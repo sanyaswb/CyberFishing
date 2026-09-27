@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { isDeepStrictEqual } = require("node:util");
 const { StageThreeBatchPrebuildProfile } = require("../../domain_batches/stage_three_batch_prebuild_profile");
 const { StageThreeBatchPrebuildProjector } = require("../../domain_batches/stage_three_batch_prebuild_projector");
 const { StageThreeBatchPrebuildContractValidator } = require("../../domain_batches/stage_three_batch_prebuild_contract");
@@ -21,7 +22,8 @@ class StageThreeBatchPrebuild {
     this.path = context.paths.prebuild;
     this.planning = new StageThreeBatchPlanning(this.root, definition);
     const execution = definition.execution;
-    const approved = new StageThreeApprovedPlanSource({ read: file => this.planning.bytes(file) })
+    this.planSource = new StageThreeApprovedPlanSource({ read: file => this.planning.bytes(file) });
+    const approved = this.planSource
       .load(this.planning.json(PATHS.executionState), { adopting: execution.continuationPlan }).document;
     const plan = this.planning.json(execution.executionPlanPath);
     this.profile = new StageThreeBatchPrebuildProfile({
@@ -59,9 +61,15 @@ class StageThreeBatchPrebuild {
     }).build();
     const before = this.bytes(PATHS.executionState);
     const oldState = JSON.parse(before);
-    // The Stage 3.22 approved prefix is already adopted; opening the batch only activates it.
-    assert.deepEqual(oldState.continuationPlan, execution.continuationPlan);
-    const after = serialize({ ...oldState, activeBatchId: this.definition.id, activeBatchPhase: "prebuild" });
+    // The approved continuation is already adopted; opening the batch only activates it. A batch
+    // whose profile pins the freeze extension of that continuation also records its adoption.
+    const adoptsExtension = !isDeepStrictEqual(oldState.continuationPlan, execution.continuationPlan);
+    if (adoptsExtension) {
+      assert(this.planSource.extendsContinuation(execution.continuationPlan, oldState.continuationPlan),
+        "the profile continuation is neither the adopted plan nor its freeze extension");
+    }
+    const after = serialize({ ...oldState, ...(adoptsExtension ? { continuationPlan: execution.continuationPlan } : {}),
+      activeBatchId: this.definition.id, activeBatchPhase: "prebuild" });
     const artifact = {
       ...projected.artifact,
       stateTransition: {

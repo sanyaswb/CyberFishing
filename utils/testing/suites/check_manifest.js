@@ -723,6 +723,18 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-34-review-queue-freeze",
+      title: "Stage 3.34.0 review-queue evidence (collection identity, hot-loop equivalence) and freeze extension replay",
+      file: "utils/architecture/stage-3-34-review-queue-freeze.js",
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-34-review-queue-freeze-fixtures",
+      title: "Stage 3.34.0 review-queue freeze rejects tampered evidence, sources, decisions and extensions",
+      file: "utils/architecture/stage-3-34-review-queue-freeze-fixtures-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",

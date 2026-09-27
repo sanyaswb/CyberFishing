@@ -4,7 +4,7 @@
 - **Current release version:** `v0.24.70`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.34.0 — review-queue evidence and freeze extension` (033 collection identity, 034 hot-loop equivalence), then batches 033–034; see “Next steps” below
+- **Next step:** `Stage 3.34 — Batch 033 (stage-3.replan-322.batch-033-assemblies-3cd39292)`, the first batch of the Stage 3.34.0 freeze extension; see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -204,7 +204,12 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [x] Input-traced seals (`--no-seal`, `--reseal`), history base (release 0.24.63 reconstruction for history-only checks), parallel runner with footprint conflicts (`--jobs`).
    - [x] Committed (1262da7); acceptance evidence records executed vs sealed counts from batch 026 on.
 3. [x] **Batches 026–032 (`v0.24.64`–`v0.24.70`)** done; through the shared tooling; recompute retirements at each preflight (expected 027, 029, 030, 031); 028–032 import earlier-batch exports; `batch-completion` prerequisites from the execution state. Browser acceptance is performed by the owner with explicit console counts.
-4. **Review queue:** 033 (collection identity for `AssemblyStateRepository#states`) and 034 (hot-loop equivalence evidence) need their evidence prerequisites first.
+4. **Review queue (Stage 3.34.0, done):** evidence and freeze extension `architecture/migration/stage_3_34_review_queue/` (replay: `node utils/architecture/stage-3-34-review-queue-freeze.js`; fixtures check with 37 negative cases).
+   - [x] Collection identity: `AssemblyStateRepository#states` proven by the atomic local replacement rule (`restoreSnapshot` builds a complete local Map and assigns it as its final statement) plus a persistence round trip in the cumulative runtime.
+   - [x] Hot-loop evidence for the six fishing modules: static member review (body fingerprints and allocation sites, no wall-clock time source, no realm/transport/typeof lookups, class providers only outside exercised members) and traced game-cycle fight scenarios (call counts, deltaTime ranges, SHA-256 of ordered arguments and results).
+   - [x] Freeze extension (base = Stage 3.22 approved prefix, sources unchanged since the 3.22 review): batches 033 and 034 frozen; the plan source chains it and a batch prebuild adopts it.
+   - [ ] Batch 033 (`v0.24.71`): AssemblyStateRepository.
+   - [ ] Batch 034 (`v0.24.72`): six hot-loop fishing modules; the batch must reproduce the recorded member fingerprints and game-cycle traces.
 5. **Prerequisite backlog:** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.
 

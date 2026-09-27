@@ -12,6 +12,9 @@ const BASE = Object.freeze({ release: "0.24.63", batch: "025" });
 const DATA = Object.freeze(["src", "architecture", "dist/stage-3-compat-runtime", "index.html", "package.json",
   "package-lock.json", "CHANGELOG.md", "refactor_Task.txt"]);
 const { INFORMATIONAL_DOCUMENTS } = require("../../architecture/informational_documents");
+const { DIRECTORY: REVIEW_QUEUE_DIRECTORY } = require("../../architecture/review_queue/review_queue_paths");
+// Stage artifact directories recorded between two batches, keyed by the first batch they precede.
+const STAGE_DIRECTORIES = Object.freeze({ [`${REVIEW_QUEUE_DIRECTORY}/`]: "033" });
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 
 class HistoryBase {
@@ -57,7 +60,8 @@ class HistoryBase {
     fs.rmSync(target, { recursive: true, force: true });
     fs.mkdirSync(target, { recursive: true });
     const newer = file => {
-      const batch = file.match(/^architecture\/migration\/stage_3_batch_(\d{3})_/u)?.[1];
+      const batch = file.match(/^architecture\/migration\/stage_3_batch_(\d{3})_/u)?.[1] ??
+        Object.entries(STAGE_DIRECTORIES).find(([directory]) => file.startsWith(directory))?.[1];
       return batch !== undefined && batch > BASE.batch;
     };
     for (const item of DATA) {

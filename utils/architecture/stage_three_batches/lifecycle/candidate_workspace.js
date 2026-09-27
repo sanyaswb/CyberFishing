@@ -34,7 +34,8 @@ class StageThreeCandidateWorkspace {
   prepare(app, prebuild, projections, sideEffectReviews) {
     const runtime = app.json(PATHS.runtimeContract);
     const state = app.json(PATHS.executionState);
-    const approved = new StageThreeApprovedPlanSource({ read: file => app.bytes(file) }).load(state).document;
+    const plan = new StageThreeApprovedPlanSource({ read: file => app.bytes(file) }).load(state);
+    const approved = plan.document;
     const retiredActivations = retiredActivationsOf(runtime, prebuild);
     const retirement = new ActivationRetirementProjection();
     const future = retirement.contract({ ...runtime, sideEffectReviews: [
@@ -74,7 +75,7 @@ class StageThreeCandidateWorkspace {
       ...app.json(PATHS.executionState), activeBatchPhase: "runtime-active",
     }));
     this.write(PATHS.approvedPlan, app.bytes(PATHS.approvedPlan));
-    this.write(state.continuationPlan.path, app.bytes(state.continuationPlan.path));
+    for (const reference of plan.references) this.write(reference.path, app.bytes(reference.path));
     const html = retirement.index(app.read(PATHS.index), runtime.output.directory, retiredActivations);
     assert.equal((html.match(/compat_runtime\.iife\.js/gu) || []).length, 1);
     this.write(PATHS.index, html);

@@ -2,10 +2,12 @@
 
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
+const { isDeepStrictEqual } = require("node:util");
 const { CanonicalJson } = require("../guards/core/canonical_json");
 
 const HISTORICAL_PLAN = "architecture/migration/stage_3_approved_batches.json";
 const CONTINUATION_KIND = "cyber-fishing-stage-3-22-approved-prefix";
+const EXTENSION_KIND = "cyber-fishing-stage-3-review-queue-freeze-extension";
 const HISTORICAL_DOMAIN_AUDIT = "architecture/migration/stage_3_domain_audit.json";
 const CONTINUATION_DOMAIN_AUDIT = "architecture/migration/stage_3_22/domain_audit.json";
 const RUNTIME_CONTRACT = "architecture/migration/stage_3_compatibility_runtime.json";
@@ -14,7 +16,9 @@ const sha256 = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
 // Single source of the Stage 3 execution plan. Without an adopted continuation it returns the frozen
 // historical plan byte-for-byte, so every released batch replays unchanged. Once the execution
 // state references the Stage 3.22 approved prefix, it returns one ordered plan: the historical
-// batches followed by the continuation batches, normalized to the historical record shape.
+// batches followed by the continuation batches, normalized to the historical record shape. An
+// adopted review-queue freeze extension names its base continuation by fingerprint and appends
+// its newly frozen batches after the base batches.
 class StageThreeApprovedPlanSource {
   constructor({ read }) {
     assert.equal(typeof read, "function", "plan source requires a byte reader");
@@ -23,23 +27,40 @@ class StageThreeApprovedPlanSource {
 
   // `adopting` is the exact continuation a batch profile pins before its prebuild records the
   // adoption in the execution state; once adopted, both references must be identical.
+  // A profile may also pin the freeze extension of the adopted continuation; its prebuild then
+  // records the extension as the adopted plan.
   load(executionState, { adopting = null } = {}) {
-    if (adopting && executionState.continuationPlan) {
-      assert.deepEqual(executionState.continuationPlan, adopting, "adopted continuation plan differs from the profile");
+    const adopted = executionState.continuationPlan;
+    const extending = Boolean(adopting && adopted && !isDeepStrictEqual(adopted, adopting) &&
+      this.extendsContinuation(adopting, adopted));
+    if (adopting && adopted && !extending) {
+      assert.deepEqual(adopted, adopting, "adopted continuation plan differs from the profile");
     }
     const historicalBytes = this.read(HISTORICAL_PLAN);
     const historicalSha256 = sha256(historicalBytes);
     assert.equal(executionState.approvedPlanSha256, historicalSha256, "approved plan fingerprint is stale");
     const historical = JSON.parse(historicalBytes.toString("utf8"));
-    const reference = executionState.continuationPlan || adopting;
+    const reference = extending ? adopting : adopted || adopting;
     if (!reference) {
       return Object.freeze({ document: historical, sha256: historicalSha256, continuation: null,
         references: [{ path: HISTORICAL_PLAN, sha256: historicalSha256 }], domainAuditPath: HISTORICAL_DOMAIN_AUDIT });
     }
     const continuationBytes = this.read(reference.path);
     assert.equal(sha256(continuationBytes), reference.sha256, "continuation plan fingerprint is stale");
-    const continuation = JSON.parse(continuationBytes.toString("utf8"));
+    let continuation = JSON.parse(continuationBytes.toString("utf8"));
+    let extension = null;
+    if (continuation.kind === EXTENSION_KIND) {
+      extension = continuation;
+      const baseBytes = this.read(extension.base.path);
+      assert.equal(sha256(baseBytes), extension.base.sha256, "extension base continuation fingerprint is stale");
+      continuation = JSON.parse(baseBytes.toString("utf8"));
+    }
     this.#validateContinuation(continuation, historical, historicalSha256);
+    if (extension) {
+      this.#validateExtension(extension, continuation, historical);
+      continuation = { ...continuation, batches: [...continuation.batches, ...extension.batches],
+        extension: { path: reference.path, sha256: reference.sha256 } };
+    }
     const batches = [...historical.batches];
     const retiredBy = this.#retiredBy();
     const continuationIds = new Set(continuation.batches.map(batch => batch.id));
@@ -59,9 +80,12 @@ class StageThreeApprovedPlanSource {
     const document = { ...historical, batches, continuation: { path: reference.path, sha256: reference.sha256 } };
     return Object.freeze({
       document,
-      sha256: sha256(Buffer.from(JSON.stringify({ historical: historicalSha256, continuation: reference.sha256 }))),
+      sha256: sha256(Buffer.from(JSON.stringify(extension
+        ? { historical: historicalSha256, continuation: extension.base.sha256, extension: reference.sha256 }
+        : { historical: historicalSha256, continuation: reference.sha256 }))),
       continuation,
-      references: [{ path: HISTORICAL_PLAN, sha256: historicalSha256 }, { ...reference }],
+      references: [{ path: HISTORICAL_PLAN, sha256: historicalSha256 },
+        ...(extension ? [{ path: extension.base.path, sha256: extension.base.sha256 }] : []), { ...reference }],
       domainAuditPath: CONTINUATION_DOMAIN_AUDIT,
     });
   }
@@ -146,6 +170,29 @@ class StageThreeApprovedPlanSource {
     });
   }
 
+  // True when `candidate` names a freeze extension whose base is exactly the `base` reference.
+  extendsContinuation(candidate, base) {
+    let document;
+    try { document = JSON.parse(this.read(candidate.path).toString("utf8")); } catch { return false; }
+    return document.kind === EXTENSION_KIND && isDeepStrictEqual(document.base, base);
+  }
+
+  // A freeze extension follows the complete base continuation: every historical and base batch is
+  // completed and its frozen batches continue the order.
+  #validateExtension(extension, continuation, historical) {
+    assert.equal(extension.status, "approved-extension-frozen", "freeze extension is not frozen");
+    assert.equal(extension.runtimeMigrationAllowed, false);
+    assert.deepEqual(extension.completedPrefix.completedBatchIds,
+      [...historical.batches, ...continuation.batches].map(batch => batch.id),
+      "freeze extension must follow the complete base continuation");
+    assert(extension.batches.length > 0, "freeze extension has no frozen batches");
+    extension.batches.forEach((batch, index) => {
+      assert.equal(batch.order, historical.batches.length + continuation.batches.length + index + 1,
+        `extension order differs: ${batch.id}`);
+      assert.equal(batch.status, "approved-frozen", `extension batch is not frozen: ${batch.id}`);
+    });
+  }
+
   // Adds the cumulative fields historical consumers read and proves them against the recorded
   // cumulative activation count and fingerprint of the continuation batch.
   #normalize(batch, previous, frozenCumulative, retiredSoFar) {
@@ -175,4 +222,10 @@ class StageThreeApprovedPlanSource {
   }
 }
 
-module.exports = { StageThreeApprovedPlanSource, HISTORICAL_PLAN, CONTINUATION_DOMAIN_AUDIT, HISTORICAL_DOMAIN_AUDIT };
+module.exports = {
+  StageThreeApprovedPlanSource,
+  HISTORICAL_PLAN,
+  CONTINUATION_DOMAIN_AUDIT,
+  HISTORICAL_DOMAIN_AUDIT,
+  EXTENSION_KIND,
+};

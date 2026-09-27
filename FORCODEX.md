@@ -26,6 +26,6 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Stage 3.34.0: review-queue evidence (AssemblyStateRepository#states atomic replacement proof + persistence round trip; hot-loop evidence for 6 fishing modules via static review and traced game-cycle) and the freeze extension of 033/034; then batches 033 (v0.24.71) and 034 (v0.24.72).
+2. Stage 3.34.0 done (evidence + freeze extension in architecture/migration/stage_3_34_review_queue/). Next: batch 033 (v0.24.71, AssemblyStateRepository), then batch 034 (v0.24.72, six hot-loop fishing modules; must reproduce the recorded game-cycle traces and member fingerprints).
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-review-queue-collection-identity-evidence",
+  "stage": "3.34.0",
+  "evidenceTaskId": "stage-3.22.prerequisite.collection-identity-evidence",
+  "prerequisiteBacklog": {
+    "path": "architecture/migration/stage_3_22/prerequisite_backlog.json",
+    "sha256": "04900a630a5fd5f8d2f1d922e00eab916c8e37b762469f2a7e63fa2dd3bccaa7"
+  },
+  "checks": [
+    "StageThreeStateIdentityReview on the reviewed collection",
+    "focused persistence round-trip"
+  ],
+  "records": [
+    {
+      "finding": "collection-identity-unproven:AssemblyStateRepository#states",
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "className": "AssemblyStateRepository",
+      "sourceSha256": "df687703775b302e9b1e6a78564b33f416843d1fff61164ae6bba063618903ae",
+      "cacheLifetime": "instance-lifetime-authoritative-store",
+      "proof": {
+        "owner": "AssemblyStateRepository#states",
+        "field": "#states",
+        "scope": "instance",
+        "collection": "Map",
+        "creation": "once-per-instance",
+        "creationLocation": "2:13",
+        "operations": [
+          {
+            "method": "has",
+            "location": "12:12"
+          },
+          {
+            "method": "get",
+            "location": "16:12"
+          },
+          {
+            "method": "set",
+            "location": "31:5"
+          },
+          {
+            "method": "delete",
+            "location": "47:5"
+          },
+          {
+            "method": "values",
+            "location": "52:16"
+          }
+        ],
+        "methods": [
+          "delete",
+          "get",
+          "has",
+          "set",
+          "values"
+        ],
+        "mutatingMethods": [
+          "delete",
+          "set"
+        ],
+        "escapes": 0,
+        "externalAccess": "impossible-private-field",
+        "derivedCache": false,
+        "replacement": "atomic-local",
+        "replacements": [
+          {
+            "method": "restoreSnapshot",
+            "location": "72:5",
+            "local": "replacement",
+            "creationLocation": "64:25",
+            "operations": [
+              "has",
+              "set"
+            ],
+            "visibility": "complete-local-collection-assigned-by-final-statement"
+          }
+        ]
+      },
+      "persistenceRoundTrip": {
+        "checks": {
+          "roundTrip": true,
+          "ownerIdentityPreserved": true,
+          "listsAreCopies": true,
+          "duplicateRestoreRejected": true,
+          "failedRestoreKeptState": true,
+          "ownerMutationsAfterRestore": true,
+          "emptyRestore": true
+        },
+        "savedShape": [
+          {
+            "rootInstanceId": "rod-a",
+            "profileId": "float",
+            "status": "DRAFT",
+            "refillSignatures": {}
+          },
+          {
+            "rootInstanceId": "rod-b",
+            "profileId": "spinning",
+            "status": "PREPARED",
+            "refillSignatures": {
+              "hook.bait": {
+                "itemId": "worm",
+                "quantity": 1
+              }
+            }
+          }
+        ],
+        "duplicateError": "RangeError: Duplicate assembly state: rod-a"
+      },
+      "verdict": "proven"
+    }
+  ]
+}
