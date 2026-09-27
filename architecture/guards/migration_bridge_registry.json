@@ -459,17 +459,17 @@
       ]
     },
     {
-      "id": "bridge-357870b89ad9",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/core/inventory/item_assembly_stacking_policy.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
+      "id": "bridge-37d65c5560c2",
+      "bridge": "src/core/inventory/item_assembly_stacking_policy.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "reason": "Preserve the exact assembly stacking consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
       "introducedStage": "stage-3",
       "removalStage": "stage-5",
       "globalProviders": [
         {
-          "symbol": "InventoryItemLocation",
+          "symbol": "ItemAssemblyStackingPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -651,6 +651,22 @@
       ]
     },
     {
+      "id": "bridge-53d26f4f68c6",
+      "bridge": "src/core/inventory/item_assembly_stacking_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "reason": "Preserve the exact assembly stacking consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-550eed84bb7c",
       "bridge": "src/core/fishing/tackle_failure_selector.js",
       "source": "src/systems/tackle_stress_system.js",
@@ -790,6 +806,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-66d8c5b75058",
+      "bridge": "src/core/inventory/item_assembly_stacking_policy.js",
+      "source": "src/core/assemblies/item_assembly_service.js",
+      "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "reason": "Preserve the exact assembly stacking consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyStackingPolicy",
           "mechanism": "global-this-property"
         }
       ]

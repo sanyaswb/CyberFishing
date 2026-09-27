@@ -64,7 +64,10 @@ class StageThreeBatchCommand {
     const d = this.definition, p = this.paths, execution = d.execution, registry = StageThreeBatchRegistry;
     const planning = () => new StageThreeBatchPlanning(ROOT, d);
     return {
-      "side-effect-review": async () => new StageThreeSideEffectReview(ROOT, d).run(),
+      "side-effect-review": async () => {
+        const review = new StageThreeSideEffectReview(ROOT, d).run();
+        return `${review.path} sha256 ${review.sha256} (pin it in profile.js sideEffectEvidence)`;
+      },
       audit: async () => {
         this.requires(p.sideEffectReview);
         const preflight = planning().preflight;

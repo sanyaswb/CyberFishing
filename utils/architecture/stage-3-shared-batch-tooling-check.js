@@ -116,7 +116,17 @@ class StageThreeSharedBatchToolingCheck {
       const release = new StageThreeBatchReleaseProjection(D).run(active);
       assert.deepEqual(serialize(release.transition), recorded(D.context.paths.releaseTransition));
     }, { keepCutover: true });
-    new StageThreeBatchReleaseCheck(D).run(ROOT);
+    // The batch-025 release is checked right after it: a newer batch is reversed first.
+    const next = D.context.next();
+    const newer = StageThreeBatchRegistry.has(next.number) &&
+      (fs.existsSync(path.join(ROOT, next.paths.prebuild)) || fs.existsSync(path.join(ROOT, next.paths.cutover)));
+    if (newer) {
+      const { StageThreeHistoricalWorkspace } = require("./stage_three_batches/lifecycle/historical_workspace");
+      await new StageThreeHistoricalWorkspace(StageThreeBatchRegistry.load(next.number), StageThreeBatchRegistry)
+        .run(ROOT, released => new StageThreeBatchReleaseCheck(D).run(released));
+    } else {
+      new StageThreeBatchReleaseCheck(D).run(ROOT);
+    }
     return 11;
   }
 }

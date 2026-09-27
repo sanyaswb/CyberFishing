@@ -11,6 +11,7 @@ const path = require("node:path");
 const BASE = Object.freeze({ release: "0.24.63", batch: "025" });
 const DATA = Object.freeze(["src", "architecture", "dist/stage-3-compat-runtime", "index.html", "package.json",
   "package-lock.json", "CHANGELOG.md", "refactor_Task.txt"]);
+const { INFORMATIONAL_DOCUMENTS } = require("../../architecture/informational_documents");
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 
 class HistoryBase {
@@ -39,28 +40,49 @@ class HistoryBase {
     }
   }
 
-  // Fingerprint of the project data under root (the live tree or the base).
+  // Fingerprint of the project data under root (the live tree or the base). Informational
+  // documents are excluded: history replays use their frozen copy.
   fingerprint(root = this.root) {
     const lines = [];
-    for (const item of DATA) {
+    for (const item of DATA.filter(entry => !INFORMATIONAL_DOCUMENTS.includes(entry))) {
       this.#walk(root, item, file => lines.push(`${file}\0${sha(fs.readFileSync(path.join(root, file)))}`));
     }
     return sha(lines.join("\n"));
   }
 
+  // Copies files only (like the historical workspaces), so a base copied from the live release and
+  // a base reconstructed from a later tree have the same structure. Artifacts of batches newer than
+  // the base are not part of the base release.
   #copyInto(sourceRoot, target) {
     fs.rmSync(target, { recursive: true, force: true });
     fs.mkdirSync(target, { recursive: true });
+    const newer = file => {
+      const batch = file.match(/^architecture\/migration\/stage_3_batch_(\d{3})_/u)?.[1];
+      return batch !== undefined && batch > BASE.batch;
+    };
     for (const item of DATA) {
-      const source = path.join(sourceRoot, item);
-      if (fs.existsSync(source)) fs.cpSync(source, path.join(target, item), { recursive: true });
+      this.#walk(sourceRoot, item, file => {
+        if (newer(file)) return;
+        const destination = path.join(target, file);
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.copyFileSync(path.join(sourceRoot, file), destination);
+      });
     }
   }
 
+  // The base fingerprint recorded while the live tree itself was the base release; a later
+  // reconstruction must reproduce it exactly (the link check).
+  #releaseRecord() { return path.join(path.dirname(this.cache), `release-${BASE.release}.json`); }
+
   async #reconstruct(target) {
     const state = JSON.parse(fs.readFileSync(path.join(this.root, "architecture/migration/stage_3_execution_state.json")));
-    if (state.releaseVersion === BASE.release && state.activeBatchId === null) {
+    const atRelease = state.releaseVersion === BASE.release && state.activeBatchId === null &&
+      !fs.readdirSync(path.join(this.root, "architecture/migration")).some(name =>
+        (name.match(/^stage_3_batch_(\d{3})_/u)?.[1] || "000") > BASE.batch);
+    if (atRelease) {
       this.#copyInto(this.root, target);
+      fs.mkdirSync(path.dirname(this.#releaseRecord()), { recursive: true });
+      fs.writeFileSync(this.#releaseRecord(), JSON.stringify({ base: this.fingerprint(target) }));
       return;
     }
     // The first shared batch after the base reverses itself and every newer batch.
@@ -72,6 +94,12 @@ class HistoryBase {
     const reconstructed = JSON.parse(fs.readFileSync(path.join(target, "architecture/migration/stage_3_execution_state.json")));
     if (reconstructed.releaseVersion !== BASE.release || reconstructed.activeBatchId !== null) {
       throw new Error(`History base reconstruction is not release ${BASE.release}`);
+    }
+    if (fs.existsSync(this.#releaseRecord())) {
+      const expected = JSON.parse(fs.readFileSync(this.#releaseRecord(), "utf8")).base;
+      if (this.fingerprint(target) !== expected) {
+        throw new Error(`History base link check failed: the reconstruction differs from release ${BASE.release}`);
+      }
     }
   }
 

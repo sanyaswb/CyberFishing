@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.64 - Inventory Assembly Stacking Policy Domain
+
+### Changed
+
+- Completed batch 026 of the Stage 3.22 approved prefix: ItemAssemblyStackingPolicy as a named ESM export.
+- Its private static ignored-key Set stays a reviewed class-definition effect evaluated once, and its InventoryItemLocation read is a reviewed import from the completed ESM owner.
+- Extended the cumulative graph from 86 to 87 project modules and from 94 to 95 activation contracts, with 143 exact bridge relationships (3 added, 1 retired).
+- The next task is batch 027 preflight.
+
 ## v0.24.63 - Fishing Sector Pressure and Retrieve Domain
 
 ### Changed

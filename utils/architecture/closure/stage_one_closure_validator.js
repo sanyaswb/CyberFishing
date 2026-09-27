@@ -632,6 +632,8 @@ class StageOneClosureValidator {
         "Inventory Reservation Policy Domain",
       "stage-3.replan-322.batch-025-fishing-9bcfae5e":
         "Fishing Sector Pressure and Retrieve Domain",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb":
+        "Inventory Assembly Stacking Policy Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -1087,9 +1089,16 @@ class StageOneClosureValidator {
         if (modernBatch && Number(modernBatch[1]) >= 10 &&
             artifact.manifestTransition?.observations === "pending") {
           const number = modernBatch[1];
-          const History = require(`../domain_batches/stage_three_batch_${number}_cutover_history`)
-            [`Batch${number}CutoverHistory`];
-          new History(this.projectRoot).artifact();
+          // Continuation batches with a shared definition use the shared cutover history.
+          const { StageThreeBatchRegistry } = require("../stage_three_batches/core/batch_definition");
+          if (StageThreeBatchRegistry.has(number)) {
+            const { StageThreeCutoverHistory } = require("../stage_three_batches/lifecycle/cutover_history");
+            new StageThreeCutoverHistory(this.projectRoot, StageThreeBatchRegistry.load(number)).artifact();
+          } else {
+            const History = require(`../domain_batches/stage_three_batch_${number}_cutover_history`)
+              [`Batch${number}CutoverHistory`];
+            new History(this.projectRoot).artifact();
+          }
           // A migrated source that imported completed-prefix exports stops reading their legacy
           // globals: its cutover removes exactly those classic edges and adds none.
           const retiredEdges = this.#reviewedImportEdgesRetiredByCutover(artifact);

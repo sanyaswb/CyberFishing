@@ -1,0 +1,712 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.27.0",
+  "sourceReleaseVersion": "0.24.63",
+  "batchId": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "0c1680dc3038939e3223b38ce43399f742e4a98414f66332d63089b35cc4c3d0",
+      "references": [
+        {
+          "path": "architecture/migration/stage_3_approved_batches.json",
+          "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+        },
+        {
+          "path": "architecture/migration/stage_3_22/approved_prefix.json",
+          "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+        }
+      ]
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "a57e7f318211b14d98838059f687c2f67460426d20f91b0ba042bac10d937f39"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_22/domain_audit.json",
+      "sha256": "b9e38673c8501448dce63fa9380edcb95fedddf9ba8a9be88c90d3c4918893b5"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "5555fda69745bf7ca1a25562e855e5bcc4fd80dde1c727eb5148b72801c3f0a3"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "2e26b32a2690b4c9cadbf2a364f2f5a898de9108b39bce8074d5ff04998d6fde"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "d0e03d96dead7c2e3b702bbe604de96159a23cbee23b00a4fc3ff33df25ea20a"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "a907a1c1e4885980b176642058f1f1f45b8c2f4a8249d3e733ee7de36fc8f89d"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "da7a879d355636455c342fd37be208228746da7ef18ecfda33beec49679ceb84"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_026_side_effect_review.json",
+      "sha256": "72126d790748a85fd559a21eb8ac45be67658262dd564178997e055538496144"
+    }
+  },
+  "scope": {
+    "targetCount": 1,
+    "modules": [
+      {
+        "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+        "targetPath": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+        "sourceSha256": "506ec92dc465510c51093b0cbd222efe3615c8885e38dbf57f180a590356180d",
+        "exports": [
+          "ItemAssemblyStackingPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-b12ac1e4c5bc",
+          "members": [
+            "src/core/inventory/item_assembly_stacking_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [
+          {
+            "target": "src/core/inventory/inventory_item_location.js",
+            "targetBoundary": "game-domain",
+            "symbols": [
+              "InventoryItemLocation"
+            ],
+            "executionPhases": [
+              "deferred"
+            ],
+            "policy": "allowed"
+          }
+        ],
+        "capabilities": [],
+        "availabilityConstraints": [
+          {
+            "symbol": "InventoryItemLocation",
+            "target": "src/core/inventory/inventory_item_location.js",
+            "consumerPhase": "deferred",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          }
+        ],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+          "classDeclarations": [
+            "ItemAssemblyStackingPolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#ignoredKeys",
+              "visibility": "private",
+              "initializerType": "NewExpression",
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "#stableSerialize",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canStack",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 1,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#ignoredKeys"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/inventory/item_assembly_stacking_policy.js",
+            "authoritativeOwners": [
+              "ItemAssemblyStackingPolicy#stableSerialize",
+              "ItemAssemblyStackingPolicy.ignoredKeys"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+            "authoritativeOwners": [
+              "ItemAssemblyStackingPolicy#stableSerialize",
+              "ItemAssemblyStackingPolicy.ignoredKeys"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden",
+          "identityReview": {
+            "kind": "collection-state-identity",
+            "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+            "className": "ItemAssemblyStackingPolicy",
+            "sourceSha256": "506ec92dc465510c51093b0cbd222efe3615c8885e38dbf57f180a590356180d",
+            "collections": [
+              {
+                "owner": "ItemAssemblyStackingPolicy.ignoredKeys",
+                "field": "#ignoredKeys",
+                "scope": "static",
+                "collection": "Set",
+                "creation": "once-per-class-evaluation",
+                "creationLocation": "2:25",
+                "operations": [
+                  {
+                    "method": "has",
+                    "location": "11:11"
+                  }
+                ],
+                "methods": [
+                  "has"
+                ],
+                "mutatingMethods": [],
+                "escapes": 0,
+                "externalAccess": "impossible-private-field",
+                "derivedCache": false
+              }
+            ],
+            "invariant": "same-authoritative-owner-before-and-after"
+          }
+        },
+        "behavior": {
+          "semanticRisk": "assembly-stack-eligibility-with-private-static-ignored-keys-and-stable-serialization",
+          "formulaDefaultsClampsRoundingFingerprint": "19ceb6035dde5e34e9530c6c0dc5408917b24114da472f8ab02925b95d99f8cc",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-assembly-stacking-policy",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_command_service.js",
+              "marker": "new ItemAssemblyStackingPolicy()"
+            },
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new ItemAssemblyStackingPolicy()"
+            },
+            {
+              "path": "src/core/assemblies/item_assembly_service.js",
+              "marker": "new ItemAssemblyStackingPolicy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "reviewed-compatible",
+          "topLevelEffects": [
+            {
+              "kind": "instantiation",
+              "location": "2:25",
+              "classification": "observable"
+            }
+          ],
+          "reviewedExposure": {
+            "kind": "private-static-literal-sets",
+            "currentPath": "src/core/inventory/item_assembly_stacking_policy.js",
+            "sourceSha256": "506ec92dc465510c51093b0cbd222efe3615c8885e38dbf57f180a590356180d",
+            "className": "ItemAssemblyStackingPolicy",
+            "bindings": {
+              "#ignoredKeys": {
+                "location": "2:25",
+                "values": [
+                  "instanceId",
+                  "quantity"
+                ]
+              }
+            },
+            "exposure": null,
+            "topLevelStatementCount": 1,
+            "evaluationCount": 1,
+            "globalPropertiesAdded": [],
+            "otherTopLevelEffects": 0
+          }
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemAssemblyStackingPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 86,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fish_retrieve_system.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 94,
+    "bridgeCount": 141,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 435,
+      "logicalLegacyPositionCount": 424,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 86,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fish_retrieve_system.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 1,
+    "newProjectModules": [
+      "src/game/domain/inventory/item_assembly_stacking_policy.js"
+    ],
+    "resultingProjectModuleCount": 87,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "resolvedImports": [
+      {
+        "source": "src/core/inventory/item_assembly_stacking_policy.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "viaShim": "src/core/inventory/inventory_item_location.js",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "exportName": "InventoryItemLocation",
+        "activationId": "activation-c3a8ca11fb0e"
+      }
+    ],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-b12ac1e4c5bc",
+        "members": [
+          "src/core/inventory/item_assembly_stacking_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/inventory/item_assembly_stacking_policy.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/core/inventory/item_assembly_stacking_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/core/inventory/item_assembly_stacking_policy.js",
+        "sha256": "19ceb6035dde5e34e9530c6c0dc5408917b24114da472f8ab02925b95d99f8cc"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/core/inventory/item_assembly_stacking_policy.js",
+        "classification": "existing-item-assembly-stacking-policy",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_command_service.js",
+            "marker": "new ItemAssemblyStackingPolicy()"
+          },
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new ItemAssemblyStackingPolicy()"
+          },
+          {
+            "path": "src/core/assemblies/item_assembly_service.js",
+            "marker": "new ItemAssemblyStackingPolicy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 2,
+          "newExpressions": 2,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [],
+    "reviewed": [
+      "src/core/inventory/item_assembly_stacking_policy.js"
+    ],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/core/inventory/item_assembly_stacking_policy.js",
+        "symbol": "ItemAssemblyStackingPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/application/inventory/inventory_v2_command_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-1daa30ad1fef",
+        "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+        "sourceProvider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "targetModule": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+        "exportName": "ItemAssemblyStackingPolicy",
+        "legacySymbol": "ItemAssemblyStackingPolicy",
+        "legacyScriptIndex": 147,
+        "shimFile": "activations/147_itemassemblystackingpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_command_service.js",
+          "src/application/inventory/inventory_v2_composition_root.js",
+          "src/core/assemblies/item_assembly_service.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [
+      {
+        "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/inventory/item_assembly_stacking_policy.js",
+        "kind": "side-effect-review",
+        "action": "prove-cumulative-evaluation-safety",
+        "module": "src/core/inventory/item_assembly_stacking_policy.js"
+      },
+      {
+        "id": "state-review:prove-state-identity-invariant:src/core/inventory/item_assembly_stacking_policy.js",
+        "kind": "state-review",
+        "action": "prove-state-identity-invariant",
+        "module": "src/core/inventory/item_assembly_stacking_policy.js"
+      }
+    ],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "one-exact-source-and-method-shape",
+    "one-export-identity-and-activation",
+    "one-reviewed-private-static-literal-set",
+    "one-exact-completed-prefix-import",
+    "three-exact-consumer-relationships-and-one-retired-bridge",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 510,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/application/inventory/inventory_v2_command_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/inventory/item_assembly_stacking_policy.js",
+        "source": "src/core/assemblies/item_assembly_service.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 87,
+    "activationCount": 95,
+    "bridgeRecordCount": 143
+  }
+}

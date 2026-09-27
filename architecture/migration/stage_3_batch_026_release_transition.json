@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-026-release-transition",
+  "batchId": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+  "fromRelease": "0.24.63",
+  "toRelease": "0.24.64",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_026_acceptance_pass.json",
+    "sha256": "7746bde3a0d2b5020109b86c29cd10ffdcc0b9c9ea8c2f3e9fbad711cd8a3bda"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_026_browser_confirmation.json",
+    "sha256": "fb9f95336f9ef94289840d38da2b9a4e13be9ae4177c0ce453009a536f4578ca"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "1a617ce6baa6301f668241fb73d26fdb1414d493c18dc1263a0effe300812c15",
+      "afterSha256": "17d3b38c2674326d5c98412296c9c65080dba50871f509193ab02eff74d4aeb9",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.64 - Inventory Assembly Stacking Policy Domain\n\n### Changed\n\n- Completed batch 026 of the Stage 3.22 approved prefix: ItemAssemblyStackingPolicy as a named ESM export.\n- Its private static ignored-key Set stays a reviewed class-definition effect evaluated once, and its InventoryItemLocation read is a reviewed import from the completed ESM owner.\n- Extended the cumulative graph from 86 to 87 project modules and from 94 to 95 activation contracts, with 143 exact bridge relationships (3 added, 1 retired).\n- The next task is batch 027 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "265be84f83df0d55aa6514619650e3da9f3d6778d5a01078e36fb599e5ecb050",
+      "afterSha256": "c4809360b697c1fc8435c1bc7c09fccb3816604202ea081cf4ac19c34d674635",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.63\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.64\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "c2476757baade9ff63d5262561391752163fe4f4bf0266af33ea04ed987be6e5",
+      "afterSha256": "2a5c513f66030df2808ee0192feb6d2466c5d42d6604e034415cf29506165e22",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.63\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.64\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "938b8622f3526ed1cbcc0de86c34b1099d9e86508eb3f98856e8eecbddb8d0da",
+      "afterSha256": "5f0e9eb587fdbf32e52a2772cd3af8e08d26d6124af2cebfe8da2d81832b0353",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.63\",",
+          "to": "  \"version\": \"0.24.64\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "58e545d03e76075fa0b3c405f6ceaee7737ff213095e916c49b2fb6d8a5bfe6d",
+      "afterSha256": "4d0a5241b49ae4ec4e7af5dacb06f8ac8c3ccc55a39e156b4533929b656ab0de",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.63\",",
+          "to": "  \"version\": \"0.24.64\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "cb38b8e887a677067b63bb8dd793eb0ea540399fdb626d540a07c17328dd3ce9",
+      "afterSha256": "cfb30bdde1ce5f847a1c643c5702856b1c1ee7738cfc07c8b02c751b9cec8ac1",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.63\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.64\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"fishing-sector-pressure-retrieve-domain\",",
+          "to": "  codename: \"inventory-assembly-stacking-policy-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  updatedAt: \"2026-09-26\",",
+          "to": "  updatedAt: \"2026-09-27\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the pole fight sector constraint, stamina pressure resolver and fish retrieve system\",\n    \"Import their five owner-created collaborators from completed ESM owners\",\n    \"Move the guarded window exposure of StaminaPressureResolver to the exact activation shim\",\n    \"Retire StaminaLateralPositionResolver and FishRetrieveResult activations as inert classic placeholders\",\n    \"Preserve eighty-six project modules, ninety-four activations and one hundred forty-one bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the item assembly stacking policy\",\n    \"Keep its private static ignored-key Set as a reviewed class-definition effect\",\n    \"Import InventoryItemLocation from its completed ESM owner\",\n    \"Preserve eighty-seven project modules, ninety-five activations and one hundred forty-three bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

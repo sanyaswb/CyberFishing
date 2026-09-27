@@ -20,15 +20,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - npm run check:quick (~40 s), npm run check:architecture, npm run check -- --suite history, npm run check (Full, ~55-70 min on Windows).
 
 ## Current state (2026-09-27)
-- Released v0.24.63 (batch 025, local commit + tag): batches 001–025 complete, 77 migrated Domain modules; runtime 86 modules / 94 activations (2 retired) / 141 bridges; activeBatchId = null.
-- Activation retirement is implemented end to end (retiredActivations ledger, inert classic placeholders, dist shim deletion with rollback, fixtures check stage-3-activation-retirement-fixtures).
-- Informational documents (this file, refactor_Task.txt) are not release metadata from batch 025 on; history replays use architecture/migration/stage_3_informational_documents_freeze.json.
-- Check catalog supports args; utils/architecture/run-check-at-checkpoint.js runs a check on the exact reconstructed state before a batch (used by eleven 006-008 history checks at --before-batch 025).
-- Long suites run on snapshot copies in %TEMP% (robocopy excluding node_modules + node_modules junction) so the working tree never blocks.
+- Released v0.24.64 (batch 026): batches 001–026 complete, 78 migrated Domain modules; runtime 87 modules / 95 activations / 143 bridges; activeBatchId = null.
+- Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
+- Check pipeline (utils/testing/CHECKS.md): input-traced seals, history base (release 0.24.63 reconstruction for history-only checks up to 025), parallel runner (--jobs, default 4), --no-seal, --reseal.
 - Browser acceptance is performed by the owner (VS Code Go Live, hard reload) with explicit console counts.
 
 ## Next tasks
-1. Commit the shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there) and the check pipeline (utils/testing/CHECKS.md: seals, history base, parallel runner) after the complete reseal Full; push develop.
-2. Batch 026 (v0.24.64) through "node utils/architecture/stage-3-batch.js --batch 026 --step <step>"; the owner plays the browser checklist.
-3. Batches 027–032 -> v0.24.65–v0.24.70 (retirements recomputed at each preflight; expected 027/029/030/031; earlier-batch imports from 028).
-4. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.
+1. Batch 027 (v0.24.65, 5 items modules; expected retirements ItemRarityDescriptor, ItemRarityStrategy, ItemQualityGradePolicy - recompute at preflight) through the shared tooling.
+2. Batches 028–032 -> v0.24.66–v0.24.70 (earlier-batch imports from 028; batch-completion prerequisites from the execution state).
+3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

@@ -254,6 +254,13 @@
       "decision": "approved-compatible",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "reason": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "evidenceFingerprint": "945a06bf2427ad214d87417507befe87874536f98ff50db5bb353790a8a588e3",
+      "decision": "approved-compatible",
+      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "reason": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
     }
   ],
   "activationPositions": [
@@ -326,6 +333,18 @@
       "legacySymbol": "UnlimitedAssemblyCapacityPolicy",
       "legacyScriptIndex": 148,
       "shimFile": "activations/148_unlimitedassemblycapacitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-1daa30ad1fef",
+      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "sourceProvider": "src/core/inventory/item_assembly_stacking_policy.js",
+      "targetModule": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "exportName": "ItemAssemblyStackingPolicy",
+      "legacySymbol": "ItemAssemblyStackingPolicy",
+      "legacyScriptIndex": 147,
+      "shimFile": "activations/147_itemassemblystackingpolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
