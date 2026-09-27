@@ -179,14 +179,16 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
 ### Next steps
 
 1. **Shared Stage 3 batch tooling (owner spec 2026-09-26)** — separate commit, no version change, no active batch:
-   - [ ] Shared lifecycle components (planning, candidate validation, cutover, live validation, reconciliation, acceptance/release, history, isolated workspace) extracted from the 022–025 per-batch files; algorithms and transactions reused.
-   - [ ] Batch definition = `profile.js` + `behavior_cases.js` (+ optional `fixtures.js`), validated against the approved plan and the current graph; expectations never derived from the validated output.
-   - [ ] One dispatcher `node utils/architecture/stage-3-batch.js --batch NNN --step <step>` (audit … history); each step checks predecessor artifacts and hashes; no automatic progression to cutover or release.
-   - [ ] Shared check entrypoint (architecture/parity/release modes) using catalog `args` (already supported).
-   - [ ] Equivalence: old vs shared implementation on reconstructed batch-025 inputs produce identical artifacts/bytes; one compatibility adapter at the latest historical boundary.
-   - [ ] Batch 026 pilot in an isolated workspace (ItemAssemblyStackingPolicy scenarios from the spec); negative and rollback cases; Architecture → Quick → one Full, fresh npm ci, build equality, git diff --check.
-   - [ ] English documentation of the command sequence and profile/scenario authoring.
-2. **Check pipeline acceleration (proposal awaiting owner approval):** input-traced seals (unchanged inputs → sealed PASS), release-checkpoint history (old layers sealed, cheap link check per release), parallel runner with resource locks (e.g. `dist-writer`), long suites on snapshot copies, honest sealed-vs-executed reporting.
+   - [x] Shared lifecycle components, context and definitions registry (`utils/architecture/stage_three_batches/`).
+   - [x] Batch definition = `profile.js` + `behavior_cases.js` (+ optional `fixtures.js`), validated against the context.
+   - [x] Dispatcher `node utils/architecture/stage-3-batch.js --batch NNN --step <step>` and shared check entrypoint via catalog `args`.
+   - [x] Equivalence: the shared lifecycle reproduces every batch-025 artifact byte-for-byte; 15 negative cases.
+   - [x] Batch 026 pilot in an isolated workspace: audit → reconcile, 026 check, 025/024 history through 026, tampered records rejected, rollback restores byte-for-byte.
+   - [x] English documentation (`utils/architecture/stage_three_batches/README.md`).
+   - [ ] Commit after the complete Full.
+2. **Check pipeline acceleration (approved 2026-09-27)** (`utils/testing/CHECKS.md`):
+   - [x] Input-traced seals (`--no-seal`, `--reseal`), history base (release 0.24.63 reconstruction for history-only checks), parallel runner with footprint conflicts (`--jobs`).
+   - [ ] Commit after the complete reseal Full; record executed vs sealed counts in acceptance evidence from batch 026 on.
 3. **Batches 026–032 (`v0.24.64`–`v0.24.70`)** through the shared tooling; recompute retirements at each preflight (expected 027, 029, 030, 031); 028–032 import earlier-batch exports; `batch-completion` prerequisites from the execution state. Browser acceptance is performed by the owner with explicit console counts.
 4. **Review queue:** 033 (collection identity for `AssemblyStateRepository#states`) and 034 (hot-loop equivalence evidence) need their evidence prerequisites first.
 5. **Prerequisite backlog:** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.

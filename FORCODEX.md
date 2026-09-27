@@ -28,7 +28,7 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Browser acceptance is performed by the owner (VS Code Go Live, hard reload) with explicit console counts.
 
 ## Next tasks
-1. Shared Stage 3 batch tooling for 026+ (owner spec 2026-09-26): shared lifecycle components, profile.js + behavior_cases.js (+ optional fixtures.js) per batch, one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>", shared check entrypoint via catalog args, equivalence with batch-025 outputs, batch-026 isolated pilot; separate commit without version change.
-2. Check pipeline acceleration (awaiting owner approval): input-traced seals, release-checkpoint history + link check, parallel runner with resource locks, snapshot runs, sealed-vs-executed reporting.
-3. Batches 026–032 -> v0.24.64–v0.24.70 (retirements recomputed at each preflight; expected 027/029/030/031; earlier-batch imports from 028).
+1. Commit the shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there) and the check pipeline (utils/testing/CHECKS.md: seals, history base, parallel runner) after the complete reseal Full; push develop.
+2. Batch 026 (v0.24.64) through "node utils/architecture/stage-3-batch.js --batch 026 --step <step>"; the owner plays the browser checklist.
+3. Batches 027–032 -> v0.24.65–v0.24.70 (retirements recomputed at each preflight; expected 027/029/030/031; earlier-batch imports from 028).
 4. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.
