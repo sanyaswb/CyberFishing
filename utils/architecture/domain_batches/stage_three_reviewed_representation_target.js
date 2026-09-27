@@ -9,13 +9,36 @@ const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_e
 const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/cumulative_side_effect_gate");
 
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
+// A leaf projection whose reviewed evaluation is verified on the complete source by the caller.
+const DEFERRED_EVALUATION = Symbol("deferred-evaluation");
 
 class RepresentationOnlyReviewedEsmTarget {
   // `imports` are the plan's exact reviewed imports of completed-prefix exports. They form a
   // header of single named imports; removing it must restore the leaf projection byte-for-byte.
   project({ imports = [], ...options }) {
-    const base = this.#projectLeaf(options);
-    return imports.length === 0 ? base : this.#withImports(base, imports, options);
+    const deferred = imports.length > 0 && Boolean(options.contract?.privateStaticSets);
+    if (deferred) assert(options.targetEvaluation, `${options.targetPath}: reviewed private static set evaluation is required`);
+    const base = this.#projectLeaf(deferred ? { ...options, targetEvaluation: DEFERRED_EVALUATION } : options);
+    if (imports.length === 0) return base;
+    const projected = this.#withImports(base, imports, options);
+    if (deferred) this.#verifyEvaluation(projected, options);
+    return projected;
+  }
+
+  // The ESM source a side-effect review observes to record the reviewed evaluation; it is never
+  // published and never replaces a verified projection.
+  observationSource({ imports = [], ...options }) {
+    assert(options.contract?.privateStaticSets, `${options.targetPath}: only reviewed evaluations need observation`);
+    const base = this.#projectLeaf({ ...options, targetEvaluation: DEFERRED_EVALUATION });
+    return imports.length === 0 ? base.targetSource : this.#withImports(base, imports, options).targetSource;
+  }
+
+  #verifyEvaluation(projected, { targetPath, targetEvaluation }) {
+    const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath,
+      source: projected.targetSource });
+    assert.equal(observed.evidenceFingerprint, targetEvaluation.evidenceFingerprint,
+      `${targetPath}: reviewed evaluation fingerprint differs`);
+    assert.deepEqual(observed.observations, targetEvaluation.observations);
   }
 
   #withImports(base, imports, { source, currentPath, targetPath, exports, sourceSha256 }) {
@@ -67,6 +90,7 @@ class RepresentationOnlyReviewedEsmTarget {
       assert(targetEvaluation, `${targetPath}: reviewed private static set evaluation is required`);
       const projected = new RepresentationOnlyNamedEsmTarget().project({ source, currentPath,
         targetPath, exportName: exports[0], sourceSha256, legacyExposure: exposure });
+      if (targetEvaluation === DEFERRED_EVALUATION) return projected;
       const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath,
         source: projected.targetSource });
       assert.equal(observed.evidenceFingerprint, targetEvaluation.evidenceFingerprint);

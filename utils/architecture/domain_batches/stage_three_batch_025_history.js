@@ -18,7 +18,14 @@ class Batch025History {
   exists() { return fs.existsSync(path.join(this.root, PREBUILD)); }
 
   before(file, provided = this.bytes(file)) {
+    // Shared continuation batches (026+) are peeled first by their own history.
+    const { StageThreeBatchRegistry } = require("../stage_three_batches/core/batch_definition");
     let bytes = Buffer.from(provided);
+    if (StageThreeBatchRegistry.has("026")) {
+      const { StageThreeBatchHistory } = require("../stage_three_batches/lifecycle/history");
+      bytes = new StageThreeBatchHistory(this.root, StageThreeBatchRegistry.load("026"), StageThreeBatchRegistry)
+        .before(file, bytes);
+    }
     if (!this.exists()) return bytes;
     bytes = new Batch025ReleaseTransition(this.root).before(file, bytes);
     if (file === MANIFEST) bytes = beforeBatch025Observations(bytes, this.root);

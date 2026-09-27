@@ -680,6 +680,20 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-3-shared-batch-tooling-negative",
+      title: "Shared Stage 3 batch tooling rejects wrong or incomplete batch definitions and preflight inputs",
+      file: "utils/architecture/stage-3-shared-batch-tooling-check.js",
+      args: ["--mode", "negative"],
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-shared-batch-tooling-equivalence",
+      title: "Shared Stage 3 batch tooling reproduces every accepted batch-025 artifact byte-for-byte",
+      file: "utils/architecture/stage-3-shared-batch-tooling-check.js",
+      args: ["--mode", "equivalence"],
+      suites: ["architecture", "history"],
+    },
+    {
       id: "stage-3-22-post-freeze-review",
       title: "Stage 3.22 post-freeze graph review, next-prefix plan and freeze replay",
       file: "utils/architecture/stage-3-22-post-freeze-review-check.js",

@@ -69,7 +69,9 @@ class StageThreeBatchPreflightAuditBuilder {
       ...previousBatch.cumulativeRuntimeTopology.stage2Targets,
       ...previousBatch.cumulativeRuntimeTopology.stage3Targets,
     ]);
-    const actualRuntimeModules = new Set(runtimeContract.activationPositions
+    // A retired activation's ESM module stays in the cumulative graph for its importers.
+    const actualRuntimeModules = new Set([...runtimeContract.activationPositions,
+      ...(runtimeContract.retiredActivations || []).map((record) => record.activation)]
       .map((activation) => activation.targetModule));
     this.#require(this.#same([...actualRuntimeModules].sort(), [...existingModules].sort()),
       "live runtime module set differs from completed frozen topology");
