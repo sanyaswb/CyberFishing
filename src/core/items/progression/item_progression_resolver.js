@@ -16,7 +16,7 @@ class ItemProgressionResolver {
     qualityResolver,
     capacityResolver = null,
     baselineRegistry,
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
   } = {}) {
     if (typeof configProvider !== "function") {
       throw new TypeError("ItemProgressionResolver requires configProvider");

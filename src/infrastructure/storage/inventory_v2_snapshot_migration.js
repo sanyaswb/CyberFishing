@@ -6,15 +6,13 @@ class InventoryV2SnapshotMigration {
 
   constructor({
     itemDefinitionResolver,
-    itemStateMigration = new LegacyItemStateMigration(),
-    itemSnapshotMapper = null,
+    itemStateMigration,
+    itemSnapshotMapper,
     targetSchemaVersion,
   } = {}) {
     this.#definitionResolver = itemDefinitionResolver;
     this.#itemStateMigration = itemStateMigration;
-    this.#itemSnapshotMapper =
-      itemSnapshotMapper ||
-      new InventoryItemSnapshotMapper({ itemDefinitionResolver });
+    this.#itemSnapshotMapper = itemSnapshotMapper;
     this.#targetSchemaVersion = Number(targetSchemaVersion);
     if (!Number.isInteger(this.#targetSchemaVersion)) {
       throw new TypeError("InventoryV2SnapshotMigration requires targetSchemaVersion");

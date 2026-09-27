@@ -19,7 +19,11 @@ class ItemProgressionConfigValidator {
   ]);
 
   #errors = [];
-  #effectiveStatsResolver = new EffectiveItemStatsResolver();
+  #effectiveStatsResolver;
+
+  constructor({ effectiveStatsResolver } = {}) {
+    this.#effectiveStatsResolver = effectiveStatsResolver;
+  }
 
   validate({ progressionConfig, itemDb = {} } = {}) {
     this.#errors = [];

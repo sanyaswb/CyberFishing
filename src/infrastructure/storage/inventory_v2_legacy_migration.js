@@ -16,17 +16,15 @@ class InventoryV2LegacyMigration {
   constructor({
     itemDefinitionResolver,
     instanceIdFactory = null,
-    itemStateMigration = new LegacyItemStateMigration(),
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
-    itemSnapshotMapper = null,
+    itemStateMigration,
+    effectiveStatsResolver,
+    itemSnapshotMapper,
   } = {}) {
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
     this.#itemStateMigration = itemStateMigration;
     this.#effectiveStatsResolver = effectiveStatsResolver;
-    this.#itemSnapshotMapper =
-      itemSnapshotMapper ||
-      new InventoryItemSnapshotMapper({ itemDefinitionResolver });
+    this.#itemSnapshotMapper = itemSnapshotMapper;
   }
 
   migrate({ legacyItems = [], legacyEquipment = {}, settings = {} } = {}) {

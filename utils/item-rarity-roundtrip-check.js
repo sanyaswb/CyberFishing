@@ -1,5 +1,6 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 
 const Assertion = CheckAssertion.create("Item rarity round-trip check");
 
@@ -73,6 +74,7 @@ class ItemRarityRoundTripCheck {
       DomAdapter: "ItemRarityDomAdapter",
       ParametersResolver: "InventoryV2ItemParametersResolver",
     });
+    new ItemStatTestComposition(sourceRuntime.context).install({ withPolicy: ["SnapshotMapper"], withResolver: ["ViewFactory"] });
     this.#runtime = sourceRuntime.context;
     this.#definitions = this.#createDefinitions();
     this.#database = {

@@ -6,7 +6,7 @@ class ItemProgressionDebugSnapshotProvider {
   constructor({
     itemDb = {},
     progressionResolver,
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
   } = {}) {
     if (!progressionResolver || typeof progressionResolver.resolve !== "function") {
       throw new TypeError(

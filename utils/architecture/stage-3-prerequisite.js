@@ -52,6 +52,8 @@ class StageThreePrerequisiteCommand {
     const next = String(Number(this.task.afterBatch) + 1).padStart(3, "0");
     const { StageThreeBatchRegistry } = require("./stage_three_batches/core/batch_definition");
     const verify = checkpoint => this.#inCopy(checkpoint, copy => {
+      // Later transitions are newer than this one: peel them before verifying its published state.
+      new StageThreePrerequisiteLedger(copy).peelFrom(record.sequence + 1);
       for (const write of record.writes) {
         const target = path.join(copy, write.path);
         assert.equal(fs.existsSync(target) ? sha(fs.readFileSync(target)) : null, write.afterSha256,
@@ -98,7 +100,7 @@ class StageThreePrerequisiteCommand {
       }
     };
     try {
-      for (const directory of ["src", "architecture"]) copy(directory);
+      for (const directory of ["src", "architecture", "dist/stage-3-compat-runtime"]) copy(directory);
       for (const file of ["index.html", "package.json"]) fs.copyFileSync(path.join(root, file), path.join(temporary, file));
       return action(temporary);
     } finally {

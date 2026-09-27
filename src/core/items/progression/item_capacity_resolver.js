@@ -1,7 +1,7 @@
 class ItemCapacityResolver {
   #effectiveStatsResolver;
 
-  constructor({ effectiveStatsResolver = new EffectiveItemStatsResolver() } = {}) {
+  constructor({ effectiveStatsResolver } = {}) {
     this.#effectiveStatsResolver = effectiveStatsResolver;
   }
 

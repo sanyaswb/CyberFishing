@@ -16,7 +16,7 @@ class InventoryItemViewFactory {
     freshnessResolver = null,
     displayStatsResolver = null,
     runtimeContextProvider = () => ({}),
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
     effectiveRarityResolver = new EffectiveItemRarityResolver(),
     baitEffectivenessCatalogResolver = null,
   } = {}) {

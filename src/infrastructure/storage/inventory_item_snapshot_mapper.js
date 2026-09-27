@@ -29,7 +29,7 @@ class InventoryItemSnapshotMapper {
 
   constructor({
     itemDefinitionResolver,
-    overridePolicy = new ItemStatOverridePolicy(),
+    overridePolicy,
     freshnessStatePolicy = new ItemFreshnessStatePolicy(),
     freshnessCapabilityProvider = null,
   } = {}) {

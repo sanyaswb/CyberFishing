@@ -133,7 +133,7 @@ class InventoryRuntimeLoader {
       "InventoryItemFactory",
     );
     this.#loadClass(context, "src/systems/inventory_system.js", "InventoryManager");
-    return context.InventoryManager;
+    return context;
   }
 
   #loadSlotConfig(context) {
@@ -174,9 +174,14 @@ class InventoryRuntimeLoader {
 
 class InventoryFixtureFactory {
   #InventoryManager;
+  #effectiveStatsResolver;
+  #itemStatOverridePolicy;
 
-  constructor(InventoryManager) {
-    this.#InventoryManager = InventoryManager;
+  // Composes the item stat collaborators the way GameCompositionRoot does.
+  constructor(runtime) {
+    this.#InventoryManager = runtime.InventoryManager;
+    this.#itemStatOverridePolicy = new runtime.ItemStatOverridePolicy({ config: runtime.ITEM_STAT_OVERRIDE_CONFIG });
+    this.#effectiveStatsResolver = new runtime.EffectiveItemStatsResolver({ overridePolicy: this.#itemStatOverridePolicy });
   }
 
   createFloatBuildFixture({ resetCache = true } = {}) {
@@ -259,6 +264,9 @@ class InventoryFixtureFactory {
       this.#createCastDistanceCalculator(),
       null,
       { getReelConfig: () => ({}) },
+      null, null, null, null, null, null, null,
+      this.#effectiveStatsResolver,
+      this.#itemStatOverridePolicy,
     );
     return { manager, events };
   }
@@ -662,7 +670,7 @@ class InventoryLifecycleCheckSuite {
   }
 }
 
-const InventoryManager = new InventoryRuntimeLoader().load();
-const fixtures = new InventoryFixtureFactory(InventoryManager);
+const runtime = new InventoryRuntimeLoader().load();
+const fixtures = new InventoryFixtureFactory(runtime);
 new InventoryLifecycleCheckSuite(fixtures).run();
 console.log("Inventory lifecycle checks passed.");

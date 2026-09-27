@@ -292,25 +292,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-1574a55baa04",
-      "rule": "boundary-dependency",
-      "source": "src/core/items/item_stat_override_policy.js",
-      "target": "src/config/items/item_stat_override_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "1574a55baa0406f5a9f345f2fe18145f9204d1aee9ca9ba1dc81e2209b54ea9b",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/items/item_stat_override_policy.js",
-        "target": "src/config/items/item_stat_override_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-17f2b94ab3cd",
       "rule": "boundary-dependency",
       "source": "src/app/states.js",
@@ -1916,26 +1897,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-ca543a3a2f54",
-      "rule": "boundary-dependency",
-      "source": "src/infrastructure/storage/legacy_item_state_migration.js",
-      "target": "src/core/items/item_stat_override_policy.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "ca543a3a2f54be5ccc282e4d797c37242efc0a09eaae4413f0a393d438d3b003",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/infrastructure/storage/legacy_item_state_migration.js",
-        "target": "src/core/items/item_stat_override_policy.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-cbb2fb915967",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
@@ -2292,26 +2253,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-fa219c513214",
-      "rule": "boundary-dependency",
-      "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-      "target": "src/core/items/item_stat_override_policy.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "fa219c513214f814b4186f41085b203a0ed301736297e7d9aa510c9483fcf4af",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-        "target": "src/core/items/item_stat_override_policy.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-fa61692643c8",
       "rule": "boundary-dependency",
       "source": "src/entities/tackle.js",
@@ -2351,27 +2292,6 @@
         "rule": "boundary-dependency",
         "source": "src/ui/inventory/inventory_v2_header_renderer.js",
         "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-fc41ef897dd2",
-      "rule": "boundary-dependency",
-      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
-      "target": "src/core/items/effective_item_stats_resolver.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "fc41ef897dd203a068e62fb430af39a0697b6055eaad572908e98d8b1e9c0943",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
-        "target": "src/core/items/effective_item_stats_resolver.js"
       }
     },
     {
@@ -3854,25 +3774,6 @@
           "src/debug/debug.js->src/debug/modules/bite_ticks_debug_module.js",
           "src/debug/modules/bite_ticks_debug_module.js->src/debug/debug.js"
         ]
-      }
-    },
-    {
-      "id": "debt-qualified-role-72ddffb8ccc5",
-      "rule": "qualified-role",
-      "source": "src/config/validation/item_progression_config_validator.js",
-      "target": "src/core/items/effective_item_stats_resolver.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy qualified-role debt.",
-      "blockers": [
-        "high-level-self-composition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "72ddffb8ccc5d903dc5d2c15d6f67f44616c4f8c589745e1d26320d1ec486e20",
-      "identity": {
-        "rule": "qualified-role",
-        "source": "src/config/validation/item_progression_config_validator.js",
-        "target": "src/core/items/effective_item_stats_resolver.js"
       }
     }
   ]

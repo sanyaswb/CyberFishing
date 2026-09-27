@@ -56,7 +56,16 @@ vm.runInContext(
     boat: { id: "boat", itemType: "boat", assemblyProfileId: "bait_boat", gameplayStats: { sections: 2 } },
   };
   let sequence = 0;
+  // Item stat collaborators composed the way the inventory composition root composes them.
+  const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: ITEM_STAT_OVERRIDE_CONFIG });
+  globalThis.itemStatCollaborators = Object.freeze({
+    itemStateMigration: new LegacyItemStateMigration({ overridePolicy: itemStatOverridePolicy }),
+    effectiveStatsResolver: new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy }),
+    itemSnapshotMapper: new InventoryItemSnapshotMapper({
+      itemDefinitionResolver: (itemId) => definitions[itemId] || null, overridePolicy: itemStatOverridePolicy }),
+  });
   const migration = new InventoryV2LegacyMigration({
+    ...itemStatCollaborators,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
     instanceIdFactory: (source) => source.instanceId + "~split-" + (++sequence),
   });
@@ -133,6 +142,8 @@ assert(
 vm.runInContext(
   `
   globalThis.snapshotUpgrade = new InventoryV2SnapshotMigration({
+    itemStateMigration: itemStatCollaborators.itemStateMigration,
+    itemSnapshotMapper: itemStatCollaborators.itemSnapshotMapper,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
     targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
   }).migrate({

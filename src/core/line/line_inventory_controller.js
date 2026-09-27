@@ -12,7 +12,7 @@ class LineInventoryController {
     makeId,
     lineConfig,
     isEquipped,
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
   }) {
     this.#inventory = inventory;
     this.#db = db;

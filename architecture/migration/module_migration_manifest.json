@@ -1200,6 +1200,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "ItemStatOverridePolicy",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "LandingAreaRenderFrameBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2362,6 +2368,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "ItemStatOverridePolicy",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/items/item_stat_override_policy.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "LandingAreaRenderFrameBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -3100,6 +3114,13 @@
               "target": "src/core/items/freshness/item_freshness_resolver.js",
               "symbols": [
                 "ItemFreshnessResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/items/item_stat_override_policy.js",
+              "symbols": [
+                "ItemStatOverridePolicy"
               ],
               "resolution": "confirmed"
             },
@@ -7892,6 +7913,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "LegacyItemStateMigration",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "LoadoutApplicationService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8423,6 +8450,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "LegacyItemStateMigration",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "LoadoutApplicationService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8888,6 +8923,13 @@
                 "InventoryV2TransactionCoordinator"
               ],
               "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
+              "symbols": [
+                "LegacyItemStateMigration"
+              ],
+              "resolution": "confirmed"
             }
           ],
           "unresolved": [],
@@ -9333,14 +9375,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -9370,25 +9405,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -10732,6 +10750,12 @@
               "executionPhase": "eager"
             },
             {
+              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            },
+            {
               "symbol": "MAP_DB",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -10850,6 +10874,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "target": "src/config/items/item_stat_override_config.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "MAP_DB",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -10925,6 +10957,13 @@
               "target": "src/config/items/item_progression_config.js",
               "symbols": [
                 "ITEM_PROGRESSION_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/items/item_stat_override_config.js",
+              "symbols": [
+                "ITEM_STAT_OVERRIDE_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -13548,14 +13587,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -13588,25 +13620,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -20794,14 +20809,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -20830,25 +20838,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/item_stat_override_policy.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/item_stat_override_policy.js",
-              "symbols": [
-                "ItemStatOverridePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -21355,14 +21346,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -21395,25 +21379,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/items/item_stat_override_config.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/items/item_stat_override_config.js",
-              "symbols": [
-                "ITEM_STAT_OVERRIDE_CONFIG"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -21682,14 +21649,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -21719,25 +21679,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -21768,14 +21711,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -21808,25 +21744,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -22074,12 +21993,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "ItemProgressionDescriptor",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -22121,14 +22034,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "ItemProgressionDescriptor",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -22138,13 +22043,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/items/progression/item_progression_descriptor.js",
               "symbols": [
@@ -23208,12 +23106,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "LineAllocationPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -23248,14 +23140,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "LineAllocationPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -23265,13 +23149,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/line/line_allocation_policy.js",
               "symbols": [
@@ -33879,14 +33756,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -33914,25 +33784,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -40893,12 +40746,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -40948,14 +40795,6 @@
               "executionPhase": "deferred",
               "target": "src/core/items/freshness/item_freshness_state_policy.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/item_stat_override_policy.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -40970,13 +40809,6 @@
               "target": "src/core/items/freshness/item_freshness_state_policy.js",
               "symbols": [
                 "ItemFreshnessStatePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/item_stat_override_policy.js",
-              "symbols": [
-                "ItemStatOverridePolicy"
               ],
               "resolution": "confirmed"
             }
@@ -41045,12 +40877,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "EquipmentLoadoutRepository",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -41093,12 +40919,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "InventoryItemSnapshotMapper",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "ItemAssemblyReader",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -41112,12 +40932,6 @@
             },
             {
               "symbol": "LegacyInventoryUnitAllocator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LegacyItemStateMigration",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -41189,14 +41003,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "EquipmentLoadoutRepository",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -41253,14 +41059,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "InventoryItemSnapshotMapper",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "ItemAssemblyReader",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -41282,14 +41080,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LegacyItemStateMigration",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
               "resolution": "confirmed"
             },
             {
@@ -41380,23 +41170,9 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/core/loadouts/equipment_loadout_repository.js",
               "symbols": [
                 "EquipmentLoadoutRepository"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-              "symbols": [
-                "InventoryItemSnapshotMapper"
               ],
               "resolution": "confirmed"
             },
@@ -41411,13 +41187,6 @@
               "target": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
               "symbols": [
                 "LegacyInventoryUnitAllocator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
-              "symbols": [
-                "LegacyItemStateMigration"
               ],
               "resolution": "confirmed"
             }
@@ -41544,20 +41313,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryItemSnapshotMapper",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LegacyItemStateMigration",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -41587,40 +41343,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryItemSnapshotMapper",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LegacyItemStateMigration",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-              "symbols": [
-                "InventoryItemSnapshotMapper"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/storage/legacy_item_state_migration.js",
-              "symbols": [
-                "LegacyItemStateMigration"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -41920,12 +41644,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -41973,14 +41691,6 @@
               "executionPhase": "deferred",
               "target": "src/core/items/freshness/item_freshness_state_policy.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemStatOverridePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/item_stat_override_policy.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -41995,13 +41705,6 @@
               "target": "src/core/items/freshness/item_freshness_state_policy.js",
               "symbols": [
                 "ItemFreshnessStatePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/item_stat_override_policy.js",
-              "symbols": [
-                "ItemStatOverridePolicy"
               ],
               "resolution": "confirmed"
             }
@@ -45999,12 +45702,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -46040,24 +45737,9 @@
               "executionPhase": "deferred",
               "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
               "symbols": [
@@ -46198,12 +45880,6 @@
             },
             {
               "symbol": "EffectiveItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EffectiveItemStatsResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -46367,14 +46043,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "EffectiveItemStatsResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FightPhysicsConfigAdapter",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -46535,13 +46203,6 @@
               "target": "src/core/inventory/inventory_item_stacking_policy.js",
               "symbols": [
                 "InventoryItemStackingPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/effective_item_stats_resolver.js",
-              "symbols": [
-                "EffectiveItemStatsResolver"
               ],
               "resolution": "confirmed"
             },

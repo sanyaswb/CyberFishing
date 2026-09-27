@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item condition check");
@@ -32,6 +33,7 @@ class RuntimeLoader {
       FreshnessResolver: "ItemFreshnessResolver",
       Adapter: "ItemConditionDomAdapter",
     });
+    new ItemStatTestComposition(runtime.context).install({ withResolver: ["Validator"] });
     return runtime.context;
   }
 }

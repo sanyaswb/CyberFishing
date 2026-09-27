@@ -38,8 +38,11 @@ class GameCompositionRoot {
   }
 
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+    // The item stat override table reaches the Domain policy only through composition.
+    const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: this.#config.itemStatOverrides });
+    const effectiveItemStatsResolver = new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy });
     this.#validateRarityConfiguration();
-    this.#validateItemProgressionConfiguration();
+    this.#validateItemProgressionConfiguration(effectiveItemStatsResolver);
     this.#validateDegradationColorConfiguration();
     const contracts = new DependencyContractValidator({
       stage: "bootstrap",
@@ -118,6 +121,7 @@ class GameCompositionRoot {
     const itemCatalogBaselineRegistry = new ItemCatalogBaselineRegistry({
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
       strategyRegistry: itemMetricStrategyRegistry,
+      effectiveStatsResolver: effectiveItemStatsResolver,
     });
     const itemRatingResolver = new ItemRatingResolver({
       strategyRegistry: itemMetricStrategyRegistry,
@@ -128,8 +132,9 @@ class GameCompositionRoot {
       ratingResolver: itemRatingResolver,
       ratingTierResolver: new ItemRatingTierResolver(),
       qualityResolver: new ItemQualityResolver(),
-      capacityResolver: new ItemCapacityResolver(),
+      capacityResolver: new ItemCapacityResolver({ effectiveStatsResolver: effectiveItemStatsResolver }),
       baselineRegistry: itemCatalogBaselineRegistry,
+      effectiveStatsResolver: effectiveItemStatsResolver,
     });
     const itemProgressionVisualResolver = new ItemProgressionVisualResolver({
       rarityVisualResolver,
@@ -142,6 +147,7 @@ class GameCompositionRoot {
       new ItemProgressionDebugSnapshotProvider({
         itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
         progressionResolver: itemProgressionResolver,
+        effectiveStatsResolver: effectiveItemStatsResolver,
       });
     contracts.requireMethods(itemRarityResolver, "itemRarityResolver", [
       "resolve",
@@ -422,11 +428,13 @@ class GameCompositionRoot {
       itemConditionResolver,
       itemFreshnessResolver,
       baitEffectivenessCatalogResolver,
+      effectiveItemStatsResolver,
+      itemStatOverridePolicy,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     const bootstrapItemDatabase = new ItemDatabase(ITEM_DB);
-    const bootstrapStatsResolver = new EffectiveItemStatsResolver();
+    const bootstrapStatsResolver = effectiveItemStatsResolver;
     const projectDefinition = (itemId) => {
       const definition = bootstrapItemDatabase.getItemData(itemId);
       if (!definition) return null;
@@ -937,13 +945,13 @@ class GameCompositionRoot {
     });
   }
 
-  #validateItemProgressionConfiguration() {
+  #validateItemProgressionConfiguration(effectiveStatsResolver) {
     if (typeof ItemProgressionConfigValidator === "undefined") {
       throw new Error(
         "ItemProgressionConfigValidator must be loaded before startup",
       );
     }
-    new ItemProgressionConfigValidator().assertValid({
+    new ItemProgressionConfigValidator({ effectiveStatsResolver }).assertValid({
       progressionConfig: this.#config.itemProgression,
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
     });

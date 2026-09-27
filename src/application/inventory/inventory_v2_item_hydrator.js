@@ -5,7 +5,7 @@ class InventoryV2ItemHydrator {
 
   constructor({
     itemDefinitionResolver = null,
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
   } = {}) {
     this.#definitionResolver = itemDefinitionResolver;
     this.#effectiveStatsResolver = effectiveStatsResolver;

@@ -82,6 +82,11 @@ new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(fi
 
 vm.runInContext(
   `
+  // Item stat collaborators composed the way GameCompositionRoot composes them.
+  const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: ITEM_STAT_OVERRIDE_CONFIG });
+  const itemStatCollaborators = Object.freeze({ itemStatOverridePolicy,
+    effectiveStatsResolver: new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy }) });
+
   const assertIntegration = (condition, message) => {
     if (!condition) {
       throw new Error("Inventory-v2 integration check failed: " + message);
@@ -283,6 +288,7 @@ vm.runInContext(
       },
     };
     return InventoryV2CompositionRoot.compose({
+      ...itemStatCollaborators,
       cache,
       initialSnapshot: {
         schemaVersion: 2,

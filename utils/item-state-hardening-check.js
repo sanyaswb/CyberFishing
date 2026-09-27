@@ -1,5 +1,6 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 
 const Assertion = CheckAssertion.create("Item state hardening check");
 
@@ -27,6 +28,8 @@ class ItemStateHardeningRuntimeLoader {
       StateStore: "InventoryV2StateStore",
       SnapshotFactory: "InventoryV2SnapshotFactory",
     });
+    new ItemStatTestComposition(runtime.context).install({ withPolicy: ["EffectiveStatsResolver", "SnapshotMapper", "LegacyMigration"],
+      withResolver: ["Hydrator"], migrations: ["SnapshotMigration"] });
     return runtime.context;
   }
 }

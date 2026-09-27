@@ -9,7 +9,7 @@ class ItemCatalogBaselineRegistry {
     itemDb = {},
     strategyRegistry,
     logger = console,
-    effectiveStatsResolver = new EffectiveItemStatsResolver(),
+    effectiveStatsResolver,
   } = {}) {
     if (!strategyRegistry || typeof strategyRegistry.get !== "function") {
       throw new TypeError(

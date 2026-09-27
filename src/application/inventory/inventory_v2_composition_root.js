@@ -19,16 +19,23 @@ class InventoryV2CompositionRoot {
     warningSink = null,
     lineConfig = {},
     itemFreshnessResolver = null,
+    itemStatOverridePolicy,
+    effectiveStatsResolver,
   } = {}) {
+    // The composed item stat override policy is shared by every item-state collaborator.
+    const overridePolicy = itemStatOverridePolicy;
+    const itemStateMigration = new LegacyItemStateMigration({ overridePolicy });
     const definitions =
       itemDefinitionResolver ||
       (typeof ITEM_DB !== "undefined" ? ITEM_DB : null);
     const hydrator = new InventoryV2ItemHydrator({
       itemDefinitionResolver: definitions,
+      effectiveStatsResolver,
     });
     const definitionLookup = (itemId) => hydrator.getDefinition(itemId);
     const itemSnapshotMapper = new InventoryItemSnapshotMapper({
       itemDefinitionResolver: definitionLookup,
+      overridePolicy,
     });
     const store =
       stateStore ||
@@ -50,6 +57,8 @@ class InventoryV2CompositionRoot {
       definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,
+      itemStateMigration,
+      effectiveStatsResolver,
     });
     const snapshot = resolvedState.snapshot;
 
@@ -376,11 +385,14 @@ class InventoryV2CompositionRoot {
     definitionLookup,
     itemSnapshotMapper,
     instanceIdFactory,
+    itemStateMigration,
+    effectiveStatsResolver,
   }) {
     if (initialSnapshot) {
       const migration = new InventoryV2SnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
+        itemStateMigration,
         targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
       }).migrate(initialSnapshot);
       const snapshot = store.save(migration.snapshot);
@@ -391,6 +403,7 @@ class InventoryV2CompositionRoot {
       const normalized = new InventoryV2SnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
+        itemStateMigration,
         targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
       }).migrate(loaded);
       return {
@@ -404,6 +417,7 @@ class InventoryV2CompositionRoot {
       const migration = new InventoryV2SnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
+        itemStateMigration,
         targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
       }).migrate(previousSnapshot);
       const snapshot = store.save(migration.snapshot);
@@ -434,6 +448,8 @@ class InventoryV2CompositionRoot {
       itemDefinitionResolver: definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,
+      itemStateMigration,
+      effectiveStatsResolver,
     }).migrate({
       legacyItems: sourceItems,
       legacyEquipment: sourceEquipment,

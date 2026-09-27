@@ -1,7 +1,7 @@
 class ItemStatOverridePolicy {
   #config;
 
-  constructor({ config = globalThis.ITEM_STAT_OVERRIDE_CONFIG } = {}) {
+  constructor({ config } = {}) {
     if (!config?.stats || typeof config.stats !== "object") {
       throw new TypeError("ItemStatOverridePolicy requires override config");
     }

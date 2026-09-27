@@ -29,7 +29,7 @@ class LegacyItemStateMigration {
   #freshnessStatePolicy;
 
   constructor({
-    overridePolicy = new ItemStatOverridePolicy(),
+    overridePolicy,
     freshnessStatePolicy = new ItemFreshnessStatePolicy(),
   } = {}) {
     if (!overridePolicy || typeof overridePolicy.normalize !== "function") {

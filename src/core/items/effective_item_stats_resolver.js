@@ -1,7 +1,7 @@
 class EffectiveItemStatsResolver {
   #overridePolicy;
 
-  constructor({ overridePolicy = new ItemStatOverridePolicy() } = {}) {
+  constructor({ overridePolicy } = {}) {
     if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
       throw new TypeError(
         "EffectiveItemStatsResolver requires ItemStatOverridePolicy",

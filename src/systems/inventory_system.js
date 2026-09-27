@@ -976,6 +976,7 @@ class InventoryManager {
   #isLocked = false;
   #equippedCache = null;
   #effectiveStatsResolver;
+  #itemStatOverridePolicy;
   #effectiveRarityResolver;
   #itemFreshnessResolver;
 
@@ -993,6 +994,8 @@ class InventoryManager {
     itemConditionResolver = null,
     itemFreshnessResolver = null,
     baitEffectivenessCatalogResolver = null,
+    effectiveStatsResolver,
+    itemStatOverridePolicy,
   ) {
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       CacheManager.get("player_inventory") || playerConfig.inventory || [],
@@ -1005,7 +1008,8 @@ class InventoryManager {
     });
 
     this.#db = new ItemDatabase(itemDB);
-    this.#effectiveStatsResolver = new EffectiveItemStatsResolver();
+    this.#effectiveStatsResolver = effectiveStatsResolver;
+    this.#itemStatOverridePolicy = itemStatOverridePolicy;
     const sharedItemRarityResolver =
       itemRarityResolver || new ItemRarityResolver();
     this.#effectiveRarityResolver = new EffectiveItemRarityResolver({
@@ -1039,6 +1043,7 @@ class InventoryManager {
             baitEffectivenessCatalogResolver,
             effectiveRarityResolver: this.#effectiveRarityResolver,
             displayStatsResolver: this.#runtimeDisplayStatsResolver,
+            effectiveStatsResolver: this.#effectiveStatsResolver,
             runtimeContextProvider: (item) => ({
               reelConfig: this.#runtimeConfigProvider.getReelConfig(),
               lineCapacity: this.#buildLineCapacityContext(),
@@ -1053,6 +1058,7 @@ class InventoryManager {
       makeId: (prefix) => this.#makeId(prefix),
       lineConfig: this.#lineRules.config,
       isEquipped: (instanceId) => this.#isInstanceEquipped(instanceId),
+      effectiveStatsResolver: this.#effectiveStatsResolver,
     });
 
     this.#setupInventorySeeders(itemDB, playerConfig);
@@ -1076,6 +1082,8 @@ class InventoryManager {
       loadValueProvider: () => this.getMaxTackleLoadKg(),
       lineConfig: this.#lineRules.config,
       itemFreshnessResolver: this.#itemFreshnessResolver,
+      itemStatOverridePolicy: this.#itemStatOverridePolicy,
+      effectiveStatsResolver: this.#effectiveStatsResolver,
     });
     this.#inventoryV2Facade = this.#inventoryV2.facade;
     this.#inventoryV2Bridge = this.#inventoryV2.gameplayBridge;

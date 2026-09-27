@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item progression check");
@@ -82,6 +83,10 @@ class RuntimeLoader {
       RarityVisual: "RarityVisualResolver",
       DegradationVisual: "DegradationColorResolver",
       ProgressionVisual: "ItemProgressionVisualResolver",
+    });
+    new ItemStatTestComposition(runtime.context).install({
+      withPolicy: ["EffectiveStats", "SemanticMigration"],
+      withResolver: ["Validator", "Baselines", "Capacity", "Progression", "ViewFactory"],
     });
     return runtime.context;
   }

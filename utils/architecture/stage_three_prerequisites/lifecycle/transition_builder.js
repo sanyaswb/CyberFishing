@@ -48,10 +48,11 @@ class StageThreePrerequisiteTransitionBuilder {
     const after = new Map();
     for (const edit of task.sourceEdits) {
       let text = this.bytes(edit.path).toString("utf8");
-      for (const [from, to] of edit.replacements) {
-        const variants = [from, from.replaceAll("\n", "\r\n")].filter(variant => text.split(variant).length === 2);
-        assert.equal(variants.length, 1, `source edit anchor is not unique: ${edit.path}`);
-        text = text.replace(variants[0], () => (variants[0] === from ? to : to.replaceAll("\n", "\r\n")));
+      // Each anchor occurs exactly `count` times (default once) with the file's line endings.
+      for (const [from, to, count = 1] of edit.replacements) {
+        const variants = [from, from.replaceAll("\n", "\r\n")].filter(variant => text.split(variant).length === count + 1);
+        assert.equal(new Set(variants).size, 1, `source edit anchor does not occur exactly ${count} time(s): ${edit.path}`);
+        text = text.replaceAll(variants[0], () => (variants[0] === from ? to : to.replaceAll("\n", "\r\n")));
       }
       after.set(edit.path, Buffer.from(text, "utf8"));
     }

@@ -756,6 +756,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-002",
+      title: "Stage 3 prerequisite 002: ItemStatOverridePolicy config injection replays byte-identically with parity, resolved debts and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "002", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",

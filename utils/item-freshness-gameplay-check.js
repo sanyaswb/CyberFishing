@@ -2,6 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item freshness gameplay check");
@@ -55,6 +56,7 @@ class ItemFreshnessGameplayCheck {
       StackingPolicy: "ItemAssemblyStackingPolicy",
       SnapshotMapper: "InventoryItemSnapshotMapper",
     });
+    new ItemStatTestComposition(sourceRuntime.context).install({ withPolicy: ["SnapshotMapper"], withResolver: ["Hydrator"] });
     this.#runtime = sourceRuntime.context;
   }
 
