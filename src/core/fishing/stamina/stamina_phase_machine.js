@@ -1,1 +1,1 @@
-globalThis.StaminaPhaseMachine = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/stamina/stamina_phase_machine.js"]["StaminaPhaseMachine"];
+// Retired Stage 3 activation activation-95251e788d44: StaminaPhaseMachine is served only through ESM imports of src/game/domain/fishing/stamina/stamina_phase_machine.js.

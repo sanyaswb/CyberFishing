@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-031-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+  "stage": "3.32.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.68",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "37fd76a83e875e46913bafdee05bf4441baede04895c800d02ae34b1140f4399"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "sourceSha256": "456ca3389184269f20b645fd338794370d4d260b87644fd4217cefd84b4867a4",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "StaminaBalanceFrame",
+        "location": "305:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "sourceSha256": "456ca3389184269f20b645fd338794370d4d260b87644fd4217cefd84b4867a4",
+        "symbol": "StaminaBalanceFrame",
+        "location": "305:3",
+        "guardLocation": "304:1",
+        "assignmentTarget": "window.StaminaBalanceFrame",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "StaminaBalanceFrame"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "ccc0cc8aa5933208c8507297dfcc0a59de0a2f0d8aaa78d7bfed09a116366dde",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "305:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-54c1801cfb5c",
+          "owner": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+          "sourceProvider": "src/core/fishing/stamina/stamina_balance_frame.js",
+          "targetModule": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+          "exportName": "StaminaBalanceFrame",
+          "legacySymbol": "StaminaBalanceFrame",
+          "legacyScriptIndex": 110,
+          "shimFile": "activations/110_staminabalanceframe.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "classification": "safe",
+      "evidenceFingerprint": "28d93c7d51730224948d28faf3c1a6d0d6de697fab998111107b04a78ae44bcc"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.32.0-live-preflight-and-graph-audit"
+}

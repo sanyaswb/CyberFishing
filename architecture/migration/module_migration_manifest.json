@@ -19014,32 +19014,17 @@
         "legacyLoadOrder": 102,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ActiveEnduranceDrainCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -19059,15 +19044,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -19084,9 +19061,56 @@
         "legacyLoadOrder": 103,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "currentArea": "core/fishing/stamina",
+      "observed": {
+        "legacyLoadOrder": 110,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "PassiveEnduranceDrainCalculator",
+              "symbol": "StaminaBalanceFrame",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -19121,8 +19145,8 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
-        "migrationWave": 1
+        "targetPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -19138,138 +19162,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/fishing/stamina/stamina_balance_frame.js",
-      "currentArea": "core/fishing/stamina",
-      "observed": {
-        "legacyLoadOrder": 110,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "StaminaBalanceFrame",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "StaminaBalanceFrame",
-              "mechanism": "window-property",
-              "availability": "conditional"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ActiveEnduranceDrainCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PassiveEnduranceDrainCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "StaminaPhaseMachine",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Math",
-            "Number",
-            "Object",
-            "String",
-            "undefined"
-          ],
-          "browserApis": [
-            "window"
-          ],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ActiveEnduranceDrainCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PassiveEnduranceDrainCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "StaminaPhaseMachine",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/stamina/stamina_phase_machine.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-              "symbols": [
-                "ActiveEnduranceDrainCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-              "symbols": [
-                "PassiveEnduranceDrainCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/stamina/stamina_phase_machine.js",
-              "symbols": [
-                "StaminaPhaseMachine"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -19382,32 +19274,17 @@
         "legacyLoadOrder": 109,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "StaminaPhaseMachine",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -19427,15 +19304,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -38522,6 +38391,59 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "currentArea": "game/domain/fishing/stamina",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "Object",
+            "String",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
         "migrationWave": 1
       },
       "analysis": {

@@ -577,6 +577,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-54c1801cfb5c",
+      "owner": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "sourceProvider": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "targetModule": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "exportName": "StaminaBalanceFrame",
+      "legacySymbol": "StaminaBalanceFrame",
+      "legacyScriptIndex": 110,
+      "shimFile": "activations/110_staminabalanceframe.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-57add99af90d",
       "owner": "stage-3.candidate-002-fishing-944d0790",
       "sourceProvider": "src/core/fishing/reel_auto_recovery_calculator.js",
@@ -901,18 +913,6 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-95251e788d44",
-      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
-      "sourceProvider": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
-      "exportName": "StaminaPhaseMachine",
-      "legacySymbol": "StaminaPhaseMachine",
-      "legacyScriptIndex": 109,
-      "shimFile": "activations/109_staminaphasemachine.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-974deda48a6f",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
@@ -1067,18 +1067,6 @@
       "shimFile": "activations/129_linetensioncalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-a9ba2b558615",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "sourceProvider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-      "targetModule": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
-      "exportName": "ActiveEnduranceDrainCalculator",
-      "legacySymbol": "ActiveEnduranceDrainCalculator",
-      "legacyScriptIndex": 102,
-      "shimFile": "activations/102_activeendurancedraincalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-ab53a7e2f8cc",
@@ -1321,18 +1309,6 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-e94561a6959c",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "sourceProvider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-      "targetModule": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
-      "exportName": "PassiveEnduranceDrainCalculator",
-      "legacySymbol": "PassiveEnduranceDrainCalculator",
-      "legacyScriptIndex": 103,
-      "shimFile": "activations/103_passiveendurancedraincalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-ea32013c6230",
       "owner": "stage-3.candidate-009-fish-444e8034",
       "sourceProvider": "src/core/fish/fish_anomaly_variant_resolver.js",
@@ -1534,6 +1510,23 @@
     },
     {
       "activation": {
+        "id": "activation-95251e788d44",
+        "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+        "sourceProvider": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "exportName": "StaminaPhaseMachine",
+        "legacySymbol": "StaminaPhaseMachine",
+        "legacyScriptIndex": 109,
+        "shimFile": "activations/109_staminaphasemachine.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-031-fishing-d2f28c0f"
+    },
+    {
+      "activation": {
         "id": "activation-9c5651e4f765",
         "owner": "stage-3.candidate-005-fishing-45d0c7ce",
         "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
@@ -1551,6 +1544,23 @@
     },
     {
       "activation": {
+        "id": "activation-a9ba2b558615",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+        "exportName": "ActiveEnduranceDrainCalculator",
+        "legacySymbol": "ActiveEnduranceDrainCalculator",
+        "legacyScriptIndex": 102,
+        "shimFile": "activations/102_activeendurancedraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-031-fishing-d2f28c0f"
+    },
+    {
+      "activation": {
         "id": "activation-dca4cdb154de",
         "owner": "stage-3.candidate-013-fishing-0267b3ea",
         "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
@@ -1565,6 +1575,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "id": "activation-e94561a6959c",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "exportName": "PassiveEnduranceDrainCalculator",
+        "legacySymbol": "PassiveEnduranceDrainCalculator",
+        "legacyScriptIndex": 103,
+        "shimFile": "activations/103_passiveendurancedraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-031-fishing-d2f28c0f"
     },
     {
       "activation": {

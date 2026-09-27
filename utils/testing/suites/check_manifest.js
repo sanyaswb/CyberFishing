@@ -706,6 +706,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.31.0–3.31.7 items hook power and rarity resolver domain migration with earlier-batch imports, retirement and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "030", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-031-architecture",
+      title: "Stage 3.32.0–3.32.7 fishing stamina balance frame domain migration with earlier-batch import, retirements and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "031", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

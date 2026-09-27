@@ -3252,26 +3252,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-b6d7a597fdc2",
-      "rule": "browser-capability",
-      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "high-level-self-composition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "b6d7a597fdc258064e93ab47908aa08d4dad08c1ee718a5f813384c47a0dda4f",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/fishing/stamina/stamina_balance_frame.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
       "id": "debt-browser-capability-bdc2cdd7e0fc",
       "rule": "browser-capability",
       "source": "src/debug/overlay/overlay_bootstrap.js",

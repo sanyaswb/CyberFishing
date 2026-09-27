@@ -642,6 +642,8 @@ class StageOneClosureValidator {
         "Fishing Sector Angle and Stamina Phase Domain",
       "stage-3.replan-322.batch-030-items-a3bf25f7":
         "Items Hook Power and Rarity Resolver Domain",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f":
+        "Fishing Stamina Balance Frame Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

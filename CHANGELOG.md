@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.69 - Fishing Stamina Balance Frame Domain
+
+### Changed
+
+- Completed batch 031 of the Stage 3.22 approved prefix: StaminaBalanceFrame as a named ESM export.
+- Three reviewed imports (StaminaPhaseMachine from batch 029, ActiveEnduranceDrainCalculator, PassiveEnduranceDrainCalculator); the owner-created defaults are proven Domain compositions and the guarded window exposure moved to the activation shim.
+- Retired the StaminaPhaseMachine, ActiveEnduranceDrainCalculator and PassiveEnduranceDrainCalculator activations as inert classic placeholders.
+- Extended the cumulative graph from 97 to 98 project modules and from 97 to 95 activation contracts, with 138 exact bridge relationships (1 added, 3 retired).
+- The next task is batch 032 preflight.
+
 ## v0.24.68 - Items Hook Power and Rarity Resolver Domain
 
 ### Changed

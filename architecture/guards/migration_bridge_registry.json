@@ -1075,22 +1075,6 @@
       ]
     },
     {
-      "id": "bridge-711daa09e743",
-      "bridge": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
-      "target": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
-      "reason": "Preserve the exact pole fight sector angle and stamina phase consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "StaminaPhaseMachine",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -1491,6 +1475,22 @@
       ]
     },
     {
+      "id": "bridge-9f5854296dfd",
+      "bridge": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "reason": "Preserve the exact stamina balance frame consumer until its legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "StaminaBalanceFrame",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9f6a7d891df3",
       "bridge": "src/core/fishing/fish_direction_intent_sampler.js",
       "source": "src/entities/fish.js",
@@ -1690,22 +1690,6 @@
         },
         {
           "symbol": "AssemblyState",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b31831993e56",
-      "bridge": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
-      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
-      "target": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ActiveEnduranceDrainCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -2154,22 +2138,6 @@
       "globalProviders": [
         {
           "symbol": "RenderComponent",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f459f48ff32c",
-      "bridge": "src/core/fishing/stamina/passive_endurance_drain_calculator.js",
-      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
-      "target": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "PassiveEnduranceDrainCalculator",
           "mechanism": "global-this-property"
         }
       ]
