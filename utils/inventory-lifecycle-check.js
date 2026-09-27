@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { ActivationShimRenderer } = require("./build/compat_runtime/activation_shim");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -151,7 +152,14 @@ class InventoryRuntimeLoader {
   }
 
   #loadClass(context, relativePath, className) {
-    const source = this.#read(relativePath);
+    // A retired activation left an inert placeholder; the test receives the same ESM export,
+    // rendered test-only like its former activation shim.
+    const contract = JSON.parse(this.#read("architecture/migration/stage_3_compatibility_runtime.json"));
+    const retired = (contract.retiredActivations || []).map((record) => record.activation)
+      .filter((activation) => activation.sourceProvider === relativePath);
+    const source = retired.length > 0
+      ? retired.map((activation) => new ActivationShimRenderer().render(activation, contract.transport.symbol)).join("")
+      : this.#read(relativePath);
     vm.runInContext(
       `${source}\nglobalThis.${className} = ${className};`,
       context,

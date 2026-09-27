@@ -634,6 +634,8 @@ class StageOneClosureValidator {
         "Fishing Sector Pressure and Retrieve Domain",
       "stage-3.replan-322.batch-026-inventory-ad73f2fb":
         "Inventory Assembly Stacking Policy Domain",
+      "stage-3.replan-322.batch-027-items-e8f84667":
+        "Items Metric Registry, Quality Modifiers and Authored Rarity Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

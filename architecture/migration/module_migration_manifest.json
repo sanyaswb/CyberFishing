@@ -22474,7 +22474,7 @@
           "items": [
             {
               "symbol": "ItemMetricStrategyRegistry",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -22482,18 +22482,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Error",
-            "Map",
-            "Object",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -22503,7 +22505,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
@@ -22514,7 +22516,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -23071,175 +23081,6 @@
           "items": [
             {
               "symbol": "EnvironmentalCompensationModifier",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EnvironmentalCompensationModifier",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Number",
-            "globalThis"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "symbols": [
-                "ItemQualityGradePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
-      "currentArea": "core/items/quality",
-      "observed": {
-        "legacyLoadOrder": 69,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "HookQualityModifier",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "HookQualityModifier",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/quality/hook_quality_modifier.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "symbols": [
-                "ItemQualityGradePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
-      "currentArea": "core/items/quality",
-      "observed": {
-        "legacyLoadOrder": 68,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemQualityGradePolicy",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -23274,8 +23115,8 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
-        "migrationWave": 1
+        "targetPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -23301,6 +23142,123 @@
       }
     },
     {
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "currentArea": "core/items/quality",
+      "observed": {
+        "legacyLoadOrder": 69,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "HookQualityModifier",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+        "migrationWave": 3
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/items/quality/item_quality_grade_policy.js",
+      "currentArea": "core/items/quality",
+      "observed": {
+        "legacyLoadOrder": 68,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/core/items/quality/net_quality_modifier.js",
       "currentArea": "core/items/quality",
       "observed": {
@@ -23308,11 +23266,6 @@
         "providers": {
           "status": "verified",
           "items": [
-            {
-              "symbol": "NetQualityModifier",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
             {
               "symbol": "NetQualityModifier",
               "mechanism": "global-this-property",
@@ -23325,10 +23278,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -23336,7 +23289,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
             "globalThis"
           ],
           "browserApis": [],
@@ -23347,7 +23299,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/quality/net_quality_modifier.js",
@@ -23356,26 +23308,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemQualityGradePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/quality/item_quality_grade_policy.js",
-              "symbols": [
-                "ItemQualityGradePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23395,7 +23338,7 @@
           "items": [
             {
               "symbol": "AuthoredItemRarityStrategy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -23405,14 +23348,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemRarityDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemRarityStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -23422,11 +23359,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Map",
-            "Number",
-            "RangeError",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23436,7 +23369,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
@@ -23445,41 +23378,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemRarityDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/rarity/item_rarity_descriptor.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemRarityStrategy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/core/items/rarity/item_rarity_strategy.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/rarity/item_rarity_descriptor.js",
-              "symbols": [
-                "ItemRarityDescriptor"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/rarity/item_rarity_strategy.js",
-              "symbols": [
-                "ItemRarityStrategy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23583,32 +23492,17 @@
         "legacyLoadOrder": 45,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemRarityDescriptor",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -23628,15 +23522,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23755,32 +23641,17 @@
         "legacyLoadOrder": 46,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemRarityStrategy",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -23800,15 +23671,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -40011,6 +39874,60 @@
       }
     },
     {
+      "currentPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "currentArea": "game/domain/items/progression",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Error",
+            "Map",
+            "Object",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/items/progression/item_progression_descriptor.js",
       "currentArea": "game/domain/items/progression",
       "observed": {
@@ -40212,6 +40129,102 @@
       }
     },
     {
+      "currentPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "currentArea": "game/domain/items/quality",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "currentArea": "game/domain/items/quality",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
       "currentArea": "game/domain/items/quality",
       "observed": {
@@ -40244,6 +40257,108 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/net_quality_modifier.js",
+      "currentArea": "game/domain/items/quality",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/quality/net_quality_modifier.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "currentArea": "game/domain/items/rarity",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Map",
+            "Number",
+            "RangeError",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
         "migrationWave": 1
       },
       "analysis": {

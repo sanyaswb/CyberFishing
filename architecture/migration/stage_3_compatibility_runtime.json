@@ -361,18 +361,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-249fe0228439",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
-      "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
-      "exportName": "ItemRarityDescriptor",
-      "legacySymbol": "ItemRarityDescriptor",
-      "legacyScriptIndex": 45,
-      "shimFile": "activations/045_itemraritydescriptor.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-2534a1bdbe18",
       "owner": "stage-3.candidate-005-fishing-45d0c7ce",
       "sourceProvider": "src/core/fishing/recoverable_line_calculator.js",
@@ -383,6 +371,18 @@
       "shimFile": "activations/117_recoverablelinecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-2593d3b2fae5",
+      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "sourceProvider": "src/core/items/quality/hook_quality_modifier.js",
+      "targetModule": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "exportName": "HookQualityModifier",
+      "legacySymbol": "HookQualityModifier",
+      "legacyScriptIndex": 69,
+      "shimFile": "activations/069_hookqualitymodifier.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-28ccfbfa82e2",
@@ -659,6 +659,18 @@
       "shimFile": "activations/395_dependencycontractvalidator.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-6debdbdd2ee1",
+      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "sourceProvider": "src/core/items/quality/environmental_compensation_modifier.js",
+      "targetModule": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "exportName": "EnvironmentalCompensationModifier",
+      "legacySymbol": "EnvironmentalCompensationModifier",
+      "legacyScriptIndex": 72,
+      "shimFile": "activations/072_environmentalcompensationmodifier.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-73dd5c8cd351",
@@ -1033,6 +1045,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-a68a23ce9bf9",
+      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "sourceProvider": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "targetModule": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "exportName": "AuthoredItemRarityStrategy",
+      "legacySymbol": "AuthoredItemRarityStrategy",
+      "legacyScriptIndex": 47,
+      "shimFile": "activations/047_authoreditemraritystrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-a8e624a68a8e",
       "owner": "stage-3.candidate-003-fishing-9700ad4f",
       "sourceProvider": "src/core/fishing/line_tension_calculator.js",
@@ -1201,6 +1225,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-c4363cf3a576",
+      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "sourceProvider": "src/core/items/quality/net_quality_modifier.js",
+      "targetModule": "src/game/domain/items/quality/net_quality_modifier.js",
+      "exportName": "NetQualityModifier",
+      "legacySymbol": "NetQualityModifier",
+      "legacyScriptIndex": 71,
+      "shimFile": "activations/071_netqualitymodifier.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-ccddea60d16c",
       "owner": "stage-3.candidate-007-fishing-bb8b3939",
       "sourceProvider": "src/core/fishing/simple_fight_force_calculator.js",
@@ -1261,6 +1297,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-e0d0ff620077",
+      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "sourceProvider": "src/core/items/progression/item_metric_strategy_registry.js",
+      "targetModule": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "exportName": "ItemMetricStrategyRegistry",
+      "legacySymbol": "ItemMetricStrategyRegistry",
+      "legacyScriptIndex": 78,
+      "shimFile": "activations/078_itemmetricstrategyregistry.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-e0fd80ed679d",
       "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
       "sourceProvider": "src/systems/fish_retrieve_system.js",
@@ -1309,18 +1357,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-edee20d9f6f3",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
-      "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
-      "exportName": "ItemRarityStrategy",
-      "legacySymbol": "ItemRarityStrategy",
-      "legacyScriptIndex": 46,
-      "shimFile": "activations/046_itemraritystrategy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-ee66782e3f9e",
       "owner": "stage-3.candidate-014-fishing-fefd469b",
       "sourceProvider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
@@ -1331,18 +1367,6 @@
       "shimFile": "activations/097_playertensionbuildrateresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-f247ec6b1d17",
-      "owner": "stage-3.candidate-019-items-b0af5033",
-      "sourceProvider": "src/core/items/quality/item_quality_grade_policy.js",
-      "targetModule": "src/game/domain/items/quality/item_quality_grade_policy.js",
-      "exportName": "ItemQualityGradePolicy",
-      "legacySymbol": "ItemQualityGradePolicy",
-      "legacyScriptIndex": 68,
-      "shimFile": "activations/068_itemqualitygradepolicy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-f5eefdd6e6e2",
@@ -1425,6 +1449,23 @@
     },
     {
       "activation": {
+        "id": "activation-249fe0228439",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_descriptor.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "exportName": "ItemRarityDescriptor",
+        "legacySymbol": "ItemRarityDescriptor",
+        "legacyScriptIndex": 45,
+        "shimFile": "activations/045_itemraritydescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-027-items-e8f84667"
+    },
+    {
+      "activation": {
         "id": "activation-9c5651e4f765",
         "owner": "stage-3.candidate-005-fishing-45d0c7ce",
         "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
@@ -1439,6 +1480,40 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-025-fishing-9bcfae5e"
+    },
+    {
+      "activation": {
+        "id": "activation-edee20d9f6f3",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/rarity/item_rarity_strategy.js",
+        "targetModule": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "exportName": "ItemRarityStrategy",
+        "legacySymbol": "ItemRarityStrategy",
+        "legacyScriptIndex": 46,
+        "shimFile": "activations/046_itemraritystrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-027-items-e8f84667"
+    },
+    {
+      "activation": {
+        "id": "activation-f247ec6b1d17",
+        "owner": "stage-3.candidate-019-items-b0af5033",
+        "sourceProvider": "src/core/items/quality/item_quality_grade_policy.js",
+        "targetModule": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "exportName": "ItemQualityGradePolicy",
+        "legacySymbol": "ItemQualityGradePolicy",
+        "legacyScriptIndex": 68,
+        "shimFile": "activations/068_itemqualitygradepolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-027-items-e8f84667"
     }
   ]
 }

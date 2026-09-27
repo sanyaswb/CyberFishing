@@ -1,14 +1,1 @@
-class NetQualityModifier {
-  #gradePolicy;
-
-  constructor({ gradePolicy = new ItemQualityGradePolicy() } = {}) {
-    this.#gradePolicy = gradePolicy;
-  }
-
-  getCatchChanceBonusPercent(quality) {
-    const grade = this.#gradePolicy.normalize(quality);
-    return Math.round((grade - ItemQualityGradePolicy.MINIMUM) * 10);
-  }
-}
-
-globalThis.NetQualityModifier = NetQualityModifier;
+globalThis.NetQualityModifier = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/quality/net_quality_modifier.js"]["NetQualityModifier"];

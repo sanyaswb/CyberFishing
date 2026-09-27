@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-027-items-e8f84667",
+  "sourceReleaseVersion": "0.24.64",
+  "targetReleaseVersion": "0.24.65",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_027_execution_plan.json",
+    "sha256": "f1ba2b206900b0fc8c6d169c4014a959d1c91c6a910312f07f44612241ca5f89"
+  },
+  "scope": {
+    "moduleCount": 5,
+    "exportCount": 5,
+    "activationCount": 5,
+    "consumerRelationshipCount": 6
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/AuthoredItemRarityStrategy/authored-descriptors-validation-and-cache-identity",
+      "kind": "behavior-equivalence",
+      "exportName": "AuthoredItemRarityStrategy",
+      "currentPath": "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "targetPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "baselineSourceSha256": "bf208adb1b226f488856968c9f5034a934fe84ecee67aff0a8751336c7f5fbf5",
+      "caseName": "authored-descriptors-validation-and-cache-identity",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EnvironmentalCompensationModifier/coefficients-ranges-and-injected-grade-policy",
+      "kind": "behavior-equivalence",
+      "exportName": "EnvironmentalCompensationModifier",
+      "currentPath": "src/core/items/quality/environmental_compensation_modifier.js",
+      "targetPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "baselineSourceSha256": "db531c3952e99d560933c8af10b8c10bda138d82def1104f5abba105e0d83830",
+      "caseName": "coefficients-ranges-and-injected-grade-policy",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HookQualityModifier/power-bonus-and-injected-grade-policy",
+      "kind": "behavior-equivalence",
+      "exportName": "HookQualityModifier",
+      "currentPath": "src/core/items/quality/hook_quality_modifier.js",
+      "targetPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "baselineSourceSha256": "244794b2cb60edee0e970bdf575d18269c68b08f10975fef225dca4a158ea594",
+      "caseName": "power-bonus-and-injected-grade-policy",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemMetricStrategyRegistry/registration-lookup-duplicates-and-frozen-ids",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemMetricStrategyRegistry",
+      "currentPath": "src/core/items/progression/item_metric_strategy_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "baselineSourceSha256": "3d344abe8577a7a5a56ade5d8e845e889f1b2d0b1e87e44f3119b4d9b0b07632",
+      "caseName": "registration-lookup-duplicates-and-frozen-ids",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/NetQualityModifier/catch-chance-bonus-and-injected-grade-policy",
+      "kind": "behavior-equivalence",
+      "exportName": "NetQualityModifier",
+      "currentPath": "src/core/items/quality/net_quality_modifier.js",
+      "targetPath": "src/game/domain/items/quality/net_quality_modifier.js",
+      "baselineSourceSha256": "2313216f4a6f8e31ec92161282ea0dd031b3e60a374276f69e7ed1535a0d8b31",
+      "caseName": "catch-chance-bonus-and-injected-grade-policy",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/five-representation-only-named-esm-targets-and-five-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "five-representation-only-named-esm-targets-and-five-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "five-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-owner-created-grade-policy-composition-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "three-owner-created-grade-policy-composition-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-reviewed-global-this-exposures-moved-to-the-exact-activation-shims",
+      "kind": "compatibility-invariant",
+      "caseName": "three-reviewed-global-this-exposures-moved-to-the-exact-activation-shims",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/imported-superclass-of-the-authored-rarity-strategy-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "imported-superclass-of-the-authored-rarity-strategy-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "five-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/six-exact-classic-consumer-relationships-and-five-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "six-exact-classic-consumer-relationships-and-five-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-consumerless-activations-retired-as-inert-classic-placeholders",
+      "kind": "compatibility-invariant",
+      "caseName": "three-consumerless-activations-retired-as-inert-classic-placeholders",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/registry-and-descriptor-cache-collection-identity-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "registry-and-descriptor-cache-collection-identity-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "AuthoredItemRarityStrategy",
+      "caseCount": 1,
+      "cases": [
+        "authored-descriptors-validation-and-cache-identity"
+      ]
+    },
+    {
+      "exportName": "EnvironmentalCompensationModifier",
+      "caseCount": 1,
+      "cases": [
+        "coefficients-ranges-and-injected-grade-policy"
+      ]
+    },
+    {
+      "exportName": "HookQualityModifier",
+      "caseCount": 1,
+      "cases": [
+        "power-bonus-and-injected-grade-policy"
+      ]
+    },
+    {
+      "exportName": "ItemMetricStrategyRegistry",
+      "caseCount": 1,
+      "cases": [
+        "registration-lookup-duplicates-and-frozen-ids"
+      ]
+    },
+    {
+      "exportName": "NetQualityModifier",
+      "caseCount": 1,
+      "cases": [
+        "catch-chance-bonus-and-injected-grade-policy"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 6,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.28.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_027_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/items/progression/item_metric_strategy_registry.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/item_metric_strategy_registry.js",
+          "authoritativeOwners": [
+            "ItemMetricStrategyRegistry#register",
+            "ItemMetricStrategyRegistry#strategies"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+          "authoritativeOwners": [
+            "ItemMetricStrategyRegistry#register",
+            "ItemMetricStrategyRegistry#strategies"
+          ]
+        },
+        "publicStateShape": [
+          "ids"
+        ],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "2c692afc46b1d3f6bbb198daa60c4936bbea9c710d0a4f08f74c68e25da327ec",
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 1,
+          "newExpressions": 3,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/quality/environmental_compensation_modifier.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/quality/environmental_compensation_modifier.js",
+          "authoritativeOwners": [
+            "EnvironmentalCompensationModifier#gradePolicy"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+          "authoritativeOwners": [
+            "EnvironmentalCompensationModifier#gradePolicy"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "fcac04328867f6d10f0879218a7120a963a740374fc146dc0bfbfb4a389327bf",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 1,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/quality/hook_quality_modifier.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/quality/hook_quality_modifier.js",
+          "authoritativeOwners": [
+            "HookQualityModifier#gradePolicy"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/quality/hook_quality_modifier.js",
+          "authoritativeOwners": [
+            "HookQualityModifier#gradePolicy"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "6dd2388d452aafd2900667e864b146a5180c1d8558fb11dab1ba38d33b0bcab8",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/quality/net_quality_modifier.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/quality/net_quality_modifier.js",
+          "authoritativeOwners": [
+            "NetQualityModifier#gradePolicy"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/quality/net_quality_modifier.js",
+          "authoritativeOwners": [
+            "NetQualityModifier#gradePolicy"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a96c0716f56769aa7e8aca0a1bc58039f5a91ac5c2f9288a8fb2ea9d807bd23e",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 0,
+          "newExpressions": 1,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/rarity/authored_item_rarity_strategy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/rarity/authored_item_rarity_strategy.js",
+          "authoritativeOwners": [
+            "AuthoredItemRarityStrategy#descriptors",
+            "AuthoredItemRarityStrategy#supports"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+          "authoritativeOwners": [
+            "AuthoredItemRarityStrategy#descriptors",
+            "AuthoredItemRarityStrategy#supports"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": true,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "84d43a6484a2e23797855740e864f60ae7fa3064d0fda19440b2f2c92ddb3ccf",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 1,
+          "newExpressions": 9,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.28.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

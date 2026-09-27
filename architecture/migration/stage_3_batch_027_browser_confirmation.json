@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-027-browser-confirmation",
+  "batchId": "stage-3.replan-322.batch-027-items-e8f84667",
+  "releaseVersion": "0.24.64",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T05:14:35.394Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute): game-cycle check re-executed without seals passed (a spinning rod lands a light fish); built-in browser at http://localhost:4173 (npm run dev) rendered the location, the inventory with rarity frames and stacks, the hook detail (rarity Common, quality 1/10) and a bait tooltip (rarity, effectiveness, freshness); retired globals ItemQualityGradePolicy, ItemRarityDescriptor and ItemRarityStrategy are undefined, the five batch-027 activations are functions.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game with a screenshot and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_027_acceptance_pass.json",
+    "sha256": "9a285deb86926d262d64f64bd38ad9a6c934658a38b60f482d23e9a15437a8e6"
+  },
+  "historicalSummaryPreserved": true
+}

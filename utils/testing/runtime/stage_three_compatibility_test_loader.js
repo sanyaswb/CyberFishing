@@ -3,12 +3,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
 
 class StageThreeCompatibilityTestLoader {
   #projectRoot;
   #context;
   #contract;
   #activationBySource;
+  #retiredBySource;
   #runtimeLoaded = false;
 
   constructor({ projectRoot, context }) {
@@ -24,13 +26,21 @@ class StageThreeCompatibilityTestLoader {
       }
       this.#activationBySource.get(activation.sourceProvider).push(activation);
     }
+    // A retired activation publishes no production global. Tests that still name the class through
+    // this legacy-shaped loader receive the same ESM export, rendered test-only like its old shim.
+    this.#retiredBySource = new Map();
+    for (const record of this.#contract.retiredActivations || []) {
+      const list = this.#retiredBySource.get(record.activation.sourceProvider) || [];
+      list.push(record.activation);
+      this.#retiredBySource.set(record.activation.sourceProvider, list);
+    }
     for (const activations of this.#activationBySource.values()) {
       activations.sort((left, right) => left.id.localeCompare(right.id));
     }
   }
 
   hasActivation(relativePath) {
-    return this.#activationBySource.has(relativePath);
+    return this.#activationBySource.has(relativePath) || this.#retiredBySource.has(relativePath);
   }
 
   loadRuntime() {
@@ -38,6 +48,14 @@ class StageThreeCompatibilityTestLoader {
   }
 
   load(relativePath, exposedNames = []) {
+    const retired = this.#retiredBySource.get(relativePath);
+    if (retired) {
+      this.#loadRuntime();
+      const renderer = new ActivationShimRenderer();
+      const code = retired.map((activation) => renderer.render(activation, this.#contract.transport.symbol)).join("");
+      vm.runInContext(code, this.#context, { filename: `test-only-retired:${relativePath}` });
+      return relativePath;
+    }
     const activations = this.#activationBySource.get(relativePath) || [];
     if (activations.length > 0) this.#loadRuntime();
     const resolvedPaths = activations.length > 0

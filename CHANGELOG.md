@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.65 - Items Metric Registry, Quality Modifiers and Authored Rarity Domain
+
+### Changed
+
+- Completed batch 027 of the Stage 3.22 approved prefix: ItemMetricStrategyRegistry, EnvironmentalCompensationModifier, HookQualityModifier, NetQualityModifier and AuthoredItemRarityStrategy as named ESM exports.
+- Their completed-prefix collaborators (ItemQualityGradePolicy, ItemRarityDescriptor and the imported superclass ItemRarityStrategy) are reviewed imports; the owner-created default grade policies keep their composition identity, and three reviewed global exposures moved to the activation shims.
+- Retired the ItemQualityGradePolicy, ItemRarityDescriptor and ItemRarityStrategy activations as inert classic placeholders: their last classic readers migrated.
+- Extended the cumulative graph from 87 to 92 project modules and from 95 to 97 activation contracts, with 144 exact bridge relationships (6 added, 5 retired).
+- The next task is batch 028 preflight.
+
 ## v0.24.64 - Inventory Assembly Stacking Policy Domain
 
 ### Changed
