@@ -3,12 +3,15 @@ class BaitEffectivenessResolver {
   #knowledgePolicy;
   #freshnessResolver;
   #freshnessModifier;
+  #descriptorFactory;
 
+  // The presentation descriptor factory is injected by composition.
   constructor({
     gradePolicy = new BaitEffectivenessGradePolicy(),
     knowledgePolicy = new AlwaysKnownBaitEffectivenessPolicy(),
     freshnessResolver = null,
     freshnessModifier = new BaitFreshnessModifier(),
+    descriptorFactory,
   } = {}) {
     if (!gradePolicy || typeof gradePolicy.resolve !== "function") {
       throw new TypeError(
@@ -24,6 +27,7 @@ class BaitEffectivenessResolver {
     this.#knowledgePolicy = knowledgePolicy;
     this.#freshnessResolver = freshnessResolver;
     this.#freshnessModifier = freshnessModifier;
+    this.#descriptorFactory = descriptorFactory;
   }
 
   resolveMultiplier(fish, baitId) {
@@ -54,7 +58,7 @@ class BaitEffectivenessResolver {
     const fishId = String(fish?.id || "");
     const normalizedBaitId = String(baitId || "");
     if (!fishId || !normalizedBaitId) {
-      return new BaitEffectivenessDescriptor({
+      return this.#descriptorFactory({
         baitId: normalizedBaitId,
         fishId,
         fishName: fish?.name,
@@ -71,7 +75,7 @@ class BaitEffectivenessResolver {
       ...context,
     }) === true;
     if (!discovered) {
-      return new BaitEffectivenessDescriptor({
+      return this.#descriptorFactory({
         baitId: normalizedBaitId,
         fishId,
         fishName: fish.name,
@@ -88,7 +92,7 @@ class BaitEffectivenessResolver {
       multiplier,
       referenceMultiplier,
     });
-    return new BaitEffectivenessDescriptor({
+    return this.#descriptorFactory({
       baitId: normalizedBaitId,
       fishId,
       fishName: fish.name,

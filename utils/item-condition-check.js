@@ -3,6 +3,7 @@ const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
+const { installDescriptorFactories } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item condition check");
@@ -34,6 +35,7 @@ class RuntimeLoader {
       Adapter: "ItemConditionDomAdapter",
     });
     new ItemStatTestComposition(runtime.context).install({ withResolver: ["Validator"] });
+    installDescriptorFactories(runtime.context, { Resolver: "ItemConditionDescriptor", FreshnessResolver: "ItemFreshnessDescriptor" });
     return runtime.context;
   }
 }

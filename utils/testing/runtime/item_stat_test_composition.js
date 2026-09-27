@@ -1,6 +1,7 @@
 "use strict";
 
 const vm = require("node:vm");
+const { bindConstructorDefaults } = require("./constructor_defaults");
 
 // Test-only composition of the item stat collaborators, mirroring GameCompositionRoot: one
 // ItemStatOverridePolicy from the configured override table and one EffectiveItemStatsResolver from
@@ -16,14 +17,7 @@ class ItemStatTestComposition {
   }
 
   bind(Class, defaults) {
-    return new Proxy(Class, {
-      construct(target, args, newTarget) {
-        const [options, ...rest] = args;
-        const merged = options === undefined ? { ...defaults }
-          : options && typeof options === "object" && !Array.isArray(options) ? { ...defaults, ...options } : options;
-        return Reflect.construct(target, [merged, ...rest], newTarget === target ? target : newTarget);
-      },
-    });
+    return bindConstructorDefaults(Class, defaults);
   }
 
   // Snapshot migrations receive the composed legacy item-state migration and a snapshot mapper over

@@ -1,9 +1,10 @@
 class ItemConditionResolver extends ItemBoundedMetricResolver {
-  constructor({ profileProvider } = {}) {
+  // The presentation descriptor factory is injected by composition.
+  constructor({ profileProvider, descriptorFactory } = {}) {
     super({
       capabilityId: "condition",
       profileProvider,
-      descriptorFactory: (values) => new ItemConditionDescriptor(values),
+      descriptorFactory,
     });
   }
 }

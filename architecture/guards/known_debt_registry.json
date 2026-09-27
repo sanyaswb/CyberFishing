@@ -4,25 +4,6 @@
   "generatedFrom": "Stage 1.7 reviewed guard debt snapshot",
   "debts": [
     {
-      "id": "debt-boundary-dependency-00960a39c848",
-      "rule": "boundary-dependency",
-      "source": "src/core/items/condition/item_condition_resolver.js",
-      "target": "src/core/items/condition/item_condition_descriptor.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "00960a39c8484a13613cb7f71fe04f792875aa32c108f832239fa806773a0ec2",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/items/condition/item_condition_resolver.js",
-        "target": "src/core/items/condition/item_condition_descriptor.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-01a239995bd8",
       "rule": "boundary-dependency",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -270,25 +251,6 @@
         "rule": "boundary-dependency",
         "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
         "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-154f09248d8f",
-      "rule": "boundary-dependency",
-      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "target": "src/core/items/bait/bait_effectiveness_descriptor.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "154f09248d8ff6d10931d1566f4b9952009bce2e80496d197dbcc285b25cd631",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-        "target": "src/core/items/bait/bait_effectiveness_descriptor.js"
       }
     },
     {
@@ -2231,25 +2193,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/script.js",
         "target": "src/config/config.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-f634d3d2e71b",
-      "rule": "boundary-dependency",
-      "source": "src/core/items/freshness/item_freshness_resolver.js",
-      "target": "src/core/items/freshness/item_freshness_descriptor.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "f634d3d2e71b52b3067e02061110b60e6dd4ee747007dcf064f57e2be40c8efb",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/items/freshness/item_freshness_resolver.js",
-        "target": "src/core/items/freshness/item_freshness_descriptor.js"
       }
     },
     {

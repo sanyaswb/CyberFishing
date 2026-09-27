@@ -1,16 +1,20 @@
 class ItemFreshnessResolver extends ItemBoundedMetricResolver {
   #profileProvider;
   #decayPolicy;
+  #descriptorFactory;
 
+  // The presentation descriptor factory is injected by composition.
   constructor({
     profileProvider,
     decayPolicy = new BaitFreshnessDecayPolicy(),
+    descriptorFactory,
   } = {}) {
     super({
       capabilityId: "freshness",
       profileProvider,
-      descriptorFactory: (values) => new ItemFreshnessDescriptor(values),
+      descriptorFactory,
     });
+    this.#descriptorFactory = descriptorFactory;
     this.#profileProvider = profileProvider;
     this.#decayPolicy = decayPolicy;
   }
@@ -29,7 +33,7 @@ class ItemFreshnessResolver extends ItemBoundedMetricResolver {
     });
     const normalized = (current - descriptor.minimum) /
       (descriptor.maximum - descriptor.minimum);
-    return new ItemFreshnessDescriptor({
+    return this.#descriptorFactory({
       capabilityId: descriptor.capabilityId,
       available: true,
       reason: null,

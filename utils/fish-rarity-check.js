@@ -1,4 +1,5 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const Assertion = CheckAssertion.create("Fish rarity check");
@@ -1165,6 +1166,8 @@ new FishRarityCheck(
   runtime.FixedCatchFishFactory,
   runtime.HookedFishProfileSynchronizer,
   runtime.RarityAnimationResolver,
-  runtime.BaitEffectivenessResolver,
+  // The descriptor factory is injected the way GameCompositionRoot composes it.
+  bindConstructorDefaults(runtime.BaitEffectivenessResolver,
+    { descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values) }),
 ).run();
 console.log("Fish rarity checks passed.");

@@ -1,5 +1,6 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { installDescriptorFactories } = require("./testing/runtime/constructor_defaults");
 
 const Assertion = CheckAssertion.create("Bait effectiveness check");
 
@@ -46,6 +47,7 @@ class BaitEffectivenessCheck {
       ParametersResolver: "InventoryV2ItemParametersResolver",
       BalanceResolver: "InventoryV2BalanceParameterResolver",
     });
+    installDescriptorFactories(this.#sourceRuntime.context, { EffectivenessResolver: "BaitEffectivenessDescriptor" });
     this.#runtime = this.#sourceRuntime.context;
   }
 

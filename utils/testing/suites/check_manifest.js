@@ -763,6 +763,27 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-003",
+      title: "Stage 3 prerequisite 003: item condition descriptor boundary replays byte-identically with parity, resolved debt and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "003", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-prerequisite-004",
+      title: "Stage 3 prerequisite 004: item freshness descriptor boundary replays byte-identically with parity, resolved debt and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "004", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-prerequisite-005",
+      title: "Stage 3 prerequisite 005: bait effectiveness descriptor boundary replays byte-identically with parity, resolved debt and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "005", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",

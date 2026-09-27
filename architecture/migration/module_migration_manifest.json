@@ -588,6 +588,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "BaitEffectivenessDescriptor",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "BaitEffectivenessGradePolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1098,6 +1104,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "ItemConditionDescriptor",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "ItemConditionDomAdapter",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1111,6 +1123,12 @@
             },
             {
               "symbol": "ItemDatabase",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "ItemFreshnessDescriptor",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -1549,6 +1567,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "BaitEffectivenessDescriptor",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/items/bait/bait_effectiveness_descriptor.js",
               "resolution": "confirmed"
             },
             {
@@ -2232,6 +2258,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "ItemConditionDescriptor",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/items/condition/item_condition_descriptor.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "ItemConditionDomAdapter",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2253,6 +2287,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/systems/inventory_system.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ItemFreshnessDescriptor",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/items/freshness/item_freshness_descriptor.js",
               "resolution": "confirmed"
             },
             {
@@ -3069,6 +3111,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/core/items/bait/bait_effectiveness_descriptor.js",
+              "symbols": [
+                "BaitEffectivenessDescriptor"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/core/items/bait/bait_effectiveness_grade_policy.js",
               "symbols": [
                 "BaitEffectivenessGradePolicy"
@@ -3090,6 +3139,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/core/items/condition/item_condition_descriptor.js",
+              "symbols": [
+                "ItemConditionDescriptor"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/core/items/condition/item_condition_resolver.js",
               "symbols": [
                 "ItemConditionResolver"
@@ -3107,6 +3163,13 @@
               "target": "src/core/items/freshness/bait_freshness_modifier.js",
               "symbols": [
                 "BaitFreshnessModifier"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/items/freshness/item_freshness_descriptor.js",
+              "symbols": [
+                "ItemFreshnessDescriptor"
               ],
               "resolution": "confirmed"
             },
@@ -20485,12 +20548,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "BaitEffectivenessDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "BaitEffectivenessGradePolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -20549,14 +20606,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "BaitEffectivenessDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/bait/bait_effectiveness_descriptor.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "BaitEffectivenessGradePolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -20582,13 +20631,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/items/bait/bait_effectiveness_descriptor.js",
-              "symbols": [
-                "BaitEffectivenessDescriptor"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/items/bait/bait_effectiveness_grade_policy.js",
               "symbols": [
@@ -20710,12 +20752,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager"
-            },
-            {
-              "symbol": "ItemConditionDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -20748,24 +20784,9 @@
               "executionPhase": "eager",
               "target": "src/core/items/metrics/item_bounded_metric_resolver.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemConditionDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/condition/item_condition_descriptor.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
-            {
-              "target": "src/core/items/condition/item_condition_descriptor.js",
-              "symbols": [
-                "ItemConditionDescriptor"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/items/metrics/item_bounded_metric_resolver.js",
               "symbols": [
@@ -21087,12 +21108,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager"
-            },
-            {
-              "symbol": "ItemFreshnessDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -21138,14 +21153,6 @@
               "executionPhase": "eager",
               "target": "src/core/items/metrics/item_bounded_metric_resolver.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemFreshnessDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/freshness/item_freshness_descriptor.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -21153,13 +21160,6 @@
               "target": "src/core/items/freshness/bait_freshness_decay_policy.js",
               "symbols": [
                 "BaitFreshnessDecayPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/freshness/item_freshness_descriptor.js",
-              "symbols": [
-                "ItemFreshnessDescriptor"
               ],
               "resolution": "confirmed"
             },

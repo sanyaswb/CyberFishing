@@ -107,9 +107,11 @@ class GameCompositionRoot {
     };
     const itemConditionResolver = new ItemConditionResolver({
       profileProvider: metricCapabilityProvider("condition"),
+      descriptorFactory: (values) => new ItemConditionDescriptor(values),
     });
     const itemFreshnessResolver = new ItemFreshnessResolver({
       profileProvider: metricCapabilityProvider("freshness"),
+      descriptorFactory: (values) => new ItemFreshnessDescriptor(values),
     });
     const itemConditionDomAdapter = new ItemConditionDomAdapter();
     const itemMetricStrategyRegistry = new ItemMetricStrategyRegistry([
@@ -212,6 +214,7 @@ class GameCompositionRoot {
       knowledgePolicy: new AlwaysKnownBaitEffectivenessPolicy(),
       freshnessResolver: itemFreshnessResolver,
       freshnessModifier: new BaitFreshnessModifier(),
+      descriptorFactory: (values) => new BaitEffectivenessDescriptor(values),
     });
     const baitEffectivenessCatalogResolver =
       new BaitEffectivenessCatalogResolver({
