@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.70 - Items Effective Rarity Resolver Domain
+
+### Changed
+
+- Completed batch 032, the last batch of the Stage 3.22 approved prefix: EffectiveItemRarityResolver as a named ESM export.
+- Its owner-created ItemRarityResolver (batch 030) is a reviewed import proven by composition identity, and the reviewed global exposure moved to the activation shim.
+- Extended the cumulative graph from 98 to 99 project modules and from 95 to 96 activation contracts, with 139 exact bridge relationships (2 added, 1 retired).
+- The next task is the post-prefix review: the review queue (033, 034) evidence prerequisites and the prerequisite backlog.
+
 ## v0.24.69 - Fishing Stamina Balance Frame Domain
 
 ### Changed

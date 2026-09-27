@@ -19,22 +19,6 @@
       ]
     },
     {
-      "id": "bridge-02d221df87c8",
-      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
-      "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
-      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
-      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-04bc2fe4918e",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1711,6 +1695,22 @@
       ]
     },
     {
+      "id": "bridge-b894531e5b91",
+      "bridge": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "source": "src/systems/inventory_item_view_factory.js",
+      "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "reason": "Preserve the exact effective item rarity consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-032-items-096b3398",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EffectiveItemRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bc38f49d00dc",
       "bridge": "src/core/items/hook/hook_power_policy.js",
       "source": "src/debug/services/debug_formatters.js",
@@ -2234,6 +2234,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ff8fc75f21d2",
+      "bridge": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "reason": "Preserve the exact effective item rarity consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-032-items-096b3398",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EffectiveItemRarityResolver",
           "mechanism": "global-this-property"
         }
       ]

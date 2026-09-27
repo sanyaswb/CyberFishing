@@ -20,12 +20,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - npm run check:quick (~40 s), npm run check:architecture, npm run check -- --suite history, npm run check (Full, ~55-70 min on Windows).
 
 ## Current state (2026-09-27)
-- Released v0.24.69 (batch 031): batches 001–031 complete, 89 migrated Domain modules; runtime 98 modules / 95 activations (13 retired) / 138 bridges; activeBatchId = null.
+- Released v0.24.70 (batch 032): batches 001–032 complete (the Stage 3.22 approved prefix is done), 90 migrated Domain modules; runtime 99 modules / 96 activations (13 retired) / 139 bridges; activeBatchId = null.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check pipeline (utils/testing/CHECKS.md): input-traced seals, history base (release 0.24.63 reconstruction for history-only checks up to 025), parallel runner (--jobs, default 4), --no-seal, --reseal.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Batch 032 (v0.24.70): EffectiveItemRarityResolver - completes the Stage 3.22 approved prefix.
+2. Stage 3.34.0: review-queue evidence (AssemblyStateRepository#states atomic replacement proof + persistence round trip; hot-loop evidence for 6 fishing modules via static review and traced game-cycle) and the freeze extension of 033/034; then batches 033 (v0.24.71) and 034 (v0.24.72).
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

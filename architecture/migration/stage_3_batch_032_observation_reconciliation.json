@@ -1,0 +1,398 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-032-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-032-items-096b3398",
+  "releaseVersion": "0.24.69",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_032_prebuild_contract.json",
+      "sha256": "166c10103444bbc153ea93b355e666b3d34b6ecf1c78065b76a99990b0508121"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_032_runtime_cutover.json",
+      "sha256": "05ca541aecaa744bc9bb737acb907e465570174c512398f9d7aca3fb8ca99067"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "7c974ee726676956339c86fc0aef5e72d3cf5c63545b0a025f6717a6115bb064"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_032_live_runtime_validation.json",
+      "sha256": "535ef50e94304ee2f671027fb63de5c25d5aa956c0933b93c21f9aaf880bb64c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_032_audit.json",
+      "sha256": "05b66e5191b27626410cf0632e407b17eb54f70e6664e7e1cfb9c3dd93f31f98"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "28488d95703bc3d239265886ffc9da71e0a58e68ce9d1a3b420a1567e606806d"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "fe24ae8372e76dfaedc739d3b06b3bae621ec6e7a5623ab0d796b1ec81445566"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "084878d942e0594091c0f9ca7d3af9a532a6ed955dc0aedf56e3f651ec269a3e"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "421f3d1c4a4934d42798e5c4bf1ef78bc50c10c8d3315f0fd6a79cb884d607ce",
+    "afterSha256": "57b049be5fea9d468c4bfe23883af595b9747fd00f1ab2bedd2a69f55ab90497",
+    "records": [
+      {
+        "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+        "before": {
+          "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+          "currentArea": "core/items/rarity",
+          "observed": {
+            "legacyLoadOrder": 50,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition"
+              ]
+            }
+          }
+        },
+        "afterSha256": "22f379aea46a7ab6435dfbf91392bea20954f5a218f4d86c2a51d72835c789f0"
+      },
+      {
+        "currentPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+          "currentArea": "game/domain/items/rarity",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "33b11e2dfa93bb2a8c7335df58cebdcc10beb30ecbc3133dbab9b8b940fc1a28"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 523,
+    "providers": 803,
+    "consumers": 945,
+    "confirmed": 860,
+    "unresolved": 85,
+    "ambiguous": 0,
+    "edges": 739
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+          "specifier": "./item_rarity_resolver.js",
+          "resolvedTarget": "src/game/domain/items/rarity/item_rarity_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 36
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 11,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "TypeError"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "symbol": "EffectiveItemRarityResolver",
+      "activationId": "activation-91c2b60ce51e",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/systems/inventory_item_view_factory.js",
+      "symbol": "EffectiveItemRarityResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/systems/inventory_system.js",
+      "symbol": "EffectiveItemRarityResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 739,
+    "confirmedInterFileEdgesAfter": 739,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 1,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-91c2b60ce51e",
+      "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "consumers": [
+        "src/systems/inventory_item_view_factory.js",
+        "src/systems/inventory_system.js"
+      ],
+      "owner": "stage-3.replan-322.batch-032-items-096b3398",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+        "symbol": "EffectiveItemRarityResolver",
+        "activationId": "activation-91c2b60ce51e",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 523,
+    "consumers": 945,
+    "confirmed": 860,
+    "selfConfirmed": 3,
+    "unresolved": 85,
+    "ambiguous": 0,
+    "edges": 739,
+    "reverseLinks": 739,
+    "targetsWithConsumers": 402,
+    "unifiedEdges": 858,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/items/rarity/effective_item_rarity_resolver.js",
+        "targetModule": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+        "legacy": [
+          {
+            "source": "src/systems/inventory_item_view_factory.js",
+            "symbols": [
+              "EffectiveItemRarityResolver"
+            ]
+          },
+          {
+            "source": "src/systems/inventory_system.js",
+            "symbols": [
+              "EffectiveItemRarityResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
+            "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-b894531e5b91",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-ff8fc75f21d2",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "2e4c29a169d3e2ab065e25f43cb31a35a2d4df86e343f58d7dac11246ed5ca5b"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 185,
+    "diagnosticsSha256": "460aed4c42f5d43587acd80c990aaeaeb96546d8213bc0d50835627e89951ca3",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/items/rarity/effective_item_rarity_resolver.js"
+    ]
+  },
+  "topology": {
+    "modules": 99,
+    "activations": 96,
+    "bridges": 139
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f"
+    ],
+    "activeBatchId": "stage-3.replan-322.batch-032-items-096b3398",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.33.8-full-acceptance-and-browser-smoke"
+}

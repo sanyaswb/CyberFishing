@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-032-release-transition",
+  "batchId": "stage-3.replan-322.batch-032-items-096b3398",
+  "fromRelease": "0.24.69",
+  "toRelease": "0.24.70",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_032_acceptance_pass.json",
+    "sha256": "97c33f6fd8e136ac102a1d55ea5639aaed06281e41a276e5a24ecb1c3d6d1c0b"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_032_browser_confirmation.json",
+    "sha256": "8825114c367f5b281d20440f2c7e82fbc5233986ce141e008570209e56e17b83"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "0d29faabd370ed07a677697b1677d18b7ad82f5115a90f05a073bd26e24ee52a",
+      "afterSha256": "4a22b7e158494a363a89e47de53a88613d0db732ff1c1c433a4a5d60405aea44",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.70 - Items Effective Rarity Resolver Domain\n\n### Changed\n\n- Completed batch 032, the last batch of the Stage 3.22 approved prefix: EffectiveItemRarityResolver as a named ESM export.\n- Its owner-created ItemRarityResolver (batch 030) is a reviewed import proven by composition identity, and the reviewed global exposure moved to the activation shim.\n- Extended the cumulative graph from 98 to 99 project modules and from 95 to 96 activation contracts, with 139 exact bridge relationships (2 added, 1 retired).\n- The next task is the post-prefix review: the review queue (033, 034) evidence prerequisites and the prerequisite backlog.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "28488d95703bc3d239265886ffc9da71e0a58e68ce9d1a3b420a1567e606806d",
+      "afterSha256": "a58ac784cae49382364824da8b6eb5d80b8ad9e66afaa98a7dca31ba64348a68",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.69\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-322.batch-032-items-096b3398\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.70\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "65909939e42003b7430e62fed6e209f1106dea7ab7c8c9552df5e3abe522f926",
+      "afterSha256": "f7050b71b1ec405bcaac0c226fa2b4af2dbe7ad50b8e1e393edcd29af18cde6b",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.69\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.70\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "9c2b73a6b0b3f00a57058a1b8ebbeccfa80e63eb54210e06f098bd100df7b55a",
+      "afterSha256": "f2c759d2689d0fd4b6d5308c8c38483f6058328d8d3d577739cadc26dd79ec98",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.69\",",
+          "to": "  \"version\": \"0.24.70\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "e07a4c2d9cd4f84db16f14d4c6a3a9399959f0b011e28e0622c981d9edae0902",
+      "afterSha256": "7f5fbfd92607f9a1523d30e6867346b9159564bddf2b2f999d2c0b1f435ddbaa",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.69\",",
+          "to": "  \"version\": \"0.24.70\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "b0b8b71ac589b9f78a4c7ae531b0948d0c67fbb6c507bc18534d6ae443dcdcac",
+      "afterSha256": "14e2b47262a2f445ab6f997dabd2e9ae89876ea851a526cb964c82164e08499e",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.69\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.70\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"fishing-stamina-balance-frame-domain\",",
+          "to": "  codename: \"items-effective-rarity-resolver-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the stamina balance frame\",\n    \"Import the stamina phase machine from batch 029 and the endurance drain calculators\",\n    \"Move the guarded window exposure of StaminaBalanceFrame to the exact activation shim\",\n    \"Retire the stamina phase machine and endurance drain activations as inert classic placeholders\",\n    \"Preserve ninety-eight project modules, ninety-five activations and one hundred thirty-eight bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the effective item rarity resolver\",\n    \"Import the item rarity resolver from batch 030\",\n    \"Move the reviewed global exposure of EffectiveItemRarityResolver to the exact activation shim\",\n    \"Complete the Stage 3.22 approved continuation prefix\",\n    \"Preserve ninety-nine project modules, ninety-six activations and one hundred thirty-nine bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

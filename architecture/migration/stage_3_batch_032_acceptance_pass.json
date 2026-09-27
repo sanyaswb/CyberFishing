@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-032-acceptance",
+  "stage": "3.33.8",
+  "batchId": "stage-3.replan-322.batch-032-items-096b3398",
+  "releaseVersion": "0.24.69",
+  "plannedReleaseVersion": "0.24.70",
+  "recordedAt": "2026-09-27T11:53:22.148Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_032_automated_acceptance.json",
+    "sha256": "a60554ac1a06f998dce47901cd089bbfd8b20a5ed85df1ce464f234167a21b13",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 199,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32 (Windows 11 Pro 10.0.26200), Node v24.13.0",
+      "source": "node utils/run-checks.js (complete catalog, 4 jobs) on the working tree: 109 checks executed, 90 accepted by content-addressed seals (every traced input byte-identical to a passing run; history-only checks up to 025 in the link-checked reconstruction of release 0.24.63); 3111.25 s."
+    },
+    "supplementary": {
+      "sealing": "utils/testing/CHECKS.md; executed 109, sealed 90"
+    },
+    "summary": "Full 199/199 (109 executed, 90 sealed) for batch 032 (99 modules / 96 activations / 139 bridges).",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 199,
+      "architecture": 69,
+      "quick": 44
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "automated-game-cycle-and-built-in-browser-screenshots",
+    "userStatement": "PASS (automated substitute, 2026-09-27): node utils/game-cycle-check.js re-executed without seals (exit 0, 208 scenario assertions passed); the game loaded from npm run dev in the built-in browser with the EffectiveItemRarityResolver and ItemRarityResolver globals present, the inventory opened with rarity-coloured item frames and the tooltip of a level-3 item showing its effective rarity; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game (inventory rarity) with screenshots and console counts.",
+    "acceptanceBasis": "Owner-authorized automated substitute (2026-09-27): game-cycle loop re-executed without seals and the game loaded in the built-in browser with screenshots and an instrumented console read.",
+    "ownerAuthorization": "Great, I’m heading to work now and leaving you to carry on with the work. Run the test for PASS yourself—run the loop, then take a screenshot; if everything looks good, keep going; if not, fix it and proceed without needing my approval. I’m giving you full control—stick to the plan outlined in CLODE and the refactor task.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_032_live_runtime_validation.json",
+      "sha256": "535ef50e94304ee2f671027fb63de5c25d5aa956c0933b93c21f9aaf880bb64c"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_032_observation_reconciliation.json",
+      "sha256": "9104d4e0e44133bbf9bca87f13fcb0a230ad018c822106212e5589ff8d1fa67c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "28488d95703bc3d239265886ffc9da71e0a58e68ce9d1a3b420a1567e606806d"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "7c974ee726676956339c86fc0aef5e72d3cf5c63545b0a025f6717a6115bb064"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "fe24ae8372e76dfaedc739d3b06b3bae621ec6e7a5623ab0d796b1ec81445566"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "57b049be5fea9d468c4bfe23883af595b9747fd00f1ab2bedd2a69f55ab90497"
+    },
+    {
+      "path": "index.html",
+      "sha256": "65909939e42003b7430e62fed6e209f1106dea7ab7c8c9552df5e3abe522f926"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-322.batch-032-items-096b3398",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.33.9 — Release Closure v0.24.70"
+}

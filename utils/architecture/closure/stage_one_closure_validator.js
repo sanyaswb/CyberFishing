@@ -644,6 +644,8 @@ class StageOneClosureValidator {
         "Items Hook Power and Rarity Resolver Domain",
       "stage-3.replan-322.batch-031-fishing-d2f28c0f":
         "Fishing Stamina Balance Frame Domain",
+      "stage-3.replan-322.batch-032-items-096b3398":
+        "Items Effective Rarity Resolver Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

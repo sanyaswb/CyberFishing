@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.69";
+const CURRENT_PROJECT_VERSION = "0.24.70";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,14 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fishing-stamina-balance-frame-domain",
+  codename: "items-effective-rarity-resolver-domain",
   updatedAt: "2026-09-27",
   notes: Object.freeze([
-    "Migrate the stamina balance frame",
-    "Import the stamina phase machine from batch 029 and the endurance drain calculators",
-    "Move the guarded window exposure of StaminaBalanceFrame to the exact activation shim",
-    "Retire the stamina phase machine and endurance drain activations as inert classic placeholders",
-    "Preserve ninety-eight project modules, ninety-five activations and one hundred thirty-eight bridges",
+    "Migrate the effective item rarity resolver",
+    "Import the item rarity resolver from batch 030",
+    "Move the reviewed global exposure of EffectiveItemRarityResolver to the exact activation shim",
+    "Complete the Stage 3.22 approved continuation prefix",
+    "Preserve ninety-nine project modules, ninety-six activations and one hundred thirty-nine bridges",
   ]),
 });
 

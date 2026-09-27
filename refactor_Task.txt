@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.69`
+- **Current release version:** `v0.24.70`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.33 — Batch 032 (stage-3.replan-322.batch-032-items-096b3398)`, the last batch of the approved prefix; see “Next steps” below
+- **Next step:** `Stage 3.34.0 — review-queue evidence and freeze extension` (033 collection identity, 034 hot-loop equivalence), then batches 033–034; see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -133,7 +133,7 @@ The prefix was adopted by the execution state at batch 022 (`continuationPlan`);
 - [x] **029 · Fishing · 2 modules:** `PoleFightSectorAngleConstraint`, `StaminaPhaseMachine` — `stage-3.replan-322.batch-029-fishing-f2a8faba`.
 - [x] **030 · Items · 2 modules:** `HookPowerPolicy`, `ItemRarityResolver` — `stage-3.replan-322.batch-030-items-a3bf25f7`.
 - [x] **031 · Fishing · 1 module:** `StaminaBalanceFrame` — `stage-3.replan-322.batch-031-fishing-d2f28c0f`.
-- [ ] **032 · Items · 1 module:** `EffectiveItemRarityResolver` — `stage-3.replan-322.batch-032-items-096b3398`.
+- [x] **032 · Items · 1 module:** `EffectiveItemRarityResolver` — `stage-3.replan-322.batch-032-items-096b3398`.
 
 **Checkpoint `v0.24.62`:** batches 022–024 of the approved prefix are complete (completed batches 001–024). Batch 024 migrated InventoryItemReservationPolicy: its reviewed globalThis exposure moved to the activation shim and it imports `InventoryItemLocation` from the completed ESM owner. The cumulative runtime has `83` project modules, `93` activations and `142` bridge records. Windows Full 188/188 passed in one uninterrupted run (4248 s), including the batch-024 architecture check, the game-cycle fight scenarios and the inventory-v2 equipment/integration suites; Architecture 66/66 and Quick 42/42 passed before it; owner-authorized automated smoke (headless game cycle and built-in browser load) passed with `0 errors` and `0 warnings`.
 
@@ -150,6 +150,8 @@ The prefix was adopted by the execution state at batch 022 (`continuationPlan`);
 **Checkpoint `v0.24.68`:** batch 030 is complete (completed batches 001–030, 88 migrated Domain modules): HookPowerPolicy (reviewed global exposure moved to the shim; its DEV consumer keeps the activation until Stage 6) and ItemRarityResolver with three reviewed imports (two from batch 027). Retired activation: HookQualityModifier. The runtime contract now accepts activation removal stage 6 (DEV consumers), consistent with the architecture policy; follow-up: reconcile the transport removal stage (currently stage-5) with the spec's Stage 6 compatibility removal. Runtime `97` modules / `97` activations / `140` bridges. Full 197/197 before release (154 executed, 43 sealed) and after release (126 executed, 71 sealed); owner-authorized automated browser substitute (hook tooltip) with `0 errors` and `0 warnings`.
 
 **Checkpoint `v0.24.69`:** batch 031 is complete (completed batches 001–031, 89 migrated Domain modules): StaminaBalanceFrame with three reviewed imports (StaminaPhaseMachine from batch 029, both endurance drain calculators), three composition identities, the guarded window exposure moved to the shim and its browser-capability debt resolved. Retired activations: StaminaPhaseMachine, ActiveEnduranceDrainCalculator, PassiveEnduranceDrainCalculator. Runtime `98` modules / `95` activations / `138` bridges. Full 198/198 before release (147 executed, 51 sealed) and after release (127 executed, 71 sealed); owner-authorized automated browser substitute (bait attached from the hook detail; fight covered by game-cycle) with `0 errors` and `0 warnings`.
+
+**Checkpoint `v0.24.70`:** batch 032 is complete and with it the whole Stage 3.22 approved prefix 022–032 (completed batches 001–032, 90 migrated Domain modules): EffectiveItemRarityResolver with the reviewed import ItemRarityResolver (batch 030), its composition identity and the reviewed globalThis exposure moved to the activation shim. Runtime `99` modules / `96` activations / `139` bridges. Full 199/199 before release (109 executed, 90 sealed) and after release (128 executed, 71 sealed); owner-authorized automated browser substitute (inventory rarity frames and the effective-rarity tooltip) with `0 errors` and `0 warnings`.
 
 ### Review queue
 
@@ -201,7 +203,7 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
 2. **Check pipeline acceleration (approved 2026-09-27)** (`utils/testing/CHECKS.md`):
    - [x] Input-traced seals (`--no-seal`, `--reseal`), history base (release 0.24.63 reconstruction for history-only checks), parallel runner with footprint conflicts (`--jobs`).
    - [x] Committed (1262da7); acceptance evidence records executed vs sealed counts from batch 026 on.
-3. **Batch 032 (`v0.24.70`)** (026–031 done) through the shared tooling; recompute retirements at each preflight (expected 027, 029, 030, 031); 028–032 import earlier-batch exports; `batch-completion` prerequisites from the execution state. Browser acceptance is performed by the owner with explicit console counts.
+3. [x] **Batches 026–032 (`v0.24.64`–`v0.24.70`)** done; through the shared tooling; recompute retirements at each preflight (expected 027, 029, 030, 031); 028–032 import earlier-batch exports; `batch-completion` prerequisites from the execution state. Browser acceptance is performed by the owner with explicit console counts.
 4. **Review queue:** 033 (collection identity for `AssemblyStateRepository#states`) and 034 (hot-loop equivalence evidence) need their evidence prerequisites first.
 5. **Prerequisite backlog:** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.

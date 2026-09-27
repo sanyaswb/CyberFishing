@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-032-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-032-items-096b3398",
+  "stage": "3.33.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.69",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "39ef2bea198fa97e349f146c95508c63e33bde1ddad11d3d531d7c75eed56beb"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "sourceSha256": "914c9a10e6fbbacdb97be7ac5aff6d18db7d4cee18a46ffe85dafd66242a1488",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "EffectiveItemRarityResolver",
+        "location": "29:1"
+      },
+      "review": {
+        "currentPath": "src/core/items/rarity/effective_item_rarity_resolver.js",
+        "symbol": "EffectiveItemRarityResolver",
+        "location": "29:1",
+        "sourceSha256": "914c9a10e6fbbacdb97be7ac5aff6d18db7d4cee18a46ffe85dafd66242a1488",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.EffectiveItemRarityResolver",
+        "evaluatedGlobalNames": [
+          "EffectiveItemRarityResolver"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "5805a366cde3b903282e1ecf887559dbf0e860e1456236e7d6f5c9f47a883c13",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "29:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-91c2b60ce51e",
+          "owner": "stage-3.replan-322.batch-032-items-096b3398",
+          "sourceProvider": "src/core/items/rarity/effective_item_rarity_resolver.js",
+          "targetModule": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+          "exportName": "EffectiveItemRarityResolver",
+          "legacySymbol": "EffectiveItemRarityResolver",
+          "legacyScriptIndex": 50,
+          "shimFile": "activations/050_effectiveitemrarityresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "0f6f81af557ee199cba35cac03abb37ed8f274f4fb9ecb3cd1ace1435d13b5fc"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.33.0-live-preflight-and-graph-audit"
+}

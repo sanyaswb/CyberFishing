@@ -913,6 +913,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-91c2b60ce51e",
+      "owner": "stage-3.replan-322.batch-032-items-096b3398",
+      "sourceProvider": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "targetModule": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "exportName": "EffectiveItemRarityResolver",
+      "legacySymbol": "EffectiveItemRarityResolver",
+      "legacyScriptIndex": 50,
+      "shimFile": "activations/050_effectiveitemrarityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-974deda48a6f",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
