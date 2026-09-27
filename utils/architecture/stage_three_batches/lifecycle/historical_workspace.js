@@ -7,6 +7,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { StageThreeBatchReleaseTransition } = require("./release_transition");
 const { MANIFEST, beforeBatchObservations } = require("./observation_transition");
+const { StageThreePrerequisiteLedger } = require("../../stage_three_prerequisites/core/prerequisite_ledger");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const sha = bytes => crypto.createHash("sha256").update(bytes).digest("hex");
@@ -57,6 +58,8 @@ class StageThreeHistoricalWorkspace {
       }
       if (copyTools) fs.symlinkSync(path.join(projectRoot, "node_modules"),
         path.join(temporary, "node_modules"), "junction");
+      // Prerequisite transitions recorded after this batch are newer than its release.
+      new StageThreePrerequisiteLedger(temporary).peel(context.number);
       const releasePath = path.join(temporary, paths.releaseTransition);
       if (fs.existsSync(releasePath)) {
         const transition = new StageThreeBatchReleaseTransition(temporary, this.definition);

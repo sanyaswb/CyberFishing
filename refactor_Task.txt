@@ -4,7 +4,7 @@
 - **Current release version:** `v0.24.72`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Prerequisite backlog` — first the shared prerequisite-transition tooling (peelable source/metadata transitions between batches), then the config injections, descriptor boundaries, Vector2 extraction and decompositions, followed by a repeated graph review and a new freeze; see “Next steps” below
+- **Next step:** `Prerequisite backlog` — next: the remaining non-trivial prerequisites (ItemStatOverridePolicy injection chain, descriptor boundaries, Vector2 extraction, decompositions) and the parameterized repeated graph review; see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -214,7 +214,15 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [x] Freeze extension (base = Stage 3.22 approved prefix, sources unchanged since the 3.22 review): batches 033 and 034 frozen; the plan source chains it and a batch prebuild adopts it.
    - [x] Batch 033 (`v0.24.71`): AssemblyStateRepository; adopted the freeze extension; retired AssemblyState and AssemblyPreparationStatus (first whole-source retirement of two activations served by one classic file).
    - [x] Batch 034 (`v0.24.72`): six hot-loop fishing modules; the preflight resolved the performance prerequisites from the recorded evidence and the live validation reproduced every member fingerprint, allocation site and game-cycle trace; retired ReelHoldLoadPolicy, RodControlAngleResolver and RodControlTensionModeResolver.
-5. **Prerequisite backlog (next):** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
+5. **Prerequisite backlog (in progress):**
+   - [x] Shared prerequisite-transition tooling: `node utils/architecture/stage-3-prerequisite.js --task NNN --step plan|apply|check|rollback`; tasks in `utils/architecture/stage_three_prerequisites/tasks/NNN/task.js`; records in `architecture/migration/stage_3_prerequisites/` (source edits, re-derived observations, resolved debts, clean guards, edge delta, focused parity, before-images). History replays peel transitions recorded after a batch before that batch; the Stage 1 closure counts their recorded edge delta.
+   - [x] 001 AssemblyProfileRegistry config injection (default-parameter read of ITEM_ASSEMBLY_PROFILE_CONFIG removed; both composition roots already pass the table; debt-boundary-dependency-0bc38e6e1330 resolved; confirmed edges 735 → 734).
+   - [ ] ItemStatOverridePolicy config injection: the policy is default-composed through EffectiveItemStatsResolver, InventoryItemSnapshotMapper and LegacyItemStateMigration, which are themselves default-composed in about a dozen modules; needs one composed policy threaded from the composition roots.
+   - [ ] Bait-effectiveness, item-freshness and item-condition descriptor boundaries (Domain result + presentation mapper).
+   - [ ] Vector2 extraction to `src/engine/math/vector2.js` (CacheManager/InputManager stay in core.js).
+   - [ ] Six responsibility decompositions.
+   - [ ] Parameterized repeated graph review (generalize the Stage 3.22 post-freeze review: stage label, topology, completed plan via the plan source, first order, id prefix, output directory) and a new freeze.
+  Original backlog line: resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.
 
 Stage 3 is complete only when all approved Domain clusters have migrated, state ownership is unambiguous, and every bridge has a controlled removal path.

@@ -150,25 +150,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-0bc38e6e1330",
-      "rule": "boundary-dependency",
-      "source": "src/core/assemblies/assembly_profile_registry.js",
-      "target": "src/config/inventory/item_assembly_profile_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "0bc38e6e13308af71f82e9b691e2461d039da31da0c8b480080d1c1461c9af65",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/assemblies/assembly_profile_registry.js",
-        "target": "src/config/inventory/item_assembly_profile_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-0c2b881384a5",
       "rule": "boundary-dependency",
       "source": "src/world/world.js",

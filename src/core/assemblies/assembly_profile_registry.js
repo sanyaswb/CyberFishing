@@ -4,7 +4,7 @@ class AssemblyProfileRegistry {
   #itemDefinitionResolver;
 
   constructor(
-    profileConfig = ITEM_ASSEMBLY_PROFILE_CONFIG,
+    profileConfig,
     { itemDefinitionResolver = null } = {},
   ) {
     this.#itemDefinitionResolver = itemDefinitionResolver;

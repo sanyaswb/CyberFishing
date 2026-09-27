@@ -828,7 +828,7 @@ class StageOneClosureValidator {
     );
     this.#require(
       this.#confirmedEdgeCount(manifest.modules) ===
-        baseline.confirmedInterFileEdges + stageThreeConfirmedEdgeDelta,
+        baseline.confirmedInterFileEdges + stageThreeConfirmedEdgeDelta + this.#prerequisiteConfirmedEdgeDelta(),
       "confirmed dependency edge count changed",
       errors,
     );
@@ -1067,6 +1067,27 @@ class StageOneClosureValidator {
       throw new Error(`Stage 3 cutover changed classic edges beyond reviewed imports: ${artifact.batchId}`);
     }
     return removed.length;
+  }
+
+  // Recorded prerequisite transitions change classic edges only as their records state: every
+  // removed edge is in the transition's manifest before-image and no added edge was there before.
+  #prerequisiteConfirmedEdgeDelta() {
+    const { StageThreePrerequisiteLedger } = require("../stage_three_prerequisites/core/prerequisite_ledger");
+    return new StageThreePrerequisiteLedger(this.projectRoot).records().reduce((total, record) => {
+      const write = record.writes.find((item) => item.path === "architecture/migration/module_migration_manifest.json");
+      const observation = record.dependencyObservation;
+      if (!write || observation.confirmedEdgeDelta !== observation.addedEdges.length - observation.removedEdges.length) {
+        throw new Error(`Prerequisite edge evidence is invalid: ${record.slug}`);
+      }
+      const before = new Set(JSON.parse(Buffer.from(write.beforeBase64, "base64")).modules.flatMap((module) =>
+        module.analysis.dependencies.items.filter((edge) => edge.resolution === "confirmed")
+          .map((edge) => `${module.currentPath}\u0000${edge.target}\u0000${[...edge.symbols].sort().join(",")}`)));
+      if (!observation.removedEdges.every((edge) => before.has(edge)) ||
+        observation.addedEdges.some((edge) => before.has(edge))) {
+        throw new Error(`Prerequisite edge evidence differs from its manifest before-image: ${record.slug}`);
+      }
+      return total + observation.confirmedEdgeDelta;
+    }, 0);
   }
 
   #stageThreeConfirmedEdgeDelta(modules, baselineEdgeCount) {

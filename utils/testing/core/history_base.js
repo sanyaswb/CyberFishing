@@ -14,7 +14,9 @@ const DATA = Object.freeze(["src", "architecture", "dist/stage-3-compat-runtime"
 const { INFORMATIONAL_DOCUMENTS } = require("../../architecture/informational_documents");
 const { DIRECTORY: REVIEW_QUEUE_DIRECTORY } = require("../../architecture/review_queue/review_queue_paths");
 // Stage artifact directories recorded between two batches, keyed by the first batch they precede.
-const STAGE_DIRECTORIES = Object.freeze({ [`${REVIEW_QUEUE_DIRECTORY}/`]: "033" });
+const { DIRECTORY: PREREQUISITE_DIRECTORY } = require("../../architecture/stage_three_prerequisites/core/prerequisite_ledger");
+// Prerequisite transitions are recorded after batch 034 or later.
+const STAGE_DIRECTORIES = Object.freeze({ [`${REVIEW_QUEUE_DIRECTORY}/`]: "033", [`${PREREQUISITE_DIRECTORY}/`]: "035" });
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 
 class HistoryBase {

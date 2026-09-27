@@ -44,7 +44,7 @@ function collaborators() {
     instanceIdFactory: source => `${source.instanceId}-split-${++sequence}`,
   });
   return { runtime, repository, stateRepository: new runtime.AssemblyStateRepository(),
-    profileRegistry: new runtime.AssemblyProfileRegistry() };
+    profileRegistry: new runtime.AssemblyProfileRegistry(runtime.ITEM_ASSEMBLY_PROFILE_CONFIG) };
 }
 
 const state = parts => ({ items: snapshot(parts.repository.createSnapshot()),

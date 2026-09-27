@@ -7,6 +7,7 @@ const { sha } = require("./planning");
 const { StageThreeCutoverHistory } = require("./cutover_history");
 const { MANIFEST, beforeBatchObservations } = require("./observation_transition");
 const { StageThreeBatchReleaseTransition } = require("./release_transition");
+const { StageThreePrerequisiteLedger } = require("../../stage_three_prerequisites/core/prerequisite_ledger");
 
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const KNOWN_DEBT = "architecture/guards/known_debt_registry.json";
@@ -35,6 +36,7 @@ class StageThreeBatchHistory {
     let bytes = newer ? newer.before(file, provided) : Buffer.from(provided);
     if (!this.exists()) return bytes;
     const paths = this.definition.context.paths;
+    bytes = new StageThreePrerequisiteLedger(this.root).before(file, bytes, this.definition.context.number);
     bytes = new StageThreeBatchReleaseTransition(this.root, this.definition).before(file, bytes);
     if (file === MANIFEST) bytes = beforeBatchObservations(this.definition, bytes, this.root);
     if (file === KNOWN_DEBT && fs.existsSync(path.join(this.root, paths.knownDebt))) {

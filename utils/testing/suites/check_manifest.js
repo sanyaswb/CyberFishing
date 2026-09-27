@@ -749,6 +749,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-3-prerequisite-001",
+      title: "Stage 3 prerequisite 001: AssemblyProfileRegistry config injection replays byte-identically with parity, resolved debt and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "001", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",

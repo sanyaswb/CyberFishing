@@ -86,7 +86,7 @@ class DomainFixture {
       instanceIdFactory: (source) => `${source.instanceId}-split-${++this.#sequence}`,
     });
     this.stateRepository = new runtime.AssemblyStateRepository();
-    this.profileRegistry = new runtime.AssemblyProfileRegistry();
+    this.profileRegistry = new runtime.AssemblyProfileRegistry(runtime.ITEM_ASSEMBLY_PROFILE_CONFIG);
     this.reader = new runtime.ItemAssemblyReader({
       repository: this.repository,
       stateRepository: this.stateRepository,
