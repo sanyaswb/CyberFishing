@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-037-browser-confirmation",
+  "batchId": "stage-3.replan-336.batch-037-items-5fccd461",
+  "releaseVersion": "0.24.74",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T23:32:46.988Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, 2026-09-28): node utils/game-cycle-check.js re-executed without seals (exit 0); the game loaded from npm run dev in the built-in browser with BaitEffectivenessResolver, ItemFreshnessResolver and ItemProgressionResolver published as ESM classes and the retired BaitEffectivenessMatch, ItemBoundedMetricResolver and ItemProgressionDescriptor globals absent; the bait details show per-fish effectiveness and freshness 100%, and the level-3 boat tooltip shows its progression values; screenshots taken; dev server stopped afterwards.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop re-executed without seals and a built-in-browser load of the game (bait effectiveness and freshness details, item progression tooltips) with screenshots and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_037_acceptance_pass.json",
+    "sha256": "750497f8a625324b3bf5d124d162ef74183b79069748bbf5dc2f97ef5a843135"
+  },
+  "historicalSummaryPreserved": true
+}

@@ -313,6 +313,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-15138a00826c",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "sourceProvider": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "targetModule": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "exportName": "BaitEffectivenessResolver",
+      "legacySymbol": "BaitEffectivenessResolver",
+      "legacyScriptIndex": 65,
+      "shimFile": "activations/065_baiteffectivenessresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-18af7e975cb0",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
@@ -395,6 +407,18 @@
       "shimFile": "activations/124_default_fish_radial_range.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-32c2b6cd025d",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "sourceProvider": "src/core/items/freshness/item_freshness_resolver.js",
+      "targetModule": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "exportName": "ItemFreshnessResolver",
+      "legacySymbol": "ItemFreshnessResolver",
+      "legacyScriptIndex": 60,
+      "shimFile": "activations/060_itemfreshnessresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-3496b09d5f7c",
@@ -551,6 +575,18 @@
       "shimFile": "activations/128_dragforcecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-527be2eff1e7",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "sourceProvider": "src/core/items/progression/item_progression_resolver.js",
+      "targetModule": "src/game/domain/items/progression/item_progression_resolver.js",
+      "exportName": "ItemProgressionResolver",
+      "legacySymbol": "ItemProgressionResolver",
+      "legacyScriptIndex": 85,
+      "shimFile": "activations/085_itemprogressionresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-54c1801cfb5c",
@@ -767,18 +803,6 @@
       "shimFile": "activations/095_playerforcebudgetallocator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-7a545a4f3325",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "sourceProvider": "src/core/items/bait/bait_effectiveness_match.js",
-      "targetModule": "src/game/domain/items/bait/bait_effectiveness_match.js",
-      "exportName": "BaitEffectivenessMatch",
-      "legacySymbol": "BaitEffectivenessMatch",
-      "legacyScriptIndex": 62,
-      "shimFile": "activations/062_baiteffectivenessmatch.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-7b2f08a8cb34",
@@ -1045,18 +1069,6 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-a1c4f48a2220",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "sourceProvider": "src/core/items/metrics/item_bounded_metric_resolver.js",
-      "targetModule": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
-      "exportName": "ItemBoundedMetricResolver",
-      "legacySymbol": "ItemBoundedMetricResolver",
-      "legacyScriptIndex": 53,
-      "shimFile": "activations/053_itemboundedmetricresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-a44add7fda39",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
@@ -1175,18 +1187,6 @@
       "shimFile": "activations/059_baitfreshnessmodifier.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-b63d6fa4a955",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
-      "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
-      "exportName": "ItemProgressionDescriptor",
-      "legacySymbol": "ItemProgressionDescriptor",
-      "legacyScriptIndex": 84,
-      "shimFile": "activations/084_itemprogressiondescriptor.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-b7cb0e61096d",
@@ -1582,6 +1582,23 @@
     },
     {
       "activation": {
+        "id": "activation-7a545a4f3325",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/bait/bait_effectiveness_match.js",
+        "targetModule": "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "exportName": "BaitEffectivenessMatch",
+        "legacySymbol": "BaitEffectivenessMatch",
+        "legacyScriptIndex": 62,
+        "shimFile": "activations/062_baiteffectivenessmatch.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
+    },
+    {
+      "activation": {
         "id": "activation-89d032a4a1e8",
         "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
         "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
@@ -1667,6 +1684,23 @@
     },
     {
       "activation": {
+        "id": "activation-a1c4f48a2220",
+        "owner": "stage-3.candidate-018-items-8ea4be10",
+        "sourceProvider": "src/core/items/metrics/item_bounded_metric_resolver.js",
+        "targetModule": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "exportName": "ItemBoundedMetricResolver",
+        "legacySymbol": "ItemBoundedMetricResolver",
+        "legacyScriptIndex": 53,
+        "shimFile": "activations/053_itemboundedmetricresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
+    },
+    {
+      "activation": {
         "id": "activation-a9ba2b558615",
         "owner": "stage-3.candidate-015-fishing-37dc3452",
         "sourceProvider": "src/core/fishing/stamina/active_endurance_drain_calculator.js",
@@ -1698,6 +1732,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-033-assemblies-3cd39292"
+    },
+    {
+      "activation": {
+        "id": "activation-b63d6fa4a955",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
+        "targetModule": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "exportName": "ItemProgressionDescriptor",
+        "legacySymbol": "ItemProgressionDescriptor",
+        "legacyScriptIndex": 84,
+        "shimFile": "activations/084_itemprogressiondescriptor.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
     },
     {
       "activation": {

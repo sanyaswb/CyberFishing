@@ -26,9 +26,13 @@ class StageThreeGlobalExposureReview {
     assert.equal(assignment.left.property.name, symbol);
     assert.equal(assignment.right.type, "Identifier");
     assert.equal(assignment.right.name, symbol);
-    const context = vm.createContext({});
+    // A global superclass is bound to an inert stand-in; evaluation may add only the class itself.
+    const superName = declaration.superClass?.type === "Identifier" ? declaration.superClass.name : null;
+    assert(declaration.superClass === null || superName, `${currentPath}: superclass must be a plain identifier`);
+    const context = vm.createContext(superName ? { [superName]: class {} } : {});
+    const before = Object.getOwnPropertyNames(context);
     vm.runInContext(source, context, { filename: currentPath });
-    assert.deepEqual(Object.getOwnPropertyNames(context), [symbol],
+    assert.deepEqual(Object.getOwnPropertyNames(context).filter(name => !before.includes(name)), [symbol],
       `${currentPath}: source evaluation changed unexpected globals`);
     assert.equal(typeof context[symbol], "function");
     assert.equal(context[symbol].name, symbol);
@@ -42,6 +46,7 @@ class StageThreeGlobalExposureReview {
       evaluatedGlobalNames: [symbol],
       evaluationCount: 1,
       otherTopLevelEffects: 0,
+      ...(superName ? { superclassBinding: superName } : {}),
     });
   }
 }

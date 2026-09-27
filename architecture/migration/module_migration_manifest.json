@@ -20454,9 +20454,56 @@
         "legacyLoadOrder": 62,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "currentArea": "core/items/bait",
+      "observed": {
+        "legacyLoadOrder": 65,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "BaitEffectivenessMatch",
+              "symbol": "BaitEffectivenessResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -20491,8 +20538,8 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/bait/bait_effectiveness_match.js",
-        "migrationWave": 1
+        "targetPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -20508,159 +20555,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "currentArea": "core/items/bait",
-      "observed": {
-        "legacyLoadOrder": 65,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "BaitEffectivenessResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "BaitEffectivenessResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "AlwaysKnownBaitEffectivenessPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "BaitEffectivenessGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "BaitEffectivenessMatch",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "BaitFreshnessModifier",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Number",
-            "Object",
-            "String",
-            "TypeError",
-            "globalThis",
-            "undefined"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "AlwaysKnownBaitEffectivenessPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "BaitEffectivenessGradePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/bait/bait_effectiveness_grade_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "BaitEffectivenessMatch",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/bait/bait_effectiveness_match.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "BaitFreshnessModifier",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/freshness/bait_freshness_modifier.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/bait/bait_effectiveness_grade_policy.js",
-              "symbols": [
-                "BaitEffectivenessGradePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
-              "symbols": [
-                "AlwaysKnownBaitEffectivenessPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/bait/bait_effectiveness_match.js",
-              "symbols": [
-                "BaitEffectivenessMatch"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/freshness/bait_freshness_modifier.js",
-              "symbols": [
-                "BaitFreshnessModifier"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -21082,11 +20976,6 @@
           "items": [
             {
               "symbol": "ItemFreshnessResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "ItemFreshnessResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -21097,14 +20986,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BaitFreshnessDecayPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemBoundedMetricResolver",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -21114,10 +20997,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -21127,7 +21007,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
@@ -21136,41 +21016,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "BaitFreshnessDecayPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/freshness/bait_freshness_decay_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemBoundedMetricResolver",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/core/items/metrics/item_bounded_metric_resolver.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/items/freshness/bait_freshness_decay_policy.js",
-              "symbols": [
-                "BaitFreshnessDecayPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/metrics/item_bounded_metric_resolver.js",
-              "symbols": [
-                "ItemBoundedMetricResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -21401,32 +21257,17 @@
         "legacyLoadOrder": 53,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemBoundedMetricResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -21446,15 +21287,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -21906,9 +21739,56 @@
         "legacyLoadOrder": 84,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "currentArea": "core/items/progression",
+      "observed": {
+        "legacyLoadOrder": 85,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "ItemProgressionDescriptor",
+              "symbol": "ItemProgressionResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -21943,8 +21823,8 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
-        "migrationWave": 1
+        "targetPath": "src/game/domain/items/progression/item_progression_resolver.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -21960,99 +21840,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/items/progression/item_progression_resolver.js",
-      "currentArea": "core/items/progression",
-      "observed": {
-        "legacyLoadOrder": 85,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemProgressionResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "ItemProgressionResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemProgressionDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Boolean",
-            "JSON",
-            "Map",
-            "Object",
-            "Set",
-            "String",
-            "TypeError",
-            "globalThis",
-            "undefined"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/items/progression/item_progression_resolver.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ItemProgressionDescriptor",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/progression/item_progression_descriptor.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/progression/item_progression_descriptor.js",
-              "symbols": [
-                "ItemProgressionDescriptor"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -39346,6 +39133,60 @@
       }
     },
     {
+      "currentPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "currentArea": "game/domain/items/bait",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Number",
+            "Object",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/items/condition/item_condition_resolver.js",
       "currentArea": "game/domain/items/condition",
       "observed": {
@@ -39529,6 +39370,57 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "currentArea": "game/domain/items/freshness",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
         "migrationWave": 1
       },
       "analysis": {
@@ -39957,6 +39849,63 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_progression_resolver.js",
+      "currentArea": "game/domain/items/progression",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "JSON",
+            "Map",
+            "Object",
+            "Set",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/items/progression/item_progression_resolver.js",
         "migrationWave": 1
       },
       "analysis": {

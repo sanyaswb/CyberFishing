@@ -51,6 +51,22 @@
       ]
     },
     {
+      "id": "bridge-06a78b1b4e3b",
+      "bridge": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "BaitEffectivenessResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-085faac976d6",
       "bridge": "src/core/equipment/exact_item_signature_policy.js",
       "source": "src/application/inventory/auto_refill_coordinator.js",
@@ -147,22 +163,6 @@
       ]
     },
     {
-      "id": "bridge-17302d0ad53c",
-      "bridge": "src/core/items/freshness/bait_freshness_decay_policy.js",
-      "source": "src/core/items/freshness/item_freshness_resolver.js",
-      "target": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-019-items-b0af5033",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "BaitFreshnessDecayPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-18e896f28aa4",
       "bridge": "src/application/inventory/refill_compatible_signature_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -238,22 +238,6 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-1d1043ea5488",
-      "bridge": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
-      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "AlwaysKnownBaitEffectivenessPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -907,6 +891,22 @@
       ]
     },
     {
+      "id": "bridge-6440a19d970c",
+      "bridge": "src/core/items/freshness/item_freshness_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-65a33fea8e4f",
       "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -950,6 +950,22 @@
       "globalProviders": [
         {
           "symbol": "PlayerForceBudgetAllocator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-69e08a840e34",
+      "bridge": "src/core/items/progression/item_progression_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/item_progression_resolver.js",
+      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemProgressionResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -1118,22 +1134,6 @@
       "globalProviders": [
         {
           "symbol": "ItemStatOverridePolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-77296222f78c",
-      "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
-      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitFreshnessModifier",
           "mechanism": "global-this-property"
         }
       ]
@@ -1310,22 +1310,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-92ff45540824",
-      "bridge": "src/core/items/bait/bait_effectiveness_grade_policy.js",
-      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-019-items-b0af5033",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessGradePolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1931,22 +1915,6 @@
       ]
     },
     {
-      "id": "bridge-d1f629c5a0fa",
-      "bridge": "src/core/items/metrics/item_bounded_metric_resolver.js",
-      "source": "src/core/items/freshness/item_freshness_resolver.js",
-      "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemBoundedMetricResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-d2178f043482",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -2059,22 +2027,6 @@
       ]
     },
     {
-      "id": "bridge-dfd570a5e25e",
-      "bridge": "src/core/items/bait/bait_effectiveness_match.js",
-      "source": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_match.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessMatch",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-e1840139830f",
       "bridge": "src/core/fishing/drag_force_calculator.js",
       "source": "src/systems/fish_force_system.js",
@@ -2166,22 +2118,6 @@
       "globalProviders": [
         {
           "symbol": "ItemMetricStrategyRegistry",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-eea627bb5a05",
-      "bridge": "src/core/items/progression/item_progression_descriptor.js",
-      "source": "src/core/items/progression/item_progression_resolver.js",
-      "target": "src/game/domain/items/progression/item_progression_descriptor.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "ItemProgressionDescriptor",
           "mechanism": "global-this-property"
         }
       ]

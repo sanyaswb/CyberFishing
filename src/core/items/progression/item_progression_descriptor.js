@@ -1,1 +1,1 @@
-globalThis.ItemProgressionDescriptor = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/progression/item_progression_descriptor.js"]["ItemProgressionDescriptor"];
+// Retired Stage 3 activation activation-b63d6fa4a955: ItemProgressionDescriptor is served only through ESM imports of src/game/domain/items/progression/item_progression_descriptor.js.

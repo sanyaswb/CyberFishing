@@ -654,6 +654,8 @@ class StageOneClosureValidator {
         "Items Condition Resolver Domain",
       "stage-3.replan-336.batch-036-items-e1a5aaa4":
         "Items Effective Stats Domain",
+      "stage-3.replan-336.batch-037-items-5fccd461":
+        "Items Bait, Freshness and Progression Resolvers Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

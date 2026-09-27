@@ -748,6 +748,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.37.0–3.37.7 items effective stats domain migration with reviewed exposures and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "036", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-037-architecture",
+      title: "Stage 3.38.0–3.38.7 items bait, freshness and progression resolvers domain migration with imports, retirements and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "037", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

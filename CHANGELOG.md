@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.75 - Items Bait, Freshness and Progression Resolvers Domain
+
+### Changed
+
+- Completed batch 037: BaitEffectivenessResolver, ItemFreshnessResolver and ItemProgressionResolver as named ESM exports with seven reviewed completed-prefix imports; descriptor factories stay injected; the progression memo cache keeps one owner.
+- Retired the BaitEffectivenessMatch, ItemBoundedMetricResolver and ItemProgressionDescriptor activations as inert classic placeholders.
+- Extended the cumulative graph from 109 to 112 project modules (101 activation contracts), with 141 exact bridge relationships (3 added, 7 retired).
+- The next task is batch 038 preflight.
+
 ## v0.24.74 - Items Effective Stats Domain
 
 ### Changed

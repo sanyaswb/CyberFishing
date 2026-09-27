@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-037-side-effect-review",
+  "batchId": "stage-3.replan-336.batch-037-items-5fccd461",
+  "stage": "3.38.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.74",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "ccadacb21a34556bf252301a53a9980df52005a42057060c5e888e2a67b5ee83"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+      "targetPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "sourceSha256": "e7225f8d729b1454d75d37f9d1a6501f08574585378b22f7ed509834efb72279",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "BaitEffectivenessResolver",
+        "location": "169:1"
+      },
+      "review": {
+        "currentPath": "src/core/items/bait/bait_effectiveness_resolver.js",
+        "symbol": "BaitEffectivenessResolver",
+        "location": "169:1",
+        "sourceSha256": "e7225f8d729b1454d75d37f9d1a6501f08574585378b22f7ed509834efb72279",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.BaitEffectivenessResolver",
+        "evaluatedGlobalNames": [
+          "BaitEffectivenessResolver"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "b3f562cfdc17950a6c95177fd92cdadd30d4b591d80d7848ef8b2e935485c0a0",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "169:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-15138a00826c",
+          "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+          "sourceProvider": "src/core/items/bait/bait_effectiveness_resolver.js",
+          "targetModule": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+          "exportName": "BaitEffectivenessResolver",
+          "legacySymbol": "BaitEffectivenessResolver",
+          "legacyScriptIndex": 65,
+          "shimFile": "activations/065_baiteffectivenessresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+      "targetPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "sourceSha256": "7ef921b4bba3e28fe706f8f514bf1ce1fcb48c48c5d0831cf833c4ad94375427",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "ItemFreshnessResolver",
+        "location": "55:1"
+      },
+      "review": {
+        "currentPath": "src/core/items/freshness/item_freshness_resolver.js",
+        "symbol": "ItemFreshnessResolver",
+        "location": "55:1",
+        "sourceSha256": "7ef921b4bba3e28fe706f8f514bf1ce1fcb48c48c5d0831cf833c4ad94375427",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.ItemFreshnessResolver",
+        "evaluatedGlobalNames": [
+          "ItemFreshnessResolver"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0,
+        "superclassBinding": "ItemBoundedMetricResolver"
+      },
+      "frozenEvidenceFingerprint": "b40d7ca113fc9357603ed60b3e1771801cb404f2e2de947ee1bb85aa8fc13412",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "55:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-32c2b6cd025d",
+          "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+          "sourceProvider": "src/core/items/freshness/item_freshness_resolver.js",
+          "targetModule": "src/game/domain/items/freshness/item_freshness_resolver.js",
+          "exportName": "ItemFreshnessResolver",
+          "legacySymbol": "ItemFreshnessResolver",
+          "legacyScriptIndex": 60,
+          "shimFile": "activations/060_itemfreshnessresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/progression/item_progression_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_progression_resolver.js",
+      "sourceSha256": "80f406a0b18207af52d50f8a456b3645cc13c5008c58f441dcff9962e0741749",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "ItemProgressionResolver",
+        "location": "194:1"
+      },
+      "review": {
+        "currentPath": "src/core/items/progression/item_progression_resolver.js",
+        "symbol": "ItemProgressionResolver",
+        "location": "194:1",
+        "sourceSha256": "80f406a0b18207af52d50f8a456b3645cc13c5008c58f441dcff9962e0741749",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.ItemProgressionResolver",
+        "evaluatedGlobalNames": [
+          "ItemProgressionResolver"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "2509578e9e7aa1107aceb6c8f9c55ea7e473be264372f6bc4a3344be09576b54",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "194:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-527be2eff1e7",
+          "owner": "stage-3.replan-336.batch-037-items-5fccd461",
+          "sourceProvider": "src/core/items/progression/item_progression_resolver.js",
+          "targetModule": "src/game/domain/items/progression/item_progression_resolver.js",
+          "exportName": "ItemProgressionResolver",
+          "legacySymbol": "ItemProgressionResolver",
+          "legacyScriptIndex": 85,
+          "shimFile": "activations/085_itemprogressionresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "fc43d698f3bae59ec6950753421445656b4fce368130d3e7a13dd42ff35735e7"
+    },
+    {
+      "module": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "2ccb0b45a9ec0ccefb8b9f60317dfbc3075de9ff68ed99c808fdae100f4c92e8"
+    },
+    {
+      "module": "src/game/domain/items/progression/item_progression_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "f81aea072f7bfecfded820f1652dd4f2e5a8c1cd37fc5a612205e13bca9443a8"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.38.0-live-preflight-and-graph-audit"
+}

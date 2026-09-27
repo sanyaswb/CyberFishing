@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.74`
+- **Current release version:** `v0.24.75`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.38 — Batch 037 (stage-3.replan-336.batch-037-items-5fccd461, bait effectiveness, item freshness and item progression resolvers)`; see “Next steps” below
+- **Next step:** `Stage 3.39 — Batch 038 (stage-3.replan-336.batch-038-assemblies-d8271d28, AssemblyProfileRegistry)`, the last batch of the Stage 3.36.0 approved prefix; see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -161,6 +161,8 @@ The prefix was adopted by the execution state at batch 022 (`continuationPlan`);
 
 **Checkpoint `v0.24.74`:** batch 036 is complete (completed batches 001–036, 100 migrated Domain modules): ItemStatOverridePolicy and EffectiveItemStatsResolver as named ESM exports composed by GameCompositionRoot; their reviewed globalThis exposures moved to the activation shims. Runtime `109` modules / `101` activations / `145` bridges. Full 211/211 before release (103 executed, 108 sealed) and after release (140 executed, 71 sealed); owner-authorized automated browser substitute (effective line stats, reload) with `0 errors` and `0 warnings`.
 
+**Checkpoint `v0.24.75`:** batch 037 is complete (completed batches 001–037, 103 migrated Domain modules): BaitEffectivenessResolver, ItemFreshnessResolver and ItemProgressionResolver as named ESM exports with seven reviewed completed-prefix imports, composition identities and the progression memo-cache identity; descriptor factories stay injected. The global-exposure review binds a global superclass to an inert stand-in. Retired activations: BaitEffectivenessMatch, ItemBoundedMetricResolver, ItemProgressionDescriptor. Runtime `112` modules / `101` activations / `141` bridges. Full 212/212 before release (106 executed, 106 sealed) and after release (141 executed, 71 sealed); owner-authorized automated browser substitute (bait effectiveness/freshness and progression tooltips) with `0 errors` and `0 warnings`.
+
 ### Review queue
 
 - **033** `stage-3.replan-322.batch-033-assemblies-3cd39292` (1 module): requires evidence — `stage-3.22.prerequisite.collection-identity-evidence`.
@@ -226,7 +228,7 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [ ] Vector2 extraction to `src/engine/math/vector2.js` (CacheManager/InputManager stay in core.js).
    - [ ] Six responsibility decompositions.
    - [x] Stage 3.36.0 repeated graph review (`node utils/architecture/stage-3-36-graph-review.js`, artifacts in `architecture/migration/stage_3_36_graph_review/`): the Stage 3.22 review tooling is parameterized by `PostFreezeReviewProfile` (3.22 replay byte-identical); the repeated review reads the completed prefix through the plan source, counts retired placeholders and completed ESM importers, derives ESM import facts, records resolved backlog tasks and adds four reviewed collection contracts. Result: 7 candidates → 4 frozen batches 035–038 (ItemConditionResolver; EffectiveItemStatsResolver + ItemStatOverridePolicy; BaitEffectivenessResolver + ItemFreshnessResolver + ItemProgressionResolver; AssemblyProfileRegistry), 2 prerequisite-blocked (Vector2), 29 deferred, 5 backlog tasks resolved, 7 open. The plan source follows continuation chains (3.36 prefix → 3.34 extension → 3.22 prefix) and takes the newest review's domain audit.
-   - [ ] Batches 035–038 (`v0.24.73`–`v0.24.76`): [x] 035 ItemConditionResolver (v0.24.73), [x] 036 ItemStatOverridePolicy + EffectiveItemStatsResolver (v0.24.74), [ ] 037, [ ] 038.
+   - [ ] Batches 035–038 (`v0.24.73`–`v0.24.76`): [x] 035 ItemConditionResolver (v0.24.73), [x] 036 ItemStatOverridePolicy + EffectiveItemStatsResolver (v0.24.74), [x] 037 bait effectiveness, item freshness and item progression resolvers (v0.24.75), [ ] 038.
   Original backlog line: resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.
 
