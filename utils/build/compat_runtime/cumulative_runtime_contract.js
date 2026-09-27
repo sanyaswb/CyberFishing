@@ -314,9 +314,10 @@ class CumulativeRuntimeContractValidator {
         );
         require(this.#text(activation.owner), `${activation.id} owner is required`);
         require(this.#text(activation.reason), `${activation.id} reason is required`);
+        // Stage 6 separates DEV: an activation whose last classic reader is a DEV consumer lives until then.
         require(
-          ["stage-3", "stage-4", "stage-5"].includes(activation.removalStage),
-          `${activation.id} removalStage must be stage-3, stage-4 or stage-5`,
+          ["stage-3", "stage-4", "stage-5", "stage-6"].includes(activation.removalStage),
+          `${activation.id} removalStage must be stage-3, stage-4, stage-5 or stage-6`,
         );
         require(
           identity.shimFile.startsWith("activations/") && identity.shimFile.endsWith(".js"),

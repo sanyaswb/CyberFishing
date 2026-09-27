@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-030-items-a3bf25f7",
+  "sourceReleaseVersion": "0.24.67",
+  "targetReleaseVersion": "0.24.68",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_030_execution_plan.json",
+    "sha256": "5faabbae1d6aa2875715a0c2499cb8b343c58b3a2454d0d183f4fd4e1278f9d4"
+  },
+  "scope": {
+    "moduleCount": 2,
+    "exportCount": 2,
+    "activationCount": 2,
+    "consumerRelationshipCount": 5
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/HookPowerPolicy/injected-and-invalid-quality-modifier",
+      "kind": "behavior-equivalence",
+      "exportName": "HookPowerPolicy",
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "targetPath": "src/game/domain/items/hook/hook_power_policy.js",
+      "baselineSourceSha256": "42f13743c0d92297e1d4d9073cb43cab96d6410919d80ceca04418bb3e315a03",
+      "caseName": "injected-and-invalid-quality-modifier",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/HookPowerPolicy/power-from-grade-weight-and-quality",
+      "kind": "behavior-equivalence",
+      "exportName": "HookPowerPolicy",
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "targetPath": "src/game/domain/items/hook/hook_power_policy.js",
+      "baselineSourceSha256": "42f13743c0d92297e1d4d9073cb43cab96d6410919d80ceca04418bb3e315a03",
+      "caseName": "power-from-grade-weight-and-quality",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemRarityResolver/authored-rarity-through-owned-registry-and-cache-identity",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemRarityResolver",
+      "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "baselineSourceSha256": "d38f35105b6d25c02f5a38ec5c9e66d7b3656adf17ef2ce23c676f7ceda26f08",
+      "caseName": "authored-rarity-through-owned-registry-and-cache-identity",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemRarityResolver/injected-strategy-registry",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemRarityResolver",
+      "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "baselineSourceSha256": "d38f35105b6d25c02f5a38ec5c9e66d7b3656adf17ef2ce23c676f7ceda26f08",
+      "caseName": "injected-strategy-registry",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/two-representation-only-named-esm-targets-and-two-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "two-representation-only-named-esm-targets-and-two-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-imports-including-two-earlier-batch-exports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-imports-including-two-earlier-batch-exports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-owner-created-composition-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "three-owner-created-composition-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/reviewed-global-this-exposure-moved-to-the-exact-activation-shim",
+      "kind": "compatibility-invariant",
+      "caseName": "reviewed-global-this-exposure-moved-to-the-exact-activation-shim",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "five-exact-classic-consumer-relationships-and-three-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/hook-quality-modifier-activation-retired-as-inert-classic-placeholder",
+      "kind": "compatibility-invariant",
+      "caseName": "hook-quality-modifier-activation-retired-as-inert-classic-placeholder",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "HookPowerPolicy",
+      "caseCount": 2,
+      "cases": [
+        "power-from-grade-weight-and-quality",
+        "injected-and-invalid-quality-modifier"
+      ]
+    },
+    {
+      "exportName": "ItemRarityResolver",
+      "caseCount": 2,
+      "cases": [
+        "authored-rarity-through-owned-registry-and-cache-identity",
+        "injected-strategy-registry"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 5,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.31.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_030_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/items/hook/hook_power_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/hook/hook_power_policy.js",
+          "authoritativeOwners": [
+            "HookPowerPolicy#qualityModifier"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/hook/hook_power_policy.js",
+          "authoritativeOwners": [
+            "HookPowerPolicy#qualityModifier"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "ca9578df98540b9bf53d66dd2a0295188a5faafd4409f01539f609cefb9500aa",
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 2,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/rarity/item_rarity_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/rarity/item_rarity_resolver.js",
+          "authoritativeOwners": [
+            "ItemRarityResolver#strategyRegistry"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/rarity/item_rarity_resolver.js",
+          "authoritativeOwners": [
+            "ItemRarityResolver#strategyRegistry"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": true,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "0be3dd2cb9ffe02d3c4f1217556554a2246235986d789bc5909a1f612d564bfa",
+        "allocationBaseline": {
+          "objectExpressions": 1,
+          "arrayExpressions": 1,
+          "newExpressions": 3,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.31.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

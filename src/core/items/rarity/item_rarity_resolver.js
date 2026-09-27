@@ -1,16 +1,1 @@
-class ItemRarityResolver {
-  #strategyRegistry;
-
-  constructor({ strategyRegistry = null } = {}) {
-    this.#strategyRegistry =
-      strategyRegistry ||
-      new ItemRarityStrategyRegistry([new AuthoredItemRarityStrategy()]);
-  }
-
-  resolve(rarityProfile) {
-    if (!rarityProfile || typeof rarityProfile !== "object") {
-      throw new TypeError("ItemRarityResolver requires rarityProfile");
-    }
-    return this.#strategyRegistry.resolve(rarityProfile);
-  }
-}
+globalThis.ItemRarityResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/rarity/item_rarity_resolver.js"]["ItemRarityResolver"];

@@ -640,6 +640,8 @@ class StageOneClosureValidator {
         "Assemblies Item Assembly Service Domain",
       "stage-3.replan-322.batch-029-fishing-f2a8faba":
         "Fishing Sector Angle and Stamina Phase Domain",
+      "stage-3.replan-322.batch-030-items-a3bf25f7":
+        "Items Hook Power and Rarity Resolver Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

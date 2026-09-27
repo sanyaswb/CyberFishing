@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.68 - Items Hook Power and Rarity Resolver Domain
+
+### Changed
+
+- Completed batch 030 of the Stage 3.22 approved prefix: HookPowerPolicy and ItemRarityResolver as named ESM exports.
+- Three reviewed imports (HookQualityModifier and AuthoredItemRarityStrategy from batch 027, ItemRarityStrategyRegistry); the owner-created defaults are proven Domain compositions and the reviewed global exposure moved to the activation shim.
+- Retired the HookQualityModifier activation as an inert classic placeholder.
+- Extended the cumulative graph from 95 to 97 project modules and from 96 to 97 activation contracts, with 140 exact bridge relationships (5 added, 3 retired).
+- The next task is batch 031 preflight.
+
 ## v0.24.67 - Fishing Sector Angle and Stamina Phase Domain
 
 ### Changed

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-030-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-030-items-a3bf25f7",
+  "stage": "3.31.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.67",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "a8a6ac93486c9cf97a398d63405d415c0297ec024b3edeabd9d2d8c1c993fcea"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/items/hook/hook_power_policy.js",
+      "targetPath": "src/game/domain/items/hook/hook_power_policy.js",
+      "sourceSha256": "42f13743c0d92297e1d4d9073cb43cab96d6410919d80ceca04418bb3e315a03",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "HookPowerPolicy",
+        "location": "19:1"
+      },
+      "review": {
+        "currentPath": "src/core/items/hook/hook_power_policy.js",
+        "symbol": "HookPowerPolicy",
+        "location": "19:1",
+        "sourceSha256": "42f13743c0d92297e1d4d9073cb43cab96d6410919d80ceca04418bb3e315a03",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.HookPowerPolicy",
+        "evaluatedGlobalNames": [
+          "HookPowerPolicy"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "369109b36c0d5f88ebe511492b04bdf85c96ed72e4f4353a2098e15e5cc310c1",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "19:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-3d418582cb27",
+          "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+          "sourceProvider": "src/core/items/hook/hook_power_policy.js",
+          "targetModule": "src/game/domain/items/hook/hook_power_policy.js",
+          "exportName": "HookPowerPolicy",
+          "legacySymbol": "HookPowerPolicy",
+          "legacyScriptIndex": 70,
+          "shimFile": "activations/070_hookpowerpolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-6"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "sourceSha256": "d38f35105b6d25c02f5a38ec5c9e66d7b3656adf17ef2ce23c676f7ceda26f08",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/items/rarity/item_rarity_resolver.js",
+        "sourceSha256": "d38f35105b6d25c02f5a38ec5c9e66d7b3656adf17ef2ce23c676f7ceda26f08"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-feaf02eaca22",
+          "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+          "sourceProvider": "src/core/items/rarity/item_rarity_resolver.js",
+          "targetModule": "src/game/domain/items/rarity/item_rarity_resolver.js",
+          "exportName": "ItemRarityResolver",
+          "legacySymbol": "ItemRarityResolver",
+          "legacyScriptIndex": 49,
+          "shimFile": "activations/049_itemrarityresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/items/hook/hook_power_policy.js",
+      "classification": "safe",
+      "evidenceFingerprint": "d35c15ae608c4122110b6df5ed3a2cedcc9b8f3cf201ff1b80a74329264455f3"
+    },
+    {
+      "module": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "fb1734b3e1dc9e4ed08dcd71ef851dd8f992bcb2c2b9652e79c0ae88b31dcc8b"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.31.0-live-preflight-and-graph-audit"
+}

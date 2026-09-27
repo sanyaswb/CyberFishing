@@ -3,6 +3,38 @@
   "kind": "cyber-fishing-migration-bridges",
   "bridges": [
     {
+      "id": "bridge-021cb2032053",
+      "bridge": "src/core/items/hook/hook_power_policy.js",
+      "source": "src/entities/tackle.js",
+      "target": "src/game/domain/items/hook/hook_power_policy.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HookPowerPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-02d221df87c8",
+      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
+      "source": "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-04bc2fe4918e",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -507,6 +539,22 @@
       ]
     },
     {
+      "id": "bridge-3d0eb05d9af6",
+      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3d9abab097f9",
       "bridge": "src/core/line/line_spool_state.js",
       "source": "src/systems/line_system.js",
@@ -726,6 +774,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5f6c783bbcd7",
+      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemRarityResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -1203,22 +1267,6 @@
       ]
     },
     {
-      "id": "bridge-8c89f4ec3943",
-      "bridge": "src/core/items/quality/hook_quality_modifier.js",
-      "source": "src/core/items/hook/hook_power_policy.js",
-      "target": "src/game/domain/items/quality/hook_quality_modifier.js",
-      "reason": "Preserve the exact item metric, quality modifier and authored rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "HookQualityModifier",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-8cec1d46f092",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_refill_ports.js",
@@ -1467,22 +1515,6 @@
       ]
     },
     {
-      "id": "bridge-a0e8c122895e",
-      "bridge": "src/core/items/rarity/authored_item_rarity_strategy.js",
-      "source": "src/core/items/rarity/item_rarity_resolver.js",
-      "target": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
-      "reason": "Preserve the exact item metric, quality modifier and authored rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "AuthoredItemRarityStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a285ed92f069",
       "bridge": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
       "source": "src/systems/fish_force_system.js",
@@ -1627,22 +1659,6 @@
       ]
     },
     {
-      "id": "bridge-a970e658356c",
-      "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
-      "source": "src/core/items/rarity/item_rarity_resolver.js",
-      "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityStrategyRegistry",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-ad3945ed8801",
       "bridge": "src/core/items/freshness/bait_freshness_decay_policy.js",
       "source": "src/application/inventory/apply_bait_exposure_service.js",
@@ -1706,6 +1722,22 @@
       "globalProviders": [
         {
           "symbol": "PlayerPressureGainResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc38f49d00dc",
+      "bridge": "src/core/items/hook/hook_power_policy.js",
+      "source": "src/debug/services/debug_formatters.js",
+      "target": "src/game/domain/items/hook/hook_power_policy.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HookPowerPolicy",
           "mechanism": "global-this-property"
         }
       ]

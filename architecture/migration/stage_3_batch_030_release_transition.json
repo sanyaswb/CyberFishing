@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-030-release-transition",
+  "batchId": "stage-3.replan-322.batch-030-items-a3bf25f7",
+  "fromRelease": "0.24.67",
+  "toRelease": "0.24.68",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_030_acceptance_pass.json",
+    "sha256": "4413fbb17df7beec21ce15f167d18485329c68905c142e5d70e915f430bf90d3"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_030_browser_confirmation.json",
+    "sha256": "4c8a3305a9ed049ef0824fd9315e9b0cd0050cc8dd2a873bf8c9504cd962d8ba"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "1c16440915c8f5b3d8c60c1d32e2a6dbee4982aadf172191d4987915c2cfae16",
+      "afterSha256": "7dc6346fcc25a06d64df2dbaf29edc7408c8224acc594bc6f8b8cd4c296bcc71",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.68 - Items Hook Power and Rarity Resolver Domain\n\n### Changed\n\n- Completed batch 030 of the Stage 3.22 approved prefix: HookPowerPolicy and ItemRarityResolver as named ESM exports.\n- Three reviewed imports (HookQualityModifier and AuthoredItemRarityStrategy from batch 027, ItemRarityStrategyRegistry); the owner-created defaults are proven Domain compositions and the reviewed global exposure moved to the activation shim.\n- Retired the HookQualityModifier activation as an inert classic placeholder.\n- Extended the cumulative graph from 95 to 97 project modules and from 96 to 97 activation contracts, with 140 exact bridge relationships (5 added, 3 retired).\n- The next task is batch 031 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "92af399fd5b2d5ac9a7cc66d770e6eb1b42c4bf79c3d2a027d1b229006fa1dc7",
+      "afterSha256": "37fd76a83e875e46913bafdee05bf4441baede04895c800d02ae34b1140f4399",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.67\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.68\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "ffa2fb89c2eaefb9e8e19c7b38405df6255ee2d9c145fc9f9d6aba03afd1aefa",
+      "afterSha256": "9d0c27e10e2acad89a39271f08d092ff872f10748d0d219447e04577ed4ad391",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.67\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.68\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "de87348862a07aa190fb7306b96d4ffd8def4eab2f826e1d434a0077b8c24c4b",
+      "afterSha256": "7066769f022b8ac089fa1eb2870fe9310994542272d235994b39970f2c1f2835",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.67\",",
+          "to": "  \"version\": \"0.24.68\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "659b13d02d4d4e2efbaae0290345b0d8b5f40aab1942f1a54e42877fe84a4f35",
+      "afterSha256": "2aa5619c5c560b726d394d21cae170971fa1b7e3727f2a6431abfa3bf1edc718",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.67\",",
+          "to": "  \"version\": \"0.24.68\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "e03aedb5cdb3baa1a2b14bbf4ae32dd3236f556ca92fc92f67151c11fa726b4e",
+      "afterSha256": "73348d29eefdf724a9735f121a9f3f907e224fff240e936a456cf07d0b996d67",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.67\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.68\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"fishing-sector-angle-stamina-phase-domain\",",
+          "to": "  codename: \"items-hook-power-rarity-resolver-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the pole fight sector angle constraint and the stamina phase machine\",\n    \"Import their owner-created collaborators, two of them from batch 025\",\n    \"Move the guarded window exposure of StaminaPhaseMachine to the exact activation shim\",\n    \"Retire the stamina drain, pressure, transition and regeneration activations as inert classic placeholders\",\n    \"Preserve ninety-five project modules, ninety-six activations and one hundred thirty-eight bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the hook power policy and the item rarity resolver\",\n    \"Import the hook quality modifier and the authored rarity strategy from batch 027\",\n    \"Move the reviewed global exposure of HookPowerPolicy to the exact activation shim\",\n    \"Retire the hook quality modifier activation as an inert classic placeholder\",\n    \"Preserve ninety-seven project modules, ninety-seven activations and one hundred forty bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

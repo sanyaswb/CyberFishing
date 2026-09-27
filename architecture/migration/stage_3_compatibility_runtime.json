@@ -373,18 +373,6 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-2593d3b2fae5",
-      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
-      "sourceProvider": "src/core/items/quality/hook_quality_modifier.js",
-      "targetModule": "src/game/domain/items/quality/hook_quality_modifier.js",
-      "exportName": "HookQualityModifier",
-      "legacySymbol": "HookQualityModifier",
-      "legacyScriptIndex": 69,
-      "shimFile": "activations/069_hookqualitymodifier.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-28ccfbfa82e2",
       "owner": "stage-3.candidate-020-assemblies-43d77861",
       "sourceProvider": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
@@ -467,6 +455,18 @@
       "shimFile": "activations/203_weakesttacklelimitresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-3d418582cb27",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "sourceProvider": "src/core/items/hook/hook_power_policy.js",
+      "targetModule": "src/game/domain/items/hook/hook_power_policy.js",
+      "exportName": "HookPowerPolicy",
+      "legacySymbol": "HookPowerPolicy",
+      "legacyScriptIndex": 70,
+      "shimFile": "activations/070_hookpowerpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-3dcbed1b3310",
@@ -1405,6 +1405,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-feaf02eaca22",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "sourceProvider": "src/core/items/rarity/item_rarity_resolver.js",
+      "targetModule": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "exportName": "ItemRarityResolver",
+      "legacySymbol": "ItemRarityResolver",
+      "legacyScriptIndex": 49,
+      "shimFile": "activations/049_itemrarityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ffea5244c4bf",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/pole_fight_sector_geometry.js",
@@ -1451,6 +1463,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-027-items-e8f84667"
+    },
+    {
+      "activation": {
+        "id": "activation-2593d3b2fae5",
+        "owner": "stage-3.replan-322.batch-027-items-e8f84667",
+        "sourceProvider": "src/core/items/quality/hook_quality_modifier.js",
+        "targetModule": "src/game/domain/items/quality/hook_quality_modifier.js",
+        "exportName": "HookQualityModifier",
+        "legacySymbol": "HookQualityModifier",
+        "legacyScriptIndex": 69,
+        "shimFile": "activations/069_hookqualitymodifier.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-030-items-a3bf25f7"
     },
     {
       "activation": {
