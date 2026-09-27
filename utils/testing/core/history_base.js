@@ -15,8 +15,10 @@ const { INFORMATIONAL_DOCUMENTS } = require("../../architecture/informational_do
 const { DIRECTORY: REVIEW_QUEUE_DIRECTORY } = require("../../architecture/review_queue/review_queue_paths");
 // Stage artifact directories recorded between two batches, keyed by the first batch they precede.
 const { DIRECTORY: PREREQUISITE_DIRECTORY } = require("../../architecture/stage_three_prerequisites/core/prerequisite_ledger");
-// Prerequisite transitions are recorded after batch 034 or later.
-const STAGE_DIRECTORIES = Object.freeze({ [`${REVIEW_QUEUE_DIRECTORY}/`]: "033", [`${PREREQUISITE_DIRECTORY}/`]: "035" });
+const { STAGE_3_36 } = require("../../architecture/post_freeze/post_freeze_review_profile");
+// Prerequisite transitions are recorded after batch 034 or later; the Stage 3.36.0 review precedes 035.
+const STAGE_DIRECTORIES = Object.freeze({ [`${REVIEW_QUEUE_DIRECTORY}/`]: "033", [`${PREREQUISITE_DIRECTORY}/`]: "035",
+  [`${STAGE_3_36.directory}/`]: "035" });
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 
 class HistoryBase {

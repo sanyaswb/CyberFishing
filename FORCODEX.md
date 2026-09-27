@@ -26,6 +26,6 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Prerequisite backlog: tooling done (utils/architecture/stage-3-prerequisite.js); 001 AssemblyProfileRegistry and 002 ItemStatOverridePolicy config injection, 003–005 descriptor boundaries done. Next: Vector2 extraction, decompositions, then a parameterized repeated graph review and a new freeze.
+2. Stage 3.36.0 repeated graph review done (stage_3_36_graph_review/): 4 frozen batches 035–038 (7 modules unblocked by prerequisites 001–005). Next: batches 035–038 (v0.24.73–v0.24.76), then Vector2 extraction and the decompositions, then another review.
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

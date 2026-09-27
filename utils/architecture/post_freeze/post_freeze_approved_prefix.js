@@ -1,12 +1,14 @@
 "use strict";
 
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+
 const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 // Records the freeze decision of every candidate batch from the reviewed module evidence: a batch
 // is approved only when each module's ownership, identity, evaluation, configuration and hot-loop
 // evidence is sufficient and every dependency is completed or frozen before it.
 class PostFreezeReviewEvidenceBuilder {
-  build({ candidates, candidateRef, evidence, backlog, reviewedCollections }) {
+  build({ candidates, candidateRef, evidence, backlog, reviewedCollections, profile = STAGE_3_22 }) {
     const evidenceByPath = new Map(evidence.map(record => [record.currentPath, record]));
     const evidenceTaskByModule = new Map();
     for (const task of backlog.tasks.filter(item => item.kind === "freeze-evidence")) {
@@ -54,10 +56,10 @@ class PostFreezeReviewEvidenceBuilder {
       })).sort((left, right) => compare(left.currentPath, right.currentPath));
     return {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-review-evidence",
-      stage: "3.22",
+      kind: profile.kind("review-evidence"),
+      stage: profile.stage,
       status: "reviewed",
-      reviewOwner: "stage-3.22-post-freeze-graph-review",
+      reviewOwner: profile.reviewOwner,
       sourceCandidate: candidateRef,
       reviewedCollections: Object.entries(reviewedCollections)
         .map(([owner, contract]) => ({ owner, ...contract }))
@@ -81,8 +83,9 @@ class PostFreezeReviewEvidenceBuilder {
 }
 
 class PostFreezeApprovedPrefixBuilder {
+  // `base` (repeated reviews) names the adopted continuation this approved prefix extends.
   build({ candidates, candidateRef, reviewEvidence, reviewEvidenceRef, backlog, backlogRef,
-    completedPrefix, historical, baselineTopology }) {
+    completedPrefix, historical, baselineTopology, profile = STAGE_3_22, base = null }) {
     const decisions = new Map(reviewEvidence.batchDecisions.map(item => [item.batchId, item]));
     let open = true;
     const frozen = [];
@@ -115,14 +118,15 @@ class PostFreezeApprovedPrefixBuilder {
     const last = frozen.at(-1);
     return {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-approved-prefix",
-      stage: "3.22",
+      kind: profile.kind("approved-prefix"),
+      stage: profile.stage,
       status: "approved-prefix-frozen",
       runtimeMigrationAllowed: false,
       executionAdoption: {
         status: "not-adopted",
-        reason: "The Stage 3 execution state keeps the completed 001–021 prefix and its approved-plan fingerprint; executing batch 022 requires a separate reviewed adoption transition.",
+        reason: profile.adoptionReason,
       },
+      ...(base ? { base } : {}),
       completedPrefix,
       sourceCandidate: candidateRef,
       reviewEvidence: reviewEvidenceRef,
@@ -170,7 +174,7 @@ class PostFreezeApprovedPrefixBuilder {
 }
 
 class PostFreezeApprovedPrefixValidator {
-  validate({ approved, candidates, reviewEvidence, expectedDomainModuleCount }) {
+  validate({ approved, candidates, reviewEvidence, expectedDomainModuleCount, profile = STAGE_3_22 }) {
     const errors = [];
     const require = (condition, message) => { if (!condition) errors.push(message); };
     require(approved.runtimeMigrationAllowed === false, "approved prefix must not allow runtime migration");
@@ -196,7 +200,7 @@ class PostFreezeApprovedPrefixValidator {
     require(new Set(all).size === all.length, "approved coverage overlaps");
     require(all.length === expectedDomainModuleCount, "approved coverage is incomplete");
     require(coverage.unassigned.length === 0, "approved coverage has unassigned modules");
-    if (errors.length > 0) throw new Error(`Stage 3.22 approved prefix failed:\n- ${errors.join("\n- ")}`);
+    if (errors.length > 0) throw new Error(`Stage ${profile.stage} approved prefix failed:\n- ${errors.join("\n- ")}`);
     return true;
   }
 }

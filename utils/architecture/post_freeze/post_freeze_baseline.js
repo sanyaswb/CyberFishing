@@ -5,16 +5,20 @@ const { LegacyScriptOrderReader } = require("../migration/legacy_script_order_re
 const { StageTwoRuntimeScriptAliasResolver } = require("../migration/stage_two_runtime_script_alias_resolver");
 const { INPUTS, HISTORICAL, RUNTIME_OUTPUT_DIRECTORY } = require("./post_freeze_paths");
 const { sha256 } = require("./post_freeze_workspace");
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+const { StageThreeApprovedPlanSource } = require("../domain_batches/stage_three_approved_plan_source");
 
-const EXPECTED_TOPOLOGY = Object.freeze({ modules: 78, activations: 87, bridges: 139 });
+const EXPECTED_TOPOLOGY = STAGE_3_22.expectedTopology;
 
-// Records the exact starting point of the Stage 3.22 review: release, completed prefix, runtime
+// Records the exact starting point of a post-freeze review: release, completed prefix, runtime
 // topology and fingerprints of every input and historical artifact the review reads.
 class PostFreezeBaselineBuilder {
-  build({ workspace, commit }) {
+  build({ workspace, commit, profile = STAGE_3_22 }) {
     assert.match(commit, /^[0-9a-f]{40}$/u, "baseline commit must be a full SHA");
     const state = workspace.json(INPUTS.executionState);
-    const approved = workspace.json(HISTORICAL.approvedPlan);
+    const approved = profile.completedFromPlanSource
+      ? new StageThreeApprovedPlanSource({ read: file => workspace.bytes(file) }).load(workspace.json(INPUTS.executionState)).document
+      : workspace.json(HISTORICAL.approvedPlan);
     const runtime = workspace.json(INPUTS.runtimeContract);
     const registry = workspace.json(INPUTS.bridgeRegistry);
     const packageJson = workspace.json(INPUTS.packageJson);
@@ -28,7 +32,7 @@ class PostFreezeBaselineBuilder {
       activations: runtime.activationPositions.length,
       bridges: registry.bridges.length,
     };
-    assert.deepEqual(topology, EXPECTED_TOPOLOGY, "runtime topology differs from 78/87/139");
+    assert.deepEqual(topology, profile.expectedTopology, `runtime topology differs from ${Object.values(profile.expectedTopology).join("/")}`);
     const scripts = new LegacyScriptOrderReader(workspace.absolute(INPUTS.index), {
       scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(workspace.root),
     }).parse(workspace.text(INPUTS.index));
@@ -39,8 +43,8 @@ class PostFreezeBaselineBuilder {
     assert(runtimeOutput.every(item => item.path.startsWith(`${RUNTIME_OUTPUT_DIRECTORY}/`)));
     return {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-baseline",
-      stage: "3.22",
+      kind: profile.kind("baseline"),
+      stage: profile.stage,
       commit,
       releaseVersion: state.releaseVersion,
       executionState: {

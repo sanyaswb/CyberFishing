@@ -15,6 +15,9 @@ const { DomainSemanticAuditPipeline } = require("../domain_audit/domain_semantic
 const { DomainSemanticAuditPersistence } = require("../domain_audit/domain_semantic_audit_persistence");
 const { INPUTS, HISTORICAL } = require("./post_freeze_paths");
 const { sha256 } = require("./post_freeze_workspace");
+const espree = require("espree");
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+const { StageThreeApprovedPlanSource } = require("../domain_batches/stage_three_approved_plan_source");
 
 const OBSERVED_FIELDS = Object.freeze(["observed", "analysis"]);
 
@@ -22,14 +25,16 @@ const OBSERVED_FIELDS = Object.freeze(["observed", "analysis"]);
 // it, and re-runs the historical Domain audit pipeline over the current Domain scope: verified ESM
 // targets of the completed prefix plus the classic Domain modules that remain.
 class PostFreezeDomainAudit {
-  build({ workspace }) {
+  build({ workspace, profile = STAGE_3_22 }) {
     const manifest = workspace.json(INPUTS.manifest);
     const policyData = workspace.json(INPUTS.policy);
     const observed = new LiveObservationSnapshot().build({
       projectRoot: workspace.root, policy: new ArchitecturePolicy(policyData), manifest,
     });
     const drift = this.#drift(manifest, observed);
-    const approved = workspace.json(HISTORICAL.approvedPlan);
+    const approved = profile.completedFromPlanSource
+      ? new StageThreeApprovedPlanSource({ read: file => workspace.bytes(file) }).load(workspace.json(INPUTS.executionState)).document
+      : workspace.json(HISTORICAL.approvedPlan);
     const completedTargets = new Set(approved.batches.flatMap(batch =>
       batch.modules.map(module => module.targetPath)));
     const contract = new DomainAuditContract();
@@ -42,7 +47,9 @@ class PostFreezeDomainAudit {
       globalBaseline: workspace.json(INPUTS.globalBaseline),
       debtRegistry: workspace.json(INPUTS.debtRegistry),
     }).build();
-    const graph = new InducedDomainGraphBuilder().build({ manifest: observed, unifiedGraph: snapshot.graph });
+    const graph = new InducedDomainGraphBuilder(profile.esmImportFacts
+      ? { esmImportNames: item => this.#importedNames(workspace, item) } : {})
+      .build({ manifest: observed, unifiedGraph: snapshot.graph });
     const topology = new DomainDependencyTopologyAnalyzer().analyze(graph);
     const analyses = new DomainDependencyAuditPipeline({ projectRoot: workspace.root, policy: policyData })
       .observe({ manifest: observed, graph, topology });
@@ -57,11 +64,24 @@ class PostFreezeDomainAudit {
     assert.deepEqual(esmEntries, [...completedTargets].sort(),
       "ESM Domain entries must be exactly the completed prefix targets");
     const activationShimsByTarget = new Map();
-    for (const activation of workspace.json(INPUTS.runtimeContract).activationPositions) {
+    const runtimeContract = workspace.json(INPUTS.runtimeContract);
+    // A repeated review also counts retired placeholders and completed ESM importers as the
+    // symbol-less consumers of a completed target.
+    const shimActivations = profile.completedFromPlanSource
+      ? [...runtimeContract.activationPositions, ...(runtimeContract.retiredActivations || []).map(record => record.activation)]
+      : runtimeContract.activationPositions;
+    for (const activation of shimActivations) {
       if (!activationShimsByTarget.has(activation.targetModule)) {
         activationShimsByTarget.set(activation.targetModule, new Set());
       }
       activationShimsByTarget.get(activation.targetModule).add(activation.sourceProvider);
+    }
+    if (profile.esmImportFacts) {
+      for (const target of completedTargets) {
+        const sources = activationShimsByTarget.get(target) || new Set();
+        for (const importer of completedTargets) if (importer !== target) sources.add(importer);
+        activationShimsByTarget.set(target, sources);
+      }
     }
     new DomainAuditValidator(contract).validate(document, { expectedInventory: inventory,
       completedPrefix: { targets: completedTargets, activationShimsByTarget } });
@@ -69,8 +89,8 @@ class PostFreezeDomainAudit {
       observed, unifiedGraph: snapshot.graph, completedTargets,
       audit: {
         schemaVersion: 1,
-        kind: "cyber-fishing-stage-3-22-domain-audit",
-        stage: "3.22",
+        kind: profile.kind("domain-audit"),
+        stage: profile.stage,
         releaseVersion,
         observation: {
           scope: "all-src-modules",
@@ -91,6 +111,15 @@ class PostFreezeDomainAudit {
         document,
       },
     };
+  }
+
+  // Bindings of one static import declaration of a completed ESM target.
+  #importedNames(workspace, item) {
+    const tree = espree.parse(workspace.text(item.source), { ecmaVersion: "latest", sourceType: "module", loc: true });
+    const declaration = tree.body.find(node => node.type === "ImportDeclaration" &&
+      node.source.value === item.specifier && node.loc.start.line === item.location.line);
+    assert(declaration, `import declaration not found: ${item.source}:${item.location.line}`);
+    return declaration.specifiers.map(specifier => specifier.imported?.name || specifier.local.name);
   }
 
   #drift(manifest, observed) {

@@ -45,30 +45,37 @@ class StageThreeApprovedPlanSource {
       return Object.freeze({ document: historical, sha256: historicalSha256, continuation: null,
         references: [{ path: HISTORICAL_PLAN, sha256: historicalSha256 }], domainAuditPath: HISTORICAL_DOMAIN_AUDIT });
     }
-    const continuationBytes = this.read(reference.path);
-    assert.equal(sha256(continuationBytes), reference.sha256, "continuation plan fingerprint is stale");
-    let continuation = JSON.parse(continuationBytes.toString("utf8"));
-    let extension = null;
-    if (continuation.kind === EXTENSION_KIND) {
-      extension = continuation;
-      const baseBytes = this.read(extension.base.path);
-      assert.equal(sha256(baseBytes), extension.base.sha256, "extension base continuation fingerprint is stale");
-      continuation = JSON.parse(baseBytes.toString("utf8"));
+    // Follow the chain of links (freeze extensions and repeated-review approved prefixes) down to the
+    // Stage 3.22 approved prefix; every link names its base by fingerprint.
+    const links = [];
+    let current = { reference, document: this.#document(reference, "continuation plan fingerprint is stale") };
+    while (current.document.kind !== CONTINUATION_KIND) {
+      assert(this.#isLink(current.document), "continuation plan kind is invalid");
+      links.unshift(current);
+      const base = current.document.base;
+      current = { reference: base, document: this.#document(base, "extension base continuation fingerprint is stale") };
     }
+    const root = current;
+    let continuation = root.document;
     this.#validateContinuation(continuation, historical, historicalSha256);
-    if (extension) {
-      this.#validateExtension(extension, continuation, historical);
-      continuation = { ...continuation, batches: [...continuation.batches, ...extension.batches],
-        extension: { path: reference.path, sha256: reference.sha256 } };
+    for (const link of links) {
+      this.#validateExtension(link.document, continuation, historical);
+      continuation = { ...continuation, batches: [...continuation.batches, ...link.document.batches],
+        extension: { path: link.reference.path, sha256: link.reference.sha256 } };
     }
+    const review = [...links].reverse().find(link => link.document.kind !== EXTENSION_KIND);
+    const domainAuditPath = review
+      ? `${review.document.sourceCandidate.path.split("/").slice(0, -1).join("/")}/domain_audit.json`
+      : CONTINUATION_DOMAIN_AUDIT;
     const batches = [...historical.batches];
     const retiredBy = this.#retiredBy();
     const continuationIds = new Set(continuation.batches.map(batch => batch.id));
-    // A base plan read at an earlier checkpoint also knows its review queue: those batches execute
-    // only through a later freeze extension, whose retirements are not yet part of this plan.
-    const queuedIds = new Set(extension ? [] : (continuation.reviewQueue || []).map(batch => batch.id));
+    // A plan read at an earlier checkpoint sees retirements of later batches (from a newer
+    // continuation link) in the live runtime contract; they are not yet part of this plan.
+    const lastOrder = historical.batches.length + continuation.batches.length;
+    const later = id => Number(/\.batch-(\d{3})-/u.exec(id)?.[1]) > lastOrder;
     for (const retiring of retiredBy.values()) {
-      assert(continuationIds.has(retiring) || queuedIds.has(retiring), `activation retired by an unknown batch: ${retiring}`);
+      assert(continuationIds.has(retiring) || later(retiring), `activation retired by an unknown batch: ${retiring}`);
     }
     // The frozen cumulative set is proven against the recorded fingerprint; activations retired by
     // this or an earlier continuation batch are then removed from the effective cumulative set.
@@ -81,16 +88,31 @@ class StageThreeApprovedPlanSource {
       batches.push(this.#normalize(batch, batches.at(-1), frozenCumulative, retiredSoFar));
     }
     const document = { ...historical, batches, continuation: { path: reference.path, sha256: reference.sha256 } };
+    // One link keeps the original single-extension fingerprint; longer chains list every link.
+    const planSha256 = links.length === 0 ? { historical: historicalSha256, continuation: reference.sha256 }
+      : links.length === 1 ? { historical: historicalSha256, continuation: root.reference.sha256, extension: reference.sha256 }
+        : { historical: historicalSha256, continuation: root.reference.sha256, links: links.map(link => link.reference.sha256) };
     return Object.freeze({
       document,
-      sha256: sha256(Buffer.from(JSON.stringify(extension
-        ? { historical: historicalSha256, continuation: extension.base.sha256, extension: reference.sha256 }
-        : { historical: historicalSha256, continuation: reference.sha256 }))),
+      sha256: sha256(Buffer.from(JSON.stringify(planSha256))),
       continuation,
       references: [{ path: HISTORICAL_PLAN, sha256: historicalSha256 },
-        ...(extension ? [{ path: extension.base.path, sha256: extension.base.sha256 }] : []), { ...reference }],
-      domainAuditPath: CONTINUATION_DOMAIN_AUDIT,
+        { path: root.reference.path, sha256: root.reference.sha256 },
+        ...links.map(link => ({ path: link.reference.path, sha256: link.reference.sha256 }))],
+      domainAuditPath,
     });
+  }
+
+  #document(reference, message) {
+    const bytes = this.read(reference.path);
+    assert.equal(sha256(bytes), reference.sha256, message);
+    return JSON.parse(bytes.toString("utf8"));
+  }
+
+  // A chain link: a review-queue freeze extension or the approved prefix of a repeated review.
+  #isLink(document) {
+    return Boolean(document?.base) && (document.kind === EXTENSION_KIND ||
+      /^cyber-fishing-stage-3-\d+-approved-prefix$/u.test(document.kind));
   }
 
   // Historical batch N ran as Stage 3.N. An adopted continuation starts after its own audit-only
@@ -173,17 +195,18 @@ class StageThreeApprovedPlanSource {
     });
   }
 
-  // True when `candidate` names a freeze extension whose base is exactly the `base` reference.
+  // True when `candidate` names a chain link (freeze extension or repeated-review approved prefix)
+  // whose base is exactly the `base` reference.
   extendsContinuation(candidate, base) {
     let document;
     try { document = JSON.parse(this.read(candidate.path).toString("utf8")); } catch { return false; }
-    return document.kind === EXTENSION_KIND && isDeepStrictEqual(document.base, base);
+    return this.#isLink(document) && isDeepStrictEqual(document.base, base);
   }
 
   // A freeze extension follows the complete base continuation: every historical and base batch is
   // completed and its frozen batches continue the order.
   #validateExtension(extension, continuation, historical) {
-    assert.equal(extension.status, "approved-extension-frozen", "freeze extension is not frozen");
+    assert(["approved-extension-frozen", "approved-prefix-frozen"].includes(extension.status), "freeze extension is not frozen");
     assert.equal(extension.runtimeMigrationAllowed, false);
     assert.deepEqual(extension.completedPrefix.completedBatchIds,
       [...historical.batches, ...continuation.batches].map(batch => batch.id),

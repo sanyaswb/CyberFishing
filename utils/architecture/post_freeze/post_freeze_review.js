@@ -1,9 +1,9 @@
 "use strict";
 
 const assert = require("node:assert/strict");
-const { INPUTS, HISTORICAL, ARTIFACTS } = require("./post_freeze_paths");
+const { INPUTS, HISTORICAL } = require("./post_freeze_paths");
 const { sha256, serialize } = require("./post_freeze_workspace");
-const { PostFreezeBaselineBuilder, EXPECTED_TOPOLOGY } = require("./post_freeze_baseline");
+const { PostFreezeBaselineBuilder } = require("./post_freeze_baseline");
 const { PostFreezeDomainAudit } = require("./post_freeze_domain_audit");
 const { PostFreezeLogicalGraphBuilder } = require("./post_freeze_logical_graph");
 const { PostFreezeEligibilityClassifier } = require("./post_freeze_eligibility");
@@ -13,27 +13,33 @@ const {
   REVIEWED_COLLECTIONS,
 } = require("./post_freeze_evidence_review");
 const { PostFreezePrerequisiteBacklogBuilder } = require("./post_freeze_prerequisite_backlog");
-const { PostFreezeCandidatePlanner, FIRST_ORDER, ID_PREFIX } = require("./post_freeze_candidate_plan");
+const { PostFreezeCandidatePlanner } = require("./post_freeze_candidate_plan");
 const {
   PostFreezeReviewEvidenceBuilder,
   PostFreezeApprovedPrefixBuilder,
   PostFreezeApprovedPrefixValidator,
 } = require("./post_freeze_approved_prefix");
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+const { StageThreeApprovedPlanSource } = require("../domain_batches/stage_three_approved_plan_source");
 
-const PRELIMINARY = Object.freeze({ candidate: 28, prerequisiteBlocked: 9, deferred: 29 });
-const DOMAIN_MODULE_COUNT = 135;
+const PRELIMINARY = STAGE_3_22.preliminary;
+const DOMAIN_MODULE_COUNT = STAGE_3_22.domainModuleCount;
 
-// Composes the Stage 3.22 post-freeze graph review. Every artifact is built in memory and
+// Composes a post-freeze graph review (the Stage 3.22 profile by default). Every artifact is built in memory and
 // references its inputs by the SHA-256 of their exact serialized bytes, so a replay either
 // reproduces every artifact byte-for-byte or reports the first stale link.
 class PostFreezeReview {
   constructor({
+    profile = STAGE_3_22,
+    reviewedCollections = REVIEWED_COLLECTIONS,
     domainAudit = new PostFreezeDomainAudit(),
     logicalGraph = new PostFreezeLogicalGraphBuilder(),
     eligibility = new PostFreezeEligibilityClassifier(),
-    backlog = new PostFreezePrerequisiteBacklogBuilder(),
-    planner = new PostFreezeCandidatePlanner(),
+    backlog = new PostFreezePrerequisiteBacklogBuilder({ profile }),
+    planner = new PostFreezeCandidatePlanner({ profile }),
   } = {}) {
+    this.profile = profile;
+    this.reviewedCollections = reviewedCollections;
     this.domainAudit = domainAudit;
     this.logicalGraph = logicalGraph;
     this.eligibility = eligibility;
@@ -42,6 +48,8 @@ class PostFreezeReview {
   }
 
   build({ workspace, commit }) {
+    const profile = this.profile;
+    const ARTIFACTS = profile.artifacts;
     const artifacts = new Map();
     const emit = (path, document) => {
       const bytes = serialize(document);
@@ -49,9 +57,9 @@ class PostFreezeReview {
       return { path, sha256: sha256(bytes) };
     };
     const input = file => workspace.fingerprint(file);
-    const baseline = new PostFreezeBaselineBuilder().build({ workspace, commit });
+    const baseline = new PostFreezeBaselineBuilder().build({ workspace, commit, profile });
     const baselineRef = emit(ARTIFACTS.baseline, baseline);
-    const audit = this.domainAudit.build({ workspace });
+    const audit = this.domainAudit.build({ workspace, profile });
     const auditRef = emit(ARTIFACTS.domainAudit, { ...audit.audit, baseline: baselineRef });
     const runtimeContract = workspace.json(INPUTS.runtimeContract);
     const bridgeRegistry = workspace.json(INPUTS.bridgeRegistry);
@@ -66,8 +74,8 @@ class PostFreezeReview {
       completedTargets: audit.completedTargets });
     const graphRef = emit(ARTIFACTS.graphReview, {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-graph-review",
-      stage: "3.22",
+      kind: profile.kind("graph-review"),
+      stage: profile.stage,
       releaseVersion: baseline.releaseVersion,
       sources: { baseline: baselineRef, domainAudit: auditRef,
         runtimeContract: input(INPUTS.runtimeContract), bridgeRegistry: input(INPUTS.bridgeRegistry) },
@@ -80,10 +88,10 @@ class PostFreezeReview {
       providerAmbiguities: providers.ambiguous,
       reassessment: {
         summary: eligibility.summary,
-        preliminary: { ...PRELIMINARY, status: "observation-not-limit",
-          matchesObservation: eligibility.summary.candidate === PRELIMINARY.candidate &&
-            eligibility.summary.prerequisiteBlocked === PRELIMINARY.prerequisiteBlocked &&
-            eligibility.summary.deferred === PRELIMINARY.deferred },
+        preliminary: { ...profile.preliminary, status: "observation-not-limit",
+          matchesObservation: eligibility.summary.candidate === profile.preliminary.candidate &&
+            eligibility.summary.prerequisiteBlocked === profile.preliminary.prerequisiteBlocked &&
+            eligibility.summary.deferred === profile.preliminary.deferred },
         records: eligibility.records.map(record => ({
           currentPath: record.currentPath,
           targetPath: record.targetPath,
@@ -99,6 +107,7 @@ class PostFreezeReview {
       },
     });
     const evidence = new PostFreezeEvidenceReviewer({
+      reviewedCollections: this.reviewedCollections,
       requiredHotLoopEvidence: eligibility.policy.performanceInvariant.requiredHotLoopEvidence,
     }).review({ modules: eligibility.modules, categories: eligibility.categories,
       providerIndex: providers.index, readSource });
@@ -106,14 +115,15 @@ class PostFreezeReview {
       providerAmbiguities: providers.ambiguous, readSource, sourceExists: file => workspace.exists(file) });
     const backlogDocument = {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-prerequisite-backlog",
-      stage: "3.22",
+      kind: profile.kind("prerequisite-backlog"),
+      stage: profile.stage,
       status: "open",
       sources: { graphReview: graphRef },
       refactoringPerformed: false,
       summary: backlog.summary,
       tasks: backlog.tasks,
       coverage: backlog.coverage,
+      ...(backlog.resolvedTaskIds ? { resolvedTaskIds: backlog.resolvedTaskIds } : {}),
     };
     const backlogRef = emit(ARTIFACTS.prerequisiteBacklog, backlogDocument);
     const state = workspace.json(INPUTS.executionState);
@@ -125,22 +135,24 @@ class PostFreezeReview {
       executionState: input(INPUTS.executionState),
       completedBatchIds: [...state.completedBatchIds],
       targets: [...audit.completedTargets].sort(),
+      ...(profile.completedFromPlanSource ? { plan: new StageThreeApprovedPlanSource({ read: file => workspace.bytes(file) })
+        .load(state).references } : {}),
     };
     const candidates = {
       schemaVersion: 1,
-      kind: "cyber-fishing-stage-3-22-candidate-batches",
-      stage: "3.22",
+      kind: profile.kind("candidate-batches"),
+      stage: profile.stage,
       status: "candidate",
       runtimeMigrationAllowed: false,
       sources: { graphReview: graphRef, prerequisiteBacklog: backlogRef,
         candidatePolicy: input(INPUTS.candidatePolicy) },
-      idScheme: { prefix: ID_PREFIX, firstOrder: FIRST_ORDER,
-        format: `${ID_PREFIX}<order>-<target-area>-<sha8 of sorted module paths>` },
+      idScheme: { prefix: profile.idPrefix, firstOrder: profile.firstOrder,
+        format: `${profile.idPrefix}<order>-<target-area>-<sha8 of sorted module paths>` },
       policy: eligibility.policy.clustering,
       ordering: "evidence-ready-clusters-first-then-dependency-depth-eligibility-risk-component-area",
       completedPrefix: { approvedPlan: completedPrefix.approvedPlan, completedBatchIds: completedPrefix.completedBatchIds },
       historicalCandidates: { ...input(HISTORICAL.candidates), status: "reference-only",
-        note: "Historical candidates 022–040 remain reference material and are not replaced." },
+        note: profile.historicalCandidatesNote },
       summary: {
         remainingModuleCount: eligibility.summary.remainingModuleCount,
         candidateBatchCount: plan.batches.length,
@@ -157,7 +169,7 @@ class PostFreezeReview {
     };
     const candidateRef = emit(ARTIFACTS.candidateBatches, candidates);
     const reviewEvidence = new PostFreezeReviewEvidenceBuilder().build({ candidates, candidateRef, evidence,
-      backlog: backlogDocument, reviewedCollections: REVIEWED_COLLECTIONS });
+      backlog: backlogDocument, reviewedCollections: this.reviewedCollections, profile });
     const reviewRef = emit(ARTIFACTS.reviewEvidence, reviewEvidence);
     const approved = new PostFreezeApprovedPrefixBuilder().build({ candidates, candidateRef, reviewEvidence,
       reviewEvidenceRef: reviewRef, backlog: backlogDocument, backlogRef, completedPrefix,
@@ -168,11 +180,13 @@ class PostFreezeReview {
         reviewEvidence: input(HISTORICAL.reviewEvidence),
         approvedPlan: input(HISTORICAL.approvedPlan),
       },
-      baselineTopology: { ...EXPECTED_TOPOLOGY } });
+      baselineTopology: { ...profile.expectedTopology }, profile,
+      base: profile.completedFromPlanSource ? state.continuationPlan : null });
     new PostFreezeApprovedPrefixValidator().validate({ approved, candidates, reviewEvidence,
-      expectedDomainModuleCount: DOMAIN_MODULE_COUNT });
+      expectedDomainModuleCount: profile.domainModuleCount, profile });
     emit(ARTIFACTS.approvedPrefix, approved);
-    assert.equal(audit.audit.domainScope.entries, DOMAIN_MODULE_COUNT, "Domain scope must contain 135 modules");
+    assert.equal(audit.audit.domainScope.entries, profile.domainModuleCount,
+      `Domain scope must contain ${profile.domainModuleCount} modules`);
     return {
       artifacts,
       summary: this.#summary({ audit, graph, eligibility, backlog, candidates, approved }),

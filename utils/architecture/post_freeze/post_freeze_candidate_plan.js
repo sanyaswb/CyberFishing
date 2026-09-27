@@ -7,8 +7,10 @@ const { DomainCandidateBatchDesigner } = require("../domain_batches/domain_candi
 const { PostFreezePlanValidator } = require("./post_freeze_plan_validator");
 
 const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
-const FIRST_ORDER = 22;
-const ID_PREFIX = "stage-3.replan-322.batch-";
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+
+const FIRST_ORDER = STAGE_3_22.firstOrder;
+const ID_PREFIX = STAGE_3_22.idPrefix;
 const AREA_SCENARIOS = Object.freeze({
   assemblies: ["inventory-v2 assembly preparation, refill and persistence round-trip"],
   fishing: ["game-cycle-check: light fish victory with spinning, feeder and pole",
@@ -23,8 +25,9 @@ const AREA_SCENARIOS = Object.freeze({
 // readiness ordering, replan identifiers, imports/exports and cumulative deltas from the current
 // 78/87/139 runtime topology.
 class PostFreezeCandidatePlanner {
-  constructor({ firstOrder = FIRST_ORDER, validator = new PostFreezePlanValidator() } = {}) {
-    this.firstOrder = firstOrder;
+  constructor({ profile = STAGE_3_22, validator = new PostFreezePlanValidator({ profile }) } = {}) {
+    this.profile = profile;
+    this.firstOrder = profile.firstOrder;
     this.validator = validator;
   }
 
@@ -42,7 +45,7 @@ class PostFreezeCandidatePlanner {
     const renamed = ordered.map((batch, index) => {
       const order = this.firstOrder + index;
       const digest = crypto.createHash("sha256").update(JSON.stringify(batch.modulePaths)).digest("hex").slice(0, 8);
-      return { ...batch, order, id: `${ID_PREFIX}${String(order).padStart(3, "0")}-${batch.targetArea}-${digest}`,
+      return { ...batch, order, id: `${this.profile.idPrefix}${String(order).padStart(3, "0")}-${batch.targetArea}-${digest}`,
         sourceClusterId: batch.id };
     });
     const design = new DomainCandidateBatchDesigner({ policy }).design({
@@ -101,9 +104,13 @@ class PostFreezeCandidatePlanner {
   }
 
   #enrich({ design, renamed, readiness, logicalGraph, runtimeContract, bridgeRegistry, completedBatchIds, moduleByPath }) {
+    // A repeated review continues the frozen cumulative sets, which keep retired activations.
+    const activations = this.profile.completedFromPlanSource
+      ? [...runtimeContract.activationPositions, ...(runtimeContract.retiredActivations || []).map(record => record.activation)]
+      : runtimeContract.activationPositions;
     const baseline = {
-      activationIds: runtimeContract.activationPositions.map(item => item.id),
-      activationTargets: runtimeContract.activationPositions.map(item => item.targetModule),
+      activationIds: activations.map(item => item.id),
+      activationTargets: activations.map(item => item.targetModule),
       bridges: bridgeRegistry.bridges.map(bridge => ({ id: bridge.id, source: bridge.source,
         bridge: bridge.bridge, target: bridge.target, origin: "registry" })),
     };

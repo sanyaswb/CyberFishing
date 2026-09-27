@@ -1,12 +1,18 @@
 "use strict";
 
 const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
-const ID_PATTERN = /^stage-3\.replan-322\.batch-(\d{3})-[a-z0-9-]+-[0-9a-f]{8}$/u;
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+
+const ID_PATTERN = STAGE_3_22.idPattern;
 
 // Validates the Stage 3.22 candidate plan against the logical graph: identifiers, batch size,
 // atomic SCCs, dependency order, candidate-only membership, unique ownership and complete,
 // non-overlapping coverage of every remaining Domain module.
 class PostFreezePlanValidator {
+  constructor({ profile = STAGE_3_22 } = {}) {
+    this.profile = profile;
+  }
+
   validate({ plan, eligibility, logicalGraph, runtimeContract, firstOrder, maximumModulesPerBatch }) {
     const errors = [];
     const require = (condition, message) => { if (!condition) errors.push(message); };
@@ -14,7 +20,7 @@ class PostFreezePlanValidator {
     const nodes = new Map(logicalGraph.nodes.map(node => [node.currentPath, node]));
     const batchOf = new Map();
     plan.batches.forEach((batch, index) => {
-      const match = ID_PATTERN.exec(batch.id);
+      const match = this.profile.idPattern.exec(batch.id);
       require(Boolean(match), `candidate id is invalid: ${batch.id}`);
       require(batch.order === firstOrder + index, `candidate order is not contiguous: ${batch.id}`);
       require(match && Number(match[1]) === batch.order, `candidate id number differs from order: ${batch.id}`);
@@ -51,7 +57,7 @@ class PostFreezePlanValidator {
     this.#ownership(plan, runtimeContract, require);
     this.#coverage(plan, eligibility, require);
     if (errors.length > 0) {
-      throw new Error(`Stage 3.22 candidate plan failed:\n- ${[...new Set(errors)].join("\n- ")}`);
+      throw new Error(`Stage ${this.profile.stage} candidate plan failed:\n- ${[...new Set(errors)].join("\n- ")}`);
     }
     return true;
   }

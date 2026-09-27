@@ -4,8 +4,11 @@ const { InducedDomainGraph } = require("./induced_domain_graph");
 const { DomainScopeSelector } = require("./domain_scope_selector");
 
 class InducedDomainGraphBuilder {
-  constructor({ targetBoundary = "game-domain" } = {}) {
+  // `esmImportNames(provenance)` (optional) names the bindings of one static-import provenance item;
+  // with it, ESM-to-ESM import edges carry their imported symbols and the eager (link-time) phase.
+  constructor({ targetBoundary = "game-domain", esmImportNames = null } = {}) {
     this.targetBoundary = targetBoundary;
+    this.esmImportNames = esmImportNames;
     this.scopeSelector = new DomainScopeSelector({ targetBoundary });
   }
 
@@ -83,13 +86,17 @@ class InducedDomainGraphBuilder {
     const matchingConfirmed = confirmed.filter((item) =>
       item.resolution === "confirmed" && item.target === edge.target
     );
+    const esmImports = this.esmImportNames
+      ? edge.provenance.filter((item) => item.mechanism === "static-import") : [];
     const symbols = this.#sortedUnique([
       ...matchingConfirmed.map((item) => item.symbol),
       ...edge.provenance.flatMap((item) => item.symbols || []),
+      ...esmImports.flatMap((item) => this.esmImportNames(item)),
     ].filter((item) => typeof item === "string" && item.length > 0));
     const executionPhases = this.#sortedUnique([
       ...matchingConfirmed.map((item) => item.executionPhase),
       ...edge.provenance.map((item) => item.executionPhase),
+      ...(esmImports.length > 0 ? ["eager"] : []),
     ].filter((item) => typeof item === "string" && item.length > 0));
     return {
       source: edge.source,

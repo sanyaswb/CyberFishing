@@ -8,8 +8,9 @@ const unique = values => [...new Set(values)].sort(compare);
 const position = node => `${node.loc.start.line}:${node.loc.start.column + 1}`;
 const BACKLOG_KINDS = new Set(["architecture-prerequisite", "boundary-extraction", "config-di",
   "domain-dependency", "evidence-review"]);
-const TASK_PREFIX = "stage-3.22.prerequisite.";
-const GRAPH_REVIEW_REPEAT = "Repeat the Stage 3.22 post-freeze graph review (fresh observation, " +
+const { STAGE_3_22 } = require("./post_freeze_review_profile");
+
+const graphReviewRepeat = stage => `Repeat the Stage ${stage} post-freeze graph review (fresh observation, ` +
   "logical graph, eligibility and candidate plan) after the task lands and before any dependent " +
   "cluster is frozen or executed.";
 
@@ -133,6 +134,10 @@ const EVIDENCE_TASKS = Object.freeze({
 });
 
 class PostFreezePrerequisiteBacklogBuilder {
+  constructor({ profile = STAGE_3_22 } = {}) {
+    this.profile = profile;
+  }
+
   build({ eligibility, evidence, unifiedGraph, providerAmbiguities, readSource, sourceExists }) {
     const records = new Map(eligibility.records.map(record => [record.currentPath, record]));
     const modules = new Map(eligibility.modules.map(module => [module.currentPath, module]));
@@ -146,8 +151,14 @@ class PostFreezePrerequisiteBacklogBuilder {
       }
     }
     const tasks = [];
+    const resolvedTaskIds = [];
     for (const definition of GRAPH_TASKS) {
       const covered = [...pending.values()].filter(item => this.#matches(definition.match, item));
+      // A repeated review records the tasks that earlier prerequisite transitions resolved.
+      if (covered.length === 0 && this.profile.completedFromPlanSource) {
+        resolvedTaskIds.push(`${this.profile.taskPrefix}${definition.slug}`);
+        continue;
+      }
       if (covered.length === 0) {
         throw new Error(`Reviewed prerequisite task matches no open prerequisite: ${definition.slug}`);
       }
@@ -156,7 +167,7 @@ class PostFreezePrerequisiteBacklogBuilder {
       const provider = definition.match.module;
       const consumers = this.#consumers(unifiedGraph, provider, definition.symbols);
       tasks.push({
-        id: `${TASK_PREFIX}${definition.slug}`,
+        id: `${this.profile.taskPrefix}${definition.slug}`,
         kind: definition.kind,
         graphChanging: true,
         status: "open",
@@ -173,7 +184,7 @@ class PostFreezePrerequisiteBacklogBuilder {
         targetBoundaries: { ...definition.targetBoundaries },
         compatibilityRequirements: [...definition.compatibility],
         checks: [...definition.checks],
-        graphReviewRepeatCondition: { trigger: definition.graphTrigger, action: GRAPH_REVIEW_REPEAT },
+        graphReviewRepeatCondition: { trigger: definition.graphTrigger, action: graphReviewRepeat(this.profile.stage) },
       });
     }
     const deferred = open.filter(record => record.category === "deferred");
@@ -192,7 +203,7 @@ class PostFreezePrerequisiteBacklogBuilder {
       const related = tasks.filter(task => task.modules.some(item => memberPaths.has(item))).map(task => task.id);
       const blockers = unique(members.flatMap(record => record.eligibility.reasonCodes));
       tasks.push({
-        id: `${TASK_PREFIX}${group.slug}`,
+        id: `${this.profile.taskPrefix}${group.slug}`,
         kind: "responsibility-decomposition",
         graphChanging: true,
         status: "open",
@@ -222,7 +233,7 @@ class PostFreezePrerequisiteBacklogBuilder {
           "game-cycle-check"],
         graphReviewRepeatCondition: {
           trigger: "A decomposition removes a deferral blocker or changes the Domain dependency graph.",
-          action: GRAPH_REVIEW_REPEAT,
+          action: graphReviewRepeat(this.profile.stage),
         },
       });
     }
@@ -230,7 +241,8 @@ class PostFreezePrerequisiteBacklogBuilder {
       throw new Error(`Prerequisites without a backlog task: ${[...pending.keys()].map(key => key.replace("\u0000", " ")).join(", ")}`);
     }
     tasks.push(...this.#evidenceTasks(evidence));
-    return this.#coverage(tasks, open, eligibility);
+    const result = this.#coverage(tasks, open, eligibility);
+    return this.profile.completedFromPlanSource ? { ...result, resolvedTaskIds } : result;
   }
 
   #matches(match, item) {
@@ -302,7 +314,7 @@ class PostFreezePrerequisiteBacklogBuilder {
     }
     return [...byTask.values()].sort((left, right) => compare(left.definition.slug, right.definition.slug))
       .map(({ definition, modules, findings }) => ({
-        id: `${TASK_PREFIX}${definition.slug}`,
+        id: `${this.profile.taskPrefix}${definition.slug}`,
         kind: "freeze-evidence",
         graphChanging: false,
         status: "open",
@@ -312,7 +324,7 @@ class PostFreezePrerequisiteBacklogBuilder {
         checks: [...definition.checks],
         graphReviewRepeatCondition: {
           trigger: "Only if collecting the evidence changes source or the dependency graph.",
-          action: "Repeat the Stage 3.22 freeze review for the affected clusters; repeat the graph review when the trigger applies.",
+          action: `Repeat the Stage ${this.profile.stage} freeze review for the affected clusters; repeat the graph review when the trigger applies.`,
         },
       }));
   }

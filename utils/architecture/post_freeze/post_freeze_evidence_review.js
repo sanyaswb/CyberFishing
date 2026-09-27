@@ -30,6 +30,24 @@ const REVIEWED_COLLECTIONS = Object.freeze({
     allowedOperations: ["get", "has", "keys", "set"], cacheLifetime: "instance-lifetime-registry" }),
 });
 
+// Collection contracts added by the Stage 3.36 repeated review for the candidates unblocked by the
+// prerequisite transitions: two registry maps and two derived memo caches cleared explicitly.
+const REVIEWED_COLLECTIONS_3_36 = Object.freeze({
+  ...REVIEWED_COLLECTIONS,
+  "AssemblyProfileRegistry#profileIdByFallbackType": Object.freeze({ className: "AssemblyProfileRegistry",
+    field: "#profileIdByFallbackType", scope: "instance", collection: "Map", allowedOperations: ["get", "has", "set"],
+    cacheLifetime: "instance-lifetime-registry-index" }),
+  "AssemblyProfileRegistry#profiles": Object.freeze({ className: "AssemblyProfileRegistry",
+    field: "#profiles", scope: "instance", collection: "Map", allowedOperations: ["get", "has", "set"],
+    cacheLifetime: "instance-lifetime-registry" }),
+  "ItemCatalogBaselineRegistry#cache": Object.freeze({ className: "ItemCatalogBaselineRegistry",
+    field: "#cache", scope: "instance", collection: "Map", allowedOperations: ["clear", "get", "set"],
+    cacheLifetime: "instance-lifetime-derived-memo-with-explicit-clear" }),
+  "ItemProgressionResolver#cache": Object.freeze({ className: "ItemProgressionResolver",
+    field: "#cache", scope: "instance", collection: "Map", allowedOperations: ["clear", "get", "set"],
+    cacheLifetime: "instance-lifetime-derived-memo-with-explicit-clear" }),
+});
+
 // Reviews the ownership, identity, evaluation-effect, configuration, cache-lifetime and hot-loop
 // evidence of every remaining Domain module. Missing or ambiguous evidence is a finding; a module
 // with findings is not sufficient for an approved freeze.
@@ -241,4 +259,5 @@ class PostFreezeProviderIndex {
   }
 }
 
-module.exports = { PostFreezeEvidenceReviewer, PostFreezeProviderIndex, REVIEWED_COLLECTIONS };
+module.exports = { PostFreezeEvidenceReviewer, PostFreezeProviderIndex, REVIEWED_COLLECTIONS,
+  REVIEWED_COLLECTIONS_3_36 };

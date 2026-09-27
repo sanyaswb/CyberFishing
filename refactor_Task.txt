@@ -4,7 +4,7 @@
 - **Current release version:** `v0.24.72`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Prerequisite backlog` — next: the remaining non-trivial prerequisites (ItemStatOverridePolicy injection chain, descriptor boundaries, Vector2 extraction, decompositions) and the parameterized repeated graph review; see “Next steps” below
+- **Next step:** `Stage 3.36 — Batch 035 (stage-3.replan-336.batch-035-items-48cb5bbc, ItemConditionResolver)`, the first batch of the Stage 3.36.0 approved prefix (035–038); see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -221,7 +221,8 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [x] 003–005 Item-condition, item-freshness and bait-effectiveness descriptor boundaries: the Domain resolvers receive the presentation descriptor factory from GameCompositionRoot (dependency inversion, as ItemBoundedMetricResolver already did), so consumers receive identical descriptors; 3 debts resolved; parity over profiles, items, exposures and fish/bait pairs. Tests bind factories via `utils/testing/runtime/constructor_defaults.js`.
    - [ ] Vector2 extraction to `src/engine/math/vector2.js` (CacheManager/InputManager stay in core.js).
    - [ ] Six responsibility decompositions.
-   - [ ] Parameterized repeated graph review (generalize the Stage 3.22 post-freeze review: stage label, topology, completed plan via the plan source, first order, id prefix, output directory) and a new freeze.
+   - [x] Stage 3.36.0 repeated graph review (`node utils/architecture/stage-3-36-graph-review.js`, artifacts in `architecture/migration/stage_3_36_graph_review/`): the Stage 3.22 review tooling is parameterized by `PostFreezeReviewProfile` (3.22 replay byte-identical); the repeated review reads the completed prefix through the plan source, counts retired placeholders and completed ESM importers, derives ESM import facts, records resolved backlog tasks and adds four reviewed collection contracts. Result: 7 candidates → 4 frozen batches 035–038 (ItemConditionResolver; EffectiveItemStatsResolver + ItemStatOverridePolicy; BaitEffectivenessResolver + ItemFreshnessResolver + ItemProgressionResolver; AssemblyProfileRegistry), 2 prerequisite-blocked (Vector2), 29 deferred, 5 backlog tasks resolved, 7 open. The plan source follows continuation chains (3.36 prefix → 3.34 extension → 3.22 prefix) and takes the newest review's domain audit.
+   - [ ] Batches 035–038 (`v0.24.73`–`v0.24.76`).
   Original backlog line: resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.
 

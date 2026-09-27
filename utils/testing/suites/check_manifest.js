@@ -749,6 +749,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-3-36-graph-review",
+      title: "Stage 3.36.0 repeated post-freeze graph review replays byte-identically and chains its approved prefix",
+      file: "utils/architecture/stage-3-36-graph-review.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-prerequisite-001",
       title: "Stage 3 prerequisite 001: AssemblyProfileRegistry config injection replays byte-identically with parity, resolved debt and clean guards",
       file: "utils/architecture/stage-3-prerequisite.js",
