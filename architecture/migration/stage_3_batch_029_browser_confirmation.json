@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-029-browser-confirmation",
+  "batchId": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+  "releaseVersion": "0.24.66",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-27T08:26:22.946Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute): game-cycle check re-executed without seals passed (spinning victory: rod hold force, player-hold tension, a light fish landed); built-in browser at http://localhost:4173 (npm run dev) loaded the location with the equipped rod (cast distance 12.8 m, depth slider); a cast was not started in the browser because no bait was attached, so fight and stamina behavior are covered by the game-cycle scenarios; retired globals StaminaDrainCalculator, StaminaPressureResolver, StaminaTransitionResolver and StaminaRegenCalculator are undefined and the two batch-029 activations are functions.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop (fight, stamina and landing scenarios) re-executed without seals and a built-in-browser load of the game with screenshots and console counts.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_029_acceptance_pass.json",
+    "sha256": "662b4a97c0974ad2d1bab0bf58ab3dcd075caee4ffff04a921f753d35dc9926e"
+  },
+  "historicalSummaryPreserved": true
+}

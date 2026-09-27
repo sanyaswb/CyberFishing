@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-029-acceptance",
+  "stage": "3.30.8",
+  "batchId": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+  "releaseVersion": "0.24.66",
+  "plannedReleaseVersion": "0.24.67",
+  "recordedAt": "2026-09-27T08:26:22.946Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_029_automated_acceptance.json",
+    "sha256": "e6cff4f02bbc916d70a4291784e59b2a9c97d709551b923c26167276ca6ad21a",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 196,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32 (Windows 11 Pro 10.0.26200), Node v24.13.0",
+      "source": "node utils/run-checks.js (complete catalog, 4 jobs) on the working tree: 145 checks executed, 51 accepted by content-addressed seals (every traced input byte-identical to a passing run; history-only checks up to 025 in the link-checked reconstruction of release 0.24.63); 3050.85 s."
+    },
+    "supplementary": {
+      "sealing": "utils/testing/CHECKS.md; executed 145, sealed 51"
+    },
+    "summary": "Full 196/196 (145 executed, 51 sealed) for batch 029 (95 modules / 96 activations / 138 bridges, 4 retired activations).",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 196,
+      "architecture": 69,
+      "quick": 44
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "automated-game-cycle-and-built-in-browser-screenshots",
+    "userStatement": "PASS (automated substitute): game-cycle check re-executed without seals passed (spinning victory: rod hold force, player-hold tension, a light fish landed); built-in browser at http://localhost:4173 (npm run dev) loaded the location with the equipped rod (cast distance 12.8 m, depth slider); a cast was not started in the browser because no bait was attached, so fight and stamina behavior are covered by the game-cycle scenarios; retired globals StaminaDrainCalculator, StaminaPressureResolver, StaminaTransitionResolver and StaminaRegenCalculator are undefined and the two batch-029 activations are functions.",
+    "context": "Automated substitute per the owner's 2026-09-27 authorization: game-cycle loop (fight, stamina and landing scenarios) re-executed without seals and a built-in-browser load of the game with screenshots and console counts.",
+    "acceptanceBasis": "Owner-authorized automated substitute (2026-09-27): game-cycle loop re-executed without seals and the game loaded in the built-in browser with screenshots and an instrumented console read.",
+    "ownerAuthorization": "Great, I’m heading to work now and leaving you to carry on with the work. Run the test for PASS yourself—run the loop, then take a screenshot; if everything looks good, keep going; if not, fix it and proceed without needing my approval. I’m giving you full control—stick to the plan outlined in CLODE and the refactor task.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_029_live_runtime_validation.json",
+      "sha256": "dab6524ae1c30274bbd9273d69211d79535be75c91e7b2712ebed3172056b149"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_029_observation_reconciliation.json",
+      "sha256": "fa968d3bfbde7b91d40d0c282053dccbe05d14ee2475f407e7b86abc9a1ef798"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "6d310278edb0cab5f6b250ddbf544aeb52d4ef869196d6b69521d517efac22a8"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "73ce55955a0b0178a5bfeecdfaeff3677ece2a51b8d731829069b76b40b7ee5e"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "6d14995b259a114e2faaa42e907f775b80a529783a57af18e2fb37f836f0d119"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "8409b4a62621fc7b85dd100ad73f35430e1a1222199344da8cbdd92f44a0eaef"
+    },
+    {
+      "path": "index.html",
+      "sha256": "7be9dbbdd0ee9af6bb937fa7c57e16704a9fca2016210037f23b6f0595501eeb"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.30.9 — Release Closure v0.24.67"
+}

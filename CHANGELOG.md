@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.67 - Fishing Sector Angle and Stamina Phase Domain
+
+### Changed
+
+- Completed batch 029 of the Stage 3.22 approved prefix: PoleFightSectorAngleConstraint and StaminaPhaseMachine as named ESM exports.
+- Five reviewed imports (PoleFightSectorConstraint and StaminaPressureResolver from batch 025, StaminaDrainCalculator, StaminaRegenCalculator, StaminaTransitionResolver); the owner-created defaults are proven Domain compositions and the guarded window exposure moved to the activation shim.
+- Retired the StaminaDrainCalculator, StaminaPressureResolver, StaminaTransitionResolver and StaminaRegenCalculator activations as inert classic placeholders.
+- Extended the cumulative graph from 93 to 95 project modules and from 98 to 96 activation contracts, with 138 exact bridge relationships (2 added, 5 retired).
+- The next task is batch 030 preflight.
+
 ## v0.24.66 - Assemblies Item Assembly Service Domain
 
 ### Changed

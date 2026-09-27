@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const vm = require("node:vm");
+const espree = require("espree");
 const { pathToFileURL } = require("node:url");
 const { ActivationShimRenderer } = require("../../../build/compat_runtime/activation_shim");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
@@ -36,9 +37,22 @@ class StageThreeFocusedParityCheck {
         fs.writeFileSync(file, text);
         return file;
       };
+      // A completed ESM owner is placed with its own static imports (transitively), exactly as the
+      // cumulative runtime resolves it.
+      const placed = new Set();
+      const placeWithImports = relative => {
+        if (placed.has(relative)) return;
+        placed.add(relative);
+        const text = planning.read(relative);
+        place(relative, text);
+        for (const statement of espree.parse(text, { ecmaVersion: "latest", sourceType: "module" }).body) {
+          if (statement.type !== "ImportDeclaration") continue;
+          placeWithImports(path.posix.normalize(path.posix.join(path.posix.dirname(relative), statement.source.value)));
+        }
+      };
       for (const module of plan.scope.modules) {
         const source = planning.read(module.currentPath);
-        for (const record of module.importsAllowed) place(record.from, planning.read(record.from));
+        for (const record of module.importsAllowed) placeWithImports(record.from);
         const target = new RepresentationOnlyReviewedEsmTarget().project({ source,
           currentPath: module.currentPath, targetPath: module.targetPath,
           exports: module.exports, sourceSha256: module.sourceSha256,

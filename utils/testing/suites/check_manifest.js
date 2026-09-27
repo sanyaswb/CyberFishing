@@ -692,6 +692,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.29.0–3.29.7 assemblies item assembly service domain migration with earlier-batch imports and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "028", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-029-architecture",
+      title: "Stage 3.30.0–3.30.7 fishing sector angle and stamina phase domain migration with earlier-batch imports, retirements and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "029", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

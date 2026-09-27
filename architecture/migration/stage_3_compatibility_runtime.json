@@ -409,18 +409,6 @@
       "removalStage": "stage-3"
     },
     {
-      "id": "activation-2eff98891b2d",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "sourceProvider": "src/core/fishing/stamina/stamina_drain_calculator.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
-      "exportName": "StaminaDrainCalculator",
-      "legacySymbol": "StaminaDrainCalculator",
-      "legacyScriptIndex": 106,
-      "shimFile": "activations/106_staminadraincalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-3496b09d5f7c",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/exact_item_signature_policy.js",
@@ -661,6 +649,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-64ebf8ced768",
+      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "sourceProvider": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "targetModule": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "exportName": "PoleFightSectorAngleConstraint",
+      "legacySymbol": "PoleFightSectorAngleConstraint",
+      "legacyScriptIndex": 136,
+      "shimFile": "activations/136_polefightsectorangleconstraint.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-6ba241908a4c",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/dependency_contract_validator.iife.js",
@@ -889,18 +889,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-89d032a4a1e8",
-      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
-      "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
-      "exportName": "StaminaPressureResolver",
-      "legacySymbol": "StaminaPressureResolver",
-      "legacyScriptIndex": 105,
-      "shimFile": "activations/105_staminapressureresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-8f8220d288e5",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/landing_lift_tension_calculator.js",
@@ -913,14 +901,14 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-9398dc78c283",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "sourceProvider": "src/core/fishing/stamina/stamina_transition_resolver.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
-      "exportName": "StaminaTransitionResolver",
-      "legacySymbol": "StaminaTransitionResolver",
-      "legacyScriptIndex": 108,
-      "shimFile": "activations/108_staminatransitionresolver.js",
+      "id": "activation-95251e788d44",
+      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "sourceProvider": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "targetModule": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "exportName": "StaminaPhaseMachine",
+      "legacySymbol": "StaminaPhaseMachine",
+      "legacyScriptIndex": 109,
+      "shimFile": "activations/109_staminaphasemachine.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
     },
@@ -1285,18 +1273,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-dca4cdb154de",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
-      "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
-      "exportName": "StaminaRegenCalculator",
-      "legacySymbol": "StaminaRegenCalculator",
-      "legacyScriptIndex": 107,
-      "shimFile": "activations/107_staminaregencalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-dcb3cecb345c",
       "owner": "stage-3.candidate-007-fishing-bb8b3939",
       "sourceProvider": "src/core/fishing/line_radial_movement_splitter.js",
@@ -1478,6 +1454,57 @@
     },
     {
       "activation": {
+        "id": "activation-2eff98891b2d",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/stamina/stamina_drain_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "exportName": "StaminaDrainCalculator",
+        "legacySymbol": "StaminaDrainCalculator",
+        "legacyScriptIndex": 106,
+        "shimFile": "activations/106_staminadraincalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "id": "activation-89d032a4a1e8",
+        "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+        "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+        "exportName": "StaminaPressureResolver",
+        "legacySymbol": "StaminaPressureResolver",
+        "legacyScriptIndex": 105,
+        "shimFile": "activations/105_staminapressureresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "id": "activation-9398dc78c283",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/stamina/stamina_transition_resolver.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "exportName": "StaminaTransitionResolver",
+        "legacySymbol": "StaminaTransitionResolver",
+        "legacyScriptIndex": 108,
+        "shimFile": "activations/108_staminatransitionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
         "id": "activation-9c5651e4f765",
         "owner": "stage-3.candidate-005-fishing-45d0c7ce",
         "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
@@ -1492,6 +1519,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-025-fishing-9bcfae5e"
+    },
+    {
+      "activation": {
+        "id": "activation-dca4cdb154de",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
+        "targetModule": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "exportName": "StaminaRegenCalculator",
+        "legacySymbol": "StaminaRegenCalculator",
+        "legacyScriptIndex": 107,
+        "shimFile": "activations/107_staminaregencalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
     },
     {
       "activation": {

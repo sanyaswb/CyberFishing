@@ -1,1 +1,1 @@
-globalThis.StaminaRegenCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/stamina/stamina_regen_calculator.js"]["StaminaRegenCalculator"];
+// Retired Stage 3 activation activation-dca4cdb154de: StaminaRegenCalculator is served only through ESM imports of src/game/domain/fishing/stamina/stamina_regen_calculator.js.

@@ -638,6 +638,8 @@ class StageOneClosureValidator {
         "Items Metric Registry, Quality Modifiers and Authored Rarity Domain",
       "stage-3.replan-322.batch-028-assemblies-f4be469e":
         "Assemblies Item Assembly Service Domain",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba":
+        "Fishing Sector Angle and Stamina Phase Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

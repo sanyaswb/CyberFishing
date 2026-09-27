@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.66";
+const CURRENT_PROJECT_VERSION = "0.24.67";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,14 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "assemblies-item-assembly-service-domain",
+  codename: "fishing-sector-angle-stamina-phase-domain",
   updatedAt: "2026-09-27",
   notes: Object.freeze([
-    "Migrate the item assembly service and its domain error",
-    "Import the assembly reader and stacking policy from earlier batches of this continuation",
-    "Keep the owner-created default collaborators as proven Domain compositions",
-    "Preserve ninety-three project modules, ninety-eight activations and one hundred forty-one bridges",
+    "Migrate the pole fight sector angle constraint and the stamina phase machine",
+    "Import their owner-created collaborators, two of them from batch 025",
+    "Move the guarded window exposure of StaminaPhaseMachine to the exact activation shim",
+    "Retire the stamina drain, pressure, transition and regeneration activations as inert classic placeholders",
+    "Preserve ninety-five project modules, ninety-six activations and one hundred thirty-eight bridges",
   ]),
 });
 

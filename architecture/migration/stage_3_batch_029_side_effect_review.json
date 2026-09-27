@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-029-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+  "stage": "3.30.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.66",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "bbb04598fc0d244dd82df7a2c442133a1e1133c05230086ec2d53c609d9f8544"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "sourceSha256": "a4105ba8e5aa585a2af8cda400f6a61ecc13cce764ad9ffecb7f9951dcb4a9c4",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+        "sourceSha256": "a4105ba8e5aa585a2af8cda400f6a61ecc13cce764ad9ffecb7f9951dcb4a9c4"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-64ebf8ced768",
+          "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+          "sourceProvider": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+          "targetModule": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+          "exportName": "PoleFightSectorAngleConstraint",
+          "legacySymbol": "PoleFightSectorAngleConstraint",
+          "legacyScriptIndex": 136,
+          "shimFile": "activations/136_polefightsectorangleconstraint.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "sourceSha256": "aa21064b25918456017b57aaa7ce6be8a85b3b7e7f8ce31f01a07cbe8cf47fe5",
+      "contract": {
+        "kind": "guarded-window-class-exposure",
+        "symbol": "StaminaPhaseMachine",
+        "location": "259:3"
+      },
+      "review": {
+        "kind": "guarded-window-class-exposure",
+        "currentPath": "src/core/fishing/stamina/stamina_phase_machine.js",
+        "sourceSha256": "aa21064b25918456017b57aaa7ce6be8a85b3b7e7f8ce31f01a07cbe8cf47fe5",
+        "symbol": "StaminaPhaseMachine",
+        "location": "259:3",
+        "guardLocation": "258:1",
+        "assignmentTarget": "window.StaminaPhaseMachine",
+        "evaluationCount": 1,
+        "globalPropertiesAddedWithoutWindow": [],
+        "windowPropertiesAdded": [
+          "StaminaPhaseMachine"
+        ],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "b9d7f3b4fdcc5c825bd53cfba74fa770e1bb49cda010359d4fa0a6f2cb4f77f2",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "259:3",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-95251e788d44",
+          "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+          "sourceProvider": "src/core/fishing/stamina/stamina_phase_machine.js",
+          "targetModule": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+          "exportName": "StaminaPhaseMachine",
+          "legacySymbol": "StaminaPhaseMachine",
+          "legacyScriptIndex": 109,
+          "shimFile": "activations/109_staminaphasemachine.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "classification": "safe",
+      "evidenceFingerprint": "914451b688f07cd83e98e359b440501b68185cb3bdfd6d26a63d2b7b9bfeba31"
+    },
+    {
+      "module": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "classification": "safe",
+      "evidenceFingerprint": "54641e8b3f8fec5956e0b5fcd7cccbb49614f9499a5d099026126d66e86578cb"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.30.0-live-preflight-and-graph-audit"
+}

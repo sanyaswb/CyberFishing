@@ -1011,6 +1011,22 @@
       ]
     },
     {
+      "id": "bridge-711daa09e743",
+      "bridge": "src/core/fishing/stamina/stamina_phase_machine.js",
+      "source": "src/core/fishing/stamina/stamina_balance_frame.js",
+      "target": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "reason": "Preserve the exact pole fight sector angle and stamina phase consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "StaminaPhaseMachine",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -1118,22 +1134,6 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyPath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8139e8003a2a",
-      "bridge": "src/core/fishing/stamina/stamina_pressure_resolver.js",
-      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "target": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
-      "reason": "Preserve the exact fishing sector, stamina pressure and retrieve consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "StaminaPressureResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -1611,22 +1611,6 @@
       ]
     },
     {
-      "id": "bridge-a880353d8927",
-      "bridge": "src/core/fishing/stamina/stamina_transition_resolver.js",
-      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "StaminaTransitionResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a9380f14d75c",
       "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
       "source": "src/app/bootstrap.js",
@@ -1775,22 +1759,6 @@
       ]
     },
     {
-      "id": "bridge-c53a729057bb",
-      "bridge": "src/core/fishing/stamina/stamina_drain_calculator.js",
-      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "StaminaDrainCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-c5b20a842e06",
       "bridge": "src/core/fishing/simple_fight_force_calculator.js",
       "source": "src/systems/fish_force_system.js",
@@ -1850,22 +1818,6 @@
       "globalProviders": [
         {
           "symbol": "ItemMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d1647c1fa147",
-      "bridge": "src/core/fishing/stamina/stamina_regen_calculator.js",
-      "source": "src/core/fishing/stamina/stamina_phase_machine.js",
-      "target": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "StaminaRegenCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -2079,22 +2031,6 @@
       ]
     },
     {
-      "id": "bridge-ec39039f0d1c",
-      "bridge": "src/core/fishing/pole_fight_sector_constraint.js",
-      "source": "src/core/fishing/pole_fight_sector_angle_constraint.js",
-      "target": "src/game/domain/fishing/pole_fight_sector_constraint.js",
-      "reason": "Preserve the exact fishing sector, stamina pressure and retrieve consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PoleFightSectorConstraint",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-ed528b9594f7",
       "bridge": "src/core/items/progression/numeric_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -2138,6 +2074,22 @@
       "globalProviders": [
         {
           "symbol": "ItemProgressionDescriptor",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ef59a7fecbec",
+      "bridge": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "reason": "Preserve the exact pole fight sector angle and stamina phase consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PoleFightSectorAngleConstraint",
           "mechanism": "global-this-property"
         }
       ]
