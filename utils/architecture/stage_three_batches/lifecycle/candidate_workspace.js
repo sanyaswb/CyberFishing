@@ -55,8 +55,8 @@ class StageThreeCandidateWorkspace {
     for (const [provider, shims] of byProvider) {
       this.write(provider, shims.join(""));
     }
-    for (const activation of retiredActivations) {
-      this.write(activation.sourceProvider, new RetiredActivationPlaceholder().render(activation));
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retiredActivations)) {
+      this.write(sourceProvider, new RetiredActivationPlaceholder().renderProvider(activations));
     }
     const pending = new PendingTargetManifestTransition({
       policy: app.json("architecture/module_architecture.json"), prebuild,

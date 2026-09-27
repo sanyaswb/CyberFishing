@@ -14070,14 +14070,56 @@
         "legacyLoadOrder": 149,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/assemblies/assembly_state.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "currentArea": "core/assemblies",
+      "observed": {
+        "legacyLoadOrder": 150,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "AssemblyPreparationStatus",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "AssemblyState",
+              "symbol": "AssemblyStateRepository",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -14112,8 +14154,8 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/assemblies/assembly_state.js",
-        "migrationWave": 1
+        "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -14129,103 +14171,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/core/assemblies/assembly_state_repository.js",
-      "currentArea": "core/assemblies",
-      "observed": {
-        "legacyLoadOrder": 150,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "AssemblyStateRepository",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "AssemblyPreparationStatus",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "AssemblyState",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Map",
-            "Object",
-            "RangeError"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "domain-behavior"
-        ],
-        "targetBoundary": "game-domain",
-        "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "AssemblyPreparationStatus",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/assembly_state.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "AssemblyState",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/assembly_state.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/assemblies/assembly_state.js",
-              "symbols": [
-                "AssemblyPreparationStatus",
-                "AssemblyState"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -35919,6 +35864,58 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/assemblies/assembly_state.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_state_repository.js",
+      "currentArea": "game/domain/assemblies",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Map",
+            "Object",
+            "RangeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
         "migrationWave": 1
       },
       "analysis": {

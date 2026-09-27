@@ -720,6 +720,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.33.0–3.33.7 items effective rarity resolver domain migration with earlier-batch import and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "032", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-033-architecture",
+      title: "Stage 3.34.0–3.34.7 assemblies assembly state repository domain migration with freeze-extension adoption, retirements and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "033", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

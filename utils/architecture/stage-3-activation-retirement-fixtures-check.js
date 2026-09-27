@@ -74,9 +74,12 @@ class ActivationRetirementFixtures {
 
   placeholder() {
     const placeholder = new RetiredActivationPlaceholder();
+    // A classic source holds one placeholder line per retired activation it served.
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(this.retired.map(item => item.activation))) {
+      placeholder.validateProvider({ code: fs.readFileSync(path.join(this.root, sourceProvider), "utf8"), activations });
+    }
     for (const record of this.retired) {
       const activation = record.activation;
-      placeholder.validate({ code: fs.readFileSync(path.join(this.root, activation.sourceProvider), "utf8"), activation });
       const shim = `globalThis.${activation.legacySymbol} = undefined;\n`;
       assert.throws(() => placeholder.validate({ code: shim, activation }), /differs from contract/u);
       assert.throws(() => placeholder.validate({ code: placeholder.render(activation) + shim, activation }),
@@ -95,7 +98,37 @@ class ActivationRetirementFixtures {
       `<head>\n<script src="${active.sourceProvider}"></script>\n</head>\n`);
     assert.throws(() => projection.index("<head></head>", this.runtime.output.directory, [active]), /not unique/u);
     assert.throws(() => projection.index(html + tag, this.runtime.output.directory, [active]), /not unique/u);
-    return 3;
+    return 3 + this.sharedSource();
+  }
+
+  // A classic source that served several activations retires as a whole: one placeholder line per
+  // activation, one restored classic tag, and no partial retirement of the source.
+  sharedSource() {
+    const byProvider = new Map();
+    for (const activation of this.runtime.activationPositions) {
+      byProvider.set(activation.sourceProvider, [...(byProvider.get(activation.sourceProvider) || []), activation]);
+    }
+    const shared = [...byProvider.values()].find(group => group.length > 1);
+    assert(shared, "fixtures need an active source with several activations");
+    const projection = new ActivationRetirementProjection();
+    const placeholder = new RetiredActivationPlaceholder();
+    const directory = this.runtime.output.directory;
+    const code = placeholder.renderProvider(shared);
+    assert.equal(code.split("\n").length - 1, shared.length);
+    placeholder.validateProvider({ code, activations: [...shared].reverse() });
+    assert.throws(() => placeholder.validateProvider({ code: placeholder.render(shared[0]), activations: shared }),
+      /differs from contract/u);
+    assert.throws(() => placeholder.renderProvider([shared[0], this.runtime.activationPositions
+      .find(item => item.sourceProvider !== shared[0].sourceProvider)]), /mixes sources/u);
+    const tags = shared.map(activation => `<script src="${directory}${activation.shimFile}"></script>`);
+    const html = `<head>\n  <script src="a.js"></script>\n  ${tags.join("\n")}\n  <script src="b.js"></script>\n</head>\n`;
+    assert.equal(projection.index(html, directory, [...shared].reverse()),
+      `<head>\n  <script src="a.js"></script>\n  <script src="${shared[0].sourceProvider}"></script>\n` +
+      "  <script src=\"b.js\"></script>\n</head>\n");
+    assert.throws(() => projection.contract(this.runtime, shared.slice(1), "fixture"), /same source/u);
+    const retired = projection.contract(this.runtime, shared, "fixture");
+    assert(shared.every(activation => !retired.activationPositions.some(item => item.id === activation.id)));
+    return 6;
   }
 
   // Only activations whose every holding bridge is migrated by the batch may retire.

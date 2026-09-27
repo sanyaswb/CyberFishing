@@ -27,6 +27,49 @@ class RetiredActivationPlaceholder {
     }
     return Object.freeze({ id: activation.id, sourceProvider: activation.sourceProvider });
   }
+
+  // One classic source that served several activations holds one comment line per activation, in
+  // activation-id order; a source with one activation renders exactly as `render`.
+  renderProvider(activations) {
+    const provider = RetiredActivationPlaceholder.provider(activations);
+    return RetiredActivationPlaceholder.ordered(activations).map((activation) => {
+      if (activation.sourceProvider !== provider) throw new Error(`Retired placeholder mixes sources: ${activation.id}`);
+      return this.render(activation);
+    }).join("");
+  }
+
+  validateProvider({ code, activations }) {
+    const provider = RetiredActivationPlaceholder.provider(activations);
+    if (code !== this.renderProvider(activations)) {
+      throw new Error(`Retired activation placeholder differs from contract: ${provider}`);
+    }
+    if (espree.parse(code, { ecmaVersion: "latest", sourceType: "script" }).body.length !== 0) {
+      throw new Error(`Retired activation placeholder contains statements: ${provider}`);
+    }
+    return RetiredActivationPlaceholder.ordered(activations)
+      .map((activation) => Object.freeze({ id: activation.id, sourceProvider: activation.sourceProvider }));
+  }
+
+  // Retiring activations grouped by classic source, in source order.
+  static byProvider(activations) {
+    const groups = new Map();
+    for (const activation of activations) {
+      groups.set(activation.sourceProvider, [...(groups.get(activation.sourceProvider) || []), activation]);
+    }
+    return [...groups.entries()].sort(([left], [right]) => left.localeCompare(right))
+      .map(([sourceProvider, members]) => ({ sourceProvider, activations: RetiredActivationPlaceholder.ordered(members) }));
+  }
+
+  static ordered(activations) {
+    return [...activations].sort((left, right) => left.id.localeCompare(right.id));
+  }
+
+  static provider(activations) {
+    if (!Array.isArray(activations) || activations.length === 0) {
+      throw new Error("Retired placeholder needs at least one activation");
+    }
+    return activations[0].sourceProvider;
+  }
 }
 
 // Projects a batch's activation retirement onto the runtime contract and the classic index.
@@ -37,6 +80,13 @@ class ActivationRetirementProjection {
       const active = runtime.activationPositions.find((item) => item.id === activation.id);
       if (!active || JSON.stringify(active) !== JSON.stringify(activation)) {
         throw new Error(`Retired activation is not the active contract: ${activation.id}`);
+      }
+    }
+    // A classic source retires as a whole: its placeholder replaces every activation it served.
+    for (const activation of runtime.activationPositions) {
+      if (!retiring.has(activation.id) &&
+        retiredActivations.some((retired) => retired.sourceProvider === activation.sourceProvider)) {
+        throw new Error(`Retirement leaves an active activation of the same source: ${activation.id}`);
       }
     }
     if (retiring.size === 0) return runtime;
@@ -52,14 +102,25 @@ class ActivationRetirementProjection {
     };
   }
 
+  // Each retired source gets back its single classic tag: the first of its shim tags becomes the
+  // source tag and the source's other shim tags (one legacy position) are removed with their line.
   index(html, outputDirectory, retiredActivations) {
     let result = html;
-    for (const activation of retiredActivations) {
-      const shimTag = `<script src="${outputDirectory}${activation.shimFile}"></script>`;
-      if (result.split(shimTag).length !== 2) {
-        throw new Error(`Retired activation shim tag is not unique: ${activation.id}`);
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retiredActivations)) {
+      const tags = activations.map((activation) => {
+        const shimTag = `<script src="${outputDirectory}${activation.shimFile}"></script>`;
+        if (result.split(shimTag).length !== 2) {
+          throw new Error(`Retired activation shim tag is not unique: ${activation.id}`);
+        }
+        return { shimTag, position: result.indexOf(shimTag) };
+      }).sort((left, right) => left.position - right.position);
+      const [first, ...rest] = tags;
+      for (const { shimTag } of rest) {
+        const line = new RegExp(`\\r?\\n[ \\t]*${shimTag.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}`, "gu");
+        if ([...result.matchAll(line)].length !== 1) throw new Error(`Retired shim tag is not on its own line: ${shimTag}`);
+        result = result.replace(line, "");
       }
-      result = result.replace(shimTag, () => `<script src="${activation.sourceProvider}"></script>`);
+      result = result.replace(first.shimTag, () => `<script src="${sourceProvider}"></script>`);
     }
     return result;
   }

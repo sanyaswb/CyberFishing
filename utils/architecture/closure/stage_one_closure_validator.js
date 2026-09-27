@@ -646,6 +646,8 @@ class StageOneClosureValidator {
         "Fishing Stamina Balance Frame Domain",
       "stage-3.replan-322.batch-032-items-096b3398":
         "Items Effective Rarity Resolver Domain",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292":
+        "Assemblies Assembly State Repository Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -697,10 +699,16 @@ class StageOneClosureValidator {
     const selectedStageThreeBatch = (stageThreeApprovedPlan?.batches || [])
       .filter((batch) => completedStageThree.has(batch.id))
       .at(-1);
-    // A retired activation keeps its script slot as an inert classic placeholder.
+    // A retired classic source keeps one script slot as an inert placeholder for all of the
+    // activations it served (each active activation has its own shim script).
+    const retiredIds = new Set(selectedStageThreeBatch?.compatibility?.cumulativeRetiredActivationIds || []);
+    const retiredRecords = retiredIds.size === 0 ? [] : (this.#readJson(
+      "architecture/migration/stage_3_compatibility_runtime.json",
+    ).retiredActivations || []).filter((record) => retiredIds.has(record.activation.id));
+    this.#require(retiredRecords.length === retiredIds.size, "retired activation ledger differs from the plan", errors);
     const cumulativeActivationCount =
       (selectedStageThreeBatch?.compatibility?.cumulativeActivationIds?.length || 0) +
-      (selectedStageThreeBatch?.compatibility?.cumulativeRetiredActivationIds?.length || 0);
+      new Set(retiredRecords.map((record) => record.activation.sourceProvider)).size;
     const additionalActivationScripts = Math.max(
       0,
       cumulativeActivationCount - activeWrapperCount - stageThreeTargetCount,

@@ -64,8 +64,11 @@ class StageThreeApprovedPlanSource {
     const batches = [...historical.batches];
     const retiredBy = this.#retiredBy();
     const continuationIds = new Set(continuation.batches.map(batch => batch.id));
+    // A base plan read at an earlier checkpoint also knows its review queue: those batches execute
+    // only through a later freeze extension, whose retirements are not yet part of this plan.
+    const queuedIds = new Set(extension ? [] : (continuation.reviewQueue || []).map(batch => batch.id));
     for (const retiring of retiredBy.values()) {
-      assert(continuationIds.has(retiring), `activation retired by an unknown batch: ${retiring}`);
+      assert(continuationIds.has(retiring) || queuedIds.has(retiring), `activation retired by an unknown batch: ${retiring}`);
     }
     // The frozen cumulative set is proven against the recorded fingerprint; activations retired by
     // this or an earlier continuation batch are then removed from the effective cumulative set.

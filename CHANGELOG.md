@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.24.71 - Assemblies Assembly State Repository Domain
+
+### Changed
+
+- Stage 3.34.0 review-queue freeze: collection-identity evidence (AssemblyStateRepository#states, atomic local replacement and a persistence round trip) and hot-loop evidence (six fishing modules: static member review and traced game-cycle fight scenarios) froze batches 033 and 034 as an extension of the Stage 3.22 approved prefix.
+- Completed batch 033: AssemblyStateRepository as a named ESM export with two reviewed completed-prefix imports (AssemblyState, AssemblyPreparationStatus) and four owner-created composition identities.
+- Retired the AssemblyState and AssemblyPreparationStatus activations as inert classic placeholders (no classic reader remains).
+- Extended the cumulative graph from 99 to 100 project modules and from 96 to 95 activation contracts, with 140 exact bridge relationships (2 added, 1 retired).
+- The next task is batch 034 preflight (hot-loop fishing modules against the recorded game-cycle traces).
+
 ## v0.24.70 - Items Effective Rarity Resolver Domain
 
 ### Changed

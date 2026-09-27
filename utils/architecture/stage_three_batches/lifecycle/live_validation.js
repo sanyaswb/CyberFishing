@@ -63,9 +63,11 @@ class StageThreeBatchLiveValidation {
       .map(record => record.activation);
     assert.deepEqual(retired.map(activation => activation.id), PROFILE.executionProfile.expectedRetiredActivationIds || []);
     const html = this.bytes(PATHS.index).toString("utf8");
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retired)) {
+      new RetiredActivationPlaceholder().validateProvider({
+        code: this.bytes(sourceProvider).toString("utf8"), activations });
+    }
     const retiredActivations = retired.map(activation => {
-      new RetiredActivationPlaceholder().validate({
-        code: this.bytes(activation.sourceProvider).toString("utf8"), activation });
       assert.equal(html.split(`<script src="${activation.sourceProvider}"></script>`).length, 2,
         `Retired slot is not the classic placeholder: ${activation.id}`);
       assert(!html.includes(activation.shimFile), `Retired shim is still loaded: ${activation.id}`);

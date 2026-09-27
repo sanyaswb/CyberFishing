@@ -20,7 +20,6 @@ const ROOT = path.resolve(__dirname, "../..");
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 const bytes = file => fs.readFileSync(path.join(ROOT, file));
 const json = file => JSON.parse(bytes(file).toString("utf8"));
-const text = file => bytes(file).toString("utf8");
 const reference = file => ({ path: file, sha256: sha(bytes(file)) });
 const clone = value => JSON.parse(JSON.stringify(value));
 let cases = 0;
@@ -35,7 +34,7 @@ const replaceOnce = (source, from, to) => {
 
 function identityCases() {
   const { currentPath, className, collection } = REVIEWED_COLLECTION;
-  const source = text(currentPath);
+  const source = checkpointSource(currentPath);
   const review = (candidate, overrides = {}) => new StageThreeStateIdentityReview().review({ source: candidate,
     currentPath, className, collections: [{ ...collection, allowedOperations: [...collection.allowedOperations],
       ...overrides }] });
@@ -62,7 +61,7 @@ function identityCases() {
 function hotLoopCases() {
   const currentPath = "src/core/fishing/tackle_stress_accumulator.js";
   const className = "TackleStressAccumulator";
-  const source = text(currentPath).replaceAll("\r\n", "\n");
+  const source = checkpointSource(currentPath).replaceAll("\r\n", "\n");
   const review = candidate => new StageThreeHotLoopSourceReview().review({ source: candidate, currentPath, className });
   assert(Object.values(review(source).proofs).every(Boolean), "baseline hot-loop proofs must hold");
   const anchor = "    const stressConfig = config.stress || {};";

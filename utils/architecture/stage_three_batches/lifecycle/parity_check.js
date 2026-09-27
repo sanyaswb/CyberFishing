@@ -69,7 +69,10 @@ class StageThreeFocusedParityCheck {
         for (const record of module.importsAllowed) {
           const namespace = await import(pathToFileURL(path.join(temp, record.from)).href);
           imported[record.exportName] = namespace[record.exportName];
-          assert.equal(typeof imported[record.exportName], "function");
+          // A reviewed import is a class or a frozen constant (e.g. an enumeration object).
+          const value = imported[record.exportName];
+          assert(typeof value === "function" || (typeof value === "object" && value !== null && Object.isFrozen(value)),
+            `Reviewed import is neither a class nor a frozen constant: ${record.exportName}`);
         }
         const classic = vm.createContext({ Map, Set, ...imported });
         vm.runInContext(source, classic, { filename: module.currentPath });

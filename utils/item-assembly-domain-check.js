@@ -59,7 +59,9 @@ class AssemblyRuntimeLoader {
     // from its ESM module in the cumulative runtime.
     const contract = JSON.parse(fs.readFileSync(
       path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
-    const target = contract.activationPositions
+    // A retired activation's placeholder publishes nothing; its exports are read the same way.
+    const target = [...contract.activationPositions,
+      ...(contract.retiredActivations || []).map((record) => record.activation)]
       .find((item) => item.sourceProvider === relativePath)?.targetModule;
     const expose = globalNames
       .map((name) => target

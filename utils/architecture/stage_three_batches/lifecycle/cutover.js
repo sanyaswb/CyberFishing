@@ -94,10 +94,16 @@ class StageThreeCutoverProjection {
         `<script src="${runtime.output.directory}${activation.shimFile}"></script>`).join("\n");
       index = index.replace(oldTag, tags);
     }
+    // In retirement order: a classic source gets its placeholder (one line per retired activation it
+    // served) at its first retired activation; every generated shim is removed and restored on rollback.
+    const placeholders = new Map(RetiredActivationPlaceholder.byProvider(retiredActivations)
+      .map(({ sourceProvider, activations }) => [sourceProvider, activations]));
     for (const activation of retiredActivations) {
-      writes.push({ relativePath: activation.sourceProvider,
-        bytes: Buffer.from(new RetiredActivationPlaceholder().render(activation)) });
-      // The generated shim of a retired activation is removed; its before-image restores it on rollback.
+      if (placeholders.has(activation.sourceProvider)) {
+        writes.push({ relativePath: activation.sourceProvider,
+          bytes: Buffer.from(new RetiredActivationPlaceholder().renderProvider(placeholders.get(activation.sourceProvider))) });
+        placeholders.delete(activation.sourceProvider);
+      }
       writes.push({ relativePath: runtime.output.directory + activation.shimFile, bytes: null });
     }
     index = retirement.index(index, runtime.output.directory, retiredActivations);

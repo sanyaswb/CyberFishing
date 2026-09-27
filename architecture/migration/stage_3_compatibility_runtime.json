@@ -937,18 +937,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-97cede2d09c5",
-      "owner": "stage-3.candidate-020-assemblies-43d77861",
-      "sourceProvider": "src/core/assemblies/assembly_state.js",
-      "targetModule": "src/game/domain/assemblies/assembly_state.js",
-      "exportName": "AssemblyState",
-      "legacySymbol": "AssemblyState",
-      "legacyScriptIndex": 149,
-      "shimFile": "activations/149_assemblystate.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-9857928fc9d0",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
@@ -1141,18 +1129,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-b3d160e2af4c",
-      "owner": "stage-3.candidate-020-assemblies-43d77861",
-      "sourceProvider": "src/core/assemblies/assembly_state.js",
-      "targetModule": "src/game/domain/assemblies/assembly_state.js",
-      "exportName": "AssemblyPreparationStatus",
-      "legacySymbol": "AssemblyPreparationStatus",
-      "legacyScriptIndex": 149,
-      "shimFile": "activations/149_assemblypreparationstatus.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-b63d6fa4a955",
       "owner": "stage-3.candidate-011-items-11818ee5",
       "sourceProvider": "src/core/items/progression/item_progression_descriptor.js",
@@ -1258,6 +1234,18 @@
       "legacyScriptIndex": 392,
       "shimFile": "activations/392_eventlifecycle.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-d5bf762477bb",
+      "owner": "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "sourceProvider": "src/core/assemblies/assembly_state_repository.js",
+      "targetModule": "src/game/domain/assemblies/assembly_state_repository.js",
+      "exportName": "AssemblyStateRepository",
+      "legacySymbol": "AssemblyStateRepository",
+      "legacyScriptIndex": 150,
+      "shimFile": "activations/150_assemblystaterepository.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {
@@ -1539,6 +1527,23 @@
     },
     {
       "activation": {
+        "id": "activation-97cede2d09c5",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/core/assemblies/assembly_state.js",
+        "targetModule": "src/game/domain/assemblies/assembly_state.js",
+        "exportName": "AssemblyState",
+        "legacySymbol": "AssemblyState",
+        "legacyScriptIndex": 149,
+        "shimFile": "activations/149_assemblystate.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-033-assemblies-3cd39292"
+    },
+    {
+      "activation": {
         "id": "activation-9c5651e4f765",
         "owner": "stage-3.candidate-005-fishing-45d0c7ce",
         "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
@@ -1570,6 +1575,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-031-fishing-d2f28c0f"
+    },
+    {
+      "activation": {
+        "id": "activation-b3d160e2af4c",
+        "owner": "stage-3.candidate-020-assemblies-43d77861",
+        "sourceProvider": "src/core/assemblies/assembly_state.js",
+        "targetModule": "src/game/domain/assemblies/assembly_state.js",
+        "exportName": "AssemblyPreparationStatus",
+        "legacySymbol": "AssemblyPreparationStatus",
+        "legacyScriptIndex": 149,
+        "shimFile": "activations/149_assemblypreparationstatus.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-322.batch-033-assemblies-3cd39292"
     },
     {
       "activation": {

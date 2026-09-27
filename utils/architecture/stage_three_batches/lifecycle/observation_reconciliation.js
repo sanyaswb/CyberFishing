@@ -82,17 +82,25 @@ class StageThreeBatchObservationReconciliation {
           reason: "unactivated-export-kept-as-esm-export-only" });
       }
     }
-    // A retired activation loses its classic global: no bridge may still read it.
+    // A retired activation loses its classic global: no bridge may still read it. A classic source
+    // retires as a whole, so it keeps no provider once all of its retired activations are removed.
+    const retiredSources = new Set();
     for (const activation of (inputs.runtime.retiredActivations || [])
       .filter(record => record.retiredBy === PROFILE.batchId).map(record => record.activation)) {
       const readers = inputs.registry.bridges.filter(bridge =>
         bridge.globalProviders.some(provider => provider.symbol === activation.legacySymbol));
       assert.deepEqual(readers, [], `Retired activation still has classic readers: ${activation.legacySymbol}`);
       const source = expectedManifest.modules.find(module => module.currentPath === activation.sourceProvider);
-      assert.deepEqual(source.observed.providers.items.map(provider => provider.symbol), [activation.legacySymbol]);
-      source.observed.providers.items = [];
+      assert.equal(source.observed.providers.items.filter(provider => provider.symbol === activation.legacySymbol).length, 1,
+        `Retired activation is not one observed provider: ${activation.legacySymbol}`);
+      source.observed.providers.items = source.observed.providers.items
+        .filter(provider => provider.symbol !== activation.legacySymbol);
+      retiredSources.add(source);
       removedSymbols.push({ symbol: activation.legacySymbol, source: activation.sourceProvider, consumers: 0,
         reason: "retired-activation-all-listed-legacy-consumers-migrated" });
+    }
+    for (const source of retiredSources) {
+      assert.deepEqual(source.observed.providers.items, [], `Retired source keeps a classic provider: ${source.currentPath}`);
     }
     assert.deepEqual(providers(result.manifest), providers(expectedManifest),
       "Unexpected global namespace change");

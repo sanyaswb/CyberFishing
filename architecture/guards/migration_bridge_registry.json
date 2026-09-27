@@ -459,6 +459,22 @@
       ]
     },
     {
+      "id": "bridge-32071390ea55",
+      "bridge": "src/core/assemblies/assembly_state_repository.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/assembly_state_repository.js",
+      "reason": "Preserve the exact assembly state repository consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyStateRepository",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-340e660ed69c",
       "bridge": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
       "source": "src/assets/asset_preload_coordinator.js",
@@ -1611,6 +1627,22 @@
       ]
     },
     {
+      "id": "bridge-a7b5464bce7f",
+      "bridge": "src/core/assemblies/assembly_state_repository.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/assemblies/assembly_state_repository.js",
+      "reason": "Preserve the exact assembly state repository consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyStateRepository",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a825c474372d",
       "bridge": "src/core/fishing/pole_fight_sector_constraint.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1654,26 +1686,6 @@
       "globalProviders": [
         {
           "symbol": "BaitFreshnessDecayPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-afb1d1b1fb1e",
-      "bridge": "src/core/assemblies/assembly_state.js",
-      "source": "src/core/assemblies/assembly_state_repository.js",
-      "target": "src/game/domain/assemblies/assembly_state.js",
-      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-020-assemblies-43d77861",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "AssemblyPreparationStatus",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "AssemblyState",
           "mechanism": "global-this-property"
         }
       ]

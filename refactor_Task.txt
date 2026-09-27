@@ -1,10 +1,10 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.70`
+- **Current release version:** `v0.24.71`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** `Stage 3.34 — Batch 033 (stage-3.replan-322.batch-033-assemblies-3cd39292)`, the first batch of the Stage 3.34.0 freeze extension; see “Next steps” below
+- **Next step:** `Stage 3.35 — Batch 034 (stage-3.replan-322.batch-034-fishing-b761d4f1)`, the hot-loop fishing cluster (last batch of the Stage 3.34.0 freeze extension); see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -153,6 +153,8 @@ The prefix was adopted by the execution state at batch 022 (`continuationPlan`);
 
 **Checkpoint `v0.24.70`:** batch 032 is complete and with it the whole Stage 3.22 approved prefix 022–032 (completed batches 001–032, 90 migrated Domain modules): EffectiveItemRarityResolver with the reviewed import ItemRarityResolver (batch 030), its composition identity and the reviewed globalThis exposure moved to the activation shim. Runtime `99` modules / `96` activations / `139` bridges. Full 199/199 before release (109 executed, 90 sealed) and after release (128 executed, 71 sealed); owner-authorized automated browser substitute (inventory rarity frames and the effective-rarity tooltip) with `0 errors` and `0 warnings`.
 
+**Checkpoint `v0.24.71`:** Stage 3.34.0 (review-queue evidence and freeze extension, commit 325ceb3) and batch 033 are complete (completed batches 001–033, 91 migrated Domain modules). AssemblyStateRepository is a named ESM export with two reviewed completed-prefix imports and four composition identities; its `#states` Map is proven by the atomic local replacement rule. The batch prebuild adopted the freeze extension. Retired activations: AssemblyState and AssemblyPreparationStatus — one classic source served both, so retirement now works per source (one placeholder line per activation, a single restored classic tag, partial source retirement rejected). Runtime `100` modules / `95` activations / `140` bridges. Full 202/202 before release and after release (131 executed, 71 sealed); owner-authorized automated browser substitute (Kits "Assemble all", assembled rod restored after reload) with `0 errors` and `0 warnings`.
+
 ### Review queue
 
 - **033** `stage-3.replan-322.batch-033-assemblies-3cd39292` (1 module): requires evidence — `stage-3.22.prerequisite.collection-identity-evidence`.
@@ -208,7 +210,7 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [x] Collection identity: `AssemblyStateRepository#states` proven by the atomic local replacement rule (`restoreSnapshot` builds a complete local Map and assigns it as its final statement) plus a persistence round trip in the cumulative runtime.
    - [x] Hot-loop evidence for the six fishing modules: static member review (body fingerprints and allocation sites, no wall-clock time source, no realm/transport/typeof lookups, class providers only outside exercised members) and traced game-cycle fight scenarios (call counts, deltaTime ranges, SHA-256 of ordered arguments and results).
    - [x] Freeze extension (base = Stage 3.22 approved prefix, sources unchanged since the 3.22 review): batches 033 and 034 frozen; the plan source chains it and a batch prebuild adopts it.
-   - [ ] Batch 033 (`v0.24.71`): AssemblyStateRepository.
+   - [x] Batch 033 (`v0.24.71`): AssemblyStateRepository; adopted the freeze extension; retired AssemblyState and AssemblyPreparationStatus (first whole-source retirement of two activations served by one classic file).
    - [ ] Batch 034 (`v0.24.72`): six hot-loop fishing modules; the batch must reproduce the recorded member fingerprints and game-cycle traces.
 5. **Prerequisite backlog:** resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
 6. Repeat prerequisite → graph review → freeze → migration batches until every approved Domain cluster is migrated, ownership is confirmed and bridges have a controlled removal path; then Stage 4 starts.

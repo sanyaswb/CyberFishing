@@ -45,11 +45,11 @@ class StageThreeBatchPlanning {
   retiredPlaceholderPaths() {
     const contract = this.json(PATHS.runtimeContract);
     const known = [...contract.activationPositions, ...(contract.retiredActivations || []).map(item => item.activation)];
-    return (this.definition.execution.expectedRetiredActivationIds || []).map(id => {
+    return [...new Set((this.definition.execution.expectedRetiredActivationIds || []).map(id => {
       const activation = known.find(item => item.id === id);
       assert.ok(activation, `Retired activation is unknown: ${id}`);
       return activation.sourceProvider;
-    });
+    }))];
   }
 
   matrixDependencies() {

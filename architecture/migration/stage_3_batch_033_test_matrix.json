@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-322.batch-033-assemblies-3cd39292",
+  "sourceReleaseVersion": "0.24.70",
+  "targetReleaseVersion": "0.24.71",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_033_execution_plan.json",
+    "sha256": "3c003fc3f1b79fe1f870de83d12210cbe0a5515a0b1d5e3fa1a379fe873ede46"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/AssemblyStateRepository/construction-lookup-and-owner-mutations",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyStateRepository",
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
+      "baselineSourceSha256": "df687703775b302e9b1e6a78564b33f416843d1fff61164ae6bba063618903ae",
+      "caseName": "construction-lookup-and-owner-mutations",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyStateRepository/snapshot-restore-atomicity-and-list-copies",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyStateRepository",
+      "currentPath": "src/core/assemblies/assembly_state_repository.js",
+      "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
+      "baselineSourceSha256": "df687703775b302e9b1e6a78564b33f416843d1fff61164ae6bba063618903ae",
+      "caseName": "snapshot-restore-atomicity-and-list-copies",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-one-exact-export",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-one-exact-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/four-owner-created-composition-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "four-owner-created-composition-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/authoritative-states-map-with-atomic-local-replacement-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "authoritative-states-map-with-atomic-local-replacement-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-activation-at-its-legacy-position",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-activation-at-its-legacy-position",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-consumer-relationships-and-one-retired-bridge",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-consumer-relationships-and-one-retired-bridge",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-consumerless-activations-retired-as-inert-classic-placeholders",
+      "kind": "compatibility-invariant",
+      "caseName": "two-consumerless-activations-retired-as-inert-classic-placeholders",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/review-queue-freeze-extension-adopted-by-the-prebuild",
+      "kind": "compatibility-invariant",
+      "caseName": "review-queue-freeze-extension-adopted-by-the-prebuild",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "AssemblyStateRepository",
+      "caseCount": 2,
+      "cases": [
+        "construction-lookup-and-owner-mutations",
+        "snapshot-restore-atomicity-and-list-copies"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.34.0-live-observation-and-stage-3.22-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_033_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/assemblies/assembly_state_repository.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/assemblies/assembly_state_repository.js",
+          "authoritativeOwners": [
+            "AssemblyStateRepository#add",
+            "AssemblyStateRepository#get",
+            "AssemblyStateRepository#has",
+            "AssemblyStateRepository#list",
+            "AssemblyStateRepository#require",
+            "AssemblyStateRepository#states",
+            "AssemblyStateRepository#toSnapshot"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/assemblies/assembly_state_repository.js",
+          "authoritativeOwners": [
+            "AssemblyStateRepository#add",
+            "AssemblyStateRepository#get",
+            "AssemblyStateRepository#has",
+            "AssemblyStateRepository#list",
+            "AssemblyStateRepository#require",
+            "AssemblyStateRepository#states",
+            "AssemblyStateRepository#toSnapshot"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "959ad26b33d735546960f16d42e0ae0c6830385c9278a7395afdc6a3fffeb73b",
+        "allocationBaseline": {
+          "objectExpressions": 4,
+          "arrayExpressions": 3,
+          "newExpressions": 9,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.34.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}
