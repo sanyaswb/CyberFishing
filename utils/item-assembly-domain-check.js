@@ -55,8 +55,17 @@ class AssemblyRuntimeLoader {
 
   #load(relativePath, globalNames) {
     const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
+    // A migrated provider's exports without an activation (no classic consumer) are read test-only
+    // from its ESM module in the cumulative runtime.
+    const contract = JSON.parse(fs.readFileSync(
+      path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
+    const target = contract.activationPositions
+      .find((item) => item.sourceProvider === relativePath)?.targetModule;
     const expose = globalNames
-      .map((name) => `globalThis.${name} = ${name};`)
+      .map((name) => target
+        ? `globalThis.${name} = typeof ${name} !== "undefined" ? ${name} : ` +
+          `globalThis.${contract.transport.symbol}.modules[${JSON.stringify(target)}][${JSON.stringify(name)}];`
+        : `globalThis.${name} = ${name};`)
       .join("\n");
     vm.runInContext(`${source}\n${expose}`, this.#context, {
       filename: relativePath,

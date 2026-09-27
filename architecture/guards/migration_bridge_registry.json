@@ -51,22 +51,6 @@
       ]
     },
     {
-      "id": "bridge-0c362ab87767",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/core/assemblies/item_assembly_service.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemLocation",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-105a8ef0c687",
       "bridge": "src/core/fishing/rod_control_movement_projector.js",
       "source": "src/systems/fight_physics_system.js",
@@ -443,6 +427,22 @@
       ]
     },
     {
+      "id": "bridge-2e917650176f",
+      "bridge": "src/core/assemblies/item_assembly_service.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/assemblies/item_assembly_service.js",
+      "reason": "Preserve the exact item assembly service consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyService",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-340e660ed69c",
       "bridge": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
       "source": "src/assets/asset_preload_coordinator.js",
@@ -811,6 +811,22 @@
       ]
     },
     {
+      "id": "bridge-641560fd9441",
+      "bridge": "src/core/assemblies/item_assembly_service.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/item_assembly_service.js",
+      "reason": "Preserve the exact item assembly service consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemAssemblyService",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-65a33fea8e4f",
       "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -838,22 +854,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-66d8c5b75058",
-      "bridge": "src/core/inventory/item_assembly_stacking_policy.js",
-      "source": "src/core/assemblies/item_assembly_service.js",
-      "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
-      "reason": "Preserve the exact assembly stacking consumers until their legacy symbol is removed.",
-      "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemAssemblyStackingPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1675,22 +1675,6 @@
       ]
     },
     {
-      "id": "bridge-ae3aff06a790",
-      "bridge": "src/core/inventory/unlimited_assembly_capacity_policy.js",
-      "source": "src/core/assemblies/item_assembly_service.js",
-      "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
-      "reason": "Preserve the exact Inventory capacity policy consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-010-inventory-e3dffbe7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "UnlimitedAssemblyCapacityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-afb1d1b1fb1e",
       "bridge": "src/core/assemblies/assembly_state.js",
       "source": "src/core/assemblies/assembly_state_repository.js",
@@ -1770,22 +1754,6 @@
       "globalProviders": [
         {
           "symbol": "UnlimitedAssemblyCapacityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c49ad9e90c8b",
-      "bridge": "src/core/assemblies/item_assembly_reader.js",
-      "source": "src/core/assemblies/item_assembly_service.js",
-      "target": "src/game/domain/assemblies/item_assembly_reader.js",
-      "reason": "Preserve the exact Assemblies read-model consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemAssemblyReader",
           "mechanism": "global-this-property"
         }
       ]
@@ -2042,22 +2010,6 @@
       "globalProviders": [
         {
           "symbol": "BaitEffectivenessMatch",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e01af933a4a4",
-      "bridge": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-      "source": "src/core/assemblies/item_assembly_service.js",
-      "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
-      "reason": "Preserve the exact Assemblies domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-020-assemblies-43d77861",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ExactAssemblyRefillSignaturePolicy",
           "mechanism": "global-this-property"
         }
       ]

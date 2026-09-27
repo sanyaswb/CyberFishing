@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-028-release-transition",
+  "batchId": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+  "fromRelease": "0.24.65",
+  "toRelease": "0.24.66",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_028_acceptance_pass.json",
+    "sha256": "e5eb56ac3839cc1de26943b43bb2f0f75903ccb7a59cff872142e7d7bd366ef2"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_028_browser_confirmation.json",
+    "sha256": "656fdb1304443af7516c10201d524c1e3e29dff39a0e3bae2c4a3c29a0543eed"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "9fbb09a0d300496639a2334350c73c8b9b981fe2f86d46700519612ee944259e",
+      "afterSha256": "7a69f57937f35a51b99795f93d1b8895a4b543363a8bda26bbf42c08deb7cd18",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.66 - Assemblies Item Assembly Service Domain\n\n### Changed\n\n- Completed batch 028 of the Stage 3.22 approved prefix: ItemAssemblyService and ItemAssemblyDomainError as named ESM exports.\n- Five reviewed imports, two of them from earlier batches of this continuation (ItemAssemblyReader from 022, ItemAssemblyStackingPolicy from 026); its owner-created default collaborators are proven Domain compositions, and the batch-completion prerequisites resolve from the execution state.\n- Extended the cumulative graph from 92 to 93 project modules and from 97 to 98 activation contracts, with 141 exact bridge relationships (2 added, 5 retired).\n- The next task is batch 029 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "f0aa41d9fa781a3e81f5e56e3371242f619b5fc6e4637c9f3af44c6d04025f63",
+      "afterSha256": "bbb04598fc0d244dd82df7a2c442133a1e1133c05230086ec2d53c609d9f8544",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.65\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.66\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_22/approved_prefix.json\",\n    \"sha256\": \"4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "b3b0cd43edd4e73be41458d98dc7c7165e127bde871549441c03ffd239384ea0",
+      "afterSha256": "d0202511db8b1cb08d76912d2dd1a38f62bf5d36cf525289223d2283a4f192aa",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.65\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.66\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "d0822ed86b86a62db4014a4b65e911a9565182b23626cae10584e4e341cf30ab",
+      "afterSha256": "e04d003099fdeb77677c77d22636df477a567b564c8450748b207d8824a193fc",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.65\",",
+          "to": "  \"version\": \"0.24.66\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "31c5339e1c48f4628ef10c97f2eb9c6090f81c0d422660428c08b26450882882",
+      "afterSha256": "538510c2387c85db964c0c952497d09978921ad06eeb655e117fd52bb630c512",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.65\",",
+          "to": "  \"version\": \"0.24.66\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "129841a067939bf4d9c256a76b0f96f513931aebbe26541bb0a4129f9b6fa870",
+      "afterSha256": "20eb74e26f5ccdfeac361fcbe4b6ec1e8f6c488b13e823986362543af03b9bec",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.65\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.66\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"items-metric-registry-quality-rarity-domain\",",
+          "to": "  codename: \"assemblies-item-assembly-service-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the item metric strategy registry, the environmental, hook and net quality modifiers and the authored rarity strategy\",\n    \"Import the grade policy, rarity descriptor and rarity strategy from their completed ESM owners\",\n    \"Move three reviewed global exposures to the exact activation shims\",\n    \"Retire the grade policy, rarity descriptor and rarity strategy activations as inert classic placeholders\",\n    \"Preserve ninety-two project modules, ninety-seven activations and one hundred forty-four bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the item assembly service and its domain error\",\n    \"Import the assembly reader and stacking policy from earlier batches of this continuation\",\n    \"Keep the owner-created default collaborators as proven Domain compositions\",\n    \"Preserve ninety-three project modules, ninety-eight activations and one hundred forty-one bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

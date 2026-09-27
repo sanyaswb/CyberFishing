@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.66 - Assemblies Item Assembly Service Domain
+
+### Changed
+
+- Completed batch 028 of the Stage 3.22 approved prefix: ItemAssemblyService and ItemAssemblyDomainError as named ESM exports.
+- Five reviewed imports, two of them from earlier batches of this continuation (ItemAssemblyReader from 022, ItemAssemblyStackingPolicy from 026); its owner-created default collaborators are proven Domain compositions, and the batch-completion prerequisites resolve from the execution state.
+- Extended the cumulative graph from 92 to 93 project modules and from 97 to 98 activation contracts, with 141 exact bridge relationships (2 added, 5 retired).
+- The next task is batch 029 preflight.
+
 ## v0.24.65 - Items Metric Registry, Quality Modifiers and Authored Rarity Domain
 
 ### Changed

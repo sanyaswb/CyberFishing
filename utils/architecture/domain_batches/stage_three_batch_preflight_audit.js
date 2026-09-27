@@ -157,14 +157,28 @@ class StageThreeBatchPreflightAuditBuilder {
       .sort();
     this.#require(this.#same(frozenNewTargets, [...targetPaths].sort()),
       "recursive closure does not add the exact frozen target set");
+    // Closure edges to an earlier batch of the same continuation were future batches at freeze time;
+    // once that batch is completed each must be exactly one reviewed import read through its shim.
+    const prerequisiteEdges = batch.internalDependencyClosure.filter((edge) =>
+      edge.resolution === "completed-prerequisite-batch");
+    for (const edge of prerequisiteEdges) {
+      this.#require(executionState.completedBatchIds.includes(edge.prerequisiteBatchId),
+        `prerequisite batch of a closure edge is not completed: ${edge.prerequisiteBatchId}`);
+      this.#require(importedShims.has(`${edge.source}\0${edge.target}`) &&
+        edge.symbols.every((symbol) => resolvedImports.some((record) => record.source === edge.source &&
+          record.viaShim === edge.target && record.symbols.includes(symbol))),
+      `completed prerequisite edge is not a reviewed import: ${edge.source}->${edge.target}`);
+    }
     this.#require(this.#same(
       internalEdges.map(({ source, target, symbols }) => ({ source, target, symbols })),
-      batch.internalDependencyClosure.map(({ source, target, symbols }) => ({
+      batch.internalDependencyClosure.filter((edge) => !prerequisiteEdges.includes(edge))
+        .map(({ source, target, symbols }) => ({
         source,
         target,
         symbols: [...symbols].sort(),
       })).sort(this.#edgeCompare),
-    ), "internal dependency closure differs from frozen batch");
+    ), `internal dependency closure differs from frozen batch: observed ${JSON.stringify(internalEdges
+      .map(({ source, target, symbols }) => ({ source, target, symbols })))}`);
 
     const consumers = batch.externalLegacyConsumers.map((consumer) => ({
       provider: consumer.provider,
@@ -212,6 +226,10 @@ class StageThreeBatchPreflightAuditBuilder {
       .map((construct) => ({ module: module.currentPath, construct })));
     const unsafeEffects = modules.filter((module) => module.effects.classification === "unsafe");
     const reviewedPrerequisites = batch.prerequisites.filter((prerequisite) =>
+      // A batch-completion prerequisite holds once the referenced batch is in the completed prefix.
+      (prerequisite.kind === "batch-completion" &&
+        prerequisite.action === "complete-prerequisite-candidate-batch" &&
+        executionState.completedBatchIds.includes(prerequisite.id.slice("batch-completion:".length))) ||
       (prerequisite.kind === "side-effect-review" && modules.some((module) =>
         module.currentPath === prerequisite.module &&
         module.effects.classification === "reviewed-compatible")) ||

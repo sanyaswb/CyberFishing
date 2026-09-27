@@ -41,7 +41,7 @@ const stageThreePlan = new StageThreeApprovedPlanSource({ read: (file) => fs.rea
 const selectedBatchIds = new Set([...stageThreeState.completedBatchIds,
   ...(stageThreeState.activeBatchPhase === "runtime-active" ? [stageThreeState.activeBatchId] : [])]);
 const reviewedImportEdges = stageThreePlan.batches.filter((batch) => selectedBatchIds.has(batch.id))
-  .flatMap((batch) => (batch.imports || []).filter((item) => item.resolution === "completed-prefix")
+  .flatMap((batch) => StageThreeApprovedPlanSource.resolvedImportRecords(stageThreePlan, batch)
     .map((item) => `${batch.modules.find((module) => module.currentPath === item.consumer).targetPath}->${item.from}`));
 const approvedEsmEdges = [...new Set([
   ...bridgeRegistry.bridges

@@ -14389,13 +14389,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemAssemblyDomainError",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "ItemAssemblyService",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -14405,34 +14400,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemAssemblyReader",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemAssemblyStackingPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "UnlimitedAssemblyCapacityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -14440,11 +14411,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Error",
-            "Number",
-            "Object",
-            "Set",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -14454,7 +14421,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/assemblies/item_assembly_service.js",
@@ -14463,86 +14430,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemAssemblyReader",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/item_assembly_reader.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemAssemblyStackingPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/item_assembly_stacking_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "UnlimitedAssemblyCapacityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/unlimited_assembly_capacity_policy.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "symbols": [
-                "ExactAssemblyRefillSignaturePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/item_assembly_reader.js",
-              "symbols": [
-                "ItemAssemblyReader"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/inventory_item_location.js",
-              "symbols": [
-                "InventoryItemLocation"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/item_assembly_stacking_policy.js",
-              "symbols": [
-                "ItemAssemblyStackingPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/unlimited_assembly_capacity_policy.js",
-              "symbols": [
-                "UnlimitedAssemblyCapacityPolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -36529,6 +36427,59 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/assemblies/item_assembly_reader.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/item_assembly_service.js",
+      "currentArea": "game/domain/assemblies",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Number",
+            "Object",
+            "Set",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/assemblies/item_assembly_service.js",
         "migrationWave": 1
       },
       "analysis": {

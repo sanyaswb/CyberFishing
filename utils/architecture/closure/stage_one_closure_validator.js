@@ -636,6 +636,8 @@ class StageOneClosureValidator {
         "Inventory Assembly Stacking Policy Domain",
       "stage-3.replan-322.batch-027-items-e8f84667":
         "Items Metric Registry, Quality Modifiers and Authored Rarity Domain",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e":
+        "Assemblies Item Assembly Service Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -1030,11 +1032,12 @@ class StageOneClosureValidator {
     const removed = before.filter((edge) => !after.has(edge)).sort();
     const added = [...after].filter((edge) => !before.includes(edge));
     const state = JSON.parse(fs.readFileSync(path.join(this.projectRoot, "architecture/migration/stage_3_execution_state.json")));
-    const batch = new StageThreeApprovedPlanSource({
+    const document = new StageThreeApprovedPlanSource({
       read: (file) => fs.readFileSync(path.join(this.projectRoot, file)),
-    }).load(state).document.batches.find((record) => record.id === artifact.batchId);
+    }).load(state).document;
+    const batch = document.batches.find((record) => record.id === artifact.batchId);
     const byEdge = new Map();
-    for (const item of (batch?.imports || []).filter((record) => record.resolution === "completed-prefix")) {
+    for (const item of batch ? StageThreeApprovedPlanSource.resolvedImportRecords(document, batch) : []) {
       const key = `${item.consumer}\0${item.viaShim}`;
       byEdge.set(key, [...(byEdge.get(key) || []), item.legacySymbol]);
     }

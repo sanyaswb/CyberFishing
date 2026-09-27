@@ -195,7 +195,11 @@ class StageThreeLivePreflight {
     assert.deepEqual(artifact.liveObservation.consumerRelationships, artifact.compatibility.consumers);
     const expectedImports = this.profile.executionProfile.expectedImports || [];
     for (const module of artifact.scope.modules) {
-      assert.equal(module.dependencyDepth, 0);
+      // A positive depth is only the dependency on completed earlier batches of this continuation;
+      // the audit proves each such closure edge is a completed batch read through a reviewed import.
+      assert(module.dependencyDepth === 0 || (artifact.prerequisites.reviewed || [])
+        .some(prerequisite => prerequisite.kind === "batch-completion"),
+      `dependency depth ${module.dependencyDepth} requires completed prerequisite batches: ${module.currentPath}`);
       assert.equal(module.scc.cyclic, false);
       assert.deepEqual(module.scc.members, [module.currentPath]);
       assert.deepEqual(module.outgoingProjectEdges.map(({ target, symbols }) => ({ target, symbols })),

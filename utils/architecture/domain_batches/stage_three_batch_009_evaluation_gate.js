@@ -7,6 +7,8 @@ const { EsmDependencyObserver } = require("../guards/observation/esm_dependency_
 const { immutableRecord } = require("../guards/core/guard_models");
 const { isInertLiteral } = require("./stage_three_inert_literal");
 
+const BUILTIN_ERRORS = new Set(["Error", "RangeError", "TypeError"]);
+
 // A deliberately conservative, batch-scoped proof: no imported/eager external
 // dependency is silently treated as safe merely because the old build passed.
 class Batch009EarlierEvaluationGate {
@@ -25,10 +27,13 @@ class Batch009EarlierEvaluationGate {
       assert.equal(observed.status, "verified", "unknown ESM construct");
       const allowedImports = reviewedImports[module.targetPath] || [];
       const closure = new Set(modules.map(item => item.targetPath));
+      // The exact reviewed import set; declaration order is the representation's own concern.
+      const bySpecifier = (left, right) => left.specifier.localeCompare(right.specifier);
       assert.deepEqual(observed.observations.map(item => ({ mechanism: item.mechanism,
-        specifier: item.specifier, resolvedTarget: item.resolvedTarget, status: item.resolutionStatus })),
+        specifier: item.specifier, resolvedTarget: item.resolvedTarget, status: item.resolutionStatus }))
+        .sort(bySpecifier),
       allowedImports.map(item => ({ mechanism: "static-import", specifier: item.specifier,
-        resolvedTarget: item.from, status: "confirmed-project" })),
+        resolvedTarget: item.from, status: "confirmed-project" })).sort(bySpecifier),
       "batch-009 closure changed: dependency requires re-audit");
       assert(allowedImports.every(item => closure.has(item.from)), "reviewed import leaves the verified closure");
       assert.equal(observed.globalAssignments.length, 0, "ESM global assignment");
@@ -56,7 +61,12 @@ class Batch009EarlierEvaluationGate {
           // ordering, so it may be the eager superclass exactly like a local class.
           const importedSuperclass = node.superClass?.type === "Identifier" && !localSuperclass &&
             allowedImports.some(item => item.exportName === node.superClass.name);
-          assert(node.superClass === null || localSuperclass || importedSuperclass,
+          // An ECMAScript error constructor is a language builtin, not a project dependency; the
+          // module must not declare or import a binding that shadows it.
+          const builtinErrorSuperclass = node.superClass?.type === "Identifier" && !localSuperclass &&
+            !importedSuperclass && BUILTIN_ERRORS.has(node.superClass.name) &&
+            !declaredClasses.has(node.superClass.name);
+          assert(node.superClass === null || localSuperclass || importedSuperclass || builtinErrorSuperclass,
             "eager superclass dependency requires review");
           if (localSuperclass) {
             initializations.push({ binding: node.id.name, kind: "local-superclass" });

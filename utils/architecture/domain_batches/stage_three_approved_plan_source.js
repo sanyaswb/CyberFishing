@@ -81,13 +81,21 @@ class StageThreeApprovedPlanSource {
 
   // Exact reviewed completed-prefix imports of every target in the given batches, keyed by target
   // path, in the execution plan's `importsAllowed` shape (relative specifier from the target).
+  // Every reviewed import record of one batch with its export resolved: completed-prefix records as
+  // frozen, earlier-batch records through the exact activation of the earlier batch.
+  static resolvedImportRecords(document, batch) {
+    return (batch.imports || []).filter(record => ["completed-prefix", "earlier-batch"].includes(record.resolution))
+      .map(record => record.resolution === "completed-prefix" ? record
+        : StageThreeApprovedPlanSource.#earlierBatchImport(document, record));
+  }
+
   static reviewedImports(document, batchIds) {
     const selected = new Set(batchIds);
     const result = {};
     for (const batch of document.batches.filter(record => selected.has(record.id))) {
       for (const module of batch.modules) {
-        const imports = (batch.imports || []).filter(record => record.consumer === module.currentPath &&
-          record.resolution === "completed-prefix");
+        const imports = StageThreeApprovedPlanSource.resolvedImportRecords(document, batch)
+          .filter(record => record.consumer === module.currentPath);
         if (imports.length === 0) continue;
         const directory = module.targetPath.split("/").slice(0, -1);
         result[module.targetPath] = imports.map(record => {
@@ -101,6 +109,20 @@ class StageThreeApprovedPlanSource {
       }
     }
     return result;
+  }
+
+  // An import of an earlier batch of the same continuation names no export in the frozen plan; it
+  // resolves exactly through that batch's frozen activation of the imported legacy symbol.
+  static #earlierBatchImport(document, record) {
+    const source = document.batches.find(batch => batch.id === record.batchId);
+    assert(source, `earlier-batch import names an unknown batch: ${record.batchId}`);
+    assert(Array.isArray(record.legacySymbols) && record.legacySymbols.length === 1,
+      `earlier-batch import must name exactly one legacy symbol: ${record.from}`);
+    const activations = source.compatibility.newActivations.map(item => item.contract).filter(contract =>
+      contract.targetModule === record.from && contract.legacySymbol === record.legacySymbols[0]);
+    assert.equal(activations.length, 1, `earlier-batch import has no exact activation: ${record.from}`);
+    return { ...record, exportName: activations[0].exportName, legacySymbol: activations[0].legacySymbol,
+      viaShim: activations[0].sourceProvider, activationId: activations[0].id };
   }
 
   #retiredBy() {

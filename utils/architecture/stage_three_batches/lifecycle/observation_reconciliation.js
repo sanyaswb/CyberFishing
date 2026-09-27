@@ -63,6 +63,25 @@ class StageThreeBatchObservationReconciliation {
           reason: "unactivated-class-family-member-kept-as-esm-export-only" });
       }
     }
+    // Any other target export without an activation (no frozen classic consumer) loses its classic
+    // global the same way; it must have no consumer anywhere in the historical graph.
+    for (const target of PROFILE.executionProfile.expectedTargets) {
+      const contract = PROFILE.reviewedContracts[target.currentPath];
+      if (contract.classFamily) continue;
+      const activated = inputs.prebuild.preliminaryMetadata.plannedActivationPositions
+        .filter(item => item.sourceProvider === target.currentPath).map(item => item.legacySymbol);
+      for (const symbol of target.exports.filter(name => !activated.includes(name))) {
+        const consumers = historical.modules.flatMap(module => module.analysis.dependencies.confirmed
+          .filter(fact => fact.target === target.currentPath && fact.symbol === symbol).map(() => module.currentPath));
+        assert.deepEqual(consumers, [], `Unactivated export still has consumers: ${symbol}`);
+        const source = expectedManifest.modules.find(module => module.currentPath === target.currentPath);
+        const old = source.observed.providers.items.filter(provider => provider.symbol === symbol);
+        assert.deepEqual(old.map(provider => provider.mechanism), ["global-lexical"]);
+        source.observed.providers.items = source.observed.providers.items.filter(provider => provider.symbol !== symbol);
+        removedSymbols.push({ symbol, source: target.currentPath, consumers: 0,
+          reason: "unactivated-export-kept-as-esm-export-only" });
+      }
+    }
     // A retired activation loses its classic global: no bridge may still read it.
     for (const activation of (inputs.runtime.retiredActivations || [])
       .filter(record => record.retiredBy === PROFILE.batchId).map(record => record.activation)) {

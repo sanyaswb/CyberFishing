@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-028-side-effect-review",
+  "batchId": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+  "stage": "3.29.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.65",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "080693d3216a33dcc399ab095f2f2253192b62ae4fb10c2f4b2c5449e8ce6ab3"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/assemblies/item_assembly_service.js",
+      "targetPath": "src/game/domain/assemblies/item_assembly_service.js",
+      "sourceSha256": "1cc2312c6d604cd880484836338539b83b5ef38041a71d4edeabca8e9cbc7a71",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/assemblies/item_assembly_service.js",
+        "sourceSha256": "1cc2312c6d604cd880484836338539b83b5ef38041a71d4edeabca8e9cbc7a71"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-46387e5f1ebf",
+          "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+          "sourceProvider": "src/core/assemblies/item_assembly_service.js",
+          "targetModule": "src/game/domain/assemblies/item_assembly_service.js",
+          "exportName": "ItemAssemblyService",
+          "legacySymbol": "ItemAssemblyService",
+          "legacyScriptIndex": 156,
+          "shimFile": "activations/156_itemassemblyservice.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/assemblies/item_assembly_service.js",
+      "classification": "safe",
+      "evidenceFingerprint": "5f188e2ce160487f90eab6e7e7e22db5323f01fcc2d39c39648f59e9e6d1ff0a"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.29.0-live-preflight-and-graph-audit"
+}

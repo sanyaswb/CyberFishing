@@ -529,6 +529,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-46387e5f1ebf",
+      "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "sourceProvider": "src/core/assemblies/item_assembly_service.js",
+      "targetModule": "src/game/domain/assemblies/item_assembly_service.js",
+      "exportName": "ItemAssemblyService",
+      "legacySymbol": "ItemAssemblyService",
+      "legacyScriptIndex": 156,
+      "shimFile": "activations/156_itemassemblyservice.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-490b698c2a9d",
       "owner": "stage-3.replan-322.batch-024-inventory-21307d68",
       "sourceProvider": "src/core/inventory/inventory_item_reservation_policy.js",

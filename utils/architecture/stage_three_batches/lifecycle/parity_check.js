@@ -65,7 +65,15 @@ class StageThreeFocusedParityCheck {
           new DomainBehaviorParityHarness().run({ exportName: symbol,
             classicClass: legacy, esmClass: esm, cases: CASES[symbol] });
           const activation = plan.compatibility.activations.find(item => item.exportName === symbol);
-          assert(activation, `Missing activation: ${symbol}`);
+          // An export without frozen classic consumers has no activation: it stays an ESM export only.
+          if (!activation) {
+            const planned = this.definition.execution.expectedActivationIds.length;
+            assert(plan.compatibility.activations.length === planned &&
+              !plan.compatibility.plannedBridgeRecords.some(bridge =>
+                bridge.globalProviders.some(provider => provider.symbol === symbol)),
+            `Export without activation has classic consumers: ${symbol}`);
+            continue;
+          }
           const context = vm.createContext({ __CYBER_FISHING_COMPAT_RUNTIME__: {
             modules: { [module.targetPath]: first },
           } });
