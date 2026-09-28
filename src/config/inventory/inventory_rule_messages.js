@@ -52,5 +52,10 @@ const INVENTORY_RULE_MESSAGES = (() => {
     lineWillBeWound: Object.freeze(
       (length) => `Буде намотано ${meters(length)}м ліски.`,
     ),
+    // Line capacity metric labels used when the progression config names none.
+    lineCapacityMetricLabel: "Ємність",
+    lineCapacityMetricSuffix: "м",
+    lineCapacityInventoryDetail: "Залишок ліски",
+    lineCapacityEquippedDetail: "На котушці",
   });
 })();

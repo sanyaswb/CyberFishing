@@ -30,6 +30,7 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Prerequisite 008 (equipment decomposition 2/2, group complete, owner played it): TerminalLineSlotResolver keeps accepted types, labels in the presentation TerminalLineSlotLabelResolver (split slot 159); TerminalLineSlotResolver and EquipmentSlotVisibilityPolicy reclassified to game-domain (Domain scope 137); waves derive from boundaries; reclassifiedWithoutEdit pins unchanged sources.
 - Prerequisite 009 (inventory decomposition 1): capacity and line-allocation texts (and metre formatting) in INVENTORY_RULE_MESSAGES, injected by bootstrap (LineCompatibilityRules -> LineInventoryController) and InventoryV2CompositionRoot (composed linePolicy). Open: FlatInventoryItemRepository, InventoryItemStackingPolicy (owner decision).
 - Prerequisite 010 (loadouts decomposition 1): LoadoutEquipmentTransitionPlanner capacity text injected by InventoryV2CompositionRoot. Open: EquipmentLoadout ("Комплект" default name/displayType persisted in saves; owner decision).
+- Prerequisite 011 (item-progression decomposition 1): ItemCapacityResolver default labels in INVENTORY_RULE_MESSAGES, injected by bootstrap. Open: ItemCatalogBaselineRegistry (console default -> platform logger), CompositeMetricStrategy/ItemRatingResolver (reclassification without edit).
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks

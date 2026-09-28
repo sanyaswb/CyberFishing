@@ -1,8 +1,11 @@
 class ItemCapacityResolver {
   #effectiveStatsResolver;
+  #messages;
 
-  constructor({ effectiveStatsResolver } = {}) {
+  // Default player-facing labels are injected by composition.
+  constructor({ effectiveStatsResolver, messages = null } = {}) {
     this.#effectiveStatsResolver = effectiveStatsResolver;
+    this.#messages = messages;
   }
 
   resolve({ item, capacityConfig, context = {} } = {}) {
@@ -43,13 +46,13 @@ class ItemCapacityResolver {
       ? Math.max(catalogLength, current)
       : current;
     let source = "line_spool";
-    let detailLabel = capacityConfig.inventoryDetailLabel || "Залишок ліски";
+    let detailLabel = capacityConfig.inventoryDetailLabel || this.#messages.lineCapacityInventoryDetail;
 
     if (isEquipped && Number.isFinite(reelCapacity) && reelCapacity > 0) {
       maximum = reelCapacity;
       current = Math.min(current, maximum);
       source = "equipped_reel";
-      detailLabel = capacityConfig.equippedDetailLabel || "На котушці";
+      detailLabel = capacityConfig.equippedDetailLabel || this.#messages.lineCapacityEquippedDetail;
 
       const activeState = lineContext.activeState;
       if (
@@ -73,8 +76,8 @@ class ItemCapacityResolver {
       available: true,
       reason: null,
       strategyId: capacityConfig.strategyId,
-      metricLabel: capacityConfig.metricLabel || "Ємність",
-      metricSuffix: capacityConfig.metricSuffix || "м",
+      metricLabel: capacityConfig.metricLabel || this.#messages.lineCapacityMetricLabel,
+      metricSuffix: capacityConfig.metricSuffix || this.#messages.lineCapacityMetricSuffix,
       detailLabel,
       source,
       current,

@@ -3,6 +3,7 @@ const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item progression check");
@@ -29,6 +30,8 @@ class RuntimeLoader {
       "src/core/items/progression/item_rating_resolver.js",
       "src/core/items/progression/item_rating_tier_resolver.js",
       "src/core/items/progression/item_quality_resolver.js",
+      "src/config/inventory/equipment_slot_presentation_config.js",
+      "src/config/inventory/inventory_rule_messages.js",
       "src/core/items/progression/item_capacity_resolver.js",
       "src/core/items/progression/item_progression_descriptor.js",
       "src/core/items/progression/item_progression_resolver.js",
@@ -69,6 +72,7 @@ class RuntimeLoader {
       RatingTier: "ItemRatingTierResolver",
       Quality: "ItemQualityResolver",
       Capacity: "ItemCapacityResolver",
+      RULE_MESSAGES: "INVENTORY_RULE_MESSAGES",
       Progression: "ItemProgressionResolver",
       EffectiveStats: "EffectiveItemStatsResolver",
       QualityGrade: "ItemQualityGradePolicy",
@@ -87,6 +91,10 @@ class RuntimeLoader {
     new ItemStatTestComposition(runtime.context).install({
       withPolicy: ["EffectiveStats", "SemanticMigration"],
       withResolver: ["Validator", "Baselines", "Capacity", "Progression", "ViewFactory"],
+    });
+    // Default capacity labels are injected the way bootstrap injects them.
+    runtime.context.Capacity = bindConstructorDefaults(runtime.context.Capacity, {
+      messages: runtime.context.RULE_MESSAGES,
     });
     return runtime.context;
   }

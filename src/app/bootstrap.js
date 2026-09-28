@@ -134,7 +134,10 @@ class GameCompositionRoot {
       ratingResolver: itemRatingResolver,
       ratingTierResolver: new ItemRatingTierResolver(),
       qualityResolver: new ItemQualityResolver(),
-      capacityResolver: new ItemCapacityResolver({ effectiveStatsResolver: effectiveItemStatsResolver }),
+      capacityResolver: new ItemCapacityResolver({
+        effectiveStatsResolver: effectiveItemStatsResolver,
+        messages: INVENTORY_RULE_MESSAGES,
+      }),
       baselineRegistry: itemCatalogBaselineRegistry,
       effectiveStatsResolver: effectiveItemStatsResolver,
     });
