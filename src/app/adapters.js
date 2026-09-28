@@ -2,6 +2,7 @@
  * @typedef {Object} IDevFlagsProvider
  * @property {(flag: string) => boolean} isEnabled
  * @property {() => boolean} isDebugEnabled
+ * @property {(name: string) => unknown} godModeValue
  */
 
 /** @implements {IDevFlagsProvider} */
@@ -24,6 +25,12 @@ class DevFlagsProvider {
   isEnabled(flag) {
     const source = this.#godModeSource?.();
     return !!(source && source[flag] === true);
+  }
+
+  // A raw GodMode setting for DEV overrides that are not flags (undefined without DEV).
+  godModeValue(name) {
+    const source = this.#godModeSource?.();
+    return source ? source[name] : undefined;
   }
 
   isDebugEnabled() {

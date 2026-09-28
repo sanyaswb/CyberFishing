@@ -186,6 +186,7 @@ class CastService {
   #getDynamicBounds;
   #debugEvents;
   #castReadinessEvaluator;
+  #devFlags;
 
   constructor({
     config,
@@ -197,6 +198,7 @@ class CastService {
     getDynamicBounds,
     debugEvents = null,
     castReadinessEvaluator = null,
+    devFlags = null,
   }) {
     this.#config = config;
     this.#rng = rng;
@@ -206,6 +208,7 @@ class CastService {
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#getDynamicBounds = getDynamicBounds;
     this.#debugEvents = debugEvents;
+    this.#devFlags = devFlags;
     this.#castReadinessEvaluator =
       typeof castReadinessEvaluator === "function"
         ? castReadinessEvaluator
@@ -262,6 +265,7 @@ class CastService {
       eq,
       this.#rng,
       this.#debugEvents,
+      this.#devFlags,
     );
 
     if (typeof floatEntity.cast === "function") {

@@ -1002,28 +1002,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-8715908e957c",
-      "rule": "boundary-dependency",
-      "source": "src/entities/tackle.js",
-      "target": "src/debug/god_mode.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8715908e957c7c53880d8a58ef8c28f2a479297b20bf9bdb7f8220fd29a9776e",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/entities/tackle.js",
-        "target": "src/debug/god_mode.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-883690d84be3",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
@@ -2982,28 +2960,6 @@
         "rule": "dev-leakage",
         "source": "src/app/fishing.js",
         "target": "src/debug/debug.js"
-      }
-    },
-    {
-      "id": "debt-dev-leakage-869e5a2d7744",
-      "rule": "dev-leakage",
-      "source": "src/entities/tackle.js",
-      "target": "src/debug/god_mode.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy dev-leakage debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "869e5a2d7744e8984718c7840634207a0dfe977c367f7e1e3dbc5781a0c4cf91",
-      "identity": {
-        "rule": "dev-leakage",
-        "source": "src/entities/tackle.js",
-        "target": "src/debug/god_mode.js"
       }
     },
     {

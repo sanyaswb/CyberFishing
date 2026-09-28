@@ -81,7 +81,8 @@
           "status": "verified",
           "builtins": [
             "Object",
-            "Promise"
+            "Promise",
+            "undefined"
           ],
           "browserApis": [
             "Audio",
@@ -35413,18 +35414,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "HookPowerPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -35520,22 +35509,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/debug/god_mode.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/god_mode.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "HookPowerPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -35624,13 +35597,6 @@
                 "Vector2"
               ],
               "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/god_mode.js",
-              "symbols": [
-                "GodMode"
-              ],
-              "resolution": "confirmed"
             }
           ],
           "unresolved": [],
@@ -35640,7 +35606,6 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "dev-production-coupling",
             "high-level-self-composition",
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"

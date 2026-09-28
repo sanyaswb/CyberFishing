@@ -488,6 +488,7 @@ class WaterEntity {
   _rng;
   _debugEvents;
   _environmentalCompensationModifier;
+  _devFlags;
 
   constructor(
     x,
@@ -497,6 +498,7 @@ class WaterEntity {
     rng = null,
     debugEvents = null,
     environmentalCompensationModifier = null,
+    devFlags = null,
   ) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
@@ -505,6 +507,7 @@ class WaterEntity {
     this._config = config;
     this._rng = rng || { next: () => Math.random() };
     this._debugEvents = debugEvents || null;
+    this._devFlags = devFlags || null;
     this._environmentalCompensationModifier =
       environmentalCompensationModifier ||
       new EnvironmentalCompensationModifier();
@@ -1021,9 +1024,9 @@ class WaterEntity {
     this._biteMoveTimer = 0;
   }
 
+  // DEV bite-sequence override through the injected DevFlagsProvider (none without DEV).
   _applyGodModeBiteSequence(seqCfg) {
-    if (typeof GodMode === "undefined") return seqCfg;
-    const mode = GodMode.biteSequenceMode;
+    const mode = this._devFlags?.godModeValue?.("biteSequenceMode");
     if (mode !== "guaranteed" && mode !== "normal") return seqCfg;
 
     seqCfg.chanceGuaranteed = mode === "guaranteed" ? 1.0 : 0.0;
@@ -1788,12 +1791,13 @@ class FloatEntity extends WaterEntity {
 }
 
 class BaitFactory {
-  static create(type, x, y, config, equipment, rng = null, debugEvents = null) {
+  // The environmental compensation modifier keeps its default (undefined).
+  static create(type, x, y, config, equipment, rng = null, debugEvents = null, devFlags = null) {
     switch (type) {
       case "spinner":
-        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents);
+        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
       case "wobbler":
-        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents);
+        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
       case "jig":
         return new JigEntity(
           x,
@@ -1802,12 +1806,14 @@ class BaitFactory {
           config.maxDepth,
           rng,
           debugEvents,
+          undefined,
+          devFlags,
         );
       case "feeder":
-        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents);
+        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
       case "float":
       default:
-        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents);
+        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
     }
   }
 }

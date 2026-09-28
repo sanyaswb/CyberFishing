@@ -712,6 +712,7 @@ class GameApplication {
       eq,
       this.#rng,
       this.#debugEvents,
+      this.#devFlags,
     );
   }
 

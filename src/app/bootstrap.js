@@ -657,6 +657,7 @@ class GameCompositionRoot {
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getDynamicBounds: appPorts.getDynamicBounds,
       debugEvents,
+      devFlags,
       castReadinessEvaluator: (equipment) =>
         runtime.inventory.evaluateCastReadiness?.(equipment),
     });
