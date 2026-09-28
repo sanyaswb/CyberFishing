@@ -2304,26 +2304,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-62ab68bab1b1",
-      "rule": "browser-capability",
-      "source": "src/core/items/progression/item_catalog_baseline_registry.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "62ab68bab1b1ef72266776f41ee800ffe3228706845a4d29d2e1c3556c9dd100",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/items/progression/item_catalog_baseline_registry.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-6b1b23c951c4",
       "rule": "browser-capability",
       "source": "src/app/fishing.js",

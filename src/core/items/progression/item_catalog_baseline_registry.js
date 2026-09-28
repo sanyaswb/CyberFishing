@@ -1,3 +1,4 @@
+// Composition injects the logger (a platform adapter in production).
 class ItemCatalogBaselineRegistry {
   #itemDb;
   #strategyRegistry;
@@ -8,7 +9,7 @@ class ItemCatalogBaselineRegistry {
   constructor({
     itemDb = {},
     strategyRegistry,
-    logger = console,
+    logger = null,
     effectiveStatsResolver,
   } = {}) {
     if (!strategyRegistry || typeof strategyRegistry.get !== "function") {

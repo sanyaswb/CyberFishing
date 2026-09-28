@@ -874,6 +874,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-014",
+      title: "Stage 3 prerequisite 014: injected platform warning logger with split legacy slot 79 and evidence-backed metric reviews replay byte-identically with parity, resolved debt and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "014", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

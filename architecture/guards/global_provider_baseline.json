@@ -4041,6 +4041,12 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/infrastructure/diagnostics/console_warning_logger.js",
+      "symbol": "ConsoleWarningLogger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/infrastructure/location/depth_map_reader.js",
       "symbol": "DepthMapReader",
       "mechanism": "global-lexical",

@@ -20,6 +20,14 @@
       "transition": "architecture/migration/stage_3_prerequisites/006_vector2-classic-extraction.json"
     },
     {
+      "slot": 79,
+      "members": [
+        "src/core/items/progression/item_catalog_baseline_registry.js",
+        "src/infrastructure/diagnostics/console_warning_logger.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/014_item-progression-logger-and-review.json"
+    },
+    {
       "slot": 159,
       "members": [
         "src/core/equipment/terminal_line_slot_resolver.js",

@@ -762,6 +762,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "ConsoleWarningLogger",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "DebugService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1805,6 +1811,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/items/progression/composite_metric_strategy.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ConsoleWarningLogger",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/diagnostics/console_warning_logger.js",
               "resolution": "confirmed"
             },
             {
@@ -3345,6 +3359,13 @@
               "target": "src/entities/tackle.js",
               "symbols": [
                 "Net"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/diagnostics/console_warning_logger.js",
+              "symbols": [
+                "ConsoleWarningLogger"
               ],
               "resolution": "confirmed"
             },
@@ -21677,9 +21698,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -21845,9 +21864,7 @@
             "Set",
             "TypeError"
           ],
-          "browserApis": [
-            "console"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -21872,9 +21889,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "browser-api-coupling"
-          ]
+          "items": []
         }
       }
     },
@@ -22272,9 +22287,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -40957,6 +40970,63 @@
         "blockers": {
           "status": "verified",
           "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/infrastructure/diagnostics/console_warning_logger.js",
+      "currentArea": "infrastructure/diagnostics",
+      "observed": {
+        "legacyLoadOrder": 79,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "ConsoleWarningLogger",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [
+            "console"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/diagnostics/console_warning_logger.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
         }
       }
     },

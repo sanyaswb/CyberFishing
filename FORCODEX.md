@@ -31,6 +31,7 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Prerequisite 009 (inventory decomposition 1): capacity and line-allocation texts (and metre formatting) in INVENTORY_RULE_MESSAGES, injected by bootstrap (LineCompatibilityRules -> LineInventoryController) and InventoryV2CompositionRoot (composed linePolicy). Open: FlatInventoryItemRepository, InventoryItemStackingPolicy (owner decision).
 - Prerequisite 010 (loadouts decomposition 1): LoadoutEquipmentTransitionPlanner capacity text injected by InventoryV2CompositionRoot. Open: EquipmentLoadout ("Комплект" default name/displayType persisted in saves; owner decision).
 - Prerequisite 011 (item-progression decomposition 1): ItemCapacityResolver default labels in INVENTORY_RULE_MESSAGES, injected by bootstrap. Open: ItemCatalogBaselineRegistry (console default -> platform logger), CompositeMetricStrategy/ItemRatingResolver (reclassification without edit).
+- Prerequisites 012-014 (owner decisions 2026-09-28): reviewedWithoutEdit (evidence-backed blocker removal, pinned hashes) closes inventory, loadouts and item-progression; ConsoleWarningLogger (platform, split slot 79) injected into ItemCatalogBaselineRegistry. Remaining: fishing-systems, entities-world-rules (plan for owner first).
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
