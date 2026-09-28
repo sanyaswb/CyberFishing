@@ -23413,8 +23413,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
