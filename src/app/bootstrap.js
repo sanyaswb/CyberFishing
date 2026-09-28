@@ -543,7 +543,7 @@ class GameCompositionRoot {
         rarityVisualResolver,
       }),
     });
-    const equipmentRules = new EquipmentRules(castDistanceCalculator);
+    const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
     const biteRules = new BiteRules(baitRules);

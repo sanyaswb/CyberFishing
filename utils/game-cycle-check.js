@@ -390,7 +390,8 @@ function createCast({
   currentHookDepth = 1,
 }) {
   const rng = createRng();
-  const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config));
+  // The runtime config is injected the way GameCompositionRoot injects it (the global CONFIG object).
+  const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config), CONFIG);
   const baitRules = new BaitRules();
   const bounds = { left: 0, right: 1000, top: 0, bottom: 800 };
   const rodVirtualPos = { x: 500, y: bounds.bottom };

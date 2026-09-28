@@ -4,7 +4,8 @@ class EquipmentRules {
   #config;
 
   constructor(castDistanceCalculator = null, config = null) {
-    this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
+    // Composition injects the runtime config.
+    this.#config = config || {};
     this.#castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(this.#config);
   }

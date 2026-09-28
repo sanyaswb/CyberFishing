@@ -6015,12 +6015,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CastDistanceCalculator",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6062,14 +6056,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "CastDistanceCalculator",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6091,13 +6077,6 @@
               "target": "src/app/utils.js",
               "symbols": [
                 "normalizeDistance"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG"
               ],
               "resolution": "confirmed"
             },
