@@ -1319,6 +1319,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     file: "utils/dev-tools-linked-parameter-check.js",
     suites: ["tools"],
   },
+  {
+    id: "check-cache-regression",
+    title: "Check cache v2 regression scenarios",
+    file: "utils/check-cache-regression-check.js",
+    suites: ["quick"],
+  },
 ]);
 
 module.exports = { CHECK_DEFINITIONS };

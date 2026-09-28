@@ -116,10 +116,11 @@ class StageThreeBatchCommand {
       },
       "automated-acceptance": async () => {
         this.requires(p.observation);
-        const evidence = this.option("--suite-evidence");
-        assert(evidence, "--suite-evidence <json file> is required");
-        const suiteEvidence = JSON.parse(fs.readFileSync(evidence, "utf8"));
-        return (await new StageThreeAutomatedAcceptance(ROOT, d, registry).run({ suiteEvidence })).status;
+        const report = this.option("--check-report");
+        assert(report, "--check-report <run-checks --acceptance/--release-gate report> is required");
+        const bytes = fs.readFileSync(report);
+        const checkReport = { bytes, report: JSON.parse(bytes) };
+        return (await new StageThreeAutomatedAcceptance(ROOT, d, registry).run({ checkReport })).status;
       },
       "browser-acceptance": async () => {
         this.requires(p.automatedAcceptance);

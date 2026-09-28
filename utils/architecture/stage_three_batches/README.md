@@ -46,8 +46,10 @@ node utils/architecture/stage-3-batch.js --batch NNN --step reconcile
   register the batch check in utils/testing/suites/check_manifest.js:
     file: "utils/architecture/stage-3-batch-check-runner.js",
     args: ["--batch", "NNN", "--mode", "architecture"], suites: ["quick", "architecture", "history"]
-  run Architecture, Quick and one complete Full (long suites may run on a snapshot copy)
-node utils/architecture/stage-3-batch.js --batch NNN --step automated-acceptance --suite-evidence <json>
+  run Architecture and Quick, then the release gate of the complete catalog (history replays may reuse
+  a proven PASS, everything else executes; see utils/testing/CHECKS.md):
+  node utils/run-checks.js --release-gate --report <abs path under node_modules/.cache or outside the project>
+node utils/architecture/stage-3-batch.js --batch NNN --step automated-acceptance --check-report <that report>
   the owner plays the batch checklist in the browser and reports console counts
 node utils/architecture/stage-3-batch.js --batch NNN --step browser-acceptance \
   --statement "<owner's words>" --console "<owner's words>" --errors 0 --warnings 0
@@ -55,7 +57,7 @@ node utils/architecture/stage-3-batch.js --batch NNN --step release-transition  
 node utils/architecture/stage-3-batch.js --batch NNN --step release-transition --publish
 node utils/architecture/stage-3-batch.js --batch NNN --step release-closure
   guard handover: the previous batch check moves to suites ["history"]
-  post-release Quick/Architecture and Full, then commit and annotated tag vX.Y.Z
+  post-release Quick/Architecture and the release gate, then commit and annotated tag vX.Y.Z
 ```
 
 `--step rollback --confirm` restores an unreleased batch from its recorded before-images (writes,

@@ -1,8 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { CheckCachePolicy } = require("./check_seal");
 
 class CheckDefinition {
-  constructor({ id, title, file, suites = [], args = [] }) {
+  constructor({ id, title, file, suites = [], args = [], cache = { policy: "never" }, isolation = "exclusive" }) {
     this.id = String(id || "").trim();
     this.title = String(title || "").trim();
     this.file = String(file || "").trim();
@@ -12,6 +13,13 @@ class CheckDefinition {
     }
     // Passed to the check process directly (no shell interpolation).
     this.args = Object.freeze([...args]);
+    // Cache policy (check_seal.js CheckCachePolicy): "never" unless the check's dependency contract
+    // was reviewed and opted into "snapshot".
+    this.cache = CheckCachePolicy.of({ id: this.id, cache });
+    // "read-only": reviewed to make no persistent project writes and start no unverified processes,
+    // so it may run in parallel (verified from its trace on every run). Otherwise it runs alone.
+    if (!["exclusive", "read-only"].includes(isolation)) throw new Error(`Unknown isolation for ${this.id}: ${isolation}`);
+    this.isolation = isolation;
     Object.freeze(this);
   }
 }

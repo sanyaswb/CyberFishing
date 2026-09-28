@@ -1,9 +1,8 @@
 const path = require("node:path");
 const fs = require("node:fs");
 const os = require("node:os");
-const crypto = require("node:crypto");
-const { spawn, spawnSync } = require("node:child_process");
-const { CheckInputFingerprints, CheckSeal, CheckSealStore, TRACER } = require("./check_seal");
+const { spawn } = require("node:child_process");
+const { CheckCachePolicy, CheckObservationValues, CheckSeal, CheckSealStore, TRACER } = require("./check_seal");
 const { HistoryBase, BASE } = require("./history_base");
 
 class CheckProcessExecutor {
@@ -12,248 +11,235 @@ class CheckProcessExecutor {
     this.nodePath = nodePath;
   }
 
-  run(check, { env = null, root = this.projectRoot } = {}) {
-    const startedAt = Date.now();
-    const result = spawnSync(
-      this.nodePath,
-      [path.join(root, check.file), ...(check.args || [])],
-      { cwd: root, stdio: "inherit", ...(env ? { env } : {}) },
-    );
-    return {
-      check,
-      durationMs: Date.now() - startedAt,
-      error: result.error || null,
-      status: result.status ?? 1,
-    };
-  }
-
-  // Runs one check with captured output (used by the parallel runner).
-  runCaptured(check, { env = null, root = this.projectRoot } = {}) {
+  // Runs one check and captures its output; with live, the output is also streamed as it arrives.
+  run(check, { env = null, root = this.projectRoot, live = false } = {}) {
     const startedAt = Date.now();
     return new Promise((resolve) => {
       const child = spawn(this.nodePath, [path.join(root, check.file), ...(check.args || [])],
         { cwd: root, ...(env ? { env } : {}) });
-      let output = "";
-      child.stdout.on("data", (chunk) => { output += chunk; });
-      child.stderr.on("data", (chunk) => { output += chunk; });
-      child.on("error", (error) => resolve({ check, durationMs: Date.now() - startedAt, error, status: 1, output }));
+      const chunks = [];
+      const collect = (stream) => (chunk) => {
+        chunks.push(chunk);
+        if (live) stream.write(chunk);
+      };
+      child.stdout.on("data", collect(process.stdout));
+      child.stderr.on("data", collect(process.stderr));
+      child.on("error", (error) => resolve({ check, durationMs: Date.now() - startedAt, error, status: 1,
+        output: Buffer.concat(chunks).toString() }));
       child.on("close", (status) => resolve({ check, durationMs: Date.now() - startedAt, error: null,
-        status: status ?? 1, output }));
+        status: status ?? 1, output: Buffer.concat(chunks).toString() }));
     });
   }
 }
 
-// Seals passing checks by their traced inputs and skips a check whose seal still holds.
-// mode "use": sealed checks are skipped; "reseal": every check runs and is sealed again.
-// History-only checks of batches up to the history base run in the reconstructed base release.
+// Executes checks under the input tracer and decides cache reuse (seal schema 2).
+// mode "use": an eligible seal that still holds is reused; "reseal": every check executes and is
+// sealed again when eligible; "none": every check executes and no seal is used or created.
+// A failed execution always removes the check's seal. History-only checks of batches up to the
+// history base run in the reconstructed base release.
 class SealingCheckExecutor {
   constructor({ projectRoot, executor = new CheckProcessExecutor({ projectRoot }), mode = "use",
     store = new CheckSealStore(projectRoot) } = {}) {
+    if (!["use", "reseal", "none"].includes(mode)) throw new Error(`Unknown seal mode: ${mode}`);
     this.projectRoot = path.resolve(projectRoot);
     this.executor = executor;
     this.mode = mode;
     this.store = store;
-    this.fingerprints = new Map();
-    this.gitCache = new Map();
-    this.basePromise = null;
+    this.values = new Map();
+    this.base = null;
   }
 
-  async rootFor(check) {
+  // The history base is reconstructed before any check runs, so no check can modify its sources
+  // while it is being built.
+  async prepare(checks) {
+    if (checks.some((check) => HistoryBase.covers(check))) this.base = await new HistoryBase(this.projectRoot).prepare();
+  }
+
+  location(check) {
     if (!HistoryBase.covers(check)) return { root: this.projectRoot, scope: "live" };
-    if (!this.basePromise) this.basePromise = new HistoryBase(this.projectRoot).prepare();
-    return { root: await this.basePromise, scope: `history-base-${BASE.release}` };
+    if (!this.base) throw new Error("The history base was not prepared");
+    return { root: this.base, scope: `history-base-${BASE.release}` };
   }
 
-  fingerprintsFor(root) {
-    if (!this.fingerprints.has(root)) this.fingerprints.set(root, new CheckInputFingerprints(root));
-    return this.fingerprints.get(root);
+  valuesFor(root) {
+    if (!this.values.has(root)) this.values.set(root, new CheckObservationValues(root));
+    return this.values.get(root);
   }
 
-  git(args) {
-    const key = JSON.stringify(args);
-    if (!this.gitCache.has(key)) {
-      const result = spawnSync(process.platform === "win32" ? "C:/Program Files/Git/cmd/git.exe" : "git", args,
-        { cwd: this.projectRoot });
-      this.gitCache.set(key, crypto.createHash("sha256").update(result.stdout || "").digest("hex"));
-    }
-    return this.gitCache.get(key);
+  // Memoized observation values are discarded after any execution that wrote or did something
+  // the tracer cannot follow.
+  invalidate() {
+    for (const values of this.values.values()) values.invalidate();
   }
 
-  scoped(check, scope) { return { ...check, args: [...(check.args || [])], scope }; }
-
-  // Returns null when the check is sealed, or the reason it must run.
-  async reason(check) {
-    const { root, scope } = await this.rootFor(check);
-    if (this.mode === "reseal") return { reason: "reseal requested", root, scope };
+  // Evaluated when the check is scheduled: { reason: null, seal } for a reusable PASS.
+  decide(check) {
+    const { root, scope } = this.location(check);
+    if (this.mode === "reseal") return { root, scope, reason: "reseal requested" };
+    if (this.mode === "none") return { root, scope, reason: "seals disabled" };
     const seal = this.store.load(check);
-    const reason = seal && seal.scope !== scope ? "execution scope changed" : CheckSeal.invalidation({ root,
-      check: this.scoped(check, scope), seal, fingerprints: this.fingerprintsFor(root), git: args => this.git(args) });
-    return { reason, root, scope, seal };
+    const reason = CheckSeal.invalidation({ check, scope, root, seal, values: this.valuesFor(root) });
+    return { root, scope, reason, seal };
+  }
+
+  cached(check, decision) {
+    return { check, scope: decision.scope, cached: true, status: 0, error: null, durationMs: 0,
+      sealedAt: decision.seal.sealedAt,
+      output: `[cached] ${decision.scope}: seal of ${decision.seal.sealedAt} holds ` +
+        `(${decision.seal.observations.length} observations, ${Object.keys(decision.seal.snapshot).length} reviewed inputs)\n` };
   }
 
   traceEnvironment(root) {
-    const trace = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "cyber-check-trace-")), "trace.jsonl");
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-check-trace-"));
+    const trace = path.join(directory, "trace.jsonl");
     fs.writeFileSync(trace, "");
     const options = process.env.NODE_OPTIONS ? `${process.env.NODE_OPTIONS} ` : "";
-    return { trace, env: { ...process.env, NODE_OPTIONS: `${options}--require ${JSON.stringify(TRACER)}`,
+    return { directory, trace, env: { ...process.env, NODE_OPTIONS: `${options}--require ${JSON.stringify(TRACER)}`,
       CYBER_CHECK_TRACE: trace, CYBER_CHECK_ROOT: root } };
   }
 
-  record(check, { root, scope }, result, trace) {
-    const text = fs.readFileSync(trace, "utf8");
-    // Files this check wrote may have changed; their fingerprints are recomputed.
-    this.fingerprints.delete(root);
-    if (result.status === 0 && !result.error) {
-      this.store.save(check, { ...CheckSeal.build({ root, check: this.scoped(check, scope), trace: text,
-        fingerprints: this.fingerprintsFor(root), durationMs: result.durationMs }), scope });
-    } else {
+  // Isolation contract of a read-only check: no project writes and nothing the tracer cannot follow
+  // except reads of external paths.
+  static isolationViolations(check, events) {
+    if (check.isolation !== "read-only") return [];
+    const violations = [];
+    for (const event of events) {
+      if (event.kind === "write") violations.push(`write ${event.path}`);
+      if (event.kind === "unsupported" && !(event.reason === "external path" && !event.mutating)) {
+        violations.push(`unsupported ${event.op}${event.path ? ` ${event.path}` : ""}${event.reason ? ` (${event.reason})` : ""}`);
+      }
+    }
+    return [...new Set(violations)];
+  }
+
+  async execute(check, decision, { live = false, seal = true } = {}) {
+    const { root, scope } = decision;
+    const policy = CheckCachePolicy.of(check);
+    const snapshotBefore = CheckSeal.snapshot(policy, new CheckObservationValues(root));
+    const { directory, trace, env } = this.traceEnvironment(root);
+    const header = `[run] ${scope}: ${decision.reason}\n`;
+    if (live) process.stdout.write(header);
+    let result;
+    let events;
+    try {
+      result = await this.executor.run(check, { env, root, live });
+      events = CheckSeal.events(fs.readFileSync(trace, "utf8"));
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+    const passed = result.status === 0 && !result.error;
+    const after = new CheckObservationValues(root);
+    const evaluation = passed
+      ? CheckSeal.evaluate({ check, scope, root, events, values: after, snapshotBefore,
+        snapshotAfter: CheckSeal.snapshot(policy, after), durationMs: result.durationMs })
+      : { eligible: false, reasons: ["execution failed"], writes: [] };
+    let sealed = false;
+    if (passed && evaluation.eligible && this.mode !== "none" && seal) {
+      this.store.save(check, evaluation.seal);
+      sealed = true;
+    } else if (!passed || (this.mode !== "none" && seal)) {
       this.store.remove(check);
     }
-    fs.rmSync(path.dirname(trace), { recursive: true, force: true });
-  }
-
-  async execute(check, { captured }) {
-    const decision = await this.reason(check);
-    if (decision.reason === null) {
-      return { check, durationMs: 0, error: null, status: 0, sealed: true,
-        output: `[sealed] ${decision.scope}: inputs unchanged since ${decision.seal.sealedAt} (${decision.seal.inputs.length} inputs)\n` };
-    }
-    const { trace, env } = this.traceEnvironment(decision.root);
-    const header = `[run] ${decision.scope}: ${decision.reason}\n`;
-    if (!captured) process.stdout.write(header);
-    const result = captured
-      ? await this.executor.runCaptured(check, { env, root: decision.root })
-      : this.executor.run(check, { env, root: decision.root });
-    this.record(check, decision, result, trace);
-    return { ...result, sealed: false, output: captured ? header + result.output : header };
-  }
-
-  // Paths a check read and wrote in its last sealed run (unknown when never sealed).
-  footprint(check) {
-    const seal = this.store.load(check);
-    if (!seal) return null;
-    return { scope: seal.scope, reads: seal.inputs.map((input) => input.path), writes: seal.writes };
+    if (events.some((event) => event.kind === "write" || event.kind === "unsupported")) this.invalidate();
+    const isolationViolations = SealingCheckExecutor.isolationViolations(check, events);
+    const reasons = evaluation.eligible && !sealed ? [seal ? "seals disabled" : "diagnostic retries never seal"]
+      : evaluation.reasons || [];
+    const cacheNote = sealed ? "[sealed]\n" : `[not sealed] ${reasons.slice(0, 3).join("; ")}` +
+      `${reasons.length > 3 ? ` (+${reasons.length - 3} more)` : ""}\n`;
+    const violationNote = isolationViolations.length
+      ? `[isolation violated] ${isolationViolations.slice(0, 5).join("; ")}\n` : "";
+    if (live) process.stdout.write(cacheNote + violationNote);
+    return { ...result, scope, cached: false, sealed, cacheReasons: reasons, isolationViolations,
+      trace: { writes: evaluation.writes || [], unsupported: events.filter((event) => event.kind === "unsupported") },
+      output: `${header}${result.output}${cacheNote}${violationNote}` };
   }
 }
 
+// Runs checks in catalog order. Read-only checks run in up to `jobs` parallel processes; any other
+// check runs alone. A cached PASS is revalidated when its check is scheduled. A failed parallel
+// execution stays failed; its sequential diagnostic retry is reported separately.
 class CheckSuiteRunner {
-  constructor({ executor }) {
-    this.executor = executor;
-  }
-
-  run(checks) {
-    if (this.executor instanceof SealingCheckExecutor) return this.#runSealed(checks);
-    const startedAt = Date.now();
-    const results = [];
-
-    for (const check of checks) {
-      console.log(`\n[check] ${check.title}`);
-      const result = this.executor.run(check);
-      results.push(result);
-      if (result.error) throw result.error;
-      if (result.status !== 0) {
-        process.exitCode = result.status;
-        return results;
-      }
-    }
-
-    const durationMs = Date.now() - startedAt;
-    console.log(`\nPassed ${results.length} checks in ${(durationMs / 1000).toFixed(2)}s.`);
-    return results;
-  }
-
-  async #runSealed(checks) {
-    const startedAt = Date.now();
-    const results = [];
-    for (const check of checks) {
-      console.log(`\n[check] ${check.title}`);
-      const result = await this.executor.execute(check, { captured: false });
-      if (result.sealed) process.stdout.write(result.output);
-      results.push(result);
-      if (result.error) throw result.error;
-      if (result.status !== 0) {
-        process.exitCode = result.status;
-        return results;
-      }
-    }
-    const sealed = results.filter((result) => result.sealed).length;
-    console.log(`\nPassed ${results.length} checks in ${((Date.now() - startedAt) / 1000).toFixed(2)}s.` +
-      ` (${results.length - sealed} executed, ${sealed} sealed)`);
-    return results;
-  }
-}
-
-// Runs unsealed checks in parallel. Two checks conflict when one wrote a path the other read or
-// wrote in its last sealed run (same execution scope); a check with no known footprint runs alone.
-// Failed checks are retried once sequentially, so an unforeseen conflict never becomes a result.
-class ParallelCheckSuiteRunner {
-  constructor({ executor, jobs = 4 }) {
+  constructor({ executor, jobs = 1, report = null, acceptance = false }) {
     this.executor = executor;
     this.jobs = jobs;
+    this.report = report;
+    this.acceptance = acceptance;
   }
 
-  static conflicts(left, right) {
-    if (!left || !right) return true;
-    if (left.scope !== right.scope) return false;
-    const touches = (writes, paths) => writes.some((write) => paths.some((item) =>
-      item === write || item.startsWith(`${write}/`) || write.startsWith(`${item}/`)));
-    return touches(left.writes, [...right.reads, ...right.writes]) || touches(right.writes, left.reads);
+  print(result, live) {
+    if (!live) {
+      console.log(`\n[check] ${result.check.title} (${(result.durationMs / 1000).toFixed(1)}s)`);
+      process.stdout.write(result.output);
+    } else if (result.cached) {
+      process.stdout.write(result.output);
+    }
   }
 
   async run(checks) {
     const startedAt = Date.now();
+    this.report?.begin(checks);
+    await this.executor.prepare(checks);
     const results = new Map();
-    const pending = [];
+    const running = new Set();
+    const live = this.jobs === 1 || checks.length === 1;
+    const drain = async () => { while (running.size > 0) await Promise.race(running); };
     for (const check of checks) {
-      const decision = await this.executor.reason(check);
+      const exclusive = live || check.isolation !== "read-only";
+      if (exclusive) await drain();
+      while (running.size >= this.jobs) await Promise.race(running);
+      if (live) console.log(`\n[check] ${check.title}`);
+      const decision = this.executor.decide(check);
       if (decision.reason === null) {
-        results.set(check.id, { check, sealed: true, status: 0 });
-      } else {
-        pending.push({ check, footprint: this.executor.footprint(check) });
+        const result = this.executor.cached(check, decision);
+        results.set(check.id, result);
+        this.print(result, live);
+        continue;
       }
+      const task = this.executor.execute(check, decision, { live })
+        .catch((error) => ({ check, scope: decision.scope, cached: false, status: 1, error, durationMs: 0,
+          cacheReasons: ["runner error"], output: `[runner error] ${error.stack}
+` }))
+        .then((result) => {
+          results.set(check.id, { ...result, parallel: !exclusive });
+          this.print(result, live);
+          running.delete(task);
+        });
+      running.add(task);
+      if (exclusive) await drain();
     }
-    console.log(`[parallel] ${checks.length - pending.length} sealed, ${pending.length} to execute with ${this.jobs} jobs`);
-    const running = new Map();
-    const failed = [];
-    await new Promise((resolve) => {
-      const launch = () => {
-        if (pending.length === 0 && running.size === 0) { resolve(); return; }
-        for (let index = 0; index < pending.length && running.size < this.jobs; index++) {
-          const candidate = pending[index];
-          const blocked = [...running.values()].some((item) =>
-            ParallelCheckSuiteRunner.conflicts(item.footprint, candidate.footprint));
-          if (blocked) continue;
-          pending.splice(index--, 1);
-          running.set(candidate.check.id, candidate);
-          this.executor.execute(candidate.check, { captured: true }).then((result) => {
-            running.delete(candidate.check.id);
-            console.log(`\n[check] ${candidate.check.title} (${(result.durationMs / 1000).toFixed(1)}s)`);
-            process.stdout.write(result.output);
-            if (result.status !== 0 || result.error) failed.push(candidate.check);
-            else results.set(candidate.check.id, result);
-            launch();
-          });
-        }
-      };
-      launch();
-    });
-    for (const check of failed) {
-      console.log(`\n[retry sequentially] ${check.title}`);
-      const result = await this.executor.execute(check, { captured: false });
-      results.set(check.id, result);
-    }
+    await drain();
     const ordered = checks.map((check) => results.get(check.id));
-    const failures = ordered.filter((result) => result.status !== 0);
-    if (failures.length > 0) {
-      for (const result of failures) console.log(`FAILED: ${result.check.title}`);
-      process.exitCode = 1;
-      return ordered;
+    for (const result of ordered.filter((item) => item.parallel && item.status !== 0)) {
+      console.log(`\n[diagnostic retry, the failure stands] ${result.check.title}`);
+      const retry = await this.executor.execute(result.check, { ...this.executor.location(result.check),
+        reason: "diagnostic retry of a failed parallel execution (never sealed)" }, { live: true, seal: false });
+      result.diagnosticRetry = { status: retry.status, durationMs: retry.durationMs };
     }
-    const sealed = ordered.filter((result) => result.sealed).length;
-    console.log(`\nPassed ${ordered.length} checks in ${((Date.now() - startedAt) / 1000).toFixed(2)}s.` +
-      ` (${ordered.length - sealed} executed, ${sealed} sealed, ${this.jobs} jobs)`);
+    const failures = ordered.filter((result) => result.status !== 0 || result.error);
+    const violations = ordered.filter((result) => result.isolationViolations?.length);
+    const cached = ordered.filter((result) => result.cached).length;
+    const report = this.report ? this.#finishReport(ordered) : null;
+    const seconds = ((Date.now() - startedAt) / 1000).toFixed(2);
+    const counts = `${ordered.length - cached} executed, ${cached} cached, ${this.jobs} jobs`;
+    for (const result of failures) console.log(`FAILED: ${result.check.title}`);
+    for (const result of violations) console.log(`ISOLATION VIOLATED: ${result.check.title}`);
+    if (report && !report.source.unchanged) console.log("SOURCE DRIFT: the working tree changed during the run");
+    if (failures.length > 0 || violations.length > 0 || (report && !report.source.unchanged)) {
+      console.log(`\nFailed ${failures.length} of ${ordered.length} checks in ${seconds}s (${counts}).`);
+      process.exitCode = 1;
+    } else {
+      console.log(`\nPassed ${ordered.length} checks in ${seconds}s (${counts}).`);
+    }
     return ordered;
+  }
+
+  #finishReport(ordered) {
+    for (const result of ordered) this.report.add(result);
+    const report = this.report.finish();
+    this.report.write(report);
+    console.log(`[report] ${report.mode}: ${this.report.file}`);
+    return report;
   }
 }
 
-module.exports = { CheckProcessExecutor, CheckSuiteRunner, ParallelCheckSuiteRunner, SealingCheckExecutor };
+module.exports = { CheckProcessExecutor, CheckSuiteRunner, SealingCheckExecutor };

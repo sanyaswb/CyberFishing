@@ -11,6 +11,9 @@ const { ControlledMetadataTransaction } = require("../../domain_batches/controll
 const { PATHS } = require("../../domain_batches/stage_three_live_preflight");
 const { sha, serialize } = require("./planning");
 const { CHECK_DEFINITIONS } = require("../../../testing/suites/check_manifest");
+const { applyCheckPolicies } = require("../../../testing/suites/check_policies");
+const { CheckCatalog } = require("../../../testing/core/check_catalog");
+const { AcceptanceReportValidator } = require("../../../testing/core/check_report");
 
 const GIT = process.platform === "win32" ? "C:/Program Files/Git/cmd/git.exe" : "git";
 
@@ -24,9 +27,31 @@ class StageThreeAutomatedAcceptance {
   bytes(file) { return fs.readFileSync(path.join(this.root, file)); }
   json(file) { return JSON.parse(this.bytes(file)); }
 
-  // suiteEvidence: { full: { passedChecks, failedChecks, platform, source }, supplementary?, summary }.
-  // The full-suite result must be a real run of the complete CHECK_DEFINITIONS catalog.
-  async run({ suiteEvidence } = {}) {
+  // The full-suite result is the runner's own report of the complete catalog (--acceptance or
+  // --release-gate), validated against the current tree before anything is recorded. The manually
+  // composed suiteEvidence ({ full: { passedChecks, failedChecks, platform, source }, supplementary?,
+  // summary }) is the legacy path of batches up to 038 and needs legacySuiteEvidence: true.
+  static reportEvidence(root, checkReport) {
+    const catalog = new CheckCatalog(applyCheckPolicies(CHECK_DEFINITIONS)).list();
+    new AcceptanceReportValidator({ projectRoot: root, catalog })
+      .assertValid(checkReport.report, { modes: ["acceptance", "release-gate"] });
+    const { report } = checkReport;
+    return {
+      full: { passedChecks: report.totals.passed + report.totals.cached, failedChecks: report.totals.failed,
+        platform: `${report.environment.platform}-${report.environment.arch} node ${report.environment.node}`,
+        source: `check run report ${report.runId}` },
+      summary: `${report.mode}: ${report.totals.executed} executed, ${report.totals.cached} reused history replays, ` +
+        `${report.totals.failed} failed; source unchanged during the run`,
+      report: { kind: report.kind, schemaVersion: report.schemaVersion, runId: report.runId, mode: report.mode,
+        sha256: sha(checkReport.bytes), executed: report.totals.executed, cached: report.totals.cached,
+        catalogSha256: report.catalog.sha256, sourceSha256: report.source.before, sourceCommit: report.source.commit },
+    };
+  }
+
+  async run({ checkReport = null, suiteEvidence: legacyEvidence = null, legacySuiteEvidence = false } = {}) {
+    assert(checkReport || (legacyEvidence && legacySuiteEvidence),
+      "Automated acceptance requires the runner report (checkReport: { bytes, report })");
+    const suiteEvidence = checkReport ? StageThreeAutomatedAcceptance.reportEvidence(this.root, checkReport) : legacyEvidence;
     const PROFILE = this.definition.profile;
     const context = this.definition.context;
     const topology = PROFILE.executionProfile.expectedTopology;
@@ -73,7 +98,8 @@ class StageThreeAutomatedAcceptance {
       },
       suites: {
         full: { passedChecks: suiteEvidence.full.passedChecks, failedChecks: suiteEvidence.full.failedChecks },
-        fullRun: { platform: suiteEvidence.full.platform, source: suiteEvidence.full.source },
+        fullRun: { platform: suiteEvidence.full.platform, source: suiteEvidence.full.source,
+          ...(suiteEvidence.report ? { report: suiteEvidence.report } : {}) },
         ...(suiteEvidence.supplementary ? { supplementary: suiteEvidence.supplementary } : {}),
         summary: suiteEvidence.summary,
         countSemantics: "The full suite includes the architecture and quick checks.",

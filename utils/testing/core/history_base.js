@@ -57,25 +57,48 @@ class HistoryBase {
     return sha(lines.join("\n"));
   }
 
-  // Copies files only (like the historical workspaces), so a base copied from the live release and
-  // a base reconstructed from a later tree have the same structure. Artifacts of batches newer than
-  // the base are not part of the base release.
+  // Mirrors the files (only, like the historical workspaces) of items from sourceRoot into target:
+  // files with different bytes are written, files and directories absent from the source are
+  // removed, and unchanged files are left untouched so their stat metadata stays stable for cached
+  // checks. A base copied from the live release and one reconstructed from a later tree have the
+  // same structure.
+  #mirror(sourceRoot, target, items, include = () => true) {
+    const wanted = new Set();
+    for (const item of items) {
+      this.#walk(sourceRoot, item, file => {
+        if (!include(file)) return;
+        wanted.add(file);
+        const destination = path.join(target, file);
+        const bytes = fs.readFileSync(path.join(sourceRoot, file));
+        const current = fs.existsSync(destination) ? fs.lstatSync(destination) : null;
+        if (current?.isFile() && fs.readFileSync(destination).equals(bytes)) return;
+        if (current) fs.rmSync(destination, { recursive: true, force: true });
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.writeFileSync(destination, bytes);
+      });
+    }
+    const prune = relative => {
+      const absolute = path.join(target, relative);
+      if (!fs.existsSync(absolute)) return;
+      if (!fs.lstatSync(absolute).isDirectory()) {
+        if (!wanted.has(relative)) fs.rmSync(absolute, { force: true });
+        return;
+      }
+      for (const entry of fs.readdirSync(absolute)) prune(`${relative}/${entry}`);
+      if (fs.readdirSync(absolute).length === 0) fs.rmdirSync(absolute);
+    };
+    for (const item of items) prune(item);
+  }
+
+  // Artifacts of batches newer than the base are not part of the base release.
   #copyInto(sourceRoot, target) {
-    fs.rmSync(target, { recursive: true, force: true });
     fs.mkdirSync(target, { recursive: true });
     const newer = file => {
       const batch = file.match(/^architecture\/migration\/stage_3_batch_(\d{3})_/u)?.[1] ??
         Object.entries(STAGE_DIRECTORIES).find(([directory]) => file.startsWith(directory))?.[1];
       return batch !== undefined && batch > BASE.batch;
     };
-    for (const item of DATA) {
-      this.#walk(sourceRoot, item, file => {
-        if (newer(file)) return;
-        const destination = path.join(target, file);
-        fs.mkdirSync(path.dirname(destination), { recursive: true });
-        fs.copyFileSync(path.join(sourceRoot, file), destination);
-      });
-    }
+    this.#mirror(sourceRoot, target, DATA, file => !newer(file));
   }
 
   // The base fingerprint recorded while the live tree itself was the base release; a later
@@ -124,13 +147,11 @@ class HistoryBase {
       fs.mkdirSync(this.cache, { recursive: true });
       fs.writeFileSync(marker, JSON.stringify({ head, base: this.fingerprint(this.directory) }));
     }
-    const utils = path.join(this.directory, "utils");
-    fs.rmSync(utils, { recursive: true, force: true });
-    fs.cpSync(path.join(this.root, "utils"), utils, { recursive: true });
+    this.#mirror(this.root, this.directory, ["utils"]);
     const modules = path.join(this.directory, "node_modules");
     if (!fs.existsSync(modules)) fs.symlinkSync(path.join(this.root, "node_modules"), modules, "junction");
     return this.directory;
   }
 }
 
-module.exports = { HistoryBase, BASE };
+module.exports = { HistoryBase, BASE, DATA };
