@@ -99,7 +99,7 @@ class RuntimeLoader {
       "EquipmentReadModelFactory",
     ]);
     // Player-facing rule texts are injected the way InventoryV2CompositionRoot injects them.
-    for (const name of ["FishingReadinessPolicy", "ManualRodChangePlanner"]) {
+    for (const name of ["FishingReadinessPolicy", "ManualRodChangePlanner", "LoadoutEquipmentTransitionPlanner"]) {
       context[name] = bindConstructorDefaults(context[name], {
         messages: context.INVENTORY_RULE_MESSAGES,
       });

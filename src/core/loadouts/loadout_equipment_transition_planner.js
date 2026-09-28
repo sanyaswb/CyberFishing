@@ -2,12 +2,16 @@ class LoadoutEquipmentTransitionPlanner {
   #capacityPolicy;
   #ownershipReader;
   #mainSlotIds;
+  #messages;
 
+  // The capacity warning text is injected by composition.
   constructor({
     capacityPolicy = null,
     ownershipReader = null,
     mainSlotIds = null,
+    messages = null,
   } = {}) {
+    this.#messages = messages;
     this.#capacityPolicy =
       capacityPolicy ||
       (typeof UnlimitedInventoryCapacityPolicy !== "undefined"
@@ -81,7 +85,7 @@ class LoadoutEquipmentTransitionPlanner {
       capacity: Object.freeze({ ...capacity }),
       warning:
         capacity.allowed === false
-          ? capacity.warning || "Недостатньо місця в інвентарі."
+          ? capacity.warning || this.#messages.inventoryCapacityExceeded
           : null,
     });
   }

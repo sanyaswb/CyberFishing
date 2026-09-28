@@ -224,6 +224,7 @@ class InventoryV2CompositionRoot {
     const loadoutTransitionPlanner = new LoadoutEquipmentTransitionPlanner({
       capacityPolicy,
       ownershipReader: (instanceId) => loadoutPort.getRootOwner(instanceId),
+      messages: INVENTORY_RULE_MESSAGES,
     });
     const loadoutService = new LoadoutApplicationService({
       port: loadoutPort,
