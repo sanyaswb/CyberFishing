@@ -14757,12 +14757,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "FloatTackleLineBudgetPolicy",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -14799,14 +14793,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FloatTackleLineBudgetPolicy",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -14816,13 +14802,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/float_tackle_line_budget_policy.js",
               "symbols": [
@@ -17042,14 +17021,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -17078,25 +17050,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -17104,8 +17059,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }
@@ -18530,14 +18484,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -18564,25 +18511,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -18590,8 +18520,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }
@@ -45897,12 +45826,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "FishFightDirectionResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -45984,14 +45907,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FishFightDirectionResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -46041,13 +45956,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/fishing/drag_force_calculator.js",
               "symbols": [

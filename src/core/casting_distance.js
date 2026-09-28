@@ -296,15 +296,9 @@ class CastDistanceCalculator {
     );
   }
 
+  // Composition passes a config carrying its FightPhysicsConfigAdapter (CONFIG or ConfigProvider).
   #resolvePhysicsConfigAdapter(config) {
     if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
-    const candidate = config?.physics || config;
-    if (
-      typeof FightPhysicsConfigAdapter !== "undefined" &&
-      (candidate?.simulation || candidate?.tackle || candidate?.fight)
-    ) {
-      return new FightPhysicsConfigAdapter(config);
-    }
     return null;
   }
 }

@@ -531,26 +531,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-3e33b8422f4d",
-      "rule": "boundary-dependency",
-      "source": "src/systems/fish_force_system.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "3e33b8422f4d5b654b6cadf2c5c65eeae33f9123cea867da5d53587731338118",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/fish_force_system.js",
-        "target": "src/config/physics/physics_config_adapter.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-4aa0ebcba268",
       "rule": "boundary-dependency",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -589,26 +569,6 @@
         "rule": "boundary-dependency",
         "source": "src/ui/version_badge.js",
         "target": "src/config/project_version.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-4b1c9821e6ed",
-      "rule": "boundary-dependency",
-      "source": "src/core/fishing/retrieve_policy.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "4b1c9821e6ed4547695ad45057f2357b58e63dcdafb53a201d3ee90e47edddd7",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/fishing/retrieve_policy.js",
-        "target": "src/config/physics/physics_config_adapter.js"
       }
     },
     {
@@ -956,26 +916,6 @@
         "rule": "boundary-dependency",
         "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
         "target": "src/infrastructure/storage/legacy_inventory_unit_allocator.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-71f856da4ba4",
-      "rule": "boundary-dependency",
-      "source": "src/core/casting_distance.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "71f856da4ba420925c6024391ef165f2eb086272c6ffbe0f5412c862f0c82383",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/casting_distance.js",
-        "target": "src/config/physics/physics_config_adapter.js"
       }
     },
     {
@@ -1683,26 +1623,6 @@
         "rule": "boundary-dependency",
         "source": "src/systems/chum_system.js",
         "target": "src/core/core.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-e9b2c7838d91",
-      "rule": "boundary-dependency",
-      "source": "src/core/fishing/landing_policy.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "e9b2c7838d914d5921dbdc4f743abfa987d1f7e39184cff29d091417de48242d",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/fishing/landing_policy.js",
-        "target": "src/config/physics/physics_config_adapter.js"
       }
     },
     {

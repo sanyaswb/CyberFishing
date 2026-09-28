@@ -732,11 +732,9 @@ class FishForceSystem {
     return Math.max(0, Math.min(1, Number(value) || 0));
   }
 
+  // Composition passes a config carrying its FightPhysicsConfigAdapter (CONFIG or ConfigProvider).
   #resolvePhysicsConfigAdapter(config) {
     if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
-    if (typeof FightPhysicsConfigAdapter !== "undefined") {
-      return new FightPhysicsConfigAdapter(config);
-    }
     return null;
   }
 

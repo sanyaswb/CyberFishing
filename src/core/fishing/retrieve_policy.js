@@ -38,11 +38,10 @@ class PoleIdleRetrievePolicy extends RetrievePolicy {
   }
 }
 
+// Composition passes a config carrying its FightPhysicsConfigAdapter (CONFIG or ConfigProvider);
+// it is read on every call, so DEV overrides stay live.
 function resolveFightPhysicsConfig(config) {
   if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
-  if (typeof FightPhysicsConfigAdapter !== "undefined") {
-    return new FightPhysicsConfigAdapter(config);
-  }
   return null;
 }
 
