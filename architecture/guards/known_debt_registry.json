@@ -294,27 +294,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-2882b596d7b6",
-      "rule": "boundary-dependency",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/core/equipment/terminal_line_slot_resolver.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "2882b596d7b65db5ed85c929df695a2ed1ab561c47b062ab5a86668f9775457f",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/equipment/equipment_compatibility_policy.js",
-        "target": "src/core/equipment/terminal_line_slot_resolver.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-28f5b8bf4610",
       "rule": "boundary-dependency",
       "source": "src/app/script.js",
@@ -1682,27 +1661,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/application.js",
         "target": "src/app/adapters.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-e6ee565161e4",
-      "rule": "boundary-dependency",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/core/equipment/equipment_slot_visibility_policy.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "e6ee565161e4fccaea66cb6106ebbae5408290a3a6120b05dd309914a5aaddfe",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/equipment/equipment_compatibility_policy.js",
-        "target": "src/core/equipment/equipment_slot_visibility_policy.js"
       }
     },
     {

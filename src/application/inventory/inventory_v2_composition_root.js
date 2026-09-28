@@ -139,6 +139,9 @@ class InventoryV2CompositionRoot {
     const terminalLineResolver = new TerminalLineSlotResolver({
       capabilityResolver,
     });
+    const terminalLineLabelResolver = new TerminalLineSlotLabelResolver({
+      capabilityResolver,
+    });
     const itemReader = (instanceId) =>
       hydrator.hydrate(instanceId, repository);
     const equipmentReadModelFactory = new EquipmentReadModelFactory({
@@ -287,7 +290,7 @@ class InventoryV2CompositionRoot {
       itemOrderResolver,
       visibilityPolicy,
       availabilityPolicy,
-      terminalLineResolver,
+      terminalLineLabelResolver,
       compatibilityPolicy,
       equipmentLineReadinessPolicy,
       equipmentReadModelFactory,

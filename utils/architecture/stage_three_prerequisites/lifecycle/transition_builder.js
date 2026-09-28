@@ -72,7 +72,11 @@ class StageThreePrerequisiteTransitionBuilder {
     // Optional: reviewed reclassification / blocker removal of Manifest entries whose sources this
     // transition edits, and reviewed global providers of the files it creates (exact baseline delta).
     const updates = task.manifestUpdates ? new PrerequisiteManifestUpdatePlan(task.manifestUpdates,
-      { editedPaths: task.sourceEdits.map(edit => edit.path) }) : null;
+      { editedPaths: task.sourceEdits.map(edit => edit.path), reclassifiedWithoutEdit: task.reclassifiedWithoutEdit || [],
+        waves: this.json(POLICY).migration.waves }) : null;
+    for (const file of task.reclassifiedWithoutEdit || []) {
+      assert(!after.has(file), `a module reclassified without edit is written by the transition: ${file}`);
+    }
     const additions = task.globalProviderAdditions ? new PrerequisiteGlobalProviderAdditionPlan(
       task.globalProviderAdditions, { createdPaths: (task.createdFiles || []).map(created => created.path) }) : null;
     if (additions) {
@@ -142,7 +146,8 @@ class StageThreePrerequisiteTransitionBuilder {
         sourceEdits: task.sourceEdits.map(edit => ({ path: edit.path, beforeSha256: sha(this.bytes(edit.path)),
           afterSha256: sha(after.get(edit.path)) })),
         resolvedDebtIds: [...task.resolvedDebtIds],
-        ...(updates ? { manifestUpdates: updates.records(oldManifest, manifest) } : {}),
+        ...(updates ? { manifestUpdates: updates.records(oldManifest, manifest,
+          { sourceSha256: file => sha(this.bytes(file)) }) } : {}),
         ...(additions ? { globalProviderAdditions: additions.records() } : {}),
         dependencyObservation: { removedEdges: removed, addedEdges: added, confirmedEdgeDelta: added.length - removed.length },
         guards: { failureCount: result.failureCount, knownDebtCount: result.knownDebtCount },

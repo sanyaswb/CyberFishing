@@ -5013,6 +5013,12 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+      "symbol": "TerminalLineSlotLabelResolver",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
       "symbol": "ItemProgressionDomAdapter",
       "mechanism": "global-lexical",

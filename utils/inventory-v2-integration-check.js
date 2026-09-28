@@ -32,6 +32,7 @@ const files = [
   "src/core/equipment/rod_capability_resolver.js",
   "src/core/equipment/equipment_slot_visibility_policy.js",
   "src/core/equipment/terminal_line_slot_resolver.js",
+  "src/ui/inventory/terminal_line_slot_label_resolver.js",
   "src/core/equipment/equipment_state.js",
   "src/core/equipment/equipment_slot_availability_policy.js",
   "src/core/equipment/inventory_capacity_policy.js",

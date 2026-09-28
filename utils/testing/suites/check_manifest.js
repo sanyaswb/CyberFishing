@@ -832,6 +832,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-008",
+      title: "Stage 3 prerequisite 008: terminal-line label split with split legacy slot 159 and reclassification of the equipment slot rules replays byte-identically with parity, resolved debts, derived waves and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "008", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

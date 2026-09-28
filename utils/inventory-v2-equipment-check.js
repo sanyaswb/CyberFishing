@@ -38,6 +38,9 @@ class RuntimeLoader {
     loader.load("src/core/equipment/terminal_line_slot_resolver.js", [
       "TerminalLineSlotResolver",
     ]);
+    loader.load("src/ui/inventory/terminal_line_slot_label_resolver.js", [
+      "TerminalLineSlotLabelResolver",
+    ]);
     loader.load("src/core/equipment/equipment_state.js", ["EquipmentState"]);
     loader.load("src/core/equipment/equipment_slot_availability_policy.js", [
       "EquipmentSlotAvailabilityState",
@@ -190,8 +193,11 @@ class InventoryV2EquipmentCheck {
     Assertion.equal(visibility.isVisible("tackle", { rod: feeder }), true, "tackle is immediately visible after rod selection");
 
     const resolver = new r.TerminalLineSlotResolver();
-    Assertion.equal(resolver.resolve(pole).label, "Ліска", "pole terminal line is labelled line");
-    Assertion.equal(resolver.resolve(feeder).label, "Поводок", "reel rod terminal line is labelled leader");
+    const labels = new r.TerminalLineSlotLabelResolver({ capabilityResolver: new r.RodCapabilityResolver() });
+    Assertion.equal(labels.resolve(pole), "Ліска", "pole terminal line is labelled line");
+    Assertion.equal(labels.resolve(feeder), "Поводок", "reel rod terminal line is labelled leader");
+    Assertion.equal(labels.resolve(null), "Поводок / ліска", "without a rod the slot names both");
+    Assertion.that(!("label" in resolver.resolve(feeder)), "the Domain terminal-line rule carries no label");
     Assertion.equal(resolver.resolve(feeder).acceptTypes[0], "leader_line", "reel rod accepts a leader");
   }
 

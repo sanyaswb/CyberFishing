@@ -18,6 +18,14 @@
         "src/core/core.js"
       ],
       "transition": "architecture/migration/stage_3_prerequisites/006_vector2-classic-extraction.json"
+    },
+    {
+      "slot": 159,
+      "members": [
+        "src/core/equipment/terminal_line_slot_resolver.js",
+        "src/ui/inventory/terminal_line_slot_label_resolver.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/008_equipment-slot-rule-reclassification.json"
     }
   ]
 }

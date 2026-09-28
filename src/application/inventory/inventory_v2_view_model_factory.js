@@ -25,7 +25,7 @@ class InventoryV2ViewModelFactory {
   #itemOrderResolver;
   #visibilityPolicy;
   #availabilityPolicy;
-  #terminalLineResolver;
+  #terminalLineLabelResolver;
   #compatibilityPolicy;
   #equipmentLineReadinessPolicy;
   #equipmentReadModelFactory;
@@ -44,7 +44,7 @@ class InventoryV2ViewModelFactory {
     itemOrderResolver,
     visibilityPolicy,
     availabilityPolicy,
-    terminalLineResolver,
+    terminalLineLabelResolver,
     compatibilityPolicy,
     equipmentLineReadinessPolicy = null,
     equipmentReadModelFactory,
@@ -63,7 +63,7 @@ class InventoryV2ViewModelFactory {
     this.#itemOrderResolver = itemOrderResolver;
     this.#visibilityPolicy = visibilityPolicy;
     this.#availabilityPolicy = availabilityPolicy;
-    this.#terminalLineResolver = terminalLineResolver;
+    this.#terminalLineLabelResolver = terminalLineLabelResolver;
     this.#compatibilityPolicy = compatibilityPolicy;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
     this.#equipmentReadModelFactory = equipmentReadModelFactory;
@@ -650,7 +650,7 @@ class InventoryV2ViewModelFactory {
 
   #equipmentLabel(slotId, rod, item) {
     if (slotId === "terminalLine") {
-      return this.#terminalLineResolver.resolve(rod).label;
+      return this.#terminalLineLabelResolver.resolve(rod);
     }
     if (slotId === "tackle" && item) return item.name || "Снасть";
     return EQUIPMENT_SLOT_PRESENTATION[slotId]?.label || slotId;

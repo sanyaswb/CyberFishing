@@ -8024,6 +8024,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "TerminalLineSlotLabelResolver",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "TerminalLineSlotResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8589,6 +8595,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "TerminalLineSlotLabelResolver",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "TerminalLineSlotResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -9033,6 +9047,13 @@
               "target": "src/infrastructure/storage/legacy_item_state_migration.js",
               "symbols": [
                 "LegacyItemStateMigration"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+              "symbols": [
+                "TerminalLineSlotLabelResolver"
               ],
               "resolution": "confirmed"
             }
@@ -15400,11 +15421,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "domain-behavior"
         ],
-        "targetBoundary": "game-presentation",
-        "targetPath": "src/game/presentation/inventory/equipment_slot_visibility_policy.js",
-        "migrationWave": 6
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -16037,11 +16058,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "domain-behavior"
         ],
-        "targetBoundary": "game-presentation",
-        "targetPath": "src/game/presentation/inventory/terminal_line_slot_resolver.js",
-        "migrationWave": 6
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -50164,6 +50185,61 @@
           "items": [
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+      "currentArea": "ui/inventory",
+      "observed": {
+        "legacyLoadOrder": 159,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "TerminalLineSlotLabelResolver",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
           ]
         }
       }

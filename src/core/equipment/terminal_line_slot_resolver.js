@@ -1,3 +1,5 @@
+// Domain rule: the terminal-line slot takes a leader on reel rods and a main line
+// otherwise. Its UI labels are resolved in presentation.
 class TerminalLineSlotResolver {
   #capabilityResolver;
 
@@ -17,7 +19,6 @@ class TerminalLineSlotResolver {
     if (!rod) {
       return Object.freeze({
         slotId,
-        label: "Поводок / ліска",
         acceptTypes: Object.freeze(["fishing_line", "leader_line"]),
       });
     }
@@ -26,7 +27,6 @@ class TerminalLineSlotResolver {
       this.#capabilityResolver?.resolve?.(rod)?.supportsReel === true;
     return Object.freeze({
       slotId,
-      label: supportsReel ? "Поводок" : "Ліска",
       acceptTypes: Object.freeze(
         supportsReel ? ["leader_line"] : ["fishing_line"],
       ),

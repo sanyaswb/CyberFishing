@@ -19,6 +19,11 @@ const MANIFEST = Object.freeze({ modules: [
   manifestEntry("src/core/sample/other.js", ["legacy-global-contract", MIXED]),
 ] });
 const EDITED = { editedPaths: ["src/core/sample/edited.js"] };
+const WAVES = Object.freeze([
+  { order: 1, id: "pure-leaf", targetBoundaries: ["engine", "game-domain"] },
+  { order: 3, id: "game-domain", targetBoundaries: ["game-domain"] },
+  { order: 6, id: "presentation", targetBoundaries: ["game-presentation"] },
+]);
 const removal = (reason = "UI text moved to the injected presentation catalog.") => ({ blocker: MIXED, reason });
 
 let cases = 0;
@@ -29,12 +34,13 @@ const rejects = (label, action, pattern) => { cases += 1; assert.throws(action, 
 accepts("valid blocker removal and reclassification", () => {
   const plan = new PrerequisiteManifestUpdatePlan([{ currentPath: "src/core/sample/edited.js",
     architecture: { roles: ["presentation"], targetBoundary: "game-presentation",
-      targetPath: "src/game/presentation/sample/edited.js" }, removedBlockers: [removal()] }], EDITED);
+      targetPath: "src/game/presentation/sample/edited.js" }, removedBlockers: [removal()] }], { ...EDITED, waves: WAVES });
   const next = plan.apply(clone(MANIFEST));
   const entry = next.modules[0];
   assert.deepEqual(entry.analysis.blockers.items, ["legacy-global-contract"]);
   assert.equal(entry.architecture.targetBoundary, "game-presentation");
-  assert.equal(entry.architecture.migrationWave, 3, "unreviewed classification fields stay");
+  assert.equal(entry.architecture.migrationWave, 6, "the wave follows the boundary (its only wave)");
+  assert.equal(entry.architecture.migrationStatus, "classified", "unreviewed classification fields stay");
   assert.deepEqual(next.modules[1], MANIFEST.modules[1], "other modules stay untouched");
   plan.verify(clone(MANIFEST), next);
   const [record] = plan.records(clone(MANIFEST), next);
@@ -87,6 +93,55 @@ rejects("an update that changes nothing", () => new PrerequisiteManifestUpdatePl
 rejects("a reclassification to the current value", () => new PrerequisiteManifestUpdatePlan([{
   currentPath: "src/core/sample/edited.js", architecture: { targetBoundary: "game-domain" } }], EDITED)
   .apply(clone(MANIFEST)), /changes nothing/u);
+
+// Derived migration waves and reclassification without edit.
+const confirmedEdge = { target: "src/core/sample/dep.js", symbols: ["Dep"], resolution: "confirmed" };
+const presentationEntry = (currentPath, dependencies) => {
+  const entry = manifestEntry(currentPath, ["high-level-self-composition", "legacy-global-contract"]);
+  entry.architecture = { migrationStatus: "classified", roles: ["presentation"], targetBoundary: "game-presentation",
+    targetPath: `src/game/presentation/sample/${currentPath.split("/").pop()}`, migrationWave: 6 };
+  entry.analysis.dependencies = { items: dependencies };
+  return entry;
+};
+const RECLASSIFY = Object.freeze({ modules: [
+  presentationEntry("src/core/sample/rule.js", [confirmedEdge]),
+  presentationEntry("src/core/sample/leaf.js", []),
+  presentationEntry("src/core/sample/edited.js", [confirmedEdge]),
+] });
+const toDomain = currentPath => ({ currentPath, architecture: { roles: ["domain-behavior"], targetBoundary: "game-domain",
+  targetPath: `src/game/domain/sample/${currentPath.split("/").pop()}` } });
+
+accepts("reclassification without edit derives the boundary's own wave and pins the source hash", () => {
+  const plan = new PrerequisiteManifestUpdatePlan([toDomain("src/core/sample/rule.js"), toDomain("src/core/sample/edited.js")],
+    { ...EDITED, reclassifiedWithoutEdit: ["src/core/sample/rule.js"], waves: WAVES });
+  const next = plan.apply(clone(RECLASSIFY));
+  assert.equal(next.modules[0].architecture.migrationWave, 3, "a non-leaf Domain rule gets the game-domain wave");
+  assert.equal(next.modules[0].architecture.targetBoundary, "game-domain");
+  assert.equal(next.modules[2].architecture.migrationWave, 3);
+  plan.verify(clone(RECLASSIFY), next);
+  const records = plan.records(clone(RECLASSIFY), next, { sourceSha256: () => "a".repeat(64) });
+  assert.equal(records[0].unchangedSourceSha256, "a".repeat(64), "the unchanged source is pinned");
+  assert(!("unchangedSourceSha256" in records[1]), "an edited module records no pinned source");
+  assert.equal(records[0].before.architecture.migrationWave, 6);
+});
+rejects("a task that sets the migration wave", () => new PrerequisiteManifestUpdatePlan([{ ...toDomain("src/core/sample/edited.js"),
+  architecture: { ...toDomain("src/core/sample/edited.js").architecture, migrationWave: 3 } }], { ...EDITED, waves: WAVES }),
+/may only reclassify/u);
+rejects("a dependency leaf whose boundary several waves allow", () => new PrerequisiteManifestUpdatePlan(
+  [toDomain("src/core/sample/leaf.js")], { editedPaths: [], reclassifiedWithoutEdit: ["src/core/sample/leaf.js"],
+    waves: WAVES }).apply(clone(RECLASSIFY)), /not derivable/u);
+rejects("a boundary change without policy waves", () => new PrerequisiteManifestUpdatePlan(
+  [toDomain("src/core/sample/edited.js")], EDITED).apply(clone(RECLASSIFY)), /needs the policy waves/u);
+rejects("an unedited module that is not listed", () => new PrerequisiteManifestUpdatePlan(
+  [toDomain("src/core/sample/rule.js")], { ...EDITED, waves: WAVES }), /outside the transition/u);
+rejects("a blocker removal from a module reclassified without edit", () => new PrerequisiteManifestUpdatePlan([{
+  ...toDomain("src/core/sample/rule.js"), removedBlockers: [removal()] }],
+{ ...EDITED, reclassifiedWithoutEdit: ["src/core/sample/rule.js"], waves: WAVES }), /only from modules the transition edits/u);
+rejects("an edited module listed as reclassified without edit", () => new PrerequisiteManifestUpdatePlan(
+  [toDomain("src/core/sample/edited.js")], { ...EDITED, reclassifiedWithoutEdit: ["src/core/sample/edited.js"], waves: WAVES }),
+/not reclassified without edit/u);
+rejects("a listed module without an update", () => new PrerequisiteManifestUpdatePlan([toDomain("src/core/sample/edited.js")],
+  { ...EDITED, reclassifiedWithoutEdit: ["src/core/sample/rule.js"], waves: WAVES }), /has no update/u);
 
 // Global provider additions: the exact baseline changes by exactly the declared, observed providers.
 const CREATED = { createdPaths: ["src/config/sample/a.js", "src/config/sample/b.js"] };
