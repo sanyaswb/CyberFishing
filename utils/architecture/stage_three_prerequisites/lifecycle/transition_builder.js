@@ -12,6 +12,7 @@ const { ArchitectureGuardEngine } = require("../../guards/architecture_guard_eng
 const { StageThreePrerequisiteLedger, KIND } = require("../core/prerequisite_ledger");
 const { PrerequisiteManifestUpdatePlan } = require("./manifest_update_plan");
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./global_provider_addition_plan");
+const { buildReviewEvidence } = require("./review_evidence");
 
 const MANIFEST = "architecture/migration/module_migration_manifest.json";
 const KNOWN_DEBT = "architecture/guards/known_debt_registry.json";
@@ -73,8 +74,8 @@ class StageThreePrerequisiteTransitionBuilder {
     // transition edits, and reviewed global providers of the files it creates (exact baseline delta).
     const updates = task.manifestUpdates ? new PrerequisiteManifestUpdatePlan(task.manifestUpdates,
       { editedPaths: task.sourceEdits.map(edit => edit.path), reclassifiedWithoutEdit: task.reclassifiedWithoutEdit || [],
-        waves: this.json(POLICY).migration.waves }) : null;
-    for (const file of task.reclassifiedWithoutEdit || []) {
+        reviewedWithoutEdit: task.reviewedWithoutEdit || [], waves: this.json(POLICY).migration.waves }) : null;
+    for (const file of [...(task.reclassifiedWithoutEdit || []), ...(task.reviewedWithoutEdit || [])]) {
       assert(!after.has(file), `a module reclassified without edit is written by the transition: ${file}`);
     }
     const additions = task.globalProviderAdditions ? new PrerequisiteGlobalProviderAdditionPlan(
@@ -147,7 +148,9 @@ class StageThreePrerequisiteTransitionBuilder {
           afterSha256: sha(after.get(edit.path)) })),
         resolvedDebtIds: [...task.resolvedDebtIds],
         ...(updates ? { manifestUpdates: updates.records(oldManifest, manifest,
-          { sourceSha256: file => sha(this.bytes(file)) }) } : {}),
+          { sourceSha256: file => sha(this.bytes(file)),
+            reviewEvidence: file => buildReviewEvidence({ currentPath: file, manifest, policy: policyDocument,
+              debtRegistry: nextDebt, sourceSha256: sha(this.bytes(file)) }) }) } : {}),
         ...(additions ? { globalProviderAdditions: additions.records() } : {}),
         dependencyObservation: { removedEdges: removed, addedEdges: added, confirmedEdgeDelta: added.length - removed.length },
         guards: { failureCount: result.failureCount, knownDebtCount: result.knownDebtCount },

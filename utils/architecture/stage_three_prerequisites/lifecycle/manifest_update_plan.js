@@ -20,14 +20,21 @@ class PrerequisiteManifestUpdatePlan {
   #updates;
   #editedPaths;
   #withoutEdit;
+  #reviewed;
   #waves;
 
-  constructor(updates, { editedPaths, reclassifiedWithoutEdit = [], waves = null }) {
+  // `reviewedWithoutEdit` (owner decision 2026-09-28) lists explicitly approved modules the transition
+  // does not edit whose blockers are removed on recorded evidence (see review_evidence.js); they are
+  // never reclassified in the same update.
+  constructor(updates, { editedPaths, reclassifiedWithoutEdit = [], reviewedWithoutEdit = [], waves = null }) {
     assert(Array.isArray(updates) && updates.length > 0, "manifest updates must be a non-empty list");
     this.#editedPaths = new Set(editedPaths);
     assert(Array.isArray(reclassifiedWithoutEdit), "modules reclassified without edit must be a list");
     this.#withoutEdit = new Set(reclassifiedWithoutEdit);
     assert.equal(this.#withoutEdit.size, reclassifiedWithoutEdit.length, "duplicated module reclassified without edit");
+    assert(Array.isArray(reviewedWithoutEdit), "modules reviewed without edit must be a list");
+    this.#reviewed = new Set(reviewedWithoutEdit);
+    assert.equal(this.#reviewed.size, reviewedWithoutEdit.length, "duplicated module reviewed without edit");
     this.#waves = waves;
     const paths = new Set();
     this.#updates = updates.map(update => {
@@ -38,8 +45,13 @@ class PrerequisiteManifestUpdatePlan {
       paths.add(update.currentPath);
       const edited = this.#editedPaths.has(update.currentPath);
       const withoutEdit = this.#withoutEdit.has(update.currentPath);
+      const reviewed = this.#reviewed.has(update.currentPath);
       assert(!(edited && withoutEdit), `an edited module is not reclassified without edit: ${update.currentPath}`);
-      assert(edited || withoutEdit, `manifest update outside the transition's source edits: ${update.currentPath}`);
+      assert(!(edited && reviewed), `an edited module is not reviewed without edit: ${update.currentPath}`);
+      assert(!(withoutEdit && reviewed), `a module is either reclassified or reviewed without edit: ${update.currentPath}`);
+      assert(edited || withoutEdit || reviewed, `manifest update outside the transition's source edits: ${update.currentPath}`);
+      assert(!reviewed || ((update.removedBlockers ?? []).length > 0 && Object.keys(update.architecture ?? {}).length === 0),
+        `a module reviewed without edit only removes reviewed blockers: ${update.currentPath}`);
       const architecture = update.architecture ?? {};
       assert(architecture && typeof architecture === "object" && !Array.isArray(architecture) &&
         sameKeys(architecture, RECLASSIFIABLE),
@@ -75,6 +87,9 @@ class PrerequisiteManifestUpdatePlan {
     });
     for (const currentPath of this.#withoutEdit) {
       assert(paths.has(currentPath), `module reclassified without edit has no update: ${currentPath}`);
+    }
+    for (const currentPath of this.#reviewed) {
+      assert(paths.has(currentPath), `module reviewed without edit has no update: ${currentPath}`);
     }
   }
 
@@ -123,13 +138,14 @@ class PrerequisiteManifestUpdatePlan {
 
   // Record entries: the exact classification and blockers before and after, with every reason; a
   // module reclassified without edit also records its unchanged source hash.
-  records(oldManifest, newManifest, { sourceSha256 = null } = {}) {
+  records(oldManifest, newManifest, { sourceSha256 = null, reviewEvidence = null } = {}) {
     const entry = (document, currentPath) => document.modules.find(module => module.currentPath === currentPath);
     return this.#updates.map(update => {
       const before = entry(oldManifest, update.currentPath);
       const after = entry(newManifest, update.currentPath);
       return { currentPath: update.currentPath,
         ...(this.#withoutEdit.has(update.currentPath) ? { unchangedSourceSha256: sourceSha256(update.currentPath) } : {}),
+        ...(this.#reviewed.has(update.currentPath) ? { reviewEvidence: reviewEvidence(update.currentPath) } : {}),
         before: { architecture: clone(before.architecture), blockers: clone(before.analysis.blockers.items) },
         after: { architecture: clone(after.architecture), blockers: clone(after.analysis.blockers.items) },
         removedBlockers: clone(update.removedBlockers) };

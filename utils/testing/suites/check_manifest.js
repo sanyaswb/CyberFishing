@@ -860,6 +860,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-012",
+      title: "Stage 3 prerequisite 012: inventory evidence-backed blocker removal without edit replays byte-identically with pinned sources and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "012", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

@@ -6,6 +6,7 @@
 const assert = require("node:assert/strict");
 const { PrerequisiteManifestUpdatePlan } = require("./stage_three_prerequisites/lifecycle/manifest_update_plan");
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_addition_plan");
+const { buildReviewEvidence } = require("./stage_three_prerequisites/lifecycle/review_evidence");
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const MIXED = "mixed-responsibility-requires-decomposition";
@@ -142,6 +143,60 @@ rejects("an edited module listed as reclassified without edit", () => new Prereq
 /not reclassified without edit/u);
 rejects("a listed module without an update", () => new PrerequisiteManifestUpdatePlan([toDomain("src/core/sample/edited.js")],
   { ...EDITED, reclassifiedWithoutEdit: ["src/core/sample/rule.js"], waves: WAVES }), /has no update/u);
+
+// Blocker removal from approved modules the transition does not edit, on recorded evidence.
+const REVIEWED = { editedPaths: ["src/core/sample/edited.js"], reviewedWithoutEdit: ["src/core/sample/other.js"] };
+const POLICY = { targetBoundaries: [{ id: "game-domain", allowedDependencies: ["engine", "game-domain"] },
+  { id: "game-presentation", allowedDependencies: ["game-domain"] }, { id: "dev", allowedDependencies: [] }] };
+const evidenceManifest = (mutate = () => {}) => {
+  const document = clone(MANIFEST);
+  const dependency = manifestEntry("src/core/sample/dep.js", []);
+  document.modules.push(dependency);
+  document.modules[1].analysis.dependencies = { items: [{ target: "src/core/sample/dep.js", symbols: ["Dep"],
+    resolution: "confirmed" }], unresolved: [], ambiguous: [] };
+  document.modules[1].observed.environment = { browserApis: [], dynamicConstructs: [] };
+  mutate(document);
+  return document;
+};
+const evidence = (manifest, debts = []) => buildReviewEvidence({ currentPath: "src/core/sample/other.js", manifest,
+  policy: POLICY, debtRegistry: { debts }, sourceSha256: "b".repeat(64) });
+
+accepts("a reviewed module drops its blocker on recorded evidence", () => {
+  const plan = new PrerequisiteManifestUpdatePlan([{ currentPath: "src/core/sample/other.js", removedBlockers: [removal()] }],
+    REVIEWED);
+  const next = plan.apply(evidenceManifest());
+  assert.deepEqual(next.modules[1].analysis.blockers.items, ["legacy-global-contract"]);
+  const [record] = plan.records(evidenceManifest(), next, { reviewEvidence: () => evidence(next) });
+  assert.equal(record.reviewEvidence.sourceSha256, "b".repeat(64), "the source hash is pinned");
+  assert.deepEqual(record.reviewEvidence.dependencies, [{ target: "src/core/sample/dep.js", targetBoundary: "game-domain" }]);
+});
+rejects("a reviewed module that is also reclassified", () => new PrerequisiteManifestUpdatePlan([{
+  currentPath: "src/core/sample/other.js", architecture: { targetBoundary: "game-presentation" },
+  removedBlockers: [removal()] }], { ...REVIEWED, waves: WAVES }), /only removes reviewed blockers/u);
+rejects("a reviewed module without a blocker removal", () => new PrerequisiteManifestUpdatePlan([{
+  currentPath: "src/core/sample/other.js", architecture: { targetBoundary: "game-presentation" } }],
+{ ...REVIEWED, waves: WAVES }), /only removes reviewed blockers/u);
+rejects("an edited module listed as reviewed without edit", () => new PrerequisiteManifestUpdatePlan([{
+  currentPath: "src/core/sample/edited.js", removedBlockers: [removal()] }],
+{ editedPaths: ["src/core/sample/edited.js"], reviewedWithoutEdit: ["src/core/sample/edited.js"] }), /not reviewed without edit/u);
+rejects("a module both reclassified and reviewed without edit", () => new PrerequisiteManifestUpdatePlan([{
+  currentPath: "src/core/sample/other.js", removedBlockers: [removal()] }],
+{ editedPaths: [], reviewedWithoutEdit: ["src/core/sample/other.js"], reclassifiedWithoutEdit: ["src/core/sample/other.js"] }),
+/either reclassified or reviewed/u);
+rejects("evidence with a forbidden dependency", () => evidence(evidenceManifest(document => {
+  document.modules[2].architecture.targetBoundary = "game-presentation";
+})), /forbidden dependency/u);
+rejects("evidence with a DEV dependency", () => evidence(evidenceManifest(document => {
+  document.modules[2].architecture.targetBoundary = "dev";
+})), /forbidden dependency/u);
+rejects("evidence with a browser API", () => evidence(evidenceManifest(document => {
+  document.modules[1].observed.environment.browserApis = ["console"];
+})), /browser APIs/u);
+rejects("evidence with an unresolved dependency", () => evidence(evidenceManifest(document => {
+  document.modules[1].analysis.dependencies.unresolved = [{ symbol: "Hidden" }];
+})), /unresolved dependencies/u);
+rejects("evidence with remaining known debt", () => evidence(evidenceManifest(),
+  [{ id: "debt-x", source: "src/core/sample/other.js" }]), /known architecture debt/u);
 
 // Global provider additions: the exact baseline changes by exactly the declared, observed providers.
 const CREATED = { createdPaths: ["src/config/sample/a.js", "src/config/sample/b.js"] };

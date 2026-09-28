@@ -20121,9 +20121,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -20325,9 +20323,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
