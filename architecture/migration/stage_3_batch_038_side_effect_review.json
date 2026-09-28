@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-038-side-effect-review",
+  "batchId": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+  "stage": "3.39.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.75",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "c173f59c7698526fac0ce1a19968065ddc16869df27371e08bacf42e5f2307b2"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+      "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "sourceSha256": "e22ea0192038142bc7153a9e3d1c7edcc66eb7b67a76bf1f8b09d4702e7d0eec",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+        "sourceSha256": "e22ea0192038142bc7153a9e3d1c7edcc66eb7b67a76bf1f8b09d4702e7d0eec"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-e85348eb50a6",
+          "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+          "sourceProvider": "src/core/assemblies/assembly_profile_registry.js",
+          "targetModule": "src/game/domain/assemblies/assembly_profile_registry.js",
+          "exportName": "AssemblyProfileRegistry",
+          "legacySymbol": "AssemblyProfileRegistry",
+          "legacyScriptIndex": 151,
+          "shimFile": "activations/151_assemblyprofileregistry.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "classification": "safe",
+      "evidenceFingerprint": "4cae0a2e4dbe0dbfd3a535a519468209daf4bd6a547ac73ea8ee802f9d3ae2d0"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.39.0-live-preflight-and-graph-audit"
+}

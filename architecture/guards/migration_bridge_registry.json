@@ -1139,6 +1139,22 @@
       ]
     },
     {
+      "id": "bridge-75d36599542b",
+      "bridge": "src/core/assemblies/assembly_profile_registry.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "reason": "Preserve the exact assembly profile registry consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyProfileRegistry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-779213470262",
       "bridge": "src/core/items/rarity/authored_item_rarity_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -2086,6 +2102,22 @@
       "globalProviders": [
         {
           "symbol": "PlayerTensionBuildRateResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ec0c2115d440",
+      "bridge": "src/core/assemblies/assembly_profile_registry.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "reason": "Preserve the exact assembly profile registry consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "AssemblyProfileRegistry",
           "mechanism": "global-this-property"
         }
       ]

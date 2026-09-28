@@ -1393,6 +1393,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-e85348eb50a6",
+      "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+      "sourceProvider": "src/core/assemblies/assembly_profile_registry.js",
+      "targetModule": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "exportName": "AssemblyProfileRegistry",
+      "legacySymbol": "AssemblyProfileRegistry",
+      "legacyScriptIndex": 151,
+      "shimFile": "activations/151_assemblyprofileregistry.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ea32013c6230",
       "owner": "stage-3.candidate-009-fish-444e8034",
       "sourceProvider": "src/core/fish/fish_anomaly_variant_resolver.js",

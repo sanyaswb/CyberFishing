@@ -1,0 +1,395 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-038-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+  "releaseVersion": "0.24.75",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_038_prebuild_contract.json",
+      "sha256": "9c3ee042a2608df606f3e01d0b8e95e470a39432a4625d35c1a6e7f0637316c3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_038_runtime_cutover.json",
+      "sha256": "879e51c496c09550c0f7adc2af56c80feb49c9c0b2748bb79f31f93a2bc5d45a"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "55124f6478435bbd3681a218ea2b1b3164fb66543e1d0b0c38d4ca6c1b358a73"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_038_live_runtime_validation.json",
+      "sha256": "8dc8b573fec57173b65f053a6618a54be2cd73bd25ce908e15898d7743bec8dc"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_038_audit.json",
+      "sha256": "f74e3ffce7d58b4eaa8a15c1425be0ab31bea13c3fd9f23c30be1b68c7d2f479"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "0b78d33ec9bdd6d71c9de720b1b347104bc6c434ecffaf50b03adfc1b233dcb1"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "4a8d01040e7dec27bffb34385f7980ccb82d4343c0a23de605d7f9a08bfaed51"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "77b621365ec53ef0dd0e7bbcb607a8065ef5f61e3efd75716b010f5039744c0a"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "8e8a7b54c6e669dcc8c0cebdb28866f3373fe00f02f1e1b4d0d2d76a622388a6"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "563423746bc86a99ced7bd0ffeb14e20ef4c62021c2c839c069225ec77cf79d6"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "cdf8c8398aa477bf9ceafaf8832d6b6c838d60ea5c7ae77eb5322f281d703c77",
+    "afterSha256": "5056ba865ae55236b833cc2699a6642de1b06b53d0f6fcb97ad911fb567190b5",
+    "records": [
+      {
+        "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+        "before": {
+          "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+          "currentArea": "core/assemblies",
+          "observed": {
+            "legacyLoadOrder": 151,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "93331fbd9afdd5a4369f4869d3a5cd1cc6a676df2bf547df42c26c81b0cd4b47"
+      },
+      {
+        "currentPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+        "before": {
+          "currentPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+          "currentArea": "game/domain/assemblies",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "7ab82774fbb54e36c6d2cab22aa23f197eddd3ec94eb5b959f2d7ad93a99a646"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 537,
+    "providers": 789,
+    "consumers": 923,
+    "confirmed": 831,
+    "unresolved": 92,
+    "ambiguous": 0,
+    "edges": 711
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Map",
+        "Number",
+        "Object",
+        "RangeError",
+        "TypeError"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/assemblies/assembly_profile_registry.js",
+      "target": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "symbol": "AssemblyProfileRegistry",
+      "activationId": "activation-e85348eb50a6",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "AssemblyProfileRegistry",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/assemblies/assembly_profile_registry.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "symbol": "AssemblyProfileRegistry",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/assemblies/assembly_profile_registry.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 711,
+    "confirmedInterFileEdgesAfter": 711,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 1,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-e85348eb50a6",
+      "source": "src/core/assemblies/assembly_profile_registry.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/assemblies/assembly_profile_registry.js",
+        "target": "src/game/domain/assemblies/assembly_profile_registry.js",
+        "symbol": "AssemblyProfileRegistry",
+        "activationId": "activation-e85348eb50a6",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 537,
+    "consumers": 923,
+    "confirmed": 831,
+    "selfConfirmed": 3,
+    "unresolved": 92,
+    "ambiguous": 0,
+    "edges": 711,
+    "reverseLinks": 711,
+    "targetsWithConsumers": 395,
+    "unifiedEdges": 849,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/assemblies/assembly_profile_registry.js",
+        "targetModule": "src/game/domain/assemblies/assembly_profile_registry.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "AssemblyProfileRegistry"
+            ]
+          },
+          {
+            "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+            "symbols": [
+              "AssemblyProfileRegistry"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/assemblies/assembly_profile_registry.js",
+            "target": "src/game/domain/assemblies/assembly_profile_registry.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-75d36599542b",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-ec0c2115d440",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "a960c3adf87087c22a6f56797dbde8d94b8c9f6114966faa85fa7abc2c06348a"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 175,
+    "diagnosticsSha256": "5f5c126d3ee56869ee3305828b9279a4463e9b218e2d6e31f0a5e7e435f3bc06",
+    "baselineGlobals": 855
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/assemblies/assembly_profile_registry.js"
+    ]
+  },
+  "topology": {
+    "modules": 113,
+    "activations": 102,
+    "bridges": 143
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "stage-3.replan-322.batch-032-items-096b3398",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "stage-3.replan-336.batch-035-items-48cb5bbc",
+      "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "stage-3.replan-336.batch-037-items-5fccd461"
+    ],
+    "activeBatchId": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.39.8-full-acceptance-and-browser-smoke"
+}

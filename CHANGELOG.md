@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.24.76 - Assemblies Profile Registry Domain
+
+### Changed
+
+- Completed batch 038, the last batch of the Stage 3.36.0 approved prefix: AssemblyProfileRegistry as a named ESM export; its profile table stays injected by the composition roots.
+- Extended the cumulative graph from 112 to 113 project modules and from 101 to 102 activation contracts, with 143 exact bridge relationships (2 added).
+- The next task is the Vector2 extraction and the responsibility decompositions, followed by another repeated graph review.
+
 ## v0.24.75 - Items Bait, Freshness and Progression Resolvers Domain
 
 ### Changed

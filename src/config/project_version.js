@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.75";
+const CURRENT_PROJECT_VERSION = "0.24.76";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,15 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "items-bait-freshness-progression-resolvers-domain",
-  updatedAt: "2026-09-27",
+  codename: "assemblies-profile-registry-domain",
+  updatedAt: "2026-09-28",
   notes: Object.freeze([
-    "Migrate the bait effectiveness, item freshness and item progression resolvers",
-    "Import their owner-created policies and descriptors from the completed prefix",
-    "Keep the presentation descriptor factories injected by composition",
-    "Move the reviewed globalThis exposures to the exact activation shims",
-    "Retire the BaitEffectivenessMatch, ItemBoundedMetricResolver and ItemProgressionDescriptor activations",
-    "Preserve one hundred twelve project modules, one hundred one activations and one hundred forty-one bridges",
+    "Migrate the assembly profile registry",
+    "Keep the profile table injected by the composition roots",
+    "Complete the Stage 3.36.0 approved prefix",
+    "Preserve one hundred thirteen project modules, one hundred two activations and one hundred forty-three bridges",
   ]),
 });
 

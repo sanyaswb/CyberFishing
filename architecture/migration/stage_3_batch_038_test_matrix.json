@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-336.batch-038-assemblies-d8271d28",
+  "sourceReleaseVersion": "0.24.75",
+  "targetReleaseVersion": "0.24.76",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_038_execution_plan.json",
+    "sha256": "0231f434bc3065d55df15af401d55b87b71acc154fc1dd0136536de3d3c9ec11"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/AssemblyProfileRegistry/profiles-resolution-and-slots",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyProfileRegistry",
+      "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+      "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "baselineSourceSha256": "e22ea0192038142bc7153a9e3d1c7edcc66eb7b67a76bf1f8b09d4702e7d0eec",
+      "caseName": "profiles-resolution-and-slots",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/AssemblyProfileRegistry/registration-contract-and-empty-table",
+      "kind": "behavior-equivalence",
+      "exportName": "AssemblyProfileRegistry",
+      "currentPath": "src/core/assemblies/assembly_profile_registry.js",
+      "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "baselineSourceSha256": "e22ea0192038142bc7153a9e3d1c7edcc66eb7b67a76bf1f8b09d4702e7d0eec",
+      "caseName": "registration-contract-and-empty-table",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-one-exact-export",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-one-exact-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-registry-map-collection-identities-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "two-registry-map-collection-identities-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-activation-at-its-legacy-position",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-activation-at-its-legacy-position",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "AssemblyProfileRegistry",
+      "caseCount": 2,
+      "cases": [
+        "profiles-resolution-and-slots",
+        "registration-contract-and-empty-table"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.39.0-live-observation-and-stage-3.36-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_038_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/assemblies/assembly_profile_registry.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/assemblies/assembly_profile_registry.js",
+          "authoritativeOwners": [
+            "AssemblyProfileRegistry#get",
+            "AssemblyProfileRegistry#itemDefinitionResolver",
+            "AssemblyProfileRegistry#itemTypes",
+            "AssemblyProfileRegistry#normalizeSlot",
+            "AssemblyProfileRegistry#profileIdByFallbackType",
+            "AssemblyProfileRegistry#profiles",
+            "AssemblyProfileRegistry#readItemProperty",
+            "AssemblyProfileRegistry#register",
+            "AssemblyProfileRegistry#require",
+            "AssemblyProfileRegistry#resolveDefinition",
+            "AssemblyProfileRegistry#resolveForItem",
+            "AssemblyProfileRegistry#resolveProfileIdForItem"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/assemblies/assembly_profile_registry.js",
+          "authoritativeOwners": [
+            "AssemblyProfileRegistry#get",
+            "AssemblyProfileRegistry#itemDefinitionResolver",
+            "AssemblyProfileRegistry#itemTypes",
+            "AssemblyProfileRegistry#normalizeSlot",
+            "AssemblyProfileRegistry#profileIdByFallbackType",
+            "AssemblyProfileRegistry#profiles",
+            "AssemblyProfileRegistry#readItemProperty",
+            "AssemblyProfileRegistry#register",
+            "AssemblyProfileRegistry#require",
+            "AssemblyProfileRegistry#resolveDefinition",
+            "AssemblyProfileRegistry#resolveForItem",
+            "AssemblyProfileRegistry#resolveProfileIdForItem"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "ebb68be02999d21a4eedf513e9fdc1bd0e9850843d2ed46b0ad16ed119bb21f5",
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 10,
+          "newExpressions": 8,
+          "objectFreezeCalls": 6,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.39.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

@@ -20,12 +20,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - npm run check:quick (~40 s), npm run check:architecture, npm run check -- --suite history, npm run check (Full, ~55-70 min on Windows).
 
 ## Current state (2026-09-27)
-- Released v0.24.75 (batch 037): batches 001–037 complete, 103 migrated Domain modules; runtime 112 modules / 101 activations (21 retired) / 141 bridges; activeBatchId = null.
+- Released v0.24.76 (batch 038): batches 001–038 complete (Stage 3.36.0 prefix done), 104 migrated Domain modules; runtime 113 modules / 102 activations (21 retired) / 143 bridges; activeBatchId = null. Remaining Domain scope: 2 blocked by Vector2, 29 deferred behind six decompositions.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check pipeline (utils/testing/CHECKS.md): input-traced seals, history base (release 0.24.63 reconstruction for history-only checks up to 025), parallel runner (--jobs, default 4), --no-seal, --reseal.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Stage 3.36.0 repeated graph review done (stage_3_36_graph_review/): 4 frozen batches 035–038 (7 modules unblocked by prerequisites 001–005). Next: batch 038 (v0.24.76), then Vector2 extraction and the decompositions, then another review.
+2. Next: Vector2 extraction (needs a reviewed partial-extraction mechanism, see refactor_Task.txt), then the six responsibility decompositions, then another repeated graph review and new batches; finally the Stage 3 closure gates.
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.
