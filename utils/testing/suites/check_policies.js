@@ -261,6 +261,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-prerequisite-014",
   "stage-3-prerequisite-015",
   "stage-3-prerequisite-016",
+  "stage-3-prerequisite-017",
   "stage-3-prerequisite-transition-fixtures",
   "legacy-slot-split",
   "stage-3-activation-retirement-fixtures",

@@ -28,6 +28,14 @@
       "transition": "architecture/migration/stage_3_prerequisites/014_item-progression-logger-and-review.json"
     },
     {
+      "slot": 89,
+      "members": [
+        "src/core/distance_unit_converter.js",
+        "src/core/casting_distance.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/017_distance-converter-split-and-review.json"
+    },
+    {
       "slot": 159,
       "members": [
         "src/core/equipment/terminal_line_slot_resolver.js",

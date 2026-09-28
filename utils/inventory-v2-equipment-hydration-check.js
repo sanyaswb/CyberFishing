@@ -66,6 +66,10 @@ class EquipmentHydrationRuntime extends SourceRuntime {
         expose: ["EquipmentReadModelFactory"],
       },
       {
+        path: "src/core/distance_unit_converter.js",
+        expose: ["DistanceUnitConverter"],
+      },
+      {
         path: "src/core/casting_distance.js",
         expose: ["CastDistanceCalculator"],
       },

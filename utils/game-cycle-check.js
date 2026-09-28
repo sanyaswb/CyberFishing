@@ -41,6 +41,7 @@ const LEGACY_FILES = [
   "src/config/config.js",
   "src/app/utils.js",
   "src/core/float_tackle_line_budget_policy.js",
+  "src/core/distance_unit_converter.js",
   "src/core/casting_distance.js",
   "src/core/line/line_spool_state.js",
   "src/core/fishing/landing_policy.js",
@@ -130,12 +131,11 @@ const compatibilityLoader = new StageThreeCompatibilityTestLoader({
   context,
 });
 compatibilityLoader.loadRuntime();
-// Prerequisite 006 extracted Vector2 into its own classic file; replays of trees recorded before it
-// still declare Vector2 in core.js.
-const VECTOR2_PROVIDER = "src/core/math/vector2.js";
-compatibilityLoader.loadAll(fs.existsSync(path.join(ROOT, VECTOR2_PROVIDER))
-  ? LEGACY_FILES
-  : LEGACY_FILES.filter((file) => file !== VECTOR2_PROVIDER));
+// Prerequisites 006 and 017 extracted Vector2 and DistanceUnitConverter into their own classic files;
+// replays of trees recorded before them still declare the classes in core.js / casting_distance.js.
+const EXTRACTED_PROVIDERS = ["src/core/math/vector2.js", "src/core/distance_unit_converter.js"];
+compatibilityLoader.loadAll(LEGACY_FILES.filter((file) =>
+  !EXTRACTED_PROVIDERS.includes(file) || fs.existsSync(path.join(ROOT, file))));
 
 vm.runInContext(`
 const checks = [];

@@ -1359,12 +1359,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/core/casting_distance.js",
-      "symbol": "DistanceUnitConverter",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/core/core.js",
       "symbol": "CacheManager",
       "mechanism": "global-lexical",
@@ -1385,6 +1379,12 @@
     {
       "currentPath": "src/core/core.js",
       "symbol": "PointerAction",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/distance_unit_converter.js",
+      "symbol": "DistanceUnitConverter",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },

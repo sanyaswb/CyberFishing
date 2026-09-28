@@ -14744,11 +14744,6 @@
               "symbol": "CastDistanceCalculator",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "DistanceUnitConverter",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
             }
           ],
           "issues": []
@@ -14756,6 +14751,12 @@
         "consumers": {
           "status": "verified",
           "items": [
+            {
+              "symbol": "DistanceUnitConverter",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
             {
               "symbol": "FloatTackleLineBudgetPolicy",
               "mechanism": "identifier",
@@ -14793,6 +14794,14 @@
           "status": "verified",
           "confirmed": [
             {
+              "symbol": "DistanceUnitConverter",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/distance_unit_converter.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "FloatTackleLineBudgetPolicy",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -14802,6 +14811,13 @@
             }
           ],
           "items": [
+            {
+              "target": "src/core/distance_unit_converter.js",
+              "symbols": [
+                "DistanceUnitConverter"
+              ],
+              "resolution": "confirmed"
+            },
             {
               "target": "src/core/float_tackle_line_budget_policy.js",
               "symbols": [
@@ -14817,8 +14833,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }
@@ -14973,6 +14988,64 @@
             "high-level-self-composition",
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/distance_unit_converter.js",
+      "currentArea": "core",
+      "observed": {
+        "legacyLoadOrder": 89,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "DistanceUnitConverter",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
           ]
         }
       }
@@ -35427,7 +35500,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/core/casting_distance.js",
+              "target": "src/core/distance_unit_converter.js",
               "resolution": "confirmed"
             },
             {
@@ -35511,7 +35584,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/casting_distance.js",
+              "target": "src/core/distance_unit_converter.js",
               "symbols": [
                 "DistanceUnitConverter"
               ],
@@ -46073,8 +46146,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }
@@ -47577,9 +47649,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "dev-production-coupling",
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }

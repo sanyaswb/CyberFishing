@@ -13,6 +13,11 @@ class RuntimeLoader {
     );
     this.#loadClass(
       runtime,
+      "src/core/distance_unit_converter.js",
+      "DistanceUnitConverter",
+    );
+    this.#loadClass(
+      runtime,
       "src/core/casting_distance.js",
       "CastDistanceCalculator",
     );
