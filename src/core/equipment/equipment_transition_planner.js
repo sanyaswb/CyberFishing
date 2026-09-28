@@ -28,8 +28,11 @@ class EquipmentTransitionPlan {
 class ManualRodChangePlanner {
   #capacityPolicy;
   #mainSlotIds;
+  #messages;
 
-  constructor({ capacityPolicy = null, mainSlotIds = null } = {}) {
+  // The capacity warning text is injected by composition.
+  constructor({ capacityPolicy = null, mainSlotIds = null, messages = null } = {}) {
+    this.#messages = messages;
     this.#capacityPolicy =
       capacityPolicy ||
       (typeof UnlimitedInventoryCapacityPolicy !== "undefined"
@@ -102,7 +105,7 @@ class ManualRodChangePlanner {
         before,
         after: before,
         capacity,
-        warning: capacity.warning || "Недостатньо місця в інвентарі.",
+        warning: capacity.warning || this.#messages.inventoryCapacityExceeded,
       });
     }
 

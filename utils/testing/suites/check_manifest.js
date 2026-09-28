@@ -825,6 +825,19 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-007",
+      title: "Stage 3 prerequisite 007: equipment presentation text boundary with split legacy slot 30 replays byte-identically with parity, reviewed Manifest updates, exact baseline additions and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "007", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-prerequisite-transition-fixtures",
+      title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
+      file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "legacy-slot-split",
       title: "Split legacy slots match the reviewed registry and bad split metadata is rejected",
       file: "utils/architecture/legacy-slot-split-check.js",

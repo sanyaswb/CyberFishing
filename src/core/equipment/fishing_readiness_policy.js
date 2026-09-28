@@ -2,14 +2,18 @@ class FishingReadinessPolicy {
   #itemReader;
   #assemblyReader;
   #capabilityResolver;
+  #messages;
 
+  // Player-facing texts are injected by composition.
   constructor({
     itemReader = null,
     assemblyReader = null,
     capabilityResolver = null,
+    messages = null,
   } = {}) {
     this.#itemReader = itemReader;
     this.#assemblyReader = assemblyReader;
+    this.#messages = messages;
     this.#capabilityResolver =
       capabilityResolver ||
       (typeof RodCapabilityResolver !== "undefined"
@@ -32,7 +36,7 @@ class FishingReadinessPolicy {
     if (!reelRootId || !reelLine) {
       return this.#validation(
         false,
-        "Поводок можна спорядити лише після котушки з установленою ліскою.",
+        this.#messages.leaderRequiresReelLine,
         "reel-line-required-for-leader",
       );
     }
@@ -43,7 +47,7 @@ class FishingReadinessPolicy {
     const rodRootId = this.#root(equipmentState, this.#slotId("ROD", "rod"));
     const rod = this.#item(rodRootId);
     if (!rod) {
-      return this.#castResult(false, "Спочатку спорядіть вудилище.", "rod-required");
+      return this.#castResult(false, this.#messages.rodRequired, "rod-required");
     }
 
     const supportsReel =
@@ -51,12 +55,12 @@ class FishingReadinessPolicy {
     if (supportsReel) {
       const reelRootId = this.#root(equipmentState, this.#slotId("REEL", "reel"));
       if (!reelRootId) {
-        return this.#castResult(false, "Для цієї вудки потрібна котушка.", "reel-required");
+        return this.#castResult(false, this.#messages.reelRequired, "reel-required");
       }
       if (!this.#child(reelRootId, "line", 0)) {
         return this.#castResult(
           false,
-          "У котушку потрібно встановити ліску.",
+          this.#messages.reelLineRequired,
           "reel-line-required",
         );
       }
@@ -70,7 +74,7 @@ class FishingReadinessPolicy {
     if (!lineRootId) {
       return this.#castResult(
         false,
-        "Для закидання потрібно спорядити ліску.",
+        this.#messages.terminalLineRequired,
         "terminal-line-required",
       );
     }
@@ -101,7 +105,7 @@ class FishingReadinessPolicy {
       warningCode: canBite ? null : "feeder-hook-missing",
       warning: canBite
         ? null
-        : "Снасть споряджена без гачків, тому клювання не буде.",
+        : this.#messages.feederHookMissing,
     });
   }
 
@@ -115,7 +119,7 @@ class FishingReadinessPolicy {
       this.#child(tackleRootId, "feederChum", 0);
     return Object.freeze({
       hasBonus: Boolean(chum),
-      warning: chum ? null : "Прикормка відсутня: бонус прикормки не діє.",
+      warning: chum ? null : this.#messages.chumBonusMissing,
     });
   }
 

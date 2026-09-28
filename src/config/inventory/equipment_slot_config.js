@@ -39,29 +39,24 @@ const EQUIPMENT_ALL_SLOT_IDS = Object.freeze([
 const EQUIPMENT_SLOT_CONFIG = Object.freeze({
   [EquipmentSlotId.ROD]: Object.freeze({
     id: EquipmentSlotId.ROD,
-    label: "Вудилище",
     group: "main",
     visibility: "always",
     acceptTypes: Object.freeze(["rod"]),
   }),
   [EquipmentSlotId.REEL]: Object.freeze({
     id: EquipmentSlotId.REEL,
-    label: "Котушка",
     group: "main",
     visibility: "supportsReel",
     acceptTypes: Object.freeze(["reel"]),
   }),
   [EquipmentSlotId.TERMINAL_LINE]: Object.freeze({
     id: EquipmentSlotId.TERMINAL_LINE,
-    label: "Поводок / ліска",
     group: "main",
     visibility: "rodSelected",
     acceptTypes: Object.freeze(["fishing_line", "leader_line"]),
-    presentation: "terminalLine",
   }),
   [EquipmentSlotId.TACKLE]: Object.freeze({
     id: EquipmentSlotId.TACKLE,
-    label: "Снасть",
     group: "main",
     visibility: "rodSelected",
     acceptTypes: Object.freeze([
@@ -72,39 +67,33 @@ const EQUIPMENT_SLOT_CONFIG = Object.freeze({
   }),
   [EquipmentSlotId.FLOAT]: Object.freeze({
     id: EquipmentSlotId.FLOAT,
-    label: "Поплавок",
     group: "main",
     visibility: "supportsFloat",
     acceptTypes: Object.freeze(["float"]),
   }),
   [EquipmentSlotId.HAND_CHUM]: Object.freeze({
     id: EquipmentSlotId.HAND_CHUM,
-    label: "Прикормка",
     group: "auxiliary",
     visibility: "always",
     acceptTypes: Object.freeze(["chum_mix"]),
   }),
   [EquipmentSlotId.NET]: Object.freeze({
     id: EquipmentSlotId.NET,
-    label: "Підсака",
     group: "auxiliary",
     visibility: "always",
     acceptTypes: Object.freeze(["net"]),
   }),
   [EquipmentSlotId.DELIVERY]: Object.freeze({
     id: EquipmentSlotId.DELIVERY,
-    label: "Кораблик",
     group: "auxiliary",
     visibility: "always",
     acceptTypes: Object.freeze(["boat", "chum_delivery"]),
   }),
   [EquipmentSlotId.GAS_MASK]: Object.freeze({
     id: EquipmentSlotId.GAS_MASK,
-    label: "Протигаз",
     group: "auxiliary",
     visibility: "always",
     acceptTypes: Object.freeze(["gas_mask"]),
     locked: true,
-    lockedWarning: "Протигаз ще не розблоковано.",
   }),
 });

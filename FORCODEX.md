@@ -26,9 +26,10 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check cache v2 committed (dd71d5e, tooling checkpoint, no version change): fresh acceptance Full 214/214 executed; v1 sealed counts of earlier checkpoints are superseded by it.
 - Prerequisite 006 (Vector2 checkpoint A): Vector2 extracted into the classic src/core/math/vector2.js sharing split legacy slot 41 with core.js (data-legacy-slot, legacy_slot_splits.json); prerequisite transitions support created files, Manifest entries and metadata writes.
+- Prerequisite 007 (equipment decomposition 1/2): EQUIPMENT_SLOT_CONFIG keeps the Domain slot catalog; labels/locked warning in the presentation EQUIPMENT_SLOT_PRESENTATION; equipment rules get the presentation INVENTORY_RULE_MESSAGES injected by InventoryV2CompositionRoot (split slot 30); transitions support reviewed manifestUpdates and globalProviderAdditions.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-2. Next: the six responsibility decompositions (owner 2026-09-28; new classic files use split legacy slots), Vector2 checkpoint B (Engine ESM activation after the runtime tag), then a repeated graph review and new batches; finally the Stage 3 closure gates.
+2. Next: equipment decomposition 2/2 (prerequisite 008: TerminalLineSlotLabelResolver + reclassify the two slot policies), then the other five decompositions (new classic files use split legacy slots; UI text is injected via INVENTORY_RULE_MESSAGES), Vector2 checkpoint B (Engine ESM activation after the runtime tag), then a repeated graph review and new batches; finally the Stage 3 closure gates.
 2a. Follow-up: reconcile the compatibility transport removalStage (stage-5) with Stage 6 compatibility removal (HookPowerPolicy activation is stage-6).
 3. Review queue 033/034 evidence prerequisites; prerequisite backlog; graph re-review and new freeze; repeat until Stage 3 is complete, then Stage 4.

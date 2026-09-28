@@ -15,15 +15,22 @@ class EquipmentSlotAvailabilityPolicy {
   #slotConfig;
   #visibilityPolicy;
   #terminalLineResolver;
+  #slotPresentation;
 
   constructor({
     slotConfig = null,
+    slotPresentation = null,
     visibilityPolicy = null,
     terminalLineResolver = null,
   } = {}) {
     this.#slotConfig =
       slotConfig ||
       (typeof EQUIPMENT_SLOT_CONFIG !== "undefined" ? EQUIPMENT_SLOT_CONFIG : {});
+    this.#slotPresentation =
+      slotPresentation ||
+      (typeof EQUIPMENT_SLOT_PRESENTATION !== "undefined"
+        ? EQUIPMENT_SLOT_PRESENTATION
+        : {});
     this.#visibilityPolicy =
       visibilityPolicy ||
       (typeof EquipmentSlotVisibilityPolicy !== "undefined"
@@ -69,7 +76,9 @@ class EquipmentSlotAvailabilityPolicy {
         visible: true,
         showCross: true,
         warningCode: EquipmentSlotWarningCode.LOCKED,
-        warning: config.lockedWarning || "Цей слот ще не розблоковано.",
+        warning:
+          this.#slotPresentation[slotId]?.lockedWarning ||
+          "Цей слот ще не розблоковано.",
       });
     }
 

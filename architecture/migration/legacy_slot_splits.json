@@ -3,6 +3,15 @@
   "kind": "cyber-fishing-legacy-slot-splits",
   "splits": [
     {
+      "slot": 30,
+      "members": [
+        "src/config/inventory/equipment_slot_config.js",
+        "src/config/inventory/equipment_slot_presentation_config.js",
+        "src/config/inventory/inventory_rule_messages.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/007_equipment-presentation-text-boundary.json"
+    },
+    {
       "slot": 41,
       "members": [
         "src/core/math/vector2.js",

@@ -653,7 +653,7 @@ class InventoryV2ViewModelFactory {
       return this.#terminalLineResolver.resolve(rod).label;
     }
     if (slotId === "tackle" && item) return item.name || "Снасть";
-    return EQUIPMENT_SLOT_CONFIG[slotId]?.label || slotId;
+    return EQUIPMENT_SLOT_PRESENTATION[slotId]?.label || slotId;
   }
 
   #socketLabel({ slotId, slotIndex, capacity, parentContext = null }) {

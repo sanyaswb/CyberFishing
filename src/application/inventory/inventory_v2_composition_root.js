@@ -150,6 +150,7 @@ class InventoryV2CompositionRoot {
       itemReader,
       assemblyReader,
       capabilityResolver,
+      messages: INVENTORY_RULE_MESSAGES,
     });
     const compatibilityPolicy = new EquipmentCompatibilityPolicy({
       slotConfig: EQUIPMENT_SLOT_CONFIG,
@@ -157,9 +158,11 @@ class InventoryV2CompositionRoot {
       terminalLineResolver,
       capabilityResolver,
       readinessPolicy,
+      messages: INVENTORY_RULE_MESSAGES,
     });
     const availabilityPolicy = new EquipmentSlotAvailabilityPolicy({
       slotConfig: EQUIPMENT_SLOT_CONFIG,
+      slotPresentation: EQUIPMENT_SLOT_PRESENTATION,
       visibilityPolicy,
       terminalLineResolver,
     });
@@ -178,7 +181,10 @@ class InventoryV2CompositionRoot {
         }),
       ],
     });
-    const rodChangePlanner = new ManualRodChangePlanner({ capacityPolicy });
+    const rodChangePlanner = new ManualRodChangePlanner({
+      capacityPolicy,
+      messages: INVENTORY_RULE_MESSAGES,
+    });
     const equipmentTransitionPort = new InventoryV2EquipmentTransitionPort({
       transaction,
     });

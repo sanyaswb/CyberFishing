@@ -7712,6 +7712,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "EquipmentAutoRefillTargetProvider",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -7785,6 +7791,12 @@
             },
             {
               "symbol": "FreshestRefillCandidatePolicy",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "INVENTORY_RULE_MESSAGES",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -8161,6 +8173,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "EquipmentAutoRefillTargetProvider",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8262,6 +8282,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/application/inventory/freshest_refill_candidate_policy.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "INVENTORY_RULE_MESSAGES",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/inventory/inventory_rule_messages.js",
               "resolution": "confirmed"
             },
             {
@@ -8764,6 +8792,20 @@
               "symbols": [
                 "EQUIPMENT_ALL_SLOT_IDS",
                 "EQUIPMENT_SLOT_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "symbols": [
+                "EQUIPMENT_SLOT_PRESENTATION"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/inventory/inventory_rule_messages.js",
+              "symbols": [
+                "INVENTORY_RULE_MESSAGES"
               ],
               "resolution": "confirmed"
             },
@@ -10201,7 +10243,7 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -10276,11 +10318,11 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
               "resolution": "confirmed"
             },
             {
@@ -10307,6 +10349,13 @@
                 "EQUIPMENT_ALL_SLOT_IDS",
                 "EQUIPMENT_MAIN_SLOT_IDS",
                 "EQUIPMENT_SLOT_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "symbols": [
+                "EQUIPMENT_SLOT_PRESENTATION"
               ],
               "resolution": "confirmed"
             },
@@ -11912,8 +11961,144 @@
         },
         "blockers": {
           "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_presentation_config.js",
+      "currentArea": "config/inventory",
+      "observed": {
+        "legacyLoadOrder": 30,
+        "providers": {
+          "status": "verified",
           "items": [
-            "mixed-responsibility-requires-decomposition"
+            {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/equipment_slot_presentation.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_rule_messages.js",
+      "currentArea": "config/inventory",
+      "observed": {
+        "legacyLoadOrder": 30,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "INVENTORY_RULE_MESSAGES",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_rule_messages.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "symbols": [
+                "EQUIPMENT_SLOT_PRESENTATION"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
           ]
         }
       }
@@ -14963,8 +15148,7 @@
           "status": "verified",
           "items": [
             "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
@@ -15000,6 +15184,12 @@
           "items": [
             {
               "symbol": "EQUIPMENT_SLOT_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
@@ -15066,6 +15256,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "EquipmentSlotId",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -15104,6 +15302,13 @@
               "symbols": [
                 "EQUIPMENT_SLOT_CONFIG",
                 "EquipmentSlotId"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/inventory/equipment_slot_presentation_config.js",
+              "symbols": [
+                "EQUIPMENT_SLOT_PRESENTATION"
               ],
               "resolution": "confirmed"
             },
@@ -15462,8 +15667,7 @@
           "status": "verified",
           "items": [
             "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
@@ -15638,8 +15842,7 @@
           "status": "verified",
           "items": [
             "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }

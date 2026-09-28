@@ -4,7 +4,9 @@ class EquipmentCompatibilityPolicy {
   #terminalLineResolver;
   #capabilityResolver;
   #readinessPolicy;
+  #messages;
 
+  // Player-facing texts are injected by composition.
   constructor({
     slotConfig = typeof EQUIPMENT_SLOT_CONFIG !== "undefined"
       ? EQUIPMENT_SLOT_CONFIG
@@ -13,6 +15,7 @@ class EquipmentCompatibilityPolicy {
     terminalLineResolver = null,
     capabilityResolver = null,
     readinessPolicy = null,
+    messages = null,
   } = {}) {
     this.#slotConfig = slotConfig;
     this.#capabilityResolver =
@@ -29,6 +32,7 @@ class EquipmentCompatibilityPolicy {
         capabilityResolver: this.#capabilityResolver,
       });
     this.#readinessPolicy = readinessPolicy;
+    this.#messages = messages;
   }
 
   isCompatible(context = {}) {
@@ -44,28 +48,25 @@ class EquipmentCompatibilityPolicy {
   } = {}) {
     const config = this.#slotConfig[slotId];
     if (!config || !item) {
-      return this.#result(false, "Предмет або слот не знайдено.");
+      return this.#result(false, this.#messages.itemOrSlotMissing);
     }
     if (config.locked === true) {
-      return this.#result(
-        false,
-        config.lockedWarning || "Цей слот ще не розблоковано.",
-      );
+      return this.#result(false, this.#messages.equipmentSlotLocked(slotId));
     }
 
     const selectedRod = rod || this.#readRootItem(equipmentState, "rod");
     if (!this.#visibilityPolicy.isVisible(slotId, { rod: selectedRod })) {
-      return this.#result(false, "Цей слот не підтримується обраним вудилищем.");
+      return this.#result(false, this.#messages.slotUnsupportedByRod);
     }
 
     const acceptedTypes = this.#acceptedTypes(slotId, config, selectedRod);
     const itemType = this.#type(item);
     if (!acceptedTypes.includes(itemType)) {
-      return this.#result(false, "Предмет не підходить до цієї комірки.");
+      return this.#result(false, this.#messages.itemNotAcceptedBySlot);
     }
 
     if (slotId === "tackle" && !this.#isTackleCompatible(itemType, selectedRod)) {
-      return this.#result(false, "Ця снасть не сумісна з обраним вудилищем.");
+      return this.#result(false, this.#messages.tackleIncompatibleWithRod);
     }
 
     if (enforceReadiness !== false) {

@@ -4,6 +4,7 @@ const { CheckAssertion } = require("./testing/core/check_assertion");
 const {
   StageThreeCompatibilityTestLoader,
 } = require("./testing/runtime/stage_three_compatibility_test_loader");
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Inventory-v2 equipment check");
@@ -21,6 +22,12 @@ class RuntimeLoader {
       "EQUIPMENT_AUXILIARY_SLOT_IDS",
       "EQUIPMENT_ALL_SLOT_IDS",
       "EQUIPMENT_SLOT_CONFIG",
+    ]);
+    loader.load("src/config/inventory/equipment_slot_presentation_config.js", [
+      "EQUIPMENT_SLOT_PRESENTATION",
+    ]);
+    loader.load("src/config/inventory/inventory_rule_messages.js", [
+      "INVENTORY_RULE_MESSAGES",
     ]);
     loader.load("src/core/equipment/rod_capability_resolver.js", [
       "RodCapabilityResolver",
@@ -88,6 +95,12 @@ class RuntimeLoader {
     loader.load("src/application/inventory/equipment_read_model_factory.js", [
       "EquipmentReadModelFactory",
     ]);
+    // Player-facing rule texts are injected the way InventoryV2CompositionRoot injects them.
+    for (const name of ["FishingReadinessPolicy", "ManualRodChangePlanner"]) {
+      context[name] = bindConstructorDefaults(context[name], {
+        messages: context.INVENTORY_RULE_MESSAGES,
+      });
+    }
     return context;
   }
 
@@ -207,6 +220,7 @@ class InventoryV2EquipmentCheck {
     const locked = policy.resolve({ slotId: "gasMask", equipmentState: state, rod, inventoryItems: [] });
     Assertion.equal(locked.state, r.EquipmentSlotAvailabilityState.LOCKED, "gas mask is game-locked");
     Assertion.equal(locked.showCross, true, "locked content draws a cross");
+    Assertion.equal(locked.warning, "Протигаз ще не розблоковано.", "locked slot keeps its presentation warning");
     const hidden = policy.resolve({ slotId: "float", equipmentState: state, rod, inventoryItems: [] });
     Assertion.equal(hidden.visible, false, "unsupported slot is hidden rather than crossed");
   }
@@ -381,6 +395,8 @@ class InventoryV2EquipmentCheck {
     Assertion.equal(readiness.validateEquip({ slotId: "reel", item: items.get("reel"), equipmentState: state }).isValid, true, "reel equips without line");
     Assertion.equal(readiness.evaluateCast({ equipmentState: state }).canCast, false, "cast is blocked without reel line");
     Assertion.equal(readiness.evaluateCast({ equipmentState: state }).shouldOpenInventory, true, "missing line opens inventory");
+    Assertion.equal(readiness.evaluateCast({ equipmentState: state }).warning, "У котушку потрібно встановити ліску.",
+      "injected readiness text is exact");
     Assertion.equal(readiness.validateEquip({ slotId: "terminalLine", item: items.get("leader"), equipmentState: state }).isValid, false, "leader requires reel line");
     assemblies.connect("reel", "line", 0, "line");
     Assertion.equal(readiness.evaluateCast({ equipmentState: state }).canCast, true, "cast is ready once line is attached");

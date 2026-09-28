@@ -10,6 +10,8 @@ const { LiveObservationSnapshot } = require("../../observation/persistence/live_
 const { ArchitectureGuardSnapshotBuilder } = require("../../guards/corpus/architecture_guard_snapshot_builder");
 const { ArchitectureGuardEngine } = require("../../guards/architecture_guard_engine");
 const { StageThreePrerequisiteLedger, KIND } = require("../core/prerequisite_ledger");
+const { PrerequisiteManifestUpdatePlan } = require("./manifest_update_plan");
+const { PrerequisiteGlobalProviderAdditionPlan } = require("./global_provider_addition_plan");
 
 const MANIFEST = "architecture/migration/module_migration_manifest.json";
 const KNOWN_DEBT = "architecture/guards/known_debt_registry.json";
@@ -67,6 +69,16 @@ class StageThreePrerequisiteTransitionBuilder {
     const metadata = task.metadataWrites ? task.metadataWrites({ read: file => this.bytes(file).toString("utf8"),
       exists: file => fs.existsSync(path.join(this.root, file)), after: file => after.get(file)?.toString("utf8") }) : new Map();
     for (const [file, bytes] of metadata) after.set(file, Buffer.from(bytes, "utf8"));
+    // Optional: reviewed reclassification / blocker removal of Manifest entries whose sources this
+    // transition edits, and reviewed global providers of the files it creates (exact baseline delta).
+    const updates = task.manifestUpdates ? new PrerequisiteManifestUpdatePlan(task.manifestUpdates,
+      { editedPaths: task.sourceEdits.map(edit => edit.path) }) : null;
+    const additions = task.globalProviderAdditions ? new PrerequisiteGlobalProviderAdditionPlan(
+      task.globalProviderAdditions, { createdPaths: (task.createdFiles || []).map(created => created.path) }) : null;
+    if (additions) {
+      assert(!metadata.has(BASELINE), "global provider additions own the baseline write");
+      after.set(BASELINE, canonical(additions.apply(this.json(BASELINE))));
+    }
     const workspace = this.#workspace(after);
     try {
       const policyDocument = this.json(POLICY);
@@ -78,7 +90,10 @@ class StageThreePrerequisiteTransitionBuilder {
         ...task.manifestEntries.map(entry => ({ currentPath: entry.currentPath, currentArea: entry.currentArea,
           observed: { legacyLoadOrder: entry.legacyLoadOrder }, architecture: entry.architecture,
           analysis: { blockers: entry.blockers } }))] } : oldManifest;
-      const manifest = new LiveObservationSnapshot().build({ projectRoot: workspace, policy, manifest: seeded });
+      const manifest = new LiveObservationSnapshot().build({ projectRoot: workspace, policy,
+        manifest: updates ? updates.apply(seeded) : seeded });
+      if (updates) updates.verify(oldManifest, manifest);
+      if (additions) additions.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
       const debt = this.json(KNOWN_DEBT);
       for (const id of task.resolvedDebtIds) assert(debt.debts.some(item => item.id === id), `unknown debt: ${id}`);
       const nextDebt = { ...debt, debts: debt.debts.filter(item => !task.resolvedDebtIds.includes(item.id)) };
@@ -107,7 +122,9 @@ class StageThreePrerequisiteTransitionBuilder {
         this.beforeBytes(file) === null);
       assert.deepEqual(changed.map(([file]) => file).sort(),
         [...task.sourceEdits.map(edit => edit.path), ...(task.createdFiles || []).map(created => created.path),
-          ...metadata.keys(), MANIFEST, KNOWN_DEBT].sort(), "unexpected transition write set");
+          ...metadata.keys(), ...(additions ? [BASELINE] : []), MANIFEST,
+          ...(task.resolvedDebtIds.length > 0 ? [KNOWN_DEBT] : [])].sort(),
+        "unexpected transition write set");
       const parity = task.parity({ read: file => this.bytes(file).toString("utf8"),
         before: file => this.bytes(file).toString("utf8"), after: file => after.get(file).toString("utf8"),
         workspace });
@@ -125,6 +142,8 @@ class StageThreePrerequisiteTransitionBuilder {
         sourceEdits: task.sourceEdits.map(edit => ({ path: edit.path, beforeSha256: sha(this.bytes(edit.path)),
           afterSha256: sha(after.get(edit.path)) })),
         resolvedDebtIds: [...task.resolvedDebtIds],
+        ...(updates ? { manifestUpdates: updates.records(oldManifest, manifest) } : {}),
+        ...(additions ? { globalProviderAdditions: additions.records() } : {}),
         dependencyObservation: { removedEdges: removed, addedEdges: added, confirmedEdgeDelta: added.length - removed.length },
         guards: { failureCount: result.failureCount, knownDebtCount: result.knownDebtCount },
         parity,

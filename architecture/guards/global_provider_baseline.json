@@ -981,6 +981,18 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/config/inventory/equipment_slot_presentation_config.js",
+      "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/inventory/inventory_rule_messages.js",
+      "symbol": "INVENTORY_RULE_MESSAGES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/config/inventory/inventory_v2_item_parameter_config.js",
       "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
       "mechanism": "global-lexical",

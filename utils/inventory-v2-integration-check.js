@@ -10,6 +10,8 @@ const files = [
   "src/config/rarity/rarity_visual_config.js",
   "src/config/inventory/item_assembly_profile_config.js",
   "src/config/inventory/equipment_slot_config.js",
+  "src/config/inventory/equipment_slot_presentation_config.js",
+  "src/config/inventory/inventory_rule_messages.js",
   "src/config/inventory/inventory_v2_sort_config.js",
   "src/config/items/item_stat_override_config.js",
   "src/core/items/item_stat_override_policy.js",
