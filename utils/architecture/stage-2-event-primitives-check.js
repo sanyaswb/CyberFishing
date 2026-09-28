@@ -289,12 +289,14 @@ class StageTwoEventPrimitivesCheck {
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
       this.projectRoot,
     );
+    // Logical slots are looked up by number: a split slot holds several physical scripts.
     const scripts = new LegacyScriptOrderReader(
       path.join(this.projectRoot, this.paths.index),
       { scriptAliases },
-    ).read().map((script) => script.currentPath);
-    assert.equal(scripts[390], expectedProviders[0]);
-    assert.equal(scripts[391], expectedProviders[1]);
+    ).read();
+    const at = (slot) => LegacyScriptOrderReader.pathsAtSlot(scripts, slot);
+    assert.deepEqual(at(391), [expectedProviders[0]]);
+    assert.deepEqual(at(392), [expectedProviders[1]]);
   }
 
   #entry(manifest, currentPath) {

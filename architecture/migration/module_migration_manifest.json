@@ -404,7 +404,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -431,13 +431,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/core/fishing/fishing_cast_exposure_resolver.js",
               "symbols": [
                 "FishingCastExposureResolver"
@@ -448,6 +441,13 @@
               "target": "src/core/inventory/inventory_item_location.js",
               "symbols": [
                 "InventoryItemLocation"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -3763,13 +3763,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -4535,7 +4535,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -4555,16 +4555,16 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
+              "target": "src/core/fishing/landing_policy.js",
               "symbols": [
-                "Vector2"
+                "LandingPolicyResolver"
               ],
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/fishing/landing_policy.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
-                "LandingPolicyResolver"
+                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -4952,13 +4952,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5059,13 +5059,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5149,13 +5149,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5373,13 +5373,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5648,13 +5648,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5731,13 +5731,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -5897,13 +5897,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -6541,7 +6541,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -6557,13 +6557,6 @@
               "target": "src/app/context.js",
               "symbols": [
                 "MutableFightFrameContext"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -6585,6 +6578,13 @@
               "target": "src/core/fishing/retrieve_policy.js",
               "symbols": [
                 "IdleRetrievePolicyResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             }
@@ -6750,7 +6750,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -6763,7 +6763,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -14600,11 +14600,6 @@
               "symbol": "PointerAction",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
             }
           ],
           "issues": []
@@ -14622,6 +14617,12 @@
               "symbol": "FightInputActionComposer",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "Vector2",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
               "executionPhase": "deferred"
             }
           ],
@@ -14678,6 +14679,14 @@
               "executionPhase": "deferred",
               "target": "src/core/input/fight_input_action_composer.js",
               "resolution": "confirmed"
+            },
+            {
+              "symbol": "Vector2",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/math/vector2.js",
+              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -14692,6 +14701,13 @@
               "target": "src/core/input/fight_input_action_composer.js",
               "symbols": [
                 "FightInputActionComposer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             }
@@ -16349,13 +16365,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -23333,6 +23349,63 @@
             "high-level-self-composition",
             "legacy-global-contract",
             "mixed-responsibility-requires-decomposition"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/core/math/vector2.js",
+      "currentArea": "core/math",
+      "observed": {
+        "legacyLoadOrder": 41,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "Vector2",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/math/vector2.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
           ]
         }
       }
@@ -35223,7 +35296,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -35246,13 +35319,6 @@
               "target": "src/core/casting_distance.js",
               "symbols": [
                 "DistanceUnitConverter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -35281,6 +35347,13 @@
               "target": "src/core/items/quality/net_quality_modifier.js",
               "symbols": [
                 "NetQualityModifier"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -44610,7 +44683,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -44618,7 +44691,13 @@
             {
               "target": "src/core/core.js",
               "symbols": [
-                "CacheManager",
+                "CacheManager"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
                 "Vector2"
               ],
               "resolution": "confirmed"
@@ -45236,7 +45315,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -45245,13 +45324,6 @@
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -45414,6 +45486,13 @@
               "target": "src/core/input/fight_input_action_composer.js",
               "symbols": [
                 "FightInputActionComposer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -45632,7 +45711,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
@@ -45641,13 +45720,6 @@
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -45683,6 +45755,13 @@
               "target": "src/core/fishing/simple_fight_force_calculator.js",
               "symbols": [
                 "SimpleFightForceCalculator"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
               ],
               "resolution": "confirmed"
             },
@@ -46603,13 +46682,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],
@@ -50804,13 +50883,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
               ],

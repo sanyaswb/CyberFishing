@@ -74,14 +74,31 @@ class StageThreePrerequisiteLedger {
         const target = path.join(this.root, write.path);
         const current = fs.existsSync(target) ? sha(fs.readFileSync(target)) : null;
         assert.equal(current, write.afterSha256, `prerequisite ${record.sequence} drift: ${write.path}`);
-        if (write.beforeBase64 === null) fs.unlinkSync(target);
-        else {
+        if (write.beforeBase64 === null) {
+          fs.unlinkSync(target);
+          // Directories the created file needed disappear with it.
+          for (let directory = path.dirname(target); directory !== this.root && fs.readdirSync(directory).length === 0;
+            directory = path.dirname(directory)) fs.rmdirSync(directory);
+        } else {
           fs.mkdirSync(path.dirname(target), { recursive: true });
           fs.writeFileSync(target, Buffer.from(write.beforeBase64, "base64"));
         }
       }
       fs.unlinkSync(path.join(this.root, StageThreePrerequisiteLedger.fileName(record)));
     }
+  }
+
+  // Bytes of one file before every recorded transition (newest first; only writes whose recorded
+  // after-image matches are reversed, so a later unrecorded change stays visible).
+  beforeAll(file, bytes) {
+    let result = Buffer.from(bytes);
+    for (const record of this.records().reverse()) {
+      const write = record.writes.find(item => item.path === file);
+      if (write && write.beforeBase64 !== null && sha(result) === write.afterSha256) {
+        result = Buffer.from(write.beforeBase64, "base64");
+      }
+    }
+    return result;
   }
 
   // Bytes of one file before the transitions recorded after the batch (a file a transition created

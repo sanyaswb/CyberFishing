@@ -179,9 +179,10 @@ class StageThreeInventoryEquipTargetBatchCheck {
     const logical = new LegacyScriptOrderReader(indexPath, {
       scriptAliases: aliases,
     }).read();
-    assert.equal(logical.length, 424);
-    assert.equal(logical[85].currentPath, SOURCE_PROVIDER);
-    assert.equal(logical[85].legacyLoadOrder, 86);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
+    // Logical slot 86 holds exactly the source provider (slots are found by number, not by index).
+    assert.deepEqual(logical.filter((script) => script.legacyLoadOrder === 86).map((script) => script.currentPath),
+      [SOURCE_PROVIDER]);
   }
 
   #verifyRuntimeIdentityAndTiming(contract) {

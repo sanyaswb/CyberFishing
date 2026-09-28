@@ -726,7 +726,7 @@ class StageOneClosureValidator {
     this.#require(
       sourceFiles.length ===
         baseline.sourceModuleCount + activeWrapperCount + stageThreeTargetCount +
-          prebuildTargetCount,
+          prebuildTargetCount + this.#prerequisiteCreatedSources().length,
       "runtime source module count changed",
       errors,
     );
@@ -734,7 +734,7 @@ class StageOneClosureValidator {
       scriptCount ===
         baseline.classicScriptCount +
           (stageThreeState?.compatibilityRuntimeActivated === true ? 1 : 0) +
-          additionalActivationScripts,
+          additionalActivationScripts + this.#splitSlotAdditionalScripts(),
       "classic script count changed",
       errors,
     );
@@ -822,11 +822,14 @@ class StageOneClosureValidator {
       "Stage 3 prebuild target Manifest entries must remain migrating",
       errors,
     );
+    // Classic sources created by recorded prerequisite transitions are classified Manifest entries.
+    const createdSources = this.#prerequisiteCreatedSources();
     this.#require(
-      classifiedCount === baseline.classifiedModuleCount - activeModules &&
+      createdSources.every((file) => manifestByPath.get(file)?.architecture?.migrationStatus === "classified") &&
+        classifiedCount === baseline.classifiedModuleCount - activeModules + createdSources.length &&
         manifest.modules.length ===
           baseline.classifiedModuleCount + activeWrappers + stageThreeTargets +
-            prebuildTargets.length,
+            prebuildTargets.length + createdSources.length,
       "Stage 1 classified set changed outside activated batches",
       errors,
     );
@@ -959,10 +962,13 @@ class StageOneClosureValidator {
       this.#require(!paths.has(item?.path), `duplicate evidence path ${item?.path}`, errors);
       paths.add(item?.path);
       const absolutePath = path.join(this.projectRoot, item?.path || "");
+      // Evidence rewritten by recorded prerequisite transitions is compared after reversing exactly
+      // their recorded writes.
       const actualHash = transition?.isReleasedPath(item.path)
         ? transition.normalizedSha256(item.path)
         : fs.existsSync(absolutePath)
-          ? this.#sha256(absolutePath)
+          ? crypto.createHash("sha256").update(this.#prerequisiteLedger()
+            .beforeAll(item.path, fs.readFileSync(absolutePath))).digest("hex")
           : null;
       this.#require(
         fs.existsSync(absolutePath) && actualHash === item?.sha256,
@@ -1075,6 +1081,26 @@ class StageOneClosureValidator {
       throw new Error(`Stage 3 cutover changed classic edges beyond reviewed imports: ${artifact.batchId}`);
     }
     return removed.length;
+  }
+
+  #prerequisiteLedger() {
+    const { StageThreePrerequisiteLedger } = require("../stage_three_prerequisites/core/prerequisite_ledger");
+    return new StageThreePrerequisiteLedger(this.projectRoot);
+  }
+
+  // Classic sources (src/**/*.js) created by recorded prerequisite transitions and still present.
+  #prerequisiteCreatedSources() {
+    return this.#prerequisiteLedger().records()
+      .flatMap((record) => record.writes.filter((write) => write.beforeSha256 === null && /^src\/.+\.js$/u.test(write.path)))
+      .map((write) => write.path)
+      .filter((file) => fs.existsSync(path.join(this.projectRoot, file)));
+  }
+
+  // Physical classic scripts added by reviewed split legacy slots (every member beyond the first).
+  #splitSlotAdditionalScripts() {
+    const { LegacySlotSplitRegistry } = require("../migration/legacy_slot_split_registry");
+    return LegacySlotSplitRegistry.load(this.projectRoot).splits
+      .reduce((total, split) => total + split.members.length - 1, 0);
   }
 
   // Recorded prerequisite transitions change classic edges only as their records state: every

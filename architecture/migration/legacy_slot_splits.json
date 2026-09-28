@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-legacy-slot-splits",
+  "splits": [
+    {
+      "slot": 41,
+      "members": [
+        "src/core/math/vector2.js",
+        "src/core/core.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/006_vector2-classic-extraction.json"
+    }
+  ]
+}

@@ -23,7 +23,7 @@ class ViteFixtureBuildCheck {
     const indexBefore = fs.readFileSync(indexPath, "utf8");
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
     const logicalScripts = new LegacyScriptOrderReader(indexPath, { scriptAliases }).read();
-    assert.equal(logicalScripts.length, 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts), 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
     assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0, "Vite fixture infrastructure must not activate module scripts");
     for (const forbidden of contract.forbiddenEntrypoints) assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Stage 1.8.2 cannot create ${forbidden}`);
     const repositorySnapshot = new RepositoryContentSnapshot(PROJECT_ROOT);

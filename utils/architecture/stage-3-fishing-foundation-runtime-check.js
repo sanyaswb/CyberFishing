@@ -332,7 +332,13 @@ class StageThreeFishingFoundationRuntimeCheck {
       /<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)>/giu,
     )];
     const providerCount = new Set(contract.activationPositions.map(item => item.sourceProvider)).size;
-    assert.equal(scripts.length, 424 + 1 +
+    const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
+    const logical = new LegacyScriptOrderReader(
+      path.join(PROJECT_ROOT, "index.html"),
+      { scriptAliases: aliases },
+    ).read();
+    // Split legacy slots add physical members without adding logical slots.
+    assert.equal(scripts.length, logical.length + 1 +
       contract.activationPositions.length - providerCount);
     assert.equal(scripts.filter((match) =>
       /\btype=["']module["']/iu.test(`${match[1]} ${match[3]}`)).length, 0);
@@ -342,12 +348,7 @@ class StageThreeFishingFoundationRuntimeCheck {
     assert.equal(scripts.filter((match) =>
       match[2].includes(`${contract.output.directory}${contract.output.activationDirectory}`)).length,
     contract.activationPositions.length);
-    const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
-    const logical = new LegacyScriptOrderReader(
-      path.join(PROJECT_ROOT, "index.html"),
-      { scriptAliases: aliases },
-    ).read();
-    assert.equal(logical.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
   }
 
   // The execution plan source keeps this historical batch record exact and appends an adopted

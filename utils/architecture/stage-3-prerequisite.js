@@ -37,7 +37,7 @@ class StageThreePrerequisiteCommand {
     const { bytes, after } = new StageThreePrerequisiteTransitionBuilder(this.root, this.task).build();
     const writes = [...[...after].map(([relativePath, content]) => ({ relativePath, bytes: content })),
       { relativePath: this.file, bytes }];
-    fs.mkdirSync(path.dirname(path.join(this.root, this.file)), { recursive: true });
+    for (const write of writes) fs.mkdirSync(path.dirname(path.join(this.root, write.relativePath)), { recursive: true });
     new ControlledMetadataTransaction({ projectRoot: this.root }).commit(writes, () => {
       for (const write of writes) assert.deepEqual(fs.readFileSync(path.join(this.root, write.relativePath)), write.bytes);
     });
@@ -83,6 +83,12 @@ class StageThreePrerequisiteCommand {
     });
     new ControlledMetadataTransaction({ projectRoot: this.root }).commit([...writes, { relativePath: this.file, bytes: null }],
       () => undefined);
+    // Directories that only held files this transition created disappear with them.
+    for (const write of record.writes.filter(item => item.beforeBase64 === null)) {
+      for (let directory = path.dirname(path.join(this.root, write.path));
+        directory !== this.root && fs.existsSync(directory) && fs.readdirSync(directory).length === 0;
+        directory = path.dirname(directory)) fs.rmdirSync(directory);
+    }
     return `rolled back ${this.file}`;
   }
 

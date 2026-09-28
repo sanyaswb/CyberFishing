@@ -196,7 +196,7 @@ class StageThreeBatch006RuntimeCheck {
       path.join(PROJECT_ROOT, "index.html"),
       { scriptAliases: aliases },
     ).read();
-    assert.equal(logical.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
     const providerCount = new Set(contract.activationPositions.map(item => item.sourceProvider)).size;
     assert.equal(scripts.length, logical.length + 1 +
       contract.activationPositions.length - providerCount);

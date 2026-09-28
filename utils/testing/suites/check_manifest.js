@@ -818,6 +818,19 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-006",
+      title: "Stage 3 prerequisite 006: Vector2 classic extraction with split legacy slot 41 replays byte-identically with parity, resolved debts and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "006", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "legacy-slot-split",
+      title: "Split legacy slots match the reviewed registry and bad split metadata is rejected",
+      file: "utils/architecture/legacy-slot-split-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",

@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const {
@@ -12,6 +13,7 @@ const LEGACY_FILES = [
   "src/core/items/hook/hook_power_policy.js",
   "src/core/items/quality/net_quality_modifier.js",
   "src/core/items/quality/environmental_compensation_modifier.js",
+  "src/core/math/vector2.js",
   "src/core/core.js",
   "src/config/databases/fish/presets/fish_profile_factory.js",
   "src/config/databases/fish/presets/fish_profile_presets.js",
@@ -128,7 +130,12 @@ const compatibilityLoader = new StageThreeCompatibilityTestLoader({
   context,
 });
 compatibilityLoader.loadRuntime();
-compatibilityLoader.loadAll(LEGACY_FILES);
+// Prerequisite 006 extracted Vector2 into its own classic file; replays of trees recorded before it
+// still declare Vector2 in core.js.
+const VECTOR2_PROVIDER = "src/core/math/vector2.js";
+compatibilityLoader.loadAll(fs.existsSync(path.join(ROOT, VECTOR2_PROVIDER))
+  ? LEGACY_FILES
+  : LEGACY_FILES.filter((file) => file !== VECTOR2_PROVIDER));
 
 vm.runInContext(`
 const checks = [];

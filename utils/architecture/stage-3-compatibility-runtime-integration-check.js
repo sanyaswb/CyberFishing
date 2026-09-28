@@ -94,7 +94,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
     const logicalScripts = new LegacyScriptOrderReader(indexPath, {
       scriptAliases: aliases,
     }).read();
-    assert.equal(logicalScripts.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts), 424);
     assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0);
     const activationProviderCount = new Set(
       contract.activationPositions.map((activation) => activation.sourceProvider),

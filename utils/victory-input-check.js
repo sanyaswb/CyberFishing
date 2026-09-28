@@ -54,6 +54,7 @@ class RuntimeLoader {
         },
       },
     });
+    this.#run(runtime, "src/core/math/vector2.js", ["Vector2"]);
     this.#run(runtime, "src/core/core.js", ["InputManager"]);
     this.#run(
       runtime,

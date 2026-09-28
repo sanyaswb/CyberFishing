@@ -151,7 +151,7 @@ class StageThreeBatch007RuntimeCutoverCheck {
     const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(runtime);
     const logical = new LegacyScriptOrderReader(null,
       { scriptAliases: aliases }).parse(html);
-    assert.equal(logical.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
   }
 
   async #verifyFailurePreservesOutput(outputDirectory) {

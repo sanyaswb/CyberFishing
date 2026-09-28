@@ -1377,12 +1377,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/core/core.js",
-      "symbol": "Vector2",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/core/equipment/auto_refill_policy.js",
       "symbol": "AutoRefillMemory",
       "mechanism": "global-lexical",
@@ -2519,6 +2513,12 @@
     {
       "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
       "symbol": "LoadoutEquipmentTransitionPlanner",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/math/vector2.js",
+      "symbol": "Vector2",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },

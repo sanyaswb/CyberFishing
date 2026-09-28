@@ -203,7 +203,7 @@ class StageThreeFishingFoundationPrebuildCheck {
       path.join(PROJECT_ROOT, "index.html"),
       { scriptAliases: aliases },
     ).read();
-    assert.equal(logical.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
     const positions = new Map(MODULES.map(([source]) => [source, null]));
     for (const script of logical) {
       if (positions.has(script.currentPath)) positions.set(script.currentPath, script.legacyLoadOrder);

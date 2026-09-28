@@ -235,12 +235,14 @@ class StageTwoDependencyContractCheck {
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(
       this.projectRoot,
     );
+    // Logical slots are looked up by number: a split slot holds several physical scripts.
     const scripts = new LegacyScriptOrderReader(
       path.join(this.projectRoot, this.paths.index),
       { scriptAliases },
-    ).read().map((script) => script.currentPath);
-    assert.equal(scripts[394], expectedProvider);
-    assert.equal(scripts[421], CONSUMER_PATH);
+    ).read();
+    const at = (slot) => LegacyScriptOrderReader.pathsAtSlot(scripts, slot);
+    assert.deepEqual(at(395), [expectedProvider]);
+    assert.deepEqual(at(422), [CONSUMER_PATH]);
   }
 
   #entry(manifest, currentPath) {

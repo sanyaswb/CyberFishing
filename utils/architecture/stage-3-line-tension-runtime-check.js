@@ -248,9 +248,10 @@ class StageThreeLineTensionRuntimeCheck {
       path.join(PROJECT_ROOT, "index.html"),
       { scriptAliases: aliases },
     ).read();
-    assert.equal(logical.length, 424);
-    assert.equal(logical[128].legacyLoadOrder, 129);
-    assert.equal(logical[128].currentPath, SOURCE_PROVIDER);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
+    // Logical slot 129 holds exactly the source provider (slots are found by number, not by index).
+    assert.deepEqual(logical.filter((script) => script.legacyLoadOrder === 129).map((script) => script.currentPath),
+      [SOURCE_PROVIDER]);
     assert.equal(activation.legacyScriptIndex, 129);
   }
 

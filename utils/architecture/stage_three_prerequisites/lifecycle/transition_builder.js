@@ -33,6 +33,8 @@ class StageThreePrerequisiteTransitionBuilder {
   }
 
   bytes(file) { return fs.readFileSync(path.join(this.root, file)); }
+  // Bytes of a file before the transition, or null when the transition creates it.
+  beforeBytes(file) { return fs.existsSync(path.join(this.root, file)) ? this.bytes(file) : null; }
   json(file) { return JSON.parse(this.bytes(file)); }
 
   build() {
@@ -56,18 +58,34 @@ class StageThreePrerequisiteTransitionBuilder {
       }
       after.set(edit.path, Buffer.from(text, "utf8"));
     }
+    // Optional: files the transition creates (exact bytes derived from the tree it applies to).
+    for (const created of task.createdFiles || []) {
+      assert(!fs.existsSync(path.join(this.root, created.path)), `created file already exists: ${created.path}`);
+      after.set(created.path, Buffer.from(created.bytes({ read: file => this.bytes(file).toString("utf8") }), "utf8"));
+    }
+    // Optional: reviewed metadata the transition changes (derived from the tree and the edits).
+    const metadata = task.metadataWrites ? task.metadataWrites({ read: file => this.bytes(file).toString("utf8"),
+      exists: file => fs.existsSync(path.join(this.root, file)), after: file => after.get(file)?.toString("utf8") }) : new Map();
+    for (const [file, bytes] of metadata) after.set(file, Buffer.from(bytes, "utf8"));
     const workspace = this.#workspace(after);
     try {
       const policyDocument = this.json(POLICY);
       const policy = ArchitecturePolicy.load(path.join(this.root, POLICY));
       const oldManifest = this.json(MANIFEST);
-      const manifest = new LiveObservationSnapshot().build({ projectRoot: workspace, policy, manifest: oldManifest });
+      // Optional: reviewed classification of modules the transition creates; the observation of the
+      // edited workspace supplies their observed facts and dependencies.
+      const seeded = task.manifestEntries ? { ...oldManifest, modules: [...oldManifest.modules,
+        ...task.manifestEntries.map(entry => ({ currentPath: entry.currentPath, currentArea: entry.currentArea,
+          observed: { legacyLoadOrder: entry.legacyLoadOrder }, architecture: entry.architecture,
+          analysis: { blockers: entry.blockers } }))] } : oldManifest;
+      const manifest = new LiveObservationSnapshot().build({ projectRoot: workspace, policy, manifest: seeded });
       const debt = this.json(KNOWN_DEBT);
       for (const id of task.resolvedDebtIds) assert(debt.debts.some(item => item.id === id), `unknown debt: ${id}`);
       const nextDebt = { ...debt, debts: debt.debts.filter(item => !task.resolvedDebtIds.includes(item.id)) };
       const guards = registry => new ArchitectureGuardEngine({ projectRoot: workspace }).run(new ArchitectureGuardSnapshotBuilder({
         projectRoot: workspace, policy: policyDocument, manifest, bridgeRegistry: this.json(BRIDGES),
-        globalBaseline: this.json(BASELINE), debtRegistry: registry }).build());
+        globalBaseline: after.has(BASELINE) ? JSON.parse(after.get(BASELINE)) : this.json(BASELINE),
+        debtRegistry: registry }).build());
       // With the old registry exactly the resolved debts become stale; with the new one nothing fails.
       const stale = guards(debt).diagnostics.filter(item => item.status === "FAIL");
       assert.deepEqual(stale.map(item => item.rule), task.resolvedDebtIds.map(() => "stale-known-debt"),
@@ -85,11 +103,14 @@ class StageThreePrerequisiteTransitionBuilder {
         "the confirmed-edge delta differs from the task");
       after.set(MANIFEST, canonical(manifest));
       after.set(KNOWN_DEBT, canonical(nextDebt));
-      const changed = [...after].filter(([file, bytes]) => !bytes.equals(this.bytes(file)));
+      const changed = [...after].filter(([file, bytes]) => !bytes.equals(this.beforeBytes(file) ?? Buffer.alloc(0)) ||
+        this.beforeBytes(file) === null);
       assert.deepEqual(changed.map(([file]) => file).sort(),
-        [...task.sourceEdits.map(edit => edit.path), MANIFEST, KNOWN_DEBT].sort(), "unexpected transition write set");
+        [...task.sourceEdits.map(edit => edit.path), ...(task.createdFiles || []).map(created => created.path),
+          ...metadata.keys(), MANIFEST, KNOWN_DEBT].sort(), "unexpected transition write set");
       const parity = task.parity({ read: file => this.bytes(file).toString("utf8"),
-        before: file => this.bytes(file).toString("utf8"), after: file => after.get(file).toString("utf8") });
+        before: file => this.bytes(file).toString("utf8"), after: file => after.get(file).toString("utf8"),
+        workspace });
       const record = {
         schemaVersion: 1,
         kind: KIND,
@@ -109,8 +130,11 @@ class StageThreePrerequisiteTransitionBuilder {
         parity,
         graphReview: { trigger: backlog.graphReviewRepeatCondition.trigger, status: "pending-repeated-graph-review" },
         behaviorChange: "none",
-        writes: changed.map(([file, bytes]) => ({ path: file, beforeSha256: sha(this.bytes(file)), afterSha256: sha(bytes),
-          beforeBase64: this.bytes(file).toString("base64") })).sort((left, right) => compare(left.path, right.path)),
+        writes: changed.map(([file, bytes]) => {
+          const before = this.beforeBytes(file);
+          return { path: file, beforeSha256: before === null ? null : sha(before), afterSha256: sha(bytes),
+            beforeBase64: before === null ? null : before.toString("base64") };
+        }).sort((left, right) => compare(left.path, right.path)),
       };
       StageThreePrerequisiteLedger.validate(record);
       return { record, bytes: canonical(record), after: new Map(changed) };
@@ -134,7 +158,10 @@ class StageThreePrerequisiteTransitionBuilder {
     };
     for (const directory of ["src", "architecture"]) copy(directory);
     for (const file of ["index.html", "package.json"]) fs.copyFileSync(path.join(this.root, file), path.join(temporary, file));
-    for (const [file, bytes] of after) fs.writeFileSync(path.join(temporary, file), bytes);
+    for (const [file, bytes] of after) {
+      fs.mkdirSync(path.dirname(path.join(temporary, file)), { recursive: true });
+      fs.writeFileSync(path.join(temporary, file), bytes);
+    }
     return temporary;
   }
 }

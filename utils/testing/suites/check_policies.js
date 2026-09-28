@@ -250,6 +250,8 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-prerequisite-003",
   "stage-3-prerequisite-004",
   "stage-3-prerequisite-005",
+  "stage-3-prerequisite-006",
+  "legacy-slot-split",
   "stage-3-activation-retirement-fixtures",
   "stage-3-shared-batch-tooling-negative",
   "stage-3-shared-batch-tooling-equivalence",

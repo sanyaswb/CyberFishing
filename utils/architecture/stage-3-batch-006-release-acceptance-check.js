@@ -172,7 +172,7 @@ class StageThreeBatch006ReleaseAcceptanceCheck {
     const logical = new LegacyScriptOrderReader(indexPath, {
       scriptAliases: aliases,
     }).read();
-    assert.equal(logical.length, 424);
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logical), 424);
   }
 
   #verifyRollback(plan) {
