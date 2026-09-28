@@ -4479,6 +4479,12 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/systems/buff_manager.js",
+      "symbol": "BuffManager",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/systems/chum_system.js",
       "symbol": "BaitBoat",
       "mechanism": "global-lexical",
@@ -4685,12 +4691,6 @@
     {
       "currentPath": "src/systems/rod_visual_offset_system.js",
       "symbol": "RodVisualOffsetSystem",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/systems/stamina_system.js",
-      "symbol": "BuffManager",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },

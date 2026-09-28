@@ -18765,9 +18765,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -44839,6 +44837,61 @@
       }
     },
     {
+      "currentPath": "src/systems/buff_manager.js",
+      "currentArea": "systems",
+      "observed": {
+        "legacyLoadOrder": 207,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "BuffManager",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/buff_manager.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
       "currentPath": "src/systems/chum_system.js",
       "currentArea": "systems",
       "observed": {
@@ -47356,11 +47409,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BuffManager",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "StaminaController",
               "mechanism": "global-lexical",
               "availability": "program-init"
@@ -47404,9 +47452,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },

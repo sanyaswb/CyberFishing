@@ -34,6 +34,14 @@
         "src/ui/inventory/terminal_line_slot_label_resolver.js"
       ],
       "transition": "architecture/migration/stage_3_prerequisites/008_equipment-slot-rule-reclassification.json"
+    },
+    {
+      "slot": 207,
+      "members": [
+        "src/systems/stamina_system.js",
+        "src/systems/buff_manager.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/016_stamina-buff-split-and-review.json"
     }
   ]
 }

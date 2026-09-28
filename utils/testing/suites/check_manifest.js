@@ -888,6 +888,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-016",
+      title: "Stage 3 prerequisite 016: BuffManager split with legacy slot 207 and cohesive hot-loop rule reviews replay byte-identically with parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "016", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",
