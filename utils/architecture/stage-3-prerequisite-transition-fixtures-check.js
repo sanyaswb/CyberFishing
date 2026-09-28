@@ -7,6 +7,7 @@ const assert = require("node:assert/strict");
 const { PrerequisiteManifestUpdatePlan } = require("./stage_three_prerequisites/lifecycle/manifest_update_plan");
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_addition_plan");
 const { buildReviewEvidence } = require("./stage_three_prerequisites/lifecycle/review_evidence");
+const { PrerequisiteGlobalProviderRemovalPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_removal_plan");
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const MIXED = "mixed-responsibility-requires-decomposition";
@@ -260,5 +261,33 @@ rejects("a duplicated addition", () => new PrerequisiteGlobalProviderAdditionPla
   /duplicated/u);
 rejects("an unsupported mechanism", () => new PrerequisiteGlobalProviderAdditionPlan([
   { ...addition("src/config/sample/a.js", "A_CATALOG"), mechanism: "window-property" }], CREATED), /invalid mechanism/u);
+
+// Global provider removals: only edited files' providers that are no longer observed, exactly.
+const EDITED_Y = { editedPaths: ["src/core/y.js"] };
+const removalOf = (symbol, reason = "Replaced by an injected provider.") => ({ currentPath: "src/core/y.js", symbol,
+  mechanism: "global-lexical", reason });
+const unobserved = { modules: [{ currentPath: "src/core/y.js", observed: { providers: { items: [] } } }] };
+accepts("a removal of an unobserved provider of an edited file", () => {
+  const plan = new PrerequisiteGlobalProviderRemovalPlan([removalOf("Y")], EDITED_Y);
+  const next = plan.apply(clone(BASELINE));
+  assert.deepEqual(next.providers.map(provider => provider.symbol), ["X"]);
+  plan.verify(clone(BASELINE), next, unobserved);
+  assert.equal(plan.records()[0].reason, "Replaced by an injected provider.");
+});
+rejects("a removal of a provider that is still observed", () => {
+  const plan = new PrerequisiteGlobalProviderRemovalPlan([removalOf("Y")], EDITED_Y);
+  plan.verify(clone(BASELINE), plan.apply(clone(BASELINE)), { modules: [{ currentPath: "src/core/y.js",
+    observed: { providers: { items: [{ symbol: "Y", mechanism: "global-lexical" }] } } }] });
+}, /still observed/u);
+rejects("a removal of a provider outside the baseline", () => new PrerequisiteGlobalProviderRemovalPlan(
+  [removalOf("Z")], EDITED_Y).apply(clone(BASELINE)), /not in the baseline/u);
+rejects("a removal for a file the transition does not edit", () => new PrerequisiteGlobalProviderRemovalPlan(
+  [{ ...removalOf("X"), currentPath: "src/app/x.js" }], EDITED_Y), /outside the transition/u);
+rejects("a removal without a reason", () => new PrerequisiteGlobalProviderRemovalPlan([removalOf("Y", " ")], EDITED_Y),
+  /needs a reason/u);
+rejects("a baseline that loses another entry too", () => {
+  const plan = new PrerequisiteGlobalProviderRemovalPlan([removalOf("Y")], EDITED_Y);
+  plan.verify(clone(BASELINE), { ...clone(BASELINE), providers: [] }, unobserved);
+}, /changed or removed/u);
 
 console.log(`Stage 3 prerequisite transition fixtures PASS: ${cases} cases (Manifest updates and global provider additions).`);

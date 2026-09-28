@@ -187,6 +187,7 @@ class CastService {
   #debugEvents;
   #castReadinessEvaluator;
   #devFlags;
+  #runtimeConfig;
 
   constructor({
     config,
@@ -199,6 +200,7 @@ class CastService {
     debugEvents = null,
     castReadinessEvaluator = null,
     devFlags = null,
+    runtimeConfig = null,
   }) {
     this.#config = config;
     this.#rng = rng;
@@ -209,6 +211,7 @@ class CastService {
     this.#getDynamicBounds = getDynamicBounds;
     this.#debugEvents = debugEvents;
     this.#devFlags = devFlags;
+    this.#runtimeConfig = runtimeConfig;
     this.#castReadinessEvaluator =
       typeof castReadinessEvaluator === "function"
         ? castReadinessEvaluator
@@ -266,6 +269,7 @@ class CastService {
       this.#rng,
       this.#debugEvents,
       this.#devFlags,
+      this.#runtimeConfig,
     );
 
     if (typeof floatEntity.cast === "function") {
@@ -339,8 +343,10 @@ class CastService {
 }
 
 class FightSessionFactory {
-  constructor({ config, rng, castDistanceCalculator = null, devFlags = null }) {
+  // runtimeConfig is the live runtime config (CONFIG) whose adapter DEV overrides replace.
+  constructor({ config, rng, castDistanceCalculator = null, devFlags = null, runtimeConfig = null }) {
     this.config = config;
+    this.runtimeConfig = runtimeConfig;
     this.rng = rng;
     this.devFlags = devFlags;
     this.physicsConfig =
@@ -398,9 +404,10 @@ class FightSessionFactory {
             durability: reelStats.durability,
             durabilityMaxLoadLossPerPercent:
               reelStats.durabilityMaxLoadLossPerPercent,
+            runtimeConfig: this.runtimeConfig,
           },
         )
-      : new Reel(0, 0, { lineCapacityMeters: 0 });
+      : new Reel(0, 0, { lineCapacityMeters: 0, runtimeConfig: this.runtimeConfig });
     const activeHook = equipment.hooks?.[0] || {};
     const hookStats = activeHook.effectiveStats || {};
     const hook = new Hook(hookStats);
@@ -529,9 +536,10 @@ class FightSessionFactory {
             durability: reelStats.durability,
             durabilityMaxLoadLossPerPercent:
               reelStats.durabilityMaxLoadLossPerPercent,
+            runtimeConfig: this.runtimeConfig,
           },
         )
-      : new Reel(0, 0, { lineCapacityMeters: 0 });
+      : new Reel(0, 0, { lineCapacityMeters: 0, runtimeConfig: this.runtimeConfig });
     const activeHook = equipment.hooks?.[0] || {};
     const hookStats = activeHook.effectiveStats || {};
     const hook = new Hook(hookStats);

@@ -403,6 +403,8 @@ function createCast({
     baitRules,
     getRodVirtualPos: () => rodVirtualPos,
     getDynamicBounds: () => bounds,
+    // The live runtime config the water entities read, as the composition passes it.
+    runtimeConfig: CONFIG,
   });
   const result = castService.cast(
     rodVirtualPos.x,
@@ -504,6 +506,8 @@ function runFloatDepthIntegrationChecks() {
     rng: createRng(),
     castDistanceCalculator: calculator,
     devFlags: createDevFlags(),
+    // The live runtime config the tackle entities read, as the composition passes it.
+    runtimeConfig: CONFIG,
   }).create(
     createFish({ weightKg: 0.25 }),
     equipment,

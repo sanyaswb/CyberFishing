@@ -13,6 +13,7 @@ const { StageThreePrerequisiteLedger, KIND } = require("../core/prerequisite_led
 const { PrerequisiteManifestUpdatePlan } = require("./manifest_update_plan");
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./global_provider_addition_plan");
 const { buildReviewEvidence } = require("./review_evidence");
+const { PrerequisiteGlobalProviderRemovalPlan } = require("./global_provider_removal_plan");
 
 const MANIFEST = "architecture/migration/module_migration_manifest.json";
 const KNOWN_DEBT = "architecture/guards/known_debt_registry.json";
@@ -80,9 +81,16 @@ class StageThreePrerequisiteTransitionBuilder {
     }
     const additions = task.globalProviderAdditions ? new PrerequisiteGlobalProviderAdditionPlan(
       task.globalProviderAdditions, { createdPaths: (task.createdFiles || []).map(created => created.path) }) : null;
+    const removals = task.globalProviderRemovals ? new PrerequisiteGlobalProviderRemovalPlan(
+      task.globalProviderRemovals, { editedPaths: task.sourceEdits.map(edit => edit.path) }) : null;
+    assert(!(additions && removals), "a transition either adds or removes global providers");
     if (additions) {
       assert(!metadata.has(BASELINE), "global provider additions own the baseline write");
       after.set(BASELINE, canonical(additions.apply(this.json(BASELINE))));
+    }
+    if (removals) {
+      assert(!metadata.has(BASELINE), "global provider removals own the baseline write");
+      after.set(BASELINE, canonical(removals.apply(this.json(BASELINE))));
     }
     const workspace = this.#workspace(after);
     try {
@@ -99,6 +107,7 @@ class StageThreePrerequisiteTransitionBuilder {
         manifest: updates ? updates.apply(seeded) : seeded });
       if (updates) updates.verify(oldManifest, manifest);
       if (additions) additions.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
+      if (removals) removals.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
       const debt = this.json(KNOWN_DEBT);
       for (const id of task.resolvedDebtIds) assert(debt.debts.some(item => item.id === id), `unknown debt: ${id}`);
       const nextDebt = { ...debt, debts: debt.debts.filter(item => !task.resolvedDebtIds.includes(item.id)) };
@@ -127,7 +136,7 @@ class StageThreePrerequisiteTransitionBuilder {
         this.beforeBytes(file) === null);
       assert.deepEqual(changed.map(([file]) => file).sort(),
         [...task.sourceEdits.map(edit => edit.path), ...(task.createdFiles || []).map(created => created.path),
-          ...metadata.keys(), ...(additions ? [BASELINE] : []), MANIFEST,
+          ...metadata.keys(), ...(additions || removals ? [BASELINE] : []), MANIFEST,
           ...(task.resolvedDebtIds.length > 0 ? [KNOWN_DEBT] : [])].sort(),
         "unexpected transition write set");
       const parity = task.parity({ read: file => this.bytes(file).toString("utf8"),
@@ -152,6 +161,7 @@ class StageThreePrerequisiteTransitionBuilder {
             reviewEvidence: file => buildReviewEvidence({ currentPath: file, manifest, policy: policyDocument,
               debtRegistry: nextDebt, sourceSha256: sha(this.bytes(file)) }) }) } : {}),
         ...(additions ? { globalProviderAdditions: additions.records() } : {}),
+        ...(removals ? { globalProviderRemovals: removals.records() } : {}),
         dependencyObservation: { removedEdges: removed, addedEdges: added, confirmedEdgeDelta: added.length - removed.length },
         guards: { failureCount: result.failureCount, knownDebtCount: result.knownDebtCount },
         parity,

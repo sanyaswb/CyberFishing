@@ -1347,28 +1347,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-c2ba4b73478d",
-      "rule": "boundary-dependency",
-      "source": "src/entities/tackle.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c2ba4b73478d5ff7271997748db44dbd840022f0f9e54508613e95013bda5071",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/entities/tackle.js",
-        "target": "src/config/physics/physics_config_adapter.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-c30ceb4282b9",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_ui.js",
@@ -1685,28 +1663,6 @@
       "identity": {
         "rule": "boundary-dependency",
         "source": "src/app/script.js",
-        "target": "src/config/config.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-fa61692643c8",
-      "rule": "boundary-dependency",
-      "source": "src/entities/tackle.js",
-      "target": "src/config/config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "fa61692643c8a34b2ca9e6d709adf67550cdf2e5bb748b2f378eb087665782dc",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/entities/tackle.js",
         "target": "src/config/config.js"
       }
     },

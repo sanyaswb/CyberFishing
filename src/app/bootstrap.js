@@ -639,6 +639,7 @@ class GameCompositionRoot {
     clock,
     rng,
     devFlags,
+    runtimeConfig,
     audio,
     debugEvents,
     canvasMetrics,
@@ -658,6 +659,7 @@ class GameCompositionRoot {
       getDynamicBounds: appPorts.getDynamicBounds,
       debugEvents,
       devFlags,
+      runtimeConfig,
       castReadinessEvaluator: (equipment) =>
         runtime.inventory.evaluateCastReadiness?.(equipment),
     });
@@ -670,6 +672,7 @@ class GameCompositionRoot {
         config,
         rng,
         devFlags,
+        runtimeConfig,
         castDistanceCalculator: runtime.castDistanceCalculator,
       }),
     });

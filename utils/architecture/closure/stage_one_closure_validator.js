@@ -845,7 +845,8 @@ class StageOneClosureValidator {
     );
     this.#require(
       globalBaseline.providers.length === baseline.globalIdentityCount +
-        this.#prerequisiteGlobalProviderAdditions(globalBaseline),
+        this.#prerequisiteGlobalProviderAdditions(globalBaseline) -
+        this.#prerequisiteGlobalProviderRemovals(globalBaseline),
       "global identity baseline changed",
       errors,
     );
@@ -1106,6 +1107,17 @@ class StageOneClosureValidator {
     const missing = additions.find((addition) => !approved.has(identity(addition)));
     if (missing) throw new Error(`Recorded global provider addition is missing from the baseline: ${missing.symbol}`);
     return new Set(additions.map(identity)).size;
+  }
+
+  // Global providers removed from the exact baseline by recorded prerequisite transitions; every
+  // recorded removal must be absent from the baseline.
+  #prerequisiteGlobalProviderRemovals(globalBaseline) {
+    const identity = (provider) => `${provider.currentPath}\u0000${provider.symbol}\u0000${provider.mechanism}`;
+    const approved = new Set(globalBaseline.providers.map(identity));
+    const removals = this.#prerequisiteLedger().records().flatMap((record) => record.globalProviderRemovals || []);
+    const present = removals.find((removal) => approved.has(identity(removal)));
+    if (present) throw new Error(`Recorded global provider removal is still in the baseline: ${present.symbol}`);
+    return new Set(removals.map(identity)).size;
   }
 
   // Physical classic scripts added by reviewed split legacy slots (every member beyond the first).

@@ -35325,36 +35325,6 @@
               "symbol": "WobblerEntity",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalFightPhysicsConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalFloatMotionConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalLureRetrieveConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalPassiveRetrieveConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalReelConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "getGlobalRuntimePhysicsConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
             }
           ],
           "issues": []
@@ -35362,18 +35332,6 @@
         "consumers": {
           "status": "verified",
           "items": [
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
             {
               "symbol": "DistanceUnitConverter",
               "mechanism": "identifier",
@@ -35384,12 +35342,6 @@
               "symbol": "EnvironmentalCompensationModifier",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -35448,22 +35400,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "DistanceUnitConverter",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -35477,14 +35413,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/items/quality/environmental_compensation_modifier.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
               "resolution": "confirmed"
             },
             {
@@ -35521,20 +35449,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/distance_unit_converter.js",
               "symbols": [

@@ -4005,42 +4005,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalFightPhysicsConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalFloatMotionConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalLureRetrieveConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalPassiveRetrieveConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalReelConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/entities/tackle.js",
-      "symbol": "getGlobalRuntimePhysicsConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/infrastructure/diagnostics/console_warning_logger.js",
       "symbol": "ConsoleWarningLogger",
       "mechanism": "global-lexical",

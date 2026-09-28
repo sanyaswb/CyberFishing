@@ -334,6 +334,7 @@ class GameApplication {
   #location;
   #rng;
   #devFlags;
+  #runtimeConfig;
   #debugEvents;
   #windowTarget;
   #documentTarget;
@@ -433,6 +434,8 @@ class GameApplication {
     if (clock) this.#clock = clock;
     this.#canvasMetrics = canvasMetrics;
     this.#config = new ConfigProvider(config);
+    // The live runtime config the tackle entities read (DEV adapter overrides stay live).
+    this.#runtimeConfig = config;
     this.#composition = compositionRoot;
     this.#devFlags = devFlags;
     this.#debugEvents = debugEvents;
@@ -564,6 +567,7 @@ class GameApplication {
       clock: this.#clock,
       rng: this.#rng,
       devFlags: this.#devFlags,
+      runtimeConfig: this.#runtimeConfig,
       audio,
       debugEvents: this.#debugEvents,
       canvasMetrics: this.#canvasMetrics,
@@ -713,6 +717,7 @@ class GameApplication {
       this.#rng,
       this.#debugEvents,
       this.#devFlags,
+      this.#runtimeConfig,
     );
   }
 

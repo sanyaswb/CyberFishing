@@ -1,44 +1,3 @@
-function getGlobalFightPhysicsConfig() {
-  if (typeof CONFIG === "undefined") return null;
-  if (CONFIG.fightPhysicsConfig) return CONFIG.fightPhysicsConfig;
-  if (typeof FightPhysicsConfigAdapter !== "undefined") {
-    return new FightPhysicsConfigAdapter(CONFIG);
-  }
-  return null;
-}
-
-function getGlobalRuntimePhysicsConfig() {
-  const physicsConfig = getGlobalFightPhysicsConfig();
-  return (
-    physicsConfig?.getDistanceConfig?.() ||
-    {}
-  );
-}
-
-function getGlobalPassiveRetrieveConfig() {
-  const physicsConfig = getGlobalFightPhysicsConfig();
-  return physicsConfig?.getPassiveRetrieveConfig?.() || {};
-}
-
-function getGlobalFloatMotionConfig() {
-  const physicsConfig = getGlobalFightPhysicsConfig();
-  return (
-    physicsConfig?.getFloatMotionConfig?.() ||
-    getGlobalRuntimePhysicsConfig().floatMotion ||
-    {}
-  );
-}
-
-function getGlobalLureRetrieveConfig() {
-  const physicsConfig = getGlobalFightPhysicsConfig();
-  return physicsConfig?.getLureRetrieveConfig?.() || {};
-}
-
-function getGlobalReelConfig() {
-  const physicsConfig = getGlobalFightPhysicsConfig();
-  return physicsConfig?.getReelConfig?.() || {};
-}
-
 class Equipment {
   #equipmentPowerLevel;
   #basePower;
@@ -172,7 +131,8 @@ class Reel extends Equipment {
     this.#bearingCount = Reel.#numberOrDefault(options.bearingCount, 0);
     this.#bearingRetrieveSpeedBonusMetersPerSec = Reel.#numberOrDefault(
       options.bearingRetrieveSpeedBonusMetersPerSec,
-      getGlobalReelConfig().bearingRetrieveSpeedBonusMetersPerSec,
+      // The composition passes the live runtime config object.
+      (options.runtimeConfig?.fightPhysicsConfig?.getReelConfig?.() || {}).bearingRetrieveSpeedBonusMetersPerSec,
       0,
     );
     this.#dragMinKg = Reel.#numberOrDefault(options.dragMinKg, 0);
@@ -416,7 +376,6 @@ class Net {
   #createConverter(physicsConfig) {
     const resolvedPhysics =
       physicsConfig ||
-      getGlobalRuntimePhysicsConfig() ||
       {};
 
     if (typeof DistanceUnitConverter !== "undefined") {
@@ -489,6 +448,7 @@ class WaterEntity {
   _debugEvents;
   _environmentalCompensationModifier;
   _devFlags;
+  _runtimeConfig;
 
   constructor(
     x,
@@ -499,6 +459,7 @@ class WaterEntity {
     debugEvents = null,
     environmentalCompensationModifier = null,
     devFlags = null,
+    runtimeConfig = null,
   ) {
     this._position = new Vector2(x, y);
     this._velocity = new Vector2(0, 0);
@@ -508,6 +469,7 @@ class WaterEntity {
     this._rng = rng || { next: () => Math.random() };
     this._debugEvents = debugEvents || null;
     this._devFlags = devFlags || null;
+    this._runtimeConfig = runtimeConfig || null;
     this._environmentalCompensationModifier =
       environmentalCompensationModifier ||
       new EnvironmentalCompensationModifier();
@@ -584,7 +546,7 @@ class WaterEntity {
   }
 
   _applyPassiveRetrieve(dt, pullDirection, retrieveParams = null) {
-    const passiveRetrieve = getGlobalPassiveRetrieveConfig();
+    const passiveRetrieve = this._passiveRetrieveConfig();
     if (Number.isFinite(Number(retrieveParams?.targetSpeedPxPerSec))) {
       this._applyRetrieveSpeed(
         dt,
@@ -773,8 +735,31 @@ class WaterEntity {
 
   _afterPhysicsUpdate(checkWater) {}
 
+  // The composition passes the live runtime config object; its adapter is read on every call, so
+  // DEV adapter overrides stay live.
+  _fightPhysicsConfig() {
+    return this._runtimeConfig?.fightPhysicsConfig || null;
+  }
+
+  _passiveRetrieveConfig() {
+    return this._fightPhysicsConfig()?.getPassiveRetrieveConfig?.() || {};
+  }
+
+  _floatMotionConfig() {
+    const physicsConfig = this._fightPhysicsConfig();
+    return (
+      physicsConfig?.getFloatMotionConfig?.() ||
+      (physicsConfig?.getDistanceConfig?.() || {}).floatMotion ||
+      {}
+    );
+  }
+
+  _lureRetrieveConfig() {
+    return this._fightPhysicsConfig()?.getLureRetrieveConfig?.() || {};
+  }
+
   _getClampedDtSec(dt) {
-    const maxDtMs = getGlobalFightPhysicsConfig()?.getMaxDtMs?.() ?? 50;
+    const maxDtMs = this._fightPhysicsConfig()?.getMaxDtMs?.() ?? 50;
     return Math.min(Math.max(0, Number(dt) || 0), maxDtMs) / 1000;
   }
 
@@ -919,7 +904,7 @@ class WaterEntity {
   _updateMotionTilt(dt, moveX, moveY) {
     if (!this._motionTiltEnabled) return;
 
-    const cfg = getGlobalFloatMotionConfig();
+    const cfg = this._floatMotionConfig();
     if (cfg.enabled === false) {
       this._motionTiltAngle = 0;
       return;
@@ -1039,7 +1024,7 @@ class WaterEntity {
     this._isHooked = false;
 
     // 1. БЕРЕМО КОНФІГ ВІД РИБИ
-    const baseSeq = fishBiteSequence || CONFIG.float.biteSequence;
+    const baseSeq = fishBiteSequence || this._runtimeConfig.float.biteSequence;
     const seqCfg = this._applyGodModeBiteSequence({ ...baseSeq });
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
@@ -1048,7 +1033,7 @@ class WaterEntity {
 
     if (isSpinningLure && !isPulling) {
       seqCfg.chanceGuaranteed =
-        getGlobalLureRetrieveConfig().idleSpinningBiteChance ?? 0.005;
+        this._lureRetrieveConfig().idleSpinningBiteChance ?? 0.005;
     }
 
     this._applyGodModeBiteSequence(seqCfg);
@@ -1376,7 +1361,7 @@ class SpinnerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        getGlobalLureRetrieveConfig().multiplier ?? 150,
+        this._lureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -1402,7 +1387,7 @@ class WobblerEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        getGlobalLureRetrieveConfig().multiplier ?? 150,
+        this._lureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
 
@@ -1449,7 +1434,7 @@ class JigEntity extends WaterEntity {
         dt,
         pullDirection,
         reelPower,
-        getGlobalLureRetrieveConfig().multiplier ?? 150,
+        this._lureRetrieveConfig().multiplier ?? 150,
         this._lureResistance,
       );
       this._currentHookDepth = Math.max(
@@ -1602,7 +1587,7 @@ class FloatEntity extends WaterEntity {
     this.stopBite();
 
     this._targetHookDepth = Math.max(
-      getGlobalLureRetrieveConfig().defaultSurfaceDepthMeters ?? 0.1,
+      this._lureRetrieveConfig().defaultSurfaceDepthMeters ?? 0.1,
       Number(targetDepth) || 0,
     );
     this._currentHookDepth = 0.1;
@@ -1635,7 +1620,7 @@ class FloatEntity extends WaterEntity {
 
     this._sinkingTotalTime = baseSinkingTime / speedMult;
 
-    const startAngle = getGlobalFloatMotionConfig().sinkingStartAngleDeg ?? 90;
+    const startAngle = this._floatMotionConfig().sinkingStartAngleDeg ?? 90;
     this._sinkingStartAngle = this._chance(0.5) ? startAngle : -startAngle;
     this._currentAngle = this._sinkingStartAngle;
     this._currentScaleY = 1.0;
@@ -1737,7 +1722,7 @@ class FloatEntity extends WaterEntity {
           );
 
     const minDuration =
-      getGlobalFloatMotionConfig().minStandUpDurationMs ?? 400;
+      this._floatMotionConfig().minStandUpDurationMs ?? 400;
     if (minDuration <= 0) return depthProgress;
 
     const timeProgress = Math.max(
@@ -1748,7 +1733,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _updatePullImpulseTilt(dt, pullDirection, isPulling) {
-    const cfg = getGlobalFloatMotionConfig();
+    const cfg = this._floatMotionConfig();
     if (cfg.enabled === false) {
       this._pullImpulseAngle = 0;
       return;
@@ -1783,7 +1768,7 @@ class FloatEntity extends WaterEntity {
   }
 
   _getPullImpulseSign(pullDirection) {
-    const cfg = getGlobalFloatMotionConfig();
+    const cfg = this._floatMotionConfig();
     const pullX = pullDirection?.x || 0;
     const deadZone = cfg.pullImpulseLateralDeadZone ?? 0.02;
     return Math.abs(pullX) > deadZone ? -Math.sign(pullX) : 0;
@@ -1792,12 +1777,12 @@ class FloatEntity extends WaterEntity {
 
 class BaitFactory {
   // The environmental compensation modifier keeps its default (undefined).
-  static create(type, x, y, config, equipment, rng = null, debugEvents = null, devFlags = null) {
+  static create(type, x, y, config, equipment, rng = null, debugEvents = null, devFlags = null, runtimeConfig = null) {
     switch (type) {
       case "spinner":
-        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
+        return new SpinnerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags, runtimeConfig);
       case "wobbler":
-        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
+        return new WobblerEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags, runtimeConfig);
       case "jig":
         return new JigEntity(
           x,
@@ -1808,12 +1793,13 @@ class BaitFactory {
           debugEvents,
           undefined,
           devFlags,
+          runtimeConfig,
         );
       case "feeder":
-        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
+        return new FeederEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags, runtimeConfig);
       case "float":
       default:
-        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags);
+        return new FloatEntity(x, y, config, config.maxDepth, rng, debugEvents, undefined, devFlags, runtimeConfig);
     }
   }
 }
