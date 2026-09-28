@@ -1,20 +1,23 @@
 class LineAllocationPolicy {
   #lineConfig;
+  #messages;
 
-  constructor(lineConfig = {}) {
+  // Player-facing texts are injected by composition.
+  constructor(lineConfig = {}, { messages = null } = {}) {
     this.#lineConfig = lineConfig || {};
+    this.#messages = messages;
   }
 
   resolve({ lineItem, equipment } = {}) {
     const rod = equipment?.rod;
     const reel = equipment?.reel;
     if (!rod) {
-      return this.#invalid("Спочатку екіпіруйте вудку для ліски.");
+      return this.#invalid(this.#messages.lineRodRequired);
     }
 
     const rodNeedsReel = this.rodRequiresReel(rod);
     if (rodNeedsReel && !reel) {
-      return this.#invalid("Для цієї вудки спочатку екіпіруйте котушку.");
+      return this.#invalid(this.#messages.lineReelRequired);
     }
 
     const sourceLength = this.getLineLengthMeters(lineItem);
@@ -23,7 +26,7 @@ class LineAllocationPolicy {
 
     if (sourceLength < minimumLength) {
       return this.#invalid(
-        `Ліска закоротка: потрібно мінімум ${this.#formatMeters(minimumLength)}м для цієї вудки.`,
+        this.#messages.lineTooShortForRod(minimumLength),
         { sourceLengthMeters: sourceLength, minimumLengthMeters: minimumLength },
       );
     }
@@ -35,7 +38,7 @@ class LineAllocationPolicy {
       maximumLength < minimumLength
     ) {
       return this.#invalid(
-        `Котушка замала: потрібно мінімум ${this.#formatMeters(minimumLength)}м, а вміщує ${this.#formatMeters(maximumLength)}м.`,
+        this.#messages.reelTooSmallForLine(minimumLength, maximumLength),
         {
           sourceLengthMeters: sourceLength,
           minimumLengthMeters: minimumLength,
@@ -52,7 +55,7 @@ class LineAllocationPolicy {
     return {
       isValid: true,
       reason: remainingLength > 0.001
-        ? `Буде відрізано ${this.#formatMeters(equipLength)}м ліски.`
+        ? this.#messages.lineWillBeCut(equipLength)
         : null,
       rodRequiresReel: rodNeedsReel,
       sourceLengthMeters: sourceLength,
@@ -71,18 +74,18 @@ class LineAllocationPolicy {
    */
   resolveForReel({ lineItem, reel } = {}) {
     if (!reel) {
-      return this.#invalid("Котушку для намотування ліски не знайдено.");
+      return this.#invalid(this.#messages.windingReelMissing);
     }
     const sourceLength = this.getLineLengthMeters(lineItem);
     if (sourceLength <= 0) {
-      return this.#invalid("У вибраній лісці немає доступної довжини.");
+      return this.#invalid(this.#messages.lineLengthUnavailable);
     }
     const maximumLength = this.#numberOrDefault(
       reel?.effectiveStats?.lineCapacityMeters,
       Infinity,
     );
     if (Number.isFinite(maximumLength) && maximumLength <= 0) {
-      return this.#invalid("Котушка не має доступної місткості для ліски.");
+      return this.#invalid(this.#messages.reelCapacityUnavailable);
     }
     const equipLength = Number.isFinite(maximumLength)
       ? Math.min(sourceLength, maximumLength)
@@ -91,7 +94,7 @@ class LineAllocationPolicy {
     return {
       isValid: true,
       reason: remainingLength > 0.001
-        ? `Буде намотано ${this.#formatMeters(equipLength)}м ліски.`
+        ? this.#messages.lineWillBeWound(equipLength)
         : null,
       rodRequiresReel: true,
       sourceLengthMeters: sourceLength,
@@ -167,11 +170,5 @@ class LineAllocationPolicy {
   #numberOrDefault(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  #formatMeters(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return "0";
-    return Number.isInteger(number) ? String(number) : number.toFixed(1);
   }
 }

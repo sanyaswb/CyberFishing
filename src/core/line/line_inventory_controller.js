@@ -11,13 +11,14 @@ class LineInventoryController {
     db,
     makeId,
     lineConfig,
+    messages = null,
     isEquipped,
     effectiveStatsResolver,
   }) {
     this.#inventory = inventory;
     this.#db = db;
     this.#makeId = makeId;
-    this.#policy = new LineAllocationPolicy(lineConfig || {});
+    this.#policy = new LineAllocationPolicy(lineConfig || {}, { messages });
     this.#isEquipped = isEquipped || (() => false);
     this.#effectiveStatsResolver = effectiveStatsResolver;
   }

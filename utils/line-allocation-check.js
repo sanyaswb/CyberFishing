@@ -11,6 +11,16 @@ class LineRuntimeLoader {
       "src/config/physics/tackle_physics_config.js",
       "TACKLE_PHYSICS_CONFIG",
     );
+    this.#loadConstant(
+      runtime,
+      "src/config/inventory/equipment_slot_presentation_config.js",
+      "EQUIPMENT_SLOT_PRESENTATION",
+    );
+    this.#loadConstant(
+      runtime,
+      "src/config/inventory/inventory_rule_messages.js",
+      "INVENTORY_RULE_MESSAGES",
+    );
     this.#loadClass(
       runtime,
       "src/core/line/line_allocation_policy.js",
@@ -97,7 +107,10 @@ class LineAllocationCheck {
   }) {
     this.#runtime = { TACKLE_PHYSICS_CONFIG, ...runtime };
     const lineConfig = TACKLE_PHYSICS_CONFIG.line;
-    this.#policy = new LineAllocationPolicy(lineConfig);
+    // Player-facing texts are injected the way composition injects them.
+    this.#policy = new LineAllocationPolicy(lineConfig, {
+      messages: runtime.INVENTORY_RULE_MESSAGES,
+    });
     this.#distanceCalculator = new CastDistanceCalculator({
       pixelsPerMeter: 50,
       line: lineConfig,
@@ -202,6 +215,7 @@ class LineAllocationCheck {
       },
       makeId: () => "split-line",
       lineConfig: this.#runtime.TACKLE_PHYSICS_CONFIG.line,
+      messages: this.#runtime.INVENTORY_RULE_MESSAGES,
       isEquipped: () => false,
     });
     const segmentId = controller.prepareLineForEquip({

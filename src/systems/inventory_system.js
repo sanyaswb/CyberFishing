@@ -711,11 +711,17 @@ class InventoryEquipment {
 
 class LineCompatibilityRules {
   #lineConfig;
+  #messages;
   #policy;
 
-  constructor(lineConfig = {}) {
+  constructor(lineConfig = {}, { messages = null } = {}) {
     this.#lineConfig = lineConfig || {};
-    this.#policy = new LineAllocationPolicy(this.#lineConfig);
+    this.#messages = messages;
+    this.#policy = new LineAllocationPolicy(this.#lineConfig, { messages });
+  }
+
+  get messages() {
+    return this.#messages;
   }
 
   get config() {
@@ -1057,6 +1063,7 @@ class InventoryManager {
       db: this.#db,
       makeId: (prefix) => this.#makeId(prefix),
       lineConfig: this.#lineRules.config,
+      messages: this.#lineRules.messages,
       isEquipped: (instanceId) => this.#isInstanceEquipped(instanceId),
       effectiveStatsResolver: this.#effectiveStatsResolver,
     });

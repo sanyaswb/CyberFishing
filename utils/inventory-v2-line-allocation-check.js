@@ -6,6 +6,8 @@ const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 for (const relativePath of [
   "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+  "src/config/inventory/equipment_slot_presentation_config.js",
+  "src/config/inventory/inventory_rule_messages.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/flat_inventory_item_repository.js",
   "src/core/line/line_allocation_policy.js",
@@ -49,6 +51,10 @@ vm.runInContext(`(() => {
     repository,
     itemReader: hydrate,
     lineConfig: { rodLengthReserveMultiplier: 2 },
+    // Composed the way InventoryV2CompositionRoot composes it, with the player-facing texts.
+    linePolicy: new LineAllocationPolicy({ rodLengthReserveMultiplier: 2 }, {
+      messages: INVENTORY_RULE_MESSAGES,
+    }),
     instanceIdFactory: () => "line-segment-" + (++sequence),
   });
   const rod = { itemType: "rod", variant: "feeder", effectiveStats: { hasReel: true, lengthMeters: 3 } };
@@ -91,6 +97,10 @@ vm.runInContext(`(() => {
     repository,
     itemReader: hydrate,
     lineConfig: { rodLengthReserveMultiplier: 2 },
+    // Composed the way InventoryV2CompositionRoot composes it, with the player-facing texts.
+    linePolicy: new LineAllocationPolicy({ rodLengthReserveMultiplier: 2 }, {
+      messages: INVENTORY_RULE_MESSAGES,
+    }),
     instanceIdFactory: () => "line-segment-" + (++sequence),
   });
   const prepared = service.prepare({

@@ -132,7 +132,11 @@ class InventoryRuntimeLoader {
       "src/systems/inventory_item_factory.js",
       "InventoryItemFactory",
     );
+    this.#loadSlotConfigFile(context, "src/config/inventory/equipment_slot_presentation_config.js");
+    this.#loadSlotConfigFile(context, "src/config/inventory/inventory_rule_messages.js");
     this.#loadClass(context, "src/systems/inventory_system.js", "InventoryManager");
+    vm.runInContext("globalThis.LineCompatibilityRules = LineCompatibilityRules;\n" +
+      "globalThis.INVENTORY_RULE_MESSAGES = INVENTORY_RULE_MESSAGES;", context);
     return context;
   }
 
@@ -174,12 +178,16 @@ class InventoryRuntimeLoader {
 
 class InventoryFixtureFactory {
   #InventoryManager;
+  #LineCompatibilityRules;
+  #ruleMessages;
   #effectiveStatsResolver;
   #itemStatOverridePolicy;
 
   // Composes the item stat collaborators the way GameCompositionRoot does.
   constructor(runtime) {
     this.#InventoryManager = runtime.InventoryManager;
+    this.#LineCompatibilityRules = runtime.LineCompatibilityRules;
+    this.#ruleMessages = runtime.INVENTORY_RULE_MESSAGES;
     this.#itemStatOverridePolicy = new runtime.ItemStatOverridePolicy({ config: runtime.ITEM_STAT_OVERRIDE_CONFIG });
     this.#effectiveStatsResolver = new runtime.EffectiveItemStatsResolver({ overridePolicy: this.#itemStatOverridePolicy });
   }
@@ -262,7 +270,8 @@ class InventoryFixtureFactory {
       { inventory, equipment },
       events,
       this.#createCastDistanceCalculator(),
-      null,
+      // Line rules composed with the player-facing texts, as bootstrap composes them.
+      new this.#LineCompatibilityRules({}, { messages: this.#ruleMessages }),
       { getReelConfig: () => ({}) },
       null, null, null, null, null, null, null,
       this.#effectiveStatsResolver,

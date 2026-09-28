@@ -1044,6 +1044,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "INVENTORY_RULE_MESSAGES",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "ITEM_DB",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -2178,6 +2184,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "INVENTORY_RULE_MESSAGES",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/inventory/inventory_rule_messages.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "ITEM_DB",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -3016,6 +3030,13 @@
               "target": "src/config/databases/item_db.js",
               "symbols": [
                 "ITEM_DB"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/inventory/inventory_rule_messages.js",
+              "symbols": [
+                "INVENTORY_RULE_MESSAGES"
               ],
               "resolution": "confirmed"
             },
@@ -7994,6 +8015,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "LineAllocationPolicy",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "LoadoutApplicationService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8555,6 +8582,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "LineAllocationPolicy",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/line/line_allocation_policy.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "LoadoutApplicationService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -8983,6 +9018,13 @@
               "target": "src/core/inventory/unlimited_assembly_capacity_policy.js",
               "symbols": [
                 "UnlimitedAssemblyCapacityPolicy"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/core/line/line_allocation_policy.js",
+              "symbols": [
+                "LineAllocationPolicy"
               ],
               "resolution": "confirmed"
             },
@@ -12074,7 +12116,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object"
+            "Number",
+            "Object",
+            "String"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -15935,9 +15979,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -23090,8 +23132,7 @@
           "builtins": [
             "Infinity",
             "Math",
-            "Number",
-            "String"
+            "Number"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23118,9 +23159,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },

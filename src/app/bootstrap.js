@@ -412,6 +412,7 @@ class GameCompositionRoot {
     const castDistanceCalculator = new CastDistanceCalculator(this.#config);
     const lineRules = new LineCompatibilityRules(
       physicsConfig?.getLineConfig?.() || {},
+      { messages: INVENTORY_RULE_MESSAGES },
     );
     const runtimeConfigProvider = new InventoryRuntimeConfigProvider(
       this.#config,

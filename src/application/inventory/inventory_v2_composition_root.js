@@ -195,6 +195,9 @@ class InventoryV2CompositionRoot {
       port: equipmentTransitionPort,
     });
     const lineAllocationService = new InventoryV2LineAllocationService({
+      linePolicy: new LineAllocationPolicy(lineConfig, {
+        messages: INVENTORY_RULE_MESSAGES,
+      }),
       repository,
       itemReader: (raw) => hydrator.hydrate(raw, repository),
       lineConfig,
