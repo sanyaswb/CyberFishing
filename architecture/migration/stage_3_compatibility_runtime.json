@@ -24,6 +24,7 @@
     "activationDirectory": "activations/"
   },
   "approvedInfrastructureModules": [
+    "src/engine/math/normalize_distance.js",
     "src/engine/math/vector2.js"
   ],
   "approvedVirtualModules": [
@@ -312,6 +313,18 @@
       "legacyScriptIndex": 144,
       "shimFile": "activations/144_inventoryitemlocationkind.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-138f54238b60",
+      "owner": "stage-3.22.prerequisite.entities-world-rules-decomposition",
+      "sourceProvider": "src/core/math/normalize_distance.js",
+      "targetModule": "src/engine/math/normalize_distance.js",
+      "exportName": "normalizeDistance",
+      "legacySymbol": "normalizeDistance",
+      "legacyScriptIndex": 390,
+      "shimFile": "activations/390_normalizedistance.js",
+      "reason": "Expose the Engine normalizeDistance function to its unmigrated classic consumer through the shared cumulative runtime.",
       "removalStage": "stage-5"
     },
     {

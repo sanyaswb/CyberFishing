@@ -985,6 +985,20 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-028",
+      title: "Stage 3 prerequisite 028: normalizeDistance moves byte-identically out of app/utils.js at split slot 390 and replays with behavior parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "028", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-prerequisite-029",
+      title: "Stage 3 prerequisite 029: normalizeDistance Engine ESM ownership, standard activation and exact consumer bridge replay with identity parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "029", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

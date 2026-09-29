@@ -399,12 +399,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/app/utils.js",
-      "symbol": "normalizeDistance",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/app/world.js",
       "symbol": "EnvironmentSystem",
       "mechanism": "global-lexical",
@@ -2526,6 +2520,12 @@
       "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
       "symbol": "LoadoutEquipmentTransitionPlanner",
       "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/core/math/normalize_distance.js",
+      "symbol": "normalizeDistance",
+      "mechanism": "global-function",
       "availability": "program-init"
     },
     {

@@ -39,6 +39,7 @@ const LEGACY_FILES = [
   "src/config/runtime/resolved_config_provider.js",
   "src/config/runtime/immutable_config.js",
   "src/config/config.js",
+  "src/core/math/normalize_distance.js",
   "src/app/utils.js",
   "src/core/float_tackle_line_budget_policy.js",
   "src/core/distance_unit_converter.js",
@@ -131,9 +132,10 @@ const compatibilityLoader = new StageThreeCompatibilityTestLoader({
   context,
 });
 compatibilityLoader.loadRuntime();
-// Prerequisites 006 and 017 extracted Vector2 and DistanceUnitConverter into their own classic files;
-// replays of trees recorded before them still declare the classes in core.js / casting_distance.js.
-const EXTRACTED_PROVIDERS = ["src/core/math/vector2.js", "src/core/distance_unit_converter.js"];
+// Prerequisites 006, 017 and 028 extracted providers into their own classic files; replays of
+// trees recorded before them still declare the symbols in their original source files.
+const EXTRACTED_PROVIDERS = ["src/core/math/vector2.js", "src/core/distance_unit_converter.js",
+  "src/core/math/normalize_distance.js"];
 compatibilityLoader.loadAll(LEGACY_FILES.filter((file) =>
   !EXTRACTED_PROVIDERS.includes(file) || fs.existsSync(path.join(ROOT, file))));
 

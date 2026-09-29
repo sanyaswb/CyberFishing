@@ -58,6 +58,14 @@
         "src/systems/buff_manager.js"
       ],
       "transition": "architecture/migration/stage_3_prerequisites/016_stamina-buff-split-and-review.json"
+    },
+    {
+      "slot": 390,
+      "members": [
+        "src/core/math/normalize_distance.js",
+        "src/app/utils.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/029_normalize-distance-engine-activation.json"
     }
   ]
 }

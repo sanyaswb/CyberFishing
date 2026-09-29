@@ -6060,13 +6060,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/app/utils.js",
+              "target": "src/core/math/normalize_distance.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/app/utils.js",
+              "target": "src/core/math/normalize_distance.js",
               "symbols": [
                 "normalizeDistance"
               ],
@@ -6621,11 +6621,6 @@
               "symbol": "SeededRng",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "normalizeDistance",
-              "mechanism": "global-function",
-              "availability": "program-init"
             }
           ],
           "issues": []
@@ -6638,7 +6633,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Infinity",
             "Math",
             "Number",
             "String"
@@ -6668,9 +6662,7 @@
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     },
@@ -23584,6 +23576,76 @@
       }
     },
     {
+      "currentPath": "src/core/math/normalize_distance.js",
+      "currentArea": "core/math",
+      "observed": {
+        "legacyLoadOrder": 390,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "normalizeDistance",
+              "mechanism": "global-this-property",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/math/normalize_distance.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/core/math/vector2.js",
       "currentArea": "core/math",
       "observed": {
@@ -34877,6 +34939,57 @@
         ],
         "targetBoundary": "engine",
         "targetPath": "src/engine/events/event_lifecycle.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/engine/math/normalize_distance.js",
+      "currentArea": "engine/math",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Infinity",
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "engine-utility"
+        ],
+        "targetBoundary": "engine",
+        "targetPath": "src/engine/math/normalize_distance.js",
         "migrationWave": 1
       },
       "analysis": {

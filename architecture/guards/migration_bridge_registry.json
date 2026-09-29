@@ -2491,6 +2491,22 @@
       ]
     },
     {
+      "id": "bridge-ec7cf54d1931",
+      "bridge": "src/core/math/normalize_distance.js",
+      "source": "src/app/rules.js",
+      "target": "src/engine/math/normalize_distance.js",
+      "reason": "Preserve the exact normalizeDistance consumer until gameplay rules import the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.entities-world-rules-decomposition",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "normalizeDistance",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ed528b9594f7",
       "bridge": "src/core/items/progression/numeric_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",

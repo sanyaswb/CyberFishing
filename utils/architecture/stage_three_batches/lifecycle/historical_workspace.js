@@ -58,8 +58,20 @@ class StageThreeHistoricalWorkspace {
       }
       if (copyTools) fs.symlinkSync(path.join(projectRoot, "node_modules"),
         path.join(temporary, "node_modules"), "junction");
+      // Prerequisite transitions may record focused test-harness or other files outside the normal
+      // production copy. Seed only those published after-images so the ledger can peel them exactly.
+      const prerequisiteLedger = new StageThreePrerequisiteLedger(temporary);
+      for (const record of prerequisiteLedger.after(context.number)) {
+        for (const write of record.writes) {
+          const target = path.join(temporary, write.path);
+          const source = path.join(projectRoot, write.path);
+          if (fs.existsSync(target) || !fs.existsSync(source)) continue;
+          fs.mkdirSync(path.dirname(target), { recursive: true });
+          fs.copyFileSync(source, target);
+        }
+      }
       // Prerequisite transitions recorded after this batch are newer than its release.
-      new StageThreePrerequisiteLedger(temporary).peel(context.number);
+      prerequisiteLedger.peel(context.number);
       const releasePath = path.join(temporary, paths.releaseTransition);
       if (fs.existsSync(releasePath)) {
         const transition = new StageThreeBatchReleaseTransition(temporary, this.definition);

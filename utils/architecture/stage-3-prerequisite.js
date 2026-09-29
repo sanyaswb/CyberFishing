@@ -53,6 +53,11 @@ class StageThreePrerequisiteCommand {
   async check() {
     const recorded = fs.readFileSync(path.join(this.root, this.file));
     const record = StageThreePrerequisiteLedger.validate(JSON.parse(recorded));
+    const checkpointFiles = new StageThreePrerequisiteLedger(this.root).records()
+      .filter(item => item.sequence >= record.sequence)
+      .flatMap(item => item.writes.map(write => write.path))
+      .filter(file => !file.startsWith("src/") && !file.startsWith("architecture/") &&
+        !file.startsWith("dist/stage-3-compat-runtime/") && !["index.html", "package.json"].includes(file));
     const next = String(Number(this.task.afterBatch) + 1).padStart(3, "0");
     const { StageThreeBatchRegistry } = require("./stage_three_batches/core/batch_definition");
     const verify = checkpoint => this.#inCopy(checkpoint, copy => {
@@ -67,7 +72,7 @@ class StageThreePrerequisiteCommand {
       const rebuilt = new StageThreePrerequisiteTransitionBuilder(copy, this.task).build();
       assert.deepEqual(rebuilt.bytes, recorded, "prerequisite transition does not replay byte-identically");
       return rebuilt.record;
-    });
+    }, checkpointFiles);
     const nextPrebuild = StageThreeBatchRegistry.has(next) &&
       fs.existsSync(path.join(this.root, StageThreeBatchRegistry.load(next).context.paths.prebuild));
     if (!nextPrebuild) return verify(this.root);
@@ -96,7 +101,7 @@ class StageThreePrerequisiteCommand {
     return `rolled back ${this.file}`;
   }
 
-  #inCopy(root, action) {
+  #inCopy(root, action, supplementalFiles = []) {
     const parent = fs.realpathSync(os.tmpdir());
     const temporary = fs.mkdtempSync(path.join(parent, "cyber-prerequisite-check-"));
     const copy = relative => {
@@ -112,6 +117,14 @@ class StageThreePrerequisiteCommand {
     try {
       for (const directory of ["src", "architecture", "dist/stage-3-compat-runtime"]) copy(directory);
       for (const file of ["index.html", "package.json"]) fs.copyFileSync(path.join(root, file), path.join(temporary, file));
+      for (const file of supplementalFiles) {
+        const checkpointSource = path.join(root, file);
+        const source = fs.existsSync(checkpointSource) ? checkpointSource : path.join(this.root, file);
+        const target = path.join(temporary, file);
+        if (!fs.existsSync(source) || fs.existsSync(target)) continue;
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.copyFileSync(source, target);
+      }
       return action(temporary);
     } finally {
       assert.equal(path.dirname(fs.realpathSync(temporary)), parent);
