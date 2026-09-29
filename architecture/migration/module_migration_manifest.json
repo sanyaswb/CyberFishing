@@ -2779,7 +2779,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/world/world.js",
+              "target": "src/world/viewport_projector.js",
               "resolution": "confirmed"
             },
             {
@@ -3728,10 +3728,16 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/world/viewport_projector.js",
+              "symbols": [
+                "ViewportProjector"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/world/world.js",
               "symbols": [
-                "LocationMap",
-                "ViewportProjector"
+                "LocationMap"
               ],
               "resolution": "confirmed"
             }
@@ -51039,6 +51045,87 @@
       }
     },
     {
+      "currentPath": "src/world/viewport_projector.js",
+      "currentArea": "world",
+      "observed": {
+        "legacyLoadOrder": 204,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "ViewportProjector",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "Vector2",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/viewport/viewport_projector.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "Vector2",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/math/vector2.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/core/math/vector2.js",
+              "symbols": [
+                "Vector2"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
       "currentPath": "src/world/world.js",
       "currentArea": "world",
       "observed": {
@@ -51060,25 +51147,13 @@
               "symbol": "LocationMap",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "ViewportProjector",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
             }
           ],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -51111,35 +51186,15 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
         "blockers": {
           "status": "verified",
-          "items": [
-            "dev-production-coupling",
-            "mixed-responsibility-requires-decomposition"
-          ]
+          "items": []
         }
       }
     }

@@ -5103,6 +5103,12 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/world/viewport_projector.js",
+      "symbol": "ViewportProjector",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/world/world.js",
       "symbol": "DynamicZone",
       "mechanism": "global-lexical",
@@ -5117,12 +5123,6 @@
     {
       "currentPath": "src/world/world.js",
       "symbol": "LocationMap",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/world/world.js",
-      "symbol": "ViewportProjector",
       "mechanism": "global-lexical",
       "availability": "program-init"
     }

@@ -44,6 +44,14 @@
       "transition": "architecture/migration/stage_3_prerequisites/008_equipment-slot-rule-reclassification.json"
     },
     {
+      "slot": 204,
+      "members": [
+        "src/world/world.js",
+        "src/world/viewport_projector.js"
+      ],
+      "transition": "architecture/migration/stage_3_prerequisites/026_viewport-projector-split.json"
+    },
+    {
       "slot": 207,
       "members": [
         "src/systems/stamina_system.js",

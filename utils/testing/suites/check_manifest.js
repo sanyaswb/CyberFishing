@@ -958,6 +958,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-026",
+      title: "Stage 3 prerequisite 026: ViewportProjector moved byte-for-byte out of world.js (split slot 204, provider moved) replays byte-identically with parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "026", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",
