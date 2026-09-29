@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-40-prerequisite-backlog",
+  "stage": "3.40",
+  "status": "open",
+  "sources": {
+    "graphReview": {
+      "path": "architecture/migration/stage_3_40_graph_review/graph_review.json",
+      "sha256": "40d2b18deff5a616df8b705a8bda11a2695e6acc75de2c89a106107018becb00"
+    }
+  },
+  "refactoringPerformed": false,
+  "summary": {
+    "taskCount": 2,
+    "graphChangingTaskCount": 0,
+    "evidenceTaskCount": 2,
+    "prerequisiteBlockedModuleCount": 0,
+    "deferredModuleCount": 0,
+    "candidateModuleCount": 35
+  },
+  "tasks": [
+    {
+      "id": "stage-3.40.prerequisite.collection-identity-evidence",
+      "kind": "freeze-evidence",
+      "graphChanging": false,
+      "status": "open",
+      "intent": "Prove or restructure collection state identity where the reviewed collection proof fails.",
+      "modules": [
+        "src/core/inventory/flat_inventory_item_repository.js",
+        "src/core/loadouts/equipment_loadout_repository.js"
+      ],
+      "findings": [
+        "src/core/inventory/flat_inventory_item_repository.js:collection-identity-unproven:FlatInventoryItemRepository#childrenByParent",
+        "src/core/inventory/flat_inventory_item_repository.js:collection-identity-unproven:FlatInventoryItemRepository#items",
+        "src/core/loadouts/equipment_loadout_repository.js:collection-identity-unproven:EquipmentLoadoutRepository#loadouts"
+      ],
+      "checks": [
+        "StageThreeStateIdentityReview on the reviewed collection",
+        "focused persistence round-trip"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "Only if collecting the evidence changes source or the dependency graph.",
+        "action": "Repeat the Stage 3.40 freeze review for the affected clusters; repeat the graph review when the trigger applies."
+      }
+    },
+    {
+      "id": "stage-3.40.prerequisite.hot-loop-equivalence-evidence",
+      "kind": "freeze-evidence",
+      "graphChanging": false,
+      "status": "open",
+      "intent": "Record allocation, behavior and deltaTime equivalence evidence for the hot-loop fishing cluster before it is frozen.",
+      "modules": [
+        "src/core/inventory/flat_inventory_item_repository.js",
+        "src/entities/fish.js",
+        "src/entities/tackle.js",
+        "src/systems/buff_manager.js",
+        "src/systems/rod_pull_system.js",
+        "src/world/world.js"
+      ],
+      "findings": [
+        "src/core/inventory/flat_inventory_item_repository.js:hot-loop-equivalence-evidence-missing",
+        "src/entities/fish.js:hot-loop-equivalence-evidence-missing",
+        "src/entities/tackle.js:hot-loop-equivalence-evidence-missing",
+        "src/systems/buff_manager.js:hot-loop-equivalence-evidence-missing",
+        "src/systems/rod_pull_system.js:hot-loop-equivalence-evidence-missing",
+        "src/world/world.js:hot-loop-equivalence-evidence-missing"
+      ],
+      "checks": [
+        "focused allocation-equivalence probe",
+        "focused deltaTime-equivalence probe",
+        "game-cycle-check fight scenarios",
+        "no compatibility lookup in the hot loop"
+      ],
+      "graphReviewRepeatCondition": {
+        "trigger": "Only if collecting the evidence changes source or the dependency graph.",
+        "action": "Repeat the Stage 3.40 freeze review for the affected clusters; repeat the graph review when the trigger applies."
+      }
+    }
+  ],
+  "coverage": {
+    "prerequisiteBlocked": [],
+    "deferred": [],
+    "uncoveredPrerequisites": []
+  },
+  "resolvedTaskIds": [
+    "stage-3.40.prerequisite.vector2-extraction",
+    "stage-3.40.prerequisite.bait-effectiveness-descriptor-boundary",
+    "stage-3.40.prerequisite.item-freshness-descriptor-boundary",
+    "stage-3.40.prerequisite.item-condition-descriptor-boundary",
+    "stage-3.40.prerequisite.assembly-profile-registry-config-injection",
+    "stage-3.40.prerequisite.item-stat-override-policy-config-injection",
+    "stage-3.40.prerequisite.equipment-decomposition",
+    "stage-3.40.prerequisite.inventory-decomposition",
+    "stage-3.40.prerequisite.loadouts-decomposition",
+    "stage-3.40.prerequisite.item-progression-decomposition",
+    "stage-3.40.prerequisite.fishing-systems-decomposition",
+    "stage-3.40.prerequisite.entities-world-rules-decomposition"
+  ]
+}
