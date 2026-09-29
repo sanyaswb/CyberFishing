@@ -57,5 +57,15 @@ const INVENTORY_RULE_MESSAGES = (() => {
     lineCapacityMetricSuffix: "м",
     lineCapacityInventoryDetail: "Залишок ліски",
     lineCapacityEquippedDetail: "На котушці",
+    // Rod kind names shown for the equipped rod (EquipmentRules.getRodKind ids). A separate section,
+    // moved to its own catalog when the catalogs become ESM modules.
+    rodKinds: Object.freeze({
+      bolognese: "Болонська",
+      feeder: "Фідер",
+      none: "Не споряджена",
+      pole: "Махова",
+      spinning: "Спінінг",
+      unknown: "Невідомий тип",
+    }),
   });
 })();

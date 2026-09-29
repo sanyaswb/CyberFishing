@@ -154,11 +154,14 @@ class StageThreePrerequisiteTransitionBuilder {
         "the confirmed-edge delta differs from the task");
       after.set(MANIFEST, canonical(manifest));
       after.set(KNOWN_DEBT, canonical(nextDebt));
+      // The re-observed Manifest is written only when an observed fact changed (a text injection that
+      // reads an already observed provider changes none); its contents are verified above either way.
+      const manifestChanged = !after.get(MANIFEST).equals(this.beforeBytes(MANIFEST));
       const changed = [...after].filter(([file, bytes]) => bytes === null ||
         !bytes.equals(this.beforeBytes(file) ?? Buffer.alloc(0)) || this.beforeBytes(file) === null);
       assert.deepEqual(changed.map(([file]) => file).sort(),
         [...task.sourceEdits.map(edit => edit.path), ...(task.createdFiles || []).map(created => created.path),
-          ...deletedPaths, ...metadata.keys(), ...(additions || removals || replacements ? [BASELINE] : []), MANIFEST,
+          ...deletedPaths, ...metadata.keys(), ...(additions || removals || replacements ? [BASELINE] : []), ...(manifestChanged ? [MANIFEST] : []),
           ...(task.resolvedDebtIds.length > 0 ? [KNOWN_DEBT] : [])].sort(),
         "unexpected transition write set");
       const parity = task.parity({ read: file => this.bytes(file).toString("utf8"),

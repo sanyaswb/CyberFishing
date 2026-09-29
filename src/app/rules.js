@@ -2,10 +2,13 @@
 class EquipmentRules {
   #castDistanceCalculator;
   #config;
+  #messages;
 
-  constructor(castDistanceCalculator = null, config = null) {
+  // Composition injects the presentation rule messages (INVENTORY_RULE_MESSAGES) for the rod kind names.
+  constructor(castDistanceCalculator = null, config = null, messages = null) {
     // Composition injects the runtime config.
     this.#config = config || {};
+    this.#messages = messages;
     this.#castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(this.#config);
   }
@@ -35,14 +38,8 @@ class EquipmentRules {
   }
 
   getRodDisplayName(equipment) {
-    const labels = {
-      bolognese: "Болонська",
-      feeder: "Фідер",
-      none: "Не споряджена",
-      pole: "Махова",
-      spinning: "Спінінг",
-    };
-    return labels[this.getRodKind(equipment)] || "Невідомий тип";
+    const labels = this.#messages.rodKinds;
+    return labels[this.getRodKind(equipment)] || labels.unknown;
   }
 
   requiresReel(equipment) {

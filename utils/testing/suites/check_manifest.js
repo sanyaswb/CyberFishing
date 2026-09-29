@@ -937,6 +937,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-023",
+      title: "Stage 3 prerequisite 023: rod kind names from the rodKinds section of the injected rule messages replay byte-identically with parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "023", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

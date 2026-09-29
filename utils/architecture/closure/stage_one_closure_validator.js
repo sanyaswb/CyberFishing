@@ -1140,8 +1140,15 @@ class StageOneClosureValidator {
     return new StageThreePrerequisiteLedger(this.projectRoot).records().reduce((total, record) => {
       const write = record.writes.find((item) => item.path === "architecture/migration/module_migration_manifest.json");
       const observation = record.dependencyObservation;
-      if (!write || observation.confirmedEdgeDelta !== observation.addedEdges.length - observation.removedEdges.length) {
+      if (observation.confirmedEdgeDelta !== observation.addedEdges.length - observation.removedEdges.length) {
         throw new Error(`Prerequisite edge evidence is invalid: ${record.slug}`);
+      }
+      // A transition that changes no observed fact writes no Manifest and records no edge change.
+      if (!write) {
+        if (observation.addedEdges.length > 0 || observation.removedEdges.length > 0) {
+          throw new Error(`Prerequisite edge evidence is invalid: ${record.slug}`);
+        }
+        return total;
       }
       const before = new Set(JSON.parse(Buffer.from(write.beforeBase64, "base64")).modules.flatMap((module) =>
         module.analysis.dependencies.items.filter((edge) => edge.resolution === "confirmed")
