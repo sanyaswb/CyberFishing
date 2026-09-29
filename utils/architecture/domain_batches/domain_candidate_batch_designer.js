@@ -238,6 +238,8 @@ class DomainCandidateBatchDesigner {
         dependencyDepth: cluster.depth,
         graphComponentId: cluster.graphComponentId,
         targetArea: cluster.targetArea,
+        // A grouped repeated-review batch spans several reviewed target areas.
+        ...(cluster.targetAreas ? { targetAreas: [...cluster.targetAreas] } : {}),
         riskTier: cluster.riskTier,
         eligibilityStatus: cluster.eligibilityStatus,
         modules: batchModules.map((module) => this.#moduleRecord(

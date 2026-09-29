@@ -81,6 +81,9 @@ const STAGE_3_40 = new PostFreezeReviewProfile({
   esmImportFacts: true,
   prerequisiteIntroducedCoverage: true,
   frozenConstantReview: true,
+  // Owner decision 2026-09-29: independent modules of one dependency layer and risk tier share a batch up
+  // to the policy maximum (6), so the remaining Stage 3 needs fewer releases.
+  groupedBatches: true,
   reviewOwner: "stage-3.40-post-freeze-graph-review",
   adoptionReason: "The execution state keeps the completed 001–038 prefix and the adopted Stage 3.36.0 approved prefix; the first frozen batch adopts this approved prefix in its own prebuild state transition.",
   historicalCandidatesNote: "Historical candidates and the Stage 3.22 and 3.36 reviews remain reference material and are not replaced.",

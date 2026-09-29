@@ -60,7 +60,11 @@ class DomainCandidateClusterSelector {
     this.policy = policy;
   }
 
-  select({ modules, decisions }) {
+  // `grouped` (a repeated review, owner decision 2026-09-29): cohorts are the dependency layer, risk tier,
+  // eligibility status and evidence readiness only, so independent modules of one layer fill batches up
+  // to the policy maximum across graph components and target areas; `evidencePending` names the
+  // modules whose freeze evidence is still open (they never share a batch with ready modules).
+  select({ modules, decisions, grouped = false, evidencePending = new Set() }) {
     const moduleByPath = new Map(modules.map((module) => [module.currentPath, module]));
     const componentByModule = this.#weakComponents(modules);
     const units = this.#sccUnits(
@@ -73,13 +77,9 @@ class DomainCandidateClusterSelector {
     const deferredUnits = units.filter((unit) => unit.status === "deferred");
     const cohorts = new Map();
     for (const unit of candidateUnits) {
-      const key = [
-        unit.depth,
-        unit.graphComponentId,
-        unit.targetArea,
-        unit.riskTier,
-        unit.status,
-      ].join("\u0000");
+      const key = (grouped
+        ? [unit.depth, unit.riskTier, unit.status, unit.members.some((member) => evidencePending.has(member))]
+        : [unit.depth, unit.graphComponentId, unit.targetArea, unit.riskTier, unit.status]).join("\u0000");
       if (!cohorts.has(key)) cohorts.set(key, []);
       cohorts.get(key).push(unit);
     }
@@ -107,16 +107,19 @@ class DomainCandidateClusterSelector {
     const batches = rawGroups.map((unitsInBatch, index) => {
       const members = unitsInBatch.flatMap((unit) => unit.members).sort();
       const sample = unitsInBatch[0];
+      // A grouped batch spanning several target areas names them all (sorted, joined).
+      const targetAreas = [...new Set(unitsInBatch.map((unit) => unit.targetArea))].sort();
       const digest = crypto
         .createHash("sha256")
         .update(JSON.stringify(members))
         .digest("hex")
         .slice(0, 8);
       return immutableRecord({
-        id: `stage-3.candidate-${String(index + 1).padStart(3, "0")}-${sample.targetArea}-${digest}`,
+        id: `stage-3.candidate-${String(index + 1).padStart(3, "0")}-${grouped ? targetAreas.join("-") : sample.targetArea}-${digest}`,
         order: index + 1,
         depth: sample.depth,
-        targetArea: sample.targetArea,
+        targetArea: grouped ? targetAreas.join("-") : sample.targetArea,
+        ...(grouped ? { targetAreas } : {}),
         riskTier: sample.riskTier,
         eligibilityStatus: sample.status,
         sccIds: unitsInBatch.map((unit) => unit.id).sort(),

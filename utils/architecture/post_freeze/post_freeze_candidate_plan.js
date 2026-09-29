@@ -37,7 +37,25 @@ class PostFreezeCandidatePlanner {
     const moduleByPath = new Map(modules.map(module => [module.currentPath, module]));
     const clusterDecisions = new Map([...decisions].map(([currentPath, decision]) => [currentPath,
       categories.get(currentPath) === "candidate" ? decision : { ...decision, status: "deferred" }]));
-    const selected = new DomainCandidateClusterSelector(policy).select({ modules, decisions: clusterDecisions });
+    // A grouping review (owner decision 2026-09-29) fills batches up to the policy maximum; modules with
+    // open evidence, or depending on one, form their own batches so ready modules stay frozen.
+    const evidencePending = new Set();
+    if (this.profile.groupedBatches) {
+      for (const record of evidence) if (record.findings.length > 0) evidencePending.add(record.currentPath);
+      let grew = true;
+      while (grew) {
+        grew = false;
+        for (const module of modules) {
+          if (evidencePending.has(module.currentPath)) continue;
+          if (module.dependencyAudit.facts.internalDependencies.some(item => evidencePending.has(item.target))) {
+            evidencePending.add(module.currentPath);
+            grew = true;
+          }
+        }
+      }
+    }
+    const selected = new DomainCandidateClusterSelector(policy).select({ modules, decisions: clusterDecisions,
+      grouped: this.profile.groupedBatches === true, evidencePending });
     const readiness = this.#readiness(selected.batches, moduleByPath, evidence);
     const ordered = [
       ...selected.batches.filter(batch => readiness.get(batch.id).ready),
@@ -227,7 +245,8 @@ class PostFreezeCandidatePlanner {
       }
       return { module: module.currentPath, scenarios: items };
     });
-    return { modules: scenarios, integration: [...(AREA_SCENARIOS[batch.targetArea] || [])] };
+    const areas = batch.targetAreas || [batch.targetArea];
+    return { modules: scenarios, integration: [...new Set(areas.flatMap(area => AREA_SCENARIOS[area] || []))] };
   }
 }
 
