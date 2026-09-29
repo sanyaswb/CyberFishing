@@ -35187,9 +35187,7 @@
             "Object",
             "String"
           ],
-          "browserApis": [
-            "console"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -35251,7 +35249,6 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "browser-api-coupling",
             "high-level-self-composition",
             "mixed-responsibility-requires-decomposition"
           ]

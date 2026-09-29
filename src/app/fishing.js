@@ -344,9 +344,11 @@ class CastService {
 
 class FightSessionFactory {
   // runtimeConfig is the live runtime config (CONFIG) whose adapter DEV overrides replace.
-  constructor({ config, rng, castDistanceCalculator = null, devFlags = null, runtimeConfig = null }) {
+  // logger receives the fish's developer diagnostics (the platform ConsoleLogger in production).
+  constructor({ config, rng, castDistanceCalculator = null, devFlags = null, runtimeConfig = null, logger = null }) {
     this.config = config;
     this.runtimeConfig = runtimeConfig;
+    this.logger = logger;
     this.rng = rng;
     this.devFlags = devFlags;
     this.physicsConfig =
@@ -416,6 +418,7 @@ class FightSessionFactory {
       fishData.weight,
       fishData.physics,
       this.rng,
+      this.logger,
     );
     const lineSystem = new LineSystem({
       rod,

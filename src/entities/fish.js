@@ -288,14 +288,17 @@ class Fish {
   #originalBehaviors = null;
   #hasActiveDebuff = false;
   #rng;
+  #logger;
 
-  constructor(level, weight, fishConfig, rng = null) {
+  // Composition injects the diagnostics logger (a platform adapter in production).
+  constructor(level, weight, fishConfig, rng = null, logger = null) {
     this.#level = level;
     this.#weight = weight;
     this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(fishConfig);
     this.#rng = rng || { next: () => Math.random() };
+    this.#logger = logger;
     this.#powerDebuff = 0;
-    this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
+    this.#behavior = new FishBehavior(this.#fishConfig, this.#rng, this.#logger);
   }
 
   #int(min, max) {
@@ -317,7 +320,7 @@ class Fish {
     }
     if (physics && typeof physics === "object") {
       this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(physics);
-      this.#behavior = new FishBehavior(this.#fishConfig, this.#rng);
+      this.#behavior = new FishBehavior(this.#fishConfig, this.#rng, this.#logger);
     }
   }
 
@@ -396,7 +399,7 @@ class Fish {
   clearMasteryDebuff() {
     if (this.#masteryPowerMult !== 1.0) {
       this.#masteryPowerMult = 1.0;
-      console.log(
+      this.#logger?.log?.(
         `[MASTERY] Риба вирвалась з центру! Плавне підкорення скинуто.`,
       );
     }
@@ -505,7 +508,7 @@ class Fish {
     ];
     const debuffType = types[this.#int(0, types.length - 1)];
     this.#lastDebuffName = debuffType;
-    console.log(`[DEBUFF] Фаза 2 виснажена! Дебаф: ${debuffType}`);
+    this.#logger?.log?.(`[DEBUFF] Фаза 2 виснажена! Дебаф: ${debuffType}`);
 
     switch (debuffType) {
       case "swimPull":
@@ -551,7 +554,7 @@ class Fish {
         Object.assign(behaviors[key], this.#originalBehaviors[key]);
     }
     this.#hasActiveDebuff = false;
-    console.log(`[DEBUFF] Стаміна 100%. Дебафи знято.`);
+    this.#logger?.log?.(`[DEBUFF] Стаміна 100%. Дебафи знято.`);
   }
 
 }
@@ -579,8 +582,9 @@ class FishBehavior {
   #runtimeMovementModifier;
   #lastMovementDebuffDebug;
   #rng;
+  #logger;
 
-  constructor(fishConfig, rng = null) {
+  constructor(fishConfig, rng = null, logger = null) {
     const behaviorMap = fishConfig?.behaviorProfile?.behaviors || fishConfig?.behaviors || {};
     this.#config = {
       ...fishConfig,
@@ -592,6 +596,7 @@ class FishBehavior {
         ? fishConfig.movementProfile
         : fishConfig || {};
     this.#rng = rng || { next: () => Math.random() };
+    this.#logger = logger;
     this.#directionIntentSampler =
       new FishDirectionIntentSampler(this.#rng);
     this.#currentStateName = "swim";
@@ -685,7 +690,7 @@ class FishBehavior {
     }
     const state = this.#config.behaviors[stateName];
     if (!state) {
-      console.error(`[BEHAVIOR ERROR] Стан ${stateName} не знайдено!`);
+      this.#logger?.error?.(`[BEHAVIOR ERROR] Стан ${stateName} не знайдено!`);
       return;
     }
 

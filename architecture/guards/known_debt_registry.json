@@ -2438,28 +2438,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-a130156639cb",
-      "rule": "browser-capability",
-      "source": "src/entities/fish.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "a130156639cb9b58f4fb3fb50478d1224bea1079a0ca5320f989d30367221ebf",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/entities/fish.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-af5852de74bf",
       "rule": "browser-capability",
       "source": "src/app/script.js",

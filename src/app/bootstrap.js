@@ -674,6 +674,7 @@ class GameCompositionRoot {
         devFlags,
         runtimeConfig,
         castDistanceCalculator: runtime.castDistanceCalculator,
+        logger: new ConsoleLogger(),
       }),
     });
 
