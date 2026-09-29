@@ -35226,8 +35226,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "mixed-responsibility-requires-decomposition"
+            "high-level-self-composition"
           ]
         }
       }
@@ -35474,8 +35473,7 @@
           "status": "verified",
           "items": [
             "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
