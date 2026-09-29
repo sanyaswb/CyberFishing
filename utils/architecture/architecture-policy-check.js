@@ -591,7 +591,8 @@ class MigrationManifestPolicyValidator {
       "classification reviewedStatuses must contain every non-legacy status",
     );
     const expectedRoleCompatibility = {
-      engine: ["engine-contract", "engine-runtime", "engine-utility"],
+      // compatibility-bridge: the activation shim of an Engine export (Vector2, owner decision 2026-09-29).
+      engine: ["compatibility-bridge", "engine-contract", "engine-runtime", "engine-utility"],
       "game-config-raw": ["raw-config"],
       "game-config": ["config-factory"],
       "game-domain": [

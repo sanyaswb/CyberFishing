@@ -87,6 +87,7 @@ function buildArtifacts({ runtimeFacts = readRuntimeFacts() } = {}) {
 }
 
 function readRuntimeFacts() {
+  const { PrerequisiteRuntimeApprovals } = require("./stage_three_prerequisites/core/prerequisite_runtime_approvals");
   const contract = json(PATHS.runtimeContract);
   const html = bytes(PATHS.index).toString("utf8");
   return Object.freeze({
@@ -95,6 +96,7 @@ function readRuntimeFacts() {
       html.match(/<script\b[^>]*stage-3-compat-runtime[^>]*><\/script>/giu) || []
     ).length,
     outputExists: fs.existsSync(absolute(PATHS.output)),
+    prerequisiteActivationCount: PrerequisiteRuntimeApprovals.of(PROJECT_ROOT, contract).activationIds.length,
   });
 }
 

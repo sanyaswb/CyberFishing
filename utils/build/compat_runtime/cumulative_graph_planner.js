@@ -131,7 +131,11 @@ class CumulativeGraphPlanner {
     const identitySensitivePrevious = [...previousBySource.values()]
       .filter((record) => record.identitySensitive)
       .map((record) => record.source);
-    const queue = [...new Set([...targets, ...identitySensitivePrevious])].sort();
+    // An approved infrastructure module enters the graph as a dependency of a target, or as a root of
+    // its own when an approved activation exposes it (e.g. an Engine module that no migrated target
+    // imports yet but classic consumers read through its activation).
+    const activatedInfrastructure = [...infrastructure].filter((module) => activationIdsByModule.has(module));
+    const queue = [...new Set([...targets, ...identitySensitivePrevious, ...activatedInfrastructure])].sort();
     while (queue.length > 0) {
       const source = queue.shift();
       if (records.has(source)) continue;

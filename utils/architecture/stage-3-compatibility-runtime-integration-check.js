@@ -5,6 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { globSync } = require("glob");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { PrerequisiteRuntimeApprovals } = require("./stage_three_prerequisites/core/prerequisite_runtime_approvals");
 const {
   CumulativeRuntimeContractValidator,
   EXACT_TRANSPORT_GLOBAL,
@@ -54,8 +55,11 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
       ...selectedBatch.cumulativeRuntimeTopology.stage3Targets,
       ...contract.approvedInfrastructureModules,
     ].sort();
+    // Batches approve every activation except those of recorded prerequisites (the Engine Vector2, 027).
+    const approvals = PrerequisiteRuntimeApprovals.of(PROJECT_ROOT, contract);
     const expectedActivationIds = [
       ...selectedBatch.compatibility.cumulativeActivationIds,
+      ...approvals.activationIds,
     ].sort();
     assert.equal(contract.status, "migration-active");
     assert.equal(state.compatibilityRuntimeActivated, true);
@@ -69,7 +73,7 @@ class StageThreeCompatibilityRuntimeIntegrationCheck {
       3 * Number(selectedBatch.order >= 20) + 2 * Number(selectedBatch.order >= 21) +
       Number(selectedBatch.order >= 26));
     assert.equal(contract.previousRuntimeTransitions.length, 9);
-    assert.equal(contract.approvedInfrastructureModules.length, 0);
+    assert.deepEqual([...contract.approvedInfrastructureModules].sort(), approvals.infrastructureModules);
     assert.equal(contract.transport.symbol, EXACT_TRANSPORT_GLOBAL);
     assert.equal(contract.transport.ownsGameState, false);
 

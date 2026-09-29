@@ -328,8 +328,10 @@ class StageThreeExecutionStateValidator {
       const selectedCount = completed.length +
         (state.activeBatchId && activeBatchPhase === "runtime-active" ? 1 : 0);
       const selectedBatch = approvedPlan.batches[selectedCount - 1];
+      // Recorded prerequisites may approve activations of their own (the Engine Vector2, 027).
       const expectedRuntimeScriptCount =
-        1 + (selectedBatch?.compatibility?.cumulativeActivationIds?.length || 0);
+        1 + (selectedBatch?.compatibility?.cumulativeActivationIds?.length || 0) +
+        (runtimeFacts?.prerequisiteActivationCount || 0);
       require(
         completed.length > 0 || state.activeBatchId !== null,
         "active compatibility runtime requires an active or completed approved batch",

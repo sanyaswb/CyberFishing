@@ -23,7 +23,9 @@
     "runtimeFile": "compat_runtime.iife.js",
     "activationDirectory": "activations/"
   },
-  "approvedInfrastructureModules": [],
+  "approvedInfrastructureModules": [
+    "src/engine/math/vector2.js"
+  ],
   "approvedVirtualModules": [
     "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",
     "\u0000@oxc-project+runtime@0.146.0/helpers/esm/checkPrivateRedeclaration.js",
@@ -383,6 +385,18 @@
       "shimFile": "activations/117_recoverablelinecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-28138de81e82",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "sourceProvider": "src/core/math/vector2.js",
+      "targetModule": "src/engine/math/vector2.js",
+      "exportName": "Vector2",
+      "legacySymbol": "Vector2",
+      "legacyScriptIndex": 41,
+      "shimFile": "activations/041_vector2.js",
+      "reason": "Expose the Engine Vector2 constructor to its unmigrated classic consumers through the shared cumulative runtime.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-28ccfbfa82e2",

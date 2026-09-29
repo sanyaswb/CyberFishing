@@ -898,6 +898,7 @@
       ],
       "roleCompatibility": {
         "engine": [
+          "compatibility-bridge",
           "engine-contract",
           "engine-runtime",
           "engine-utility"

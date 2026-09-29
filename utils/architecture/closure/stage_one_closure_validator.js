@@ -822,14 +822,22 @@ class StageOneClosureValidator {
       "Stage 3 prebuild target Manifest entries must remain migrating",
       errors,
     );
-    // Classic sources created by recorded prerequisite transitions are classified Manifest entries.
-    const createdSources = this.#prerequisiteCreatedSources();
+    // Classic sources created by recorded prerequisite transitions are classified Manifest entries; an
+    // ESM module a prerequisite creates is an Engine module the runtime contract approves as
+    // infrastructure (the Engine Vector2, 027): an ESM entry that is not part of the classified set.
+    const created = this.#prerequisiteCreatedSources();
+    const runtimeContract = JSON.parse(fs.readFileSync(
+      path.join(this.projectRoot, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
+    const createdInfrastructure = created.filter((file) =>
+      (runtimeContract.approvedInfrastructureModules || []).includes(file) &&
+      manifestByPath.get(file)?.architecture?.migrationStatus === "esm");
+    const createdSources = created.filter((file) => !createdInfrastructure.includes(file));
     this.#require(
       createdSources.every((file) => manifestByPath.get(file)?.architecture?.migrationStatus === "classified") &&
         classifiedCount === baseline.classifiedModuleCount - activeModules + createdSources.length &&
         manifest.modules.length ===
           baseline.classifiedModuleCount + activeWrappers + stageThreeTargets +
-            prebuildTargets.length + createdSources.length,
+            prebuildTargets.length + createdSources.length + createdInfrastructure.length,
       "Stage 1 classified set changed outside activated batches",
       errors,
     );

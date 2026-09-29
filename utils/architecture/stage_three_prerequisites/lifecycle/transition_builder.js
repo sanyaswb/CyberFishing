@@ -76,9 +76,11 @@ class StageThreePrerequisiteTransitionBuilder {
       assert(!after.has(file), `a deleted file is also edited or created: ${file}`);
       after.set(file, null);
     }
-    // Optional: reviewed metadata the transition changes (derived from the tree and the edits).
+    // Optional: reviewed metadata the transition changes (derived from the tree and the edits; `root` is
+    // the tree the transition applies to, for derivations such as a runtime rebuild of the proposed tree).
     const metadata = task.metadataWrites ? task.metadataWrites({ read: file => this.bytes(file).toString("utf8"),
-      exists: file => fs.existsSync(path.join(this.root, file)), after: file => after.get(file)?.toString("utf8") }) : new Map();
+      exists: file => fs.existsSync(path.join(this.root, file)), after: file => after.get(file)?.toString("utf8"),
+      root: this.root }) : new Map();
     for (const [file, bytes] of metadata) after.set(file, Buffer.from(bytes, "utf8"));
     // Optional: reviewed reclassification / blocker removal of Manifest entries whose sources this
     // transition edits, and reviewed global providers of the files it creates (exact baseline delta).
@@ -111,8 +113,9 @@ class StageThreePrerequisiteTransitionBuilder {
     }
     const workspace = this.#workspace(after);
     try {
-      const policyDocument = this.json(POLICY);
-      const policy = ArchitecturePolicy.load(path.join(this.root, POLICY));
+      // A transition that edits the policy (a reviewed owner decision) is validated against its new state.
+      const policyDocument = after.has(POLICY) ? JSON.parse(after.get(POLICY)) : this.json(POLICY);
+      const policy = ArchitecturePolicy.load(path.join(workspace, POLICY));
       const oldManifest = this.json(MANIFEST);
       // Optional: reviewed classification of modules the transition creates; the observation of the
       // edited workspace supplies their observed facts and dependencies.
@@ -134,7 +137,8 @@ class StageThreePrerequisiteTransitionBuilder {
       for (const id of task.resolvedDebtIds) assert(debt.debts.some(item => item.id === id), `unknown debt: ${id}`);
       const nextDebt = { ...debt, debts: debt.debts.filter(item => !task.resolvedDebtIds.includes(item.id)) };
       const guards = registry => new ArchitectureGuardEngine({ projectRoot: workspace }).run(new ArchitectureGuardSnapshotBuilder({
-        projectRoot: workspace, policy: policyDocument, manifest, bridgeRegistry: this.json(BRIDGES),
+        projectRoot: workspace, policy: policyDocument, manifest,
+        bridgeRegistry: after.has(BRIDGES) ? JSON.parse(after.get(BRIDGES)) : this.json(BRIDGES),
         globalBaseline: after.has(BASELINE) ? JSON.parse(after.get(BASELINE)) : this.json(BASELINE),
         debtRegistry: registry }).build());
       // With the old registry exactly the resolved debts become stale; with the new one nothing fails.

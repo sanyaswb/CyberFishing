@@ -14,10 +14,10 @@
     {
       "slot": 41,
       "members": [
-        "src/core/math/vector2.js",
-        "src/core/core.js"
+        "src/core/core.js",
+        "src/core/math/vector2.js"
       ],
-      "transition": "architecture/migration/stage_3_prerequisites/006_vector2-classic-extraction.json"
+      "transition": "architecture/migration/stage_3_prerequisites/027_vector2-engine-activation.json"
     },
     {
       "slot": 79,

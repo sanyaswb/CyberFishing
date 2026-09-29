@@ -16,6 +16,7 @@ const {
 
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
+const { PrerequisiteRuntimeApprovals } = require("./stage_three_prerequisites/core/prerequisite_runtime_approvals");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-005-fishing-45d0c7ce";
 
@@ -232,7 +233,9 @@ class StageThreeFishingFoundationRuntimeCheck {
       ...selectedBatch.cumulativeRuntimeTopology.stage3Targets,
       ...contract.approvedInfrastructureModules,
     ].sort();
-    const expectedActivationIds = [...selectedBatch.compatibility.cumulativeActivationIds].sort();
+    // Batches approve every activation except those of recorded prerequisites (the Engine Vector2, 027).
+    const expectedActivationIds = [...selectedBatch.compatibility.cumulativeActivationIds,
+      ...PrerequisiteRuntimeApprovals.of(PROJECT_ROOT, contract).activationIds].sort();
     const report = await new StageThreeCompatibilityBuildApplication({
       projectRoot: PROJECT_ROOT,
     }).run();

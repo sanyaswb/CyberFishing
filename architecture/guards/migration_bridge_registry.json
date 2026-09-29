@@ -99,6 +99,22 @@
       ]
     },
     {
+      "id": "bridge-0d6b757f78b7",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-105a8ef0c687",
       "bridge": "src/core/fishing/rod_control_movement_projector.js",
       "source": "src/systems/fight_physics_system.js",
@@ -275,6 +291,22 @@
       ]
     },
     {
+      "id": "bridge-1fcb4fbde037",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/fishing.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-218534519854",
       "bridge": "src/core/fishing/recoverable_line_calculator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -427,6 +459,22 @@
       ]
     },
     {
+      "id": "bridge-2e8f3cba4637",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/core/core.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-2e917650176f",
       "bridge": "src/core/assemblies/item_assembly_service.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -454,6 +502,22 @@
       "globalProviders": [
         {
           "symbol": "ItemConditionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-310326528653",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/world/viewport_projector.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -539,6 +603,22 @@
       ]
     },
     {
+      "id": "bridge-39e763819786",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3d0eb05d9af6",
       "bridge": "src/core/items/rarity/item_rarity_resolver.js",
       "source": "src/systems/inventory_system.js",
@@ -571,6 +651,22 @@
       ]
     },
     {
+      "id": "bridge-45364c413248",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/application.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-465e746a78c9",
       "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -587,6 +683,22 @@
       ]
     },
     {
+      "id": "bridge-46acc1909f4e",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/entities/tackle.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-46e283c7d3b4",
       "bridge": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
       "source": "src/systems/fight_physics_system.js",
@@ -598,6 +710,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRecoveryFishSlowdownPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-47ede6d2e84c",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -678,6 +806,22 @@
       "globalProviders": [
         {
           "symbol": "ItemFreshnessStatePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-537204637b4c",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/systems/player_force_system.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -827,6 +971,22 @@
       ]
     },
     {
+      "id": "bridge-60d3aa8afcca",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/core/fishing/fish_fight_direction_resolver.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-61c989dead40",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_view_model_factory.js",
@@ -870,6 +1030,22 @@
       "globalProviders": [
         {
           "symbol": "ReelAutoRecoveryCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-63f240e0a04b",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/world_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -998,6 +1174,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6bd38de51ce1",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/fishing_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1155,6 +1347,22 @@
       ]
     },
     {
+      "id": "bridge-772e31acd167",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/states.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-779213470262",
       "bridge": "src/core/items/rarity/authored_item_rarity_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1214,6 +1422,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyPath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-815c81d10665",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/fight_area_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1659,6 +1883,22 @@
       ]
     },
     {
+      "id": "bridge-a8155a87814b",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/location_debug_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a825c474372d",
       "bridge": "src/core/fishing/pole_fight_sector_constraint.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1702,6 +1942,38 @@
       "globalProviders": [
         {
           "symbol": "BaitFreshnessDecayPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ae20278a9e2f",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/systems/chum_system.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ae46e766e312",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/landing_area_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1931,6 +2203,22 @@
       ]
     },
     {
+      "id": "bridge-d1231113ad43",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/cast_power.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d2178f043482",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -2022,6 +2310,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ddab9cbee9ba",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/casting_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -2198,6 +2502,22 @@
       "globalProviders": [
         {
           "symbol": "RenderComponent",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f57fc81d1499",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/world.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]

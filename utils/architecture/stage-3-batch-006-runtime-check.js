@@ -25,6 +25,7 @@ const {
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 const { RetiredActivationPlaceholder } = require("../build/compat_runtime/activation_retirement");
+const { PrerequisiteRuntimeApprovals } = require("./stage_three_prerequisites/core/prerequisite_runtime_approvals");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-006-fishing-e48e70d8";
 
@@ -52,8 +53,10 @@ class StageThreeBatch006RuntimeCheck {
     const selectedCount = state.completedBatchIds.length +
       (state.activeBatchId && state.activeBatchPhase === "runtime-active" ? 1 : 0);
     const selectedBatch = approved.batches[selectedCount - 1];
+    // Batches approve every activation except those of recorded prerequisites (the Engine Vector2, 027).
+    const prerequisiteActivations = PrerequisiteRuntimeApprovals.of(PROJECT_ROOT, contract).activationIds.length;
     assert.equal(contract.activationPositions.length,
-      selectedBatch.compatibility.cumulativeActivationIds.length);
+      selectedBatch.compatibility.cumulativeActivationIds.length + prerequisiteActivations);
     assert.equal(contract.plannedActivationPositions, undefined);
     this.#verifyRepresentationOnly(executionPlan);
 
@@ -68,7 +71,7 @@ class StageThreeBatch006RuntimeCheck {
     assert.equal(report.status, "built");
     assert.equal(report.moduleCount, expectedModules.length);
     assert.equal(report.activationCount,
-      selectedBatch.compatibility.cumulativeActivationIds.length);
+      selectedBatch.compatibility.cumulativeActivationIds.length + prerequisiteActivations);
     assert.deepEqual(report.selectedBatchIds, approved.batches.slice(0, selectedCount)
       .map((record) => record.id));
     const runtime = report.outputs.find((record) =>
