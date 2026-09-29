@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.76";
+const CURRENT_PROJECT_VERSION = "0.24.77";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "assemblies-profile-registry-domain",
-  updatedAt: "2026-09-28",
+  codename: "inventory-capacity-and-stamina-domain",
+  updatedAt: "2026-09-29",
   notes: Object.freeze([
-    "Migrate the assembly profile registry",
-    "Keep the profile table injected by the composition roots",
-    "Complete the Stage 3.36.0 approved prefix",
-    "Preserve one hundred thirteen project modules, one hundred two activations and one hundred forty-three bridges",
+    "Migrate the inventory capacity policies",
+    "Migrate the fight stamina controller",
+    "Open the Stage 3.40.0 approved prefix",
+    "Preserve one hundred sixteen project modules, one hundred five activations and one hundred sixty-eight bridges",
   ]),
 });
 

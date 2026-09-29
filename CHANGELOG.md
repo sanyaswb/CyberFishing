@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.24.77 - Inventory Capacity And Stamina Domain
+
+### Changed
+
+- Opened the Stage 3.40.0 approved prefix (grouped batches after the six decompositions and Vector2 Engine ownership) with batch 039: InventoryCapacityPolicy, UnlimitedInventoryCapacityPolicy, DelegatingInventoryCapacityPolicy and StaminaController as named ESM exports.
+- Extended the cumulative graph from 114 to 116 project modules and from 103 to 105 activation contracts, with 168 exact bridge relationships (5 added).
+- The next batch is 040 of the Stage 3.40.0 approved prefix.
+
 ## v0.24.76 - Assemblies Profile Registry Domain
 
 ### Changed

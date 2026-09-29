@@ -40,6 +40,12 @@ class CumulativeLiveActivationProbe {
       "Cumulative evaluation must immediately precede the first approved exposure");
     const pending = new Map(runtime.activationPositions.map((item) => [item.id, item]));
     assert.equal(pending.size, runtime.activationPositions.length, "Duplicate activation ID");
+    const logicalProviders = new Set(logical.map((script) =>
+      `${script.legacyLoadOrder}\0${script.currentPath}`));
+    for (const item of pending.values()) {
+      assert(logicalProviders.has(`${item.legacyScriptIndex}\0${item.sourceProvider}`),
+        `Activation provider moved logical position: ${item.sourceProvider} at ${item.legacyScriptIndex}`);
+    }
     const exposed = new Map(), timing = [];
     // Walk real logical positions, but execute only compatibility scripts here.
     // This is VM identity/timing validation, not a browser/gameplay simulation.

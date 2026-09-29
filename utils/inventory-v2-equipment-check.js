@@ -52,6 +52,13 @@ class RuntimeLoader {
       "UnlimitedInventoryCapacityPolicy",
       "DelegatingInventoryCapacityPolicy",
     ]);
+    // Production activates only the export with legacy consumers. This legacy-shaped test also
+    // exercises the other two named exports through their exact identity in the loaded ESM module.
+    const capacityModule = context.__CYBER_FISHING_COMPAT_RUNTIME__.modules[
+      "src/game/domain/inventory/inventory_capacity_policy.js"
+    ];
+    context.InventoryCapacityPolicy = capacityModule.InventoryCapacityPolicy;
+    context.DelegatingInventoryCapacityPolicy = capacityModule.DelegatingInventoryCapacityPolicy;
     loader.load("src/core/equipment/equipment_transition_planner.js", [
       "EquipmentTransitionPlan",
       "ManualRodChangePlanner",

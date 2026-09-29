@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cyber-fishing-stage-3-execution-state",
-  "releaseVersion": "0.24.76",
+  "releaseVersion": "0.24.77",
   "approvedPlanSha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb",
   "status": "migration-active",
   "completedBatchIds": [
@@ -42,13 +42,13 @@
     "stage-3.replan-336.batch-035-items-48cb5bbc",
     "stage-3.replan-336.batch-036-items-e1a5aaa4",
     "stage-3.replan-336.batch-037-items-5fccd461",
-    "stage-3.replan-336.batch-038-assemblies-d8271d28"
+    "stage-3.replan-336.batch-038-assemblies-d8271d28",
+    "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea"
   ],
-  "activeBatchId": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+  "activeBatchId": null,
   "compatibilityRuntimeActivated": true,
   "continuationPlan": {
     "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
     "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
-  },
-  "activeBatchPhase": "runtime-active"
+  }
 }

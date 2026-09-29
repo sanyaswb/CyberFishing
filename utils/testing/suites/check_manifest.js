@@ -762,7 +762,7 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.39.0–3.39.7 assemblies profile registry domain migration with collection identities and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "038", "--mode", "architecture"],
-      suites: ["quick", "architecture", "history"],
+      suites: ["history"],
     },
     {
       id: "stage-3-batch-039-architecture",
