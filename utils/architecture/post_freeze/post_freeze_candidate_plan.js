@@ -31,7 +31,8 @@ class PostFreezeCandidatePlanner {
     this.validator = validator;
   }
 
-  plan({ eligibility, evidence, logicalGraph, runtimeContract, bridgeRegistry, completedBatchIds }) {
+  plan({ eligibility, evidence, logicalGraph, runtimeContract, bridgeRegistry, completedBatchIds,
+    prerequisiteActivationIds = new Set() }) {
     const { modules, decisions, categories, policy } = eligibility;
     const moduleByPath = new Map(modules.map(module => [module.currentPath, module]));
     const clusterDecisions = new Map([...decisions].map(([currentPath, decision]) => [currentPath,
@@ -53,7 +54,7 @@ class PostFreezeCandidatePlanner {
       stageTwoExposures: [],
     });
     const batches = this.#enrich({ design, renamed, readiness, logicalGraph, runtimeContract,
-      bridgeRegistry, completedBatchIds, moduleByPath });
+      bridgeRegistry, completedBatchIds, moduleByPath, prerequisiteActivationIds });
     const records = eligibility.records;
     const plan = {
       batches,
@@ -103,7 +104,8 @@ class PostFreezeCandidatePlanner {
     return readiness;
   }
 
-  #enrich({ design, renamed, readiness, logicalGraph, runtimeContract, bridgeRegistry, completedBatchIds, moduleByPath }) {
+  #enrich({ design, renamed, readiness, logicalGraph, runtimeContract, bridgeRegistry, completedBatchIds, moduleByPath,
+    prerequisiteActivationIds }) {
     // A repeated review continues the frozen cumulative sets, which keep retired activations.
     const activations = this.profile.completedFromPlanSource
       ? [...runtimeContract.activationPositions, ...(runtimeContract.retiredActivations || []).map(record => record.activation)]
@@ -132,7 +134,7 @@ class PostFreezeCandidatePlanner {
         state.activationTargets.add(activation.contract.targetModule);
       }
       const after = this.#counts(state);
-      const cumulativeActivationIds = [...state.activationIds].sort(compare);
+      const cumulativeActivationIds = [...state.activationIds].filter(id => !prerequisiteActivationIds.has(id)).sort(compare);
       const record = {
         ...batch,
         status: "candidate",

@@ -146,8 +146,13 @@ class PostFreezeReview {
     };
     const backlogRef = emit(ARTIFACTS.prerequisiteBacklog, backlogDocument);
     const state = workspace.json(INPUTS.executionState);
+    // Activations approved by recorded prerequisites (the Engine Vector2) belong to the runtime topology
+    // but not to any batch's cumulative activation set.
+    const prerequisiteActivationIds = profile.prerequisiteIntroducedCoverage
+      ? new Set(require("../stage_three_prerequisites/core/prerequisite_runtime_approvals")
+        .PrerequisiteRuntimeApprovals.of(workspace.root, runtimeContract).activationIds) : new Set();
     const plan = this.planner.plan({ eligibility, evidence, logicalGraph: graph, runtimeContract,
-      bridgeRegistry, completedBatchIds: state.completedBatchIds });
+      bridgeRegistry, completedBatchIds: state.completedBatchIds, prerequisiteActivationIds });
     const completedPrefix = {
       status: "completed-unchanged",
       approvedPlan: input(HISTORICAL.approvedPlan),
