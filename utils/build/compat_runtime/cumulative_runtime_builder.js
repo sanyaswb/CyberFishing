@@ -160,17 +160,19 @@ class DirectNamedExportValidator {
 
 class LegacyActivationPositionValidator {
   validate({ activations, scripts }) {
-    const byOrder = new Map(
-      scripts
-        .filter((script) => script.type === "classic")
-        .map((script) => [script.legacyLoadOrder, script.currentPath]),
-    );
+    // A split legacy slot has several members (legacy_slot_splits.json); the activation's provider must
+    // be one of the members of its logical slot, never an arbitrary last member of a one-per-slot map.
+    const byOrder = new Map();
+    for (const script of scripts.filter((item) => item.type === "classic")) {
+      if (!byOrder.has(script.legacyLoadOrder)) byOrder.set(script.legacyLoadOrder, []);
+      byOrder.get(script.legacyLoadOrder).push(script.currentPath);
+    }
     for (const activation of activations) {
-      const actualProvider = byOrder.get(activation.legacyScriptIndex);
-      if (actualProvider !== activation.sourceProvider) {
+      const members = byOrder.get(activation.legacyScriptIndex) || [];
+      if (!members.includes(activation.sourceProvider)) {
         throw new Error(
           `Activation position differs from legacy provider: ${activation.id}; ` +
-            `${actualProvider || "<missing>"} !== ${activation.sourceProvider}`,
+            `${members.join(", ") || "<missing>"} !== ${activation.sourceProvider}`,
         );
       }
     }

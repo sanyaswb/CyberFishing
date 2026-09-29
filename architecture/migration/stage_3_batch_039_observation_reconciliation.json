@@ -1,0 +1,684 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-039-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+  "releaseVersion": "0.24.76",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_039_prebuild_contract.json",
+      "sha256": "70aa84d149090715618c60987f4d9e21c1feae2be6b1e6746d4362af52eda7fb"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_039_runtime_cutover.json",
+      "sha256": "fc3fc53b5f4c2f3033c5fd6965517247bc69d6ed87f016dcf0236de303cfb4c4"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "b2b33a3e9d117adc94f3950e77695c24dde76b51225b43ee191eaeba182440b3"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_039_live_runtime_validation.json",
+      "sha256": "2693d5552354d0cd0cc023214ec6153dc9df71f3abd81ced9a83e2dc9586f657"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_039_audit.json",
+      "sha256": "49005bdbcb3e78d61c3daece21ee0d923911f564227f92bebe02b13434296b88"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "9c5f1862ad21eba5d92f4f1a2b08c7f302ccbe2d7c9c9f14b5532f26a7b8b304"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "9ae96bcea5f53f21919fdb8d40343ee5c3472bd6ae7a7900104c3b4a4973d632"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "ae36987ebb1eeee2e3cde5e3278a5ea8aa093dbf03ad780586955f0063cc109c"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "17f2f5161efd781e6afeeb28eef7caa99815100f64c19c45c49596520e062340"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "7bdd569f446efa7572293e8f672191b078c51d07154eb64f96aca72e23bd9260"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "ff233fffce88a568e430bcf32566cd9ff3cb937e63206c25ac787a98fa9de7b4",
+    "afterSha256": "2402f81419dc0533d49be3e4bf37d410866f4c924abffdfa7fc138a54341bf2b",
+    "records": [
+      {
+        "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+        "before": {
+          "currentPath": "src/core/equipment/inventory_capacity_policy.js",
+          "currentArea": "core/equipment",
+          "observed": {
+            "legacyLoadOrder": 162,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "66ba2fc50f9eedfb6e85f4e14c696f91c211b04203df171102b8136297626650"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/stamina_system.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/stamina_system.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina_system.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "124268bb703fc1981dc0594665108ea67574ec29ae4568421570772d8aa4e1a7"
+      },
+      {
+        "currentPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "currentArea": "game/domain/inventory",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior",
+              "domain-contract"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "773955c6e164cd8adae4961e20c4090e428b6fb47120fba4d55fc72f42bd50c2"
+      },
+      {
+        "currentPath": "src/systems/stamina_system.js",
+        "before": {
+          "currentPath": "src/systems/stamina_system.js",
+          "currentArea": "systems",
+          "observed": {
+            "legacyLoadOrder": 207,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/stamina_system.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "0bcc1bd55efcfb0e46c1ba82e4719a1e8f45dcfa7e389769dc5a29e6626ef06b"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 548,
+    "providers": 785,
+    "consumers": 925,
+    "confirmed": 830,
+    "unresolved": 95,
+    "ambiguous": 0,
+    "edges": 715
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/fishing/stamina_system.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 1,
+            "column": 1
+          }
+        },
+        {
+          "kind": "named",
+          "location": {
+            "line": 9,
+            "column": 1
+          }
+        },
+        {
+          "kind": "named",
+          "location": {
+            "line": 31,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Boolean",
+        "Error",
+        "Number",
+        "Object",
+        "Set",
+        "TypeError"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/systems/stamina_system.js",
+      "target": "src/game/domain/fishing/stamina_system.js",
+      "symbol": "StaminaController",
+      "activationId": "activation-58191715ba45",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/equipment/inventory_capacity_policy.js",
+      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "activationId": "activation-fae9ef46057a",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/fishing.js",
+      "symbol": "StaminaController",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/systems/stamina_system.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/loadout_application_service.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [
+    {
+      "source": "src/application/inventory/loadout_application_service.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "symbol": "UnlimitedInventoryCapacityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/inventory_capacity_policy.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 715,
+    "confirmedInterFileEdgesAfter": 715,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 2,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-58191715ba45",
+      "source": "src/systems/stamina_system.js",
+      "consumers": [
+        "src/app/fishing.js"
+      ],
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-fae9ef46057a",
+      "source": "src/core/equipment/inventory_capacity_policy.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/equipment/equipment_transition_planner.js",
+        "src/core/loadouts/loadout_equipment_transition_planner.js"
+      ],
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [
+      {
+        "symbol": "DelegatingInventoryCapacityPolicy",
+        "source": "src/core/equipment/inventory_capacity_policy.js",
+        "consumers": 0,
+        "reason": "unactivated-export-kept-as-esm-export-only"
+      },
+      {
+        "symbol": "InventoryCapacityPolicy",
+        "source": "src/core/equipment/inventory_capacity_policy.js",
+        "consumers": 0,
+        "reason": "unactivated-export-kept-as-esm-export-only"
+      }
+    ],
+    "mechanismTransitions": [
+      {
+        "source": "src/systems/stamina_system.js",
+        "target": "src/game/domain/fishing/stamina_system.js",
+        "symbol": "StaminaController",
+        "activationId": "activation-58191715ba45",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/equipment/inventory_capacity_policy.js",
+        "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+        "symbol": "UnlimitedInventoryCapacityPolicy",
+        "activationId": "activation-fae9ef46057a",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 548,
+    "consumers": 925,
+    "confirmed": 830,
+    "selfConfirmed": 3,
+    "unresolved": 95,
+    "ambiguous": 0,
+    "edges": 715,
+    "reverseLinks": 715,
+    "targetsWithConsumers": 402,
+    "unifiedEdges": 856,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/systems/stamina_system.js",
+        "targetModule": "src/game/domain/fishing/stamina_system.js",
+        "legacy": [
+          {
+            "source": "src/app/fishing.js",
+            "symbols": [
+              "StaminaController"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/systems/stamina_system.js",
+            "target": "src/game/domain/fishing/stamina_system.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-2aa2248bbfc4",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/equipment/inventory_capacity_policy.js",
+        "targetModule": "src/game/domain/inventory/inventory_capacity_policy.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "UnlimitedInventoryCapacityPolicy"
+            ]
+          },
+          {
+            "source": "src/application/inventory/loadout_application_service.js",
+            "symbols": [
+              "UnlimitedInventoryCapacityPolicy"
+            ]
+          },
+          {
+            "source": "src/core/equipment/equipment_transition_planner.js",
+            "symbols": [
+              "UnlimitedInventoryCapacityPolicy"
+            ]
+          },
+          {
+            "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+            "symbols": [
+              "UnlimitedInventoryCapacityPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/equipment/inventory_capacity_policy.js",
+            "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-289f736e1af7",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-a481c78efd89",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-c38c025ddc66",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-eec9b2477622",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "6cc42ef558a4891f83ec9d56b7c7cdbf28e477a913f4e60607f585fb31716277"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 145,
+    "diagnosticsSha256": "60dc4a50ac9dd2f2959b2f7238dd241c94e1e8944b7ab6d85d1951e56bdfc2a3",
+    "baselineGlobals": 853
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/fishing/stamina_system.js",
+      "src/game/domain/inventory/inventory_capacity_policy.js"
+    ]
+  },
+  "topology": {
+    "modules": 116,
+    "activations": 105,
+    "bridges": 168
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "stage-3.replan-322.batch-032-items-096b3398",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "stage-3.replan-336.batch-035-items-48cb5bbc",
+      "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "stage-3.replan-336.batch-037-items-5fccd461",
+      "stage-3.replan-336.batch-038-assemblies-d8271d28"
+    ],
+    "activeBatchId": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.40.8-full-acceptance-and-browser-smoke"
+}

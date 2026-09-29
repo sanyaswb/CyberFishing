@@ -765,6 +765,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-batch-039-architecture",
+      title: "Stage 3.40.0–3.40.7 inventory capacity and stamina domain migration with split-slot activation, identity and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "039", "--mode", "architecture"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-34-review-queue-freeze",
       title: "Stage 3.34.0 review-queue evidence (collection identity, hot-loop equivalence) and freeze extension replay",
       file: "utils/architecture/stage-3-34-review-queue-freeze.js",

@@ -639,6 +639,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-58191715ba45",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "sourceProvider": "src/systems/stamina_system.js",
+      "targetModule": "src/game/domain/fishing/stamina_system.js",
+      "exportName": "StaminaController",
+      "legacySymbol": "StaminaController",
+      "legacyScriptIndex": 207,
+      "shimFile": "activations/207_staminacontroller.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-596779b33d76",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_completion_policy.js",
@@ -1477,6 +1489,18 @@
       "shimFile": "activations/111_endurancemovementdebuffcalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
+    },
+    {
+      "id": "activation-fae9ef46057a",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "sourceProvider": "src/core/equipment/inventory_capacity_policy.js",
+      "targetModule": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "exportName": "UnlimitedInventoryCapacityPolicy",
+      "legacySymbol": "UnlimitedInventoryCapacityPolicy",
+      "legacyScriptIndex": 162,
+      "shimFile": "activations/162_unlimitedinventorycapacitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-feaf02eaca22",

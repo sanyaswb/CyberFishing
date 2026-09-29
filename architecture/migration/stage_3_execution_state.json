@@ -44,10 +44,11 @@
     "stage-3.replan-336.batch-037-items-5fccd461",
     "stage-3.replan-336.batch-038-assemblies-d8271d28"
   ],
-  "activeBatchId": null,
+  "activeBatchId": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
   "compatibilityRuntimeActivated": true,
   "continuationPlan": {
-    "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
-    "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
-  }
+    "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+    "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+  },
+  "activeBatchPhase": "runtime-active"
 }

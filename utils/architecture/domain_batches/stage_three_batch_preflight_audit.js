@@ -66,9 +66,11 @@ class StageThreeBatchPreflightAuditBuilder {
 
     const previousBatch = approvedPlan.batches[batch.order - 2];
     this.#require(previousBatch, "previous completed batch is missing");
+    // Approved infrastructure modules (the Engine Vector2, prerequisite 027) are part of the runtime too.
     const existingModules = new Set([
       ...previousBatch.cumulativeRuntimeTopology.stage2Targets,
       ...previousBatch.cumulativeRuntimeTopology.stage3Targets,
+      ...(runtimeContract.approvedInfrastructureModules || []),
     ]);
     // A retired activation's ESM module stays in the cumulative graph for its importers.
     const actualRuntimeModules = new Set([...runtimeContract.activationPositions,

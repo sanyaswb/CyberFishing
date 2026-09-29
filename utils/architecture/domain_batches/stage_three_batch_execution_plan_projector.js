@@ -91,7 +91,9 @@ class StageThreeBatchExecutionPlanProjector {
       match[2].split("?")[0] === `${runtimeContract.output.directory}${runtimeContract.output.runtimeFile}`).length;
     if (runtimeScriptCount !== 1) throw new Error("Expected exactly one active cumulative runtime script");
     return Object.freeze({
-      projectModuleCount: selectedBatch.cumulativeRuntimeTopology.moduleRecordCount,
+      // Approved infrastructure modules (the Engine Vector2, prerequisite 027) are runtime modules too.
+      projectModuleCount: selectedBatch.cumulativeRuntimeTopology.moduleRecordCount +
+        (runtimeContract.approvedInfrastructureModules || []).length,
       activationCount: runtimeContract.activationPositions.length,
       scriptTopology: Object.freeze({
         physicalClassicScriptCount: scriptTags.length - moduleScriptCount,

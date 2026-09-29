@@ -24,12 +24,17 @@ class CumulativeLiveActivationProbe {
     assert.deepEqual(Object.keys(transport.modules).sort(), projectModules);
     const logical = new LegacyScriptOrderReader(null, { scriptAliases:
       new StageThreeRuntimeScriptAliasResolver().resolve(runtime) }).parse(index);
-    const physical = new LegacyScriptOrderReader(null).parse(index);
+    // The physical document order of every script tag (split legacy slots may place the runtime tag
+    // between members of one logical slot, as Vector2 does at slot 41).
+    const physical = [...index.matchAll(/<script\b([^>]*)\bsrc\s*=\s*["']([^"']+)["']([^>]*)>\s*<\/script>/giu)]
+      .map((match) => ({ currentPath: match[2].split("?")[0].replace(/^\.\//u, ""),
+        type: /\btype\s*=\s*["']module["']/iu.test(`${match[1]} ${match[3]}`) ? "module" : "classic" }));
     assert(physical.every((item) => item.type === "classic"));
     const runtimePath = `${runtime.output.directory}${runtime.output.runtimeFile}`;
     assert.equal(physical.filter((item) => item.currentPath === runtimePath).length, 1);
-    const firstActivation = Math.min(...runtime.activationPositions.map((item) => item.legacyScriptIndex));
-    const firstShim = logical.find((item) => item.legacyLoadOrder === firstActivation)?.source;
+    const firstActivation = [...runtime.activationPositions].sort((left, right) =>
+      left.legacyScriptIndex - right.legacyScriptIndex)[0];
+    const firstShim = `${runtime.output.directory}${firstActivation.shimFile}`;
     assert.equal(physical.findIndex((item) => item.currentPath === firstShim),
       physical.findIndex((item) => item.currentPath === runtimePath) + 1,
       "Cumulative evaluation must immediately precede the first approved exposure");
@@ -42,7 +47,9 @@ class CumulativeLiveActivationProbe {
       for (const item of pending.values()) assert.equal(context[item.legacySymbol], undefined,
         `Early exposure before logical position ${item.legacyScriptIndex}: ${item.legacySymbol}`);
       for (const [symbol, value] of exposed) assert.equal(context[symbol], value, "Existing identity overwritten");
-      const atPosition = [...pending.values()].filter((item) => item.legacyScriptIndex === script.legacyLoadOrder);
+      // A split legacy slot has several members: each activation belongs to the member that provides it.
+      const atPosition = [...pending.values()].filter((item) => item.legacyScriptIndex === script.legacyLoadOrder &&
+        item.sourceProvider === script.currentPath);
       const shims = new Set();
       for (const item of atPosition) {
         const shimPath = `${runtime.output.directory}${item.shimFile}`;

@@ -658,6 +658,8 @@ class StageOneClosureValidator {
         "Items Bait, Freshness and Progression Resolvers Domain",
       "stage-3.replan-336.batch-038-assemblies-d8271d28":
         "Assemblies Profile Registry Domain",
+      "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea":
+        "Fishing and Inventory Capacity Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

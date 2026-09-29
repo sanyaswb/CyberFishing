@@ -88,10 +88,13 @@ class StageThreeCutoverProjection {
       writes.push({ relativePath: provider,
         bytes: Buffer.from(activations.map(activation =>
           new ActivationShimRenderer().render(activation, runtime.transport.symbol)).join("")) });
-      const oldTag = new RegExp(`<script src="${provider.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}(?:\\?[^\"]*)?"></script>`, "gu");
-      assert.equal([...index.matchAll(oldTag)].length, 1);
+      // A split legacy slot member keeps its data-legacy-slot attribute on its activation tag.
+      const oldTag = new RegExp(`<script src="${provider.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}(?:\\?[^\"]*)?"( data-legacy-slot="\\d+")?></script>`, "gu");
+      const matches = [...index.matchAll(oldTag)];
+      assert.equal(matches.length, 1);
+      const slotAttribute = matches[0][1] || "";
       const tags = activations.map(activation =>
-        `<script src="${runtime.output.directory}${activation.shimFile}"></script>`).join("\n");
+        `<script src="${runtime.output.directory}${activation.shimFile}"${slotAttribute}></script>`).join("\n");
       index = index.replace(oldTag, tags);
     }
     // In retirement order: a classic source gets its placeholder (one line per retired activation it

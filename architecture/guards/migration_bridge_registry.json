@@ -411,6 +411,22 @@
       ]
     },
     {
+      "id": "bridge-289f736e1af7",
+      "bridge": "src/core/equipment/inventory_capacity_policy.js",
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedInventoryCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-292102f00c09",
       "bridge": "src/core/fishing/line_constrained_fish_motion_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -454,6 +470,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2aa2248bbfc4",
+      "bridge": "src/systems/stamina_system.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/fishing/stamina_system.js",
+      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "StaminaController",
           "mechanism": "global-this-property"
         }
       ]
@@ -1803,6 +1835,22 @@
       ]
     },
     {
+      "id": "bridge-a481c78efd89",
+      "bridge": "src/core/equipment/inventory_capacity_policy.js",
+      "source": "src/application/inventory/loadout_application_service.js",
+      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedInventoryCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a59383ea4b2f",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2118,6 +2166,22 @@
       "globalProviders": [
         {
           "symbol": "EffectiveItemStatsResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c38c025ddc66",
+      "bridge": "src/core/equipment/inventory_capacity_policy.js",
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedInventoryCapacityPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -2454,6 +2518,22 @@
       "globalProviders": [
         {
           "symbol": "ItemMetricStrategyRegistry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-eec9b2477622",
+      "bridge": "src/core/equipment/inventory_capacity_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UnlimitedInventoryCapacityPolicy",
           "mechanism": "global-this-property"
         }
       ]
