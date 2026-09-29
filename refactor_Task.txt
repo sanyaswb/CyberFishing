@@ -4,7 +4,7 @@
 - **Current release version:** `v0.24.76`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** the six responsibility decompositions (equipment group done: prerequisites 007–008; inventory next), then Vector2 checkpoint B (Engine ESM), then a repeated graph review; see “Next steps” below
+- **Next step:** finish the entities-world-rules decomposition (the last of six; 018–021 done, next 022 fish.js logger injection, 023 rod-kind labels, then per-class splits), one acceptance Full and the owner's play check, then Vector2 checkpoint B (Engine ESM), then a repeated graph review; see “Next steps” below
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -262,7 +262,13 @@ When a batch migrates the last listed classic consumer of an earlier Stage 3 act
    - [x] 002 ItemStatOverridePolicy config injection: CONFIG exposes the override table (like itemProgression); GameCompositionRoot composes one policy and one EffectiveItemStatsResolver and threads them through InventoryManager into InventoryV2CompositionRoot; every former default-parameter call site (Domain resolvers, line controller, view factory, hydrator, validator, DEV provider, mapper and migrations) receives them explicitly. 5 debts resolved, confirmed edges 734 → 719, parity identical over every catalog item. Test harnesses compose the collaborators through `utils/testing/runtime/item_stat_test_composition.js`; game-cycle now loads the override config like index.html.
    - [x] 003–005 Item-condition, item-freshness and bait-effectiveness descriptor boundaries: the Domain resolvers receive the presentation descriptor factory from GameCompositionRoot (dependency inversion, as ItemBoundedMetricResolver already did), so consumers receive identical descriptors; 3 debts resolved; parity over profiles, items, exposures and fish/bait pairs. Tests bind factories via `utils/testing/runtime/constructor_defaults.js`.
    - [~] Vector2 extraction: checkpoint A done (prerequisite 006, classic `src/core/math/vector2.js` in split slot 41); checkpoint B (Engine ESM `src/engine/math/vector2.js`, standard activation after the runtime tag) follows the decompositions. Unblocks FishFightDirectionResolver and PlayerForceSystem.
-   - [ ] Six responsibility decompositions (owner 2026-09-28: before Vector2 B). Equipment: [x] 007 text boundary + slot catalog split; [x] 008 terminal-line label split + reclassification of EquipmentSlotVisibilityPolicy/TerminalLineSlotResolver to game-domain (Domain scope 135 → 137). Then inventory, loadouts, item-progression, fishing-systems, entities-world-rules.
+   - [~] Six responsibility decompositions (owner 2026-09-28: before Vector2 B; each a separate prerequisite transition and commit, never mixed with migration):
+     - [x] Equipment (owner played it): 007 text boundary + slot catalog split (EQUIPMENT_SLOT_PRESENTATION, INVENTORY_RULE_MESSAGES); 008 terminal-line label split + reclassification of EquipmentSlotVisibilityPolicy/TerminalLineSlotResolver to game-domain (Domain scope 135 → 137).
+     - [x] Inventory: 009 capacity and line-allocation texts injected; 012 FlatInventoryItemRepository and InventoryItemStackingPolicy reviewed without edit.
+     - [x] Loadouts: 010 transition-planner text injected; 013 EquipmentLoadout reviewed without edit ("Комплект" stays a save constant).
+     - [x] Item progression: 011 capacity labels injected; 014 platform ConsoleWarningLogger for ItemCatalogBaselineRegistry, CompositeMetricStrategy/ItemRatingResolver reviewed without edit.
+     - [x] Fishing systems: 015 FightPhysicsConfigAdapter fallback removed; 016 BuffManager split, StaminaController/RodPullCalculator cohesive; 017 DistanceUnitConverter split, FishForceSystem/TackleStressSystem reviewed without edit. Fresh acceptance Full 228/228 at 9a15286.
+     - [~] Entities, world, rules: [x] 018 GodMode bite override through DevFlagsProvider; [x] 019 EquipmentRules config injection; [x] 020 tackle.js live runtime config (six global getters removed); [x] 021 ConsoleLogger generalization (deletedFiles, globalProviderReplacements); [ ] 022 fish.js console output through the injected ConsoleLogger (texts stay DEV diagnostics); [ ] 023 rod-kind labels in a separate `rodKinds` section of INVENTORY_RULE_MESSAGES injected into EquipmentRules; [ ] per-class splits of world.js (ViewportProjector to presentation; LocationMap debug counter to a DEV-owned store if only DEV reads it), rules.js, fish.js and tackle.js — one file per transaction, file list and targets sent to the owner first; [ ] acceptance Full at the group end and the owner's play check.
    - [x] Stage 3.36.0 repeated graph review (`node utils/architecture/stage-3-36-graph-review.js`, artifacts in `architecture/migration/stage_3_36_graph_review/`): the Stage 3.22 review tooling is parameterized by `PostFreezeReviewProfile` (3.22 replay byte-identical); the repeated review reads the completed prefix through the plan source, counts retired placeholders and completed ESM importers, derives ESM import facts, records resolved backlog tasks and adds four reviewed collection contracts. Result: 7 candidates → 4 frozen batches 035–038 (ItemConditionResolver; EffectiveItemStatsResolver + ItemStatOverridePolicy; BaitEffectivenessResolver + ItemFreshnessResolver + ItemProgressionResolver; AssemblyProfileRegistry), 2 prerequisite-blocked (Vector2), 29 deferred, 5 backlog tasks resolved, 7 open. The plan source follows continuation chains (3.36 prefix → 3.34 extension → 3.22 prefix) and takes the newest review's domain audit.
    - [x] Batches 035–038 (`v0.24.73`–`v0.24.76`): 035 ItemConditionResolver, 036 ItemStatOverridePolicy + EffectiveItemStatsResolver, 037 bait effectiveness, item freshness and item progression resolvers, 038 AssemblyProfileRegistry.
   Original backlog line: resolve as separate tasks, never mixed with a module migration (Vector2 extraction, descriptor boundaries, config injection, decompositions); every graph change is followed by a repeated graph review and a new freeze.
@@ -286,13 +292,30 @@ assets
 DOM/Canvas adapters
 ```
 
+Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
+
+- [ ] Inject a clock / instance-id factory into `FlatInventoryItemRepository` (its fallback instance id reads `Date.now`; 012, owner decision 2026-09-28).
+- [ ] Remove the visual fields (ratingColor, ratingGradient, powerColor, powerGradient) from saved inventory items, with an explicit save migration (Stage 4/5); `InventoryItemStackingPolicy` ignores them until then (012).
+- [ ] `ConfigProvider` caches the fight-physics adapter, so DEV adapter overrides do not reach services composed through it (pre-existing; 015/020 read the live `CONFIG` instead). Decide one live config source when the application services migrate.
+
 # 4. Stage 5 — Presentation + Bootstrap
 
 Migrate the rendering pipeline, UI, screens, HUD, `GameApplication`, and `GameCompositionRoot`. Create the production `game.entry.js` only after the dependency graph is ready.
 
+Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
+
+- [ ] The presentation catalogs `EQUIPMENT_SLOT_PRESENTATION` and `INVENTORY_RULE_MESSAGES` (incl. the `rodKinds` section from 023, kept as its own section so it can be separated), `TerminalLineSlotLabelResolver` and the platform `ConsoleLogger` become ESM imports of their composition consumers; their recorded global providers are removed under the removal conditions in records 007, 008 and 021.
+- [ ] Rename the Domain slot catalog `EQUIPMENT_SLOT_CONFIG` to an equipment slot catalog module at its ESM migration (007).
+- [ ] Collapse the duplicated global `resolveFightPhysicsConfig` (landing and retrieve policies, kept byte-identical in 015) into one module export.
+
 # 5. Stage 6 — Development / Production Split
 
 Create a separate `dev.entry.js`. Physically separate the debug overlay, GodMode, diagnostics, watchdog, dev schemas, and balance tools from the production graph. Gradually remove legacy globals and classic scripts.
+
+Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
+
+- [ ] Move the display of `Fish.activeDebuffName` into the DEV overlay (fishing.js debug data feeds it today; owner decision 2026-09-29).
+- [ ] Split the bootstrap DEV coupling: the DEV hooks reach production only through the injected `DevFlagsProvider` (e.g. the GodMode bite-sequence override since 018), composed from `dev.entry.js`; a production build composes it without GodMode.
 
 # 6. Stage 7 — Structural Hardening
 
@@ -303,6 +326,11 @@ After ESM is stable:
 - Remove transitional compatibility code.
 - Clean up the legacy `systems/services/app` structure.
 - Complete production hardening.
+
+Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
+
+- [ ] Rename the production diagnostic snapshots called "debug" in `FishForceSystem` and `TackleStressSystem` to diagnostics (017).
+- [ ] Decide the fate of unused code kept during migration (never deleted in Stage 3): `BuffManager` (016), `InventoryV2GameplayBridge.evaluateBiteReadiness` / `evaluateChumBonus` and `FishingReadinessPolicy.evaluateChumBonus`.
 
 ---
 
