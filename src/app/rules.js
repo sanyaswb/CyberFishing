@@ -9,8 +9,7 @@ class EquipmentRules {
     // Composition injects the runtime config.
     this.#config = config || {};
     this.#messages = messages;
-    this.#castDistanceCalculator =
-      castDistanceCalculator || new CastDistanceCalculator(this.#config);
+    this.#castDistanceCalculator = castDistanceCalculator;
   }
 
   isSpinning(equipment) {
@@ -176,7 +175,7 @@ class BaitRules {
 }
 
 class CastRules {
-  constructor(equipmentRules = new EquipmentRules()) {
+  constructor(equipmentRules) {
     this.equipmentRules = equipmentRules;
   }
 
@@ -205,7 +204,7 @@ class CastRules {
 }
 
 class BiteRules {
-  constructor(baitRules = new BaitRules()) {
+  constructor(baitRules) {
     this.baitRules = baitRules;
   }
 
@@ -283,7 +282,7 @@ class BoatRules {
 }
 
 class PlayerCastRules {
-  constructor(boatRules = new BoatRules(), equipmentRules = new EquipmentRules()) {
+  constructor(boatRules, equipmentRules) {
     this.boatRules = boatRules;
     this.equipmentRules = equipmentRules;
   }

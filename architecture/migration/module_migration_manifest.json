@@ -6015,12 +6015,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CastDistanceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "normalizeDistance",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6056,14 +6050,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CastDistanceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/casting_distance.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "normalizeDistance",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6079,13 +6065,6 @@
                 "normalizeDistance"
               ],
               "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/casting_distance.js",
-              "symbols": [
-                "CastDistanceCalculator"
-              ],
-              "resolution": "confirmed"
             }
           ],
           "unresolved": [],
@@ -6095,9 +6074,7 @@
         "blockers": {
           "status": "verified",
           "items": [
-            "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
