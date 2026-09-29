@@ -8,15 +8,22 @@ const { StageThreeCandidateOutputManager } = require("./domain_batches/stage_thr
 const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { fingerprint } = require("./domain_batches/stage_three_pending_target_manifest");
+const { HistoricalBuildWorkspace } = require("./domain_batches/stage_three_historical_build_workspace");
 
+// The historical records are read from the project; the build runs in a temporary copy of its build
+// inputs, so the replay writes nothing into the project (or the history base).
 async function run(root) {
+  return new HistoricalBuildWorkspace().run(root, (workspace) => build(root, workspace));
+}
+
+async function build(root, workspace) {
   const history = new Batch008CutoverHistory(root);
   const read = (name) => JSON.parse(history.before(`architecture/migration/${name}.json`));
   const contract = read("stage_3_compatibility_runtime");
   const state = read("stage_3_execution_state"); state.activeBatchId = null; delete state.activeBatchPhase;
-  const manager = new StageThreeCandidateOutputManager(root, "008-historical");
+  const manager = new StageThreeCandidateOutputManager(workspace, "008-historical");
   try {
-    const report = await new CumulativeRuntimeBuildApplication({ projectRoot: root, contract,
+    const report = await new CumulativeRuntimeBuildApplication({ projectRoot: workspace, contract,
       approvedPlan: read("stage_3_approved_batches"), executionState: state,
       stageTwoApprovedPlan: read("stage_2_approved_batches"), stageTwoExecutionState: read("stage_2_execution_state"),
       outputManager: manager, scriptOrderProvider: () => new LegacyScriptOrderReader(null, {

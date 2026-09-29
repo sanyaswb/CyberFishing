@@ -13,8 +13,9 @@ const HISTORY_BASE_REPLAY = Object.freeze({ policy: "snapshot", inputPaths: Obje
   environmentKeys: Object.freeze([]) });
 
 const SNAPSHOT_CONTRACTS = Object.freeze([
-  // Every history replay of the base except the three that rebuild dist inside the base (their writes
-  // make them non-cacheable). Reviewed from the traced survey of 2026-09-28.
+  // Every history replay of the base except the one that rebuilds dist inside the base (its writes make
+  // it non-cacheable). Reviewed from the traced survey of 2026-09-28; the two 007 observation replays
+  // build their historical runtime in a temporary workspace since 2026-09-29 (traced and sealed).
   Object.freeze({ contract: "history-base-replay", cache: HISTORY_BASE_REPLAY, ids: Object.freeze([
     "stage-3-batch-006-audit-fixtures",
     "stage-3-batch-006-audit-integration",
@@ -95,6 +96,8 @@ const SNAPSHOT_CONTRACTS = Object.freeze([
     "stage-3-batch-007-cutover-fixtures",
     "stage-3-batch-007-live-runtime-fixtures",
     "stage-3-batch-007-live-runtime-integration",
+    "stage-3-batch-007-observation-fixtures",
+    "stage-3-batch-007-observation-integration",
     "stage-3-batch-007-acceptance",
     "stage-3-batch-007-release-acceptance",
     "stage-3-batch-008-release-acceptance",
@@ -105,7 +108,7 @@ const SNAPSHOT_CONTRACTS = Object.freeze([
 
 // Checks reviewed to make no persistent project writes and to start no process the tracer cannot
 // follow; they may run in parallel with each other. Reviewed from the traced survey of 2026-09-28:
-// every check except the nine that rebuild dist (live or in the history base) and the cache
+// every check except the seven that rebuild dist (live or in the history base) and the cache
 // regression check (it runs nested check runners).
 const WRITERS = Object.freeze([
   "stage-3-batch-006-runtime",
@@ -114,8 +117,6 @@ const WRITERS = Object.freeze([
   "stage-3-line-tension-runtime",
   "stage-3-reel-auto-recovery-runtime",
   "stage-3-rod-capability-runtime",
-  "stage-3-batch-007-observation-fixtures",
-  "stage-3-batch-007-observation-integration",
   "stage-3-batch-007-runtime-cutover",
 ]);
 const READ_ONLY_CHECKS = Object.freeze([
