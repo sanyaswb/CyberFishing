@@ -15,7 +15,9 @@ const compare = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 // them into review candidates, modules blocked by an outstanding graph-changing prerequisite
 // (directly or through a Domain dependency) and deferred modules. The counts are observations.
 class PostFreezeEligibilityClassifier {
-  classify({ document, completedTargets, observed, candidatePolicy, historicalPlan }) {
+  // `introducedPaths`: Domain modules that entered the scope through recorded prerequisite transitions
+  // (created files, reviewed reclassifications); a repeated review covers them explicitly.
+  classify({ document, completedTargets, observed, candidatePolicy, historicalPlan, introducedPaths = new Set() }) {
     const policy = new DomainCandidatePolicyValidator().validate(candidatePolicy);
     const remaining = document.entries.filter(entry => !completedTargets.has(entry.currentPath));
     const scope = new Set(remaining.map(entry => entry.currentPath));
@@ -65,7 +67,8 @@ class PostFreezeEligibilityClassifier {
         targetArea: module.targetArea,
         category: categories.get(module.currentPath),
         historicalCoverage: historicalDeferred.has(module.currentPath) ? "deferred"
-          : historicalReplan.has(module.currentPath) ? "requires-replan" : "absent",
+          : historicalReplan.has(module.currentPath) ? "requires-replan"
+            : introducedPaths.has(module.currentPath) ? "prerequisite-introduced" : "absent",
         eligibility: decision,
         blockedBy: blockedBy.get(module.currentPath) || null,
       };

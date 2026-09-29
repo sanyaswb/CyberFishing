@@ -48,13 +48,37 @@ const REVIEWED_COLLECTIONS_3_36 = Object.freeze({
     cacheLifetime: "instance-lifetime-derived-memo-with-explicit-clear" }),
 });
 
+// Collection contracts added by the Stage 3.40 repeated review for the candidates unblocked by the six
+// decompositions: two authoritative stores replaced by snapshot restore, the store's derived child
+// index rebuilt with it, and one immutable static lookup (as ItemAssemblyStackingPolicy.ignoredKeys).
+const REVIEWED_COLLECTIONS_3_40 = Object.freeze({
+  ...REVIEWED_COLLECTIONS_3_36,
+  "FlatInventoryItemRepository#items": Object.freeze({ className: "FlatInventoryItemRepository",
+    field: "#items", scope: "instance", collection: "Map",
+    allowedOperations: ["delete", "get", "has", "set", "size", "values"],
+    cacheLifetime: "instance-lifetime-authoritative-store" }),
+  "FlatInventoryItemRepository#childrenByParent": Object.freeze({ className: "FlatInventoryItemRepository",
+    field: "#childrenByParent", scope: "instance", collection: "Map", allowedOperations: ["get", "set"],
+    cacheLifetime: "instance-lifetime-derived-index-rebuilt-with-store" }),
+  "InventoryItemStackingPolicy.ignoredKeys": Object.freeze({ className: "InventoryItemStackingPolicy",
+    field: "#ignoredKeys", scope: "static", collection: "Set", allowedOperations: ["has"],
+    cacheLifetime: "class-lifetime-immutable-lookup" }),
+  "EquipmentLoadoutRepository#loadouts": Object.freeze({ className: "EquipmentLoadoutRepository",
+    field: "#loadouts", scope: "instance", collection: "Map",
+    allowedOperations: ["delete", "get", "has", "set", "values"],
+    cacheLifetime: "instance-lifetime-authoritative-store" }),
+});
+
 // Reviews the ownership, identity, evaluation-effect, configuration, cache-lifetime and hot-loop
 // evidence of every remaining Domain module. Missing or ambiguous evidence is a finding; a module
 // with findings is not sufficient for an approved freeze.
 class PostFreezeEvidenceReviewer {
+  // `frozenConstants`: review top-level Object.freeze constants (Stage 3.40 on; earlier reviews replay
+  // without it byte-for-byte).
   constructor({ reviewedCollections = REVIEWED_COLLECTIONS, requiredHotLoopEvidence,
-    identityReview = new StageThreeStateIdentityReview() } = {}) {
+    identityReview = new StageThreeStateIdentityReview(), frozenConstants = false } = {}) {
     this.reviewedCollections = reviewedCollections;
+    this.frozenConstants = frozenConstants;
     this.requiredHotLoopEvidence = requiredHotLoopEvidence;
     this.identityReview = identityReview;
   }
@@ -194,10 +218,43 @@ class PostFreezeEvidenceReviewer {
     } else if (effect.kind === "instantiation") {
       const owner = this.#staticCollectionOwner(tree, effect.location);
       if (owner && reviewedOwners.has(owner)) review = "reviewed-private-collection-created-once";
+    } else if (effect.kind === "call" && this.frozenConstants && this.#frozenConstant(tree, effect.location)) {
+      review = "reviewed-immutable-constant-declaration";
     }
     if (review === "unreviewed") findings.push(`unreviewed-evaluation-effect:${effect.kind}@${effect.location}`);
     return { kind: effect.kind, location: effect.location, classification: effect.classification, review,
       module: currentPath };
+  }
+
+  // `Object.freeze(<object or array literal>)` whose ancestors up to a top-level `const` declaration are
+  // only literals, their properties and further `Object.freeze` calls: an immutable constant evaluated
+  // once, with no effect outside the value it creates.
+  #frozenConstant(tree, location) {
+    const isFreeze = node => node.type === "CallExpression" && node.callee.type === "MemberExpression" &&
+      !node.callee.computed && node.callee.object.type === "Identifier" && node.callee.object.name === "Object" &&
+      node.callee.property.name === "freeze" && node.arguments.length === 1 &&
+      ["ObjectExpression", "ArrayExpression"].includes(node.arguments[0].type);
+    for (const declaration of tree.body.filter(node => node.type === "VariableDeclaration" && node.kind === "const")) {
+      for (const declarator of declaration.declarations) {
+        let found = null;
+        const walk = (node, allowed) => {
+          if (!node || found !== null) return;
+          if (node.type === "CallExpression" && position(node) === location) {
+            found = allowed && isFreeze(node);
+            return;
+          }
+          if (isFreeze(node)) return walk(node.arguments[0], allowed);
+          if (node.type === "ObjectExpression") {
+            for (const property of node.properties) walk(property.type === "Property" ? property.value : property, allowed);
+          } else if (node.type === "ArrayExpression") {
+            for (const element of node.elements) walk(element, allowed);
+          }
+        };
+        walk(declarator.init, true);
+        if (found !== null) return found;
+      }
+    }
+    return false;
   }
 
   #staticCollectionOwner(tree, location) {
@@ -240,7 +297,15 @@ class PostFreezeProviderIndex {
       if (!owners.has(symbol)) owners.set(symbol, new Map());
       owners.get(symbol).set(record.module, record);
     };
+    const infrastructure = new Set(runtimeContract.approvedInfrastructureModules || []);
     for (const activation of runtimeContract.activationPositions) {
+      // An approved infrastructure module (the Engine Vector2, prerequisite 027) provides its symbol
+      // like a completed target: consumers compose the one Engine constructor.
+      if (infrastructure.has(activation.targetModule)) {
+        add(activation.legacySymbol, { module: activation.targetModule, status: "approved-infrastructure",
+          exportName: activation.exportName });
+        continue;
+      }
       if (!completedTargets.has(activation.targetModule)) continue;
       add(activation.legacySymbol, { module: activation.targetModule, status: "completed",
         exportName: activation.exportName });
@@ -260,4 +325,4 @@ class PostFreezeProviderIndex {
 }
 
 module.exports = { PostFreezeEvidenceReviewer, PostFreezeProviderIndex, REVIEWED_COLLECTIONS,
-  REVIEWED_COLLECTIONS_3_36 };
+  REVIEWED_COLLECTIONS_3_36, REVIEWED_COLLECTIONS_3_40 };

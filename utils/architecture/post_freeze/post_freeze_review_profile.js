@@ -62,4 +62,28 @@ const STAGE_3_36 = new PostFreezeReviewProfile({
   historicalCandidatesNote: "Historical candidates and the Stage 3.22 review remain reference material and are not replaced.",
 });
 
-module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36 };
+// Repeated review after the Stage 3.36.0 prefix (035–038) and the prerequisite transitions 006–027 (the
+// six responsibility decompositions and Vector2 Engine ownership). Recorded as Stage 3.40.0: the next
+// batch (039) is Stage 3.40. Modules introduced by prerequisite transitions (created files, reviewed
+// reclassifications into game-domain) are covered explicitly; the Domain scope is 139 modules.
+const STAGE_3_40 = new PostFreezeReviewProfile({
+  stage: "3.40",
+  kindStage: "3-40",
+  directory: "architecture/migration/stage_3_40_graph_review",
+  // Active runtime after prerequisite 027: distinct active activation targets / activations / bridges.
+  expectedTopology: Object.freeze({ modules: 94, activations: 103, bridges: 163 }),
+  firstOrder: 39,
+  idPrefix: "stage-3.replan-340.batch-",
+  taskPrefix: "stage-3.40.prerequisite.",
+  preliminary: Object.freeze({ candidate: 35, prerequisiteBlocked: 0, deferred: 0 }),
+  domainModuleCount: 139,
+  completedFromPlanSource: true,
+  esmImportFacts: true,
+  prerequisiteIntroducedCoverage: true,
+  frozenConstantReview: true,
+  reviewOwner: "stage-3.40-post-freeze-graph-review",
+  adoptionReason: "The execution state keeps the completed 001–038 prefix and the adopted Stage 3.36.0 approved prefix; the first frozen batch adopts this approved prefix in its own prebuild state transition.",
+  historicalCandidatesNote: "Historical candidates and the Stage 3.22 and 3.36 reviews remain reference material and are not replaced.",
+});
+
+module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40 };

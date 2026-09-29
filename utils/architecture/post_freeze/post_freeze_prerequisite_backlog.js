@@ -196,6 +196,11 @@ class PostFreezePrerequisiteBacklogBuilder {
     }
     for (const group of DECOMPOSITION_GROUPS) {
       const members = deferred.filter(record => group.areas.includes(record.targetArea));
+      // A repeated review records the decomposition groups that earlier prerequisite transitions resolved.
+      if (members.length === 0 && this.profile.completedFromPlanSource) {
+        resolvedTaskIds.push(`${this.profile.taskPrefix}${group.slug}`);
+        continue;
+      }
       if (members.length === 0) throw new Error(`Decomposition group is empty: ${group.slug}`);
       const memberPaths = new Set(members.map(record => record.currentPath));
       const covered = [...pending.values()].filter(item => memberPaths.has(item.owner));

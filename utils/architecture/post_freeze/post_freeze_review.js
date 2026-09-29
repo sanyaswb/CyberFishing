@@ -28,6 +28,23 @@ const DOMAIN_MODULE_COUNT = STAGE_3_22.domainModuleCount;
 // Composes a post-freeze graph review (the Stage 3.22 profile by default). Every artifact is built in memory and
 // references its inputs by the SHA-256 of their exact serialized bytes, so a replay either
 // reproduces every artifact byte-for-byte or reports the first stale link.
+// Domain modules introduced by recorded prerequisite transitions: source files they created and
+// modules they reclassified into game-domain (reviewed Manifest updates).
+function prerequisiteIntroducedPaths(root) {
+  const { StageThreePrerequisiteLedger } = require("../stage_three_prerequisites/core/prerequisite_ledger");
+  const paths = new Set();
+  for (const record of new StageThreePrerequisiteLedger(root).records()) {
+    for (const write of record.writes) {
+      if (write.beforeSha256 === null && /^src\/.+\.js$/u.test(write.path)) paths.add(write.path);
+    }
+    for (const update of record.manifestUpdates || []) {
+      if (update.after?.architecture?.targetBoundary === "game-domain" &&
+        update.before?.architecture?.targetBoundary !== "game-domain") paths.add(update.currentPath);
+    }
+  }
+  return paths;
+}
+
 class PostFreezeReview {
   constructor({
     profile = STAGE_3_22,
@@ -69,7 +86,8 @@ class PostFreezeReview {
       runtimeContract, bridgeRegistry, unifiedGraph: audit.unifiedGraph, readSource });
     const eligibility = this.eligibility.classify({ document: audit.audit.document,
       completedTargets: audit.completedTargets, observed: audit.observed,
-      candidatePolicy: workspace.json(INPUTS.candidatePolicy), historicalPlan });
+      candidatePolicy: workspace.json(INPUTS.candidatePolicy), historicalPlan,
+      ...(profile.prerequisiteIntroducedCoverage ? { introducedPaths: prerequisiteIntroducedPaths(workspace.root) } : {}) });
     const providers = new PostFreezeProviderIndex().build({ modules: eligibility.modules, runtimeContract,
       completedTargets: audit.completedTargets });
     const graphRef = emit(ARTIFACTS.graphReview, {
@@ -109,6 +127,7 @@ class PostFreezeReview {
     const evidence = new PostFreezeEvidenceReviewer({
       reviewedCollections: this.reviewedCollections,
       requiredHotLoopEvidence: eligibility.policy.performanceInvariant.requiredHotLoopEvidence,
+      frozenConstants: profile.frozenConstantReview === true,
     }).review({ modules: eligibility.modules, categories: eligibility.categories,
       providerIndex: providers.index, readSource });
     const backlog = this.backlog.build({ eligibility, evidence, unifiedGraph: audit.unifiedGraph,
