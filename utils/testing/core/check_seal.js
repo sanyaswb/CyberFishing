@@ -284,6 +284,7 @@ class CheckSeal {
       CODE_TREES.some(tree => within(item, tree)) || item === check.file;
     const observations = [];
     const seen = new Set();
+    const currentByKey = new Map();
     for (const event of events) {
       if (!["read", "list", "tree", "stat", "lstat", "exists", "access", "realpath", "readlink"].includes(event.kind)) continue;
       // Existence/metadata probes (inside or outside the root) are complete observations of their
@@ -295,12 +296,15 @@ class CheckSeal {
         ...(event.kind === "list" ? { recursive: event.recursive === true } : {}),
         ...(event.kind === "access" ? { mode: event.mode } : {}) };
       const key = canonical(observation);
+      // Every recorded value must still hold after the execution, not only the first one per path: a
+      // path read as A, then B, then A again would otherwise be sealed as A although the check saw B.
+      // Only the observation list is deduplicated.
+      if (!currentByKey.has(key)) currentByKey.set(key, values.value(observation));
+      const current = currentByKey.get(key);
+      const reported = CheckObservationValues.recorded(event);
+      if (reported !== null && reported !== current) reasons.push(`${event.kind} ${event.path} changed during execution`);
       if (seen.has(key)) continue;
       seen.add(key);
-      // Observations that report their own value must still hold after the execution.
-      const reported = CheckObservationValues.recorded(event);
-      const current = values.value(observation);
-      if (reported !== null && reported !== current) reasons.push(`${event.kind} ${event.path} changed during execution`);
       observations.push({ ...observation, value: current });
     }
     if (reasons.length > 0) return { eligible: false, reasons: [...new Set(reasons)], writes };

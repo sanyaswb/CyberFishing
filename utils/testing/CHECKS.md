@@ -25,7 +25,11 @@ names and bytes are fingerprinted before and after the execution) and `environme
 passing execution the runner seals the check (`node_modules/.cache/cyber-check-seals/<id>.json`)
 only when:
 
-- the reviewed inputs did not change during the execution and every consumed input still holds;
+- the reviewed inputs did not change during the execution and every consumed input still holds: every
+  recorded value is compared, not only the first per path, so a path observed as A, then B, then A again
+  is not sealed;
+- the trace stayed within its per-process limit (64 MiB of distinct observations; past it the tracer
+  records one unsupported "trace limit" event and stops recording, and the check simply executes);
 - nothing unsupported happened, every `git` command succeeded inside the project, and the check
   wrote nothing inside its execution root (read-then-write checks and output producers are not
   cacheable);

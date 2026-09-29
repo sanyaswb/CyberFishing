@@ -386,6 +386,73 @@ scenario("12. history reconstruction scope and tooling changes invalidate histor
   assert.match((await project.one(check)).output, /reviewed input changed: data/u);
 });
 
+scenario("13. a path read as A, then B, then A again yields no seal", async project => {
+  project.write("data/a.txt", "a");
+  // The check and the scenario coordinate through marker files in the temporary directory, which the
+  // tracer does not record; the reviewed input returns to its first bytes before the check ends.
+  const signal = path.join(path.dirname(project.log), "signal-");
+  const check = { ...project.check("revisit", [
+    `const signal = ${JSON.stringify(signal)};`,
+    "const waitFor = name => { const deadline = Date.now() + 20000;",
+    "  while (!fs.existsSync(signal + name)) {",
+    "    if (Date.now() > deadline) throw new Error(`timeout ${name}`);",
+    "    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 20);",
+    "  } };",
+    "const read = () => fs.readFileSync(path.join(root, \"data/a.txt\"), \"utf8\");",
+    "if (read() !== \"a\") process.exit(1);",
+    "fs.writeFileSync(signal + \"read1\", \"\");",
+    "waitFor(\"changed\");",
+    "if (read() !== \"b\") process.exit(1);",
+    "fs.writeFileSync(signal + \"read2\", \"\");",
+    "waitFor(\"reverted\");",
+    "if (read() !== \"a\") process.exit(1);",
+  ].join("\n")), cache: DATA_POLICY };
+  const steps = [["read1", "b", "changed"], ["read2", "a", "reverted"]];
+  const poll = setInterval(() => {
+    const [marker, content, answer] = steps[0] || [];
+    if (!marker || !fs.existsSync(signal + marker)) return;
+    project.write("data/a.txt", content);
+    fs.writeFileSync(signal + answer, "");
+    steps.shift();
+  }, 20);
+  let result;
+  try {
+    result = await project.one(check, { mode: "reseal" });
+  } finally {
+    clearInterval(poll);
+  }
+  assert.equal(steps.length, 0, "both input changes happened during the execution");
+  assert.equal(result.status, 0, result.output);
+  assert.equal(fs.readFileSync(project.file("data/a.txt"), "utf8"), "a", "the input ends with its first bytes");
+  assert.equal(result.sealed, false, "a revisited value must not be sealed");
+  assert(result.cacheReasons.some(reason => /read data\/a\.txt changed during execution/u.test(reason)),
+    result.cacheReasons.join("; "));
+  assert.equal(fs.existsSync(project.store.file(check)), false, "no seal was stored");
+});
+
+scenario("14. a trace past its limit yields no seal and the check still executes", async project => {
+  for (let index = 0; index < 40; index += 1) project.write(`data/file-${index}.txt`, `content ${index}`);
+  const check = { ...project.check("wide", [
+    "for (let index = 0; index < 40; index += 1) fs.readFileSync(path.join(root, `data/file-${index}.txt`));",
+  ].join("\n")), cache: DATA_POLICY };
+  const previous = process.env.CYBER_CHECK_TRACE_LIMIT_BYTES;
+  process.env.CYBER_CHECK_TRACE_LIMIT_BYTES = "2000";
+  let limited;
+  try {
+    limited = await project.one(check);
+  } finally {
+    if (previous === undefined) delete process.env.CYBER_CHECK_TRACE_LIMIT_BYTES;
+    else process.env.CYBER_CHECK_TRACE_LIMIT_BYTES = previous;
+  }
+  assert.equal(limited.status, 0, limited.output);
+  executed(limited);
+  assert.equal(limited.sealed, false, "a truncated trace must not be sealed");
+  assert(limited.cacheReasons.some(reason => /unsupported trace \(trace limit\)/u.test(reason)), limited.cacheReasons.join("; "));
+  // The environment can only lower the limit: without it the same check seals.
+  const full = await project.one(check);
+  assert.equal(full.sealed, true, full.output);
+});
+
 (async () => {
   for (const { name, action } of scenarios) {
     const project = new FixtureProject();
@@ -399,7 +466,8 @@ scenario("12. history reconstruction scope and tooling changes invalidate histor
     }
   }
   console.log(`Check cache regression passed: ${scenarios.length} scenarios (positive control, stat/root/recursive/read-write ` +
-    "false hits, identity, drift, schema, failure, acceptance report, isolation and history invalidation).");
+    "false hits, identity, drift, schema, failure, acceptance report, isolation, history invalidation, revisited " +
+    "values and trace limit).");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

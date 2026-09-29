@@ -61,6 +61,13 @@ if (TRACE && ROOT) {
   // a process that ends without it (killed) leaves an incomplete, non-cacheable record.
   let sequence = 0;
   const seen = new Set();
+  // Distinct observations are bounded per process: past the limit the tracer records one unsupported
+  // "trace limit" event (the check then executes without a seal) and stops recording, which keeps the
+  // trace file and the deduplication set in bounded memory. The environment may only lower the limit.
+  const TRACE_LIMIT_BYTES = Math.min(Number(process.env.CYBER_CHECK_TRACE_LIMIT_BYTES) || 64 * 1024 * 1024,
+    64 * 1024 * 1024);
+  let traced = 0;
+  let limited = false;
   let buffer = [];
   const flush = () => {
     if (buffer.length === 0) return;
@@ -69,8 +76,18 @@ if (TRACE && ROOT) {
     raw.appendFileSync(TRACE, lines);
   };
   const emit = event => quiet(() => {
+    if (limited) return;
     const key = JSON.stringify(event);
     if (seen.has(key)) return;
+    traced += key.length;
+    if (traced > TRACE_LIMIT_BYTES) {
+      limited = true;
+      seen.clear();
+      buffer.push(`${JSON.stringify({ seq: sequence++, pid: process.pid, kind: "unsupported", op: "trace",
+        reason: "trace limit" })}\n`);
+      flush();
+      return;
+    }
     seen.add(key);
     buffer.push(`${JSON.stringify({ seq: sequence++, pid: process.pid, ...event })}\n`);
     if (buffer.length >= 2000) flush();
