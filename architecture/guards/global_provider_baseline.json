@@ -4005,8 +4005,8 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/infrastructure/diagnostics/console_warning_logger.js",
-      "symbol": "ConsoleWarningLogger",
+      "currentPath": "src/infrastructure/diagnostics/console_logger.js",
+      "symbol": "ConsoleLogger",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },

@@ -124,7 +124,7 @@ class GameCompositionRoot {
       itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
       strategyRegistry: itemMetricStrategyRegistry,
       effectiveStatsResolver: effectiveItemStatsResolver,
-      logger: new ConsoleWarningLogger(),
+      logger: new ConsoleLogger(),
     });
     const itemRatingResolver = new ItemRatingResolver({
       strategyRegistry: itemMetricStrategyRegistry,

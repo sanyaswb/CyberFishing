@@ -8,6 +8,7 @@ const { PrerequisiteManifestUpdatePlan } = require("./stage_three_prerequisites/
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_addition_plan");
 const { buildReviewEvidence } = require("./stage_three_prerequisites/lifecycle/review_evidence");
 const { PrerequisiteGlobalProviderRemovalPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_removal_plan");
+const { PrerequisiteGlobalProviderReplacementPlan } = require("./stage_three_prerequisites/lifecycle/global_provider_replacement_plan");
 
 const clone = value => JSON.parse(JSON.stringify(value));
 const MIXED = "mixed-responsibility-requires-decomposition";
@@ -289,5 +290,43 @@ rejects("a baseline that loses another entry too", () => {
   const plan = new PrerequisiteGlobalProviderRemovalPlan([removalOf("Y")], EDITED_Y);
   plan.verify(clone(BASELINE), { ...clone(BASELINE), providers: [] }, unobserved);
 }, /changed or removed/u);
+
+// Global provider replacements: only exact "remove X, add Y" pairs, the removed global unreferenced.
+const PAIR_PATHS = { editedPaths: [], deletedPaths: ["src/core/y.js"], createdPaths: ["src/config/sample/a.js"] };
+const pair = (extra = {}) => ({ remove: removalOf("Y"), add: addition("src/config/sample/a.js", "A_CATALOG"), ...extra });
+const replaced = (consumers = []) => ({ modules: [
+  { currentPath: "src/config/sample/a.js", observed: { providers: { items: [{ symbol: "A_CATALOG",
+    mechanism: "global-lexical", availability: "program-init" }] }, consumers: { items: [] } } },
+  { currentPath: "src/app/x.js", observed: { providers: { items: [] }, consumers: { items: consumers } } },
+] });
+accepts("an exact replacement pair of a deleted file's global", () => {
+  const plan = new PrerequisiteGlobalProviderReplacementPlan([pair()], PAIR_PATHS);
+  const next = plan.apply(clone(BASELINE));
+  assert.deepEqual(next.providers.map(provider => provider.symbol), ["X", "A_CATALOG"]);
+  plan.verify(clone(BASELINE), next, replaced());
+  assert.equal(plan.records()[0].remove.symbol, "Y");
+});
+rejects("a replacement whose removed global is still referenced", () => {
+  const plan = new PrerequisiteGlobalProviderReplacementPlan([pair()], PAIR_PATHS);
+  plan.verify(clone(BASELINE), plan.apply(clone(BASELINE)), replaced([{ symbol: "Y", mechanism: "identifier" }]));
+}, /still referenced/u);
+rejects("a replacement with extra fields", () => new PrerequisiteGlobalProviderReplacementPlan([pair({ reason: "x" })],
+  PAIR_PATHS), /exactly \{ remove, add \}/u);
+rejects("a replacement adding a global to a file it does not create", () => new PrerequisiteGlobalProviderReplacementPlan(
+  [pair({ add: addition("src/app/x.js", "X2") })], PAIR_PATHS), /outside the files/u);
+rejects("a replacement removing a global of a file it neither edits nor deletes", () =>
+  new PrerequisiteGlobalProviderReplacementPlan([pair()], { ...PAIR_PATHS, deletedPaths: [] }), /outside the transition/u);
+rejects("a replacement whose baseline gains a third entry", () => {
+  const plan = new PrerequisiteGlobalProviderReplacementPlan([pair()], PAIR_PATHS);
+  const next = plan.apply(clone(BASELINE));
+  next.providers.push({ currentPath: "src/app/z.js", symbol: "Z", mechanism: "global-lexical", availability: "program-init" });
+  plan.verify(clone(BASELINE), next, replaced());
+}, /other entries/u);
+rejects("a replacement whose created file provides another global", () => {
+  const plan = new PrerequisiteGlobalProviderReplacementPlan([pair()], PAIR_PATHS);
+  const observed = replaced();
+  observed.modules[0].observed.providers.items.push({ symbol: "HIDDEN", mechanism: "global-lexical", availability: "program-init" });
+  plan.verify(clone(BASELINE), plan.apply(clone(BASELINE)), observed);
+}, /other globals/u);
 
 console.log(`Stage 3 prerequisite transition fixtures PASS: ${cases} cases (Manifest updates and global provider additions).`);

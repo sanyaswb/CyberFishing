@@ -14,6 +14,7 @@ const { PrerequisiteManifestUpdatePlan } = require("./manifest_update_plan");
 const { PrerequisiteGlobalProviderAdditionPlan } = require("./global_provider_addition_plan");
 const { buildReviewEvidence } = require("./review_evidence");
 const { PrerequisiteGlobalProviderRemovalPlan } = require("./global_provider_removal_plan");
+const { PrerequisiteGlobalProviderReplacementPlan } = require("./global_provider_replacement_plan");
 
 const MANIFEST = "architecture/migration/module_migration_manifest.json";
 const KNOWN_DEBT = "architecture/guards/known_debt_registry.json";
@@ -67,6 +68,14 @@ class StageThreePrerequisiteTransitionBuilder {
       assert(!fs.existsSync(path.join(this.root, created.path)), `created file already exists: ${created.path}`);
       after.set(created.path, Buffer.from(created.bytes({ read: file => this.bytes(file).toString("utf8") }), "utf8"));
     }
+    // Optional: files the transition deletes, each explicitly listed; the record keeps its full
+    // before-image, so rollback restores it byte-for-byte.
+    const deletedPaths = [...(task.deletedFiles || [])];
+    for (const file of deletedPaths) {
+      assert(fs.existsSync(path.join(this.root, file)), `deleted file does not exist: ${file}`);
+      assert(!after.has(file), `a deleted file is also edited or created: ${file}`);
+      after.set(file, null);
+    }
     // Optional: reviewed metadata the transition changes (derived from the tree and the edits).
     const metadata = task.metadataWrites ? task.metadataWrites({ read: file => this.bytes(file).toString("utf8"),
       exists: file => fs.existsSync(path.join(this.root, file)), after: file => after.get(file)?.toString("utf8") }) : new Map();
@@ -84,6 +93,14 @@ class StageThreePrerequisiteTransitionBuilder {
     const removals = task.globalProviderRemovals ? new PrerequisiteGlobalProviderRemovalPlan(
       task.globalProviderRemovals, { editedPaths: task.sourceEdits.map(edit => edit.path) }) : null;
     assert(!(additions && removals), "a transition either adds or removes global providers");
+    const replacements = task.globalProviderReplacements ? new PrerequisiteGlobalProviderReplacementPlan(
+      task.globalProviderReplacements, { editedPaths: task.sourceEdits.map(edit => edit.path), deletedPaths,
+        createdPaths: (task.createdFiles || []).map(created => created.path) }) : null;
+    assert(!(replacements && (additions || removals)), "global provider replacements are the only baseline change");
+    if (replacements) {
+      assert(!metadata.has(BASELINE), "global provider replacements own the baseline write");
+      after.set(BASELINE, canonical(replacements.apply(this.json(BASELINE))));
+    }
     if (additions) {
       assert(!metadata.has(BASELINE), "global provider additions own the baseline write");
       after.set(BASELINE, canonical(additions.apply(this.json(BASELINE))));
@@ -99,15 +116,20 @@ class StageThreePrerequisiteTransitionBuilder {
       const oldManifest = this.json(MANIFEST);
       // Optional: reviewed classification of modules the transition creates; the observation of the
       // edited workspace supplies their observed facts and dependencies.
-      const seeded = task.manifestEntries ? { ...oldManifest, modules: [...oldManifest.modules,
+      // A deleted file's Manifest entry leaves with it.
+      const kept = { ...oldManifest, modules: oldManifest.modules.filter(module => !deletedPaths.includes(module.currentPath)) };
+      assert.equal(oldManifest.modules.length - kept.modules.length, deletedPaths.length,
+        "every deleted file has exactly one Manifest entry");
+      const seeded = task.manifestEntries ? { ...kept, modules: [...kept.modules,
         ...task.manifestEntries.map(entry => ({ currentPath: entry.currentPath, currentArea: entry.currentArea,
           observed: { legacyLoadOrder: entry.legacyLoadOrder }, architecture: entry.architecture,
-          analysis: { blockers: entry.blockers } }))] } : oldManifest;
+          analysis: { blockers: entry.blockers } }))] } : kept;
       const manifest = new LiveObservationSnapshot().build({ projectRoot: workspace, policy,
         manifest: updates ? updates.apply(seeded) : seeded });
       if (updates) updates.verify(oldManifest, manifest);
       if (additions) additions.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
       if (removals) removals.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
+      if (replacements) replacements.verify(this.json(BASELINE), JSON.parse(after.get(BASELINE)), manifest);
       const debt = this.json(KNOWN_DEBT);
       for (const id of task.resolvedDebtIds) assert(debt.debts.some(item => item.id === id), `unknown debt: ${id}`);
       const nextDebt = { ...debt, debts: debt.debts.filter(item => !task.resolvedDebtIds.includes(item.id)) };
@@ -132,11 +154,11 @@ class StageThreePrerequisiteTransitionBuilder {
         "the confirmed-edge delta differs from the task");
       after.set(MANIFEST, canonical(manifest));
       after.set(KNOWN_DEBT, canonical(nextDebt));
-      const changed = [...after].filter(([file, bytes]) => !bytes.equals(this.beforeBytes(file) ?? Buffer.alloc(0)) ||
-        this.beforeBytes(file) === null);
+      const changed = [...after].filter(([file, bytes]) => bytes === null ||
+        !bytes.equals(this.beforeBytes(file) ?? Buffer.alloc(0)) || this.beforeBytes(file) === null);
       assert.deepEqual(changed.map(([file]) => file).sort(),
         [...task.sourceEdits.map(edit => edit.path), ...(task.createdFiles || []).map(created => created.path),
-          ...metadata.keys(), ...(additions || removals ? [BASELINE] : []), MANIFEST,
+          ...deletedPaths, ...metadata.keys(), ...(additions || removals || replacements ? [BASELINE] : []), MANIFEST,
           ...(task.resolvedDebtIds.length > 0 ? [KNOWN_DEBT] : [])].sort(),
         "unexpected transition write set");
       const parity = task.parity({ read: file => this.bytes(file).toString("utf8"),
@@ -162,6 +184,8 @@ class StageThreePrerequisiteTransitionBuilder {
               debtRegistry: nextDebt, sourceSha256: sha(this.bytes(file)) }) }) } : {}),
         ...(additions ? { globalProviderAdditions: additions.records() } : {}),
         ...(removals ? { globalProviderRemovals: removals.records() } : {}),
+        ...(replacements ? { globalProviderReplacements: replacements.records() } : {}),
+        ...(deletedPaths.length > 0 ? { deletedFiles: [...deletedPaths] } : {}),
         dependencyObservation: { removedEdges: removed, addedEdges: added, confirmedEdgeDelta: added.length - removed.length },
         guards: { failureCount: result.failureCount, knownDebtCount: result.knownDebtCount },
         parity,
@@ -169,7 +193,7 @@ class StageThreePrerequisiteTransitionBuilder {
         behaviorChange: "none",
         writes: changed.map(([file, bytes]) => {
           const before = this.beforeBytes(file);
-          return { path: file, beforeSha256: before === null ? null : sha(before), afterSha256: sha(bytes),
+          return { path: file, beforeSha256: before === null ? null : sha(before), afterSha256: bytes === null ? null : sha(bytes),
             beforeBase64: before === null ? null : before.toString("base64") };
         }).sort((left, right) => compare(left.path, right.path)),
       };
@@ -196,6 +220,10 @@ class StageThreePrerequisiteTransitionBuilder {
     for (const directory of ["src", "architecture"]) copy(directory);
     for (const file of ["index.html", "package.json"]) fs.copyFileSync(path.join(this.root, file), path.join(temporary, file));
     for (const [file, bytes] of after) {
+      if (bytes === null) {
+        fs.rmSync(path.join(temporary, file), { force: true });
+        continue;
+      }
       fs.mkdirSync(path.dirname(path.join(temporary, file)), { recursive: true });
       fs.writeFileSync(path.join(temporary, file), bytes);
     }

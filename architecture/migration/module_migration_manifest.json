@@ -763,7 +763,7 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "ConsoleWarningLogger",
+              "symbol": "ConsoleLogger",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -1815,11 +1815,11 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ConsoleWarningLogger",
+              "symbol": "ConsoleLogger",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/infrastructure/diagnostics/console_warning_logger.js",
+              "target": "src/infrastructure/diagnostics/console_logger.js",
               "resolution": "confirmed"
             },
             {
@@ -3364,9 +3364,9 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/infrastructure/diagnostics/console_warning_logger.js",
+              "target": "src/infrastructure/diagnostics/console_logger.js",
               "symbols": [
-                "ConsoleWarningLogger"
+                "ConsoleLogger"
               ],
               "resolution": "confirmed"
             },
@@ -40832,7 +40832,7 @@
       }
     },
     {
-      "currentPath": "src/infrastructure/diagnostics/console_warning_logger.js",
+      "currentPath": "src/infrastructure/diagnostics/console_logger.js",
       "currentArea": "infrastructure/diagnostics",
       "observed": {
         "legacyLoadOrder": 79,
@@ -40840,7 +40840,7 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ConsoleWarningLogger",
+              "symbol": "ConsoleLogger",
               "mechanism": "global-lexical",
               "availability": "program-init"
             }
@@ -40868,7 +40868,7 @@
           "platform-adapter"
         ],
         "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/diagnostics/console_warning_logger.js",
+        "targetPath": "src/platform/browser/diagnostics/console_logger.js",
         "migrationWave": 5
       },
       "analysis": {

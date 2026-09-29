@@ -923,6 +923,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-021",
+      title: "Stage 3 prerequisite 021: ConsoleLogger replacing ConsoleWarningLogger (deleted file, exact replacement pair, split slot 79) replays byte-identically with parity and clean guards",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "021", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

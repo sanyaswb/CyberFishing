@@ -845,8 +845,7 @@ class StageOneClosureValidator {
     );
     this.#require(
       globalBaseline.providers.length === baseline.globalIdentityCount +
-        this.#prerequisiteGlobalProviderAdditions(globalBaseline) -
-        this.#prerequisiteGlobalProviderRemovals(globalBaseline),
+        this.#prerequisiteGlobalProviderNetChange(globalBaseline),
       "global identity baseline changed",
       errors,
     );
@@ -1098,26 +1097,33 @@ class StageOneClosureValidator {
       .filter((file) => fs.existsSync(path.join(this.projectRoot, file)));
   }
 
-  // Global providers added to the exact baseline by recorded prerequisite transitions (reviewed
-  // additions with removal conditions); every recorded addition must still be in the baseline.
-  #prerequisiteGlobalProviderAdditions(globalBaseline) {
+  // Net change of the exact global baseline by recorded prerequisite transitions, applied in recording
+  // order (additions, removals and replacement pairs): a provider added by one transition may be removed
+  // by a later one. Every provider added and not later removed must be in the baseline; every provider
+  // removed and not later re-added must be absent from it.
+  #prerequisiteGlobalProviderNetChange(globalBaseline) {
     const identity = (provider) => `${provider.currentPath}\u0000${provider.symbol}\u0000${provider.mechanism}`;
     const approved = new Set(globalBaseline.providers.map(identity));
-    const additions = this.#prerequisiteLedger().records().flatMap((record) => record.globalProviderAdditions || []);
-    const missing = additions.find((addition) => !approved.has(identity(addition)));
-    if (missing) throw new Error(`Recorded global provider addition is missing from the baseline: ${missing.symbol}`);
-    return new Set(additions.map(identity)).size;
-  }
-
-  // Global providers removed from the exact baseline by recorded prerequisite transitions; every
-  // recorded removal must be absent from the baseline.
-  #prerequisiteGlobalProviderRemovals(globalBaseline) {
-    const identity = (provider) => `${provider.currentPath}\u0000${provider.symbol}\u0000${provider.mechanism}`;
-    const approved = new Set(globalBaseline.providers.map(identity));
-    const removals = this.#prerequisiteLedger().records().flatMap((record) => record.globalProviderRemovals || []);
-    const present = removals.find((removal) => approved.has(identity(removal)));
-    if (present) throw new Error(`Recorded global provider removal is still in the baseline: ${present.symbol}`);
-    return new Set(removals.map(identity)).size;
+    const added = new Set();
+    const removed = new Set();
+    for (const record of this.#prerequisiteLedger().records()) {
+      const pairs = record.globalProviderReplacements || [];
+      for (const provider of [...(record.globalProviderRemovals || []), ...pairs.map((pair) => pair.remove)]) {
+        const key = identity(provider);
+        if (added.has(key)) added.delete(key);
+        else removed.add(key);
+      }
+      for (const provider of [...(record.globalProviderAdditions || []), ...pairs.map((pair) => pair.add)]) {
+        const key = identity(provider);
+        if (removed.has(key)) removed.delete(key);
+        else added.add(key);
+      }
+    }
+    const missing = [...added].find((key) => !approved.has(key));
+    if (missing) throw new Error(`Recorded global provider addition is missing from the baseline: ${missing}`);
+    const present = [...removed].find((key) => approved.has(key));
+    if (present) throw new Error(`Recorded global provider removal is still in the baseline: ${present}`);
+    return added.size - removed.size;
   }
 
   // Physical classic scripts added by reviewed split legacy slots (every member beyond the first).

@@ -39,7 +39,11 @@ class StageThreePrerequisiteCommand {
       { relativePath: this.file, bytes }];
     for (const write of writes) fs.mkdirSync(path.dirname(path.join(this.root, write.relativePath)), { recursive: true });
     new ControlledMetadataTransaction({ projectRoot: this.root }).commit(writes, () => {
-      for (const write of writes) assert.deepEqual(fs.readFileSync(path.join(this.root, write.relativePath)), write.bytes);
+      for (const write of writes) {
+        const target = path.join(this.root, write.relativePath);
+        if (write.bytes === null) assert(!fs.existsSync(target), `deleted file still exists: ${write.relativePath}`);
+        else assert.deepEqual(fs.readFileSync(target), write.bytes);
+      }
     });
     return `applied ${this.file}`;
   }

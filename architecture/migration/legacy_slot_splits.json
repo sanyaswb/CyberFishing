@@ -23,9 +23,9 @@
       "slot": 79,
       "members": [
         "src/core/items/progression/item_catalog_baseline_registry.js",
-        "src/infrastructure/diagnostics/console_warning_logger.js"
+        "src/infrastructure/diagnostics/console_logger.js"
       ],
-      "transition": "architecture/migration/stage_3_prerequisites/014_item-progression-logger-and-review.json"
+      "transition": "architecture/migration/stage_3_prerequisites/021_console-logger-generalization.json"
     },
     {
       "slot": 89,
