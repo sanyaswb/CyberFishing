@@ -1018,6 +1018,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture", "history"],
     },
     {
+      id: "stage-3-prerequisite-030",
+      title: "Stage 3 prerequisite 030: duplicate resolveFightPhysicsConfig removed from retrieve_policy.js with one recorded provider removal, one Domain edge and retrieve/landing parity",
+      file: "utils/architecture/stage-3-prerequisite.js",
+      args: ["--task", "030", "--step", "check"],
+      suites: ["quick", "architecture", "history"],
+    },
+    {
       id: "stage-3-prerequisite-transition-fixtures",
       title: "Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures",
       file: "utils/architecture/stage-3-prerequisite-transition-fixtures-check.js",

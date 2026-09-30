@@ -18502,18 +18502,20 @@
               "symbol": "RetrievePolicy",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "resolveFightPhysicsConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
             }
           ],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "resolveFightPhysicsConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
           "issues": []
         },
         "environment": {
@@ -18540,8 +18542,25 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [],
-          "items": [],
+          "confirmed": [
+            {
+              "symbol": "resolveFightPhysicsConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/core/fishing/landing_policy.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/core/fishing/landing_policy.js",
+              "symbols": [
+                "resolveFightPhysicsConfig"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

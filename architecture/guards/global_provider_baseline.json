@@ -1827,12 +1827,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/core/fishing/retrieve_policy.js",
-      "symbol": "resolveFightPhysicsConfig",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/core/fishing/rod_control_angle_resolver.js",
       "symbol": "RodControlAngleResolver",
       "mechanism": "global-lexical",
