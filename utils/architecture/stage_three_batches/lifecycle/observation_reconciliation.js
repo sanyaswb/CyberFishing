@@ -34,8 +34,10 @@ class StageThreeBatchObservationReconciliation {
       const source = expectedManifest.modules.find(module => module.currentPath === item.sourceProvider);
       const old = source.observed.providers.items.filter(provider => provider.symbol === item.legacySymbol);
       const exposure = observationProfile(definition, inputs.prebuild).legacyExposureBySource[item.sourceProvider];
+      // A class or constant is a global-lexical provider; a reviewed top-level function a global-function one.
+      const fromMechanism = old[0]?.mechanism === "global-function" ? "global-function" : "global-lexical";
       assert.deepEqual(old.map(provider => provider.mechanism), exposure?.symbol === item.legacySymbol
-        ? ["global-lexical", exposure.mechanism] : ["global-lexical"]);
+        ? [fromMechanism, exposure.mechanism] : [fromMechanism]);
       source.observed.providers.items = source.observed.providers.items.filter(provider =>
         provider.symbol !== item.legacySymbol);
       source.observed.providers.items.push({ symbol: item.legacySymbol,

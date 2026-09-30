@@ -245,6 +245,8 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-batch-038-architecture",
   "stage-3-batch-039-architecture",
   "stage-3-batch-040-architecture",
+  "stage-3-batch-041-architecture",
+  "stage-3-batch-reviewed-shapes-fixtures",
   "stage-3-34-review-queue-freeze",
   "stage-3-34-review-queue-freeze-fixtures",
   "stage-3-36-graph-review",

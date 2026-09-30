@@ -266,6 +266,31 @@ const fixtures = [
       ],
     },
   },
+  {
+    name: "module export function is a top-level declaration, not an annex b block",
+    source: `
+      export class Policy {}
+      export function resolveConfig(config) { return config?.value || null; }
+    `,
+    expected: { status: "verified", items: [], issues: [] },
+  },
+  {
+    name: "sloppy script block function beside a plain function stays annex b",
+    source: `
+      function topLevel() {}
+      { function blockScoped() {} }
+    `,
+    expected: {
+      status: "partial",
+      items: [provider("topLevel", "global-function")],
+      issues: [
+        issue(
+          "annex-b-block-function",
+          "A sloppy top-level block function has implementation-sensitive global semantics.",
+        ),
+      ],
+    },
+  },
 ];
 
 for (const fixture of fixtures) {

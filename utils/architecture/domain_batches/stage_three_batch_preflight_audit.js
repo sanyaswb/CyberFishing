@@ -9,6 +9,8 @@ const { StageThreeGlobalExposureReview } = require("./stage_three_global_exposur
 const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_evaluation_effect");
 const { StageThreeStateIdentityReview } = require("./stage_three_state_identity_review");
 const { StageThreeCompositionIdentityReview } = require("./stage_three_composition_identity_review");
+const { StageThreeReviewedTopLevelFunctions } = require("./stage_three_reviewed_top_level_functions");
+const { StageThreeLocalCompositionReview } = require("./stage_three_local_composition_review");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -253,7 +255,9 @@ class StageThreeBatchPreflightAuditBuilder {
             module.state.identityReview.compositions.every((composition) =>
               composition.provider?.startsWith("src/game/domain/"))) ||
           // A class without any construction site composes nothing: every collaborator is injected.
-          (!module.state.identityReview && module.sourceShape.allocationTotals.newExpressions === 0)))));
+          (!module.state.identityReview && module.sourceShape.allocationTotals.newExpressions === 0) ||
+          // Reviewed local composition: default collaborators are classes of the same source.
+          module.state.localComposition?.invariant === "same-module-owner-created-default-collaborators"))));
     const unresolvedPrerequisites = batch.prerequisites.filter((prerequisite) =>
       !reviewedPrerequisites.includes(prerequisite));
     const unresolvedState = modules.filter((module) => !module.state.reviewed);
@@ -439,15 +443,17 @@ class StageThreeBatchPreflightAuditBuilder {
     const expectedSymbols = [...new Set(module.providers.map((provider) => provider.symbol))].sort();
     const providerSymbols = manifestEntry.observed.providers.items
       .map((provider) => provider.symbol);
+    const topLevelFunctions = reviewed.topLevelFunctions || [];
     const expectedClasses = reviewed.frozenConstants
       ? [...(reviewed.frozenConstants.classNames || [reviewed.frozenConstants.className])].sort()
-      : expectedSymbols;
+      : expectedSymbols.filter((symbol) => !topLevelFunctions.includes(symbol));
     this.#require(this.#same(sourceShape.classDeclarations, expectedClasses),
       `class declaration differs: ${module.currentPath}`);
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
-    this.#require(this.#same(sourceShape.topLevelBindings,
-      Object.keys(reviewed.frozenConstants?.bindings || {}).map(() => "VariableDeclaration")),
+    this.#require(this.#same(sourceShape.topLevelBindings, reviewed.topLevelFunctions
+      ? topLevelFunctions.map(() => "FunctionDeclaration")
+      : Object.keys(reviewed.frozenConstants?.bindings || {}).map(() => "VariableDeclaration")),
       `top-level binding exists: ${module.currentPath}`);
     let reviewedExposure = null;
     if (reviewed.frozenConstants) {
@@ -515,6 +521,11 @@ class StageThreeBatchPreflightAuditBuilder {
           ? `IfStatement@${reviewedExposure.guardLocation}`
           : `ExpressionStatement@${exposure.location}`]),
       `reviewed top-level effect differs: ${module.currentPath}`);
+    } else if (reviewed.topLevelFunctions) {
+      // Reviewed pure function declarations are the only top-level statements beside the classes.
+      this.#require(this.#same(sourceShape.topLevelEffects, new StageThreeReviewedTopLevelFunctions()
+        .review({ source, currentPath: module.currentPath, names: topLevelFunctions }).sort()),
+      `reviewed top-level function differs: ${module.currentPath}`);
     } else {
       this.#require(sourceShape.topLevelEffects.length === 0,
         `top-level effect exists: ${module.currentPath}`);
@@ -564,6 +575,8 @@ class StageThreeBatchPreflightAuditBuilder {
         ownerIdentity: module.stateOwnershipInvariant.ownerIdentity,
         duplicateStateCopies: module.stateOwnershipInvariant.duplicateStateCopies,
         ...(identityReview ? { identityReview } : {}),
+        ...(reviewed.localCompositions ? { localComposition: new StageThreeLocalCompositionReview().review({
+          source, currentPath: module.currentPath, composedClasses: reviewed.localCompositions }) } : {}),
       },
       behavior: {
         semanticRisk: reviewed.semanticRisk,

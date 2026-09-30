@@ -662,6 +662,8 @@ class StageOneClosureValidator {
         "Inventory Capacity And Stamina Domain",
       "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89":
         "Casting Items Line And Rules Domain",
+      "stage-3.replan-342.batch-041-fishing-71e662d7":
+        "Landing Policy Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }

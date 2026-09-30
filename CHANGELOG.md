@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.79 - Landing Policy Domain
+
+### Changed
+
+- Adopted the Stage 3.42.0 replacement suffix after the duplicate-helper removal and migrated the landing policy source with five named ESM exports.
+- Added five exact classic consumer bridges for LandingPolicyResolver and the resolveFightPhysicsConfig helper.
+- Extended the cumulative runtime from 123 to 124 project modules and the active activation set from 116 to 118 contracts, with 181 exact bridge relationships.
+- The next task is batch 042 preflight.
+
 ## v0.24.78 - Casting Items Line And Rules Domain
 
 ### Changed

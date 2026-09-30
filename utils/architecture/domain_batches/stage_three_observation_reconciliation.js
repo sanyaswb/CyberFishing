@@ -54,13 +54,15 @@ class StageThreeObservationReconciliation {
       const reviewedExposure = this.profile.legacyExposureBySource?.[item.sourceProvider];
       const exposure = typeof reviewedExposure === "string"
         ? { symbol: reviewedExposure, mechanism: "global-this-property" } : reviewedExposure;
+      // A class or constant is a global-lexical provider; a reviewed top-level function a global-function one.
+      const fromMechanism = original[0]?.mechanism === "global-function" ? "global-function" : "global-lexical";
       assert.deepEqual(original.map(provider => provider.mechanism), exposure?.symbol === item.legacySymbol
-        ? ["global-lexical", exposure.mechanism] : ["global-lexical"],
+        ? [fromMechanism, exposure.mechanism] : [fromMechanism],
       "Missing exact approved legacy identity");
       assert(bridges.some((bridge) => bridge.bridge === item.sourceProvider && bridge.target === item.targetModule &&
         bridge.globalProviders.some((provider) => provider.symbol === item.legacySymbol && provider.mechanism === "global-this-property")));
       return { source: item.sourceProvider, target: item.targetModule, symbol: item.legacySymbol, activationId: item.id,
-        fromMechanism: "global-lexical", toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
+        fromMechanism, toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
     });
     assert.deepEqual(esm.map((item) => item.source).sort(),
       [...new Set(activations.map((item) => item.targetModule))].sort());

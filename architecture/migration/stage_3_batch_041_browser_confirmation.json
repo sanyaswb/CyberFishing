@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-041-browser-confirmation",
+  "batchId": "stage-3.replan-342.batch-041-fishing-71e662d7",
+  "releaseVersion": "0.24.78",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-09-30T15:02:08.144Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, owner away): game-cycle-check.js re-executed without seals, exit 0, 208 scenario lines passed (casting, bite, fight, landing and retrieval for reel and pole). Built-in browser load of v0.24.78 runtime with batch 041 active: 1 canvas, LandingPolicyResolver and resolveFightPhysicsConfig are the exact ESM exports of src/game/domain/fishing/landing_policy.js, helper name preserved, IdleRetrievePolicyResolver available; console 0 errors, 0 warnings (2 CacheManager logs).",
+    "context": "Automated substitute per the owner's 2026-09-30 authorization (owner away from home): game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_041_acceptance_pass.json",
+    "sha256": "af3923fd43e056464a783d71371dd0991902a1256305ce952fb26018999efcae"
+  },
+  "historicalSummaryPreserved": true
+}

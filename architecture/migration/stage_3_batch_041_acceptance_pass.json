@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-041-acceptance",
+  "stage": "3.42.8",
+  "batchId": "stage-3.replan-342.batch-041-fishing-71e662d7",
+  "releaseVersion": "0.24.78",
+  "plannedReleaseVersion": "0.24.79",
+  "recordedAt": "2026-09-30T15:02:08.144Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_041_automated_acceptance.json",
+    "sha256": "7a22ab1e076811012f0f719d466daba0447a353f6ecd605e80a52bbbfd17a9f3",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 249,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32-x64 node v24.13.0",
+      "source": "check run report 2026-09-30T13-54-24-524Z-18936",
+      "report": {
+        "kind": "cyber-fishing-check-run-report",
+        "schemaVersion": 1,
+        "runId": "2026-09-30T13-54-24-524Z-18936",
+        "mode": "release-gate",
+        "sha256": "63f88e4f09243c9038f3e023d161ed6165c6dd7acd3effe1b99cd6b716975765",
+        "executed": 249,
+        "cached": 0,
+        "catalogSha256": "9e0cad9467737524d0454d295b64b16b4bb5462cbefaa2674adb8ac325b4f0c4",
+        "sourceSha256": "ecffe61182c6fde35e9b5257560c496c1a4ef17df8fcb8a28bd97fffe065f520",
+        "sourceCommit": "a82fd8c14cf6813b2a9ca6412f56b86e38329295"
+      }
+    },
+    "summary": "release-gate: 249 executed, 0 reused history replays, 0 failed; source unchanged during the run",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 249,
+      "architecture": 109,
+      "quick": 85
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "owner-authorized-automated-substitute",
+    "userStatement": "PASS (automated substitute, owner away): game-cycle-check.js re-executed without seals, exit 0, 208 scenario lines passed (casting, bite, fight, landing and retrieval for reel and pole). Built-in browser load of v0.24.78 runtime with batch 041 active: 1 canvas, LandingPolicyResolver and resolveFightPhysicsConfig are the exact ESM exports of src/game/domain/fishing/landing_policy.js, helper name preserved, IdleRetrievePolicyResolver available; console 0 errors, 0 warnings (2 CacheManager logs).",
+    "context": "Automated substitute per the owner's 2026-09-30 authorization (owner away from home): game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "acceptanceBasis": "Owner-authorized automated substitute: game-cycle without seals and an instrumented built-in-browser console read; the owner did not play this batch.",
+    "ownerAuthorization": "Я не зможу подивитися гру сам, бо я не дома, тому поки що перевірка на тобі через game cycle, та можеш подивитися помилки в браузері при запуску, поки що тпк",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_041_live_runtime_validation.json",
+      "sha256": "b1d671ecf86f968ece3027be1147c9f8fb3f1cee8c01a78d87be64ef5e80a9cb"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_041_observation_reconciliation.json",
+      "sha256": "497a59667f1da0e9edb84e64fe5dcfb66445f1aebfe79373a2f323bccdad4204"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "2aa0d8d810d5d4541c4deb6238d38a5547e9952cc782f29976192de03a20389b"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "99dcfffff7d509211e40c8ce1b944a8e0913828f60747ff8a817636191caf35d"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "db7af94b1c0da741993e8b1f9f69fb6a1978618768da9d67c0fae98ac31af2f1"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "1fe7c71c21e3de47b2653a56701cd67f04d0ae83da13f36c5cab8d22d487b038"
+    },
+    {
+      "path": "index.html",
+      "sha256": "594e27f9cd1f7b2d1d87de3f2f57710771468c43c0a0f6a6c830eb91398821a9"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-342.batch-041-fishing-71e662d7",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.42.9 — Release Closure v0.24.79"
+}

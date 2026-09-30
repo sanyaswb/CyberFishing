@@ -77,7 +77,8 @@ class RepresentationOnlyReviewedEsmTarget {
     assert.equal(sha(source), sourceSha256, `${currentPath}: source changed after audit`);
     if (!contract.privateStaticSets && !contract.frozenStaticFields && !contract.frozenConstants &&
       !contract.classFamily && !contract.legacyExposure && exports.length > 1) {
-      return this.#classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256 });
+      return this.#classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256,
+        functions: contract.topLevelFunctions || [] });
     }
     const reviewer = new StageThreeReviewedEvaluationEffect();
     if (contract.privateStaticSets) {
@@ -192,29 +193,35 @@ class RepresentationOnlyReviewedEsmTarget {
 
   // A classic script of plain class declarations only (global lexical providers, no top-level
   // effect) becomes the same classes with an `export` token each.
-  #classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256 }) {
+  // Reviewed pure top-level functions (contract.topLevelFunctions) are exported beside the classes.
+  #classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256, functions = [] }) {
     const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script" });
-    assert(tree.body.every(node => node.type === "ClassDeclaration"),
-      `${currentPath}: only plain class declarations may use the class-declarations shape`);
+    assert(tree.body.every(node => node.type === "ClassDeclaration" ||
+      (node.type === "FunctionDeclaration" && functions.includes(node.id.name) && !node.async && !node.generator)),
+    `${currentPath}: only plain class declarations may use the class-declarations shape`);
     assert.deepEqual(tree.body.map(node => node.id.name).sort(), exports, `${currentPath}: class set differs`);
+    const tokenOf = name => functions.includes(name) ? `function ${name}(` : `class ${name} `;
     let targetSource = source;
     for (const name of exports) {
-      const token = `class ${name} `;
+      const token = tokenOf(name);
       assert.equal(targetSource.split(token).length - 1, 1, `${currentPath}: class token is not exact: ${name}`);
       targetSource = targetSource.replace(token, `export ${token}`);
     }
     const target = espree.parse(targetSource, { ecmaVersion: "latest", sourceType: "module" });
     assert(target.body.every(node => node.type === "ExportNamedDeclaration" && node.source === null &&
-      node.declaration?.type === "ClassDeclaration"), `${targetPath}: only direct named class exports are allowed`);
+      (node.declaration?.type === "ClassDeclaration" || (node.declaration?.type === "FunctionDeclaration" &&
+        functions.includes(node.declaration.id.name)))), `${targetPath}: only direct named class exports are allowed`);
     assert(!targetSource.includes("window") && !targetSource.includes("globalThis") &&
       !targetSource.includes("__CYBER_FISHING_COMPAT_RUNTIME__"),
     `${targetPath}: target retains a browser or transport dependency`);
     let restored = targetSource;
-    for (const name of exports) restored = restored.replace(`export class ${name} `, `class ${name} `);
+    for (const name of exports) restored = restored.replace(`export ${tokenOf(name)}`, tokenOf(name));
     assert.equal(restored, source, `${targetPath}: non-representation source delta`);
     return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
       sourceSha256, targetSha256: sha(targetSource), targetSource,
-      validation: { representation: "classic-class-declarations-to-named-esm-exports-only",
+      validation: { representation: functions.length === 0
+        ? "classic-class-declarations-to-named-esm-exports-only"
+        : "classic-class-and-reviewed-function-declarations-to-named-esm-exports-only",
         importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
         forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
         allocationDelta: "none", currentPath, targetPath },

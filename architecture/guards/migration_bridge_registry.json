@@ -115,6 +115,22 @@
       ]
     },
     {
+      "id": "bridge-0f4da996fde3",
+      "bridge": "src/core/fishing/landing_policy.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/fishing/landing_policy.js",
+      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LandingPolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-105324aeeccc",
       "bridge": "src/core/line/line_allocation_policy.js",
       "source": "src/core/line/line_inventory_controller.js",
@@ -1395,6 +1411,22 @@
       ]
     },
     {
+      "id": "bridge-72ec98688ff1",
+      "bridge": "src/core/fishing/landing_policy.js",
+      "source": "src/core/fishing/retrieve_policy.js",
+      "target": "src/game/domain/fishing/landing_policy.js",
+      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "resolveFightPhysicsConfig",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -2475,6 +2507,22 @@
       ]
     },
     {
+      "id": "bridge-dd0df8ff0363",
+      "bridge": "src/core/fishing/landing_policy.js",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/domain/fishing/landing_policy.js",
+      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LandingPolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-dd65f33afb4a",
       "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
       "source": "src/app/bootstrap.js",
@@ -2518,6 +2566,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-de699c628b92",
+      "bridge": "src/core/fishing/landing_policy.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/fishing/landing_policy.js",
+      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LandingPolicyResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -2846,6 +2910,22 @@
       "globalProviders": [
         {
           "symbol": "RodCapabilityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ff82838dfd66",
+      "bridge": "src/core/fishing/landing_policy.js",
+      "source": "src/app/states.js",
+      "target": "src/game/domain/fishing/landing_policy.js",
+      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LandingPolicyResolver",
           "mechanism": "global-this-property"
         }
       ]

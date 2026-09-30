@@ -73,6 +73,8 @@ class UnsupportedProviderConstructDetector {
     const contexts = this.contextIndex.ancestors(node);
     const parent = contexts[0]?.parent;
     if (!parent || parent.type === "Program") return false;
+    // `export function` is a module top-level declaration (modules are strict), not an Annex B block.
+    if (parent.type === "ExportNamedDeclaration" || parent.type === "ExportDefaultDeclaration") return false;
     return !contexts.some(({ parent: ancestor }) =>
       ancestor.type === "FunctionDeclaration" ||
       ancestor.type === "FunctionExpression" ||

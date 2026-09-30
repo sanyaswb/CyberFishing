@@ -776,7 +776,20 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.41.0–3.41.7 casting, items, line and gameplay-rules domain migration with foundation imports, split-slot retirement and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "040", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-041-architecture",
+      title: "Stage 3.42.0–3.42.7 landing policy domain migration with a reviewed top-level function export, local default compositions and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "041", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
+    },
+    {
+      id: "stage-3-batch-reviewed-shapes-fixtures",
+      title: "Stage 3 batch reviewed top-level functions and local compositions accept only exact reviewed facts",
+      file: "utils/architecture/stage-3-batch-reviewed-shapes-fixtures-check.js",
+      suites: ["quick", "architecture"],
     },
     {
       id: "stage-3-34-review-queue-freeze",

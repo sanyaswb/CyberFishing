@@ -7,6 +7,7 @@ const { ControlledMetadataTransaction } = require("../../domain_batches/controll
 const { StageThreeReviewedEvaluationEffect } = require("../../domain_batches/stage_three_reviewed_evaluation_effect");
 const { StageThreeGlobalExposureReview } = require("../../domain_batches/stage_three_global_exposure_review");
 const { StageThreeBatchSourceObserver } = require("../../domain_batches/stage_three_batch_source_observer");
+const { StageThreeReviewedTopLevelFunctions } = require("../../domain_batches/stage_three_reviewed_top_level_functions");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
 const { StageThreeApprovedPlanSource } = require("../../domain_batches/stage_three_approved_plan_source");
 const { ModuleEvaluationEffectObserver } = require("../../../build/compat_runtime/cumulative_side_effect_gate");
@@ -24,7 +25,10 @@ function reviewedEffect(contract) {
     return { kind: "private-static-literal-sets", ...contract.privateStaticSets,
       exposure: exposure ? { symbol: exposure.symbol, location: exposure.location } : null };
   }
-  if (!exposure) return { kind: "effect-free" };
+  if (!exposure) {
+    return contract.topLevelFunctions
+      ? { kind: "effect-free", topLevelFunctions: [...contract.topLevelFunctions] } : { kind: "effect-free" };
+  }
   const kinds = { "window-property": "guarded-window-class-exposure", "global-this-property": "global-this-class-exposure" };
   const kind = kinds[exposure.mechanism || "global-this-property"];
   assert(kind, `Unsupported legacy exposure mechanism: ${exposure.mechanism}`);
@@ -82,10 +86,14 @@ class StageThreeSideEffectReview {
         assert.equal(frozen.status, "required-before-approved-freeze");
         assert.equal(frozen.requiredDecision, "approved-compatible-or-batch-deferred");
       } else if (contract.kind === "effect-free") {
-        // A module without a frozen effect review must stay free of top-level effects.
+        // A module without a frozen effect review must stay free of top-level effects; reviewed pure
+        // function declarations are bindings, not effects.
         assert.equal(frozen, null);
-        assert.deepEqual(new StageThreeBatchSourceObserver().observe(source, module.currentPath).topLevelEffects, []);
-        review = { kind: "effect-free", currentPath: module.currentPath, sourceSha256: sha(source) };
+        assert.deepEqual(new StageThreeBatchSourceObserver().observe(source, module.currentPath).topLevelEffects,
+          new StageThreeReviewedTopLevelFunctions().review({ source, currentPath: module.currentPath,
+            names: contract.topLevelFunctions || [] }).sort());
+        review = { kind: "effect-free", currentPath: module.currentPath, sourceSha256: sha(source),
+          ...(contract.topLevelFunctions ? { topLevelFunctions: contract.topLevelFunctions } : {}) };
       } else {
         assert(frozen, `Missing frozen effect review: ${module.targetPath}`);
         review = contract.kind === "guarded-window-class-exposure"

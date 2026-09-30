@@ -130,6 +130,24 @@ class StageThreeBatchPreflightProfile {
           family.classes.indexOf(parent) < family.classes.indexOf(child)),
       `${currentPath} classFamily must name ordered classes, local superclasses and exact exposures`);
     }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const functions = contract?.topLevelFunctions;
+      if (functions === undefined) continue;
+      require(!contract.legacyExposure && !contract.frozenConstants && !contract.frozenStaticFields &&
+        !contract.privateStaticSets && !contract.classFamily,
+      `${currentPath} topLevelFunctions combine only with effect-free classes`);
+      require(Array.isArray(functions) && functions.length > 0 &&
+        functions.every((name) => /^[A-Za-z_$][\w$]*$/u.test(name)) &&
+        new Set(functions).size === functions.length,
+      `${currentPath} topLevelFunctions must name unique top-level functions`);
+    }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const composed = contract?.localCompositions;
+      if (composed === undefined) continue;
+      require(Array.isArray(composed) && composed.length > 0 &&
+        composed.every((name) => /^[A-Za-z_$][\w$]*$/u.test(name)) && new Set(composed).size === composed.length,
+      `${currentPath} localCompositions must name unique composed classes`);
+    }
     require(Array.isArray(definition?.migrationGates) && definition.migrationGates.length > 0,
       "migrationGates are required");
     if (errors.length > 0) {
