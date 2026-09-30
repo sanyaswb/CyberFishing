@@ -32,13 +32,19 @@ class PostFreezeDomainAudit {
       projectRoot: workspace.root, policy: new ArchitecturePolicy(policyData), manifest,
     });
     const drift = this.#drift(manifest, observed);
+    const state = workspace.json(INPUTS.executionState);
     const approved = profile.completedFromPlanSource
       ? new StageThreeApprovedPlanSource({ read: file => workspace.bytes(file) }).load(workspace.json(INPUTS.executionState)).document
       : workspace.json(HISTORICAL.approvedPlan);
-    const completedTargets = new Set(approved.batches.flatMap(batch =>
+    const completedBatches = profile.replacesIncompleteSuffix
+      ? approved.batches.slice(0, state.completedBatchIds.length)
+      : approved.batches;
+    assert.deepEqual(completedBatches.map(batch => batch.id), state.completedBatchIds,
+      "Domain audit completed batches differ from execution state");
+    const completedTargets = new Set(completedBatches.flatMap(batch =>
       batch.modules.map(module => module.targetPath)));
     const contract = new DomainAuditContract();
-    const releaseVersion = workspace.json(INPUTS.executionState).releaseVersion;
+    const releaseVersion = state.releaseVersion;
     const inventory = new ConservativeDomainInventoryBuilder(contract)
       .build({ manifest: observed, releaseVersion });
     const snapshot = new ArchitectureGuardSnapshotBuilder({

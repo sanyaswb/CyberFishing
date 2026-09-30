@@ -127,6 +127,7 @@ class PostFreezeApprovedPrefixBuilder {
         reason: profile.adoptionReason,
       },
       ...(base ? { base } : {}),
+      ...(profile.replacesIncompleteSuffix ? { replacesIncompleteSuffix: true } : {}),
       completedPrefix,
       sourceCandidate: candidateRef,
       reviewEvidence: reviewEvidenceRef,

@@ -89,4 +89,31 @@ const STAGE_3_40 = new PostFreezeReviewProfile({
   historicalCandidatesNote: "Historical candidates and the Stage 3.22 and 3.36 reviews remain reference material and are not replaced.",
 });
 
-module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40 };
+// Repeated review after batch 039 and prerequisite transitions 028–029. normalizeDistance now has
+// one Engine ESM owner, so the rules candidate must import it directly instead of relying on the
+// classic app/utils.js provider recorded by the Stage 3.40 review. The explicit replacement flag is
+// necessary because the existing base-link contract can only append after a fully completed plan;
+// it cannot preserve completed batch 039 while discarding the frozen, unexecuted 040–046 suffix.
+const STAGE_3_41 = new PostFreezeReviewProfile({
+  stage: "3.41",
+  kindStage: "3-41",
+  directory: "architecture/migration/stage_3_41_graph_review",
+  // Active runtime after batch 039 and prerequisite 029.
+  expectedTopology: Object.freeze({ modules: 97, activations: 106, bridges: 169 }),
+  firstOrder: 40,
+  idPrefix: "stage-3.replan-341.batch-",
+  taskPrefix: "stage-3.41.prerequisite.",
+  preliminary: Object.freeze({ candidate: 33, prerequisiteBlocked: 0, deferred: 0 }),
+  domainModuleCount: 139,
+  completedFromPlanSource: true,
+  replacesIncompleteSuffix: true,
+  esmImportFacts: true,
+  prerequisiteIntroducedCoverage: true,
+  frozenConstantReview: true,
+  groupedBatches: true,
+  reviewOwner: "stage-3.41-post-freeze-graph-review",
+  adoptionReason: "The execution state keeps the completed 001–039 prefix and the adopted Stage 3.40.0 approved prefix; batch 040 adopts this replacement approved prefix in its own prebuild state transition.",
+  historicalCandidatesNote: "Historical candidates and the Stage 3.22, 3.36 and 3.40 reviews remain reference material and are not replaced.",
+});
+
+module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40, STAGE_3_41 };

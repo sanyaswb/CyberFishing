@@ -796,6 +796,18 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-3-41-graph-review",
+      title: "Stage 3.41.0 replacement graph review after batch 039 and normalizeDistance Engine ownership replays byte-identically and replaces only the incomplete suffix",
+      file: "utils/architecture/stage-3-41-graph-review.js",
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-41-replacement-plan-fixtures",
+      title: "Stage 3.41.0 replacement approved-plan link rejects incomplete, reordered, stale and empty suffix replacements",
+      file: "utils/architecture/stage-3-41-replacement-plan-fixtures-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-prerequisite-001",
       title: "Stage 3 prerequisite 001: AssemblyProfileRegistry config injection replays byte-identically with parity, resolved debt and clean guards",
       file: "utils/architecture/stage-3-prerequisite.js",

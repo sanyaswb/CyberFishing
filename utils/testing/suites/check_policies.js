@@ -248,6 +248,8 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-34-review-queue-freeze-fixtures",
   "stage-3-36-graph-review",
   "stage-3-40-graph-review",
+  "stage-3-41-graph-review",
+  "stage-3-41-replacement-plan-fixtures",
   "stage-3-prerequisite-001",
   "stage-3-prerequisite-002",
   "stage-3-prerequisite-003",

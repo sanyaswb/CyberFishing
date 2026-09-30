@@ -25,8 +25,16 @@ class PostFreezeBaselineBuilder {
     assert.equal(state.activeBatchId, null, "review requires no active batch");
     assert(!Object.hasOwn(state, "activeBatchPhase"), "review requires a closed batch lifecycle");
     assert.equal(packageJson.version, state.releaseVersion, "package and execution state disagree");
-    assert.deepEqual(state.completedBatchIds, approved.batches.map(batch => batch.id),
-      "the frozen approved plan must be fully completed");
+    const approvedIds = approved.batches.map(batch => batch.id);
+    if (profile.replacesIncompleteSuffix) {
+      assert(state.completedBatchIds.length < approvedIds.length,
+        "replacement review requires an incomplete approved-plan suffix");
+      assert.deepEqual(state.completedBatchIds, approvedIds.slice(0, state.completedBatchIds.length),
+        "completed batches must be an exact approved-plan prefix");
+    } else {
+      assert.deepEqual(state.completedBatchIds, approvedIds,
+        "the frozen approved plan must be fully completed");
+    }
     const topology = {
       modules: new Set(runtime.activationPositions.map(item => item.targetModule)).size,
       activations: runtime.activationPositions.length,

@@ -1,0 +1,4068 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-41-review-evidence",
+  "stage": "3.41",
+  "status": "reviewed",
+  "reviewOwner": "stage-3.41-post-freeze-graph-review",
+  "sourceCandidate": {
+    "path": "architecture/migration/stage_3_41_graph_review/candidate_batches.json",
+    "sha256": "849076710594a2bdb89a2b3657cadbce1771008c53cb9db9ad14a77347ff53f0"
+  },
+  "reviewedCollections": [
+    {
+      "owner": "AssemblyProfileRegistry#profileIdByFallbackType",
+      "className": "AssemblyProfileRegistry",
+      "field": "#profileIdByFallbackType",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "get",
+        "has",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-registry-index"
+    },
+    {
+      "owner": "AssemblyProfileRegistry#profiles",
+      "className": "AssemblyProfileRegistry",
+      "field": "#profiles",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "get",
+        "has",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-registry"
+    },
+    {
+      "owner": "AssemblyStateRepository#states",
+      "className": "AssemblyStateRepository",
+      "field": "#states",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "delete",
+        "get",
+        "has",
+        "set",
+        "values"
+      ],
+      "cacheLifetime": "instance-lifetime-authoritative-store"
+    },
+    {
+      "owner": "AuthoredItemRarityStrategy#descriptors",
+      "className": "AuthoredItemRarityStrategy",
+      "field": "#descriptors",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "get",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-derived-memo-without-eviction"
+    },
+    {
+      "owner": "EquipmentLoadoutRepository#loadouts",
+      "className": "EquipmentLoadoutRepository",
+      "field": "#loadouts",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "delete",
+        "get",
+        "has",
+        "set",
+        "values"
+      ],
+      "cacheLifetime": "instance-lifetime-authoritative-store"
+    },
+    {
+      "owner": "FlatInventoryItemRepository#childrenByParent",
+      "className": "FlatInventoryItemRepository",
+      "field": "#childrenByParent",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "get",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-derived-index-rebuilt-with-store"
+    },
+    {
+      "owner": "FlatInventoryItemRepository#items",
+      "className": "FlatInventoryItemRepository",
+      "field": "#items",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "delete",
+        "get",
+        "has",
+        "set",
+        "size",
+        "values"
+      ],
+      "cacheLifetime": "instance-lifetime-authoritative-store"
+    },
+    {
+      "owner": "InventoryItemStackingPolicy.ignoredKeys",
+      "className": "InventoryItemStackingPolicy",
+      "field": "#ignoredKeys",
+      "scope": "static",
+      "collection": "Set",
+      "allowedOperations": [
+        "has"
+      ],
+      "cacheLifetime": "class-lifetime-immutable-lookup"
+    },
+    {
+      "owner": "ItemAssemblyStackingPolicy.ignoredKeys",
+      "className": "ItemAssemblyStackingPolicy",
+      "field": "#ignoredKeys",
+      "scope": "static",
+      "collection": "Set",
+      "allowedOperations": [
+        "has"
+      ],
+      "cacheLifetime": "class-lifetime-immutable-lookup"
+    },
+    {
+      "owner": "ItemCatalogBaselineRegistry#cache",
+      "className": "ItemCatalogBaselineRegistry",
+      "field": "#cache",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "clear",
+        "get",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-derived-memo-with-explicit-clear"
+    },
+    {
+      "owner": "ItemMetricStrategyRegistry#strategies",
+      "className": "ItemMetricStrategyRegistry",
+      "field": "#strategies",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "get",
+        "has",
+        "keys",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-registry"
+    },
+    {
+      "owner": "ItemProgressionResolver#cache",
+      "className": "ItemProgressionResolver",
+      "field": "#cache",
+      "scope": "instance",
+      "collection": "Map",
+      "allowedOperations": [
+        "clear",
+        "get",
+        "set"
+      ],
+      "cacheLifetime": "instance-lifetime-derived-memo-with-explicit-clear"
+    }
+  ],
+  "summary": {
+    "moduleCount": 33,
+    "candidateModules": 33,
+    "sufficientCandidates": 26,
+    "insufficientCandidates": 7,
+    "approvedBatches": 7,
+    "requiresEvidenceBatches": 4,
+    "sideEffectReviews": 3,
+    "stateIdentityReviews": 14
+  },
+  "batchDecisions": [
+    {
+      "batchId": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "order": 40,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/app/rules.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "a0ab318fd2574b0c6fbec414f0ca5c0ec492c543ab7f88a78a8c1e250b4eb0ae"
+        },
+        {
+          "currentPath": "src/core/distance_unit_converter.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "84aeecd3e51ccc628fe96a28f66527b12127be4aa223abe72b19289086390e91"
+        },
+        {
+          "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "b55dd60a73f5724ccc3d2c8b49c3b5c60cfa0d3f5f117d9d320f8c1fb3dfd3c9"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "cd866633eaaeba1e151458ef7f726e70a1b99763d583b1b25ccebcae6507e6f9"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_rating_resolver.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "06aae01b2076816fb6832b6b6a9dd15c71218f235b3e42b2a348e08c4e3e3ec2"
+        },
+        {
+          "currentPath": "src/core/line/line_allocation_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "7eff1b14f72b7e21b1d8e8033a63db2984bc0b05d99d3fdf7c6c245dcc95af6d"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-041-fishing-dbc2cb5c",
+      "order": 41,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/fishing/landing_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "1b23b8aa122aa26b3643e2f2b4bf6f2e537c2ecb838ada6c1d5e1fa31fa22b2a"
+        },
+        {
+          "currentPath": "src/core/fishing/retrieve_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "47f93c43b2118f6805ae4ad86b7446c9c21247fdca506ac5c1dbab1995202366"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-042-equipment-6f782961",
+      "order": 42,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/config/inventory/equipment_slot_config.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "60a07f16e59357db08a94060a7360b34bfaed79faf75de1adfec128f61498d84"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "order": 43,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "3c69bfd02ba0b078b9307ac0721904c2c80cce042ebde93970c1860407980bae"
+        },
+        {
+          "currentPath": "src/core/fishing/rod_pull_calculator.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "1511c24bb6388f10b5a8ab24f8998f3dde5e41aa96d0e5ba4e5df4e448722fe0"
+        },
+        {
+          "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "35ffc162545798598a5c8f482c6e4b763757d864160b93fc9050a93de2228766"
+        },
+        {
+          "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "22c7258b02f1d86509bf84388fbf88c3e6059a5a57a6f1e9f255f60832dd36b9"
+        },
+        {
+          "currentPath": "src/systems/player_force_system.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "5090bd9e78b45ec3ec3433de9b97048ecdcc66241aef75f600e5ca841cc87d76"
+        },
+        {
+          "currentPath": "src/systems/tackle_stress_system.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "7d09c147b4b7b769ec8446d0a07c4378f3d8d9868b80801e5e02af5da7a3b226"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-044-equipment-loadouts-f4fab38e",
+      "order": 44,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/equipment/equipment_state.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "bdf7aef9601a3d388f7fddf9a66f6746585fd7a33f17b0ec5ccd4d033f5b410f"
+        },
+        {
+          "currentPath": "src/core/loadouts/equipment_loadout.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "accc2b183005ca7db45b53e82776a275d7142de2c7290cd32779d566bf61f2ac"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "order": 45,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/casting_distance.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "a5497766b205ede4023be5e2f53f57e64fc4212efd071e0247bd4df2450d2725"
+        },
+        {
+          "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "ddef0869ee9cb8966ee6176b5634d52c4734df472112b698a7e475c7e6776c22"
+        },
+        {
+          "currentPath": "src/core/equipment/equipment_transition_planner.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "473cd0e3265cf59e6462a37e84fea260c9f02913d7189b46ffe6037428c8ce00"
+        },
+        {
+          "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "7be03d3d0c127e35a37dbaf93d487e13c00dad47d60b68dfd9f4643b3dd50047"
+        },
+        {
+          "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "b724686efe44ffb62deffb26838885e8edf48f129f658b929b9731d3b9f90565"
+        },
+        {
+          "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "7f0912334e21cbf65e8c0f46ddf866982568456f55785f5b3c12fbd5ef5a7084"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-046-equipment-fishing-401d1d14",
+      "order": 46,
+      "decision": "approved-frozen",
+      "reasons": [],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "277b424921b6eb8ecb656bbb7b654e3e836b8aa0c0e11390ddddbefc0992992e"
+        },
+        {
+          "currentPath": "src/systems/line_system.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "08ada649111eac82d775241f46bf677073643147dd4666e902234eae0744d331"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-047-fish-fishing-inventory-locations-0eca8332",
+      "order": 47,
+      "decision": "requires-evidence",
+      "reasons": [
+        "insufficient-evidence:src/core/inventory/flat_inventory_item_repository.js:collection-identity-unproven:FlatInventoryItemRepository#childrenByParent",
+        "insufficient-evidence:src/core/inventory/flat_inventory_item_repository.js:collection-identity-unproven:FlatInventoryItemRepository#items",
+        "insufficient-evidence:src/core/inventory/flat_inventory_item_repository.js:hot-loop-equivalence-evidence-missing",
+        "insufficient-evidence:src/entities/fish.js:hot-loop-equivalence-evidence-missing",
+        "insufficient-evidence:src/systems/buff_manager.js:hot-loop-equivalence-evidence-missing",
+        "insufficient-evidence:src/world/world.js:hot-loop-equivalence-evidence-missing"
+      ],
+      "evidenceTaskIds": [
+        "stage-3.41.prerequisite.collection-identity-evidence",
+        "stage-3.41.prerequisite.hot-loop-equivalence-evidence"
+      ],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "76c6c685ba3e1e0d700c37545bcda9baac1b899e1fce089b9a1fc601e8126d2a"
+        },
+        {
+          "currentPath": "src/entities/fish.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "ffb009751f5a0ef3815f2bcb03a720664101b7d6d44321cbb99c2b0894913fac"
+        },
+        {
+          "currentPath": "src/systems/buff_manager.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "56ed8a3e2c2b9c4abfb5493d8f80df6dbb46c414d2bf57d32be38cca89d204f6"
+        },
+        {
+          "currentPath": "src/world/world.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "6682e415df845b3413f97c4aca5fbb434bacaf9796e859dc18511660aab348e4"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-048-fishing-95a74a4a",
+      "order": 48,
+      "decision": "requires-evidence",
+      "reasons": [
+        "depends-on-unfrozen-module:src/entities/fish.js"
+      ],
+      "evidenceTaskIds": [],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/systems/fish_force_system.js",
+          "verdict": "sufficient",
+          "evidenceFingerprint": "330e9b75f06504aab504dd3cf39d2fc178b85e8169709635824c2daccc1b9e7e"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-049-fishing-tackle-f84e1043",
+      "order": 49,
+      "decision": "requires-evidence",
+      "reasons": [
+        "insufficient-evidence:src/entities/tackle.js:hot-loop-equivalence-evidence-missing",
+        "insufficient-evidence:src/systems/rod_pull_system.js:hot-loop-equivalence-evidence-missing"
+      ],
+      "evidenceTaskIds": [
+        "stage-3.41.prerequisite.hot-loop-equivalence-evidence"
+      ],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/entities/tackle.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "71d2ef885cf815a60a5b169326d12cd9cb88cc55f98865aec041ba7acf43bdde"
+        },
+        {
+          "currentPath": "src/systems/rod_pull_system.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "23d0f8e2b6efb327776327ef14a7ab92d56474d86ee13a2c89152a0df4cac995"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-050-loadouts-8df79db8",
+      "order": 50,
+      "decision": "requires-evidence",
+      "reasons": [
+        "insufficient-evidence:src/core/loadouts/equipment_loadout_repository.js:collection-identity-unproven:EquipmentLoadoutRepository#loadouts"
+      ],
+      "evidenceTaskIds": [
+        "stage-3.41.prerequisite.collection-identity-evidence"
+      ],
+      "moduleEvidence": [
+        {
+          "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+          "verdict": "insufficient",
+          "evidenceFingerprint": "dbaffffb03091f6b78004b559aa03e2c836f53cc385db13cd5bfd1a97207cd9b"
+        }
+      ]
+    }
+  ],
+  "sideEffectReviews": [
+    {
+      "batchId": "stage-3.replan-341.batch-046-equipment-fishing-401d1d14",
+      "module": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "evidenceFingerprint": "1d8a3d7875016141d277959990d06a6cbe77286223e6cb089e3d6bdebd1f7505",
+      "decision": "approved-compatible",
+      "classifications": [
+        "legacy-exposure-replaced-by-exact-activation"
+      ],
+      "observations": [
+        {
+          "kind": "assignment",
+          "location": "119:1",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-042-equipment-6f782961",
+      "module": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "evidenceFingerprint": "c2b532e98ba2d9c156656ae5c15b81708e29658938aaaf44b36339bc4bf38351",
+      "decision": "approved-compatible",
+      "classifications": [
+        "reviewed-immutable-constant-declaration"
+      ],
+      "observations": [
+        {
+          "kind": "call",
+          "location": "19:33",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "27:38",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "34:32",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "39:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "40:26",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "44:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "46:27",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "50:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "52:36",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "56:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "58:29",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "62:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "68:28",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "72:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "74:32",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "78:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "7:25",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "80:26",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "84:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "86:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "90:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "92:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "96:18",
+          "classification": "observable"
+        }
+      ]
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "module": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "evidenceFingerprint": "295efc6eb70a7bb96386d1fdda9e803a9ab419cfe00dcf3d84e647d3624b553a",
+      "decision": "approved-compatible",
+      "classifications": [
+        "reviewed-private-collection-created-once"
+      ],
+      "observations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        }
+      ]
+    }
+  ],
+  "stateIdentityReviews": [
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/casting_distance.js",
+      "targetPath": "src/game/domain/casting/cast_distance_calculator.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "CastDistanceCalculator#clamp01",
+        "CastDistanceCalculator#clampCastPower",
+        "CastDistanceCalculator#config",
+        "CastDistanceCalculator#converter",
+        "CastDistanceCalculator#floatLineBudgetPolicy",
+        "CastDistanceCalculator#getBuildCastPowerCoefficient",
+        "CastDistanceCalculator#getCastingPowerConfig",
+        "CastDistanceCalculator#getEquippedLineStats",
+        "CastDistanceCalculator#getFloatLineBudget",
+        "CastDistanceCalculator#getLineMeters",
+        "CastDistanceCalculator#getMaxCastDistanceMeters",
+        "CastDistanceCalculator#getMaxCastDistancePx",
+        "CastDistanceCalculator#getRodBaseReachMeters",
+        "CastDistanceCalculator#isReelAvailable",
+        "CastDistanceCalculator#lineConfig",
+        "CastDistanceCalculator#metersToPixels",
+        "CastDistanceCalculator#numberOrDefault",
+        "CastDistanceCalculator#physicsConfig",
+        "CastDistanceCalculator#pixelsPerMeter",
+        "CastDistanceCalculator#pixelsToMeters",
+        "CastDistanceCalculator#readNumber",
+        "CastDistanceCalculator#resolvePhysicsConfigAdapter"
+      ],
+      "reviewIssues": [
+        "self-composition:CastDistanceCalculator->DistanceUnitConverter@15:23",
+        "self-composition:CastDistanceCalculator->FloatTackleLineBudgetPolicy@20:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "DistanceUnitConverter",
+          "provider": "src/core/distance_unit_converter.js",
+          "providerStatus": "remaining"
+        },
+        {
+          "composed": "FloatTackleLineBudgetPolicy",
+          "provider": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "a5497766b205ede4023be5e2f53f57e64fc4212efd071e0247bd4df2450d2725"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-046-equipment-fishing-401d1d14",
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "EquipmentCompatibilityPolicy#acceptedTypes",
+        "EquipmentCompatibilityPolicy#capabilityResolver",
+        "EquipmentCompatibilityPolicy#isTackleCompatible",
+        "EquipmentCompatibilityPolicy#messages",
+        "EquipmentCompatibilityPolicy#readRootItem",
+        "EquipmentCompatibilityPolicy#readinessPolicy",
+        "EquipmentCompatibilityPolicy#result",
+        "EquipmentCompatibilityPolicy#slotConfig",
+        "EquipmentCompatibilityPolicy#terminalLineResolver",
+        "EquipmentCompatibilityPolicy#type",
+        "EquipmentCompatibilityPolicy#validate",
+        "EquipmentCompatibilityPolicy#visibilityPolicy"
+      ],
+      "reviewIssues": [
+        "self-composition:EquipmentCompatibilityPolicy->EquipmentSlotVisibilityPolicy@25:7",
+        "self-composition:EquipmentCompatibilityPolicy->RodCapabilityResolver@22:29",
+        "self-composition:EquipmentCompatibilityPolicy->TerminalLineSlotResolver@31:7"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "EquipmentSlotVisibilityPolicy",
+          "provider": "src/core/equipment/equipment_slot_visibility_policy.js",
+          "providerStatus": "remaining"
+        },
+        {
+          "composed": "RodCapabilityResolver",
+          "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+          "providerStatus": "completed"
+        },
+        {
+          "composed": "TerminalLineSlotResolver",
+          "provider": "src/core/equipment/terminal_line_slot_resolver.js",
+          "providerStatus": "remaining"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "277b424921b6eb8ecb656bbb7b654e3e836b8aa0c0e11390ddddbefc0992992e"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "EquipmentSlotVisibilityPolicy#capabilityResolver",
+        "EquipmentSlotVisibilityPolicy#isVisible",
+        "EquipmentSlotVisibilityPolicy#slotConfig"
+      ],
+      "reviewIssues": [
+        "self-composition:EquipmentSlotVisibilityPolicy->RodCapabilityResolver@15:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "RodCapabilityResolver",
+          "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "ddef0869ee9cb8966ee6176b5634d52c4734df472112b698a7e475c7e6776c22"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/equipment/equipment_transition_planner.js",
+      "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "EquipmentTransitionPlan#after",
+        "EquipmentTransitionPlan#allowed",
+        "EquipmentTransitionPlan#before",
+        "EquipmentTransitionPlan#capacity",
+        "EquipmentTransitionPlan#kind",
+        "EquipmentTransitionPlan#movements",
+        "EquipmentTransitionPlan#warning",
+        "ManualRodChangePlanner#capacityPolicy",
+        "ManualRodChangePlanner#mainSlotIds",
+        "ManualRodChangePlanner#messages",
+        "ManualRodChangePlanner#snapshot"
+      ],
+      "reviewIssues": [
+        "self-composition:ManualRodChangePlanner->UnlimitedInventoryCapacityPolicy@39:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "UnlimitedInventoryCapacityPolicy",
+          "provider": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "473cd0e3265cf59e6462a37e84fea260c9f02913d7189b46ffe6037428c8ce00"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+      "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "FishingReadinessPolicy#assemblyReader",
+        "FishingReadinessPolicy#capabilityResolver",
+        "FishingReadinessPolicy#castResult",
+        "FishingReadinessPolicy#child",
+        "FishingReadinessPolicy#children",
+        "FishingReadinessPolicy#isHook",
+        "FishingReadinessPolicy#isLeader",
+        "FishingReadinessPolicy#item",
+        "FishingReadinessPolicy#itemReader",
+        "FishingReadinessPolicy#messages",
+        "FishingReadinessPolicy#root",
+        "FishingReadinessPolicy#slotId",
+        "FishingReadinessPolicy#validation"
+      ],
+      "reviewIssues": [
+        "self-composition:FishingReadinessPolicy->RodCapabilityResolver@20:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "RodCapabilityResolver",
+          "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "7be03d3d0c127e35a37dbaf93d487e13c00dad47d60b68dfd9f4643b3dd50047"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+      "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "TerminalLineSlotResolver#capabilityResolver"
+      ],
+      "reviewIssues": [
+        "self-composition:TerminalLineSlotResolver->RodCapabilityResolver@10:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "RodCapabilityResolver",
+          "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "b724686efe44ffb62deffb26838885e8edf48f129f658b929b9731d3b9f90565"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+      "targetPath": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "FishFightDirectionResolver#away",
+        "FishFightDirectionResolver#clamp",
+        "FishFightDirectionResolver#lateral",
+        "FishFightDirectionResolver#result"
+      ],
+      "reviewIssues": [
+        "self-composition:FishFightDirectionResolver->Vector2@2:13",
+        "self-composition:FishFightDirectionResolver->Vector2@3:11",
+        "self-composition:FishFightDirectionResolver->Vector2@4:14"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        },
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        },
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "3c69bfd02ba0b078b9307ac0721904c2c80cce042ebde93970c1860407980bae"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/core/fishing/rod_pull_calculator.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_calculator.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "RodPullCalculator#buildResult",
+        "RodPullCalculator#calculateForceLimit",
+        "RodPullCalculator#calculateMaxDistance",
+        "RodPullCalculator#calculateStrokeCapacity",
+        "RodPullCalculator#config",
+        "RodPullCalculator#controlledPullLimitKg",
+        "RodPullCalculator#lineHasReserve",
+        "RodPullCalculator#pressureEfficiency",
+        "RodPullCalculator#pressureGainMultiplier",
+        "RodPullCalculator#ratioOrDefault",
+        "RodPullCalculator#resolveHoldChargePerSecond",
+        "RodPullCalculator#strokeCapacityResolver",
+        "RodPullCalculator#tensionBuildRateMultiplier",
+        "RodPullCalculator#tensionCeilingMultiplier"
+      ],
+      "reviewIssues": [
+        "self-composition:RodPullCalculator->RodStrokeCapacityResolver@9:7"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "RodStrokeCapacityResolver",
+          "provider": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "1511c24bb6388f10b5a8ab24f8998f3dde5e41aa96d0e5ba4e5df4e448722fe0"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "InventoryItemStackingPolicy.ignoredKeys"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:InventoryItemStackingPolicy.ignoredKeys"
+      ],
+      "collections": [
+        {
+          "owner": "InventoryItemStackingPolicy.ignoredKeys",
+          "status": "proven",
+          "creation": "once-per-class-evaluation",
+          "cacheLifetime": "class-lifetime-immutable-lookup"
+        }
+      ],
+      "composition": [],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "35ffc162545798598a5c8f482c6e4b763757d864160b93fc9050a93de2228766"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "ItemCatalogBaselineRegistry#cache",
+        "ItemCatalogBaselineRegistry#catalogItems",
+        "ItemCatalogBaselineRegistry#effectiveStatsResolver",
+        "ItemCatalogBaselineRegistry#fixed",
+        "ItemCatalogBaselineRegistry#itemDb",
+        "ItemCatalogBaselineRegistry#logger",
+        "ItemCatalogBaselineRegistry#strategyRegistry",
+        "ItemCatalogBaselineRegistry#unavailable"
+      ],
+      "reviewIssues": [
+        "collection-state-requires-cache-review:ItemCatalogBaselineRegistry#cache"
+      ],
+      "collections": [
+        {
+          "owner": "ItemCatalogBaselineRegistry#cache",
+          "status": "proven",
+          "creation": "once-per-instance",
+          "cacheLifetime": "instance-lifetime-derived-memo-with-explicit-clear"
+        }
+      ],
+      "composition": [],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "22c7258b02f1d86509bf84388fbf88c3e6059a5a57a6f1e9f255f60832dd36b9"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-045-casting-equipment-loadouts-681c0bc4",
+      "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "LoadoutEquipmentTransitionPlanner#capacityPolicy",
+        "LoadoutEquipmentTransitionPlanner#getOwner",
+        "LoadoutEquipmentTransitionPlanner#mainSlotIds",
+        "LoadoutEquipmentTransitionPlanner#messages",
+        "LoadoutEquipmentTransitionPlanner#ownershipReader"
+      ],
+      "reviewIssues": [
+        "self-composition:LoadoutEquipmentTransitionPlanner->UnlimitedInventoryCapacityPolicy@18:11"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "UnlimitedInventoryCapacityPolicy",
+          "provider": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "7f0912334e21cbf65e8c0f46ddf866982568456f55785f5b3c12fbd5ef5a7084"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-046-equipment-fishing-401d1d14",
+      "currentPath": "src/systems/line_system.js",
+      "targetPath": "src/game/domain/fishing/line_system.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "LineSystem#baseReachMeters",
+        "LineSystem#clamp01",
+        "LineSystem#config",
+        "LineSystem#constraintTolerancePx",
+        "LineSystem#distanceCalculator",
+        "LineSystem#distanceMeters",
+        "LineSystem#durabilityLossPerPercent",
+        "LineSystem#getEffectiveLineMaxLoadKg",
+        "LineSystem#getState",
+        "LineSystem#hasReel",
+        "LineSystem#initialized",
+        "LineSystem#isFullyExtended",
+        "LineSystem#lastConstraintResult",
+        "LineSystem#lastRecoveredMeters",
+        "LineSystem#lastReleaseResult",
+        "LineSystem#lastReleasedMeters",
+        "LineSystem#lineDurability",
+        "LineSystem#lineExtensionRatio",
+        "LineSystem#lineMaxLoadKg",
+        "LineSystem#maxRemainingMeters",
+        "LineSystem#numberOrDefault",
+        "LineSystem#pixelsPerMeter",
+        "LineSystem#randomRange",
+        "LineSystem#recoverLineCredit",
+        "LineSystem#reelLineMeters",
+        "LineSystem#refreshState",
+        "LineSystem#releasedMeters",
+        "LineSystem#remainingMeters",
+        "LineSystem#setConstraintResult",
+        "LineSystem#setReleaseResult",
+        "LineSystem#spoolState",
+        "LineSystem#totalLengthMeters",
+        "LineSystem#updateDistance"
+      ],
+      "reviewIssues": [
+        "self-composition:LineSystem->CastDistanceCalculator@50:33",
+        "self-composition:LineSystem->LineSpoolState@69:24"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "CastDistanceCalculator",
+          "provider": "src/core/casting_distance.js",
+          "providerStatus": "remaining"
+        },
+        {
+          "composed": "LineSpoolState",
+          "provider": "src/game/domain/fishing/line_spool_state.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "08ada649111eac82d775241f46bf677073643147dd4666e902234eae0744d331"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/systems/player_force_system.js",
+      "targetPath": "src/game/domain/fishing/player_force_system.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "PlayerForceSystem#calculateDragLimitKg",
+        "PlayerForceSystem#calculateMaxPlayerForceKg",
+        "PlayerForceSystem#clamp01",
+        "PlayerForceSystem#lerp",
+        "PlayerForceSystem#lineDir",
+        "PlayerForceSystem#physicsConfig",
+        "PlayerForceSystem#playerPullDir",
+        "PlayerForceSystem#playerVector"
+      ],
+      "reviewIssues": [
+        "self-composition:PlayerForceSystem->Vector2@2:19",
+        "self-composition:PlayerForceSystem->Vector2@3:20",
+        "self-composition:PlayerForceSystem->Vector2@4:14"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        },
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        },
+        {
+          "composed": "Vector2",
+          "provider": "src/engine/math/vector2.js",
+          "providerStatus": "approved-infrastructure"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "5090bd9e78b45ec3ec3433de9b97048ecdcc66241aef75f600e5ca841cc87d76"
+    },
+    {
+      "batchId": "stage-3.replan-341.batch-043-fishing-inventory-items-96886e57",
+      "currentPath": "src/systems/tackle_stress_system.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_system.js",
+      "decision": "approved-preserved",
+      "proof": "single-cumulative-module-instance-and-same-authoritative-owner",
+      "authoritativeOwners": [
+        "TackleStressSystem#accumulator",
+        "TackleStressSystem#breakInfo",
+        "TackleStressSystem#breakReason",
+        "TackleStressSystem#config",
+        "TackleStressSystem#createBreakInfo",
+        "TackleStressSystem#currentColor",
+        "TackleStressSystem#currentStatusColor",
+        "TackleStressSystem#currentStatusLabel",
+        "TackleStressSystem#currentTensionKg",
+        "TackleStressSystem#debug",
+        "TackleStressSystem#devFlags",
+        "TackleStressSystem#effectiveTensionKg",
+        "TackleStressSystem#failureSelector",
+        "TackleStressSystem#frameResult",
+        "TackleStressSystem#getEffectiveHookMaxLoadKg",
+        "TackleStressSystem#getEffectiveLeaderMaxLoadKg",
+        "TackleStressSystem#getEffectiveLineSystemMaxLoadKg",
+        "TackleStressSystem#getEffectiveMaxTackleLoadKg",
+        "TackleStressSystem#getEffectiveReelMaxLoadKg",
+        "TackleStressSystem#getEffectiveRodMaxLoadKg",
+        "TackleStressSystem#getStressRatio",
+        "TackleStressSystem#getWeakestTackleLimitFrame",
+        "TackleStressSystem#hook",
+        "TackleStressSystem#isBreakPrevented",
+        "TackleStressSystem#isBroken",
+        "TackleStressSystem#lastBreakProgress",
+        "TackleStressSystem#leader",
+        "TackleStressSystem#lineSystem",
+        "TackleStressSystem#preventedBreakReason",
+        "TackleStressSystem#pulsePhase",
+        "TackleStressSystem#reel",
+        "TackleStressSystem#refreshRatios",
+        "TackleStressSystem#resetStress",
+        "TackleStressSystem#resolveTackleStressConfig",
+        "TackleStressSystem#rng",
+        "TackleStressSystem#rod",
+        "TackleStressSystem#safeNumber",
+        "TackleStressSystem#selectFailureComponent",
+        "TackleStressSystem#selectedFailureComponent",
+        "TackleStressSystem#stressDebug",
+        "TackleStressSystem#stressDebugDefaults",
+        "TackleStressSystem#stressDebugWithDefaults",
+        "TackleStressSystem#stressRatio",
+        "TackleStressSystem#targetTensionKg",
+        "TackleStressSystem#tensionPercent",
+        "TackleStressSystem#tensionRatio",
+        "TackleStressSystem#tensionStressSource",
+        "TackleStressSystem#triggerTackleFailure",
+        "TackleStressSystem#updateEquipment",
+        "TackleStressSystem#updateTensionFrame",
+        "TackleStressSystem#updateVisualStates",
+        "TackleStressSystem#weakestLimitResolver"
+      ],
+      "reviewIssues": [
+        "self-composition:TackleStressSystem->TackleFailureSelector@37:29",
+        "self-composition:TackleStressSystem->TackleStressAccumulator@36:25",
+        "self-composition:TackleStressSystem->WeakestTackleLimitResolver@42:13"
+      ],
+      "collections": [],
+      "composition": [
+        {
+          "composed": "TackleFailureSelector",
+          "provider": "src/game/domain/fishing/tackle_failure_selector.js",
+          "providerStatus": "completed"
+        },
+        {
+          "composed": "TackleStressAccumulator",
+          "provider": "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "providerStatus": "completed"
+        },
+        {
+          "composed": "WeakestTackleLimitResolver",
+          "provider": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+          "providerStatus": "completed"
+        }
+      ],
+      "duplicateStateCopies": "forbidden",
+      "evidenceFingerprint": "7d09c147b4b7b769ec8446d0a07c4378f3d8d9868b80801e5e02af5da7a3b226"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "BiteRules#baitRules",
+          "BoatRules#isManual",
+          "CastRules#equipmentRules",
+          "EquipmentRules#castDistanceCalculator",
+          "EquipmentRules#config",
+          "EquipmentRules#getCastPowerCoefficient",
+          "EquipmentRules#getFloatLineBudget",
+          "EquipmentRules#getRodKind",
+          "EquipmentRules#isFeeder",
+          "EquipmentRules#isFloatRod",
+          "EquipmentRules#isSpinning",
+          "EquipmentRules#messages",
+          "EquipmentRules#requiresReel",
+          "PlayerCastRules#boatRules",
+          "PlayerCastRules#equipmentRules"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "BaitRules",
+          "BiteRules",
+          "BoatRules",
+          "CastRules",
+          "ChumRules",
+          "EquipmentRules",
+          "PlayerCastRules"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "a0ab318fd2574b0c6fbec414f0ca5c0ec492c543ab7f88a78a8c1e250b4eb0ae"
+    },
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "stateless",
+        "authoritativeOwners": [],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EQUIPMENT_ALL_SLOT_IDS",
+          "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "EQUIPMENT_MAIN_SLOT_IDS",
+          "EQUIPMENT_SLOT_CONFIG",
+          "EquipmentSlotId"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": [
+          {
+            "kind": "call",
+            "location": "19:33",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "27:38",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "34:32",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "39:31",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "40:26",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "44:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "46:27",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "50:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "52:36",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "56:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "58:29",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "62:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "68:28",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "72:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "74:32",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "78:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "7:25",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "80:26",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "84:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "86:31",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "90:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "92:31",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          },
+          {
+            "kind": "call",
+            "location": "96:18",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/config/inventory/equipment_slot_config.js"
+          }
+        ]
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "60a07f16e59357db08a94060a7360b34bfaed79faf75de1adfec128f61498d84"
+    },
+    {
+      "currentPath": "src/core/casting_distance.js",
+      "targetPath": "src/game/domain/casting/cast_distance_calculator.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "CastDistanceCalculator#clamp01",
+          "CastDistanceCalculator#clampCastPower",
+          "CastDistanceCalculator#config",
+          "CastDistanceCalculator#converter",
+          "CastDistanceCalculator#floatLineBudgetPolicy",
+          "CastDistanceCalculator#getBuildCastPowerCoefficient",
+          "CastDistanceCalculator#getCastingPowerConfig",
+          "CastDistanceCalculator#getEquippedLineStats",
+          "CastDistanceCalculator#getFloatLineBudget",
+          "CastDistanceCalculator#getLineMeters",
+          "CastDistanceCalculator#getMaxCastDistanceMeters",
+          "CastDistanceCalculator#getMaxCastDistancePx",
+          "CastDistanceCalculator#getRodBaseReachMeters",
+          "CastDistanceCalculator#isReelAvailable",
+          "CastDistanceCalculator#lineConfig",
+          "CastDistanceCalculator#metersToPixels",
+          "CastDistanceCalculator#numberOrDefault",
+          "CastDistanceCalculator#physicsConfig",
+          "CastDistanceCalculator#pixelsPerMeter",
+          "CastDistanceCalculator#pixelsToMeters",
+          "CastDistanceCalculator#readNumber",
+          "CastDistanceCalculator#resolvePhysicsConfigAdapter"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "CastDistanceCalculator",
+            "composed": "DistanceUnitConverter",
+            "location": "15:23",
+            "provider": "src/core/distance_unit_converter.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "CastDistanceCalculator",
+            "composed": "FloatTackleLineBudgetPolicy",
+            "location": "20:11",
+            "provider": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "CastDistanceCalculator"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "a5497766b205ede4023be5e2f53f57e64fc4212efd071e0247bd4df2450d2725"
+    },
+    {
+      "currentPath": "src/core/distance_unit_converter.js",
+      "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "DistanceUnitConverter#pixelsPerMeter"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "DistanceUnitConverter"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "84aeecd3e51ccc628fe96a28f66527b12127be4aa223abe72b19289086390e91"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentCompatibilityPolicy#acceptedTypes",
+          "EquipmentCompatibilityPolicy#capabilityResolver",
+          "EquipmentCompatibilityPolicy#isTackleCompatible",
+          "EquipmentCompatibilityPolicy#messages",
+          "EquipmentCompatibilityPolicy#readRootItem",
+          "EquipmentCompatibilityPolicy#readinessPolicy",
+          "EquipmentCompatibilityPolicy#result",
+          "EquipmentCompatibilityPolicy#slotConfig",
+          "EquipmentCompatibilityPolicy#terminalLineResolver",
+          "EquipmentCompatibilityPolicy#type",
+          "EquipmentCompatibilityPolicy#validate",
+          "EquipmentCompatibilityPolicy#visibilityPolicy"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "EquipmentCompatibilityPolicy",
+            "composed": "EquipmentSlotVisibilityPolicy",
+            "location": "25:7",
+            "provider": "src/core/equipment/equipment_slot_visibility_policy.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "EquipmentCompatibilityPolicy",
+            "composed": "RodCapabilityResolver",
+            "location": "22:29",
+            "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "EquipmentCompatibilityPolicy",
+            "composed": "TerminalLineSlotResolver",
+            "location": "31:7",
+            "provider": "src/core/equipment/terminal_line_slot_resolver.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EquipmentCompatibilityPolicy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": [
+          {
+            "kind": "assignment",
+            "location": "119:1",
+            "classification": "observable",
+            "review": "legacy-exposure-replaced-by-exact-activation",
+            "module": "src/core/equipment/equipment_compatibility_policy.js"
+          }
+        ]
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 4,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "277b424921b6eb8ecb656bbb7b654e3e836b8aa0c0e11390ddddbefc0992992e"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentSlotVisibilityPolicy#capabilityResolver",
+          "EquipmentSlotVisibilityPolicy#isVisible",
+          "EquipmentSlotVisibilityPolicy#slotConfig"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "EquipmentSlotVisibilityPolicy",
+            "composed": "RodCapabilityResolver",
+            "location": "15:11",
+            "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EquipmentSlotVisibilityPolicy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 3,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "ddef0869ee9cb8966ee6176b5634d52c4734df472112b698a7e475c7e6776c22"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_state.js",
+      "targetPath": "src/game/domain/equipment/equipment_state.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentState#assertKnownSlot",
+          "EquipmentState#auxiliarySlotIds",
+          "EquipmentState#defaultAuxiliarySlotIds",
+          "EquipmentState#defaultMainSlotIds",
+          "EquipmentState#getRootInstanceId",
+          "EquipmentState#mainSlotIds",
+          "EquipmentState#normalizeRootReference",
+          "EquipmentState#restore",
+          "EquipmentState#roots",
+          "EquipmentState#select",
+          "EquipmentState#setRootInstanceId",
+          "EquipmentState#slotIds"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EquipmentState"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "bdf7aef9601a3d388f7fddf9a66f6746585fd7a33f17b0ec5ccd4d033f5b410f"
+    },
+    {
+      "currentPath": "src/core/equipment/equipment_transition_planner.js",
+      "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentTransitionPlan#after",
+          "EquipmentTransitionPlan#allowed",
+          "EquipmentTransitionPlan#before",
+          "EquipmentTransitionPlan#capacity",
+          "EquipmentTransitionPlan#kind",
+          "EquipmentTransitionPlan#movements",
+          "EquipmentTransitionPlan#warning",
+          "ManualRodChangePlanner#capacityPolicy",
+          "ManualRodChangePlanner#mainSlotIds",
+          "ManualRodChangePlanner#messages",
+          "ManualRodChangePlanner#snapshot"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "ManualRodChangePlanner",
+            "composed": "UnlimitedInventoryCapacityPolicy",
+            "location": "39:11",
+            "provider": "src/game/domain/inventory/inventory_capacity_policy.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EquipmentTransitionPlan",
+          "ManualRodChangePlanner"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "473cd0e3265cf59e6462a37e84fea260c9f02913d7189b46ffe6037428c8ce00"
+    },
+    {
+      "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+      "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "FishingReadinessPolicy#assemblyReader",
+          "FishingReadinessPolicy#capabilityResolver",
+          "FishingReadinessPolicy#castResult",
+          "FishingReadinessPolicy#child",
+          "FishingReadinessPolicy#children",
+          "FishingReadinessPolicy#isHook",
+          "FishingReadinessPolicy#isLeader",
+          "FishingReadinessPolicy#item",
+          "FishingReadinessPolicy#itemReader",
+          "FishingReadinessPolicy#messages",
+          "FishingReadinessPolicy#root",
+          "FishingReadinessPolicy#slotId",
+          "FishingReadinessPolicy#validation"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "FishingReadinessPolicy",
+            "composed": "RodCapabilityResolver",
+            "location": "20:11",
+            "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "FishingReadinessPolicy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "7be03d3d0c127e35a37dbaf93d487e13c00dad47d60b68dfd9f4643b3dd50047"
+    },
+    {
+      "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+      "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "TerminalLineSlotResolver#capabilityResolver"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "TerminalLineSlotResolver",
+            "composed": "RodCapabilityResolver",
+            "location": "10:11",
+            "provider": "src/game/domain/equipment/rod_capability_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "TerminalLineSlotResolver"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "b724686efe44ffb62deffb26838885e8edf48f129f658b929b9731d3b9f90565"
+    },
+    {
+      "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+      "targetPath": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "FishFightDirectionResolver#away",
+          "FishFightDirectionResolver#clamp",
+          "FishFightDirectionResolver#lateral",
+          "FishFightDirectionResolver#result"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "FishFightDirectionResolver",
+            "composed": "Vector2",
+            "location": "2:13",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishFightDirectionResolver",
+            "composed": "Vector2",
+            "location": "3:11",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishFightDirectionResolver",
+            "composed": "Vector2",
+            "location": "4:14",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "FishFightDirectionResolver"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "3c69bfd02ba0b078b9307ac0721904c2c80cce042ebde93970c1860407980bae"
+    },
+    {
+      "currentPath": "src/core/fishing/landing_policy.js",
+      "targetPath": "src/game/domain/fishing/landing_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "LandingPolicy#getLandingDistanceMeters",
+          "LandingPolicyResolver#hasUsableReel",
+          "LandingPolicyResolver#polePolicy",
+          "LandingPolicyResolver#reelPolicy",
+          "PoleLandingPolicy#getRodLengthMeters"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "LandingPolicy",
+          "LandingPolicyResolver",
+          "PoleLandingPolicy",
+          "ReelLandingPolicy",
+          "resolveFightPhysicsConfig"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "1b23b8aa122aa26b3643e2f2b4bf6f2e537c2ecb838ada6c1d5e1fa31fa22b2a"
+    },
+    {
+      "currentPath": "src/core/fishing/retrieve_policy.js",
+      "targetPath": "src/game/domain/fishing/retrieve_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "IdleRetrievePolicyResolver#defaultPolicy",
+          "IdleRetrievePolicyResolver#hasUsableReel",
+          "IdleRetrievePolicyResolver#polePolicy"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "IdleRetrievePolicyResolver",
+          "PassiveLureRetrievePolicy",
+          "PoleIdleRetrievePolicy",
+          "RetrievePolicy",
+          "resolveFightPhysicsConfig"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "47f93c43b2118f6805ae4ad86b7446c9c21247fdca506ac5c1dbab1995202366"
+    },
+    {
+      "currentPath": "src/core/fishing/rod_pull_calculator.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_calculator.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "RodPullCalculator#buildResult",
+          "RodPullCalculator#calculateForceLimit",
+          "RodPullCalculator#calculateMaxDistance",
+          "RodPullCalculator#calculateStrokeCapacity",
+          "RodPullCalculator#config",
+          "RodPullCalculator#controlledPullLimitKg",
+          "RodPullCalculator#lineHasReserve",
+          "RodPullCalculator#pressureEfficiency",
+          "RodPullCalculator#pressureGainMultiplier",
+          "RodPullCalculator#ratioOrDefault",
+          "RodPullCalculator#resolveHoldChargePerSecond",
+          "RodPullCalculator#strokeCapacityResolver",
+          "RodPullCalculator#tensionBuildRateMultiplier",
+          "RodPullCalculator#tensionCeilingMultiplier"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "RodPullCalculator",
+            "composed": "RodStrokeCapacityResolver",
+            "location": "9:7",
+            "provider": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "RodPullCalculator"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "1511c24bb6388f10b5a8ab24f8998f3dde5e41aa96d0e5ba4e5df4e448722fe0"
+    },
+    {
+      "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+      "targetPath": "src/game/domain/inventory/flat_inventory_item_repository.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "FlatInventoryItemRepository#add",
+          "FlatInventoryItemRepository#assertNoLocationCycle",
+          "FlatInventoryItemRepository#canMergeItem",
+          "FlatInventoryItemRepository#childrenByParent",
+          "FlatInventoryItemRepository#clone",
+          "FlatInventoryItemRepository#fallbackSequence",
+          "FlatInventoryItemRepository#get",
+          "FlatInventoryItemRepository#getChildren",
+          "FlatInventoryItemRepository#instanceIdFactory",
+          "FlatInventoryItemRepository#items",
+          "FlatInventoryItemRepository#list",
+          "FlatInventoryItemRepository#nextInstanceId",
+          "FlatInventoryItemRepository#normalizeItem",
+          "FlatInventoryItemRepository#rebuildIndexesAndValidate",
+          "FlatInventoryItemRepository#remove",
+          "FlatInventoryItemRepository#require",
+          "FlatInventoryItemRepository#reservationPolicy",
+          "FlatInventoryItemRepository#toSnapshot",
+          "FlatInventoryItemRepository#update"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": [
+          {
+            "owner": "FlatInventoryItemRepository#childrenByParent",
+            "status": "unproven",
+            "reason": "src/core/inventory/flat_inventory_item_repository.js: #childrenByParent escapes its owner",
+            "cacheLifetime": "instance-lifetime-derived-index-rebuilt-with-store",
+            "creation": "unproven"
+          },
+          {
+            "owner": "FlatInventoryItemRepository#items",
+            "status": "unproven",
+            "reason": "src/core/inventory/flat_inventory_item_repository.js: #items escapes its owner",
+            "cacheLifetime": "instance-lifetime-authoritative-store",
+            "creation": "unproven"
+          }
+        ]
+      },
+      "identity": {
+        "providers": [
+          "FlatInventoryItemRepository"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [
+        {
+          "owner": "FlatInventoryItemRepository#childrenByParent",
+          "lifetime": "instance-lifetime-derived-index-rebuilt-with-store",
+          "creation": "unproven"
+        },
+        {
+          "owner": "FlatInventoryItemRepository#items",
+          "lifetime": "instance-lifetime-authoritative-store",
+          "creation": "unproven"
+        }
+      ],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "observed",
+        "deltaTimeSemantics": "requires-review",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "collection-identity-unproven:FlatInventoryItemRepository#childrenByParent",
+        "collection-identity-unproven:FlatInventoryItemRepository#items",
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "76c6c685ba3e1e0d700c37545bcda9baac1b899e1fce089b9a1fc601e8126d2a"
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "InventoryItemStackingPolicy.ignoredKeys"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": [
+          {
+            "owner": "InventoryItemStackingPolicy.ignoredKeys",
+            "status": "proven",
+            "collection": "Set",
+            "scope": "static",
+            "creation": "once-per-class-evaluation",
+            "creationLocation": "2:25",
+            "methods": [
+              "has"
+            ],
+            "mutatingMethods": [],
+            "escapes": 0,
+            "cacheLifetime": "class-lifetime-immutable-lookup"
+          }
+        ]
+      },
+      "identity": {
+        "providers": [
+          "InventoryItemStackingPolicy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": [
+          {
+            "kind": "instantiation",
+            "location": "2:25",
+            "classification": "observable",
+            "review": "reviewed-private-collection-created-once",
+            "module": "src/core/inventory/inventory_item_stacking_policy.js"
+          }
+        ]
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [
+        {
+          "owner": "InventoryItemStackingPolicy.ignoredKeys",
+          "lifetime": "class-lifetime-immutable-lookup",
+          "creation": "once-per-class-evaluation"
+        }
+      ],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "35ffc162545798598a5c8f482c6e4b763757d864160b93fc9050a93de2228766"
+    },
+    {
+      "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "CompositeMetricStrategy#available",
+          "CompositeMetricStrategy#unavailable"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "CompositeMetricStrategy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "b55dd60a73f5724ccc3d2c8b49c3b5c60cfa0d3f5f117d9d320f8c1fb3dfd3c9"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "ItemCapacityResolver#effectiveStatsResolver",
+          "ItemCapacityResolver#messages",
+          "ItemCapacityResolver#number",
+          "ItemCapacityResolver#readPath",
+          "ItemCapacityResolver#unavailable"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "ItemCapacityResolver"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "cd866633eaaeba1e151458ef7f726e70a1b99763d583b1b25ccebcae6507e6f9"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "ItemCatalogBaselineRegistry#cache",
+          "ItemCatalogBaselineRegistry#catalogItems",
+          "ItemCatalogBaselineRegistry#effectiveStatsResolver",
+          "ItemCatalogBaselineRegistry#fixed",
+          "ItemCatalogBaselineRegistry#itemDb",
+          "ItemCatalogBaselineRegistry#logger",
+          "ItemCatalogBaselineRegistry#strategyRegistry",
+          "ItemCatalogBaselineRegistry#unavailable"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": [
+          {
+            "owner": "ItemCatalogBaselineRegistry#cache",
+            "status": "proven",
+            "collection": "Map",
+            "scope": "instance",
+            "creation": "once-per-instance",
+            "creationLocation": "5:12",
+            "methods": [
+              "clear",
+              "get",
+              "set"
+            ],
+            "mutatingMethods": [
+              "clear",
+              "set"
+            ],
+            "escapes": 0,
+            "cacheLifetime": "instance-lifetime-derived-memo-with-explicit-clear"
+          }
+        ]
+      },
+      "identity": {
+        "providers": [
+          "ItemCatalogBaselineRegistry"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [
+        {
+          "owner": "ItemCatalogBaselineRegistry#cache",
+          "lifetime": "instance-lifetime-derived-memo-with-explicit-clear",
+          "creation": "once-per-instance"
+        }
+      ],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "22c7258b02f1d86509bf84388fbf88c3e6059a5a57a6f1e9f255f60832dd36b9"
+    },
+    {
+      "currentPath": "src/core/items/progression/item_rating_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "ItemRatingResolver#baselineRegistry",
+          "ItemRatingResolver#resolveOutOfRange",
+          "ItemRatingResolver#strategyRegistry",
+          "ItemRatingResolver#unavailable"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "ItemRatingResolver"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "06aae01b2076816fb6832b6b6a9dd15c71218f235b3e42b2a348e08c4e3e3ec2"
+    },
+    {
+      "currentPath": "src/core/line/line_allocation_policy.js",
+      "targetPath": "src/game/domain/line/line_allocation_policy.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "LineAllocationPolicy#getLineLengthMeters",
+          "LineAllocationPolicy#getMaximumLineLengthMeters",
+          "LineAllocationPolicy#getMinimumLineLengthMeters",
+          "LineAllocationPolicy#invalid",
+          "LineAllocationPolicy#lineConfig",
+          "LineAllocationPolicy#messages",
+          "LineAllocationPolicy#numberOrDefault",
+          "LineAllocationPolicy#rodLengthMeters",
+          "LineAllocationPolicy#rodRequiresReel"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "LineAllocationPolicy"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "7eff1b14f72b7e21b1d8e8033a63db2984bc0b05d99d3fdf7c6c245dcc95af6d"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout.js",
+      "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentLoadout#assertNoAuxiliaryAssignments",
+          "EquipmentLoadout#createdAt",
+          "EquipmentLoadout#displayType",
+          "EquipmentLoadout#getContainedRootIds",
+          "EquipmentLoadout#getRootInstanceIds",
+          "EquipmentLoadout#inventoryCellCost",
+          "EquipmentLoadout#loadoutId",
+          "EquipmentLoadout#mainSlotIds",
+          "EquipmentLoadout#name",
+          "EquipmentLoadout#normalizeRoot",
+          "EquipmentLoadout#rootInstanceIds",
+          "EquipmentLoadout#type",
+          "EquipmentLoadout#updatedAt"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "EquipmentLoadout",
+          "LOADOUT_DISPLAY_NAME"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "accc2b183005ca7db45b53e82776a275d7142de2c7290cd32779d566bf61f2ac"
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "EquipmentLoadoutRepository#add",
+          "EquipmentLoadoutRepository#get",
+          "EquipmentLoadoutRepository#has",
+          "EquipmentLoadoutRepository#list",
+          "EquipmentLoadoutRepository#loadouts",
+          "EquipmentLoadoutRepository#require",
+          "EquipmentLoadoutRepository#toSnapshot"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "EquipmentLoadoutRepository",
+            "composed": "EquipmentLoadout",
+            "location": "26:11",
+            "provider": "src/core/loadouts/equipment_loadout.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "EquipmentLoadoutRepository",
+            "composed": "EquipmentLoadout",
+            "location": "61:23",
+            "provider": "src/core/loadouts/equipment_loadout.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": [
+          {
+            "owner": "EquipmentLoadoutRepository#loadouts",
+            "status": "unproven",
+            "reason": "src/core/loadouts/equipment_loadout_repository.js: #loadouts escapes its owner",
+            "cacheLifetime": "instance-lifetime-authoritative-store",
+            "creation": "unproven"
+          }
+        ]
+      },
+      "identity": {
+        "providers": [
+          "EquipmentLoadoutRepository"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": [
+          {
+            "kind": "assignment",
+            "location": "71:1",
+            "classification": "observable",
+            "review": "legacy-exposure-replaced-by-exact-activation",
+            "module": "src/core/loadouts/equipment_loadout_repository.js"
+          }
+        ]
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [
+        {
+          "owner": "EquipmentLoadoutRepository#loadouts",
+          "lifetime": "instance-lifetime-authoritative-store",
+          "creation": "unproven"
+        }
+      ],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "collection-identity-unproven:EquipmentLoadoutRepository#loadouts"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "dbaffffb03091f6b78004b559aa03e2c836f53cc385db13cd5bfd1a97207cd9b"
+    },
+    {
+      "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "LoadoutEquipmentTransitionPlanner#capacityPolicy",
+          "LoadoutEquipmentTransitionPlanner#getOwner",
+          "LoadoutEquipmentTransitionPlanner#mainSlotIds",
+          "LoadoutEquipmentTransitionPlanner#messages",
+          "LoadoutEquipmentTransitionPlanner#ownershipReader"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "LoadoutEquipmentTransitionPlanner",
+            "composed": "UnlimitedInventoryCapacityPolicy",
+            "location": "18:11",
+            "provider": "src/game/domain/inventory/inventory_capacity_policy.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "LoadoutEquipmentTransitionPlanner"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "7f0912334e21cbf65e8c0f46ddf866982568456f55785f5b3c12fbd5ef5a7084"
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "targetPath": "src/game/domain/fish/fish.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "Fish#behavior",
+          "Fish#clampPowerDebuff",
+          "Fish#clearDebuff",
+          "Fish#fishConfig",
+          "Fish#getBehaviorMap",
+          "Fish#getInitialPower",
+          "Fish#getLevelMultiplier",
+          "Fish#getMaxSpeedPxPerSec",
+          "Fish#getPower",
+          "Fish#getStaticPowerKg",
+          "Fish#hasActiveDebuff",
+          "Fish#int",
+          "Fish#lastDebuffName",
+          "Fish#level",
+          "Fish#logger",
+          "Fish#masteryPowerMult",
+          "Fish#originalBehaviors",
+          "Fish#powerDebuff",
+          "Fish#rng",
+          "Fish#weight",
+          "FishBehavior#clamp01",
+          "FishBehavior#clampNonNegative",
+          "FishBehavior#config",
+          "FishBehavior#currentLateralIntent",
+          "FishBehavior#currentMove",
+          "FishBehavior#currentPull",
+          "FishBehavior#currentRadialIntent",
+          "FishBehavior#currentStateName",
+          "FishBehavior#dirTimer",
+          "FishBehavior#directionIntentSampler",
+          "FishBehavior#effectiveBehaviorWeight",
+          "FishBehavior#forceState",
+          "FishBehavior#holdSpecialStateUntilLeave",
+          "FishBehavior#isLocked",
+          "FishBehavior#lastDashBlockedByCatchZone",
+          "FishBehavior#lastDashCheckTimer",
+          "FishBehavior#lastDashDebug",
+          "FishBehavior#lastMovementDebuffDebug",
+          "FishBehavior#lerpRange",
+          "FishBehavior#logger",
+          "FishBehavior#movementProfile",
+          "FishBehavior#normalizeRange",
+          "FishBehavior#pickDirectionTarget",
+          "FishBehavior#pickNextState",
+          "FishBehavior#positiveOrInfinity",
+          "FishBehavior#random",
+          "FishBehavior#range",
+          "FishBehavior#resolveChance",
+          "FishBehavior#resolveLastDashTriggerDistance",
+          "FishBehavior#resolveLastDashZoneShape",
+          "FishBehavior#resolveRadialRangeFrame",
+          "FishBehavior#rng",
+          "FishBehavior#runtimeMovementModifier",
+          "FishBehavior#stateTimer",
+          "FishBehavior#targetLateralIntent",
+          "FishBehavior#targetMove",
+          "FishBehavior#targetPull",
+          "FishBehavior#targetRadialIntent",
+          "FishCondition#currentExhaustion",
+          "FishCondition#currentStamina",
+          "FishCondition#maxEndurance",
+          "FishCondition#maxStamina",
+          "FishCondition#phase",
+          "FishEndurancePointsCalculator#isBossFish",
+          "FishEndurancePointsCalculator#positiveLevel",
+          "FishEndurancePointsCalculator#positiveNumber",
+          "FishEndurancePointsCalculator#resolveBaseStamina",
+          "FishEndurancePointsCalculator#resolveBossMultiplier",
+          "FishPhysicsProfile#copyFiniteAlias",
+          "FishPhysicsProfile#copyNormalizedRange",
+          "FishPhysicsProfile#firstFiniteNumber",
+          "FishPhysicsProfile#normalizeBehaviors",
+          "FishPhysicsProfile#object",
+          "FishPhysicsProfile#raw",
+          "FishPhysicsProfile#resolveBehaviors",
+          "FishStaminaPointsCalculator#positiveNumber",
+          "FishStaminaPointsCalculator#resolveRatio"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "FishBehavior",
+            "composed": "FishDirectionIntentSampler",
+            "location": "601:7",
+            "provider": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "FISH_FIGHT_EVENT",
+          "Fish",
+          "FishBehavior",
+          "FishCondition",
+          "FishEndurancePointsCalculator",
+          "FishPhysicsProfile",
+          "FishStaminaPointsCalculator"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": [
+          {
+            "kind": "call",
+            "location": "1:26",
+            "classification": "observable",
+            "review": "reviewed-immutable-constant-declaration",
+            "module": "src/entities/fish.js"
+          }
+        ]
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "none-observed",
+        "deltaTimeSemantics": "preserved",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 3,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "ffb009751f5a0ef3815f2bcb03a720664101b7d6d44321cbb99c2b0894913fac"
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "targetPath": "src/game/domain/tackle/tackle.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "Equipment#basePower",
+          "Equipment#equipmentPowerLevel",
+          "FeederEntity#_applyPassiveRetrieve",
+          "FeederEntity#_chance",
+          "FeederEntity#_currentAngle",
+          "FeederEntity#_currentHookDepth",
+          "FeederEntity#_currentScaleY",
+          "FeederEntity#_isBiting",
+          "FeederEntity#_isHooked",
+          "FeederEntity#_isSinking",
+          "FeederEntity#_lerp",
+          "FeederEntity#_position",
+          "FeederEntity#_sinkingStartAngle",
+          "FeederEntity#_sinkingTimer",
+          "FeederEntity#_sinkingTotalTime",
+          "FeederEntity#_syncToBottomDepth",
+          "FeederEntity#_targetHookDepth",
+          "FeederEntity#_velocity",
+          "FeederEntity#_weightedTackleConfig",
+          "FeederEntity#_weightedTackleHeightScale",
+          "FeederEntity#getEffectiveHookDepth",
+          "FeederEntity#isBottomLocked",
+          "FeederEntity#stopBite",
+          "FloatEntity#_advanceSinkingVisual",
+          "FloatEntity#_applyPassiveRetrieve",
+          "FloatEntity#_baseColor",
+          "FloatEntity#_chance",
+          "FloatEntity#_config",
+          "FloatEntity#_currentAngle",
+          "FloatEntity#_currentColor",
+          "FloatEntity#_currentHookDepth",
+          "FloatEntity#_currentScaleY",
+          "FloatEntity#_floatMotionConfig",
+          "FloatEntity#_getPullImpulseSign",
+          "FloatEntity#_getSinkingDepthProgress",
+          "FloatEntity#_isBiting",
+          "FloatEntity#_isHooked",
+          "FloatEntity#_isOverDepth",
+          "FloatEntity#_isSinking",
+          "FloatEntity#_lureRetrieveConfig",
+          "FloatEntity#_motionTiltAngle",
+          "FloatEntity#_motionTiltEnabled",
+          "FloatEntity#_perspectiveScale",
+          "FloatEntity#_position",
+          "FloatEntity#_pullImpulseAngle",
+          "FloatEntity#_pullImpulseScaleY",
+          "FloatEntity#_pullImpulseSign",
+          "FloatEntity#_redirectSinkingAngleFromPull",
+          "FloatEntity#_sinkingDelayTimer",
+          "FloatEntity#_sinkingStartAngle",
+          "FloatEntity#_sinkingTotalTime",
+          "FloatEntity#_sinkingVisualElapsed",
+          "FloatEntity#_syncSinkingAngleToDepth",
+          "FloatEntity#_targetHookDepth",
+          "FloatEntity#_updatePullImpulseTilt",
+          "FloatEntity#_velocity",
+          "FloatEntity#_weightedTackleConfig",
+          "FloatEntity#_weightedTackleHeightScale",
+          "FloatEntity#stopBite",
+          "Hook#durability",
+          "Hook#durabilityMaxLoadLossPerPercent",
+          "Hook#hookPowerGrade",
+          "Hook#maxLoadKg",
+          "Hook#powerPolicy",
+          "Hook#qualityGrade",
+          "Hook#weight",
+          "JigEntity#_applyRetrieveForce",
+          "JigEntity#_config",
+          "JigEntity#_currentHookDepth",
+          "JigEntity#_lureResistance",
+          "JigEntity#_lureRetrieveConfig",
+          "JigEntity#_maxDepth",
+          "Net#config",
+          "Net#converter",
+          "Net#createConverter",
+          "Net#getMaxWeight",
+          "Net#getReachMeters",
+          "Net#getReachPixels",
+          "Net#getTriggerVirtualY",
+          "Net#isActive",
+          "Net#qualityModifier",
+          "Net#updateConfig",
+          "Net#virtualReach",
+          "Reel#baseRetrieveSpeedMetersPerSec",
+          "Reel#bearingCount",
+          "Reel#bearingRetrieveSpeedBonusMetersPerSec",
+          "Reel#dragChangeSpeedPerSec",
+          "Reel#dragMaxKg",
+          "Reel#dragMinKg",
+          "Reel#durability",
+          "Reel#durabilityMaxLoadLossPerPercent",
+          "Reel#getPower",
+          "Reel#hasDrag",
+          "Reel#hasHoldMechanic",
+          "Reel#holdConfig",
+          "Reel#lineCapacityMeters",
+          "Reel#maxLoadKg",
+          "Reel#retrieveSpeedCalculator",
+          "Rod#castPowerCoefficient",
+          "Rod#compensation",
+          "Rod#durability",
+          "Rod#durabilityMaxLoadLossPerPercent",
+          "Rod#hasReel",
+          "Rod#holdTensionRatio",
+          "Rod#lengthMeters",
+          "Rod#maxDistance",
+          "Rod#maxLoadKg",
+          "Rod#variant",
+          "SpinnerEntity#_applyRetrieveForce",
+          "SpinnerEntity#_config",
+          "SpinnerEntity#_currentHookDepth",
+          "SpinnerEntity#_lureResistance",
+          "SpinnerEntity#_lureRetrieveConfig",
+          "WaterEntity#_activeBiteSequence",
+          "WaterEntity#_afterPhysicsUpdate",
+          "WaterEntity#_animDuration",
+          "WaterEntity#_animTimer",
+          "WaterEntity#_applyGodModeBiteSequence",
+          "WaterEntity#_applyPhysics",
+          "WaterEntity#_applyRetrieveForce",
+          "WaterEntity#_applyRetrieveSpeed",
+          "WaterEntity#_baseColor",
+          "WaterEntity#_biteMoveTimer",
+          "WaterEntity#_calculateEnvironmentDrift",
+          "WaterEntity#_chance",
+          "WaterEntity#_config",
+          "WaterEntity#_currentAngle",
+          "WaterEntity#_currentBiteMoveVelocity",
+          "WaterEntity#_currentColor",
+          "WaterEntity#_currentHookDepth",
+          "WaterEntity#_currentScaleY",
+          "WaterEntity#_currentSequenceCount",
+          "WaterEntity#_debugEvents",
+          "WaterEntity#_devFlags",
+          "WaterEntity#_easeInOutQuad",
+          "WaterEntity#_emitDebugEvent",
+          "WaterEntity#_environmentalCompensationModifier",
+          "WaterEntity#_fightPhysicsConfig",
+          "WaterEntity#_floatMotionConfig",
+          "WaterEntity#_forceScratch",
+          "WaterEntity#_formatPercent",
+          "WaterEntity#_generateRandomAnim",
+          "WaterEntity#_getClampedDtSec",
+          "WaterEntity#_getRandom",
+          "WaterEntity#_getVelocityDamping",
+          "WaterEntity#_handleSequenceEnd",
+          "WaterEntity#_isBiting",
+          "WaterEntity#_isGuaranteed",
+          "WaterEntity#_isHooked",
+          "WaterEntity#_isOverDepth",
+          "WaterEntity#_isPlayerPullingThisFrame",
+          "WaterEntity#_lerp",
+          "WaterEntity#_lureResistance",
+          "WaterEntity#_lureRetrieveConfig",
+          "WaterEntity#_maxDepth",
+          "WaterEntity#_motionTiltAngle",
+          "WaterEntity#_motionTiltEnabled",
+          "WaterEntity#_nextAnimStep",
+          "WaterEntity#_passiveRetrieveConfig",
+          "WaterEntity#_perspectiveScale",
+          "WaterEntity#_position",
+          "WaterEntity#_processMechanics",
+          "WaterEntity#_pullImpulseAngle",
+          "WaterEntity#_pullImpulseScaleY",
+          "WaterEntity#_pullImpulseSign",
+          "WaterEntity#_random",
+          "WaterEntity#_resetPassiveWindMotion",
+          "WaterEntity#_rng",
+          "WaterEntity#_rollBiteSequence",
+          "WaterEntity#_rollChance",
+          "WaterEntity#_runtimeConfig",
+          "WaterEntity#_sequenceQueue",
+          "WaterEntity#_sinkingStartAngle",
+          "WaterEntity#_startAnimState",
+          "WaterEntity#_stepId",
+          "WaterEntity#_targetAnimState",
+          "WaterEntity#_targetHookDepth",
+          "WaterEntity#_targetSequenceCount",
+          "WaterEntity#_targetWindAngle",
+          "WaterEntity#_updateMotionTilt",
+          "WaterEntity#_velocity",
+          "WaterEntity#_velocityDamping",
+          "WaterEntity#_weightedTackleConfig",
+          "WaterEntity#_weightedTackleHeightScale",
+          "WaterEntity#_windAngleOffset",
+          "WaterEntity#_windFluctuationTimer",
+          "WaterEntity#_windTimer",
+          "WaterEntity#applyForce",
+          "WaterEntity#getEffectiveHookDepth",
+          "WaterEntity#stopBite",
+          "WaterEntity#updateBite",
+          "WobblerEntity#_adjustDepth",
+          "WobblerEntity#_applyRetrieveForce",
+          "WobblerEntity#_config",
+          "WobblerEntity#_currentHookDepth",
+          "WobblerEntity#_lureResistance",
+          "WobblerEntity#_lureRetrieveConfig",
+          "WobblerEntity#_maxDepth"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "Net",
+            "composed": "DistanceUnitConverter",
+            "location": "382:14",
+            "provider": "src/core/distance_unit_converter.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "WaterEntity",
+            "composed": "EnvironmentalCompensationModifier",
+            "location": "475:7",
+            "provider": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "Hook",
+            "composed": "HookPowerPolicy",
+            "location": "252:43",
+            "provider": "src/game/domain/items/hook/hook_power_policy.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "Net",
+            "composed": "NetQualityModifier",
+            "location": "296:48",
+            "provider": "src/game/domain/items/quality/net_quality_modifier.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "Reel",
+            "composed": "ReelRetrieveSpeedCalculator",
+            "location": "107:30",
+            "provider": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "WaterEntity",
+            "composed": "Vector2",
+            "location": "464:22",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "WaterEntity",
+            "composed": "Vector2",
+            "location": "465:22",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "WaterEntity",
+            "composed": "Vector2",
+            "location": "466:37",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "WaterEntity",
+            "composed": "Vector2",
+            "location": "467:26",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "BaitFactory",
+          "Equipment",
+          "FeederEntity",
+          "FloatEntity",
+          "Hook",
+          "JigEntity",
+          "Net",
+          "Reel",
+          "Rod",
+          "SpinnerEntity",
+          "WaterEntity",
+          "WobblerEntity"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "observed",
+        "deltaTimeSemantics": "preserved",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 6,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "71d2ef885cf815a60a5b169326d12cd9cb88cc55f98865aec041ba7acf43bdde"
+    },
+    {
+      "currentPath": "src/systems/buff_manager.js",
+      "targetPath": "src/game/domain/fishing/buff_manager.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "BuffManager#activeBuffs"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "BuffManager"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "none"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "none-observed",
+        "deltaTimeSemantics": "preserved",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "56ed8a3e2c2b9c4abfb5493d8f80df6dbb46c414d2bf57d32be38cca89d204f6"
+    },
+    {
+      "currentPath": "src/systems/fish_force_system.js",
+      "targetPath": "src/game/domain/fishing/fish_force_system.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "FishForceSystem#calculateDirectionInfo",
+          "FishForceSystem#calculateEnduranceMovementDebuff",
+          "FishForceSystem#calculateOpposition",
+          "FishForceSystem#calculatePlayerForce",
+          "FishForceSystem#clamp01",
+          "FishForceSystem#config",
+          "FishForceSystem#debug",
+          "FishForceSystem#directionResolver",
+          "FishForceSystem#dragForceCalculator",
+          "FishForceSystem#enduranceMovementDebuffCalculator",
+          "FishForceSystem#enduranceMovementDebugFields",
+          "FishForceSystem#firstFiniteNumber",
+          "FishForceSystem#fish",
+          "FishForceSystem#forceCalculator",
+          "FishForceSystem#getCurrentVelocityPxPerSec",
+          "FishForceSystem#getRuntimePhysicsConfig",
+          "FishForceSystem#holdOppositionResolver",
+          "FishForceSystem#lerp",
+          "FishForceSystem#numberOrDefault",
+          "FishForceSystem#physicsConfig",
+          "FishForceSystem#playerForceSystem",
+          "FishForceSystem#positiveOrDefault",
+          "FishForceSystem#resolvePhysicsConfigAdapter",
+          "FishForceSystem#scratchB",
+          "FishForceSystem#targetVelocity",
+          "FishForceSystem#tautTargetVelocity"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "FishForceSystem",
+            "composed": "DragForceCalculator",
+            "location": "11:26",
+            "provider": "src/game/domain/fishing/drag_force_calculator.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "EnduranceMovementDebuffCalculator",
+            "location": "14:9",
+            "provider": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "FishFightDirectionResolver",
+            "location": "5:24",
+            "provider": "src/core/fishing/fish_fight_direction_resolver.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "HoldOppositionResolver",
+            "location": "10:29",
+            "provider": "src/game/domain/fishing/hold_opposition_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "PlayerForceSystem",
+            "location": "23:31",
+            "provider": "src/systems/player_force_system.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "SimpleFightForceCalculator",
+            "location": "9:22",
+            "provider": "src/game/domain/fishing/simple_fight_force_calculator.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "Vector2",
+            "location": "4:15",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "Vector2",
+            "location": "6:21",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "FishForceSystem",
+            "composed": "Vector2",
+            "location": "7:25",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "FishForceSystem"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 8,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "330e9b75f06504aab504dd3cf39d2fc178b85e8169709635824c2daccc1b9e7e"
+    },
+    {
+      "currentPath": "src/systems/line_system.js",
+      "targetPath": "src/game/domain/fishing/line_system.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "LineSystem#baseReachMeters",
+          "LineSystem#clamp01",
+          "LineSystem#config",
+          "LineSystem#constraintTolerancePx",
+          "LineSystem#distanceCalculator",
+          "LineSystem#distanceMeters",
+          "LineSystem#durabilityLossPerPercent",
+          "LineSystem#getEffectiveLineMaxLoadKg",
+          "LineSystem#getState",
+          "LineSystem#hasReel",
+          "LineSystem#initialized",
+          "LineSystem#isFullyExtended",
+          "LineSystem#lastConstraintResult",
+          "LineSystem#lastRecoveredMeters",
+          "LineSystem#lastReleaseResult",
+          "LineSystem#lastReleasedMeters",
+          "LineSystem#lineDurability",
+          "LineSystem#lineExtensionRatio",
+          "LineSystem#lineMaxLoadKg",
+          "LineSystem#maxRemainingMeters",
+          "LineSystem#numberOrDefault",
+          "LineSystem#pixelsPerMeter",
+          "LineSystem#randomRange",
+          "LineSystem#recoverLineCredit",
+          "LineSystem#reelLineMeters",
+          "LineSystem#refreshState",
+          "LineSystem#releasedMeters",
+          "LineSystem#remainingMeters",
+          "LineSystem#setConstraintResult",
+          "LineSystem#setReleaseResult",
+          "LineSystem#spoolState",
+          "LineSystem#totalLengthMeters",
+          "LineSystem#updateDistance"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "LineSystem",
+            "composed": "CastDistanceCalculator",
+            "location": "50:33",
+            "provider": "src/core/casting_distance.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "LineSystem",
+            "composed": "LineSpoolState",
+            "location": "69:24",
+            "provider": "src/game/domain/fishing/line_spool_state.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "LineSystem"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 2,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "08ada649111eac82d775241f46bf677073643147dd4666e902234eae0744d331"
+    },
+    {
+      "currentPath": "src/systems/player_force_system.js",
+      "targetPath": "src/game/domain/fishing/player_force_system.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "PlayerForceSystem#calculateDragLimitKg",
+          "PlayerForceSystem#calculateMaxPlayerForceKg",
+          "PlayerForceSystem#clamp01",
+          "PlayerForceSystem#lerp",
+          "PlayerForceSystem#lineDir",
+          "PlayerForceSystem#physicsConfig",
+          "PlayerForceSystem#playerPullDir",
+          "PlayerForceSystem#playerVector"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "PlayerForceSystem",
+            "composed": "Vector2",
+            "location": "2:19",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "PlayerForceSystem",
+            "composed": "Vector2",
+            "location": "3:20",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "PlayerForceSystem",
+            "composed": "Vector2",
+            "location": "4:14",
+            "provider": "src/engine/math/vector2.js",
+            "providerStatus": "approved-infrastructure",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "PlayerForceSystem"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 1,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "5090bd9e78b45ec3ec3433de9b97048ecdcc66241aef75f600e5ca841cc87d76"
+    },
+    {
+      "currentPath": "src/systems/rod_pull_system.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_system.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "RodPullSystem#applyPlayerForceBudgetDiagnostics",
+          "RodPullSystem#calculator",
+          "RodPullSystem#clamp01",
+          "RodPullSystem#clearStrokeFrameDiagnostics",
+          "RodPullSystem#copyResultToState",
+          "RodPullSystem#fishTensionKg",
+          "RodPullSystem#holdTensionRatio",
+          "RodPullSystem#recordDistanceMovement",
+          "RodPullSystem#result",
+          "RodPullSystem#rodLengthMeters",
+          "RodPullSystem#rodLimitKg",
+          "RodPullSystem#state",
+          "RodPullSystem#strokeSnapshot",
+          "RodPullSystem#strokeState",
+          "RodPullSystem#writeStrokeSnapshot"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "RodPullSystem",
+            "composed": "RodPullCalculator",
+            "location": "73:24",
+            "provider": "src/core/fishing/rod_pull_calculator.js",
+            "providerStatus": "remaining",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "RodPullSystem",
+            "composed": "RodPullState",
+            "location": "3:12",
+            "provider": "src/game/domain/fishing/rod_pull_state.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "RodPullSystem",
+            "composed": "RodStrokeState",
+            "location": "4:18",
+            "provider": "src/game/domain/fishing/rod_stroke_state.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "RodPullSystem"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "observed",
+        "deltaTimeSemantics": "requires-review",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 3,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "23d0f8e2b6efb327776327ef14a7ab92d56474d86ee13a2c89152a0df4cac995"
+    },
+    {
+      "currentPath": "src/systems/tackle_stress_system.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_system.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "partial",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "TackleStressSystem#accumulator",
+          "TackleStressSystem#breakInfo",
+          "TackleStressSystem#breakReason",
+          "TackleStressSystem#config",
+          "TackleStressSystem#createBreakInfo",
+          "TackleStressSystem#currentColor",
+          "TackleStressSystem#currentStatusColor",
+          "TackleStressSystem#currentStatusLabel",
+          "TackleStressSystem#currentTensionKg",
+          "TackleStressSystem#debug",
+          "TackleStressSystem#devFlags",
+          "TackleStressSystem#effectiveTensionKg",
+          "TackleStressSystem#failureSelector",
+          "TackleStressSystem#frameResult",
+          "TackleStressSystem#getEffectiveHookMaxLoadKg",
+          "TackleStressSystem#getEffectiveLeaderMaxLoadKg",
+          "TackleStressSystem#getEffectiveLineSystemMaxLoadKg",
+          "TackleStressSystem#getEffectiveMaxTackleLoadKg",
+          "TackleStressSystem#getEffectiveReelMaxLoadKg",
+          "TackleStressSystem#getEffectiveRodMaxLoadKg",
+          "TackleStressSystem#getStressRatio",
+          "TackleStressSystem#getWeakestTackleLimitFrame",
+          "TackleStressSystem#hook",
+          "TackleStressSystem#isBreakPrevented",
+          "TackleStressSystem#isBroken",
+          "TackleStressSystem#lastBreakProgress",
+          "TackleStressSystem#leader",
+          "TackleStressSystem#lineSystem",
+          "TackleStressSystem#preventedBreakReason",
+          "TackleStressSystem#pulsePhase",
+          "TackleStressSystem#reel",
+          "TackleStressSystem#refreshRatios",
+          "TackleStressSystem#resetStress",
+          "TackleStressSystem#resolveTackleStressConfig",
+          "TackleStressSystem#rng",
+          "TackleStressSystem#rod",
+          "TackleStressSystem#safeNumber",
+          "TackleStressSystem#selectFailureComponent",
+          "TackleStressSystem#selectedFailureComponent",
+          "TackleStressSystem#stressDebug",
+          "TackleStressSystem#stressDebugDefaults",
+          "TackleStressSystem#stressDebugWithDefaults",
+          "TackleStressSystem#stressRatio",
+          "TackleStressSystem#targetTensionKg",
+          "TackleStressSystem#tensionPercent",
+          "TackleStressSystem#tensionRatio",
+          "TackleStressSystem#tensionStressSource",
+          "TackleStressSystem#triggerTackleFailure",
+          "TackleStressSystem#updateEquipment",
+          "TackleStressSystem#updateTensionFrame",
+          "TackleStressSystem#updateVisualStates",
+          "TackleStressSystem#weakestLimitResolver"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [
+          {
+            "owner": "TackleStressSystem",
+            "composed": "TackleFailureSelector",
+            "location": "37:29",
+            "provider": "src/game/domain/fishing/tackle_failure_selector.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "TackleStressSystem",
+            "composed": "TackleStressAccumulator",
+            "location": "36:25",
+            "provider": "src/game/domain/fishing/tackle_stress_accumulator.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          },
+          {
+            "owner": "TackleStressSystem",
+            "composed": "WeakestTackleLimitResolver",
+            "location": "42:13",
+            "provider": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+            "providerStatus": "completed",
+            "identity": "owner-created-instance"
+          }
+        ],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "TackleStressSystem"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "none",
+        "perFrameAllocations": "unknown",
+        "deltaTimeSemantics": "not-applicable",
+        "updateRenderSeparation": "not-applicable",
+        "requiredEvidence": []
+      },
+      "availability": {
+        "constraints": 3,
+        "unconfirmed": 0
+      },
+      "findings": [],
+      "verdict": "sufficient",
+      "evidenceFingerprint": "7d09c147b4b7b769ec8446d0a07c4378f3d8d9868b80801e5e02af5da7a3b226"
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "targetPath": "src/game/domain/locations/location_world.js",
+      "category": "candidate",
+      "ownership": {
+        "status": "verified",
+        "classification": "authoritative-owner",
+        "authoritativeOwners": [
+          "DynamicZone#bounds",
+          "DynamicZone#currentSpeed",
+          "DynamicZone#dirTimer",
+          "DynamicZone#h",
+          "DynamicZone#id",
+          "DynamicZone#moving",
+          "DynamicZone#multiplier",
+          "DynamicZone#range",
+          "DynamicZone#rng",
+          "DynamicZone#speedX",
+          "DynamicZone#speedY",
+          "DynamicZone#type",
+          "DynamicZone#w",
+          "DynamicZone#x",
+          "DynamicZone#y",
+          "GridCell#depth",
+          "GridCell#hasCollision",
+          "GridCell#hasSnag",
+          "GridCell#isCastable",
+          "GridCell#isWater",
+          "GridCell#size",
+          "GridCell#x",
+          "GridCell#y",
+          "LocationMap#applyLocationResources",
+          "LocationMap#backgroundRenderData",
+          "LocationMap#bgAssetIds",
+          "LocationMap#bgLoaded",
+          "LocationMap#bgOpacities",
+          "LocationMap#buildGrid",
+          "LocationMap#castableBounds",
+          "LocationMap#cols",
+          "LocationMap#config",
+          "LocationMap#debugRevision",
+          "LocationMap#dynamicZones",
+          "LocationMap#grid",
+          "LocationMap#id",
+          "LocationMap#isDynamicBg",
+          "LocationMap#isValid",
+          "LocationMap#lastDebugState",
+          "LocationMap#lastProjector",
+          "LocationMap#locationsConfig",
+          "LocationMap#processDepthMap",
+          "LocationMap#recalculateZones",
+          "LocationMap#rng",
+          "LocationMap#rows"
+        ],
+        "derivedCaches": [],
+        "persistenceBoundaries": [],
+        "selfComposition": [],
+        "collections": []
+      },
+      "identity": {
+        "providers": [
+          "DynamicZone",
+          "GridCell",
+          "LocationMap"
+        ],
+        "instancePolicy": "single-cumulative-module-instance",
+        "exposure": "exact-activation-reference"
+      },
+      "evaluation": {
+        "effects": []
+      },
+      "configuration": {
+        "status": "verified",
+        "inputs": 0,
+        "forbiddenDirectReads": []
+      },
+      "cacheLifetime": [],
+      "performance": {
+        "hotLoopParticipation": "direct",
+        "perFrameAllocations": "observed",
+        "deltaTimeSemantics": "preserved",
+        "updateRenderSeparation": "separated",
+        "requiredEvidence": [
+          "allocation-equivalence",
+          "behavior-equivalence",
+          "delta-time-equivalence",
+          "no-compatibility-lookup-in-hot-loop"
+        ]
+      },
+      "availability": {
+        "constraints": 0,
+        "unconfirmed": 0
+      },
+      "findings": [
+        "hot-loop-equivalence-evidence-missing"
+      ],
+      "verdict": "insufficient",
+      "evidenceFingerprint": "6682e415df845b3413f97c4aca5fbb434bacaf9796e859dc18511660aab348e4"
+    }
+  ]
+}

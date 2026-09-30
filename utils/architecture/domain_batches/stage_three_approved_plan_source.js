@@ -59,8 +59,9 @@ class StageThreeApprovedPlanSource {
     let continuation = root.document;
     this.#validateContinuation(continuation, historical, historicalSha256);
     for (const link of links) {
-      this.#validateExtension(link.document, continuation, historical);
-      continuation = { ...continuation, batches: [...continuation.batches, ...link.document.batches],
+      const replaceAt = this.#validateExtension(link.document, continuation, historical);
+      const baseBatches = replaceAt === null ? continuation.batches : continuation.batches.slice(0, replaceAt);
+      continuation = { ...continuation, batches: [...baseBatches, ...link.document.batches],
         extension: { path: link.reference.path, sha256: link.reference.sha256 } };
     }
     const review = [...links].reverse().find(link => link.document.kind !== EXTENSION_KIND);
@@ -208,6 +209,21 @@ class StageThreeApprovedPlanSource {
   #validateExtension(extension, continuation, historical) {
     assert(["approved-extension-frozen", "approved-prefix-frozen"].includes(extension.status), "freeze extension is not frozen");
     assert.equal(extension.runtimeMigrationAllowed, false);
+    if (extension.replacesIncompleteSuffix === true) {
+      const existingIds = [...historical.batches, ...continuation.batches].map(batch => batch.id);
+      const completedIds = extension.completedPrefix.completedBatchIds;
+      assert(completedIds.length >= historical.batches.length && completedIds.length < existingIds.length,
+        "replacement review must keep the historical prefix and replace a non-empty suffix");
+      assert.deepEqual(completedIds, existingIds.slice(0, completedIds.length),
+        "replacement review must follow the exact completed base prefix");
+      assert(extension.batches.length > 0, "replacement review has no frozen batches");
+      extension.batches.forEach((batch, index) => {
+        assert.equal(batch.order, completedIds.length + index + 1,
+          `replacement batch order differs: ${batch.id}`);
+        assert.equal(batch.status, "approved-frozen", `replacement batch is not frozen: ${batch.id}`);
+      });
+      return completedIds.length - historical.batches.length;
+    }
     assert.deepEqual(extension.completedPrefix.completedBatchIds,
       [...historical.batches, ...continuation.batches].map(batch => batch.id),
       "freeze extension must follow the complete base continuation");
@@ -217,6 +233,7 @@ class StageThreeApprovedPlanSource {
         `extension order differs: ${batch.id}`);
       assert.equal(batch.status, "approved-frozen", `extension batch is not frozen: ${batch.id}`);
     });
+    return null;
   }
 
   // Adds the cumulative fields historical consumers read and proves them against the recorded
