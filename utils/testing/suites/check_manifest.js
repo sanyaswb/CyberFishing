@@ -815,6 +815,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-3-42-graph-review",
+      title: "Stage 3.42.0 replacement graph review after batch 040 and the duplicate-helper removal replays byte-identically and replaces only the incomplete suffix",
+      file: "utils/architecture/stage-3-42-graph-review.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-prerequisite-001",
       title: "Stage 3 prerequisite 001: AssemblyProfileRegistry config injection replays byte-identically with parity, resolved debt and clean guards",
       file: "utils/architecture/stage-3-prerequisite.js",

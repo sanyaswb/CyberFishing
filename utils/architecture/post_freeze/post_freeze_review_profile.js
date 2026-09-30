@@ -116,4 +116,30 @@ const STAGE_3_41 = new PostFreezeReviewProfile({
   historicalCandidatesNote: "Historical candidates and the Stage 3.22, 3.36 and 3.40 reviews remain reference material and are not replaced.",
 });
 
-module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40, STAGE_3_41 };
+// Replacement review after batch 040 and prerequisite transition 030. The frozen 3.41 batch 041 could not
+// build: landing_policy.js and retrieve_policy.js declared the same global helper, which one cumulative
+// runtime cannot export twice under one name. Prerequisite 030 removed the duplicate (a new
+// retrieve -> landing Domain edge), so the unexecuted 041–046 suffix is replaced from fresh observation.
+const STAGE_3_42 = new PostFreezeReviewProfile({
+  stage: "3.42",
+  kindStage: "3-42",
+  directory: "architecture/migration/stage_3_42_graph_review",
+  // Active runtime after batch 040 and prerequisite 030.
+  expectedTopology: Object.freeze({ modules: 101, activations: 116, bridges: 176 }),
+  firstOrder: 41,
+  idPrefix: "stage-3.replan-342.batch-",
+  taskPrefix: "stage-3.42.prerequisite.",
+  preliminary: Object.freeze({ candidate: 27, prerequisiteBlocked: 0, deferred: 0 }),
+  domainModuleCount: 139,
+  completedFromPlanSource: true,
+  replacesIncompleteSuffix: true,
+  esmImportFacts: true,
+  prerequisiteIntroducedCoverage: true,
+  frozenConstantReview: true,
+  groupedBatches: true,
+  reviewOwner: "stage-3.42-post-freeze-graph-review",
+  adoptionReason: "The execution state keeps the completed 001–040 prefix and the adopted Stage 3.41.0 approved prefix; batch 041 adopts this replacement approved prefix in its own prebuild state transition.",
+  historicalCandidatesNote: "Historical candidates and the Stage 3.22, 3.36, 3.40 and 3.41 reviews remain reference material and are not replaced.",
+});
+
+module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40, STAGE_3_41, STAGE_3_42 };

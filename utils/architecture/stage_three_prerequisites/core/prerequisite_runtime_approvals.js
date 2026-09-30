@@ -27,6 +27,7 @@ class PrerequisiteRuntimeApprovals {
     return Object.freeze({
       activations: Object.freeze(activations),
       activationIds: Object.freeze(activations.map(activation => activation.id).sort()),
+      retiredActivationIds: Object.freeze(retiredActivations.map(activation => activation.id).sort()),
       infrastructureModules: Object.freeze(infrastructureModules),
     });
   }

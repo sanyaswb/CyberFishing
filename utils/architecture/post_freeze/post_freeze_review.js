@@ -147,10 +147,13 @@ class PostFreezeReview {
     const backlogRef = emit(ARTIFACTS.prerequisiteBacklog, backlogDocument);
     const state = workspace.json(INPUTS.executionState);
     // Activations approved by recorded prerequisites (the Engine Vector2) belong to the runtime topology
-    // but not to any batch's cumulative activation set.
-    const prerequisiteActivationIds = profile.prerequisiteIntroducedCoverage
-      ? new Set(require("../stage_three_prerequisites/core/prerequisite_runtime_approvals")
-        .PrerequisiteRuntimeApprovals.of(workspace.root, runtimeContract).activationIds) : new Set();
+    // but not to any batch's cumulative activation set; a retired one (normalizeDistance, retired by
+    // batch 040) stays outside it too, although a repeated review reads the retired activations.
+    const approvals = profile.prerequisiteIntroducedCoverage
+      ? require("../stage_three_prerequisites/core/prerequisite_runtime_approvals")
+        .PrerequisiteRuntimeApprovals.of(workspace.root, runtimeContract) : null;
+    const prerequisiteActivationIds = approvals
+      ? new Set([...approvals.activationIds, ...approvals.retiredActivationIds]) : new Set();
     const plan = this.planner.plan({ eligibility, evidence, logicalGraph: graph, runtimeContract,
       bridgeRegistry, completedBatchIds: state.completedBatchIds, prerequisiteActivationIds });
     const completedPrefix = {
