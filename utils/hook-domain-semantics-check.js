@@ -39,7 +39,8 @@ class HookDomainSemanticsCheck {
       "hook power preserves the previous numeric balance",
     );
 
-    const rules = this.#sourceRuntime.read("src/app/rules.js");
+    // Batch 040 migrated the gameplay rules; the classic path is now the activation shim.
+    const rules = this.#sourceRuntime.read("src/game/domain/rules/gameplay_rules.js");
     const states = this.#sourceRuntime.read("src/app/states.js");
     const debug = this.#sourceRuntime.read("src/app/debug.js");
     const formatter = this.#sourceRuntime.read("src/debug/services/debug_formatters.js");

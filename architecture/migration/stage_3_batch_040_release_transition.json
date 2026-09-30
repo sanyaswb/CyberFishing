@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-040-release-transition",
+  "batchId": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+  "fromRelease": "0.24.77",
+  "toRelease": "0.24.78",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_040_acceptance_pass.json",
+    "sha256": "eaebf0e264570b108aaf1301c75e8cff8864461c111d63379702e101191306e9"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_040_browser_confirmation.json",
+    "sha256": "9b8bff11622f276e66365d6456ec6efcd358ef5c09efc49b027a76fa6c5c5e5f"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "4a555fa1536e8f79146ec042f1888731b9980fe53e2e6ec74b6eb232b171245c",
+      "afterSha256": "e5a219aadd5fc7b642aca10b5e2974f36028a1d17818e14921ffcddd7dd47718",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.78 - Casting Items Line And Rules Domain\n\n### Changed\n\n- Adopted the Stage 3.41.0 replacement suffix after the normalizeDistance Engine prerequisite and migrated six Domain sources with twelve named ESM exports.\n- Replaced three legacy dependency bridges with reviewed ESM imports while preserving ten exact classic consumer bridges.\n- Extended the cumulative runtime from 117 to 123 project modules and the active activation set from 106 to 116 contracts, with 176 exact bridge relationships (10 added, 3 retired); the review ledger contains 139 activations including retired history.\n- The next task is batch 041 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "f60aacbbaaf0930c33cc5e8b303fb5a3f5609db37a9ff4ba1203408b32581e0a",
+      "afterSha256": "5bb33a3feb187aeb91d6ae5624ed148f508134da9fce456c3427eb91c302ec0d",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.77\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_41_graph_review/approved_prefix.json\",\n    \"sha256\": \"2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.78\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\",\n    \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_41_graph_review/approved_prefix.json\",\n    \"sha256\": \"2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "1e20f15ff92b537a3f51970938203f1350fda12ad776dcef8e0baabfa6f6c7c7",
+      "afterSha256": "59a15838c728beeafb40afa787f0738f75434247d2fa6fb8cf1b8b8d52345ea3",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.77\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.78\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "4d11aebea395bead4253d822695fcd4eb459eb03d5685658aa0b97c09f218f04",
+      "afterSha256": "e522dd72eed0baceb38230448d9cc36ff2f70741ef2241f44d7dd4fabad1723d",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.77\",",
+          "to": "  \"version\": \"0.24.78\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "5871d5a699de12f7c4d184682c64e25b9706c391ce1680aca1b7991b86506e6f",
+      "afterSha256": "7eacd7480404c2b63e8f7a19ef61d36e74b85e056caf837885793eecdef9512a",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.77\",",
+          "to": "  \"version\": \"0.24.78\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "06e9d8386fb944ab407474d7aaf94fcd4d8eb85deb91254b4ca815b0e9fc1189",
+      "afterSha256": "11d80d7448ca773088a4258be9fad08fb137188c55c312ed660ac532985f61f9",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.77\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.78\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"inventory-capacity-and-stamina-domain\",",
+          "to": "  codename: \"casting-items-line-rules-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  updatedAt: \"2026-09-29\",",
+          "to": "  updatedAt: \"2026-09-30\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the inventory capacity policies\",\n    \"Migrate the fight stamina controller\",\n    \"Open the Stage 3.40.0 approved prefix\",\n    \"Preserve one hundred sixteen project modules, one hundred five activations and one hundred sixty-eight bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Adopt the Stage 3.41.0 replacement prefix\",\n    \"Migrate gameplay rules, distance conversion, item metric composition, capacity and rating, and line allocation\",\n    \"Use the Engine normalizeDistance owner and completed-prefix ItemMetricStrategy through reviewed imports\",\n    \"Preserve one hundred twenty-three project modules, one hundred sixteen active activations and one hundred seventy-six bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

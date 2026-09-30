@@ -40,6 +40,7 @@ class Batch009EarlierEvaluationGate {
       const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "module" });
       const initializations = [];
       const declaredClasses = new Set();
+      const declaredBindings = new Set();
       for (const statement of tree.body) {
         if (statement.type === "ImportDeclaration") {
           // Pure binding: the imported module is itself verified inside this closure.
@@ -49,9 +50,23 @@ class Batch009EarlierEvaluationGate {
             statement.specifiers[0].local.name === item.exportName), "unreviewed import declaration");
           continue;
         }
+        if (statement.type === "ExportNamedDeclaration" && statement.declaration === null) {
+          // A local named-export list performs no initialization. It is allowed only for bindings
+          // already proven earlier in this module; re-exports still require a separate review.
+          assert.equal(statement.source, null, "re-export requires review");
+          assert(statement.specifiers.length > 0, "empty export list is unsupported");
+          for (const specifier of statement.specifiers) {
+            assert(specifier.type === "ExportSpecifier" && specifier.local?.type === "Identifier" &&
+              declaredBindings.has(specifier.local.name), "export names an undeclared binding");
+          }
+          continue;
+        }
         const node = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
         assert(node, "unsupported export");
-        if (node.type === "FunctionDeclaration") continue;
+        if (node.type === "FunctionDeclaration") {
+          declaredBindings.add(node.id.name);
+          continue;
+        }
         if (node.type === "ClassDeclaration") {
           // Only a class declared earlier in the same module may be a superclass: it is fully
           // evaluated before the subclass and is not an external eager dependency.
@@ -104,6 +119,7 @@ class Batch009EarlierEvaluationGate {
             }
           }
           declaredClasses.add(node.id.name);
+          declaredBindings.add(node.id.name);
           continue;
         }
         assert.equal(node.type, "VariableDeclaration", "unsupported top-level effect");
@@ -133,6 +149,7 @@ class Batch009EarlierEvaluationGate {
           initializations.push({ binding: declaration.id.name, kind: localWeakMap
             ? "private-empty-weakmap" : frozenLiteralRange ? "frozen-literal-range"
               : frozenLiteralConstant ? "frozen-literal-constant" : "primitive-literal" });
+          declaredBindings.add(declaration.id.name);
         }
       }
       const effect = effects.observe({ modulePath: module.targetPath, source });

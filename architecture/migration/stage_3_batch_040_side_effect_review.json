@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-040-side-effect-review",
+  "batchId": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+  "stage": "3.41.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.77",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+      "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+    },
+    {
+      "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+      "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "c636b99d5b807606899b4621b20bdddc9fd3a0c958566dc40c3e2776510245b5"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "sourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/app/rules.js",
+        "sourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-649929a35f50",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "BiteRules",
+          "legacySymbol": "BiteRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_biterules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-7939598a66ae",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "PlayerCastRules",
+          "legacySymbol": "PlayerCastRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_playercastrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-80e73205e0e8",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "CastRules",
+          "legacySymbol": "CastRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_castrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-a461979f2c52",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "BoatRules",
+          "legacySymbol": "BoatRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_boatrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-b35709a3491d",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "EquipmentRules",
+          "legacySymbol": "EquipmentRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_equipmentrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-f7878fbddced",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "ChumRules",
+          "legacySymbol": "ChumRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_chumrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-f80b8eeb5a75",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/app/rules.js",
+          "targetModule": "src/game/domain/rules/gameplay_rules.js",
+          "exportName": "BaitRules",
+          "legacySymbol": "BaitRules",
+          "legacyScriptIndex": 397,
+          "shimFile": "activations/397_baitrules.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/distance_unit_converter.js",
+      "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+      "sourceSha256": "e6f81a0db00152d675ebba636409b06af1ccc7466caa5c12e54382e9bb0cbe18",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/distance_unit_converter.js",
+        "sourceSha256": "e6f81a0db00152d675ebba636409b06af1ccc7466caa5c12e54382e9bb0cbe18"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-27de2804d152",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/core/distance_unit_converter.js",
+          "targetModule": "src/game/domain/casting/distance_unit_converter.js",
+          "exportName": "DistanceUnitConverter",
+          "legacySymbol": "DistanceUnitConverter",
+          "legacyScriptIndex": 89,
+          "shimFile": "activations/089_distanceunitconverter.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "sourceSha256": "d4279fdf0759d4bdf288f73dc8df9b2e9c03b570070584897293e747cddebc8b",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+        "sourceSha256": "d4279fdf0759d4bdf288f73dc8df9b2e9c03b570070584897293e747cddebc8b"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-71f9e7f66e9c",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/core/items/progression/composite_metric_strategy.js",
+          "targetModule": "src/game/domain/items/progression/composite_metric_strategy.js",
+          "exportName": "CompositeMetricStrategy",
+          "legacySymbol": "CompositeMetricStrategy",
+          "legacyScriptIndex": 77,
+          "shimFile": "activations/077_compositemetricstrategy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "sourceSha256": "ec9b6480e5f2e03c798646c9591ebf8650a7f2f19a694cf0ee318284e32b7bfa",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+        "sourceSha256": "ec9b6480e5f2e03c798646c9591ebf8650a7f2f19a694cf0ee318284e32b7bfa"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-8706d223cc0c",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/core/items/progression/item_capacity_resolver.js",
+          "targetModule": "src/game/domain/items/progression/item_capacity_resolver.js",
+          "exportName": "ItemCapacityResolver",
+          "legacySymbol": "ItemCapacityResolver",
+          "legacyScriptIndex": 83,
+          "shimFile": "activations/083_itemcapacityresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/items/progression/item_rating_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+      "sourceSha256": "278ab1b84a3ff19847dd2da5e8fc63ed64468bba7a5788bf6298f9505557a5eb",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/items/progression/item_rating_resolver.js",
+        "sourceSha256": "278ab1b84a3ff19847dd2da5e8fc63ed64468bba7a5788bf6298f9505557a5eb"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-b01073370443",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/core/items/progression/item_rating_resolver.js",
+          "targetModule": "src/game/domain/items/progression/item_rating_resolver.js",
+          "exportName": "ItemRatingResolver",
+          "legacySymbol": "ItemRatingResolver",
+          "legacyScriptIndex": 80,
+          "shimFile": "activations/080_itemratingresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/line/line_allocation_policy.js",
+      "targetPath": "src/game/domain/line/line_allocation_policy.js",
+      "sourceSha256": "9c0ad851fc5f5bada4b19c6deeeedaf60c3338162f872518e2b7c146e914ad5d",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/line/line_allocation_policy.js",
+        "sourceSha256": "9c0ad851fc5f5bada4b19c6deeeedaf60c3338162f872518e2b7c146e914ad5d"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-aad64fe0f08c",
+          "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+          "sourceProvider": "src/core/line/line_allocation_policy.js",
+          "targetModule": "src/game/domain/line/line_allocation_policy.js",
+          "exportName": "LineAllocationPolicy",
+          "legacySymbol": "LineAllocationPolicy",
+          "legacyScriptIndex": 142,
+          "shimFile": "activations/142_lineallocationpolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/casting/distance_unit_converter.js",
+      "classification": "safe",
+      "evidenceFingerprint": "941bfe5d3da59cb8667c94327a0f943f0dc2a15c27acdef23342e879c7559d60"
+    },
+    {
+      "module": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "classification": "safe",
+      "evidenceFingerprint": "f8f1e6a2cda0d1ad12e3280d1a161422b714ea90b45690d625424ebe44ffbc58"
+    },
+    {
+      "module": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "bc79b722522c01e18ee7b8af5eb37355d8eff3512e2a6024a72dca50a2bd8fd2"
+    },
+    {
+      "module": "src/game/domain/items/progression/item_rating_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "90ae4b24e6783618b6ec15fa479b14c2be1ff023295da32dfdd9adcdf9fd0ff5"
+    },
+    {
+      "module": "src/game/domain/line/line_allocation_policy.js",
+      "classification": "safe",
+      "evidenceFingerprint": "6a51c147d7ec710802206befa922c816bf89b1666940048fb7b4b3114fd36a35"
+    },
+    {
+      "module": "src/game/domain/rules/gameplay_rules.js",
+      "classification": "safe",
+      "evidenceFingerprint": "6ab7dbeeec48ec3adab43f6165efb85f69e075e1aedf108c8aab1639880b3487"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.41.0-live-preflight-and-graph-audit"
+}

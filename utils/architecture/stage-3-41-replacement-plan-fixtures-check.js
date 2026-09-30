@@ -15,10 +15,20 @@ const REPLACEMENT = "architecture/migration/stage_3_41_graph_review/approved_pre
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 const bytes = file => fs.readFileSync(path.join(ROOT, file));
 const clone = value => JSON.parse(JSON.stringify(value));
-const state = JSON.parse(bytes(STATE));
+const liveState = JSON.parse(bytes(STATE));
 const replacementBytes = bytes(REPLACEMENT);
 const replacement = JSON.parse(replacementBytes);
 const reference = { path: REPLACEMENT, sha256: sha(replacementBytes) };
+// Replay the replacement decision from its frozen base checkpoint even after batch 040 adopts the
+// replacement and later batches advance the live execution state.
+const state = {
+  ...liveState,
+  releaseVersion: "0.24.77",
+  approvedPlanSha256: replacement.completedPrefix.approvedPlan.sha256,
+  completedBatchIds: [...replacement.completedPrefix.completedBatchIds],
+  activeBatchId: null,
+  continuationPlan: { ...replacement.base },
+};
 let cases = 0;
 
 const load = document => {
@@ -40,6 +50,14 @@ assert.deepEqual(adopted.document.batches.map(batch => batch.id),
   "replacement must preserve the completed prefix and replace only its unexecuted suffix");
 assert.equal(adopted.domainAuditPath,
   "architecture/migration/stage_3_41_graph_review/domain_audit.json");
+const firstBatchImports = StageThreeApprovedPlanSource.reviewedImports(adopted.document,
+  [replacement.batches[0].id]);
+assert.deepEqual(firstBatchImports["src/game/domain/rules/gameplay_rules.js"], [{
+  specifier: "../../../engine/math/normalize_distance.js",
+  from: "src/engine/math/normalize_distance.js",
+  exportName: "normalizeDistance",
+  activationId: "activation-138f54238b60",
+}], "foundation imports must remain reviewed source-build imports");
 
 rejects(document => { document.base.sha256 = "0".repeat(64); },
   /adopted continuation plan differs/u, "replacement of another base");
@@ -63,4 +81,4 @@ rejects(document => { document.batches = []; }, /no frozen batches/u, "empty rep
 rejects(document => { delete document.replacesIncompleteSuffix; },
   /complete base continuation/u, "replacement flag removed");
 
-console.log(`Stage 3.41 replacement-plan fixtures PASS: ${cases} negative cases and exact completed-prefix preservation.`);
+console.log(`Stage 3.41 replacement-plan fixtures PASS: ${cases} negative cases, exact completed-prefix preservation and foundation import resolution.`);

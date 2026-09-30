@@ -96,9 +96,12 @@ class ActivationRetirementFixtures {
     const html = `<head>\n${tag}\n</head>\n`;
     assert.equal(projection.index(html, this.runtime.output.directory, [active]),
       `<head>\n<script src="${active.sourceProvider}"></script>\n</head>\n`);
+    const splitTag = `<script src="${this.runtime.output.directory}${active.shimFile}" data-legacy-slot="390"></script>`;
+    assert.equal(projection.index(`<head>\n  ${splitTag}\n</head>\n`, this.runtime.output.directory, [active]),
+      `<head>\n  <script src="${active.sourceProvider}" data-legacy-slot="390"></script>\n</head>\n`);
     assert.throws(() => projection.index("<head></head>", this.runtime.output.directory, [active]), /not unique/u);
     assert.throws(() => projection.index(html + tag, this.runtime.output.directory, [active]), /not unique/u);
-    return 3 + this.sharedSource();
+    return 4 + this.sharedSource();
   }
 
   // A classic source that served several activations retires as a whole: one placeholder line per

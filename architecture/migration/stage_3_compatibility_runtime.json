@@ -316,18 +316,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-138f54238b60",
-      "owner": "stage-3.22.prerequisite.entities-world-rules-decomposition",
-      "sourceProvider": "src/core/math/normalize_distance.js",
-      "targetModule": "src/engine/math/normalize_distance.js",
-      "exportName": "normalizeDistance",
-      "legacySymbol": "normalizeDistance",
-      "legacyScriptIndex": 390,
-      "shimFile": "activations/390_normalizedistance.js",
-      "reason": "Expose the Engine normalizeDistance function to its unmigrated classic consumer through the shared cumulative runtime.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-15138a00826c",
       "owner": "stage-3.replan-336.batch-037-items-5fccd461",
       "sourceProvider": "src/core/items/bait/bait_effectiveness_resolver.js",
@@ -398,6 +386,18 @@
       "shimFile": "activations/117_recoverablelinecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-27de2804d152",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/core/distance_unit_converter.js",
+      "targetModule": "src/game/domain/casting/distance_unit_converter.js",
+      "exportName": "DistanceUnitConverter",
+      "legacySymbol": "DistanceUnitConverter",
+      "legacyScriptIndex": 89,
+      "shimFile": "activations/089_distanceunitconverter.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-28138de81e82",
@@ -676,18 +676,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-597e6786200f",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
-      "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
-      "exportName": "ItemMetricStrategy",
-      "legacySymbol": "ItemMetricStrategy",
-      "legacyScriptIndex": 73,
-      "shimFile": "activations/073_itemmetricstrategy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-59bd96059da6",
       "owner": "stage-3.candidate-004-equipment-4f2570dc",
       "sourceProvider": "src/core/equipment/rod_capability_resolver.js",
@@ -708,6 +696,18 @@
       "legacySymbol": "InventoryEquipTargetSelectionPolicy",
       "legacyScriptIndex": 86,
       "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-649929a35f50",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "BiteRules",
+      "legacySymbol": "BiteRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_biterules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -758,6 +758,18 @@
       "shimFile": "activations/098_playerreelfatiguesession.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-71f9e7f66e9c",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/core/items/progression/composite_metric_strategy.js",
+      "targetModule": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "exportName": "CompositeMetricStrategy",
+      "legacySymbol": "CompositeMetricStrategy",
+      "legacyScriptIndex": 77,
+      "shimFile": "activations/077_compositemetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-73dd5c8cd351",
@@ -832,6 +844,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-7939598a66ae",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "PlayerCastRules",
+      "legacySymbol": "PlayerCastRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_playercastrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-79ef4d67c996",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/player_force_budget_allocator.js",
@@ -900,6 +924,18 @@
       "legacySymbol": "DerivedStatMetricStrategy",
       "legacyScriptIndex": 75,
       "shimFile": "activations/075_derivedstatmetricstrategy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-80e73205e0e8",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "CastRules",
+      "legacySymbol": "CastRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_castrules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -974,6 +1010,18 @@
       "shimFile": "activations/353_assetloadresult.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-8706d223cc0c",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/core/items/progression/item_capacity_resolver.js",
+      "targetModule": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "exportName": "ItemCapacityResolver",
+      "legacySymbol": "ItemCapacityResolver",
+      "legacyScriptIndex": 83,
+      "shimFile": "activations/083_itemcapacityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-886fb34615aa",
@@ -1120,6 +1168,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-a461979f2c52",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "BoatRules",
+      "legacySymbol": "BoatRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_boatrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-a63204f0676b",
       "owner": "stage-3.candidate-007-fishing-bb8b3939",
       "sourceProvider": "src/core/fishing/rod_pull_state.js",
@@ -1168,6 +1228,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-aad64fe0f08c",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/core/line/line_allocation_policy.js",
+      "targetModule": "src/game/domain/line/line_allocation_policy.js",
+      "exportName": "LineAllocationPolicy",
+      "legacySymbol": "LineAllocationPolicy",
+      "legacyScriptIndex": 142,
+      "shimFile": "activations/142_lineallocationpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ab53a7e2f8cc",
       "owner": "stage-3.candidate-018-items-8ea4be10",
       "sourceProvider": "src/core/items/freshness/item_freshness_state_policy.js",
@@ -1204,6 +1276,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-b01073370443",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/core/items/progression/item_rating_resolver.js",
+      "targetModule": "src/game/domain/items/progression/item_rating_resolver.js",
+      "exportName": "ItemRatingResolver",
+      "legacySymbol": "ItemRatingResolver",
+      "legacyScriptIndex": 80,
+      "shimFile": "activations/080_itemratingresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-b1c0f1f37980",
       "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
       "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
@@ -1212,6 +1296,18 @@
       "legacySymbol": "ItemAssemblyPath",
       "legacyScriptIndex": 152,
       "shimFile": "activations/152_itemassemblypath.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-b35709a3491d",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "EquipmentRules",
+      "legacySymbol": "EquipmentRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_equipmentrules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1480,6 +1576,30 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-f7878fbddced",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "ChumRules",
+      "legacySymbol": "ChumRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_chumrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-f80b8eeb5a75",
+      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "sourceProvider": "src/app/rules.js",
+      "targetModule": "src/game/domain/rules/gameplay_rules.js",
+      "exportName": "BaitRules",
+      "legacySymbol": "BaitRules",
+      "legacyScriptIndex": 397,
+      "shimFile": "activations/397_baitrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-fa2fa2abbda3",
       "owner": "stage-3.candidate-018-items-8ea4be10",
       "sourceProvider": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
@@ -1541,6 +1661,23 @@
     }
   ],
   "retiredActivations": [
+    {
+      "activation": {
+        "id": "activation-138f54238b60",
+        "owner": "stage-3.22.prerequisite.entities-world-rules-decomposition",
+        "sourceProvider": "src/core/math/normalize_distance.js",
+        "targetModule": "src/engine/math/normalize_distance.js",
+        "exportName": "normalizeDistance",
+        "legacySymbol": "normalizeDistance",
+        "legacyScriptIndex": 390,
+        "shimFile": "activations/390_normalizedistance.js",
+        "reason": "Expose the Engine normalizeDistance function to its unmigrated classic consumer through the shared cumulative runtime.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89"
+    },
     {
       "activation": {
         "id": "activation-20cb461d88b8",
@@ -1642,6 +1779,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-034-fishing-b761d4f1"
+    },
+    {
+      "activation": {
+        "id": "activation-597e6786200f",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacySymbol": "ItemMetricStrategy",
+        "legacyScriptIndex": 73,
+        "shimFile": "activations/073_itemmetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89"
     },
     {
       "activation": {

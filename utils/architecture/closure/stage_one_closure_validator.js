@@ -660,6 +660,8 @@ class StageOneClosureValidator {
         "Assemblies Profile Registry Domain",
       "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea":
         "Inventory Capacity And Stamina Domain",
+      "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89":
+        "Casting Items Line And Rules Domain",
     };
     return titles[lastBatch] || "Domain ESM Migration";
   }
@@ -718,9 +720,15 @@ class StageOneClosureValidator {
       "architecture/migration/stage_3_compatibility_runtime.json",
     ).retiredActivations || []).filter((record) => retiredIds.has(record.activation.id));
     this.#require(retiredRecords.length === retiredIds.size, "retired activation ledger differs from the plan", errors);
+    const stageThreeBatchOwners = new Set((stageThreeApprovedPlan?.batches || []).map(batch => batch.id));
+    // Prerequisite-owned Engine activations and their sources are accounted by prerequisite sources
+    // and reviewed split slots. Only batch-owned retired providers replace a migrated classic slot.
+    const retiredBatchProviders = new Set(retiredRecords
+      .filter(record => stageThreeBatchOwners.has(record.activation.owner))
+      .map(record => record.activation.sourceProvider));
     const cumulativeActivationCount =
       (selectedStageThreeBatch?.compatibility?.cumulativeActivationIds?.length || 0) +
-      new Set(retiredRecords.map((record) => record.activation.sourceProvider)).size;
+      retiredBatchProviders.size;
     const additionalActivationScripts = Math.max(
       0,
       cumulativeActivationCount - activeWrapperCount - stageThreeTargetCount,

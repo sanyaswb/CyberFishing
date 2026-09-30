@@ -12,8 +12,10 @@ const {StageThreeBatch009ReleaseTransition,TRANSITION}=require("./stage_three_ba
 class Batch009HistoricalWorkspace {
   async run(root,action,{copyTools=false}={}) {
     if(fs.existsSync(path.join(root,"architecture/migration/stage_3_batch_010_prebuild_contract.json"))) {
+      // Later prerequisite ledgers pin focused harnesses under utils (currently game-cycle-check).
+      // Preserve tools through the newer-workspace chain so those ledgers can peel exact bytes.
       return new (require("./stage_three_batch_010_historical_workspace").Batch010HistoricalWorkspace)()
-        .run(root,temporary=>this.run(temporary,action,{copyTools}),{copyTools});
+        .run(root,temporary=>this.run(temporary,action,{copyTools}),{copyTools:true});
     }
     const history=new Batch009CutoverHistory(root);
     const released=new Batch009ReleaseHistoricalWorkspace().isCompleted(root);

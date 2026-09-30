@@ -1,0 +1,2883 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-preflight-audit",
+  "status": "verified",
+  "stage": "Stage 3.41.0",
+  "sourceReleaseVersion": "0.24.77",
+  "batchId": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+  "sourceEvidence": {
+    "approvedPlan": {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "660370f836589dbf73378fbb6870c8280856c48655b0db1ae4106e9b37dd434c",
+      "references": [
+        {
+          "path": "architecture/migration/stage_3_approved_batches.json",
+          "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+        },
+        {
+          "path": "architecture/migration/stage_3_22/approved_prefix.json",
+          "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+        },
+        {
+          "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+          "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+        },
+        {
+          "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+          "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+        },
+        {
+          "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+          "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+        },
+        {
+          "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+          "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+        }
+      ]
+    },
+    "manifest": {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "8ca551af7060f56fc78ec4e69b20116bb9f986ee1fd9129cb768fc451fbd099a"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_41_graph_review/domain_audit.json",
+      "sha256": "4a4aad57594dc4bc342cf06e71f7097d7daed32de490476719a24731f2800be2"
+    },
+    "executionState": {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "c636b99d5b807606899b4621b20bdddc9fd3a0c958566dc40c3e2776510245b5"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "cd06d2564724a757b4cf8e5b3fd54098abadc6affd30adba30aa40a65749a79b"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "359b6c9c00e4874ddd2e9b1ae58175a5776d3001ccc58d591c35a50e78f33c2f"
+    },
+    "index": {
+      "path": "index.html",
+      "sha256": "11d1669a38145a896f0005252cf42490807461ab1424ee6785c27f2cf6c687ca"
+    },
+    "runtimeOutput": {
+      "path": "dist/stage-3-compat-runtime",
+      "fingerprint": "3fbb6bd934c13353031f3f2b99ffd2658904bd9fbca8cf18148976c5bbaac864"
+    },
+    "sideEffectReview": {
+      "path": "architecture/migration/stage_3_batch_040_side_effect_review.json",
+      "sha256": "1ecb3fbe212bc8a0c42883dc6c8f705133e552634b23819a3bb5f7f8cfe0619e"
+    }
+  },
+  "scope": {
+    "targetCount": 6,
+    "modules": [
+      {
+        "currentPath": "src/app/rules.js",
+        "targetPath": "src/game/domain/rules/gameplay_rules.js",
+        "sourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+        "exports": [
+          "BaitRules",
+          "BiteRules",
+          "BoatRules",
+          "CastRules",
+          "ChumRules",
+          "EquipmentRules",
+          "PlayerCastRules"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-169131335316",
+          "members": [
+            "src/app/rules.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [
+          {
+            "target": "src/core/math/normalize_distance.js",
+            "targetBoundary": "engine",
+            "symbols": [
+              "normalizeDistance"
+            ],
+            "executionPhases": [
+              "deferred"
+            ],
+            "policy": "allowed"
+          }
+        ],
+        "capabilities": [],
+        "availabilityConstraints": [
+          {
+            "symbol": "normalizeDistance",
+            "target": "src/core/math/normalize_distance.js",
+            "consumerPhase": "deferred",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          }
+        ],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/app/rules.js",
+          "classDeclarations": [
+            "BaitRules",
+            "BiteRules",
+            "BoatRules",
+            "CastRules",
+            "ChumRules",
+            "EquipmentRules",
+            "PlayerCastRules"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#castDistanceCalculator",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#config",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#messages",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#clamp01",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canAcceptManualTarget",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canAutoReturn",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canBeRemovedNearShore",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canCastAt",
+              "kind": "method",
+              "parameterCount": 6,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canDropManualChum",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canPlayerCast",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canPlayerCastWithBoat",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "canSelectDepth",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getCastDistanceInfo",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getCastPowerCoefficient",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getDeliveryMethod",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getDeliverySections",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getEffectiveCastDistance",
+              "kind": "method",
+              "parameterCount": 4,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getFloatLineBudget",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getHookSize",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getMaxCastDistance",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getMaxHookDepth",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getPhysicsType",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getRodDisplayName",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getRodKind",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getSinkRate",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "hasActiveLureType",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "hasEquippedLine",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "hasLoadedDeliveryChum",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isActiveLure",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isBusy",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isFeeder",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isFloatRod",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isManual",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "isSpinning",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "requiresReel",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "selectBiteSequence",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 7,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#castDistanceCalculator",
+            "#config",
+            "#messages"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/app/rules.js",
+            "authoritativeOwners": [
+              "BiteRules#baitRules",
+              "BoatRules#isManual",
+              "CastRules#equipmentRules",
+              "EquipmentRules#castDistanceCalculator",
+              "EquipmentRules#config",
+              "EquipmentRules#getCastPowerCoefficient",
+              "EquipmentRules#getFloatLineBudget",
+              "EquipmentRules#getRodKind",
+              "EquipmentRules#isFeeder",
+              "EquipmentRules#isFloatRod",
+              "EquipmentRules#isSpinning",
+              "EquipmentRules#messages",
+              "EquipmentRules#requiresReel",
+              "PlayerCastRules#boatRules",
+              "PlayerCastRules#equipmentRules"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/rules/gameplay_rules.js",
+            "authoritativeOwners": [
+              "BiteRules#baitRules",
+              "BoatRules#isManual",
+              "CastRules#equipmentRules",
+              "EquipmentRules#castDistanceCalculator",
+              "EquipmentRules#config",
+              "EquipmentRules#getCastPowerCoefficient",
+              "EquipmentRules#getFloatLineBudget",
+              "EquipmentRules#getRodKind",
+              "EquipmentRules#isFeeder",
+              "EquipmentRules#isFloatRod",
+              "EquipmentRules#isSpinning",
+              "EquipmentRules#messages",
+              "EquipmentRules#requiresReel",
+              "PlayerCastRules#boatRules",
+              "PlayerCastRules#equipmentRules"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "equipment-bait-cast-bite-chum-boat-and-player-cast-rules-with-injected-config-and-messages",
+          "formulaDefaultsClampsRoundingFingerprint": "6abf94a8977f544f955a404074594c69fcaa5a3fb5652e5afa1981131bddd66d",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-gameplay-rules",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new EquipmentRules("
+            },
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new PlayerCastRules("
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 7,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "BaitRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BiteRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "BoatRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "CastRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "ChumRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "EquipmentRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          },
+          {
+            "symbol": "PlayerCastRules",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/distance_unit_converter.js",
+        "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+        "sourceSha256": "e6f81a0db00152d675ebba636409b06af1ccc7466caa5c12e54382e9bb0cbe18",
+        "exports": [
+          "DistanceUnitConverter"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-a4433a019683",
+          "members": [
+            "src/core/distance_unit_converter.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/distance_unit_converter.js",
+          "classDeclarations": [
+            "DistanceUnitConverter"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#pixelsPerMeter",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "pixelsPerMeter",
+              "kind": "get",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "metersToPixels",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "pixelsToMeters",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#pixelsPerMeter"
+          ],
+          "publicStateShape": [
+            "pixelsPerMeter"
+          ],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/distance_unit_converter.js",
+            "authoritativeOwners": [
+              "DistanceUnitConverter#pixelsPerMeter"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/casting/distance_unit_converter.js",
+            "authoritativeOwners": [
+              "DistanceUnitConverter#pixelsPerMeter"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "pixel-and-metre-conversion-over-composed-physics-scale",
+          "formulaDefaultsClampsRoundingFingerprint": "732b43c1cd44a893ac949ce29185f44e3afdd9800d8769033b27d2dca5cc8f82",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-distance-unit-converter",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/core/casting_distance.js",
+              "marker": "new DistanceUnitConverter("
+            },
+            {
+              "path": "src/entities/tackle.js",
+              "marker": "new DistanceUnitConverter("
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "DistanceUnitConverter",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+        "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+        "sourceSha256": "d4279fdf0759d4bdf288f73dc8df9b2e9c03b570070584897293e747cddebc8b",
+        "exports": [
+          "CompositeMetricStrategy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-868743ffebb5",
+          "members": [
+            "src/core/items/progression/composite_metric_strategy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [
+          {
+            "target": "src/core/items/progression/item_metric_strategy.js",
+            "targetBoundary": "game-domain",
+            "symbols": [
+              "ItemMetricStrategy"
+            ],
+            "executionPhases": [
+              "deferred",
+              "eager"
+            ],
+            "policy": "allowed"
+          }
+        ],
+        "capabilities": [],
+        "availabilityConstraints": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "target": "src/core/items/progression/item_metric_strategy.js",
+            "consumerPhase": "deferred",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          },
+          {
+            "symbol": "ItemMetricStrategy",
+            "target": "src/core/items/progression/item_metric_strategy.js",
+            "consumerPhase": "eager",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          }
+        ],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+          "classDeclarations": [
+            "CompositeMetricStrategy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 0,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "evaluate",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 10,
+                "arrayExpressions": 2,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 10,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/composite_metric_strategy.js",
+            "authoritativeOwners": [
+              "CompositeMetricStrategy#available",
+              "CompositeMetricStrategy#unavailable"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/composite_metric_strategy.js",
+            "authoritativeOwners": [
+              "CompositeMetricStrategy#available",
+              "CompositeMetricStrategy#unavailable"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "weighted-item-metric-composition-and-baseline-normalization",
+          "formulaDefaultsClampsRoundingFingerprint": "a36cf0bacda1e5fba68ea07b0441add2491e3af810ef1e345f3d5d414efcc778",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-composite-metric-strategy",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new CompositeMetricStrategy()"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 10,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "CompositeMetricStrategy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+        "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+        "sourceSha256": "ec9b6480e5f2e03c798646c9591ebf8650a7f2f19a694cf0ee318284e32b7bfa",
+        "exports": [
+          "ItemCapacityResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-15e151381932",
+          "members": [
+            "src/core/items/progression/item_capacity_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+          "classDeclarations": [
+            "ItemCapacityResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#effectiveStatsResolver",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#messages",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#number",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#readPath",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#unavailable",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 6,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 1,
+                "objectAssignCalls": 0,
+                "roundingCalls": 1
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#effectiveStatsResolver",
+            "#messages"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/item_capacity_resolver.js",
+            "authoritativeOwners": [
+              "ItemCapacityResolver#effectiveStatsResolver",
+              "ItemCapacityResolver#messages",
+              "ItemCapacityResolver#number",
+              "ItemCapacityResolver#readPath",
+              "ItemCapacityResolver#unavailable"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/item_capacity_resolver.js",
+            "authoritativeOwners": [
+              "ItemCapacityResolver#effectiveStatsResolver",
+              "ItemCapacityResolver#messages",
+              "ItemCapacityResolver#number",
+              "ItemCapacityResolver#readPath",
+              "ItemCapacityResolver#unavailable"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "line-capacity-progress-over-catalog-equipped-and-active-line-state",
+          "formulaDefaultsClampsRoundingFingerprint": "ca49d20d2a8b31df019d68e860f76844ce6a9cfb667c624c98fdb857b70e5e47",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-capacity-resolver",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new ItemCapacityResolver({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemCapacityResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/items/progression/item_rating_resolver.js",
+        "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+        "sourceSha256": "278ab1b84a3ff19847dd2da5e8fc63ed64468bba7a5788bf6298f9505557a5eb",
+        "exports": [
+          "ItemRatingResolver"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-0325acbd2715",
+          "members": [
+            "src/core/items/progression/item_rating_resolver.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [
+          {
+            "target": "src/core/items/progression/item_metric_strategy.js",
+            "targetBoundary": "game-domain",
+            "symbols": [
+              "ItemMetricStrategy"
+            ],
+            "executionPhases": [
+              "deferred"
+            ],
+            "policy": "allowed"
+          }
+        ],
+        "capabilities": [],
+        "availabilityConstraints": [
+          {
+            "symbol": "ItemMetricStrategy",
+            "target": "src/core/items/progression/item_metric_strategy.js",
+            "consumerPhase": "deferred",
+            "providerAvailability": "program-init",
+            "resolution": "confirmed"
+          }
+        ],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/items/progression/item_rating_resolver.js",
+          "classDeclarations": [
+            "ItemRatingResolver"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#baselineRegistry",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#strategyRegistry",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 2,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#resolveOutOfRange",
+              "kind": "method",
+              "parameterCount": 3,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#unavailable",
+              "kind": "method",
+              "parameterCount": 4,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 4,
+                "arrayExpressions": 1,
+                "newExpressions": 0,
+                "objectFreezeCalls": 2,
+                "objectAssignCalls": 0,
+                "roundingCalls": 1
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 7,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#baselineRegistry",
+            "#strategyRegistry"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/items/progression/item_rating_resolver.js",
+            "authoritativeOwners": [
+              "ItemRatingResolver#baselineRegistry",
+              "ItemRatingResolver#resolveOutOfRange",
+              "ItemRatingResolver#strategyRegistry",
+              "ItemRatingResolver#unavailable"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/items/progression/item_rating_resolver.js",
+            "authoritativeOwners": [
+              "ItemRatingResolver#baselineRegistry",
+              "ItemRatingResolver#resolveOutOfRange",
+              "ItemRatingResolver#strategyRegistry",
+              "ItemRatingResolver#unavailable"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "item-rating-strategy-baseline-normalization-and-range-reporting",
+          "formulaDefaultsClampsRoundingFingerprint": "504b511feeb35cb2078964523f2818d48f6834991b7be5206e9a23343d1d66b3",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-item-rating-resolver",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/app/bootstrap.js",
+              "marker": "new ItemRatingResolver({"
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 7,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "ItemRatingResolver",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      },
+      {
+        "currentPath": "src/core/line/line_allocation_policy.js",
+        "targetPath": "src/game/domain/line/line_allocation_policy.js",
+        "sourceSha256": "9c0ad851fc5f5bada4b19c6deeeedaf60c3338162f872518e2b7c146e914ad5d",
+        "exports": [
+          "LineAllocationPolicy"
+        ],
+        "roles": [
+          "domain-behavior"
+        ],
+        "dependencyDepth": 0,
+        "scc": {
+          "id": "scc-78ca635665cd",
+          "members": [
+            "src/core/line/line_allocation_policy.js"
+          ],
+          "internalEdges": [],
+          "cyclic": false
+        },
+        "outgoingProjectEdges": [],
+        "capabilities": [],
+        "availabilityConstraints": [],
+        "dynamicConstructs": [],
+        "sourceShape": {
+          "currentPath": "src/core/line/line_allocation_policy.js",
+          "classDeclarations": [
+            "LineAllocationPolicy"
+          ],
+          "topLevelBindings": [],
+          "topLevelEffects": [],
+          "fields": [
+            {
+              "name": "#lineConfig",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            },
+            {
+              "name": "#messages",
+              "visibility": "private",
+              "initializerType": null,
+              "objectShape": []
+            }
+          ],
+          "methods": [
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 3,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#invalid",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#numberOrDefault",
+              "kind": "method",
+              "parameterCount": 2,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "#rodLengthMeters",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getLineLengthMeters",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getMaximumLineLengthMeters",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 1,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "getMinimumLineLengthMeters",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 5,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "resolveForReel",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            },
+            {
+              "name": "rodRequiresReel",
+              "kind": "method",
+              "parameterCount": 1,
+              "allocations": {
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
+                "objectFreezeCalls": 0,
+                "objectAssignCalls": 0,
+                "roundingCalls": 0
+              }
+            }
+          ],
+          "allocationTotals": {
+            "objectExpressions": 13,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "forbiddenReads": []
+        },
+        "state": {
+          "reviewed": true,
+          "frozenStateRole": "authoritative-owner",
+          "classification": "authoritative-owner",
+          "instanceFields": [
+            "#lineConfig",
+            "#messages"
+          ],
+          "publicStateShape": [],
+          "resultShape": [],
+          "stableResultIdentity": false,
+          "mutatesCallerInputs": false,
+          "authoritativeOwnerBefore": {
+            "module": "src/core/line/line_allocation_policy.js",
+            "authoritativeOwners": [
+              "LineAllocationPolicy#getLineLengthMeters",
+              "LineAllocationPolicy#getMaximumLineLengthMeters",
+              "LineAllocationPolicy#getMinimumLineLengthMeters",
+              "LineAllocationPolicy#invalid",
+              "LineAllocationPolicy#lineConfig",
+              "LineAllocationPolicy#messages",
+              "LineAllocationPolicy#numberOrDefault",
+              "LineAllocationPolicy#rodLengthMeters",
+              "LineAllocationPolicy#rodRequiresReel"
+            ]
+          },
+          "authoritativeOwnerAfter": {
+            "module": "src/game/domain/line/line_allocation_policy.js",
+            "authoritativeOwners": [
+              "LineAllocationPolicy#getLineLengthMeters",
+              "LineAllocationPolicy#getMaximumLineLengthMeters",
+              "LineAllocationPolicy#getMinimumLineLengthMeters",
+              "LineAllocationPolicy#invalid",
+              "LineAllocationPolicy#lineConfig",
+              "LineAllocationPolicy#messages",
+              "LineAllocationPolicy#numberOrDefault",
+              "LineAllocationPolicy#rodLengthMeters",
+              "LineAllocationPolicy#rodRequiresReel"
+            ]
+          },
+          "ownerIdentity": "preserved",
+          "duplicateStateCopies": "forbidden"
+        },
+        "behavior": {
+          "semanticRisk": "line-allocation-minimum-capacity-split-and-reel-winding-with-injected-messages",
+          "formulaDefaultsClampsRoundingFingerprint": "2f5aab231d712ae8095490d7d0d921ffcc1d8d89bea485d4da6959e577425e67",
+          "representationOnlyRequired": true
+        },
+        "performance": {
+          "classification": "existing-line-allocation-policy",
+          "callSites": [],
+          "callSiteEvidence": [
+            {
+              "path": "src/application/inventory/inventory_v2_composition_root.js",
+              "marker": "new LineAllocationPolicy("
+            },
+            {
+              "path": "src/core/line/line_inventory_controller.js",
+              "marker": "new LineAllocationPolicy("
+            }
+          ],
+          "allocationBaseline": {
+            "objectExpressions": 13,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          },
+          "additionalMigrationAllocationsAllowed": 0,
+          "transportLookupsAllowed": 0,
+          "comparisonMode": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+        },
+        "effects": {
+          "classification": "safe",
+          "topLevelEffects": []
+        },
+        "providerFacts": [
+          {
+            "symbol": "LineAllocationPolicy",
+            "mechanism": "global-lexical",
+            "availability": "program-init"
+          }
+        ]
+      }
+    ]
+  },
+  "runtimeBaseline": {
+    "projectModuleCount": 117,
+    "projectModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/math/normalize_distance.js",
+      "src/engine/math/vector2.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_profile_registry.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/assembly_state_repository.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/domain/assemblies/item_assembly_service.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fish_retrieve_system.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_lateral_control_system.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/stamina_system.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_capacity_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "src/game/domain/items/condition/item_condition_resolver.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/hook/hook_power_policy.js",
+      "src/game/domain/items/item_stat_override_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_progression_resolver.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "src/game/domain/items/quality/hook_quality_modifier.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/quality/net_quality_modifier.js",
+      "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "activationCount": 106,
+    "bridgeCount": 169,
+    "scriptTopology": {
+      "physicalClassicScriptCount": 443,
+      "logicalLegacyPositionCount": 433,
+      "moduleScriptCount": 0,
+      "cumulativeRuntimeScriptCount": 1,
+      "isolatedIifeScriptCount": 0
+    }
+  },
+  "closure": {
+    "existingCumulativeModuleCount": 117,
+    "existingCumulativeModules": [
+      "src/engine/assets/asset_load_result.js",
+      "src/engine/assets/asset_manifest.js",
+      "src/engine/di/dependency_contract_validator.js",
+      "src/engine/events/event_bus.js",
+      "src/engine/events/event_lifecycle.js",
+      "src/engine/math/normalize_distance.js",
+      "src/engine/math/vector2.js",
+      "src/engine/rendering/composite_renderer.js",
+      "src/engine/rendering/render_component.js",
+      "src/engine/rendering/render_math.js",
+      "src/engine/rendering/render_pass.js",
+      "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "src/game/domain/assemblies/assembly_completion_policy.js",
+      "src/game/domain/assemblies/assembly_profile_registry.js",
+      "src/game/domain/assemblies/assembly_state.js",
+      "src/game/domain/assemblies/assembly_state_repository.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/domain/assemblies/item_assembly_service.js",
+      "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/domain/equipment/exact_item_signature_policy.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
+      "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "src/game/domain/fish/fish_rarity_resolver.js",
+      "src/game/domain/fishing/drag_force_calculator.js",
+      "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "src/game/domain/fishing/fish_retrieve_result.js",
+      "src/game/domain/fishing/fish_retrieve_system.js",
+      "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/hold_opposition_resolver.js",
+      "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/domain/fishing/line_spool_state.js",
+      "src/game/domain/fishing/line_tension_calculator.js",
+      "src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/domain/fishing/reel_hold_load_policy.js",
+      "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "src/game/domain/fishing/rod_lateral_control_system.js",
+      "src/game/domain/fishing/rod_pull_state.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/domain/fishing/rod_stroke_state.js",
+      "src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "src/game/domain/fishing/stamina_system.js",
+      "src/game/domain/fishing/tackle_failure_selector.js",
+      "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "src/game/domain/inventory/equip_target_selection_policy.js",
+      "src/game/domain/inventory/inventory_capacity_policy.js",
+      "src/game/domain/inventory/inventory_item_location.js",
+      "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "src/game/domain/items/condition/item_condition_resolver.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/hook/hook_power_policy.js",
+      "src/game/domain/items/item_stat_override_policy.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy.js",
+      "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "src/game/domain/items/progression/item_progression_descriptor.js",
+      "src/game/domain/items/progression/item_progression_resolver.js",
+      "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "src/game/domain/items/quality/hook_quality_modifier.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/quality/net_quality_modifier.js",
+      "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+    ],
+    "newProjectModuleCount": 6,
+    "newProjectModules": [
+      "src/game/domain/casting/distance_unit_converter.js",
+      "src/game/domain/items/progression/composite_metric_strategy.js",
+      "src/game/domain/items/progression/item_capacity_resolver.js",
+      "src/game/domain/items/progression/item_rating_resolver.js",
+      "src/game/domain/line/line_allocation_policy.js",
+      "src/game/domain/rules/gameplay_rules.js"
+    ],
+    "resultingProjectModuleCount": 123,
+    "internalEdges": [],
+    "alreadyCumulativeDependencies": [],
+    "resolvedImports": [
+      {
+        "source": "src/app/rules.js",
+        "target": "src/engine/math/normalize_distance.js",
+        "viaShim": "src/core/math/normalize_distance.js",
+        "symbols": [
+          "normalizeDistance"
+        ],
+        "exportName": "normalizeDistance",
+        "activationId": "activation-138f54238b60"
+      },
+      {
+        "source": "src/core/items/progression/composite_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "viaShim": "src/core/items/progression/item_metric_strategy.js",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "exportName": "ItemMetricStrategy",
+        "activationId": "activation-597e6786200f"
+      },
+      {
+        "source": "src/core/items/progression/item_rating_resolver.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "viaShim": "src/core/items/progression/item_metric_strategy.js",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "exportName": "ItemMetricStrategy",
+        "activationId": "activation-597e6786200f"
+      }
+    ],
+    "unexpectedDependencies": []
+  },
+  "evaluation": {
+    "legacyScriptOrderControlsEvaluation": false,
+    "ordering": "esm-graph-topology-with-lexicographic-diagnostic-tiebreak",
+    "stronglyConnectedComponents": [
+      {
+        "id": "scc-0325acbd2715",
+        "members": [
+          "src/core/items/progression/item_rating_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-15e151381932",
+        "members": [
+          "src/core/items/progression/item_capacity_resolver.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-169131335316",
+        "members": [
+          "src/app/rules.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-78ca635665cd",
+        "members": [
+          "src/core/line/line_allocation_policy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-868743ffebb5",
+        "members": [
+          "src/core/items/progression/composite_metric_strategy.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      },
+      {
+        "id": "scc-a4433a019683",
+        "members": [
+          "src/core/distance_unit_converter.js"
+        ],
+        "internalEdges": [],
+        "cyclic": false
+      }
+    ],
+    "layers": [
+      [
+        "src/game/domain/casting/distance_unit_converter.js",
+        "src/game/domain/items/progression/composite_metric_strategy.js",
+        "src/game/domain/items/progression/item_capacity_resolver.js",
+        "src/game/domain/items/progression/item_rating_resolver.js",
+        "src/game/domain/line/line_allocation_policy.js",
+        "src/game/domain/rules/gameplay_rules.js"
+      ]
+    ],
+    "cycles": []
+  },
+  "boundaries": {
+    "forbiddenEdges": [],
+    "directConfigDependencies": [],
+    "browserCapabilities": [],
+    "transportReads": [],
+    "forbiddenSourceReads": [],
+    "dynamicConstructs": []
+  },
+  "state": {
+    "reviewed": [
+      {
+        "module": "src/app/rules.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/distance_unit_converter.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/progression/composite_metric_strategy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/progression/item_capacity_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_resolver.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      },
+      {
+        "module": "src/core/line/line_allocation_policy.js",
+        "frozenStateRole": "authoritative-owner",
+        "classification": "authoritative-owner",
+        "ownerIdentity": "preserved"
+      }
+    ],
+    "unresolved": []
+  },
+  "behavior": {
+    "resultShapeSensitive": [],
+    "mutableIdentitySensitive": [],
+    "formulaDefaultsClampsRoundingFingerprints": [
+      {
+        "module": "src/app/rules.js",
+        "sha256": "6abf94a8977f544f955a404074594c69fcaa5a3fb5652e5afa1981131bddd66d"
+      },
+      {
+        "module": "src/core/distance_unit_converter.js",
+        "sha256": "732b43c1cd44a893ac949ce29185f44e3afdd9800d8769033b27d2dca5cc8f82"
+      },
+      {
+        "module": "src/core/items/progression/composite_metric_strategy.js",
+        "sha256": "a36cf0bacda1e5fba68ea07b0441add2491e3af810ef1e345f3d5d414efcc778"
+      },
+      {
+        "module": "src/core/items/progression/item_capacity_resolver.js",
+        "sha256": "ca49d20d2a8b31df019d68e860f76844ce6a9cfb667c624c98fdb857b70e5e47"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_resolver.js",
+        "sha256": "504b511feeb35cb2078964523f2818d48f6834991b7be5206e9a23343d1d66b3"
+      },
+      {
+        "module": "src/core/line/line_allocation_policy.js",
+        "sha256": "2f5aab231d712ae8095490d7d0d921ffcc1d8d89bea485d4da6959e577425e67"
+      }
+    ],
+    "unresolved": []
+  },
+  "performance": {
+    "reviewed": [
+      {
+        "module": "src/app/rules.js",
+        "classification": "existing-gameplay-rules",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new EquipmentRules("
+          },
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new PlayerCastRules("
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 2,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/distance_unit_converter.js",
+        "classification": "existing-distance-unit-converter",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/core/casting_distance.js",
+            "marker": "new DistanceUnitConverter("
+          },
+          {
+            "path": "src/entities/tackle.js",
+            "marker": "new DistanceUnitConverter("
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/progression/composite_metric_strategy.js",
+        "classification": "existing-item-composite-metric-strategy",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new CompositeMetricStrategy()"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 10,
+          "arrayExpressions": 2,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      },
+      {
+        "module": "src/core/items/progression/item_capacity_resolver.js",
+        "classification": "existing-item-capacity-resolver",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new ItemCapacityResolver({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        }
+      },
+      {
+        "module": "src/core/items/progression/item_rating_resolver.js",
+        "classification": "existing-item-rating-resolver",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/app/bootstrap.js",
+            "marker": "new ItemRatingResolver({"
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 3,
+          "newExpressions": 2,
+          "objectFreezeCalls": 4,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        }
+      },
+      {
+        "module": "src/core/line/line_allocation_policy.js",
+        "classification": "existing-line-allocation-policy",
+        "callSites": [],
+        "callSiteEvidence": [
+          {
+            "path": "src/application/inventory/inventory_v2_composition_root.js",
+            "marker": "new LineAllocationPolicy("
+          },
+          {
+            "path": "src/core/line/line_inventory_controller.js",
+            "marker": "new LineAllocationPolicy("
+          }
+        ],
+        "allocationBaseline": {
+          "objectExpressions": 13,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        }
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "unresolved": []
+  },
+  "effects": {
+    "safe": [
+      "src/app/rules.js",
+      "src/core/distance_unit_converter.js",
+      "src/core/items/progression/composite_metric_strategy.js",
+      "src/core/items/progression/item_capacity_resolver.js",
+      "src/core/items/progression/item_rating_resolver.js",
+      "src/core/line/line_allocation_policy.js"
+    ],
+    "reviewed": [],
+    "unsafe": []
+  },
+  "compatibility": {
+    "providers": [
+      {
+        "module": "src/app/rules.js",
+        "symbol": "BaitRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "BiteRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "BoatRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "CastRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "ChumRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "EquipmentRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/app/rules.js",
+        "symbol": "PlayerCastRules",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/distance_unit_converter.js",
+        "symbol": "DistanceUnitConverter",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/composite_metric_strategy.js",
+        "symbol": "CompositeMetricStrategy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/item_capacity_resolver.js",
+        "symbol": "ItemCapacityResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_resolver.js",
+        "symbol": "ItemRatingResolver",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      },
+      {
+        "module": "src/core/line/line_allocation_policy.js",
+        "symbol": "LineAllocationPolicy",
+        "mechanism": "global-lexical",
+        "availability": "program-init"
+      }
+    ],
+    "consumers": [
+      {
+        "provider": "src/app/rules.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "BaitRules",
+          "BiteRules",
+          "BoatRules",
+          "CastRules",
+          "ChumRules",
+          "EquipmentRules",
+          "PlayerCastRules"
+        ]
+      },
+      {
+        "provider": "src/core/distance_unit_converter.js",
+        "source": "src/core/casting_distance.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "DistanceUnitConverter"
+        ]
+      },
+      {
+        "provider": "src/core/distance_unit_converter.js",
+        "source": "src/entities/tackle.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "DistanceUnitConverter"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/composite_metric_strategy.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "CompositeMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_capacity_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemCapacityResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_rating_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRatingResolver"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/core/line/line_inventory_controller.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/systems/inventory_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      }
+    ],
+    "activations": [
+      {
+        "id": "activation-27de2804d152",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/core/distance_unit_converter.js",
+        "targetModule": "src/game/domain/casting/distance_unit_converter.js",
+        "exportName": "DistanceUnitConverter",
+        "legacySymbol": "DistanceUnitConverter",
+        "legacyScriptIndex": 89,
+        "shimFile": "activations/089_distanceunitconverter.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/core/casting_distance.js",
+          "src/entities/tackle.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-649929a35f50",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "BiteRules",
+        "legacySymbol": "BiteRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_biterules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-71f9e7f66e9c",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/core/items/progression/composite_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/composite_metric_strategy.js",
+        "exportName": "CompositeMetricStrategy",
+        "legacySymbol": "CompositeMetricStrategy",
+        "legacyScriptIndex": 77,
+        "shimFile": "activations/077_compositemetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-7939598a66ae",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "PlayerCastRules",
+        "legacySymbol": "PlayerCastRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_playercastrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-80e73205e0e8",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "CastRules",
+        "legacySymbol": "CastRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_castrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-8706d223cc0c",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/core/items/progression/item_capacity_resolver.js",
+        "targetModule": "src/game/domain/items/progression/item_capacity_resolver.js",
+        "exportName": "ItemCapacityResolver",
+        "legacySymbol": "ItemCapacityResolver",
+        "legacyScriptIndex": 83,
+        "shimFile": "activations/083_itemcapacityresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-a461979f2c52",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "BoatRules",
+        "legacySymbol": "BoatRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_boatrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-aad64fe0f08c",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/core/line/line_allocation_policy.js",
+        "targetModule": "src/game/domain/line/line_allocation_policy.js",
+        "exportName": "LineAllocationPolicy",
+        "legacySymbol": "LineAllocationPolicy",
+        "legacyScriptIndex": 142,
+        "shimFile": "activations/142_lineallocationpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/application/inventory/inventory_v2_composition_root.js",
+          "src/application/inventory/inventory_v2_line_allocation_service.js",
+          "src/core/line/line_inventory_controller.js",
+          "src/systems/inventory_system.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b01073370443",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/core/items/progression/item_rating_resolver.js",
+        "targetModule": "src/game/domain/items/progression/item_rating_resolver.js",
+        "exportName": "ItemRatingResolver",
+        "legacySymbol": "ItemRatingResolver",
+        "legacyScriptIndex": 80,
+        "shimFile": "activations/080_itemratingresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-b35709a3491d",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "EquipmentRules",
+        "legacySymbol": "EquipmentRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_equipmentrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-f7878fbddced",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "ChumRules",
+        "legacySymbol": "ChumRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_chumrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      },
+      {
+        "id": "activation-f80b8eeb5a75",
+        "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+        "sourceProvider": "src/app/rules.js",
+        "targetModule": "src/game/domain/rules/gameplay_rules.js",
+        "exportName": "BaitRules",
+        "legacySymbol": "BaitRules",
+        "legacyScriptIndex": 397,
+        "shimFile": "activations/397_baitrules.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5",
+        "mechanism": "global-this-property",
+        "consumers": [
+          "src/app/bootstrap.js"
+        ],
+        "removalCondition": "all-listed-legacy-consumers-migrated"
+      }
+    ]
+  },
+  "prerequisites": {
+    "frozen": [],
+    "reviewed": [],
+    "newlyDiscovered": []
+  },
+  "migrationGates": [
+    "six-exact-sources-and-method-shapes",
+    "twelve-export-identities-and-activations",
+    "three-exact-reviewed-imports-and-three-retired-bridges",
+    "ten-exact-consumer-relationships",
+    "all-legacy-activation-positions-preserved",
+    "zero-config-platform-browser-dev-dependencies",
+    "zero-added-hot-loop-allocations"
+  ],
+  "issues": [],
+  "verdict": "eligible-for-execution-plan",
+  "liveObservation": {
+    "status": "verified",
+    "sourceCount": 550,
+    "persistencePerformed": false,
+    "consumerRelationships": [
+      {
+        "provider": "src/app/rules.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "BaitRules",
+          "BiteRules",
+          "BoatRules",
+          "CastRules",
+          "ChumRules",
+          "EquipmentRules",
+          "PlayerCastRules"
+        ]
+      },
+      {
+        "provider": "src/core/distance_unit_converter.js",
+        "source": "src/core/casting_distance.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "DistanceUnitConverter"
+        ]
+      },
+      {
+        "provider": "src/core/distance_unit_converter.js",
+        "source": "src/entities/tackle.js",
+        "sourceBoundary": "game-domain",
+        "symbols": [
+          "DistanceUnitConverter"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/composite_metric_strategy.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "CompositeMetricStrategy"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_capacity_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemCapacityResolver"
+        ]
+      },
+      {
+        "provider": "src/core/items/progression/item_rating_resolver.js",
+        "source": "src/app/bootstrap.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "ItemRatingResolver"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/application/inventory/inventory_v2_composition_root.js",
+        "sourceBoundary": "bootstrap-production",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/core/line/line_inventory_controller.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      },
+      {
+        "provider": "src/core/line/line_allocation_policy.js",
+        "source": "src/systems/inventory_system.js",
+        "sourceBoundary": "game-application",
+        "symbols": [
+          "LineAllocationPolicy"
+        ]
+      }
+    ]
+  },
+  "plannedTopology": {
+    "projectModuleCount": 123,
+    "activationCount": 116,
+    "bridgeRecordCount": 176
+  },
+  "activationRetirement": {
+    "reason": "all-listed-legacy-consumers-migrated",
+    "placeholder": "inert-classic-position",
+    "activations": [
+      {
+        "id": "activation-138f54238b60",
+        "owner": "stage-3.22.prerequisite.entities-world-rules-decomposition",
+        "sourceProvider": "src/core/math/normalize_distance.js",
+        "targetModule": "src/engine/math/normalize_distance.js",
+        "exportName": "normalizeDistance",
+        "legacySymbol": "normalizeDistance",
+        "legacyScriptIndex": 390,
+        "shimFile": "activations/390_normalizedistance.js",
+        "reason": "Expose the Engine normalizeDistance function to its unmigrated classic consumer through the shared cumulative runtime.",
+        "removalStage": "stage-5"
+      },
+      {
+        "id": "activation-597e6786200f",
+        "owner": "stage-3.candidate-011-items-11818ee5",
+        "sourceProvider": "src/core/items/progression/item_metric_strategy.js",
+        "targetModule": "src/game/domain/items/progression/item_metric_strategy.js",
+        "exportName": "ItemMetricStrategy",
+        "legacySymbol": "ItemMetricStrategy",
+        "legacyScriptIndex": 73,
+        "shimFile": "activations/073_itemmetricstrategy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      }
+    ]
+  }
+}

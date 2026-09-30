@@ -17,7 +17,7 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js?v=0.24.77"></script>
+    <script src="src/config/project_version.js?v=0.24.78"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
     <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
@@ -95,25 +95,25 @@
     <script src="dist/stage-3-compat-runtime/activations/070_hookpowerpolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/071_netqualitymodifier.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/072_environmentalcompensationmodifier.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/073_itemmetricstrategy.js"></script>
+    <script src="src/core/items/progression/item_metric_strategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/074_numericstatmetricstrategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/075_derivedstatmetricstrategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/076_targetrangemetricstrategy.js"></script>
-    <script src="src/core/items/progression/composite_metric_strategy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/077_compositemetricstrategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/078_itemmetricstrategyregistry.js"></script>
     <script src="src/core/items/progression/item_catalog_baseline_registry.js" data-legacy-slot="79"></script>
     <script src="src/infrastructure/diagnostics/console_logger.js" data-legacy-slot="79"></script>
-    <script src="src/core/items/progression/item_rating_resolver.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/080_itemratingresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/081_itemratingtierresolver.js"></script>
     <script src="src/core/items/progression/item_quality_resolver.js"></script>
-    <script src="src/core/items/progression/item_capacity_resolver.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/083_itemcapacityresolver.js"></script>
     <script src="src/core/items/progression/item_progression_descriptor.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/085_itemprogressionresolver.js"></script>
 
     <script src="dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js"></script>
     <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/088_floattacklelinebudgetpolicy.js"></script>
-    <script src="src/core/distance_unit_converter.js" data-legacy-slot="89"></script>
+    <script src="dist/stage-3-compat-runtime/activations/089_distanceunitconverter.js" data-legacy-slot="89"></script>
     <script src="src/core/casting_distance.js" data-legacy-slot="89"></script>
     <script src="dist/stage-3-compat-runtime/activations/090_linespoolstate.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/091_rodpullstate.js"></script>
@@ -170,7 +170,7 @@
     <script src="dist/stage-3-compat-runtime/activations/139_simplefightforcecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/140_landinglifttensioncalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/141_landingliftreadinesspolicy.js"></script>
-    <script src="src/core/line/line_allocation_policy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/142_lineallocationpolicy.js"></script>
     <script src="src/core/line/line_inventory_controller.js"></script>
 
     <!-- Inventory v2 domain -->
@@ -440,7 +440,7 @@
     <script src="src/render/pipeline/game_render_pipeline.js"></script>
 
     <!-- APP UTILS -->
-    <script src="dist/stage-3-compat-runtime/activations/390_normalizedistance.js" data-legacy-slot="390"></script>
+    <script src="src/core/math/normalize_distance.js" data-legacy-slot="390"></script>
     <script src="src/app/utils.js" data-legacy-slot="390"></script>
 
     <!-- APP CORE -->
@@ -454,7 +454,13 @@
     <script src="src/app/adapters.js"></script>
 
     <!-- APP RULES -->
-    <script src="src/app/rules.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/397_biterules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_playercastrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_castrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_boatrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_equipmentrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_chumrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/397_baitrules.js"></script>
     <script src="src/app/cast_power.js"></script>
 
     <!-- APP CONTEXT -->

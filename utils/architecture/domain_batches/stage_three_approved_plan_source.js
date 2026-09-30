@@ -73,8 +73,11 @@ class StageThreeApprovedPlanSource {
     const continuationIds = new Set(continuation.batches.map(batch => batch.id));
     // A plan read at an earlier checkpoint sees retirements of later batches (from a newer
     // continuation link) in the live runtime contract; they are not yet part of this plan.
-    const lastOrder = historical.batches.length + continuation.batches.length;
-    const later = id => Number(/\.batch-(\d{3})-/u.exec(id)?.[1]) > lastOrder;
+    // A later replacement review may reuse the next unexecuted order while replacing an older
+    // frozen suffix. It is later relative to this checkpoint when it follows the completed prefix,
+    // even if the older plan had already reserved the same or higher order numbers.
+    const completedOrder = executionState.completedBatchIds.length;
+    const later = id => Number(/\.batch-(\d{3})-/u.exec(id)?.[1]) > completedOrder;
     for (const retiring of retiredBy.values()) {
       assert(continuationIds.has(retiring) || later(retiring), `activation retired by an unknown batch: ${retiring}`);
     }
@@ -131,12 +134,14 @@ class StageThreeApprovedPlanSource {
 
   // Exact reviewed completed-prefix imports of every target in the given batches, keyed by target
   // path, in the execution plan's `importsAllowed` shape (relative specifier from the target).
-  // Every reviewed import record of one batch with its export resolved: completed-prefix records as
-  // frozen, earlier-batch records through the exact activation of the earlier batch.
+  // Every reviewed import record of one batch with its export resolved: completed-prefix and
+  // foundation records as frozen, earlier-batch records through the exact activation of the
+  // earlier batch.
   static resolvedImportRecords(document, batch) {
-    return (batch.imports || []).filter(record => ["completed-prefix", "earlier-batch"].includes(record.resolution))
-      .map(record => record.resolution === "completed-prefix" ? record
-        : StageThreeApprovedPlanSource.#earlierBatchImport(document, record));
+    return (batch.imports || []).filter(record =>
+      ["completed-prefix", "earlier-batch", "foundation"].includes(record.resolution))
+      .map(record => record.resolution === "earlier-batch"
+        ? StageThreeApprovedPlanSource.#earlierBatchImport(document, record) : record);
   }
 
   static reviewedImports(document, batchIds) {

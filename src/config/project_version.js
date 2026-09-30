@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.77";
+const CURRENT_PROJECT_VERSION = "0.24.78";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-capacity-and-stamina-domain",
-  updatedAt: "2026-09-29",
+  codename: "casting-items-line-rules-domain",
+  updatedAt: "2026-09-30",
   notes: Object.freeze([
-    "Migrate the inventory capacity policies",
-    "Migrate the fight stamina controller",
-    "Open the Stage 3.40.0 approved prefix",
-    "Preserve one hundred sixteen project modules, one hundred five activations and one hundred sixty-eight bridges",
+    "Adopt the Stage 3.41.0 replacement prefix",
+    "Migrate gameplay rules, distance conversion, item metric composition, capacity and rating, and line allocation",
+    "Use the Engine normalizeDistance owner and completed-prefix ItemMetricStrategy through reviewed imports",
+    "Preserve one hundred twenty-three project modules, one hundred sixteen active activations and one hundred seventy-six bridges",
   ]),
 });
 

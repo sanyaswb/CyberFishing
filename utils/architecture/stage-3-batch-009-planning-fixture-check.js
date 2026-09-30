@@ -64,6 +64,7 @@ class Batch009PlanningFixtures {
     const synthetic = source => gate.verify({ projectRoot: root,
       modules: [{ currentPath: "fixture.js", targetPath: "fixture.js" }], read: () => source, reviews: [] });
     synthetic("export class Safe { method() { return new Map(); } }");
+    synthetic("function safe(value) { return value; } export { safe };");
     for (const source of [
       "export class Unsafe extends Unknown {}",
       "export class Unsafe { static state = document; }",
@@ -75,6 +76,7 @@ class Batch009PlanningFixtures {
       "import './future.js'; export class Unsafe {}",
       "export class Unsafe {} globalThis.Extra = Unsafe;",
       "const cache = new WeakMap(); export class NeedsReview {}",
+      "export { missing };",
     ]) { assert.throws(() => synthetic(source)); negatives++; }
     const runtime = app.json(PATHS.runtimeContract);
     const modules = audit.earlierEvaluation.records.map(r => ({ currentPath: r.source, targetPath: r.target }));

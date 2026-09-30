@@ -1,0 +1,659 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+  "sourceReleaseVersion": "0.24.77",
+  "targetReleaseVersion": "0.24.78",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_040_execution_plan.json",
+    "sha256": "1a62762bbec3ad730a43840cc46a63ffbf1153522ae995b83d81453d9f284d3c"
+  },
+  "scope": {
+    "moduleCount": 6,
+    "exportCount": 12,
+    "activationCount": 12,
+    "consumerRelationshipCount": 10
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/BaitRules/bait-types-and-physics",
+      "kind": "behavior-equivalence",
+      "exportName": "BaitRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "bait-types-and-physics",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/BiteRules/hook-size-and-bite-sequence",
+      "kind": "behavior-equivalence",
+      "exportName": "BiteRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "hook-size-and-bite-sequence",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/BoatRules/manual-state-targeting-and-cast",
+      "kind": "behavior-equivalence",
+      "exportName": "BoatRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "manual-state-targeting-and-cast",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/CastRules/bounds-distance-and-rod-position",
+      "kind": "behavior-equivalence",
+      "exportName": "CastRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "bounds-distance-and-rod-position",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ChumRules/delivery-load-and-sections",
+      "kind": "behavior-equivalence",
+      "exportName": "ChumRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "delivery-load-and-sections",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/CompositeMetricStrategy/components-baselines-and-failures",
+      "kind": "behavior-equivalence",
+      "exportName": "CompositeMetricStrategy",
+      "currentPath": "src/core/items/progression/composite_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "baselineSourceSha256": "d4279fdf0759d4bdf288f73dc8df9b2e9c03b570070584897293e747cddebc8b",
+      "caseName": "components-baselines-and-failures",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/DistanceUnitConverter/configuration-and-conversions",
+      "kind": "behavior-equivalence",
+      "exportName": "DistanceUnitConverter",
+      "currentPath": "src/core/distance_unit_converter.js",
+      "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+      "baselineSourceSha256": "e6f81a0db00152d675ebba636409b06af1ccc7466caa5c12e54382e9bb0cbe18",
+      "caseName": "configuration-and-conversions",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EquipmentRules/equipment-kinds-selection-and-depth",
+      "kind": "behavior-equivalence",
+      "exportName": "EquipmentRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "equipment-kinds-selection-and-depth",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemCapacityResolver/capacity-sources-and-unavailable-results",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemCapacityResolver",
+      "currentPath": "src/core/items/progression/item_capacity_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "baselineSourceSha256": "ec9b6480e5f2e03c798646c9591ebf8650a7f2f19a694cf0ee318284e32b7bfa",
+      "caseName": "capacity-sources-and-unavailable-results",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemRatingResolver/constructor-strategy-baseline-and-range",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemRatingResolver",
+      "currentPath": "src/core/items/progression/item_rating_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+      "baselineSourceSha256": "278ab1b84a3ff19847dd2da5e8fc63ed64468bba7a5788bf6298f9505557a5eb",
+      "caseName": "constructor-strategy-baseline-and-range",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/LineAllocationPolicy/rod-reel-allocation-and-winding",
+      "kind": "behavior-equivalence",
+      "exportName": "LineAllocationPolicy",
+      "currentPath": "src/core/line/line_allocation_policy.js",
+      "targetPath": "src/game/domain/line/line_allocation_policy.js",
+      "baselineSourceSha256": "9c0ad851fc5f5bada4b19c6deeeedaf60c3338162f872518e2b7c146e914ad5d",
+      "caseName": "rod-reel-allocation-and-winding",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/PlayerCastRules/equipment-and-boat-gates",
+      "kind": "behavior-equivalence",
+      "exportName": "PlayerCastRules",
+      "currentPath": "src/app/rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "baselineSourceSha256": "39524c26694825bf2584e3aa58f219ce037f5598fb668cb6624c65de7b2a8375",
+      "caseName": "equipment-and-boat-gates",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/six-representation-only-named-esm-targets-and-twelve-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "six-representation-only-named-esm-targets-and-twelve-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/three-exact-reviewed-imports-and-three-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "three-exact-reviewed-imports-and-three-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/twelve-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "twelve-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/ten-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "ten-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "BaitRules",
+      "caseCount": 1,
+      "cases": [
+        "bait-types-and-physics"
+      ]
+    },
+    {
+      "exportName": "BiteRules",
+      "caseCount": 1,
+      "cases": [
+        "hook-size-and-bite-sequence"
+      ]
+    },
+    {
+      "exportName": "BoatRules",
+      "caseCount": 1,
+      "cases": [
+        "manual-state-targeting-and-cast"
+      ]
+    },
+    {
+      "exportName": "CastRules",
+      "caseCount": 1,
+      "cases": [
+        "bounds-distance-and-rod-position"
+      ]
+    },
+    {
+      "exportName": "ChumRules",
+      "caseCount": 1,
+      "cases": [
+        "delivery-load-and-sections"
+      ]
+    },
+    {
+      "exportName": "CompositeMetricStrategy",
+      "caseCount": 1,
+      "cases": [
+        "components-baselines-and-failures"
+      ]
+    },
+    {
+      "exportName": "DistanceUnitConverter",
+      "caseCount": 1,
+      "cases": [
+        "configuration-and-conversions"
+      ]
+    },
+    {
+      "exportName": "EquipmentRules",
+      "caseCount": 1,
+      "cases": [
+        "equipment-kinds-selection-and-depth"
+      ]
+    },
+    {
+      "exportName": "ItemCapacityResolver",
+      "caseCount": 1,
+      "cases": [
+        "capacity-sources-and-unavailable-results"
+      ]
+    },
+    {
+      "exportName": "ItemRatingResolver",
+      "caseCount": 1,
+      "cases": [
+        "constructor-strategy-baseline-and-range"
+      ]
+    },
+    {
+      "exportName": "LineAllocationPolicy",
+      "caseCount": 1,
+      "cases": [
+        "rod-reel-allocation-and-winding"
+      ]
+    },
+    {
+      "exportName": "PlayerCastRules",
+      "caseCount": 1,
+      "cases": [
+        "equipment-and-boat-gates"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 10,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.41.0-live-observation-and-stage-3.41-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_040_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/app/rules.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/app/rules.js",
+          "authoritativeOwners": [
+            "BiteRules#baitRules",
+            "BoatRules#isManual",
+            "CastRules#equipmentRules",
+            "EquipmentRules#castDistanceCalculator",
+            "EquipmentRules#config",
+            "EquipmentRules#getCastPowerCoefficient",
+            "EquipmentRules#getFloatLineBudget",
+            "EquipmentRules#getRodKind",
+            "EquipmentRules#isFeeder",
+            "EquipmentRules#isFloatRod",
+            "EquipmentRules#isSpinning",
+            "EquipmentRules#messages",
+            "EquipmentRules#requiresReel",
+            "PlayerCastRules#boatRules",
+            "PlayerCastRules#equipmentRules"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/rules/gameplay_rules.js",
+          "authoritativeOwners": [
+            "BiteRules#baitRules",
+            "BoatRules#isManual",
+            "CastRules#equipmentRules",
+            "EquipmentRules#castDistanceCalculator",
+            "EquipmentRules#config",
+            "EquipmentRules#getCastPowerCoefficient",
+            "EquipmentRules#getFloatLineBudget",
+            "EquipmentRules#getRodKind",
+            "EquipmentRules#isFeeder",
+            "EquipmentRules#isFloatRod",
+            "EquipmentRules#isSpinning",
+            "EquipmentRules#messages",
+            "EquipmentRules#requiresReel",
+            "PlayerCastRules#boatRules",
+            "PlayerCastRules#equipmentRules"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "6abf94a8977f544f955a404074594c69fcaa5a3fb5652e5afa1981131bddd66d",
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 2,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/distance_unit_converter.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/distance_unit_converter.js",
+          "authoritativeOwners": [
+            "DistanceUnitConverter#pixelsPerMeter"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/casting/distance_unit_converter.js",
+          "authoritativeOwners": [
+            "DistanceUnitConverter#pixelsPerMeter"
+          ]
+        },
+        "publicStateShape": [
+          "pixelsPerMeter"
+        ],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "732b43c1cd44a893ac949ce29185f44e3afdd9800d8769033b27d2dca5cc8f82",
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/progression/composite_metric_strategy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/composite_metric_strategy.js",
+          "authoritativeOwners": [
+            "CompositeMetricStrategy#available",
+            "CompositeMetricStrategy#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/composite_metric_strategy.js",
+          "authoritativeOwners": [
+            "CompositeMetricStrategy#available",
+            "CompositeMetricStrategy#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "a36cf0bacda1e5fba68ea07b0441add2491e3af810ef1e345f3d5d414efcc778",
+        "allocationBaseline": {
+          "objectExpressions": 10,
+          "arrayExpressions": 2,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/progression/item_capacity_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/item_capacity_resolver.js",
+          "authoritativeOwners": [
+            "ItemCapacityResolver#effectiveStatsResolver",
+            "ItemCapacityResolver#messages",
+            "ItemCapacityResolver#number",
+            "ItemCapacityResolver#readPath",
+            "ItemCapacityResolver#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/item_capacity_resolver.js",
+          "authoritativeOwners": [
+            "ItemCapacityResolver#effectiveStatsResolver",
+            "ItemCapacityResolver#messages",
+            "ItemCapacityResolver#number",
+            "ItemCapacityResolver#readPath",
+            "ItemCapacityResolver#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "ca49d20d2a8b31df019d68e860f76844ce6a9cfb667c624c98fdb857b70e5e47",
+        "allocationBaseline": {
+          "objectExpressions": 8,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/items/progression/item_rating_resolver.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/item_rating_resolver.js",
+          "authoritativeOwners": [
+            "ItemRatingResolver#baselineRegistry",
+            "ItemRatingResolver#resolveOutOfRange",
+            "ItemRatingResolver#strategyRegistry",
+            "ItemRatingResolver#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/item_rating_resolver.js",
+          "authoritativeOwners": [
+            "ItemRatingResolver#baselineRegistry",
+            "ItemRatingResolver#resolveOutOfRange",
+            "ItemRatingResolver#strategyRegistry",
+            "ItemRatingResolver#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "504b511feeb35cb2078964523f2818d48f6834991b7be5206e9a23343d1d66b3",
+        "allocationBaseline": {
+          "objectExpressions": 7,
+          "arrayExpressions": 3,
+          "newExpressions": 2,
+          "objectFreezeCalls": 4,
+          "objectAssignCalls": 0,
+          "roundingCalls": 1
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      },
+      {
+        "module": "src/core/line/line_allocation_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/line/line_allocation_policy.js",
+          "authoritativeOwners": [
+            "LineAllocationPolicy#getLineLengthMeters",
+            "LineAllocationPolicy#getMaximumLineLengthMeters",
+            "LineAllocationPolicy#getMinimumLineLengthMeters",
+            "LineAllocationPolicy#invalid",
+            "LineAllocationPolicy#lineConfig",
+            "LineAllocationPolicy#messages",
+            "LineAllocationPolicy#numberOrDefault",
+            "LineAllocationPolicy#rodLengthMeters",
+            "LineAllocationPolicy#rodRequiresReel"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/line/line_allocation_policy.js",
+          "authoritativeOwners": [
+            "LineAllocationPolicy#getLineLengthMeters",
+            "LineAllocationPolicy#getMaximumLineLengthMeters",
+            "LineAllocationPolicy#getMinimumLineLengthMeters",
+            "LineAllocationPolicy#invalid",
+            "LineAllocationPolicy#lineConfig",
+            "LineAllocationPolicy#messages",
+            "LineAllocationPolicy#numberOrDefault",
+            "LineAllocationPolicy#rodLengthMeters",
+            "LineAllocationPolicy#rodRequiresReel"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "2f5aab231d712ae8095490d7d0d921ffcc1d8d89bea485d4da6959e577425e67",
+        "allocationBaseline": {
+          "objectExpressions": 13,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.41.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

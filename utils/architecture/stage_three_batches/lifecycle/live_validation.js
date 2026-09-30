@@ -18,6 +18,7 @@ const { StageThreeHotLoopEquivalence } = require("./hot_loop_equivalence");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
 const { ControlledMetadataTransaction } = require("../../domain_batches/controlled_metadata_transaction");
 
+const LEGACY_SLOT_SPLITS = "architecture/migration/legacy_slot_splits.json";
 
 // Validates the published runtime after cutover (Stage 3.N.6): exact published bytes, retired
 // placeholders, activation identity and timing, one evaluation, behavior and state shapes.
@@ -64,13 +65,31 @@ class StageThreeBatchLiveValidation {
       .map(record => record.activation);
     assert.deepEqual(retired.map(activation => activation.id), PROFILE.executionProfile.expectedRetiredActivationIds || []);
     const html = this.bytes(PATHS.index).toString("utf8");
+    // The split registry was introduced after the earliest continuation batches. Their historical
+    // workspaces have no split slots and therefore legitimately have no registry file.
+    const slotSplits = fs.existsSync(path.join(this.root, LEGACY_SLOT_SPLITS))
+      ? this.json(LEGACY_SLOT_SPLITS).splits : [];
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retired)) {
       new RetiredActivationPlaceholder().validateProvider({
         code: this.bytes(sourceProvider).toString("utf8"), activations });
     }
     const retiredActivations = retired.map(activation => {
-      assert.equal(html.split(`<script src="${activation.sourceProvider}"></script>`).length, 2,
-        `Retired slot is not the classic placeholder: ${activation.id}`);
+      const split = slotSplits.find(record => record.slot === activation.legacyScriptIndex &&
+        record.members.includes(activation.sourceProvider));
+      const providerTag = split
+        ? `<script src="${activation.sourceProvider}" data-legacy-slot="${split.slot}"></script>`
+        : `<script src="${activation.sourceProvider}"></script>`;
+      assert.equal(html.split(providerTag).length, 2,
+        `Retired slot is not the exact classic placeholder: ${activation.id}`);
+      if (split) {
+        const positions = split.members.map(member => {
+          const tag = `<script src="${member}" data-legacy-slot="${split.slot}"></script>`;
+          assert.equal(html.split(tag).length, 2, `Split-slot member differs after retirement: ${member}`);
+          return html.indexOf(tag);
+        });
+        assert.deepEqual(positions, [...positions].sort((left, right) => left - right),
+          `Split-slot member order differs after retirement: ${split.slot}`);
+      }
       assert(!html.includes(activation.shimFile), `Retired shim is still loaded: ${activation.id}`);
       assert(!fs.existsSync(path.join(this.root, runtime.output.directory + activation.shimFile)));
       return { id: activation.id, legacySymbol: activation.legacySymbol, sourceProvider: activation.sourceProvider };

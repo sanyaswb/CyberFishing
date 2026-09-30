@@ -769,6 +769,13 @@ const CHECK_DEFINITIONS = Object.freeze([
       title: "Stage 3.40.0–3.40.7 inventory capacity and stamina domain migration with split-slot activation, identity and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
       args: ["--batch", "039", "--mode", "architecture"],
+      suites: ["history"],
+    },
+    {
+      id: "stage-3-batch-040-architecture",
+      title: "Stage 3.41.0–3.41.7 casting, items, line and gameplay-rules domain migration with foundation imports, split-slot retirement and rollback gates",
+      file: "utils/architecture/stage-3-batch-check-runner.js",
+      args: ["--batch", "040", "--mode", "architecture"],
       suites: ["quick", "architecture", "history"],
     },
     {

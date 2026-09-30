@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.78 - Casting Items Line And Rules Domain
+
+### Changed
+
+- Adopted the Stage 3.41.0 replacement suffix after the normalizeDistance Engine prerequisite and migrated six Domain sources with twelve named ESM exports.
+- Replaced three legacy dependency bridges with reviewed ESM imports while preserving ten exact classic consumer bridges.
+- Extended the cumulative runtime from 117 to 123 project modules and the active activation set from 106 to 116 contracts, with 176 exact bridge relationships (10 added, 3 retired); the review ledger contains 139 activations including retired history.
+- The next task is batch 041 preflight.
+
 ## v0.24.77 - Inventory Capacity And Stamina Domain
 
 ### Changed

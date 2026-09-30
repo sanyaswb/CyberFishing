@@ -108,11 +108,16 @@ class ActivationRetirementProjection {
     let result = html;
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retiredActivations)) {
       const tags = activations.map((activation) => {
-        const shimTag = `<script src="${outputDirectory}${activation.shimFile}"></script>`;
-        if (result.split(shimTag).length !== 2) {
+        const shimSource = `${outputDirectory}${activation.shimFile}`;
+        const escapedSource = shimSource.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+        // Split legacy slots add data-legacy-slot after src. Match the complete tag and preserve
+        // those reviewed attributes when the classic provider tag is restored.
+        const pattern = new RegExp(`<script\\b[^>]*\\bsrc="${escapedSource}"[^>]*></script>`, "gu");
+        const matches = [...result.matchAll(pattern)];
+        if (matches.length !== 1) {
           throw new Error(`Retired activation shim tag is not unique: ${activation.id}`);
         }
-        return { shimTag, position: result.indexOf(shimTag) };
+        return { shimTag: matches[0][0], shimSource, position: matches[0].index };
       }).sort((left, right) => left.position - right.position);
       const [first, ...rest] = tags;
       for (const { shimTag } of rest) {
@@ -120,7 +125,8 @@ class ActivationRetirementProjection {
         if ([...result.matchAll(line)].length !== 1) throw new Error(`Retired shim tag is not on its own line: ${shimTag}`);
         result = result.replace(line, "");
       }
-      result = result.replace(first.shimTag, () => `<script src="${sourceProvider}"></script>`);
+      result = result.replace(first.shimTag,
+        () => first.shimTag.replace(`src="${first.shimSource}"`, `src="${sourceProvider}"`));
     }
     return result;
   }

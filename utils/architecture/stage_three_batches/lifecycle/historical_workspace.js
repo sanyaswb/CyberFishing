@@ -21,8 +21,10 @@ class StageThreeHistoricalWorkspace {
     this.registry = registry;
   }
 
-  async run(root, action, { keepPrebuild = false, keepCutover = false, copyTools = false } = {}) {
+  async run(root, action, { keepPrebuild = false, keepCutover = false, copyTools = false,
+    supplementalRoot = null } = {}) {
     const projectRoot = path.resolve(root);
+    const supplementalSourceRoot = path.resolve(supplementalRoot || projectRoot);
     const context = this.definition.context;
     const next = context.next().number;
     if (this.registry.has(next)) {
@@ -30,7 +32,9 @@ class StageThreeHistoricalWorkspace {
       if (fs.existsSync(path.join(projectRoot, nextPaths.cutover)) ||
         fs.existsSync(path.join(projectRoot, nextPaths.prebuild))) {
         return new StageThreeHistoricalWorkspace(this.registry.load(next), this.registry).run(projectRoot,
-          prior => this.run(prior, action, { keepPrebuild, keepCutover, copyTools }), { copyTools });
+          prior => this.run(prior, action,
+            { keepPrebuild, keepCutover, copyTools, supplementalRoot: supplementalSourceRoot }),
+          { copyTools, supplementalRoot: supplementalSourceRoot });
       }
     }
     const paths = context.paths;
@@ -64,7 +68,7 @@ class StageThreeHistoricalWorkspace {
       for (const record of prerequisiteLedger.after(context.number)) {
         for (const write of record.writes) {
           const target = path.join(temporary, write.path);
-          const source = path.join(projectRoot, write.path);
+          const source = path.join(supplementalSourceRoot, write.path);
           if (fs.existsSync(target) || !fs.existsSync(source)) continue;
           fs.mkdirSync(path.dirname(target), { recursive: true });
           fs.copyFileSync(source, target);
