@@ -92,7 +92,7 @@ class StageThreeHotLoopEvidence {
       const source = fs.readFileSync(path.join(this.root, currentPath), "utf8");
       const imports = new Set(reviewedImports);
       const classes = classNames.map(className => {
-        const review = this.sourceReview.review({ source, currentPath, className });
+        const review = this.sourceReview.review({ source, currentPath, className, classScope: true });
         const trace = traces[className];
         const exercised = Object.entries(trace.methods).filter(([, stats]) => stats.calls > 0)
           .map(([name]) => name).sort();

@@ -27,6 +27,10 @@ function reviewedEffect(contract) {
   if (contract.frozenDataConstants) {
     return { kind: "frozen-data-constants", bindings: contract.frozenDataConstants.bindings };
   }
+  // Batch 050: top-level Object.freeze literal constants beside classes (fish.js FISH_FIGHT_EVENT).
+  if (contract.frozenConstants) {
+    return { kind: "frozen-constants", ...contract.frozenConstants };
+  }
   if (contract.privateStaticSets) {
     return { kind: "private-static-literal-sets", ...contract.privateStaticSets,
       exposure: exposure ? { symbol: exposure.symbol, location: exposure.location } : null };
@@ -60,7 +64,7 @@ class StageThreeSideEffectReview {
     const PROFILE = definition.profile;
     const context = definition.context;
     for (const [source, contract] of Object.entries(PROFILE.reviewedContracts)) {
-      for (const shape of ["frozenConstants", "frozenStaticFields", "classFamily", "numericTables"]) {
+      for (const shape of ["frozenStaticFields", "classFamily", "numericTables"]) {
         assert(!contract[shape], `Unsupported reviewer shape ${shape} for ${source}: extend the shared side-effect review`);
       }
     }
@@ -87,6 +91,15 @@ class StageThreeSideEffectReview {
           bindings: contract.bindings });
         assert.deepEqual(frozen.observations, review.freezeCallLocations.map(location =>
           ({ kind: "call", location, classification: "observable" })));
+        assert.equal(frozen.status, "required-before-approved-freeze");
+        assert.equal(frozen.requiredDecision, "approved-compatible-or-batch-deferred");
+      } else if (contract.kind === "frozen-constants") {
+        assert(frozen, `Missing frozen effect review: ${module.targetPath}`);
+        const { kind: _kind, ...frozenConstants } = contract;
+        review = new StageThreeReviewedEvaluationEffect().frozenConstants({ source, currentPath: module.currentPath,
+          ...frozenConstants });
+        assert.deepEqual(frozen.observations, Object.values(contract.bindings).map(item =>
+          ({ kind: "call", location: item.location, classification: "observable" })));
         assert.equal(frozen.status, "required-before-approved-freeze");
         assert.equal(frozen.requiredDecision, "approved-compatible-or-batch-deferred");
       } else if (contract.kind === "private-static-literal-sets") {
@@ -150,12 +163,12 @@ class StageThreeSideEffectReview {
         targetEvaluation: null, imports: imports[module.targetPath] || [] };
       // A reviewed evaluation effect is observed on the unpublished source to record it.
       const representation = new RepresentationOnlyReviewedEsmTarget();
-      const targetSource = module.contract.kind === "private-static-literal-sets"
+      const targetSource = ["private-static-literal-sets", "frozen-constants"].includes(module.contract.kind)
         ? representation.observationSource(options) : representation.project(options).targetSource;
       return new ModuleEvaluationEffectObserver().observe({ modulePath: module.targetPath, source: targetSource });
     };
-    const withEffects = modules.filter(module => ["private-static-literal-sets", "frozen-data-constants"]
-      .includes(module.contract.kind));
+    const withEffects = modules.filter(module => ["private-static-literal-sets", "frozen-data-constants",
+      "frozen-constants"].includes(module.contract.kind));
     const targetEvaluations = withEffects.map(module => {
       const observation = project(module);
       assert.equal(observation.classification, "needs-review");
@@ -176,6 +189,18 @@ class StageThreeSideEffectReview {
       // The import header (one line per import plus a blank line) shifts target line numbers.
       const importLines = (imports[module.targetPath] || []).length;
       const shift = importLines === 0 ? 0 : importLines + 1;
+      if (module.contract.kind === "frozen-constants") {
+        // Each exported constant also shifts by the `export ` token.
+        assert.deepEqual(observation.observations.map(item => [item.kind, item.location]),
+          Object.values(module.contract.bindings).map(item => {
+            const [line, column] = item.location.split(":").map(Number);
+            return ["initializer-execution", `${line + shift}:${column + "export ".length}`];
+          }));
+        return { module: module.targetPath, decision: "approved-compatible",
+          evidenceFingerprint: observation.evidenceFingerprint, observations: observation.observations,
+          exactEffect: `${Object.keys(module.contract.bindings).length} top-level Object.freeze call(s) over inert ` +
+            "literals beside the classes; no external state read or global write" };
+      }
       assert.deepEqual(observation.observations.map(item => [item.kind, item.location]),
         Object.values(module.contract.bindings).map(item => {
           const [line, column] = item.location.split(":").map(Number);

@@ -141,8 +141,27 @@ class ActivationRetirementProjection {
   }
 }
 
+// A migrated classic source without any activation (no classic consumer; batch 050 BuffManager) keeps its
+// legacy script position as an inert placeholder: one comment line naming the ESM target, no global.
+class MigratedSourcePlaceholder {
+  render({ currentPath, targetPath, exports }) {
+    if (!Array.isArray(exports) || exports.length === 0) throw new Error(`Migrated source has no exports: ${currentPath}`);
+    return `// Migrated Stage 3 source ${currentPath}: ${[...exports].sort().join(", ")} ` +
+      `served only through ESM imports of ${targetPath}.\n`;
+  }
+
+  validate({ code, ...target }) {
+    if (code !== this.render(target)) throw new Error(`Migrated source placeholder differs: ${target.currentPath}`);
+    if (espree.parse(code, { ecmaVersion: "latest", sourceType: "script" }).body.length !== 0) {
+      throw new Error(`Migrated source placeholder contains statements: ${target.currentPath}`);
+    }
+    return Object.freeze({ currentPath: target.currentPath, targetPath: target.targetPath });
+  }
+}
+
 module.exports = {
   ActivationRetirementProjection,
+  MigratedSourcePlaceholder,
   PLACEHOLDER_KIND,
   RETIREMENT_REASON,
   SHARED_SOURCE_KIND,

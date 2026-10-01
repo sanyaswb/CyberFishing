@@ -132,7 +132,7 @@ async function main(argv) {
   const { StageThreeHistoricalWorkspace } = require("./stage_three_batches/lifecycle/historical_workspace");
   const result = StageThreeBatchRegistry.has(FIRST_BATCH)
     ? await new StageThreeHistoricalWorkspace(StageThreeBatchRegistry.load(FIRST_BATCH), StageThreeBatchRegistry)
-      .run(PROJECT_ROOT, prior => replay(prior))
+      .run(PROJECT_ROOT, prior => replay(prior), { copyTools: true })
     : replay(PROJECT_ROOT);
   console.log(`Stage 3.50.1 review-queue freeze replay OK: ${Object.keys(ARTIFACTS).length} artifacts byte-identical; ` +
     `${report(result)}.`);

@@ -922,9 +922,9 @@
               "bodySha256": "a0f7a08807e2cbf3ea416f7680a00fd697f04fca1b538e19dd9a45e4f96c4d13",
               "parameters": 5,
               "allocations": {
-                "objectExpressions": 3,
+                "objectExpressions": 1,
                 "arrayExpressions": 0,
-                "newExpressions": 2,
+                "newExpressions": 1,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -1282,7 +1282,7 @@
               "bodySha256": "00b97d9e7cc8cd61436c4eaa508e6baf9e085999d8d0dae15481599457319171",
               "parameters": 1,
               "allocations": {
-                "objectExpressions": 7,
+                "objectExpressions": 1,
                 "arrayExpressions": 0,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
@@ -1312,7 +1312,7 @@
               "bodySha256": "8b681631b89aaf13993ed6a44942805c1870a7a6fbda66d6eb977ddda80d132b",
               "parameters": 0,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 0,
                 "arrayExpressions": 0,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
@@ -1382,12 +1382,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
-            "objectFreezeCalls": 3,
+            "objectExpressions": 5,
+            "arrayExpressions": 1,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
             "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "roundingCalls": 2
           },
           "freeIdentifiers": [
             {
@@ -1895,9 +1895,9 @@
               "bodySha256": "7fccc746e5705cc365b798c754ce305aae975b43e781a730ed9fb89e18b2c933",
               "parameters": 3,
               "allocations": {
-                "objectExpressions": 3,
+                "objectExpressions": 5,
                 "arrayExpressions": 0,
-                "newExpressions": 2,
+                "newExpressions": 1,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -2220,12 +2220,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
+            "objectExpressions": 23,
+            "arrayExpressions": 6,
+            "newExpressions": 1,
             "objectFreezeCalls": 3,
-            "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -2896,12 +2896,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
-            "objectFreezeCalls": 3,
-            "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -3010,7 +3010,7 @@
               "bodySha256": "42157ec4bcd778e7e2e148ee45668a5cce7b73b99f3152223a7eff8e109be10b",
               "parameters": 1,
               "allocations": {
-                "objectExpressions": 4,
+                "objectExpressions": 5,
                 "arrayExpressions": 0,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
@@ -3095,12 +3095,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
-            "objectFreezeCalls": 3,
-            "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
           },
           "freeIdentifiers": [
             {
@@ -3321,9 +3321,9 @@
               "bodySha256": "3050367ee95f48389099658fc070060da58f408a6a30804ade4d358e29801eb0",
               "parameters": 1,
               "allocations": {
-                "objectExpressions": 3,
+                "objectExpressions": 2,
                 "arrayExpressions": 0,
-                "newExpressions": 2,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -3466,12 +3466,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
-            "objectFreezeCalls": 3,
-            "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "objectExpressions": 17,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -3696,12 +3696,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 57,
-            "arrayExpressions": 10,
-            "newExpressions": 6,
-            "objectFreezeCalls": 3,
-            "objectAssignCalls": 1,
-            "roundingCalls": 4
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -3822,12 +3822,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 5,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -3894,9 +3894,9 @@
               "bodySha256": "de856f2499596b68046813639c8021b426aa0ba918374c988d2f6d3c2bbc181d",
               "parameters": 2,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 0,
                 "arrayExpressions": 0,
-                "newExpressions": 5,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -3909,7 +3909,7 @@
               "bodySha256": "6343ce9610c72f41b66c113ecdb09561b6d7670a083c1513a45acf10fa17ffa3",
               "parameters": 0,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 0,
                 "arrayExpressions": 0,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
@@ -3919,12 +3919,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [],
           "classProviderReads": [],
@@ -3977,7 +3977,7 @@
               "parameters": 6,
               "allocations": {
                 "objectExpressions": 1,
-                "arrayExpressions": 1,
+                "arrayExpressions": 0,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
@@ -4091,12 +4091,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 6,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -4350,12 +4350,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -4564,9 +4564,9 @@
               "bodySha256": "79e792d1bb3fb69f27d546f5a8288c2748d41349967d7e55fc6a551bd738d954",
               "parameters": 2,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 2,
                 "arrayExpressions": 0,
-                "newExpressions": 5,
+                "newExpressions": 1,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -4634,12 +4634,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -4741,12 +4741,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -4803,9 +4803,9 @@
               "bodySha256": "ef1797971e05f6e53f094c4baa9b5f789c7cb140db5fbf9d65a0d27f1cfd3607",
               "parameters": 3,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 0,
                 "arrayExpressions": 0,
-                "newExpressions": 5,
+                "newExpressions": 1,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -4963,12 +4963,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -5152,9 +5152,9 @@
               "bodySha256": "e01aa8cfaa35bf60e0cfdae8a88c37a87bd463da0a03918530a15e6fdf5c81b7",
               "parameters": 3,
               "allocations": {
-                "objectExpressions": 1,
+                "objectExpressions": 2,
                 "arrayExpressions": 0,
-                "newExpressions": 5,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -5372,12 +5372,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -5534,7 +5534,7 @@
               "allocations": {
                 "objectExpressions": 1,
                 "arrayExpressions": 0,
-                "newExpressions": 5,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
                 "roundingCalls": 0
@@ -5722,12 +5722,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -5838,12 +5838,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -6909,9 +6909,9 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 29,
+            "arrayExpressions": 19,
+            "newExpressions": 5,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
             "roundingCalls": 3
@@ -7515,12 +7515,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 47,
-            "arrayExpressions": 23,
-            "newExpressions": 14,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 3
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -8447,11 +8447,11 @@
               "parameters": 2,
               "allocations": {
                 "objectExpressions": 1,
-                "arrayExpressions": 2,
-                "newExpressions": 2,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
-                "roundingCalls": 10
+                "roundingCalls": 0
               }
             },
             {
@@ -8477,7 +8477,7 @@
               "parameters": 1,
               "allocations": {
                 "objectExpressions": 0,
-                "arrayExpressions": 0,
+                "arrayExpressions": 1,
                 "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
@@ -8486,12 +8486,12 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 10,
-            "arrayExpressions": 6,
-            "newExpressions": 7,
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 26
+            "roundingCalls": 0
           },
           "freeIdentifiers": [
             {
@@ -8586,22 +8586,22 @@
               "bodySha256": "67db9a4354ce81b22c526739d475de23b682f5570d34f5b786dd5402e465f0f5",
               "parameters": 3,
               "allocations": {
-                "objectExpressions": 1,
-                "arrayExpressions": 2,
-                "newExpressions": 2,
+                "objectExpressions": 0,
+                "arrayExpressions": 0,
+                "newExpressions": 0,
                 "objectFreezeCalls": 0,
                 "objectAssignCalls": 0,
-                "roundingCalls": 10
+                "roundingCalls": 0
               }
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 10,
-            "arrayExpressions": 6,
-            "newExpressions": 7,
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,
-            "roundingCalls": 26
+            "roundingCalls": 0
           },
           "freeIdentifiers": [],
           "classProviderReads": [],
@@ -8998,8 +8998,8 @@
             }
           ],
           "allocationTotals": {
-            "objectExpressions": 10,
-            "arrayExpressions": 6,
+            "objectExpressions": 9,
+            "arrayExpressions": 5,
             "newExpressions": 7,
             "objectFreezeCalls": 0,
             "objectAssignCalls": 0,

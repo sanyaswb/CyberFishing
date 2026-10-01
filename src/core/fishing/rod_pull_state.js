@@ -1,1 +1,1 @@
-globalThis.RodPullState = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_pull_state.js"]["RodPullState"];
+// Retired Stage 3 activation activation-a63204f0676b: RodPullState is served only through ESM imports of src/game/domain/fishing/rod_pull_state.js.

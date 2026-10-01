@@ -14,7 +14,7 @@ const { ActivationShimRenderer } = require("../../../build/compat_runtime/activa
 const { MigrationBridgeRegistryValidator } = require("../../guards/contracts/guard_artifact_repository");
 const { CumulativeRuntimeContractValidator } = require("../../../build/compat_runtime/cumulative_runtime_contract");
 const { StageThreeApprovedPlanSource } = require("../../domain_batches/stage_three_approved_plan_source");
-const { ActivationRetirementProjection, RetiredActivationPlaceholder } =
+const { ActivationRetirementProjection, RetiredActivationPlaceholder, MigratedSourcePlaceholder } =
   require("../../../build/compat_runtime/activation_retirement");
 const { retiredActivationsOf } = require("./candidate_workspace");
 
@@ -52,6 +52,14 @@ class StageThreeCutoverProjection {
     ], activationPositions: [
       ...runtime.activationPositions, ...prebuild.preliminaryMetadata.plannedActivationPositions,
     ].sort((a, b) => a.id.localeCompare(b.id)) }, retiredActivations, PROFILE.batchId);
+    // Targets without any activation (batch 050) are recorded as inert modules of the cumulative graph.
+    const plannedProviders = new Set(prebuild.preliminaryMetadata.plannedActivationPositions.map(item => item.sourceProvider));
+    const inertTargets = PROFILE.executionProfile.expectedTargets.filter(target => !plannedProviders.has(target.currentPath));
+    if (inertTargets.length > 0) {
+      future.inertModules = [...(future.inertModules || []), ...inertTargets.map(target => ({ owner: PROFILE.batchId,
+        sourceProvider: target.currentPath, targetModule: target.targetPath }))]
+        .sort((left, right) => left.targetModule.localeCompare(right.targetModule));
+    }
     new CumulativeRuntimeContractValidator().validate(future);
     const oldRegistry = app.json(PATHS.bridgeRegistry);
     // A migrated source no longer reads legacy globals: the bridges it held retire.
@@ -96,6 +104,17 @@ class StageThreeCutoverProjection {
       const tags = activations.map(activation =>
         `<script src="${runtime.output.directory}${activation.shimFile}"${slotAttribute}></script>`).join("\n");
       index = index.replace(oldTag, tags);
+    }
+    // A target without any activation (no classic consumer, batch 050) leaves an inert placeholder at its
+    // classic source; its tag and legacy slot stay, so no classic slot is renumbered and no global remains.
+    for (const target of PROFILE.executionProfile.expectedTargets.filter(item => !activationsByProvider.has(item.currentPath))) {
+      const source = manifest.modules.find(module => module.currentPath === target.currentPath);
+      const pendingTarget = manifest.modules.find(module => module.currentPath === target.targetPath);
+      assert(source && pendingTarget, "Pending inert source/target records missing");
+      source.architecture.roles = ["compatibility-bridge"];
+      source.observed = { ...structuredClone(pendingTarget.observed), legacyLoadOrder: source.observed.legacyLoadOrder };
+      source.analysis.dependencies = structuredClone(pendingTarget.analysis.dependencies);
+      writes.push({ relativePath: target.currentPath, bytes: Buffer.from(new MigratedSourcePlaceholder().render(target)) });
     }
     // In retirement order: a classic source gets its placeholder (one line per retired activation it
     // served) at its first retired activation; every generated shim is removed and restored on rollback.

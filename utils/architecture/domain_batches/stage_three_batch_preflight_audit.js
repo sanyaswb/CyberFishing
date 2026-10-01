@@ -262,8 +262,10 @@ class StageThreeBatchPreflightAuditBuilder {
         prerequisite.action === "review-constructor-injection-boundary" &&
         modules.some((module) => module.currentPath === prerequisite.module &&
           (((module.state.identityReview?.compositions || []).length > 0 &&
+            // Domain composes Domain or Engine collaborators (dependency direction domain → domain/engine;
+            // batch 050: WaterEntity composes the Engine Vector2).
             module.state.identityReview.compositions.every((composition) =>
-              composition.provider?.startsWith("src/game/domain/"))) ||
+              composition.provider?.startsWith("src/game/domain/") || composition.provider?.startsWith("src/engine/"))) ||
           // A class without any construction site composes nothing: every collaborator is injected.
           (!module.state.identityReview && module.sourceShape.allocationTotals.newExpressions === 0) ||
           // Reviewed local composition: default collaborators are classes of the same source.

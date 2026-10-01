@@ -10,7 +10,7 @@ const { StageThreeBatchPlanning, sha, serialize } = require("./planning");
 const { beforeBatchObservations } = require("./observation_transition");
 const { reviewedTargetEvaluation } = require("./target_evaluation");
 const { PATHS } = require("../../domain_batches/stage_three_live_preflight");
-const { RetiredActivationPlaceholder } = require("../../../build/compat_runtime/activation_retirement");
+const { RetiredActivationPlaceholder, MigratedSourcePlaceholder } = require("../../../build/compat_runtime/activation_retirement");
 const { ActivationShimRenderer } = require("../../../build/compat_runtime/activation_shim");
 const { CumulativeLiveActivationProbe } = require("../../domain_batches/cumulative_live_activation_probe");
 const { EagerClassModuleEvaluationProbe } = require("../../domain_batches/eager_class_module_evaluation_probe");
@@ -99,7 +99,11 @@ class StageThreeBatchLiveValidation {
         `Retired slot is not the exact classic placeholder: ${activation.id}`);
       if (split) {
         const positions = split.members.map(member => {
-          const tag = `<script src="${member}" data-legacy-slot="${split.slot}"></script>`;
+          // A member that still serves an active activation is loaded through its shim (batch 050: the
+          // CastDistanceCalculator shim beside the retired converter at slot 89).
+          const active = runtime.activationPositions.filter(item => item.sourceProvider === member);
+          const source = active.length === 1 ? `${runtime.output.directory}${active[0].shimFile}` : member;
+          const tag = `<script src="${source}" data-legacy-slot="${split.slot}"></script>`;
           assert.equal(html.split(tag).length, 2, `Split-slot member differs after retirement: ${member}`);
           return html.indexOf(tag);
         });
@@ -110,6 +114,13 @@ class StageThreeBatchLiveValidation {
       assert(!fs.existsSync(path.join(this.root, runtime.output.directory + activation.shimFile)));
       return { id: activation.id, legacySymbol: activation.legacySymbol, sourceProvider: activation.sourceProvider };
     });
+    // Targets without any activation (batch 050) keep an inert placeholder at their loaded classic source.
+    const activated = new Set([...runtime.activationPositions, ...(runtime.retiredActivations || [])
+      .map(record => record.activation)].map(activation => activation.sourceProvider));
+    for (const target of PROFILE.executionProfile.expectedTargets.filter(item => !activated.has(item.currentPath))) {
+      new MigratedSourcePlaceholder().validate({ code: this.bytes(target.currentPath).toString("utf8"), ...target });
+      assert.equal(html.split(`src="${target.currentPath}"`).length, 2, `Inert source tag is not loaded once: ${target.currentPath}`);
+    }
     const code = this.bytes(runtime.output.directory + runtime.output.runtimeFile).toString("utf8");
     assert.equal(sha(Buffer.from(code)), proof.report.runtimeSha256);
     for (const effect of proof.effects.records) {

@@ -1,1 +1,1 @@
-globalThis.RodPullCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_pull_calculator.js"]["RodPullCalculator"];
+// Retired Stage 3 activation activation-552c2d2ba80f: RodPullCalculator is served only through ESM imports of src/game/domain/fishing/rod_pull_calculator.js.

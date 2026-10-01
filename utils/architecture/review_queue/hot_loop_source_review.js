@@ -31,12 +31,15 @@ class StageThreeHotLoopSourceReview {
 
   // `sourceType: "module"` reviews the exported class of an ESM target the same way, so its member
   // fingerprints and allocation sites compare directly with the classic record.
-  review({ source, currentPath, className, sourceType = "script" }) {
+  // `classScope` (Stage 3.50, modules with several classes): the classic source is observed through the
+  // class declaration alone, like an ESM target, so allocation totals and member allocations belong to the
+  // reviewed class only (same-named members of other classes never mix).
+  review({ source, currentPath, className, sourceType = "script", classScope = false }) {
     const tree = espree.parse(source, { ecmaVersion: "latest", sourceType, loc: true, range: true });
     const declaration = tree.body.map(node => (node.type === "ExportNamedDeclaration" ? node.declaration : node))
       .find(node => node?.type === "ClassDeclaration" && node.id.name === className);
     assert(declaration, `${currentPath}: class ${className} is missing`);
-    const observed = this.observer.observe(sourceType === "script" ? source
+    const observed = this.observer.observe(sourceType === "script" && !classScope ? source
       : source.slice(declaration.range[0], declaration.range[1]), currentPath);
     const allocations = new Map(observed.methods.map(method => [`${method.kind}\0${method.name}`, method.allocations]));
     const memberName = key => key.type === "PrivateIdentifier" ? `#${key.name}` : key.name;

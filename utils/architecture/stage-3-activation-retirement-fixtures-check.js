@@ -6,7 +6,7 @@ const os = require("node:os");
 const path = require("node:path");
 const { CanonicalActivationIdentity, CumulativeRuntimeContractValidator } =
   require("../build/compat_runtime/cumulative_runtime_contract");
-const { ActivationRetirementProjection, RetiredActivationPlaceholder } =
+const { ActivationRetirementProjection, RetiredActivationPlaceholder, MigratedSourcePlaceholder } =
   require("../build/compat_runtime/activation_retirement");
 const { ControlledMetadataTransaction } = require("./domain_batches/controlled_metadata_transaction");
 const { StageThreeLivePreflight } = require("./domain_batches/stage_three_live_preflight");
@@ -33,6 +33,7 @@ class ActivationRetirementFixtures {
       this.index(),
       this.retiringSet(),
       this.transaction(),
+      this.inertModules(),
     ];
     return results.reduce((count, value) => count + value, 0);
   }
@@ -164,6 +165,32 @@ class ActivationRetirementFixtures {
   }
 
   // Only activations whose every holding bridge is migrated by the batch may retire.
+  // Batch 050: a migrated target without any activation is an inert module of the runtime contract and its
+  // classic source holds one placeholder comment line.
+  inertModules() {
+    const placeholder = new MigratedSourcePlaceholder();
+    const target = { currentPath: "src/systems/fixture.js", targetPath: "src/game/domain/fishing/fixture.js",
+      exports: ["Fixture"] };
+    const code = placeholder.render(target);
+    placeholder.validate({ code, ...target });
+    assert.throws(() => placeholder.validate({ code: code + "globalThis.Fixture = 1;\n", ...target }), /differs/u);
+    assert.throws(() => placeholder.validate({ code, ...target, exports: ["Other"] }), /differs/u);
+    assert.throws(() => placeholder.render({ ...target, exports: [] }), /no exports/u);
+    const validator = new CumulativeRuntimeContractValidator();
+    const record = { owner: "fixture", sourceProvider: target.currentPath, targetModule: target.targetPath };
+    validator.validate({ ...this.runtime, inertModules: [...(this.runtime.inertModules || []), record]
+      .sort((left, right) => left.targetModule.localeCompare(right.targetModule)) });
+    const active = this.runtime.activationPositions[0];
+    for (const [inertModules, pattern] of [
+      [[{ ...record, extra: true }], /non-contract fields/u],
+      [[{ ...record, owner: "" }], /fields are required/u],
+      [[{ ...record, targetModule: active.targetModule }], /has an activation/u],
+      [[record, record], /sorted and unique/u],
+      ["not-an-array", /must be an array/u],
+    ]) assert.throws(() => validator.validate({ ...this.runtime, inertModules }), pattern);
+    return 9;
+  }
+
   retiringSet() {
     const preflight = Object.create(StageThreeLivePreflight.prototype);
     const activation = this.runtime.activationPositions.find(item => item.owner.startsWith("stage-3."));

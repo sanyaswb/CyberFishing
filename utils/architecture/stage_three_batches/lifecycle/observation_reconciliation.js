@@ -42,7 +42,8 @@ class StageThreeBatchObservationReconciliation {
         provider.symbol !== item.legacySymbol);
       source.observed.providers.items.push({ symbol: item.legacySymbol,
         mechanism: "global-this-property", availability: "program-init" });
-      source.observed.providers.items.sort((a, b) => a.symbol.localeCompare(b.symbol));
+      // Code-unit order, as the observer records providers (batch 050: FISH_FIGHT_EVENT before Fish).
+      source.observed.providers.items.sort((a, b) => (a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0));
     }
     // An unactivated class of a reviewed class family loses its classic global. The frozen plan
     // gives it no activation; it must have no consumer anywhere in the historical graph.

@@ -17,7 +17,10 @@ class RepresentationOnlyReviewedEsmTarget {
   // `imports` are the plan's exact reviewed imports of completed-prefix exports. They form a
   // header of single named imports; removing it must restore the leaf projection byte-for-byte.
   project({ imports = [], ...options }) {
-    const deferred = imports.length > 0 && Boolean(options.contract?.privateStaticSets);
+    // Reviewed evaluations of a target with an import header are verified on the projection with it
+    // (private static Sets; frozen constants beside classes since batch 050).
+    const deferred = imports.length > 0 &&
+      Boolean(options.contract?.privateStaticSets || options.contract?.frozenConstants);
     if (deferred) assert(options.targetEvaluation, `${options.targetPath}: reviewed private static set evaluation is required`);
     const base = this.#projectLeaf(deferred ? { ...options, targetEvaluation: DEFERRED_EVALUATION } : options);
     if (imports.length === 0) return base;
@@ -29,7 +32,8 @@ class RepresentationOnlyReviewedEsmTarget {
   // The ESM source a side-effect review observes to record the reviewed evaluation; it is never
   // published and never replaces a verified projection.
   observationSource({ imports = [], ...options }) {
-    assert(options.contract?.privateStaticSets, `${options.targetPath}: only reviewed evaluations need observation`);
+    assert(options.contract?.privateStaticSets || options.contract?.frozenConstants,
+      `${options.targetPath}: only reviewed evaluations need observation`);
     const base = this.#projectLeaf({ ...options, targetEvaluation: DEFERRED_EVALUATION });
     return imports.length === 0 ? base.targetSource : this.#withImports(base, imports, options).targetSource;
   }
@@ -181,7 +185,7 @@ class RepresentationOnlyReviewedEsmTarget {
       restored = restored.replace(`export class ${name}`, `class ${name}`);
     }
     assert.equal(restored, classicBody, `${targetPath}: non-representation source delta`);
-    if (targetEvaluation) {
+    if (targetEvaluation && targetEvaluation !== DEFERRED_EVALUATION) {
       const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath,
         source: targetSource });
       assert.equal(observed.evidenceFingerprint, targetEvaluation.evidenceFingerprint);

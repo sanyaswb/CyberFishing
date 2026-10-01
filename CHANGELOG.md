@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.24.88 - Fish Tackle Inventory Repository And World Domain
+
+### Changed
+
+- Migrated the fish and tackle entities, the flat inventory repository, buff manager, rod pull system and location world to the Domain (hot-loop evidence re-verified live; game-cycle output unchanged).
+
 ## v0.24.87 - Equipment Loadout Repository Domain
 
 ### Changed

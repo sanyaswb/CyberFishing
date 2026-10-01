@@ -64,15 +64,20 @@ class StageThreeObservationReconciliation {
       return { source: item.sourceProvider, target: item.targetModule, symbol: item.legacySymbol, activationId: item.id,
         fromMechanism, toMechanism: "global-this-property", approval: "exact-existing-activation-and-consumer-registry" };
     });
+    // Targets without any activation (batch 050) are observed ESM modules as well.
+    const targets = this.profile.executionProfile?.expectedTargets || [];
+    const activated = new Set(activations.map((item) => item.sourceProvider));
+    const inertTargets = targets.filter((target) => !activated.has(target.currentPath));
     assert.deepEqual(esm.map((item) => item.source).sort(),
-      [...new Set(activations.map((item) => item.targetModule))].sort());
+      [...new Set([...activations.map((item) => item.targetModule), ...inertTargets.map((target) => target.targetPath)])].sort());
     for (const item of esm) {
       assert.equal(item.status, "verified");
       assert.equal(item.hasEsmSyntax, true);
       // Only the plan's exact reviewed imports of completed-prefix exports may appear.
       const reviewedImports = (this.profile.executionProfile?.expectedImports || [])
-        .filter((record) => record.consumer === activations.find((activation) =>
-          activation.targetModule === item.source)?.sourceProvider);
+        .filter((record) => record.consumer === (activations.find((activation) =>
+          activation.targetModule === item.source)?.sourceProvider ||
+          inertTargets.find((target) => target.targetPath === item.source)?.currentPath));
       assert.deepEqual(item.observations.map((observation) => ({ mechanism: observation.mechanism,
         resolvedTarget: observation.resolvedTarget, status: observation.resolutionStatus })).sort((left, right) =>
         left.resolvedTarget.localeCompare(right.resolvedTarget)),

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-050-browser-confirmation",
+  "batchId": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+  "releaseVersion": "0.24.87",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-10-01T23:54:19.382Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute): game-cycle re-executed without seals, exit 0, 217-line output byte-identical to the pre-cutover run (per-frame fish, tackle, rod pull, inventory, buff and world targets; the live gate re-verified the Stage 3.50.1 hot-loop evidence per class); game loaded in the built-in browser: the twelve activated globals identical to their runtime ESM exports, five retired globals undefined, BuffManager served only by its ESM module (no global), 149 runtime modules, canvas present; console errors 0, warnings 0.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_050_acceptance_pass.json",
+    "sha256": "075afaf3c6b8768859c8f882227251b5ba8f05ca8a267882026d5c245e92c7bd"
+  },
+  "historicalSummaryPreserved": true
+}

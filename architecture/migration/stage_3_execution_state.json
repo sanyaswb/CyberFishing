@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cyber-fishing-stage-3-execution-state",
-  "releaseVersion": "0.24.87",
+  "releaseVersion": "0.24.88",
   "approvedPlanSha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb",
   "status": "migration-active",
   "completedBatchIds": [
@@ -53,12 +53,13 @@
     "stage-3.replan-342.batch-046-fishing-9a1447c2",
     "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
     "stage-3.replan-342.batch-048-equipment-1d22d745",
-    "stage-3.replan-350.batch-049-loadouts-8df79db8"
+    "stage-3.replan-350.batch-049-loadouts-8df79db8",
+    "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c"
   ],
   "activeBatchId": null,
   "compatibilityRuntimeActivated": true,
   "continuationPlan": {
-    "path": "architecture/migration/stage_3_50_graph_review/approved_prefix.json",
-    "sha256": "a40f25ee0a6d671d12fb77b46e42ec102f3ba96ad5a550de2a6da45eba5057a7"
+    "path": "architecture/migration/stage_3_50_review_queue/freeze_extension.json",
+    "sha256": "484074c63c2ff654561a54e8111452158ec22ed33dccccb1e8c9023ae6f5ffa8"
   }
 }

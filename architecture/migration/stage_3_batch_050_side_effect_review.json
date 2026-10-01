@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-050-side-effect-review",
+  "batchId": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+  "stage": "3.51.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.87",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+      "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+    },
+    {
+      "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+      "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+    },
+    {
+      "path": "architecture/migration/stage_3_42_graph_review/approved_prefix.json",
+      "sha256": "dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c"
+    },
+    {
+      "path": "architecture/migration/stage_3_50_graph_review/approved_prefix.json",
+      "sha256": "a40f25ee0a6d671d12fb77b46e42ec102f3ba96ad5a550de2a6da45eba5057a7"
+    },
+    {
+      "path": "architecture/migration/stage_3_50_review_queue/freeze_extension.json",
+      "sha256": "484074c63c2ff654561a54e8111452158ec22ed33dccccb1e8c9023ae6f5ffa8"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "b9146bac9f5dea486bb3d978b5b3dac90567e552f02c042386825137e22dd3b4"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+      "targetPath": "src/game/domain/inventory/flat_inventory_item_repository.js",
+      "sourceSha256": "0a5e1b16510bf6385b58cba0a07b6eb9e3c4e124206f43b2cd8da6da9432c0c3",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+        "sourceSha256": "0a5e1b16510bf6385b58cba0a07b6eb9e3c4e124206f43b2cd8da6da9432c0c3"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-3a560121fa29",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/core/inventory/flat_inventory_item_repository.js",
+          "targetModule": "src/game/domain/inventory/flat_inventory_item_repository.js",
+          "exportName": "FlatInventoryItemRepository",
+          "legacySymbol": "FlatInventoryItemRepository",
+          "legacyScriptIndex": 146,
+          "shimFile": "activations/146_flatinventoryitemrepository.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "targetPath": "src/game/domain/fish/fish.js",
+      "sourceSha256": "60d2adcc5fddf7b015f750ac188b5cd33a891e96c29ba9222218a5c359374209",
+      "contract": {
+        "kind": "frozen-constants",
+        "classNames": [
+          "FishPhysicsProfile",
+          "Fish",
+          "FishBehavior",
+          "FishCondition",
+          "FishEndurancePointsCalculator",
+          "FishStaminaPointsCalculator"
+        ],
+        "bindings": {
+          "FISH_FIGHT_EVENT": {
+            "location": "1:26",
+            "values": {
+              "CATCH_ZONE_ENTERED": "catch_zone_entered"
+            }
+          }
+        }
+      },
+      "review": {
+        "kind": "frozen-literal-constants",
+        "currentPath": "src/entities/fish.js",
+        "sourceSha256": "60d2adcc5fddf7b015f750ac188b5cd33a891e96c29ba9222218a5c359374209",
+        "classNames": [
+          "FishPhysicsProfile",
+          "Fish",
+          "FishBehavior",
+          "FishCondition",
+          "FishEndurancePointsCalculator",
+          "FishStaminaPointsCalculator"
+        ],
+        "bindings": {
+          "FISH_FIGHT_EVENT": {
+            "location": "1:26",
+            "values": {
+              "CATCH_ZONE_ENTERED": "catch_zone_entered"
+            }
+          }
+        },
+        "topLevelStatementCount": 7,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "e73ab08057485052fbf40316c12fe1cbb20c494d4e5f0335c441dfd025776fe6",
+      "frozenObservations": [
+        {
+          "kind": "call",
+          "location": "1:26",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-13045d7d5103",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/fish.js",
+          "targetModule": "src/game/domain/fish/fish.js",
+          "exportName": "FishCondition",
+          "legacySymbol": "FishCondition",
+          "legacyScriptIndex": 206,
+          "shimFile": "activations/206_fishcondition.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-6"
+        },
+        {
+          "id": "activation-a94480a6d930",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/fish.js",
+          "targetModule": "src/game/domain/fish/fish.js",
+          "exportName": "FISH_FIGHT_EVENT",
+          "legacySymbol": "FISH_FIGHT_EVENT",
+          "legacyScriptIndex": 206,
+          "shimFile": "activations/206_fish_fight_event.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-6"
+        },
+        {
+          "id": "activation-f31861589962",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/fish.js",
+          "targetModule": "src/game/domain/fish/fish.js",
+          "exportName": "FishPhysicsProfile",
+          "legacySymbol": "FishPhysicsProfile",
+          "legacyScriptIndex": 206,
+          "shimFile": "activations/206_fishphysicsprofile.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-6"
+        },
+        {
+          "id": "activation-f4e8bbb8cb91",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/fish.js",
+          "targetModule": "src/game/domain/fish/fish.js",
+          "exportName": "Fish",
+          "legacySymbol": "Fish",
+          "legacyScriptIndex": 206,
+          "shimFile": "activations/206_fish.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-6"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "targetPath": "src/game/domain/tackle/tackle.js",
+      "sourceSha256": "a33dc3e5871becca3dfb0b39b4ecbb4f0ae9ce4a40bef848fc32cad5bfb869d8",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/entities/tackle.js",
+        "sourceSha256": "a33dc3e5871becca3dfb0b39b4ecbb4f0ae9ce4a40bef848fc32cad5bfb869d8"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-3c866d430a42",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/tackle.js",
+          "targetModule": "src/game/domain/tackle/tackle.js",
+          "exportName": "Reel",
+          "legacySymbol": "Reel",
+          "legacyScriptIndex": 205,
+          "shimFile": "activations/205_reel.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-a8f13a41b355",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/tackle.js",
+          "targetModule": "src/game/domain/tackle/tackle.js",
+          "exportName": "BaitFactory",
+          "legacySymbol": "BaitFactory",
+          "legacyScriptIndex": 205,
+          "shimFile": "activations/205_baitfactory.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-d36f5f18f7e5",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/tackle.js",
+          "targetModule": "src/game/domain/tackle/tackle.js",
+          "exportName": "Net",
+          "legacySymbol": "Net",
+          "legacyScriptIndex": 205,
+          "shimFile": "activations/205_net.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-e72b9af71364",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/tackle.js",
+          "targetModule": "src/game/domain/tackle/tackle.js",
+          "exportName": "Hook",
+          "legacySymbol": "Hook",
+          "legacyScriptIndex": 205,
+          "shimFile": "activations/205_hook.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-f41223b184f9",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/entities/tackle.js",
+          "targetModule": "src/game/domain/tackle/tackle.js",
+          "exportName": "Rod",
+          "legacySymbol": "Rod",
+          "legacyScriptIndex": 205,
+          "shimFile": "activations/205_rod.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/buff_manager.js",
+      "targetPath": "src/game/domain/fishing/buff_manager.js",
+      "sourceSha256": "d5bf58c77f21bb4111821717f06df4c44f4462c3055d6bf5bdb100ae05f46883",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/buff_manager.js",
+        "sourceSha256": "d5bf58c77f21bb4111821717f06df4c44f4462c3055d6bf5bdb100ae05f46883"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": []
+    },
+    {
+      "currentPath": "src/systems/rod_pull_system.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_system.js",
+      "sourceSha256": "74bac2e8a1621fc1867bf1cd40f475de61712bbbc8949cbaea588a42d76c3dc8",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/rod_pull_system.js",
+        "sourceSha256": "74bac2e8a1621fc1867bf1cd40f475de61712bbbc8949cbaea588a42d76c3dc8"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-e7f8998f8ce0",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/systems/rod_pull_system.js",
+          "targetModule": "src/game/domain/fishing/rod_pull_system.js",
+          "exportName": "RodPullSystem",
+          "legacySymbol": "RodPullSystem",
+          "legacyScriptIndex": 213,
+          "shimFile": "activations/213_rodpullsystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "targetPath": "src/game/domain/locations/location_world.js",
+      "sourceSha256": "be92d6a1399d67d338f96ca3ba080e15eafe8cb206eb0f346f60b732212cafe1",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/world/world.js",
+        "sourceSha256": "be92d6a1399d67d338f96ca3ba080e15eafe8cb206eb0f346f60b732212cafe1"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-a810d3dd8368",
+          "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+          "sourceProvider": "src/world/world.js",
+          "targetModule": "src/game/domain/locations/location_world.js",
+          "exportName": "LocationMap",
+          "legacySymbol": "LocationMap",
+          "legacyScriptIndex": 204,
+          "shimFile": "activations/204_locationmap.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/fishing/buff_manager.js",
+      "classification": "safe",
+      "evidenceFingerprint": "04e4c2e2245fb39aca8610485722d2ac5b6de286d063026cdcb21ec396a72be1"
+    },
+    {
+      "module": "src/game/domain/fishing/rod_pull_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "4f3cbd7a665e2829d6b482a6e7915b99b03c45b884a117af7d5cd3e03c867cf6"
+    },
+    {
+      "module": "src/game/domain/inventory/flat_inventory_item_repository.js",
+      "classification": "safe",
+      "evidenceFingerprint": "9ee878fa235bb025796ce1531dc2eb61c0fb224b10309e8a4a4fad949cd75ff7"
+    },
+    {
+      "module": "src/game/domain/locations/location_world.js",
+      "classification": "safe",
+      "evidenceFingerprint": "0cbf879a9a738d903b89efc3296ab22ec955a0d5132f44847a927ce8d30a4beb"
+    },
+    {
+      "module": "src/game/domain/tackle/tackle.js",
+      "classification": "safe",
+      "evidenceFingerprint": "7be47302f73ba3217f1f007e1c0c1b316295d47f92e77358ccf77aa78a450bad"
+    }
+  ],
+  "targetEvaluations": [
+    {
+      "module": "src/game/domain/fish/fish.js",
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "74edb2a7481ef1e351da939dd3fac5b2e13c4796830f01f57236323a65196dfe",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "5:33"
+        }
+      ],
+      "exactEffect": "1 top-level Object.freeze call(s) over inert literals beside the classes; no external state read or global write"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.51.0-live-preflight-and-graph-audit"
+}

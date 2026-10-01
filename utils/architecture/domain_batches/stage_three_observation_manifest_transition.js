@@ -25,8 +25,13 @@ class StageThreeObservationManifestTransition {
     // Activations this batch retired leave an inert classic placeholder whose observed facts become empty.
     this.retired = (runtime.retiredActivations || []).filter((record) => record.retiredBy === profile.batchId)
       .map((record) => record.activation);
+    // Targets without any activation (batch 050) leave an inert migrated-source placeholder; the target
+    // record becomes verified like an activation target.
+    const providers = new Set(this.activations.map((item) => item.sourceProvider));
+    this.inert = (profile.executionProfile?.expectedTargets || []).filter((target) => !providers.has(target.currentPath));
     this.paths = [...new Set([...this.activations.flatMap((item) =>
-      [item.sourceProvider, item.targetModule]), ...this.retired.map((item) => item.sourceProvider)])].sort();
+      [item.sourceProvider, item.targetModule]), ...this.retired.map((item) => item.sourceProvider),
+    ...this.inert.flatMap((target) => [target.currentPath, target.targetPath])])].sort();
     this.beforeSha256 = cutover.writes.find((item) => item.path === MANIFEST).afterSha256;
   }
 
@@ -44,6 +49,13 @@ class StageThreeObservationManifestTransition {
         old.get(target.currentPath).architecture, "Scanner changed target classification");
       target.architecture.migrationStatus = "verified";
     }
+    for (const inert of this.inert) {
+      const target = next.modules.find((item) => item.currentPath === inert.targetPath);
+      assert.equal(old.get(target.currentPath).architecture.migrationStatus, "migrating");
+      assert.deepEqual({ ...target.architecture, migrationStatus: "migrating" },
+        old.get(target.currentPath).architecture, "Scanner changed inert target classification");
+      target.architecture.migrationStatus = "verified";
+    }
     this.validateDelta(before, next);
     const records = this.paths.map((currentPath) => ({ currentPath,
       before: old.get(currentPath), afterSha256: fingerprint(canonicalBytes(next.modules.find((item) => item.currentPath === currentPath))) }));
@@ -51,6 +63,7 @@ class StageThreeObservationManifestTransition {
       afterSha256: fingerprint(canonicalBytes(next)), records } };
   }
 
+  // Provider items follow the observer's code-unit order (batch 050: FISH_FIGHT_EVENT before Fish).
   validateDelta(before, after) {
     const byPath = new Map(after.modules.map((item) => [item.currentPath, item]));
     for (const activation of this.activations) {
@@ -62,7 +75,7 @@ class StageThreeObservationManifestTransition {
       const providerItems = this.activations.filter(item =>
         item.sourceProvider === activation.sourceProvider).map(item => ({
         symbol: item.legacySymbol, mechanism: "global-this-property", availability: "program-init",
-      })).sort((left, right) => left.symbol.localeCompare(right.symbol));
+      })).sort((left, right) => (left.symbol < right.symbol ? -1 : left.symbol > right.symbol ? 1 : 0));
       assert.deepEqual(source.observed.providers, { status: "verified", items: providerItems, issues: [] });
       const transport = { symbol: this.runtime.transport.symbol, mechanism: "global-this-property",
         accessRequirement: "required", executionPhase: "eager" };
@@ -109,7 +122,7 @@ class StageThreeObservationManifestTransition {
           accessRequirement: "required", executionPhase: "eager" };
         assert.deepEqual(placeholder.observed.providers, { status: "verified", issues: [], items: remaining.map(item => ({
           symbol: item.legacySymbol, mechanism: "global-this-property", availability: "program-init",
-        })).sort((left, right) => left.symbol.localeCompare(right.symbol)) });
+        })).sort((left, right) => (left.symbol < right.symbol ? -1 : left.symbol > right.symbol ? 1 : 0)) });
         assert.deepEqual(placeholder.observed.consumers, { status: "verified", items: [transport], issues: [] });
         assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: ["globalThis"],
           browserApis: [], dynamicConstructs: [], issues: [] });
@@ -117,6 +130,18 @@ class StageThreeObservationManifestTransition {
           unresolved: [{ ...transport, resolution: "unresolved" }], ambiguous: [], issues: [] });
         continue;
       }
+      assert.deepEqual(placeholder.observed.providers, empty());
+      assert.deepEqual(placeholder.observed.consumers, empty());
+      assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: [], browserApis: [],
+        dynamicConstructs: [], issues: [] });
+      assert.deepEqual(placeholder.analysis.dependencies, { status: "verified", confirmed: [], items: [],
+        unresolved: [], ambiguous: [], issues: [] });
+    }
+    for (const inert of this.inert) {
+      const placeholder = byPath.get(inert.currentPath);
+      const previous = before.modules.find((item) => item.currentPath === inert.currentPath);
+      assert(placeholder && previous, "Missing inert source record");
+      assert.deepEqual(placeholder.architecture, previous.architecture, "Inert source classification changed");
       assert.deepEqual(placeholder.observed.providers, empty());
       assert.deepEqual(placeholder.observed.consumers, empty());
       assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: [], browserApis: [],

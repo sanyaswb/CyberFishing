@@ -1,3 +1,3 @@
-globalThis.FishDirectionIntentSampler = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/fish_direction_intent_sampler.js"]["FishDirectionIntentSampler"];
-globalThis.DEFAULT_FISH_RADIAL_RANGE = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/fish_direction_intent_sampler.js"]["DEFAULT_FISH_RADIAL_RANGE"];
-globalThis.DEFAULT_FISH_LATERAL_RANGE = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/fish_direction_intent_sampler.js"]["DEFAULT_FISH_LATERAL_RANGE"];
+// Retired Stage 3 activation activation-18af7e975cb0: FishDirectionIntentSampler is served only through ESM imports of src/game/domain/fishing/fish_direction_intent_sampler.js.
+// Retired Stage 3 activation activation-2a74f4c05932: DEFAULT_FISH_RADIAL_RANGE is served only through ESM imports of src/game/domain/fishing/fish_direction_intent_sampler.js.
+// Retired Stage 3 activation activation-3ed53946507b: DEFAULT_FISH_LATERAL_RANGE is served only through ESM imports of src/game/domain/fishing/fish_direction_intent_sampler.js.

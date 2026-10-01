@@ -32,9 +32,11 @@ class StageThreeRetirementView {
   // Distinct ESM modules published by active and retired activations; retired modules stay in
   // the cumulative graph for their importers.
   static activationModuleCount(runtimeContract) {
-    return new Set([...runtimeContract.activationPositions,
+    // Inert modules (batch 050: migrated targets without any activation) are graph modules as well.
+    return new Set([...[...runtimeContract.activationPositions,
       ...(runtimeContract.retiredActivations || []).map((record) => record.activation)]
-      .map((activation) => activation.targetModule)).size;
+      .map((activation) => activation.targetModule),
+    ...(runtimeContract.inertModules || []).map((record) => record.targetModule)]).size;
   }
 
   // Classic sources that later migrated: they are activation shims or retired placeholders now.

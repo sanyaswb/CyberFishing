@@ -357,6 +357,24 @@ class CumulativeRuntimeContractValidator {
       [...retired.map((record) => record.activation.id)].sort()) &&
       new Set(retired.map((record) => record.activation.id)).size === retired.length,
     "retiredActivations must be sorted and unique by activation id");
+    // Inert modules (batch 050): a migrated ESM target without any activation (no classic consumer) is a
+    // module of the cumulative graph; its classic source is an inert placeholder at its legacy position.
+    const inert = contract?.inertModules === undefined ? [] : contract.inertModules;
+    require(Array.isArray(inert), "inertModules must be an array");
+    const activationTargets = new Set([...activations, ...retired.map((record) => record.activation || {})]
+      .map((activation) => activation.targetModule));
+    for (const record of Array.isArray(inert) ? inert : []) {
+      require(this.#sameArray(Object.keys(record || {}).sort(), ["owner", "sourceProvider", "targetModule"]),
+        `inert module has non-contract fields: ${record?.targetModule || "<unknown>"}`);
+      require(this.#text(record?.owner) && this.#text(record?.sourceProvider) && this.#text(record?.targetModule),
+        "inert module fields are required");
+      require(!activationTargets.has(record?.targetModule), `inert module has an activation: ${record?.targetModule}`);
+    }
+    if (Array.isArray(inert)) {
+      const targets = inert.map((record) => record?.targetModule);
+      require(this.#sameArray(targets, [...targets].sort()) && new Set(targets).size === targets.length,
+        "inertModules must be sorted and unique by target module");
+    }
     require(
       this.#sameArray(
         activations.map((activation) => activation.id),

@@ -17,7 +17,7 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js?v=0.24.87"></script>
+    <script src="src/config/project_version.js?v=0.24.88"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
     <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
@@ -96,8 +96,8 @@
     <script src="src/core/items/quality/item_quality_grade_policy.js"></script>
     <script src="src/core/items/quality/hook_quality_modifier.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/070_hookpowerpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/071_netqualitymodifier.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/072_environmentalcompensationmodifier.js"></script>
+    <script src="src/core/items/quality/net_quality_modifier.js"></script>
+    <script src="src/core/items/quality/environmental_compensation_modifier.js"></script>
     <script src="src/core/items/progression/item_metric_strategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/074_numericstatmetricstrategy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/075_derivedstatmetricstrategy.js"></script>
@@ -116,11 +116,11 @@
     <script src="dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/087_inventoryitemstackingpolicy.js"></script>
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/089_distanceunitconverter.js" data-legacy-slot="89"></script>
+    <script src="src/core/distance_unit_converter.js" data-legacy-slot="89"></script>
     <script src="dist/stage-3-compat-runtime/activations/089_castdistancecalculator.js" data-legacy-slot="89"></script>
     <script src="src/core/line/line_spool_state.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/091_rodpullstate.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/092_rodstrokestate.js"></script>
+    <script src="src/core/fishing/rod_pull_state.js"></script>
+    <script src="src/core/fishing/rod_stroke_state.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/093_rodstroketracker.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/094_rodstrokedistancetracker.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/095_playerforcebudgetallocator.js"></script>
@@ -148,14 +148,12 @@
     <script src="dist/stage-3-compat-runtime/activations/117_recoverablelinecalculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/117_looselinecalculator.js"></script>
     <script src="src/core/fishing/rod_stroke_capacity_resolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/119_rodpullcalculator.js"></script>
+    <script src="src/core/fishing/rod_pull_calculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/120_landingpolicyresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/121_idleretrievepolicyresolver.js"></script>
     <script src="src/core/fishing/fish_retrieve_result.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/123_holdoppositionresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/124_fishdirectionintentsampler.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/124_default_fish_radial_range.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/124_default_fish_lateral_range.js"></script>
+    <script src="src/core/fishing/fish_direction_intent_sampler.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/125_fishfightdirectionresolver.js"></script>
     <script src="src/core/fishing/rod_control_tension_mode_resolver.js"></script>
     <script src="src/core/fishing/rod_control_angle_resolver.js"></script>
@@ -180,7 +178,7 @@
     <script src="dist/stage-3-compat-runtime/activations/144_inventoryitemlocationkind.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/144_inventoryitemlocation.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/145_inventoryitemreservationpolicy.js"></script>
-    <script src="src/core/inventory/flat_inventory_item_repository.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/146_flatinventoryitemrepository.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/147_itemassemblystackingpolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js"></script>
     <script src="src/core/assemblies/assembly_state.js"></script>
@@ -246,11 +244,18 @@
     <script src="src/application/inventory/inventory_v2_facade.js"></script>
     <script src="src/application/inventory/inventory_v2_composition_root.js?v=0.24.30"></script>
     <script src="src/services/weakest_tackle_limit_resolver.js"></script>
-    <script src="src/world/world.js" data-legacy-slot="204"></script>
+    <script src="dist/stage-3-compat-runtime/activations/204_locationmap.js" data-legacy-slot="204"></script>
     <script src="src/world/viewport_projector.js" data-legacy-slot="204"></script>
 
-    <script src="src/entities/tackle.js?v=0.24.30"></script>
-    <script src="src/entities/fish.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/205_reel.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/205_baitfactory.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/205_net.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/205_hook.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/205_rod.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/206_fishcondition.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/206_fish_fight_event.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/206_fishphysicsprofile.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/206_fish.js"></script>
 
     <script src="dist/stage-3-compat-runtime/activations/207_staminacontroller.js" data-legacy-slot="207"></script>
     <script src="src/systems/buff_manager.js" data-legacy-slot="207"></script>
@@ -259,7 +264,7 @@
     <script src="dist/stage-3-compat-runtime/activations/210_playerforcesystem.js"></script>
     <script src="src/systems/fish_force_system.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/212_playerpullmotionsmoother.js"></script>
-    <script src="src/systems/rod_pull_system.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/213_rodpullsystem.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/214_rodlateralcontrolsystem.js"></script>
     <script src="src/systems/rod_visual_offset_system.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/216_fishretrievesystem.js"></script>
