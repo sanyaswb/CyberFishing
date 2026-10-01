@@ -115,6 +115,10 @@ const LEGACY_FILES = [
   "src/systems/fight_physics_system.js",
   "src/systems/stamina_system.js",
   "src/app/fishing.js",
+  "src/core/inventory/inventory_item_location.js",
+  "src/core/inventory/flat_inventory_item_repository.js",
+  "src/systems/buff_manager.js",
+  "src/world/world.js",
 ];
 
 const context = vm.createContext({
@@ -1875,6 +1879,104 @@ const spinningVictory = runFightScenario({
   closeDrag: true,
 });
 assert(spinningVictory.transition?.name === "victory", "spinning rod lands a light fish");
+
+// Review queue 049 scenarios (hot-loop evidence for the non-fight Domain sources). A migrated class
+// without an activation is read from the cumulative runtime exports.
+function domainClass(name, targetModule) {
+  try { return eval(name); } catch (error) {
+    return globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules[targetModule][name];
+  }
+}
+
+const InventoryRepository = domainClass("FlatInventoryItemRepository",
+  "src/game/domain/inventory/flat_inventory_item_repository.js");
+let inventorySequence = 0;
+const inventory = new InventoryRepository({
+  items: [
+    { instanceId: "inv_rod", itemId: "rod_test", quantity: 1, location: InventoryItemLocation.inventory() },
+    { instanceId: "inv_reel", itemId: "reel_test", quantity: 1,
+      location: InventoryItemLocation.attached("inv_rod", "reel") },
+    { instanceId: "inv_line", itemId: "line_test", quantity: 1,
+      location: InventoryItemLocation.attached("inv_reel", "line") },
+    { instanceId: "inv_worm", itemId: "worm", quantity: 4, location: InventoryItemLocation.inventory() },
+  ],
+  instanceIdFactory: source => source.itemId + "_split_" + (++inventorySequence),
+  now: () => 1790000000000,
+});
+const splitWorm = inventory.splitOne("inv_worm");
+inventory.setLocation(splitWorm.instanceId, InventoryItemLocation.attached("inv_rod", "bait"));
+assert(inventory.getChild("inv_rod", "bait")?.instanceId === splitWorm.instanceId &&
+  inventory.require("inv_worm").quantity === 3, "inventory repository splits a stack and attaches one item");
+assert(inventory.listDescendants("inv_rod").map(entry => entry.item.instanceId + ":" + entry.depth).join(",") ===
+  "worm_split_1:1,inv_reel:1,inv_line:2", "inventory repository lists attached descendants by depth");
+inventory.setLocation(splitWorm.instanceId, InventoryItemLocation.inventory());
+const mergedInto = inventory.mergeInventoryItem(splitWorm.instanceId,
+  { canStack: (left, right) => left.itemId === right.itemId });
+assert(mergedInto === "inv_worm" && inventory.require("inv_worm").quantity === 4 && inventory.size === 4,
+  "inventory repository merges a stack back");
+const inventorySnapshot = inventory.toSnapshot();
+let duplicateRestore = null;
+try { inventory.restoreSnapshot([inventorySnapshot[0], inventorySnapshot[0]]); } catch (error) { duplicateRestore = error.name; }
+let orphanRestore = null;
+try {
+  inventory.restoreSnapshot([{ instanceId: "orphan", itemId: "x", quantity: 1,
+    location: InventoryItemLocation.attached("missing", "slot") }]);
+} catch (error) { orphanRestore = error.name; }
+assert(duplicateRestore === "RangeError" && orphanRestore === "Error" &&
+  JSON.stringify(inventory.toSnapshot()) === JSON.stringify(inventorySnapshot) &&
+  inventory.getChildren("inv_rod").length === 1, "inventory repository keeps its state after a rejected restore");
+inventory.restoreSnapshot(inventorySnapshot.filter(item => item.instanceId !== "inv_line"));
+assert(inventory.size === 3 && inventory.getChildren("inv_reel").length === 0,
+  "inventory repository restores a snapshot and rebuilds its child index");
+
+const Buffs = domainClass("BuffManager", "src/game/domain/fishing/buff_manager.js");
+const buffs = new Buffs();
+buffs.addBuff(1.5, 300);
+buffs.addBuff(2, 1000);
+const buffMultipliers = [];
+for (let frame = 0; frame < 30; frame++) {
+  buffs.update(1000 / 60);
+  buffMultipliers.push(buffs.getTotalMultiplier());
+}
+assert(buffMultipliers[0] === 3 && buffMultipliers[29] === 2, "buff manager expires buffs by deltaTime");
+
+const WorldMap = domainClass("LocationMap", "src/game/domain/locations/location_world.js");
+const worldConfig = {
+  map: { lake: {
+    zones: {
+      castable: [{ x: 0, y: 2, w: 10, h: 4 }],
+      collisions: [{ x: 0, y: 0, w: 2, h: 1 }],
+      snags: [{ x: 5, y: 3, w: 1, h: 1 }],
+      dynamic: [{ id: "school", type: "fish", multiplier: 1.4, x: 3, y: 3, w: 2, h: 2, moving: true, speedX: 1,
+        bounds: { x: 0, y: 2, w: 10, h: 4 } }],
+    },
+    depthBounds: { min: 1, max: 5 },
+  } },
+  baseResolution: { width: 100, height: 60 },
+  cellSize: 10,
+  enableCastable: true,
+  enableCollisions: true,
+  enableSnags: true,
+  enableDynamicZones: true,
+};
+let worldRoll = 0;
+const worldRng = { next: () => { worldRoll = (worldRoll * 9301 + 49297) % 233280; return worldRoll / 233280; } };
+const lake = new WorldMap("lake", worldConfig, worldRng, { background: { dynamic: true, assetIds: { day: "day" } }, loaded: true },
+  () => new Date(2026, 9, 1, 18, 30));
+const worldOpacities = [];
+for (let frame = 0; frame < 120; frame++) {
+  lake.update(1000 / 60, frame < 60 ? 6 + frame / 4 : null);
+  const background = lake.getBackgroundRenderData();
+  worldOpacities.push(background.eveningOpacity + "/" + background.nightOpacity);
+}
+const school = lake.getDynamicZones()[0];
+assert(worldOpacities[0] === "1/0.5" && worldOpacities[119] === "0.75/0" &&
+  Number.isFinite(school.x) && Number.isFinite(school.y), "location map updates its background and dynamic zones");
+const castable = lake.getCastableBoundsVirtual(10);
+const cell = lake.getCellAtVirtualPos(35, 35, 10);
+assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
+  Number.isFinite(castable.left + castable.right + castable.top + castable.bottom),
+  "location map exposes its grid and castable bounds");
 
 console.log("game-cycle-check passed:");
 console.log("- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%");

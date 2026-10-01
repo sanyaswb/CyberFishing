@@ -300,6 +300,18 @@ const CHECK_DEFINITIONS = Object.freeze([
       file: "utils/architecture/stage-3-changelog-trim-fixtures-check.js",
       suites: ["quick", "architecture"],
     },
+    {
+      id: "stage-3-50-graph-review",
+      title: "Stage 3.50.0 repeated graph review byte-identical replay",
+      file: "utils/architecture/stage-3-50-graph-review.js",
+      suites: ["architecture"],
+    },
+    {
+      id: "stage-3-state-identity-replacement-fixtures",
+      title: "Stage 3 state-identity transactional swap, rebuilt index and size read fixtures",
+      file: "utils/architecture/stage-3-state-identity-replacement-fixtures-check.js",
+      suites: ["quick", "architecture"],
+    },
   {
     id: "stage-3-inventory-equip-target-batch",
     title: "Stage 3.1 inventory equip-target domain batch",

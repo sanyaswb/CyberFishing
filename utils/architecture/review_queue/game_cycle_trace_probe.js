@@ -36,7 +36,11 @@ const INSTRUMENT = `(() => {
   };
   const traces = {};
   for (const name of __traceHost.classes) {
-    const Class = globalThis[name] || (() => { try { return eval(name); } catch { return undefined; } })();
+    // A migrated class without an activation (review queue 049: e.g. FishBehavior, BuffManager) is found
+    // among the cumulative runtime exports; classes with a global resolve exactly as before.
+    const Class = globalThis[name] || (() => { try { return eval(name); } catch { return undefined; } })() ||
+      Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__?.modules || {})
+        .map(exports => exports[name]).find(value => typeof value === "function");
     if (typeof Class !== "function") throw new Error("trace class is not loaded: " + name);
     const record = { methods: {}, digest: crypto.createHash("sha256") };
     traces[name] = record;

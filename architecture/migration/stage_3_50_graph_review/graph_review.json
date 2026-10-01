@@ -1,0 +1,4959 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-50-graph-review",
+  "stage": "3.50",
+  "releaseVersion": "0.24.86",
+  "sources": {
+    "baseline": {
+      "path": "architecture/migration/stage_3_50_graph_review/baseline.json",
+      "sha256": "a260c4bbaa99ab533b8bb3058733eb8e63a3ead62db1e773ffd52f6968b307a2"
+    },
+    "domainAudit": {
+      "path": "architecture/migration/stage_3_50_graph_review/domain_audit.json",
+      "sha256": "ab8f3f9367a19ace4e36006c69be7117127150922b196ac223f7518898a321c6"
+    },
+    "runtimeContract": {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "8bb8c9715cdb51c437184007ef1072cfeaca5aa3bddfbf0f5c48672bfb679472"
+    },
+    "bridgeRegistry": {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "b9961f2a33d3d6020d39eda12b3595ca1aaefd17f7e1a937007c9f63f60faa83"
+    }
+  },
+  "physicalGraph": {
+    "preserved": true,
+    "nodeCount": 575,
+    "edgeCount": 875,
+    "mechanisms": {
+      "approved-bridge": 311,
+      "legacy-confirmed": 686,
+      "static-import": 84
+    },
+    "fingerprint": "0f8a0e34742911a8b5d279505ed581e4696c96501d87edec4d21a45e6f35743a"
+  },
+  "activationResolution": [
+    {
+      "scope": "completed-domain",
+      "consumer": "src/core/inventory/flat_inventory_item_repository.js",
+      "consumerLegacyLoadOrder": 146,
+      "shim": "src/core/inventory/inventory_item_location.js",
+      "symbol": "InventoryItemLocation",
+      "exportName": "InventoryItemLocation",
+      "targetModule": "src/game/domain/inventory/inventory_item_location.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-c3a8ca11fb0e",
+      "activationOwner": "stage-3.candidate-017-inventory-fd62478b",
+      "activationPosition": 105,
+      "legacyScriptIndex": 144
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/core/loadouts/equipment_loadout_repository.js",
+      "consumerLegacyLoadOrder": 169,
+      "shim": "src/core/loadouts/equipment_loadout.js",
+      "symbol": "EquipmentLoadout",
+      "exportName": "EquipmentLoadout",
+      "targetModule": "src/game/domain/loadouts/equipment_loadout.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-6088d7e23f95",
+      "activationOwner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "activationPosition": 45,
+      "legacyScriptIndex": 168
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/fish.js",
+      "consumerLegacyLoadOrder": 206,
+      "shim": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "DEFAULT_FISH_LATERAL_RANGE",
+      "exportName": "DEFAULT_FISH_LATERAL_RANGE",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-3ed53946507b",
+      "activationOwner": "stage-3.candidate-013-fishing-0267b3ea",
+      "activationPosition": 28,
+      "legacyScriptIndex": 124
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/fish.js",
+      "consumerLegacyLoadOrder": 206,
+      "shim": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "DEFAULT_FISH_RADIAL_RANGE",
+      "exportName": "DEFAULT_FISH_RADIAL_RANGE",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-2a74f4c05932",
+      "activationOwner": "stage-3.candidate-013-fishing-0267b3ea",
+      "activationPosition": 17,
+      "legacyScriptIndex": 124
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/fish.js",
+      "consumerLegacyLoadOrder": 206,
+      "shim": "src/core/fishing/fish_direction_intent_sampler.js",
+      "symbol": "FishDirectionIntentSampler",
+      "exportName": "FishDirectionIntentSampler",
+      "targetModule": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-18af7e975cb0",
+      "activationOwner": "stage-3.candidate-013-fishing-0267b3ea",
+      "activationPosition": 8,
+      "legacyScriptIndex": 124
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/distance_unit_converter.js",
+      "symbol": "DistanceUnitConverter",
+      "exportName": "DistanceUnitConverter",
+      "targetModule": "src/game/domain/casting/distance_unit_converter.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-27de2804d152",
+      "activationOwner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "activationPosition": 14,
+      "legacyScriptIndex": 89
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/fishing/reel_retrieve_speed_calculator.js",
+      "symbol": "ReelRetrieveSpeedCalculator",
+      "exportName": "ReelRetrieveSpeedCalculator",
+      "targetModule": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-da8d3f6d370f",
+      "activationOwner": "stage-3.candidate-007-fishing-bb8b3939",
+      "activationPosition": 111,
+      "legacyScriptIndex": 112
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/items/hook/hook_power_policy.js",
+      "symbol": "HookPowerPolicy",
+      "exportName": "HookPowerPolicy",
+      "targetModule": "src/game/domain/items/hook/hook_power_policy.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-3d418582cb27",
+      "activationOwner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "activationPosition": 25,
+      "legacyScriptIndex": 70
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/items/quality/environmental_compensation_modifier.js",
+      "symbol": "EnvironmentalCompensationModifier",
+      "exportName": "EnvironmentalCompensationModifier",
+      "targetModule": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-6debdbdd2ee1",
+      "activationOwner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "activationPosition": 49,
+      "legacyScriptIndex": 72
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/items/quality/net_quality_modifier.js",
+      "symbol": "NetQualityModifier",
+      "exportName": "NetQualityModifier",
+      "targetModule": "src/game/domain/items/quality/net_quality_modifier.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-c4363cf3a576",
+      "activationOwner": "stage-3.replan-322.batch-027-items-e8f84667",
+      "activationPosition": 106,
+      "legacyScriptIndex": 71
+    },
+    {
+      "scope": "foundation",
+      "consumer": "src/entities/tackle.js",
+      "consumerLegacyLoadOrder": 205,
+      "shim": "src/core/math/vector2.js",
+      "symbol": "Vector2",
+      "exportName": "Vector2",
+      "targetModule": "src/engine/math/vector2.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-28138de81e82",
+      "activationOwner": "stage-3.22.prerequisite.vector2-extraction",
+      "activationPosition": 15,
+      "legacyScriptIndex": 41
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/fishing/drag_force_calculator.js",
+      "symbol": "DragForceCalculator",
+      "exportName": "DragForceCalculator",
+      "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-4e28fdf337a3",
+      "activationOwner": "stage-3.candidate-005-fishing-45d0c7ce",
+      "activationPosition": 34,
+      "legacyScriptIndex": 128
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "symbol": "EnduranceMovementDebuffCalculator",
+      "exportName": "EnduranceMovementDebuffCalculator",
+      "targetModule": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-fa95b209e285",
+      "activationOwner": "stage-3.candidate-015-fishing-37dc3452",
+      "activationPosition": 128,
+      "legacyScriptIndex": 111
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/fishing/fish_fight_direction_resolver.js",
+      "symbol": "FishFightDirectionResolver",
+      "exportName": "FishFightDirectionResolver",
+      "targetModule": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-aa0a15e8a3fa",
+      "activationOwner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "activationPosition": 89,
+      "legacyScriptIndex": 125
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/fishing/hold_opposition_resolver.js",
+      "symbol": "HoldOppositionResolver",
+      "exportName": "HoldOppositionResolver",
+      "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-9857928fc9d0",
+      "activationOwner": "stage-3.candidate-006-fishing-e48e70d8",
+      "activationPosition": 77,
+      "legacyScriptIndex": 123
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/fishing/simple_fight_force_calculator.js",
+      "symbol": "SimpleFightForceCalculator",
+      "exportName": "SimpleFightForceCalculator",
+      "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-ccddea60d16c",
+      "activationOwner": "stage-3.candidate-007-fishing-bb8b3939",
+      "activationPosition": 107,
+      "legacyScriptIndex": 139
+    },
+    {
+      "scope": "foundation",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/core/math/vector2.js",
+      "symbol": "Vector2",
+      "exportName": "Vector2",
+      "targetModule": "src/engine/math/vector2.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-28138de81e82",
+      "activationOwner": "stage-3.22.prerequisite.vector2-extraction",
+      "activationPosition": 15,
+      "legacyScriptIndex": 41
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/fish_force_system.js",
+      "consumerLegacyLoadOrder": 211,
+      "shim": "src/systems/player_force_system.js",
+      "symbol": "PlayerForceSystem",
+      "exportName": "PlayerForceSystem",
+      "targetModule": "src/game/domain/fishing/player_force_system.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-38802c3efbfc",
+      "activationOwner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "activationPosition": 23,
+      "legacyScriptIndex": 210
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/rod_pull_system.js",
+      "consumerLegacyLoadOrder": 213,
+      "shim": "src/core/fishing/rod_pull_calculator.js",
+      "symbol": "RodPullCalculator",
+      "exportName": "RodPullCalculator",
+      "targetModule": "src/game/domain/fishing/rod_pull_calculator.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-552c2d2ba80f",
+      "activationOwner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "activationPosition": 38,
+      "legacyScriptIndex": 119
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/rod_pull_system.js",
+      "consumerLegacyLoadOrder": 213,
+      "shim": "src/core/fishing/rod_pull_state.js",
+      "symbol": "RodPullState",
+      "exportName": "RodPullState",
+      "targetModule": "src/game/domain/fishing/rod_pull_state.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-a63204f0676b",
+      "activationOwner": "stage-3.candidate-007-fishing-bb8b3939",
+      "activationPosition": 84,
+      "legacyScriptIndex": 91
+    },
+    {
+      "scope": "completed-domain",
+      "consumer": "src/systems/rod_pull_system.js",
+      "consumerLegacyLoadOrder": 213,
+      "shim": "src/core/fishing/rod_stroke_state.js",
+      "symbol": "RodStrokeState",
+      "exportName": "RodStrokeState",
+      "targetModule": "src/game/domain/fishing/rod_stroke_state.js",
+      "executionPhases": [
+        "deferred"
+      ],
+      "activationId": "activation-00287f399f05",
+      "activationOwner": "stage-3.candidate-007-fishing-bb8b3939",
+      "activationPosition": 0,
+      "legacyScriptIndex": 92
+    }
+  ],
+  "logicalGraph": {
+    "nodeCount": 139,
+    "completedCount": 131,
+    "remainingCount": 8,
+    "edgeCount": 90,
+    "edgesByKind": {
+      "activation-resolved": 17,
+      "classic-global": 1,
+      "esm-import": 72
+    },
+    "fingerprint": "b289b1aa413d30a79a6062efbad628066802ef4f91978c5b3b0243ff2945c92c",
+    "edges": [
+      {
+        "source": "src/core/inventory/flat_inventory_item_repository.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/inventory/inventory_item_location.js"
+      },
+      {
+        "source": "src/core/loadouts/equipment_loadout_repository.js",
+        "target": "src/game/domain/loadouts/equipment_loadout.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "EquipmentLoadout"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/loadouts/equipment_loadout.js"
+      },
+      {
+        "source": "src/entities/fish.js",
+        "target": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "DEFAULT_FISH_LATERAL_RANGE",
+          "DEFAULT_FISH_RADIAL_RANGE",
+          "FishDirectionIntentSampler"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/fish_direction_intent_sampler.js"
+      },
+      {
+        "source": "src/entities/tackle.js",
+        "target": "src/game/domain/casting/distance_unit_converter.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "DistanceUnitConverter"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/distance_unit_converter.js"
+      },
+      {
+        "source": "src/entities/tackle.js",
+        "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "ReelRetrieveSpeedCalculator"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/reel_retrieve_speed_calculator.js"
+      },
+      {
+        "source": "src/entities/tackle.js",
+        "target": "src/game/domain/items/hook/hook_power_policy.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "HookPowerPolicy"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/items/hook/hook_power_policy.js"
+      },
+      {
+        "source": "src/entities/tackle.js",
+        "target": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "EnvironmentalCompensationModifier"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/items/quality/environmental_compensation_modifier.js"
+      },
+      {
+        "source": "src/entities/tackle.js",
+        "target": "src/game/domain/items/quality/net_quality_modifier.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "NetQualityModifier"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/items/quality/net_quality_modifier.js"
+      },
+      {
+        "source": "src/game/domain/assemblies/assembly_state_repository.js",
+        "target": "src/game/domain/assemblies/assembly_state.js",
+        "kind": "esm-import",
+        "symbols": [
+          "AssemblyPreparationStatus",
+          "AssemblyState"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_reader.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "kind": "esm-import",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ExactAssemblyRefillSignaturePolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/assemblies/item_assembly_reader.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemAssemblyReader"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "kind": "esm-import",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemAssemblyStackingPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/assemblies/item_assembly_service.js",
+        "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "UnlimitedAssemblyCapacityPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/casting/cast_distance_calculator.js",
+        "target": "src/game/domain/casting/distance_unit_converter.js",
+        "kind": "esm-import",
+        "symbols": [
+          "DistanceUnitConverter"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/casting/cast_distance_calculator.js",
+        "target": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "FloatTackleLineBudgetPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_SLOT_CONFIG"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EquipmentSlotVisibilityPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "target": "src/game/domain/equipment/rod_capability_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodCapabilityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "TerminalLineSlotResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_ALL_SLOT_IDS",
+          "EQUIPMENT_SLOT_CONFIG"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "target": "src/game/domain/equipment/rod_capability_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodCapabilityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_state.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "EQUIPMENT_MAIN_SLOT_IDS"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_transition_planner.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_MAIN_SLOT_IDS"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/equipment_transition_planner.js",
+        "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "UnlimitedInventoryCapacityPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/fishing_readiness_policy.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EquipmentSlotId"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/fishing_readiness_policy.js",
+        "target": "src/game/domain/equipment/rod_capability_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodCapabilityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EquipmentSlotId"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "target": "src/game/domain/equipment/rod_capability_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodCapabilityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/fish_retrieve_system.js",
+        "target": "src/game/domain/fishing/drag_force_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "DragForceCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/fish_retrieve_system.js",
+        "target": "src/game/domain/fishing/fish_retrieve_result.js",
+        "kind": "esm-import",
+        "symbols": [
+          "FishRetrieveResult"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/fish_retrieve_system.js",
+        "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "SimpleFightForceCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/line_system.js",
+        "target": "src/game/domain/casting/cast_distance_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "CastDistanceCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/line_system.js",
+        "target": "src/game/domain/fishing/line_spool_state.js",
+        "kind": "esm-import",
+        "symbols": [
+          "LineSpoolState"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+        "target": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+        "kind": "esm-import",
+        "symbols": [
+          "PoleFightSectorConstraint"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+        "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+        "kind": "esm-import",
+        "symbols": [
+          "PoleFightSectorGeometry"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/reel_hold_recovery_system.js",
+        "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ReelHoldLoadPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/retrieve_policy.js",
+        "target": "src/game/domain/fishing/landing_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "resolveFightPhysicsConfig"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/rod_lateral_control_system.js",
+        "target": "src/game/domain/fishing/rod_control_angle_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodControlAngleResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/rod_lateral_control_system.js",
+        "target": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodControlTensionModeResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/rod_pull_calculator.js",
+        "target": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "RodStrokeCapacityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+        "target": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ActiveEnduranceDrainCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+        "target": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "PassiveEnduranceDrainCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+        "target": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaPhaseMachine"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaDrainCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "target": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaPressureResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "target": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaRegenCalculator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+        "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaTransitionResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+        "target": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "StaminaLateralPositionResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/tackle_stress_system.js",
+        "target": "src/game/domain/fishing/tackle_failure_selector.js",
+        "kind": "esm-import",
+        "symbols": [
+          "TackleFailureSelector"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/tackle_stress_system.js",
+        "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+        "kind": "esm-import",
+        "symbols": [
+          "TackleStressAccumulator"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/fishing/tackle_stress_system.js",
+        "target": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "WeakestTackleLimitResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/inventory/inventory_item_reservation_policy.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "kind": "esm-import",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+        "target": "src/game/domain/inventory/inventory_item_location.js",
+        "kind": "esm-import",
+        "symbols": [
+          "InventoryItemLocation"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "target": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "BaitEffectivenessGradePolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "AlwaysKnownBaitEffectivenessPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "target": "src/game/domain/items/bait/bait_effectiveness_match.js",
+        "kind": "esm-import",
+        "symbols": [
+          "BaitEffectivenessMatch"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+        "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+        "kind": "esm-import",
+        "symbols": [
+          "BaitFreshnessModifier"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/condition/item_condition_resolver.js",
+        "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/freshness/item_freshness_resolver.js",
+        "target": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "BaitFreshnessDecayPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/freshness/item_freshness_resolver.js",
+        "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemBoundedMetricResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/hook/hook_power_policy.js",
+        "target": "src/game/domain/items/quality/hook_quality_modifier.js",
+        "kind": "esm-import",
+        "symbols": [
+          "HookQualityModifier"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/composite_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/item_progression_resolver.js",
+        "target": "src/game/domain/items/progression/item_progression_descriptor.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemProgressionDescriptor"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/item_rating_resolver.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/progression/target_range_metric_strategy.js",
+        "target": "src/game/domain/items/progression/item_metric_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemMetricStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+        "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemQualityGradePolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/quality/hook_quality_modifier.js",
+        "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemQualityGradePolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/quality/net_quality_modifier.js",
+        "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemQualityGradePolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemRarityDescriptor"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemRarityStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemRarityResolver"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/rarity/item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "AuthoredItemRarityStrategy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/items/rarity/item_rarity_resolver.js",
+        "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+        "kind": "esm-import",
+        "symbols": [
+          "ItemRarityStrategyRegistry"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/loadouts/equipment_loadout.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "EQUIPMENT_MAIN_SLOT_IDS"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+        "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "kind": "esm-import",
+        "symbols": [
+          "EQUIPMENT_MAIN_SLOT_IDS"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+        "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+        "kind": "esm-import",
+        "symbols": [
+          "UnlimitedInventoryCapacityPolicy"
+        ],
+        "executionPhases": [
+          "eager"
+        ]
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/entities/fish.js",
+        "kind": "classic-global",
+        "symbols": [
+          "FishPhysicsProfile"
+        ],
+        "executionPhases": [
+          "deferred"
+        ]
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/drag_force_calculator.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "DragForceCalculator"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/drag_force_calculator.js"
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "EnduranceMovementDebuffCalculator"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js"
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "FishFightDirectionResolver"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/fish_fight_direction_resolver.js"
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "HoldOppositionResolver"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/hold_opposition_resolver.js"
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/player_force_system.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "PlayerForceSystem"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/systems/player_force_system.js"
+      },
+      {
+        "source": "src/systems/fish_force_system.js",
+        "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "SimpleFightForceCalculator"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/simple_fight_force_calculator.js"
+      },
+      {
+        "source": "src/systems/rod_pull_system.js",
+        "target": "src/game/domain/fishing/rod_pull_calculator.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "RodPullCalculator"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/rod_pull_calculator.js"
+      },
+      {
+        "source": "src/systems/rod_pull_system.js",
+        "target": "src/game/domain/fishing/rod_pull_state.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "RodPullState"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/rod_pull_state.js"
+      },
+      {
+        "source": "src/systems/rod_pull_system.js",
+        "target": "src/game/domain/fishing/rod_stroke_state.js",
+        "kind": "activation-resolved",
+        "symbols": [
+          "RodStrokeState"
+        ],
+        "executionPhases": [
+          "deferred"
+        ],
+        "viaShim": "src/core/fishing/rod_stroke_state.js"
+      }
+    ]
+  },
+  "sccs": {
+    "logical": {
+      "count": 139,
+      "cyclic": [],
+      "maximumDepth": 3,
+      "fingerprint": "172281fc85fdd6b95862093ec41c286a34c60d5c527dfb347eeeecc57722cea2"
+    },
+    "planning": {
+      "count": 8,
+      "cyclic": [],
+      "maximumDepth": 1,
+      "fingerprint": "b39dadda6223bd25ea46948a35e432c265e50a837b132edd653478209eaf3090"
+    }
+  },
+  "dependencyOrder": [
+    "src/core/inventory/flat_inventory_item_repository.js",
+    "src/core/loadouts/equipment_loadout_repository.js",
+    "src/entities/fish.js",
+    "src/entities/tackle.js",
+    "src/systems/buff_manager.js",
+    "src/systems/rod_pull_system.js",
+    "src/world/world.js",
+    "src/systems/fish_force_system.js"
+  ],
+  "nodes": [
+    {
+      "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+      "targetPath": "src/game/domain/inventory/flat_inventory_item_repository.js",
+      "status": "remaining",
+      "logicalSccId": "scc-520761d22469",
+      "logicalDepth": 1,
+      "planningSccId": "scc-520761d22469",
+      "planningDepth": 0,
+      "dependencies": [
+        {
+          "target": "src/game/domain/inventory/inventory_item_location.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/inventory/inventory_item_location.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "status": "remaining",
+      "logicalSccId": "scc-6cfd7897e2a3",
+      "logicalDepth": 2,
+      "planningSccId": "scc-6cfd7897e2a3",
+      "planningDepth": 0,
+      "dependencies": [
+        {
+          "target": "src/game/domain/loadouts/equipment_loadout.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/loadouts/equipment_loadout.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/entities/fish.js",
+      "targetPath": "src/game/domain/fish/fish.js",
+      "status": "remaining",
+      "logicalSccId": "scc-9d7e551f0a2e",
+      "logicalDepth": 1,
+      "planningSccId": "scc-9d7e551f0a2e",
+      "planningDepth": 0,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js",
+        "src/debug/services/active_fish_dev_tools_schema.js",
+        "src/systems/bite_system.js",
+        "src/systems/fight_physics_system.js",
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/fish_direction_intent_sampler.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/entities/tackle.js",
+      "targetPath": "src/game/domain/tackle/tackle.js",
+      "status": "remaining",
+      "logicalSccId": "scc-8987dd8bb7c1",
+      "logicalDepth": 3,
+      "planningSccId": "scc-8987dd8bb7c1",
+      "planningDepth": 0,
+      "dependencies": [
+        {
+          "target": "src/game/domain/casting/distance_unit_converter.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/items/hook/hook_power_policy.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/items/quality/net_quality_modifier.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/application.js",
+        "src/app/bootstrap.js",
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/casting/distance_unit_converter.js",
+          "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+          "src/game/domain/items/hook/hook_power_policy.js",
+          "src/game/domain/items/quality/environmental_compensation_modifier.js",
+          "src/game/domain/items/quality/hook_quality_modifier.js",
+          "src/game/domain/items/quality/item_quality_grade_policy.js",
+          "src/game/domain/items/quality/net_quality_modifier.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "targetPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-a5a0d188e2ff",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "targetPath": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-7edbdd0c8191",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "targetPath": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "status": "completed",
+      "logicalSccId": "scc-a3ae7458b2e3",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_state.js",
+      "targetPath": "src/game/domain/assemblies/assembly_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-e2c84323a3d5",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/assemblies/assembly_state_repository.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/assembly_state_repository.js",
+      "targetPath": "src/game/domain/assemblies/assembly_state_repository.js",
+      "status": "completed",
+      "logicalSccId": "scc-245b78994467",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/assemblies/assembly_state.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/assemblies/assembly_state.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "targetPath": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-43f6f5bfd0a8",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/assemblies/item_assembly_service.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/auto_refill_coordinator.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/item_assembly_reader.js",
+      "targetPath": "src/game/domain/assemblies/item_assembly_reader.js",
+      "status": "completed",
+      "logicalSccId": "scc-96c14afaa7a8",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/inventory/inventory_item_location.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/assemblies/item_assembly_service.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/inventory_v2_refill_ports.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/inventory/inventory_item_location.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/item_assembly_service.js",
+      "targetPath": "src/game/domain/assemblies/item_assembly_service.js",
+      "status": "completed",
+      "logicalSccId": "scc-bb34aba5ed68",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/assemblies/item_assembly_reader.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/inventory/inventory_item_location.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+          "src/game/domain/assemblies/item_assembly_reader.js",
+          "src/game/domain/inventory/inventory_item_location.js",
+          "src/game/domain/inventory/item_assembly_stacking_policy.js",
+          "src/game/domain/inventory/unlimited_assembly_capacity_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "targetPath": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-e8d161ad7225",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/casting/cast_distance_calculator.js",
+      "targetPath": "src/game/domain/casting/cast_distance_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-a137fb51462c",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/casting/distance_unit_converter.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/line_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js",
+        "src/app/fishing.js",
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/casting/distance_unit_converter.js",
+          "src/game/domain/fishing/float_tackle_line_budget_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/casting/distance_unit_converter.js",
+      "targetPath": "src/game/domain/casting/distance_unit_converter.js",
+      "status": "completed",
+      "logicalSccId": "scc-7c4b94fbfd6b",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/entities/tackle.js",
+        "src/game/domain/casting/cast_distance_calculator.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-0822991e198b",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/equipment_auto_refill_target_provider.js",
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-94a4c87c5677",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/rod_capability_resolver.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "src/game/domain/equipment/rod_capability_resolver.js",
+          "src/game/domain/equipment/terminal_line_slot_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "status": "completed",
+      "logicalSccId": "scc-114a789c243b",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "src/game/domain/equipment/equipment_state.js",
+        "src/game/domain/equipment/equipment_transition_planner.js",
+        "src/game/domain/equipment/fishing_readiness_policy.js",
+        "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "src/game/domain/loadouts/equipment_loadout.js",
+        "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/inventory_v2_context_item_filter.js",
+        "src/application/inventory/inventory_v2_view_model_factory.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/equipment/equipment_slot_availability_policy.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-74a4349fb197",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/rod_capability_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/equipment/equipment_compatibility_policy.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/core/equipment/equipment_slot_availability_policy.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/equipment/rod_capability_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_state.js",
+      "targetPath": "src/game/domain/equipment/equipment_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-f52cf4e2d46f",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_transition_planner.js",
+      "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+      "status": "completed",
+      "logicalSccId": "scc-f4ca580e2b0d",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/inventory/inventory_capacity_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "targetPath": "src/game/domain/equipment/exact_item_signature_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-5c2fb0b61454",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/auto_refill_coordinator.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-dfb72e800f7e",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/rod_capability_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/equipment/rod_capability_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/rod_capability_resolver.js",
+      "targetPath": "src/game/domain/equipment/rod_capability_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-e9a475323b10",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/equipment/equipment_compatibility_policy.js",
+        "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "src/game/domain/equipment/fishing_readiness_policy.js",
+        "src/game/domain/equipment/terminal_line_slot_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/equipment_read_model_factory.js",
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-8349de70fd1b",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/equipment/rod_capability_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/equipment/equipment_compatibility_policy.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/core/equipment/equipment_slot_availability_policy.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/equipment/rod_capability_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-d4b445689803",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "targetPath": "src/game/domain/fish/fish_rarity_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-1d4e9677f697",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/drag_force_calculator.js",
+      "targetPath": "src/game/domain/fishing/drag_force_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-010ec595fc3d",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/fish_retrieve_system.js",
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "targetPath": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-91b214b27730",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "targetPath": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "status": "completed",
+      "logicalSccId": "scc-12c2b9e4452e",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/entities/fish.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/entities/fish.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "targetPath": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-8be561caf4ca",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/fish_retrieve_result.js",
+      "targetPath": "src/game/domain/fishing/fish_retrieve_result.js",
+      "status": "completed",
+      "logicalSccId": "scc-1e16b4f18ca2",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/fish_retrieve_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/fish_retrieve_system.js",
+      "targetPath": "src/game/domain/fishing/fish_retrieve_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-cd97708e86b3",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/drag_force_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/fish_retrieve_result.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/drag_force_calculator.js",
+          "src/game/domain/fishing/fish_retrieve_result.js",
+          "src/game/domain/fishing/simple_fight_force_calculator.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "targetPath": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-cc9d1cdb4aee",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/application.js",
+        "src/app/states.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "targetPath": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-78cee9471180",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/casting/cast_distance_calculator.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "targetPath": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-0a0dc481fa57",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-2550aed47e16",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-4ccbbcbf4c8d",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/landing_policy.js",
+      "targetPath": "src/game/domain/fishing/landing_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-e9b28d8afc7f",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/retrieve_policy.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js",
+        "src/app/fishing.js",
+        "src/app/states.js",
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-911b5c1baea9",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "targetPath": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-8e52fd6115e5",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "targetPath": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "status": "completed",
+      "logicalSccId": "scc-9942cc9f1276",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_spool_state.js",
+      "targetPath": "src/game/domain/fishing/line_spool_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-0a464e82fdbe",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/line_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_system.js",
+      "targetPath": "src/game/domain/fishing/line_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-46c0a117b285",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/casting/cast_distance_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/line_spool_state.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/casting/cast_distance_calculator.js",
+          "src/game/domain/casting/distance_unit_converter.js",
+          "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+          "src/game/domain/fishing/line_spool_state.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/line_tension_calculator.js",
+      "targetPath": "src/game/domain/fishing/line_tension_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-946acb3c77a1",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/tension_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "targetPath": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "status": "completed",
+      "logicalSccId": "scc-9238afa5e459",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_force_system.js",
+      "targetPath": "src/game/domain/fishing/player_force_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-5fba49bd523f",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-ab9e40c684a1",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-0964fbfa4509",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-75bb533ae898",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-fada9cae9dc2",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "status": "completed",
+      "logicalSccId": "scc-bf051bffeb64",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "targetPath": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-5079afd1bb97",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "targetPath": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "status": "completed",
+      "logicalSccId": "scc-93f1aa378ca8",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "status": "completed",
+      "logicalSccId": "scc-5ca4b1ee092a",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/pole_fight_sector_constraint.js",
+          "src/game/domain/fishing/pole_fight_sector_geometry.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "status": "completed",
+      "logicalSccId": "scc-0513ac1f8ae7",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/pole_fight_sector_angle_constraint.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/pole_fight_sector_geometry.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "targetPath": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "status": "completed",
+      "logicalSccId": "scc-30c16fcabe71",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/pole_fight_sector_constraint.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "targetPath": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-4cec83aea98c",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "targetPath": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-7106bd2d4025",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/reel_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "targetPath": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-27017c61120d",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/reel_hold_recovery_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "targetPath": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-cc1274dfb3a2",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/reel_hold_load_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/reel_hold_load_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "targetPath": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-4c1db000cec9",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "targetPath": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-e482de15af08",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js",
+        "src/entities/tackle.js",
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/retrieve_policy.js",
+      "targetPath": "src/game/domain/fishing/retrieve_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-6b8134d71245",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/landing_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/states.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/landing_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-e76823827b54",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/rod_lateral_control_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "targetPath": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "status": "completed",
+      "logicalSccId": "scc-3cda3c900dba",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-c1f16b3e6264",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/rod_lateral_control_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "targetPath": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-4957ec1c4067",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/rod_control_angle_resolver.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/rod_control_angle_resolver.js",
+          "src/game/domain/fishing/rod_control_tension_mode_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_pull_calculator.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-405897a09b6e",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/rod_stroke_capacity_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_pull_state.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-5700181c31e1",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "targetPath": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-8c2e9aa5cf4f",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/rod_pull_calculator.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "targetPath": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "status": "completed",
+      "logicalSccId": "scc-451146c1ca4c",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_stroke_state.js",
+      "targetPath": "src/game/domain/fishing/rod_stroke_state.js",
+      "status": "completed",
+      "logicalSccId": "scc-9006e4b7099f",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/rod_pull_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "targetPath": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "status": "completed",
+      "logicalSccId": "scc-e08b546d35c8",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "targetPath": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-a89850d8f638",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/fish_retrieve_system.js",
+        "src/systems/fish_force_system.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/systems/fish_force_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-3bb2eb3c5a0a",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_balance_frame.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-0a57bb3c061c",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_balance_frame.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "status": "completed",
+      "logicalSccId": "scc-5fe36e54817f",
+      "logicalDepth": 3,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/fight_physics_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+          "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+          "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+          "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+          "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+          "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+          "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+          "src/game/domain/fishing/stamina/stamina_transition_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-7e7276cde456",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-b2a859e79edb",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_pressure_resolver.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "status": "completed",
+      "logicalSccId": "scc-918a29d74945",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_balance_frame.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+          "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+          "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+          "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+          "src/game/domain/fishing/stamina/stamina_transition_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-a26c0893c49d",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "status": "completed",
+      "logicalSccId": "scc-3bc26e8fa27a",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "targetPath": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-cfbeda7203cf",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/stamina/stamina_phase_machine.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/stamina_system.js",
+      "targetPath": "src/game/domain/fishing/stamina_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-a8a6ae96702a",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/tackle_failure_selector.js",
+      "targetPath": "src/game/domain/fishing/tackle_failure_selector.js",
+      "status": "completed",
+      "logicalSccId": "scc-caa037765720",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/tackle_stress_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "status": "completed",
+      "logicalSccId": "scc-e1d72056bfcd",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/tackle_stress_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/tackle_stress_system.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_system.js",
+      "status": "completed",
+      "logicalSccId": "scc-3feddec894ed",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/tackle_failure_selector.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/tackle_failure_selector.js",
+          "src/game/domain/fishing/tackle_stress_accumulator.js",
+          "src/game/domain/fishing/weakest_tackle_limit_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "targetPath": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-71d5ab0bfbe1",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/fishing/tackle_stress_system.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "targetPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-2eeafd0b6bb0",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/ui/ui.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-0d152b332ce8",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/equipment/equipment_transition_planner.js",
+        "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/loadout_application_service.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/inventory_item_location.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_location.js",
+      "status": "completed",
+      "logicalSccId": "scc-382d7e363027",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/core/inventory/flat_inventory_item_repository.js",
+        "src/game/domain/assemblies/item_assembly_reader.js",
+        "src/game/domain/assemblies/item_assembly_service.js",
+        "src/game/domain/inventory/inventory_item_reservation_policy.js",
+        "src/game/domain/inventory/item_assembly_stacking_policy.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/application.js",
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_gameplay_bridge.js",
+        "src/application/inventory/inventory_v2_line_allocation_service.js",
+        "src/application/inventory/inventory_v2_loadout_port.js",
+        "src/application/inventory/inventory_v2_refill_ports.js",
+        "src/application/inventory/inventory_v2_view_model_factory.js",
+        "src/core/equipment/equipment_slot_availability_policy.js",
+        "src/core/inventory/flat_inventory_item_repository.js",
+        "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "src/infrastructure/storage/legacy_inventory_unit_allocator.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-772d4fe03e2b",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/inventory/inventory_item_location.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/inventory/inventory_item_location.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-e8e5aed60730",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "targetPath": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-a752527fe59b",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/inventory/inventory_item_location.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/assemblies/item_assembly_service.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/inventory/inventory_item_location.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "targetPath": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-b99ad6bec5bf",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/assemblies/item_assembly_service.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "targetPath": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-9c762900f65b",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "targetPath": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-a9e3f37a9feb",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "targetPath": "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "status": "completed",
+      "logicalSccId": "scc-4024b8a00212",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "targetPath": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-c180d74301b4",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/bait/bait_effectiveness_match.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+          "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+          "src/game/domain/items/bait/bait_effectiveness_match.js",
+          "src/game/domain/items/freshness/bait_freshness_modifier.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/condition/item_condition_resolver.js",
+      "targetPath": "src/game/domain/items/condition/item_condition_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-ceef9ec81cce",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/metrics/item_bounded_metric_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/effective_item_stats_resolver.js",
+      "targetPath": "src/game/domain/items/effective_item_stats_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-c9a947c76aff",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "targetPath": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-eee8773cbfcf",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/freshness/item_freshness_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/apply_bait_exposure_service.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "targetPath": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "status": "completed",
+      "logicalSccId": "scc-83cc7e3c6f16",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/bait/bait_effectiveness_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "targetPath": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-e5c9e97665ca",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+          "src/game/domain/items/metrics/item_bounded_metric_resolver.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "targetPath": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-993ee7a9c8c6",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/apply_bait_exposure_service.js",
+        "src/application/inventory/freshest_refill_candidate_policy.js",
+        "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "src/infrastructure/storage/legacy_item_state_migration.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/hook/hook_power_policy.js",
+      "targetPath": "src/game/domain/items/hook/hook_power_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-52d07aaf65d7",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/quality/hook_quality_modifier.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/debug/services/debug_formatters.js",
+        "src/entities/tackle.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/quality/hook_quality_modifier.js",
+          "src/game/domain/items/quality/item_quality_grade_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/item_stat_override_policy.js",
+      "targetPath": "src/game/domain/items/item_stat_override_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-6e23180edc08",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "targetPath": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-ed7628bd9a1d",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/condition/item_condition_resolver.js",
+        "src/game/domain/items/freshness/item_freshness_resolver.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-e06a5fe3c0a4",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_metric_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_metric_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-d672e7309b2b",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_metric_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_metric_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-006a41b4e867",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "status": "completed",
+      "logicalSccId": "scc-b36ef38f7ffb",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/item_metric_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-1abe6a53f9d2",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/progression/composite_metric_strategy.js",
+        "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+        "src/game/domain/items/progression/item_rating_resolver.js",
+        "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+        "src/game/domain/items/progression/target_range_metric_strategy.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "status": "completed",
+      "logicalSccId": "scc-01423a106c1d",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+      "targetPath": "src/game/domain/items/progression/item_progression_descriptor.js",
+      "status": "completed",
+      "logicalSccId": "scc-a085e1254f9b",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/progression/item_progression_resolver.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_progression_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_progression_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-297d243b57b6",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_progression_descriptor.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_progression_descriptor.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_rating_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_rating_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-3c59a067f781",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_metric_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_metric_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "targetPath": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-7dc700c19427",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-7f2ece95edae",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_metric_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_metric_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "targetPath": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-872e61ba94dc",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/progression/item_metric_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/progression/item_metric_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "targetPath": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "status": "completed",
+      "logicalSccId": "scc-4f4daeb17a96",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/quality/item_quality_grade_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "targetPath": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "status": "completed",
+      "logicalSccId": "scc-7c043101752e",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/hook/hook_power_policy.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/quality/item_quality_grade_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "targetPath": "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-36557086baa7",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/quality/environmental_compensation_modifier.js",
+        "src/game/domain/items/quality/hook_quality_modifier.js",
+        "src/game/domain/items/quality/net_quality_modifier.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/quality/net_quality_modifier.js",
+      "targetPath": "src/game/domain/items/quality/net_quality_modifier.js",
+      "status": "completed",
+      "logicalSccId": "scc-c9aa842b1660",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/quality/item_quality_grade_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/entities/tackle.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/quality/item_quality_grade_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "targetPath": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-c82661151b6c",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/rarity/item_rarity_strategy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/rarity/item_rarity_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/rarity/item_rarity_descriptor.js",
+          "src/game/domain/items/rarity/item_rarity_strategy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-ab73b262f2a8",
+      "logicalDepth": 3,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/systems/inventory_item_view_factory.js",
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+          "src/game/domain/items/rarity/item_rarity_descriptor.js",
+          "src/game/domain/items/rarity/item_rarity_resolver.js",
+          "src/game/domain/items/rarity/item_rarity_strategy.js",
+          "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "status": "completed",
+      "logicalSccId": "scc-338761556adc",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/rarity/authored_item_rarity_strategy.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "status": "completed",
+      "logicalSccId": "scc-41dcc49de234",
+      "logicalDepth": 2,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/rarity/effective_item_rarity_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js",
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+          "src/game/domain/items/rarity/item_rarity_descriptor.js",
+          "src/game/domain/items/rarity/item_rarity_strategy.js",
+          "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "status": "completed",
+      "logicalSccId": "scc-61c9750e5e83",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/rarity/authored_item_rarity_strategy.js"
+      ],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+      "targetPath": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+      "status": "completed",
+      "logicalSccId": "scc-9808dd0089c1",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [
+        "src/game/domain/items/rarity/item_rarity_resolver.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/line/line_allocation_policy.js",
+      "targetPath": "src/game/domain/line/line_allocation_policy.js",
+      "status": "completed",
+      "logicalSccId": "scc-0866f4f04115",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/inventory_v2_line_allocation_service.js",
+        "src/core/line/line_inventory_controller.js",
+        "src/systems/inventory_system.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/game/domain/loadouts/equipment_loadout.js",
+      "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
+      "status": "completed",
+      "logicalSccId": "scc-a55496450774",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [
+        "src/core/loadouts/equipment_loadout_repository.js"
+      ],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_command_service.js",
+        "src/application/inventory/loadout_application_service.js",
+        "src/core/loadouts/equipment_loadout_repository.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "status": "completed",
+      "logicalSccId": "scc-d8d484faf9ed",
+      "logicalDepth": 1,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [
+        {
+          "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "kind": "esm-import"
+        },
+        {
+          "target": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "kind": "esm-import"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/loadout_application_service.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/equipment/equipment_slot_catalog.js",
+          "src/game/domain/inventory/inventory_capacity_policy.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/game/domain/rules/gameplay_rules.js",
+      "targetPath": "src/game/domain/rules/gameplay_rules.js",
+      "status": "completed",
+      "logicalSccId": "scc-300588f3a191",
+      "logicalDepth": 0,
+      "planningSccId": null,
+      "planningDepth": null,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/systems/buff_manager.js",
+      "targetPath": "src/game/domain/fishing/buff_manager.js",
+      "status": "remaining",
+      "logicalSccId": "scc-9b84c29e5f9e",
+      "logicalDepth": 0,
+      "planningSccId": "scc-9b84c29e5f9e",
+      "planningDepth": 0,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    },
+    {
+      "currentPath": "src/systems/fish_force_system.js",
+      "targetPath": "src/game/domain/fishing/fish_force_system.js",
+      "status": "remaining",
+      "logicalSccId": "scc-8923f6ae9749",
+      "logicalDepth": 2,
+      "planningSccId": "scc-8923f6ae9749",
+      "planningDepth": 1,
+      "dependencies": [
+        {
+          "target": "src/entities/fish.js",
+          "kind": "classic-global"
+        },
+        {
+          "target": "src/game/domain/fishing/drag_force_calculator.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/hold_opposition_resolver.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/player_force_system.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/simple_fight_force_calculator.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [
+          "src/entities/fish.js"
+        ],
+        "completed": [
+          "src/game/domain/fishing/drag_force_calculator.js",
+          "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+          "src/game/domain/fishing/fish_direction_intent_sampler.js",
+          "src/game/domain/fishing/fish_fight_direction_resolver.js",
+          "src/game/domain/fishing/hold_opposition_resolver.js",
+          "src/game/domain/fishing/player_force_system.js",
+          "src/game/domain/fishing/simple_fight_force_calculator.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/systems/rod_pull_system.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_system.js",
+      "status": "remaining",
+      "logicalSccId": "scc-a5fd9cd706ca",
+      "logicalDepth": 2,
+      "planningSccId": "scc-a5fd9cd706ca",
+      "planningDepth": 0,
+      "dependencies": [
+        {
+          "target": "src/game/domain/fishing/rod_pull_calculator.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/rod_pull_state.js",
+          "kind": "activation-resolved"
+        },
+        {
+          "target": "src/game/domain/fishing/rod_stroke_state.js",
+          "kind": "activation-resolved"
+        }
+      ],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/fishing.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": [
+          "src/game/domain/fishing/rod_pull_calculator.js",
+          "src/game/domain/fishing/rod_pull_state.js",
+          "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+          "src/game/domain/fishing/rod_stroke_state.js"
+        ]
+      }
+    },
+    {
+      "currentPath": "src/world/world.js",
+      "targetPath": "src/game/domain/locations/location_world.js",
+      "status": "remaining",
+      "logicalSccId": "scc-6a0e2a46c08f",
+      "logicalDepth": 0,
+      "planningSccId": "scc-6a0e2a46c08f",
+      "planningDepth": 0,
+      "dependencies": [],
+      "reverseDomainConsumers": [],
+      "reverseExternalConsumers": [
+        "src/app/bootstrap.js"
+      ],
+      "closure": {
+        "remaining": [],
+        "completed": []
+      }
+    }
+  ],
+  "providerAmbiguities": [],
+  "reassessment": {
+    "summary": {
+      "remainingModuleCount": 8,
+      "candidate": 8,
+      "prerequisiteBlocked": 0,
+      "deferred": 0,
+      "deferredMatchesHistorical": false
+    },
+    "preliminary": {
+      "candidate": 8,
+      "prerequisiteBlocked": 0,
+      "deferred": 0,
+      "status": "observation-not-limit",
+      "matchesObservation": true
+    },
+    "records": [
+      {
+        "currentPath": "src/core/inventory/flat_inventory_item_repository.js",
+        "targetPath": "src/game/domain/inventory/flat_inventory_item_repository.js",
+        "targetArea": "inventory",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "hot-loop-performance-gate",
+          "partial-state-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/core/inventory/flat_inventory_item_repository.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/core/inventory/flat_inventory_item_repository.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/core/inventory/flat_inventory_item_repository.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/core/inventory/flat_inventory_item_repository.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+        "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+        "targetArea": "loadouts",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "partial-state-review",
+          "side-effect-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "side-effect-review:prove-cumulative-evaluation-safety:src/core/loadouts/equipment_loadout_repository.js",
+            "kind": "side-effect-review",
+            "action": "prove-cumulative-evaluation-safety",
+            "module": "src/core/loadouts/equipment_loadout_repository.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/core/loadouts/equipment_loadout_repository.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/core/loadouts/equipment_loadout_repository.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "standard",
+          "sideEffects": "review-required",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/entities/fish.js",
+        "targetPath": "src/game/domain/fish/fish.js",
+        "targetArea": "fish",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "high-level-self-composition",
+          "hot-loop-performance-gate",
+          "partial-state-review",
+          "side-effect-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "dependency-inversion-review:review-constructor-injection-boundary:src/entities/fish.js",
+            "kind": "dependency-inversion-review",
+            "action": "review-constructor-injection-boundary",
+            "module": "src/entities/fish.js"
+          },
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/entities/fish.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/entities/fish.js"
+          },
+          {
+            "id": "side-effect-review:prove-cumulative-evaluation-safety:src/entities/fish.js",
+            "kind": "side-effect-review",
+            "action": "prove-cumulative-evaluation-safety",
+            "module": "src/entities/fish.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/entities/fish.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/entities/fish.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "review-required",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/entities/tackle.js",
+        "targetPath": "src/game/domain/tackle/tackle.js",
+        "targetArea": "tackle",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "high-level-self-composition",
+          "hot-loop-performance-gate",
+          "partial-state-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "dependency-inversion-review:review-constructor-injection-boundary:src/entities/tackle.js",
+            "kind": "dependency-inversion-review",
+            "action": "review-constructor-injection-boundary",
+            "module": "src/entities/tackle.js"
+          },
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/entities/tackle.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/entities/tackle.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/entities/tackle.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/entities/tackle.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/systems/buff_manager.js",
+        "targetPath": "src/game/domain/fishing/buff_manager.js",
+        "targetArea": "fishing",
+        "category": "candidate",
+        "historicalCoverage": "prerequisite-introduced",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "hot-loop-performance-gate"
+        ],
+        "prerequisites": [
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/systems/buff_manager.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/systems/buff_manager.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "preserved",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "none"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/systems/fish_force_system.js",
+        "targetPath": "src/game/domain/fishing/fish_force_system.js",
+        "targetArea": "fishing",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "high-level-self-composition",
+          "partial-state-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "dependency-inversion-review:review-constructor-injection-boundary:src/systems/fish_force_system.js",
+            "kind": "dependency-inversion-review",
+            "action": "review-constructor-injection-boundary",
+            "module": "src/systems/fish_force_system.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/systems/fish_force_system.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/systems/fish_force_system.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "standard",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/systems/rod_pull_system.js",
+        "targetPath": "src/game/domain/fishing/rod_pull_system.js",
+        "targetArea": "fishing",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "high-level-self-composition",
+          "hot-loop-performance-gate",
+          "partial-state-review"
+        ],
+        "prerequisites": [
+          {
+            "id": "dependency-inversion-review:review-constructor-injection-boundary:src/systems/rod_pull_system.js",
+            "kind": "dependency-inversion-review",
+            "action": "review-constructor-injection-boundary",
+            "module": "src/systems/rod_pull_system.js"
+          },
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/systems/rod_pull_system.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/systems/rod_pull_system.js"
+          },
+          {
+            "id": "state-review:prove-state-identity-invariant:src/systems/rod_pull_system.js",
+            "kind": "state-review",
+            "action": "prove-state-identity-invariant",
+            "module": "src/systems/rod_pull_system.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "review-required",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      },
+      {
+        "currentPath": "src/world/world.js",
+        "targetPath": "src/game/domain/locations/location_world.js",
+        "targetArea": "locations",
+        "category": "candidate",
+        "historicalCoverage": "deferred",
+        "eligibilityStatus": "conditionally-eligible",
+        "reasonCodes": [
+          "hot-loop-performance-gate"
+        ],
+        "prerequisites": [
+          {
+            "id": "performance-review:prove-hot-loop-equivalence:src/world/world.js",
+            "kind": "performance-review",
+            "action": "prove-hot-loop-equivalence",
+            "module": "src/world/world.js"
+          }
+        ],
+        "invariantImpact": {
+          "state": "preserved",
+          "configuration": "none",
+          "performance": "enhanced-gates-required",
+          "sideEffects": "safe-by-observation",
+          "compatibility": "activation-required"
+        },
+        "blockedBy": null
+      }
+    ]
+  }
+}

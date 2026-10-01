@@ -142,4 +142,28 @@ const STAGE_3_42 = new PostFreezeReviewProfile({
   historicalCandidatesNote: "Historical candidates and the Stage 3.22, 3.36, 3.40 and 3.41 reviews remain reference material and are not replaced.",
 });
 
-module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40, STAGE_3_41, STAGE_3_42 };
+// Repeated review after the completed 3.42 approved prefix (041–048) and prerequisite 033 (hot-loop clock
+// injection, Net converter fallback), for the 3.42 review queue (049–052). Recorded as Stage 3.50.0: the
+// next batch (049) is Stage 3.50. The reviewed collections carry their replacement rules (REVIEWED_COLLECTIONS_3_50).
+const STAGE_3_50 = new PostFreezeReviewProfile({
+  stage: "3.50",
+  kindStage: "3-50",
+  directory: "architecture/migration/stage_3_50_graph_review",
+  // Active runtime at v0.24.86 after prerequisite 033: distinct active activation targets / activations / bridges.
+  expectedTopology: Object.freeze({ modules: 114, activations: 132, bridges: 197 }),
+  firstOrder: 49,
+  idPrefix: "stage-3.replan-350.batch-",
+  taskPrefix: "stage-3.50.prerequisite.",
+  preliminary: Object.freeze({ candidate: 8, prerequisiteBlocked: 0, deferred: 0 }),
+  domainModuleCount: 139,
+  completedFromPlanSource: true,
+  esmImportFacts: true,
+  prerequisiteIntroducedCoverage: true,
+  frozenConstantReview: true,
+  groupedBatches: true,
+  reviewOwner: "stage-3.50-post-freeze-graph-review",
+  adoptionReason: "The execution state keeps the completed 001–048 prefix and the adopted Stage 3.42.0 approved prefix; the first batch frozen by this review or its freeze extension adopts it in its own prebuild state transition.",
+  historicalCandidatesNote: "Historical candidates and the Stage 3.22, 3.36, 3.40, 3.41 and 3.42 reviews remain reference material and are not replaced.",
+});
+
+module.exports = { PostFreezeReviewProfile, STAGE_3_22, STAGE_3_36, STAGE_3_40, STAGE_3_41, STAGE_3_42, STAGE_3_50 };
