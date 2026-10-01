@@ -306,6 +306,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-07d23f1fe2ec",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "sourceProvider": "src/core/equipment/equipment_state.js",
+      "targetModule": "src/game/domain/equipment/equipment_state.js",
+      "exportName": "EquipmentState",
+      "legacySymbol": "EquipmentState",
+      "legacyScriptIndex": 160,
+      "shimFile": "activations/160_equipmentstate.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-0937f80ab214",
       "owner": "stage-3.replan-322.batch-023-items-c91fce82",
       "sourceProvider": "src/core/items/progression/numeric_stat_metric_strategy.js",
@@ -314,18 +326,6 @@
       "legacySymbol": "NumericStatMetricStrategy",
       "legacyScriptIndex": 74,
       "shimFile": "activations/074_numericstatmetricstrategy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-0c061ffb07d6",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "sourceProvider": "src/config/inventory/equipment_slot_config.js",
-      "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "exportName": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-      "legacySymbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-      "legacyScriptIndex": 30,
-      "shimFile": "activations/030_equipment_auxiliary_slot_ids.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -808,6 +808,18 @@
       "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-6088d7e23f95",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "sourceProvider": "src/core/loadouts/equipment_loadout.js",
+      "targetModule": "src/game/domain/loadouts/equipment_loadout.js",
+      "exportName": "EquipmentLoadout",
+      "legacySymbol": "EquipmentLoadout",
+      "legacyScriptIndex": 168,
+      "shimFile": "activations/168_equipmentloadout.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-649929a35f50",
@@ -1783,6 +1795,23 @@
     }
   ],
   "retiredActivations": [
+    {
+      "activation": {
+        "id": "activation-0c061ffb07d6",
+        "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+        "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+        "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "exportName": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+        "legacySymbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+        "legacyScriptIndex": 30,
+        "shimFile": "activations/030_equipment_auxiliary_slot_ids.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e"
+    },
     {
       "activation": {
         "id": "activation-138f54238b60",

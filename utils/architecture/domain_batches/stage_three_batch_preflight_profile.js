@@ -149,6 +149,16 @@ class StageThreeBatchPreflightProfile {
       `${currentPath} localCompositions must name unique composed classes`);
     }
     for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const constants = contract?.literalConstants;
+      if (constants === undefined) continue;
+      require(!contract.legacyExposure && !contract.frozenConstants && !contract.frozenStaticFields &&
+        !contract.privateStaticSets && !contract.classFamily && !contract.frozenDataConstants,
+      `${currentPath} literalConstants combine only with effect-free classes`);
+      require(Array.isArray(constants) && constants.length > 0 &&
+        constants.every((name) => /^[A-Za-z_$][\w$]*$/u.test(name)) && new Set(constants).size === constants.length,
+      `${currentPath} literalConstants must name unique top-level constants`);
+    }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
       const data = contract?.frozenDataConstants;
       if (data === undefined) continue;
       require(Boolean(definition?.sideEffectEvidence),

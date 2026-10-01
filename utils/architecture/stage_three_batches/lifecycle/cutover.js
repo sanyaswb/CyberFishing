@@ -99,17 +99,22 @@ class StageThreeCutoverProjection {
     }
     // In retirement order: a classic source gets its placeholder (one line per retired activation it
     // served) at its first retired activation; every generated shim is removed and restored on rollback.
+    // A shared source (other activations stay active) keeps the shim lines of its active activations.
+    const shared = ActivationRetirementProjection.sharedSources(runtime, retiredActivations);
     const placeholders = new Map(RetiredActivationPlaceholder.byProvider(retiredActivations)
       .map(({ sourceProvider, activations }) => [sourceProvider, activations]));
     for (const activation of retiredActivations) {
       if (placeholders.has(activation.sourceProvider)) {
         writes.push({ relativePath: activation.sourceProvider,
-          bytes: Buffer.from(new RetiredActivationPlaceholder().renderProvider(placeholders.get(activation.sourceProvider))) });
+          bytes: Buffer.from(shared.has(activation.sourceProvider)
+            ? future.activationPositions.filter(item => item.sourceProvider === activation.sourceProvider)
+              .map(item => new ActivationShimRenderer().render(item, runtime.transport.symbol)).join("")
+            : new RetiredActivationPlaceholder().renderProvider(placeholders.get(activation.sourceProvider))) });
         placeholders.delete(activation.sourceProvider);
       }
       writes.push({ relativePath: runtime.output.directory + activation.shimFile, bytes: null });
     }
-    index = retirement.index(index, runtime.output.directory, retiredActivations);
+    index = retirement.index(index, runtime.output.directory, retiredActivations, shared);
     for (const [relativePath, bytes] of generated) writes.push({ relativePath, bytes });
     const packageContract = app.json("architecture/build/package_contract.json");
     packageContract.stage.current = context.stage;

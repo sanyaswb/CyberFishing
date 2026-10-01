@@ -131,4 +131,24 @@ accepts(() => Grammar.freezeCalls(initOf("export const A = Object.freeze([...B])
 accepts(() => Grammar.freezeCalls(initOf("export const A = Object.freeze({ k: B.c() });"), new Set(["B"])), null,
   "gate table with a call");
 
+// Batch 045: literalConstants names exact top-level const literal bindings beside the classes.
+const { StageThreeReviewedLiteralConstants } = require("./domain_batches/stage_three_reviewed_literal_constants");
+const literals = new StageThreeReviewedLiteralConstants();
+const withName = "const NAME = \"Kit\";\n\nclass Loadout {}\n";
+accepts(() => literals.review({ source: withName, currentPath: CURRENT, names: ["NAME"] }), ["VariableDeclaration@1:1"],
+  "reviewed literal constant");
+rejects(() => literals.review({ source: withName, currentPath: CURRENT, names: [] }), /literal constants differ/u,
+  "unreviewed literal constant");
+rejects(() => literals.review({ source: "const NAME = make();\nclass L {}\n", currentPath: CURRENT, names: ["NAME"] }),
+  /must be a string, number or boolean literal/u, "computed constant");
+rejects(() => literals.review({ source: "let NAME = \"x\";\nclass L {}\n", currentPath: CURRENT, names: ["NAME"] }),
+  /only single const literal bindings/u, "mutable binding");
+accepts(() => new RepresentationOnlyReviewedEsmTarget().project({ source: withName, currentPath: CURRENT,
+  targetPath: "fixture/target.js", exports: ["Loadout", "NAME"], sourceSha256: sha(withName),
+  contract: { literalConstants: ["NAME"] }, targetEvaluation: null, imports: [] }).targetSource,
+"export const NAME = \"Kit\";\n\nexport class Loadout {}\n", "literal constant export");
+rejects(() => new RepresentationOnlyReviewedEsmTarget().project({ source: withName, currentPath: CURRENT,
+  targetPath: "fixture/target.js", exports: ["Loadout", "NAME"], sourceSha256: sha(withName), contract: {},
+  targetEvaluation: null, imports: [] }), /only plain class declarations/u, "unreviewed constant export");
+
 console.log(`Stage 3 batch reviewed-shape fixtures passed (${cases} cases).`);

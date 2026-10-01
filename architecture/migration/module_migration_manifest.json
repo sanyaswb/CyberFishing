@@ -11931,11 +11931,6 @@
               "availability": "program-init"
             },
             {
-              "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
               "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -15551,7 +15546,7 @@
           "items": [
             {
               "symbol": "EquipmentState",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -15561,16 +15556,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -15578,10 +15567,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "RangeError",
-            "TypeError",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -15591,7 +15577,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/equipment/equipment_state.js",
@@ -15600,35 +15586,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_AUXILIARY_SLOT_IDS",
-                "EQUIPMENT_MAIN_SLOT_IDS"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -23158,12 +23126,7 @@
           "items": [
             {
               "symbol": "EquipmentLoadout",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "LOADOUT_DISPLAY_NAME",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -23173,16 +23136,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -23190,13 +23147,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Boolean",
-            "Date",
-            "Object",
-            "RangeError",
-            "String",
-            "TypeError",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23206,7 +23157,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "value-object"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
@@ -23215,35 +23166,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_AUXILIARY_SLOT_IDS",
-                "EQUIPMENT_MAIN_SLOT_IDS"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -36190,6 +36123,58 @@
       }
     },
     {
+      "currentPath": "src/game/domain/equipment/equipment_state.js",
+      "currentArea": "game/domain/equipment",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "RangeError",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/equipment/equipment_state.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/equipment/exact_item_signature_policy.js",
       "currentArea": "game/domain/equipment",
       "observed": {
@@ -41641,6 +41626,61 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/line/line_allocation_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/loadouts/equipment_loadout.js",
+      "currentArea": "game/domain/loadouts",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Boolean",
+            "Date",
+            "Object",
+            "RangeError",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "value-object"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
         "migrationWave": 1
       },
       "analysis": {

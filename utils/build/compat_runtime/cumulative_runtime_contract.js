@@ -349,7 +349,8 @@ class CumulativeRuntimeContractValidator {
       require(!activationIds.includes(activation.id), `retired activation is still active: ${activation.id}`);
       require(record.reason === "all-listed-legacy-consumers-migrated",
         `${activation.id} retirement reason is invalid`);
-      require(record.placeholder === "inert-classic-position", `${activation.id} placeholder is invalid`);
+      require(["inert-classic-position", "shared-source-line-removed"].includes(record.placeholder),
+        `${activation.id} placeholder is invalid`);
       require(this.#text(record.retiredBy), `${activation.id} retiredBy is required`);
     }
     require(this.#sameArray(retired.map((record) => record.activation.id),

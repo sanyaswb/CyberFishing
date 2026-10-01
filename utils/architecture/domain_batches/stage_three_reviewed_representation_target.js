@@ -83,7 +83,7 @@ class RepresentationOnlyReviewedEsmTarget {
     if (!contract.privateStaticSets && !contract.frozenStaticFields && !contract.frozenConstants &&
       !contract.classFamily && !contract.legacyExposure && exports.length > 1) {
       return this.#classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256,
-        functions: contract.topLevelFunctions || [] });
+        functions: contract.topLevelFunctions || [], constants: contract.literalConstants || [] });
     }
     const reviewer = new StageThreeReviewedEvaluationEffect();
     if (contract.privateStaticSets) {
@@ -235,14 +235,20 @@ class RepresentationOnlyReviewedEsmTarget {
 
   // A classic script of plain class declarations only (global lexical providers, no top-level
   // effect) becomes the same classes with an `export` token each.
-  // Reviewed pure top-level functions (contract.topLevelFunctions) are exported beside the classes.
-  #classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256, functions = [] }) {
+  // Reviewed pure top-level functions (contract.topLevelFunctions) and literal constants
+  // (contract.literalConstants, batch 045) are exported beside the classes.
+  #classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256, functions = [], constants = [] }) {
     const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script" });
-    assert(tree.body.every(node => node.type === "ClassDeclaration" ||
+    const constantOf = node => node.type === "VariableDeclaration" && node.kind === "const" &&
+      node.declarations.length === 1 && constants.includes(node.declarations[0].id.name) &&
+      node.declarations[0].init?.type === "Literal";
+    assert(tree.body.every(node => node.type === "ClassDeclaration" || constantOf(node) ||
       (node.type === "FunctionDeclaration" && functions.includes(node.id.name) && !node.async && !node.generator)),
     `${currentPath}: only plain class declarations may use the class-declarations shape`);
-    assert.deepEqual(tree.body.map(node => node.id.name).sort(), exports, `${currentPath}: class set differs`);
-    const tokenOf = name => functions.includes(name) ? `function ${name}(` : `class ${name} `;
+    assert.deepEqual(tree.body.map(node => node.id?.name || node.declarations[0].id.name).sort(), exports,
+      `${currentPath}: class set differs`);
+    const tokenOf = name => functions.includes(name) ? `function ${name}(`
+      : constants.includes(name) ? `const ${name} =` : `class ${name} `;
     let targetSource = source;
     for (const name of exports) {
       const token = tokenOf(name);
@@ -251,8 +257,9 @@ class RepresentationOnlyReviewedEsmTarget {
     }
     const target = espree.parse(targetSource, { ecmaVersion: "latest", sourceType: "module" });
     assert(target.body.every(node => node.type === "ExportNamedDeclaration" && node.source === null &&
-      (node.declaration?.type === "ClassDeclaration" || (node.declaration?.type === "FunctionDeclaration" &&
-        functions.includes(node.declaration.id.name)))), `${targetPath}: only direct named class exports are allowed`);
+      (node.declaration?.type === "ClassDeclaration" || constantOf(node.declaration) ||
+        (node.declaration?.type === "FunctionDeclaration" && functions.includes(node.declaration.id.name)))),
+    `${targetPath}: only direct named class exports are allowed`);
     assert(!targetSource.includes("window") && !targetSource.includes("globalThis") &&
       !targetSource.includes("__CYBER_FISHING_COMPAT_RUNTIME__"),
     `${targetPath}: target retains a browser or transport dependency`);
@@ -261,9 +268,11 @@ class RepresentationOnlyReviewedEsmTarget {
     assert.equal(restored, source, `${targetPath}: non-representation source delta`);
     return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
       sourceSha256, targetSha256: sha(targetSource), targetSource,
-      validation: { representation: functions.length === 0
-        ? "classic-class-declarations-to-named-esm-exports-only"
-        : "classic-class-and-reviewed-function-declarations-to-named-esm-exports-only",
+      validation: { representation: constants.length > 0
+        ? "classic-class-and-reviewed-literal-constant-declarations-to-named-esm-exports-only"
+        : functions.length === 0
+          ? "classic-class-declarations-to-named-esm-exports-only"
+          : "classic-class-and-reviewed-function-declarations-to-named-esm-exports-only",
         importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
         forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
         allocationDelta: "none", currentPath, targetPath },

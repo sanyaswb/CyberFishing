@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.83 - Equipment State And Loadout Domain
+
+### Changed
+
+- Migrated EquipmentState and EquipmentLoadout with LOADOUT_DISPLAY_NAME as named ESM exports; persisted snapshots are unchanged.
+- Retired the EQUIPMENT_AUXILIARY_SLOT_IDS activation as a shared-source line removal (new in the shared tooling): the catalog shim keeps its other four activations.
+- Extended the cumulative runtime from 132 to 134 project modules; 126 active activations and 201 exact bridge relationships.
+- The next task is batch 046 preflight.
+
 ## v0.24.82 - Item Catalog Baseline Registry Domain
 
 ### Changed

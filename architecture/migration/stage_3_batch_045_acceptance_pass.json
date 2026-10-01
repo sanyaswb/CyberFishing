@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-045-acceptance",
+  "stage": "3.46.8",
+  "batchId": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+  "releaseVersion": "0.24.82",
+  "plannedReleaseVersion": "0.24.83",
+  "recordedAt": "2026-10-01T18:41:57.384Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_045_automated_acceptance.json",
+    "sha256": "83d468f8940d4d297f16ca8e4f69bf00f95d1a7f7a445f5032d52097961a1d95",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 86,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32-x64 node v24.13.0",
+      "source": "check run report 2026-10-01T18-40-20-234Z-29120",
+      "report": {
+        "kind": "cyber-fishing-check-run-report",
+        "schemaVersion": 1,
+        "runId": "2026-10-01T18-40-20-234Z-29120",
+        "mode": "release-gate",
+        "sha256": "d56358c3d244d87a736b6712a45d42ac1bf1a7f64c9e55c0e8f7f51f953c690c",
+        "executed": 86,
+        "cached": 0,
+        "catalogSha256": "4edbcb1711f758b8e4d5165a9286c3099b202623084c0cdc6e9768f891bb10e8",
+        "sourceSha256": "2dc33b656e0b052e8037f1c21430ff7d08d0a7e059b17bf8a8cbb6a1cb8fb863",
+        "sourceCommit": "17d5ed4eaa2c4e8fddcdbe8b8837455962bd00b6"
+      }
+    },
+    "summary": "release-gate: 86 executed, 0 reused history replays, 0 failed; source unchanged during the run",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 86,
+      "architecture": 57,
+      "quick": 36
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "owner-authorized-automated-substitute",
+    "userStatement": "PASS (automated substitute, owner away): node utils/game-cycle-check.js exit 0 without seals, output byte-identical before and after the cutover; built-in browser load: 134 runtime modules, EquipmentState and EquipmentLoadout globals identical to their ESM exports, LOADOUT_DISPLAY_NAME exported only (Комплект), EQUIPMENT_AUXILIARY_SLOT_IDS no longer published while the other four catalog globals stay, 1 canvas.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "acceptanceBasis": "Owner-authorized automated substitute: game-cycle without seals and an instrumented built-in-browser console read; the owner did not play this batch.",
+    "ownerAuthorization": "я поки відійду, тести на тобі game cycle бери за основу якщо треба помилки то відкрий у вбудованому браузері.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_045_live_runtime_validation.json",
+      "sha256": "cccc97dc72eba24b85b94eea4f3f0a1e872ac7591d95c91e04289542374188cc"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_045_observation_reconciliation.json",
+      "sha256": "0fed665a9eae36eb1b5c35d6ce5a12c0401cebf0bb8a469c1f3ed072b16c647d"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "8f6d7eb437ac1c42009b0910a8e86f82cb8aa2b45e0afa6dae8e4bf357a1a5a2"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "0e3f41dab2052f5a7f72ec2223a666cd8656c85e9989ad4d0ff2826d246dbf28"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "0828d0f766dfd104a812160eb7fba3958ab8150f3ce0c9a55040a4bb4dfb06e9"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "2ccd7922746a3262ec0eb3e16794fef1ffc0d103a8e9d212f6954bbcda09a94d"
+    },
+    {
+      "path": "index.html",
+      "sha256": "26638cc0b5c14f398b15124313b93c2bc7aa6d34d1b9af0d6c8f595d331b12b0"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.46.9 — Release Closure v0.24.83"
+}

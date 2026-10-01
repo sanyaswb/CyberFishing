@@ -5,6 +5,9 @@ const { CanonicalActivationIdentity } = require("./cumulative_runtime_contract")
 
 const RETIREMENT_REASON = "all-listed-legacy-consumers-migrated";
 const PLACEHOLDER_KIND = "inert-classic-position";
+// A source that keeps other active activations (batch 045) loses only the retired activation's shim
+// line and tag; its classic position stays held by the remaining activations.
+const SHARED_SOURCE_KIND = "shared-source-line-removed";
 
 // A retired activation keeps its legacy script position as an inert classic placeholder: the
 // source provider holds one comment line and publishes no global.
@@ -82,29 +85,34 @@ class ActivationRetirementProjection {
         throw new Error(`Retired activation is not the active contract: ${activation.id}`);
       }
     }
-    // A classic source retires as a whole: its placeholder replaces every activation it served.
-    for (const activation of runtime.activationPositions) {
-      if (!retiring.has(activation.id) &&
-        retiredActivations.some((retired) => retired.sourceProvider === activation.sourceProvider)) {
-        throw new Error(`Retirement leaves an active activation of the same source: ${activation.id}`);
-      }
-    }
+    // A classic source retires as a whole (inert placeholder) unless another activation of the same
+    // source stays active: then only the retired shim line and tag are removed.
+    const shared = ActivationRetirementProjection.sharedSources(runtime, retiredActivations);
     if (retiring.size === 0) return runtime;
     return {
       ...runtime,
       activationPositions: runtime.activationPositions.filter((activation) => !retiring.has(activation.id)),
       retiredActivations: [...(runtime.retiredActivations || []), ...retiredActivations.map((activation) => ({
         activation: { ...activation },
-        placeholder: PLACEHOLDER_KIND,
+        placeholder: shared.has(activation.sourceProvider) ? SHARED_SOURCE_KIND : PLACEHOLDER_KIND,
         reason: RETIREMENT_REASON,
         retiredBy,
       }))].sort((left, right) => left.activation.id.localeCompare(right.activation.id)),
     };
   }
 
+  // Sources whose other activations stay active after the retirement.
+  static sharedSources(runtime, retiredActivations) {
+    const retiring = new Set(retiredActivations.map((activation) => activation.id));
+    return new Set(runtime.activationPositions.filter((activation) => !retiring.has(activation.id) &&
+      retiredActivations.some((retired) => retired.sourceProvider === activation.sourceProvider))
+      .map((activation) => activation.sourceProvider));
+  }
+
   // Each retired source gets back its single classic tag: the first of its shim tags becomes the
   // source tag and the source's other shim tags (one legacy position) are removed with their line.
-  index(html, outputDirectory, retiredActivations) {
+  // A shared source (sharedSources) keeps its remaining shim tags; only the retired ones are removed.
+  index(html, outputDirectory, retiredActivations, sharedSources = new Set()) {
     let result = html;
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retiredActivations)) {
       const tags = activations.map((activation) => {
@@ -120,11 +128,12 @@ class ActivationRetirementProjection {
         return { shimTag: matches[0][0], shimSource, position: matches[0].index };
       }).sort((left, right) => left.position - right.position);
       const [first, ...rest] = tags;
-      for (const { shimTag } of rest) {
+      for (const { shimTag } of sharedSources.has(sourceProvider) ? tags : rest) {
         const line = new RegExp(`\\r?\\n[ \\t]*${shimTag.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}`, "gu");
         if ([...result.matchAll(line)].length !== 1) throw new Error(`Retired shim tag is not on its own line: ${shimTag}`);
         result = result.replace(line, "");
       }
+      if (sharedSources.has(sourceProvider)) continue;
       result = result.replace(first.shimTag,
         () => first.shimTag.replace(`src="${first.shimSource}"`, `src="${sourceProvider}"`));
     }
@@ -136,5 +145,6 @@ module.exports = {
   ActivationRetirementProjection,
   PLACEHOLDER_KIND,
   RETIREMENT_REASON,
+  SHARED_SOURCE_KIND,
   RetiredActivationPlaceholder,
 };

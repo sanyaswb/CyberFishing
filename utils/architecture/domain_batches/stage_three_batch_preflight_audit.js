@@ -12,6 +12,7 @@ const { StageThreeCompositionIdentityReview } = require("./stage_three_compositi
 const { StageThreeReviewedTopLevelFunctions } = require("./stage_three_reviewed_top_level_functions");
 const { StageThreeLocalCompositionReview } = require("./stage_three_local_composition_review");
 const { StageThreeReviewedFrozenDataConstants } = require("./stage_three_reviewed_frozen_data_constants");
+const { StageThreeReviewedLiteralConstants } = require("./stage_three_reviewed_literal_constants");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -449,12 +450,16 @@ class StageThreeBatchPreflightAuditBuilder {
     const dataConstants = Object.keys(reviewed.frozenDataConstants?.bindings || {});
     const expectedClasses = reviewed.frozenConstants
       ? [...(reviewed.frozenConstants.classNames || [reviewed.frozenConstants.className])].sort()
-      : expectedSymbols.filter((symbol) => !topLevelFunctions.includes(symbol) && !dataConstants.includes(symbol));
+      : expectedSymbols.filter((symbol) => !topLevelFunctions.includes(symbol) && !dataConstants.includes(symbol) &&
+        !(reviewed.literalConstants || []).includes(symbol));
     this.#require(this.#same(sourceShape.classDeclarations, expectedClasses),
       `class declaration differs: ${module.currentPath}`);
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
-    this.#require(this.#same(sourceShape.topLevelBindings, reviewed.topLevelFunctions
+    this.#require(this.#same(sourceShape.topLevelBindings, reviewed.literalConstants
+      ? [...topLevelFunctions.map(() => "FunctionDeclaration"),
+        ...reviewed.literalConstants.map(() => "VariableDeclaration")].sort()
+      : reviewed.topLevelFunctions
       ? topLevelFunctions.map(() => "FunctionDeclaration")
       : Object.keys(reviewed.frozenConstants?.bindings || reviewed.frozenDataConstants?.bindings || {})
         .map(() => "VariableDeclaration")),
@@ -539,10 +544,13 @@ class StageThreeBatchPreflightAuditBuilder {
           ? `IfStatement@${reviewedExposure.guardLocation}`
           : `ExpressionStatement@${exposure.location}`]),
       `reviewed top-level effect differs: ${module.currentPath}`);
-    } else if (reviewed.topLevelFunctions) {
-      // Reviewed pure function declarations are the only top-level statements beside the classes.
-      this.#require(this.#same(sourceShape.topLevelEffects, new StageThreeReviewedTopLevelFunctions()
-        .review({ source, currentPath: module.currentPath, names: topLevelFunctions }).sort()),
+    } else if (reviewed.topLevelFunctions || reviewed.literalConstants) {
+      // Reviewed pure function declarations and literal constants are the only top-level statements
+      // beside the classes.
+      this.#require(this.#same(sourceShape.topLevelEffects, [...new StageThreeReviewedTopLevelFunctions()
+        .review({ source, currentPath: module.currentPath, names: topLevelFunctions }),
+      ...(reviewed.literalConstants ? new StageThreeReviewedLiteralConstants().review({ source,
+        currentPath: module.currentPath, names: reviewed.literalConstants }) : [])].sort()),
       `reviewed top-level function differs: ${module.currentPath}`);
     } else {
       this.#require(sourceShape.topLevelEffects.length === 0,

@@ -9,6 +9,7 @@ const { StageThreeGlobalExposureReview } = require("../../domain_batches/stage_t
 const { StageThreeBatchSourceObserver } = require("../../domain_batches/stage_three_batch_source_observer");
 const { StageThreeReviewedTopLevelFunctions } = require("../../domain_batches/stage_three_reviewed_top_level_functions");
 const { StageThreeReviewedFrozenDataConstants } = require("../../domain_batches/stage_three_reviewed_frozen_data_constants");
+const { StageThreeReviewedLiteralConstants } = require("../../domain_batches/stage_three_reviewed_literal_constants");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
 const { StageThreeApprovedPlanSource } = require("../../domain_batches/stage_three_approved_plan_source");
 const { ModuleEvaluationEffectObserver } = require("../../../build/compat_runtime/cumulative_side_effect_gate");
@@ -31,8 +32,9 @@ function reviewedEffect(contract) {
       exposure: exposure ? { symbol: exposure.symbol, location: exposure.location } : null };
   }
   if (!exposure) {
-    return contract.topLevelFunctions
-      ? { kind: "effect-free", topLevelFunctions: [...contract.topLevelFunctions] } : { kind: "effect-free" };
+    return { kind: "effect-free",
+      ...(contract.topLevelFunctions ? { topLevelFunctions: [...contract.topLevelFunctions] } : {}),
+      ...(contract.literalConstants ? { literalConstants: [...contract.literalConstants] } : {}) };
   }
   const kinds = { "window-property": "guarded-window-class-exposure", "global-this-property": "global-this-class-exposure" };
   const kind = kinds[exposure.mechanism || "global-this-property"];
@@ -102,11 +104,15 @@ class StageThreeSideEffectReview {
         // A module without a frozen effect review must stay free of top-level effects; reviewed pure
         // function declarations are bindings, not effects.
         assert.equal(frozen, null);
+        // Reviewed top-level literal constants (batch 045) are bindings as well.
         assert.deepEqual(new StageThreeBatchSourceObserver().observe(source, module.currentPath).topLevelEffects,
-          new StageThreeReviewedTopLevelFunctions().review({ source, currentPath: module.currentPath,
-            names: contract.topLevelFunctions || [] }).sort());
+          [...new StageThreeReviewedTopLevelFunctions().review({ source, currentPath: module.currentPath,
+            names: contract.topLevelFunctions || [] }),
+          ...(contract.literalConstants ? new StageThreeReviewedLiteralConstants().review({ source,
+            currentPath: module.currentPath, names: contract.literalConstants }) : [])].sort());
         review = { kind: "effect-free", currentPath: module.currentPath, sourceSha256: sha(source),
-          ...(contract.topLevelFunctions ? { topLevelFunctions: contract.topLevelFunctions } : {}) };
+          ...(contract.topLevelFunctions ? { topLevelFunctions: contract.topLevelFunctions } : {}),
+          ...(contract.literalConstants ? { literalConstants: contract.literalConstants } : {}) };
       } else {
         assert(frozen, `Missing frozen effect review: ${module.targetPath}`);
         review = contract.kind === "guarded-window-class-exposure"

@@ -138,10 +138,15 @@ class StageThreeApprovedPlanSource {
   // foundation records as frozen, earlier-batch records through the exact activation of the
   // earlier batch.
   static resolvedImportRecords(document, batch) {
+    // An earlier-batch import naming several legacy symbols of one module (batch 045+) becomes one
+    // record per symbol, each resolved through its own exact activation.
     return (batch.imports || []).filter(record =>
       ["completed-prefix", "earlier-batch", "foundation"].includes(record.resolution))
-      .map(record => record.resolution === "earlier-batch"
-        ? StageThreeApprovedPlanSource.#earlierBatchImport(document, record) : record);
+      .flatMap(record => record.resolution === "earlier-batch"
+        ? (Array.isArray(record.legacySymbols) && record.legacySymbols.length > 1
+          ? record.legacySymbols.map(symbol => ({ ...record, legacySymbols: [symbol] })) : [record])
+          .map(single => StageThreeApprovedPlanSource.#earlierBatchImport(document, single))
+        : [record]);
   }
 
   static reviewedImports(document, batchIds) {

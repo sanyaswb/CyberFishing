@@ -11,6 +11,7 @@ const { beforeBatchObservations } = require("./observation_transition");
 const { reviewedTargetEvaluation } = require("./target_evaluation");
 const { PATHS } = require("../../domain_batches/stage_three_live_preflight");
 const { RetiredActivationPlaceholder } = require("../../../build/compat_runtime/activation_retirement");
+const { ActivationShimRenderer } = require("../../../build/compat_runtime/activation_shim");
 const { CumulativeLiveActivationProbe } = require("../../domain_batches/cumulative_live_activation_probe");
 const { EagerClassModuleEvaluationProbe } = require("../../domain_batches/eager_class_module_evaluation_probe");
 const { StageThreeBatchSourceObserver } = require("../../domain_batches/stage_three_batch_source_observer");
@@ -69,11 +70,26 @@ class StageThreeBatchLiveValidation {
     // workspaces have no split slots and therefore legitimately have no registry file.
     const slotSplits = fs.existsSync(path.join(this.root, LEGACY_SLOT_SPLITS))
       ? this.json(LEGACY_SLOT_SPLITS).splits : [];
+    // A shared source (batch 045) keeps exactly the shims of its still-active activations and its slot.
+    const sharedSources = new Set(retired.filter(activation => runtime.activationPositions
+      .some(item => item.sourceProvider === activation.sourceProvider)).map(activation => activation.sourceProvider));
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retired)) {
+      if (sharedSources.has(sourceProvider)) {
+        assert.equal(this.bytes(sourceProvider).toString("utf8"), runtime.activationPositions
+          .filter(item => item.sourceProvider === sourceProvider)
+          .map(item => new ActivationShimRenderer().render(item, runtime.transport.symbol)).join(""),
+        `Shared source shim differs after partial retirement: ${sourceProvider}`);
+        continue;
+      }
       new RetiredActivationPlaceholder().validateProvider({
         code: this.bytes(sourceProvider).toString("utf8"), activations });
     }
     const retiredActivations = retired.map(activation => {
+      if (sharedSources.has(activation.sourceProvider)) {
+        assert(!html.includes(activation.shimFile), `Retired shim is still loaded: ${activation.id}`);
+        assert(!fs.existsSync(path.join(this.root, runtime.output.directory + activation.shimFile)));
+        return { id: activation.id, legacySymbol: activation.legacySymbol, sourceProvider: activation.sourceProvider };
+      }
       const split = slotSplits.find(record => record.slot === activation.legacyScriptIndex &&
         record.members.includes(activation.sourceProvider));
       const providerTag = split

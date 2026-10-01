@@ -74,9 +74,16 @@ class ActivationRetirementFixtures {
 
   placeholder() {
     const placeholder = new RetiredActivationPlaceholder();
-    // A classic source holds one placeholder line per retired activation it served.
-    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(this.retired.map(item => item.activation))) {
+    // A classic source holds one placeholder line per retired activation it served; a shared-source
+    // retirement (batch 045) leaves the source as the shim of its still-active activations instead.
+    const inert = this.retired.filter(record => record.placeholder === "inert-classic-position");
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(inert.map(item => item.activation))) {
       placeholder.validateProvider({ code: fs.readFileSync(path.join(this.root, sourceProvider), "utf8"), activations });
+    }
+    for (const record of this.retired.filter(item => item.placeholder === "shared-source-line-removed")) {
+      const code = fs.readFileSync(path.join(this.root, record.activation.sourceProvider), "utf8");
+      assert(!code.includes(`globalThis.${record.activation.legacySymbol} =`), `shared source still publishes ${record.activation.id}`);
+      assert(this.runtime.activationPositions.some(item => item.sourceProvider === record.activation.sourceProvider));
     }
     for (const record of this.retired) {
       const activation = record.activation;
@@ -105,7 +112,7 @@ class ActivationRetirementFixtures {
   }
 
   // A classic source that served several activations retires as a whole: one placeholder line per
-  // activation, one restored classic tag, and no partial retirement of the source.
+  // activation and one restored classic tag; a partial retirement removes only the retired shim (batch 045).
   sharedSource() {
     const byProvider = new Map();
     for (const activation of this.runtime.activationPositions) {
@@ -128,10 +135,22 @@ class ActivationRetirementFixtures {
     assert.equal(projection.index(html, directory, [...shared].reverse()),
       `<head>\n  <script src="a.js"></script>\n  <script src="${shared[0].sourceProvider}"></script>\n` +
       "  <script src=\"b.js\"></script>\n</head>\n");
-    assert.throws(() => projection.contract(this.runtime, shared.slice(1), "fixture"), /same source/u);
     const retired = projection.contract(this.runtime, shared, "fixture");
     assert(shared.every(activation => !retired.activationPositions.some(item => item.id === activation.id)));
-    return 6;
+    assert(retired.retiredActivations.filter(record => record.retiredBy === "fixture")
+      .every(record => record.placeholder === "inert-classic-position"));
+    // Since batch 045 a source may lose one activation while the others stay active: that record is a
+    // shared-source line removal, and only the retired shim tag leaves the index.
+    const partial = projection.contract(this.runtime, shared.slice(1), "fixture");
+    assert(partial.activationPositions.some(item => item.id === shared[0].id));
+    assert(partial.retiredActivations.filter(record => record.retiredBy === "fixture")
+      .every(record => record.placeholder === "shared-source-line-removed"));
+    const sharedSources = ActivationRetirementProjection.sharedSources(this.runtime, shared.slice(1));
+    assert.deepEqual([...sharedSources], [shared[0].sourceProvider]);
+    assert.equal(projection.index(html, directory, shared.slice(1), sharedSources),
+      `<head>\n  <script src="a.js"></script>\n  ${tags[0]}\n  <script src="b.js"></script>\n</head>\n`);
+    assert.equal(ActivationRetirementProjection.sharedSources(this.runtime, shared).size, 0);
+    return 9;
   }
 
   // Only activations whose every holding bridge is migrated by the batch may retire.

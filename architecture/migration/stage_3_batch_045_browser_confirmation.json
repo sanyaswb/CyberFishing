@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-045-browser-confirmation",
+  "batchId": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+  "releaseVersion": "0.24.82",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-10-01T18:41:57.384Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, owner away): node utils/game-cycle-check.js exit 0 without seals, output byte-identical before and after the cutover; built-in browser load: 134 runtime modules, EquipmentState and EquipmentLoadout globals identical to their ESM exports, LOADOUT_DISPLAY_NAME exported only (Комплект), EQUIPMENT_AUXILIARY_SLOT_IDS no longer published while the other four catalog globals stay, 1 canvas.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_045_acceptance_pass.json",
+    "sha256": "8c8859b72a066da8c2894c33f7595001143711b873ea38a93585b1f147219cbe"
+  },
+  "historicalSummaryPreserved": true
+}

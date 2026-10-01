@@ -54,7 +54,8 @@ class StageThreeCompatibilityTestLoader {
       const renderer = new ActivationShimRenderer();
       const code = retired.map((activation) => renderer.render(activation, this.#contract.transport.symbol)).join("");
       vm.runInContext(code, this.#context, { filename: `test-only-retired:${relativePath}` });
-      return relativePath;
+      // A shared source (batch 045) also keeps active activations: load them below as usual.
+      if (!this.#activationBySource.has(relativePath)) return relativePath;
     }
     const activations = this.#activationBySource.get(relativePath) || [];
     if (activations.length > 0) this.#loadRuntime();

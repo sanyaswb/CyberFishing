@@ -55,8 +55,10 @@ class StageThreeCandidateWorkspace {
     for (const [provider, shims] of byProvider) {
       this.write(provider, shims.join(""));
     }
+    // A shared source keeps the shims of its active activations written above.
+    const shared = ActivationRetirementProjection.sharedSources(runtime, retiredActivations);
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(retiredActivations)) {
-      this.write(sourceProvider, new RetiredActivationPlaceholder().renderProvider(activations));
+      if (!shared.has(sourceProvider)) this.write(sourceProvider, new RetiredActivationPlaceholder().renderProvider(activations));
     }
     const pending = new PendingTargetManifestTransition({
       policy: app.json("architecture/module_architecture.json"), prebuild,
@@ -76,7 +78,7 @@ class StageThreeCandidateWorkspace {
     }));
     this.write(PATHS.approvedPlan, app.bytes(PATHS.approvedPlan));
     for (const reference of plan.references) this.write(reference.path, app.bytes(reference.path));
-    const html = retirement.index(app.read(PATHS.index), runtime.output.directory, retiredActivations);
+    const html = retirement.index(app.read(PATHS.index), runtime.output.directory, retiredActivations, shared);
     assert.equal((html.match(/compat_runtime\.iife\.js/gu) || []).length, 1);
     this.write(PATHS.index, html);
     this.write("dist/stage-3-compat-runtime/previous-validated-output.txt", "previous validated output sentinel\n");

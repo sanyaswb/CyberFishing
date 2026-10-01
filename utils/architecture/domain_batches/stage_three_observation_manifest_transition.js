@@ -102,6 +102,21 @@ class StageThreeObservationManifestTransition {
       assert(placeholder && previous, "Missing retired placeholder record");
       assert.deepEqual(placeholder.architecture, previous.architecture, "Retired placeholder classification changed");
       assert.equal(placeholder.observed.legacyLoadOrder, activation.legacyScriptIndex);
+      // A shared source (batch 045) stays the exact shim of its still-active activations.
+      const remaining = this.runtime.activationPositions.filter(item => item.sourceProvider === activation.sourceProvider);
+      if (remaining.length > 0) {
+        const transport = { symbol: this.runtime.transport.symbol, mechanism: "global-this-property",
+          accessRequirement: "required", executionPhase: "eager" };
+        assert.deepEqual(placeholder.observed.providers, { status: "verified", issues: [], items: remaining.map(item => ({
+          symbol: item.legacySymbol, mechanism: "global-this-property", availability: "program-init",
+        })).sort((left, right) => left.symbol.localeCompare(right.symbol)) });
+        assert.deepEqual(placeholder.observed.consumers, { status: "verified", items: [transport], issues: [] });
+        assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: ["globalThis"],
+          browserApis: [], dynamicConstructs: [], issues: [] });
+        assert.deepEqual(placeholder.analysis.dependencies, { status: "verified", confirmed: [], items: [],
+          unresolved: [{ ...transport, resolution: "unresolved" }], ambiguous: [], issues: [] });
+        continue;
+      }
       assert.deepEqual(placeholder.observed.providers, empty());
       assert.deepEqual(placeholder.observed.consumers, empty());
       assert.deepEqual(placeholder.observed.environment, { status: "verified", builtins: [], browserApis: [],

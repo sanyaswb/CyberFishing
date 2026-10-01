@@ -163,26 +163,6 @@
       ]
     },
     {
-      "id": "bridge-1299ad9a2b2d",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/loadouts/equipment_loadout.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-145734990113",
       "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
       "source": "src/app/bootstrap.js",
@@ -1023,6 +1003,22 @@
       ]
     },
     {
+      "id": "bridge-4f68e27e6b7b",
+      "bridge": "src/core/loadouts/equipment_loadout.js",
+      "source": "src/application/inventory/loadout_application_service.js",
+      "target": "src/game/domain/loadouts/equipment_loadout.js",
+      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentLoadout",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-5021e2c92869",
       "bridge": "src/core/items/progression/target_range_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1098,6 +1094,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-551355d4d947",
+      "bridge": "src/core/loadouts/equipment_loadout.js",
+      "source": "src/core/loadouts/equipment_loadout_repository.js",
+      "target": "src/game/domain/loadouts/equipment_loadout.js",
+      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentLoadout",
           "mechanism": "global-this-property"
         }
       ]
@@ -1231,6 +1243,22 @@
       ]
     },
     {
+      "id": "bridge-636ce7883f6f",
+      "bridge": "src/core/equipment/equipment_state.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/equipment/equipment_state.js",
+      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentState",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-63afd58b4545",
       "bridge": "src/core/fishing/reel_auto_recovery_calculator.js",
       "source": "src/systems/reel_system.js",
@@ -1290,6 +1318,22 @@
       "globalProviders": [
         {
           "symbol": "ItemFreshnessResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-64632d0e888b",
+      "bridge": "src/core/equipment/equipment_state.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/equipment_state.js",
+      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentState",
           "mechanism": "global-this-property"
         }
       ]
@@ -1750,6 +1794,22 @@
       "globalProviders": [
         {
           "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-85ff03affd96",
+      "bridge": "src/core/loadouts/equipment_loadout.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/domain/loadouts/equipment_loadout.js",
+      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentLoadout",
           "mechanism": "global-this-property"
         }
       ]
@@ -2770,26 +2830,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ddd9f08863d4",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/equipment_state.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
           "mechanism": "global-this-property"
         }
       ]

@@ -101,8 +101,12 @@ class StageThreeBatchObservationReconciliation {
       removedSymbols.push({ symbol: activation.legacySymbol, source: activation.sourceProvider, consumers: 0,
         reason: "retired-activation-all-listed-legacy-consumers-migrated" });
     }
+    // A shared source (batch 045) keeps exactly the providers of its still-active activations.
     for (const source of retiredSources) {
-      assert.deepEqual(source.observed.providers.items, [], `Retired source keeps a classic provider: ${source.currentPath}`);
+      const remaining = inputs.runtime.activationPositions.filter(item => item.sourceProvider === source.currentPath)
+        .map(item => item.legacySymbol).sort();
+      assert.deepEqual(source.observed.providers.items.map(provider => provider.symbol).sort(), remaining,
+        `Retired source keeps a classic provider: ${source.currentPath}`);
     }
     assert.deepEqual(providers(result.manifest), providers(expectedManifest),
       "Unexpected global namespace change");
