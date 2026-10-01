@@ -579,6 +579,22 @@
       ]
     },
     {
+      "id": "bridge-32ecd6bd8f9d",
+      "bridge": "src/core/loadouts/equipment_loadout_repository.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "reason": "Preserve the exact equipment loadout repository consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-350.batch-049-loadouts-8df79db8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentLoadoutRepository",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-33d4356e3078",
       "bridge": "src/core/equipment/equipment_compatibility_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1026,22 +1042,6 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-551355d4d947",
-      "bridge": "src/core/loadouts/equipment_loadout.js",
-      "source": "src/core/loadouts/equipment_loadout_repository.js",
-      "target": "src/game/domain/loadouts/equipment_loadout.js",
-      "reason": "Preserve the exact equipment state and loadout consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "EquipmentLoadout",
           "mechanism": "global-this-property"
         }
       ]
@@ -2650,6 +2650,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d2cb57446440",
+      "bridge": "src/core/loadouts/equipment_loadout_repository.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "reason": "Preserve the exact equipment loadout repository consumers until their legacy symbol is removed.",
+      "owner": "stage-3.replan-350.batch-049-loadouts-8df79db8",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentLoadoutRepository",
           "mechanism": "global-this-property"
         }
       ]

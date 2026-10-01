@@ -1566,6 +1566,18 @@
       "removalStage": "stage-3"
     },
     {
+      "id": "activation-cc1097105d17",
+      "owner": "stage-3.replan-350.batch-049-loadouts-8df79db8",
+      "sourceProvider": "src/core/loadouts/equipment_loadout_repository.js",
+      "targetModule": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "exportName": "EquipmentLoadoutRepository",
+      "legacySymbol": "EquipmentLoadoutRepository",
+      "legacyScriptIndex": 169,
+      "shimFile": "activations/169_equipmentloadoutrepository.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ccddea60d16c",
       "owner": "stage-3.candidate-007-fishing-bb8b3939",
       "sourceProvider": "src/core/fishing/simple_fight_force_calculator.js",

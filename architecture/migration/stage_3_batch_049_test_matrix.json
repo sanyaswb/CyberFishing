@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-350.batch-049-loadouts-8df79db8",
+  "sourceReleaseVersion": "0.24.86",
+  "targetReleaseVersion": "0.24.87",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_049_execution_plan.json",
+    "sha256": "ee77b8e792753a7d6182de54d9cba3bdd3d4207e3019e9820f52944db9c51060"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 2
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/EquipmentLoadoutRepository/loadout-store-add-remove-find-and-snapshot-restore",
+      "kind": "behavior-equivalence",
+      "exportName": "EquipmentLoadoutRepository",
+      "currentPath": "src/core/loadouts/equipment_loadout_repository.js",
+      "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "baselineSourceSha256": "709de0de6d9c65ffb259c33a9a9ef425f9e85d44f8c50160225b0335d6bd42a2",
+      "caseName": "loadout-store-add-remove-find-and-snapshot-restore",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-one-exact-export",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-one-exact-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-completed-prefix-import-bound-to-the-cumulative-instance",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-completed-prefix-import-bound-to-the-cumulative-instance",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-reviewed-global-this-exposure-moved-to-the-activation-shim",
+      "kind": "compatibility-invariant",
+      "caseName": "one-reviewed-global-this-exposure-moved-to-the-activation-shim",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-activation-at-its-legacy-position",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-activation-at-its-legacy-position",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/two-exact-classic-consumer-relationships-and-one-retired-bridge",
+      "kind": "compatibility-invariant",
+      "caseName": "two-exact-classic-consumer-relationships-and-one-retired-bridge",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "EquipmentLoadoutRepository",
+      "caseCount": 1,
+      "cases": [
+        "loadout-store-add-remove-find-and-snapshot-restore"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 2,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.50.0-live-observation-and-stage-3.50-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_049_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/loadouts/equipment_loadout_repository.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/loadouts/equipment_loadout_repository.js",
+          "authoritativeOwners": [
+            "EquipmentLoadoutRepository#add",
+            "EquipmentLoadoutRepository#get",
+            "EquipmentLoadoutRepository#has",
+            "EquipmentLoadoutRepository#list",
+            "EquipmentLoadoutRepository#loadouts",
+            "EquipmentLoadoutRepository#require",
+            "EquipmentLoadoutRepository#toSnapshot"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/loadouts/equipment_loadout_repository.js",
+          "authoritativeOwners": [
+            "EquipmentLoadoutRepository#add",
+            "EquipmentLoadoutRepository#get",
+            "EquipmentLoadoutRepository#has",
+            "EquipmentLoadoutRepository#list",
+            "EquipmentLoadoutRepository#loadouts",
+            "EquipmentLoadoutRepository#require",
+            "EquipmentLoadoutRepository#toSnapshot"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "7d28435a5f69942934f26065cce24376f63f12df0c39b0ae785292cfc7ecc3ce",
+        "allocationBaseline": {
+          "objectExpressions": 2,
+          "arrayExpressions": 4,
+          "newExpressions": 7,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.50.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

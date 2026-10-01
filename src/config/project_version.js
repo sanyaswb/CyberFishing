@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.86";
+const CURRENT_PROJECT_VERSION = "0.24.87";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "equipment-compatibility-policy-domain",
+  codename: "equipment-loadout-repository-domain",
   updatedAt: "2026-10-01",
   notes: Object.freeze([
-    "Migrate the equipment compatibility policy with its reviewed global exposure",
-    "Import the slot catalog, slot visibility, terminal-line and rod capability collaborators",
-    "Preserve one hundred forty-two project modules, one hundred thirty-two active activations and one hundred ninety-seven bridges",
+    "Adopt the Stage 3.50.0 repeated review",
+    "Migrate the equipment loadout repository with its reviewed loadout map and global exposure",
+    "Preserve one hundred forty-three project modules, one hundred thirty-three active activations and one hundred ninety-eight bridges",
   ]),
 });
 

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-049-browser-confirmation",
+  "batchId": "stage-3.replan-350.batch-049-loadouts-8df79db8",
+  "releaseVersion": "0.24.86",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-10-01T23:23:38.210Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute): game-cycle re-executed without seals, exit 0, 217-line output byte-identical to the pre-cutover run; game loaded in the built-in browser: EquipmentLoadoutRepository global identical to the runtime ESM export (reviewed global-this exposure now served by the activation shim), EquipmentLoadout kept, 143 runtime modules, canvas present; console errors 0, warnings 0.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_049_acceptance_pass.json",
+    "sha256": "993bc5e8543252d8add2e839ff0fa53674aea75ee8606636dd650add6c20b840"
+  },
+  "historicalSummaryPreserved": true
+}

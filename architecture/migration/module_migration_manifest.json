@@ -22924,11 +22924,6 @@
           "items": [
             {
               "symbol": "EquipmentLoadoutRepository",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EquipmentLoadoutRepository",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -22939,10 +22934,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EquipmentLoadout",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -22950,8 +22945,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Map",
-            "RangeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -22962,7 +22955,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
@@ -22971,26 +22964,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "EquipmentLoadout",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/loadouts/equipment_loadout.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/loadouts/equipment_loadout.js",
-              "symbols": [
-                "EquipmentLoadout"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -41725,6 +41709,56 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/loadouts/equipment_loadout.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "currentArea": "game/domain/loadouts",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Map",
+            "RangeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/loadouts/equipment_loadout_repository.js",
         "migrationWave": 1
       },
       "analysis": {

@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.24.87 - Equipment Loadout Repository Domain
+
+### Changed
+
+- Migrated EquipmentLoadoutRepository to the loadouts Domain (Stage 3.50.0 repeated review adopted); saved loadouts are unchanged.
+
 ## v0.24.86 - Equipment Compatibility Policy Domain
 
 ### Changed
