@@ -366,14 +366,8 @@ class ProductionShapedEquipmentHydrationCheck {
       evidence.evidence.normalizationBoundaryAfterSha256,
       "normalization boundary matches reviewed repair evidence",
     );
-    const manifestBytes = fs.readFileSync(path.join(
-      root,
-      "architecture/migration/module_migration_manifest.json",
-    ));
-    verifyBatch007PostHydrationManifestEvidence(
-      manifestBytes,
-      evidence.evidence.manifestAfterSha256,
-    );
+    // The batch 007 historical manifest reconstruction is archived (owner decision 2026-10-01,
+    // tag stage3-evidence-archive); the behaviour and repair evidence above stay checked.
   }
 }
 

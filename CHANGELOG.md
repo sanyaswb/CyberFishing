@@ -1,5 +1,16 @@
 # CyberFishing changelog
 
+## v0.24.80 - Equipment Slot Catalog Domain
+
+### Changed
+
+- Migrated the equipment slot catalog source with five named ESM exports; the persisted slot ids and frozen tables are unchanged.
+- Added the reviewed frozenDataConstants shape to the shared Stage 3 batch tooling for data sources made only of deeply frozen tables.
+- Added fifteen exact classic consumer bridges and five activations at legacy slot 30.
+- Extended the cumulative runtime from 124 to 125 project modules and the active activation set from 118 to 123 contracts, with 196 exact bridge relationships.
+- Correction: batch 039 browser acceptance was the automated substitute, not the owner; the browser-acceptance step now requires an explicit --performed-by basis.
+- The next task is batch 043 preflight.
+
 ## v0.24.79 - Landing Policy Domain
 
 ### Changed

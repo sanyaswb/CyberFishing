@@ -1,0 +1,566 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-042-side-effect-review",
+  "batchId": "stage-3.replan-342.batch-042-equipment-6f782961",
+  "stage": "3.43.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.79",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+      "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+    },
+    {
+      "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+      "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+    },
+    {
+      "path": "architecture/migration/stage_3_42_graph_review/approved_prefix.json",
+      "sha256": "dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "7fc7b955e47e10085586ccaa3810ada230bb047749cde83114af022993cdf692"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "sourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "contract": {
+        "kind": "frozen-data-constants",
+        "bindings": {
+          "EquipmentSlotId": {
+            "location": "7:25",
+            "values": {
+              "ROD": "rod",
+              "REEL": "reel",
+              "TERMINAL_LINE": "terminalLine",
+              "TACKLE": "tackle",
+              "FLOAT": "float",
+              "HAND_CHUM": "handChum",
+              "NET": "net",
+              "DELIVERY": "delivery",
+              "GAS_MASK": "gasMask"
+            }
+          },
+          "EQUIPMENT_MAIN_SLOT_IDS": {
+            "location": "19:33",
+            "values": [
+              "rod",
+              "reel",
+              "terminalLine",
+              "tackle",
+              "float"
+            ]
+          },
+          "EQUIPMENT_AUXILIARY_SLOT_IDS": {
+            "location": "27:38",
+            "values": [
+              "handChum",
+              "net",
+              "delivery",
+              "gasMask"
+            ]
+          },
+          "EQUIPMENT_ALL_SLOT_IDS": {
+            "location": "34:32",
+            "values": [
+              "rod",
+              "reel",
+              "terminalLine",
+              "tackle",
+              "float",
+              "handChum",
+              "net",
+              "delivery",
+              "gasMask"
+            ]
+          },
+          "EQUIPMENT_SLOT_CONFIG": {
+            "location": "39:31",
+            "values": {
+              "rod": {
+                "id": "rod",
+                "group": "main",
+                "visibility": "always",
+                "acceptTypes": [
+                  "rod"
+                ]
+              },
+              "reel": {
+                "id": "reel",
+                "group": "main",
+                "visibility": "supportsReel",
+                "acceptTypes": [
+                  "reel"
+                ]
+              },
+              "terminalLine": {
+                "id": "terminalLine",
+                "group": "main",
+                "visibility": "rodSelected",
+                "acceptTypes": [
+                  "fishing_line",
+                  "leader_line"
+                ]
+              },
+              "tackle": {
+                "id": "tackle",
+                "group": "main",
+                "visibility": "rodSelected",
+                "acceptTypes": [
+                  "hook",
+                  "feeder_rig",
+                  "lure"
+                ]
+              },
+              "float": {
+                "id": "float",
+                "group": "main",
+                "visibility": "supportsFloat",
+                "acceptTypes": [
+                  "float"
+                ]
+              },
+              "handChum": {
+                "id": "handChum",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "chum_mix"
+                ]
+              },
+              "net": {
+                "id": "net",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "net"
+                ]
+              },
+              "delivery": {
+                "id": "delivery",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "boat",
+                  "chum_delivery"
+                ]
+              },
+              "gasMask": {
+                "id": "gasMask",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "gas_mask"
+                ],
+                "locked": true
+              }
+            }
+          }
+        }
+      },
+      "review": {
+        "kind": "frozen-data-constants",
+        "currentPath": "src/config/inventory/equipment_slot_config.js",
+        "sourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+        "bindings": {
+          "EquipmentSlotId": {
+            "location": "7:25",
+            "values": {
+              "ROD": "rod",
+              "REEL": "reel",
+              "TERMINAL_LINE": "terminalLine",
+              "TACKLE": "tackle",
+              "FLOAT": "float",
+              "HAND_CHUM": "handChum",
+              "NET": "net",
+              "DELIVERY": "delivery",
+              "GAS_MASK": "gasMask"
+            }
+          },
+          "EQUIPMENT_MAIN_SLOT_IDS": {
+            "location": "19:33",
+            "values": [
+              "rod",
+              "reel",
+              "terminalLine",
+              "tackle",
+              "float"
+            ]
+          },
+          "EQUIPMENT_AUXILIARY_SLOT_IDS": {
+            "location": "27:38",
+            "values": [
+              "handChum",
+              "net",
+              "delivery",
+              "gasMask"
+            ]
+          },
+          "EQUIPMENT_ALL_SLOT_IDS": {
+            "location": "34:32",
+            "values": [
+              "rod",
+              "reel",
+              "terminalLine",
+              "tackle",
+              "float",
+              "handChum",
+              "net",
+              "delivery",
+              "gasMask"
+            ]
+          },
+          "EQUIPMENT_SLOT_CONFIG": {
+            "location": "39:31",
+            "values": {
+              "rod": {
+                "id": "rod",
+                "group": "main",
+                "visibility": "always",
+                "acceptTypes": [
+                  "rod"
+                ]
+              },
+              "reel": {
+                "id": "reel",
+                "group": "main",
+                "visibility": "supportsReel",
+                "acceptTypes": [
+                  "reel"
+                ]
+              },
+              "terminalLine": {
+                "id": "terminalLine",
+                "group": "main",
+                "visibility": "rodSelected",
+                "acceptTypes": [
+                  "fishing_line",
+                  "leader_line"
+                ]
+              },
+              "tackle": {
+                "id": "tackle",
+                "group": "main",
+                "visibility": "rodSelected",
+                "acceptTypes": [
+                  "hook",
+                  "feeder_rig",
+                  "lure"
+                ]
+              },
+              "float": {
+                "id": "float",
+                "group": "main",
+                "visibility": "supportsFloat",
+                "acceptTypes": [
+                  "float"
+                ]
+              },
+              "handChum": {
+                "id": "handChum",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "chum_mix"
+                ]
+              },
+              "net": {
+                "id": "net",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "net"
+                ]
+              },
+              "delivery": {
+                "id": "delivery",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "boat",
+                  "chum_delivery"
+                ]
+              },
+              "gasMask": {
+                "id": "gasMask",
+                "group": "auxiliary",
+                "visibility": "always",
+                "acceptTypes": [
+                  "gas_mask"
+                ],
+                "locked": true
+              }
+            }
+          }
+        },
+        "freezeCallLocations": [
+          "19:33",
+          "27:38",
+          "34:32",
+          "39:31",
+          "40:26",
+          "44:18",
+          "46:27",
+          "50:18",
+          "52:36",
+          "56:18",
+          "58:29",
+          "62:18",
+          "68:28",
+          "72:18",
+          "74:32",
+          "78:18",
+          "7:25",
+          "80:26",
+          "84:18",
+          "86:31",
+          "90:18",
+          "92:31",
+          "96:18"
+        ],
+        "topLevelStatementCount": 5,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "0c81e42487019a4ab9c2ed5b1c578289675aa29dbae3fcb4aeb6c3ec0cf0fde5",
+      "frozenObservations": [
+        {
+          "kind": "call",
+          "location": "19:33",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "27:38",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "34:32",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "39:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "40:26",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "44:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "46:27",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "50:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "52:36",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "56:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "58:29",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "62:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "68:28",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "72:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "74:32",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "78:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "7:25",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "80:26",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "84:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "86:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "90:18",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "92:31",
+          "classification": "observable"
+        },
+        {
+          "kind": "call",
+          "location": "96:18",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-0c061ffb07d6",
+          "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+          "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+          "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "exportName": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "legacySymbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "legacyScriptIndex": 30,
+          "shimFile": "activations/030_equipment_auxiliary_slot_ids.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-177bcf26ae86",
+          "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+          "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+          "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "exportName": "EQUIPMENT_SLOT_CONFIG",
+          "legacySymbol": "EQUIPMENT_SLOT_CONFIG",
+          "legacyScriptIndex": 30,
+          "shimFile": "activations/030_equipment_slot_config.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-3c14e876e15d",
+          "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+          "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+          "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "exportName": "EquipmentSlotId",
+          "legacySymbol": "EquipmentSlotId",
+          "legacyScriptIndex": 30,
+          "shimFile": "activations/030_equipmentslotid.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-58caa603fdd9",
+          "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+          "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+          "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "exportName": "EQUIPMENT_MAIN_SLOT_IDS",
+          "legacySymbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "legacyScriptIndex": 30,
+          "shimFile": "activations/030_equipment_main_slot_ids.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        },
+        {
+          "id": "activation-bc66e23232d8",
+          "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+          "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+          "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "exportName": "EQUIPMENT_ALL_SLOT_IDS",
+          "legacySymbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "legacyScriptIndex": 30,
+          "shimFile": "activations/030_equipment_all_slot_ids.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEvaluations": [
+    {
+      "module": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "fc85c28bd53aefe2de887f37fa75e9b1dab780c64c35c824120c493f61d53254",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "19:40"
+        },
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "27:45"
+        },
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "34:39"
+        },
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "39:38"
+        },
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "7:32"
+        }
+      ],
+      "exactEffect": "23 Object.freeze calls build 5 deeply frozen data tables from literals and earlier bindings of the same module; no external state read or global write"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.43.0-live-preflight-and-graph-audit"
+}

@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-342.batch-042-equipment-6f782961",
+  "sourceReleaseVersion": "0.24.79",
+  "targetReleaseVersion": "0.24.80",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_042_execution_plan.json",
+    "sha256": "6a1ec4a62ddc05875a566f496a3d7a672aad5d7cee12c28ecc3b48bf24706ff6"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 5,
+    "activationCount": 5,
+    "consumerRelationshipCount": 15
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/EQUIPMENT_ALL_SLOT_IDS/all-slot-order-main-then-auxiliary",
+      "kind": "behavior-equivalence",
+      "exportName": "EQUIPMENT_ALL_SLOT_IDS",
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "baselineSourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "caseName": "all-slot-order-main-then-auxiliary",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EQUIPMENT_AUXILIARY_SLOT_IDS/auxiliary-slot-order-and-frozen-array",
+      "kind": "behavior-equivalence",
+      "exportName": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "baselineSourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "caseName": "auxiliary-slot-order-and-frozen-array",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EQUIPMENT_MAIN_SLOT_IDS/main-slot-order-and-frozen-array",
+      "kind": "behavior-equivalence",
+      "exportName": "EQUIPMENT_MAIN_SLOT_IDS",
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "baselineSourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "caseName": "main-slot-order-and-frozen-array",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EQUIPMENT_SLOT_CONFIG/slot-table-groups-visibility-accept-types-and-lock",
+      "kind": "behavior-equivalence",
+      "exportName": "EQUIPMENT_SLOT_CONFIG",
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "baselineSourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "caseName": "slot-table-groups-visibility-accept-types-and-lock",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/EquipmentSlotId/persisted-slot-id-values-and-frozen-enum",
+      "kind": "behavior-equivalence",
+      "exportName": "EquipmentSlotId",
+      "currentPath": "src/config/inventory/equipment_slot_config.js",
+      "targetPath": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "baselineSourceSha256": "b64766608f6aabfd592459ec7a2f8f19a1fbf78035b9c0eac31f3e21e67e6a82",
+      "caseName": "persisted-slot-id-values-and-frozen-enum",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-five-exact-exports",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-five-exact-exports",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-with-the-reviewed-frozen-data-tables-only",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-with-the-reviewed-frozen-data-tables-only",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/five-exact-classic-activations-at-their-legacy-positions",
+      "kind": "compatibility-invariant",
+      "caseName": "five-exact-classic-activations-at-their-legacy-positions",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/fifteen-exact-classic-consumer-relationships",
+      "kind": "compatibility-invariant",
+      "caseName": "fifteen-exact-classic-consumer-relationships",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "EQUIPMENT_ALL_SLOT_IDS",
+      "caseCount": 1,
+      "cases": [
+        "all-slot-order-main-then-auxiliary"
+      ]
+    },
+    {
+      "exportName": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+      "caseCount": 1,
+      "cases": [
+        "auxiliary-slot-order-and-frozen-array"
+      ]
+    },
+    {
+      "exportName": "EQUIPMENT_MAIN_SLOT_IDS",
+      "caseCount": 1,
+      "cases": [
+        "main-slot-order-and-frozen-array"
+      ]
+    },
+    {
+      "exportName": "EQUIPMENT_SLOT_CONFIG",
+      "caseCount": 1,
+      "cases": [
+        "slot-table-groups-visibility-accept-types-and-lock"
+      ]
+    },
+    {
+      "exportName": "EquipmentSlotId",
+      "caseCount": 1,
+      "cases": [
+        "persisted-slot-id-values-and-frozen-enum"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 15,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.42.0-live-observation-and-stage-3.42-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_042_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/config/inventory/equipment_slot_config.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/config/inventory/equipment_slot_config.js",
+          "authoritativeOwners": []
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "authoritativeOwners": []
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "7d58189124f7197178892ebbd1e9eb148ab1bdc9f9b52c419c6390e6f2339715",
+        "allocationBaseline": {
+          "objectExpressions": 0,
+          "arrayExpressions": 0,
+          "newExpressions": 0,
+          "objectFreezeCalls": 0,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.43.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

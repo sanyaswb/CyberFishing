@@ -163,6 +163,26 @@
       ]
     },
     {
+      "id": "bridge-1299ad9a2b2d",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/loadouts/equipment_loadout.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-145734990113",
       "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
       "source": "src/app/bootstrap.js",
@@ -174,6 +194,22 @@
       "globalProviders": [
         {
           "symbol": "BaitFreshnessModifier",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-147d6cace9f9",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/fishing_readiness_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentSlotId",
           "mechanism": "global-this-property"
         }
       ]
@@ -406,6 +442,30 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-24a053ebadb8",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -843,6 +903,26 @@
       ]
     },
     {
+      "id": "bridge-4c14b57df8d8",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-4c97028596c9",
       "bridge": "src/core/equipment/rod_capability_resolver.js",
       "source": "src/core/equipment/equipment_compatibility_policy.js",
@@ -870,6 +950,42 @@
       "globalProviders": [
         {
           "symbol": "LineAllocationPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-4e3ebadf8b3a",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-4e502cbad3d4",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EquipmentSlotId",
           "mechanism": "global-this-property"
         }
       ]
@@ -1243,6 +1359,22 @@
       ]
     },
     {
+      "id": "bridge-691e8a5b2dc1",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/terminal_line_slot_resolver.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentSlotId",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-69e08a840e34",
       "bridge": "src/core/items/progression/item_progression_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -1406,6 +1538,26 @@
       "globalProviders": [
         {
           "symbol": "RodStrokeTracker",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-71b223bc178a",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
           "mechanism": "global-this-property"
         }
       ]
@@ -1603,6 +1755,22 @@
       ]
     },
     {
+      "id": "bridge-84f91b03422f",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8654ddb73e7e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/fishing/line_visual_state_controller.js",
@@ -1678,6 +1846,22 @@
       "globalProviders": [
         {
           "symbol": "FishRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8f5ad06b2f6f",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
           "mechanism": "global-this-property"
         }
       ]
@@ -1822,6 +2006,26 @@
       "globalProviders": [
         {
           "symbol": "LandingLiftReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9bbb538cc1b6",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2555,6 +2759,26 @@
       ]
     },
     {
+      "id": "bridge-ddd9f08863d4",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/equipment_state.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_AUXILIARY_SLOT_IDS",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ddf61a64424b",
       "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
       "source": "src/systems/inventory_system.js",
@@ -2635,6 +2859,22 @@
       ]
     },
     {
+      "id": "bridge-e6bc462714e6",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ea578f08c07c",
       "bridge": "src/app/rules.js",
       "source": "src/app/bootstrap.js",
@@ -2670,6 +2910,22 @@
         },
         {
           "symbol": "PlayerCastRules",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-eb5bcad15dea",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
           "mechanism": "global-this-property"
         }
       ]
@@ -2798,6 +3054,22 @@
       "globalProviders": [
         {
           "symbol": "RenderComponent",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f3446ce3cb4c",
+      "bridge": "src/config/inventory/equipment_slot_config.js",
+      "source": "src/application/inventory/loadout_application_service.js",
+      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
           "mechanism": "global-this-property"
         }
       ]
