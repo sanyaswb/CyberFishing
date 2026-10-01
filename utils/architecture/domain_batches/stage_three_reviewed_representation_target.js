@@ -6,6 +6,7 @@ const espree = require("espree");
 const { immutableRecord } = require("../guards/core/guard_models");
 const { RepresentationOnlyNamedEsmTarget } = require("./stage_three_representation_target");
 const { StageThreeReviewedEvaluationEffect } = require("./stage_three_reviewed_evaluation_effect");
+const { StageThreeReviewedFrozenDataConstants } = require("./stage_three_reviewed_frozen_data_constants");
 const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/cumulative_side_effect_gate");
 
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
@@ -75,6 +76,10 @@ class RepresentationOnlyReviewedEsmTarget {
   #projectLeaf({ source, currentPath, targetPath, exports, sourceSha256, contract,
     targetEvaluation = null }) {
     assert.equal(sha(source), sourceSha256, `${currentPath}: source changed after audit`);
+    if (contract.frozenDataConstants) {
+      return this.#frozenDataConstants({ source, currentPath, targetPath, exports, sourceSha256,
+        bindings: contract.frozenDataConstants.bindings, targetEvaluation });
+    }
     if (!contract.privateStaticSets && !contract.frozenStaticFields && !contract.frozenConstants &&
       !contract.classFamily && !contract.legacyExposure && exports.length > 1) {
       return this.#classDeclarationsOnly({ source, currentPath, targetPath, exports, sourceSha256,
@@ -185,6 +190,43 @@ class RepresentationOnlyReviewedEsmTarget {
     return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
       sourceSha256, targetSha256: sha(targetSource), targetSource,
       validation: { representation: "reviewed-classic-declarations-to-named-esm-exports-only",
+        importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
+        forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
+        allocationDelta: "none", currentPath, targetPath },
+    });
+  }
+
+  // A reviewed classic data source of top-level deeply frozen tables becomes the same declarations
+  // with an `export` token each; the reviewed Object.freeze evaluation is re-verified on the target.
+  #frozenDataConstants({ source, currentPath, targetPath, exports, sourceSha256, bindings, targetEvaluation }) {
+    new StageThreeReviewedFrozenDataConstants().review({ source, currentPath, bindings });
+    const names = Object.keys(bindings);
+    assert.deepEqual([...names].sort(), exports, `${currentPath}: frozen data constant set differs`);
+    let targetSource = source;
+    for (const name of names) {
+      const token = `const ${name} =`;
+      assert.equal(targetSource.split(token).length - 1, 1, `${currentPath}: constant token is not exact: ${name}`);
+      targetSource = targetSource.replace(token, `export ${token}`);
+    }
+    const tree = espree.parse(targetSource, { ecmaVersion: "latest", sourceType: "module" });
+    assert(tree.body.every(node => node.type === "ExportNamedDeclaration" && node.source === null &&
+      node.declaration?.type === "VariableDeclaration" && node.declaration.kind === "const"),
+    `${targetPath}: only direct named constant exports are allowed`);
+    assert(!targetSource.includes("window") && !targetSource.includes("globalThis") &&
+      !targetSource.includes("__CYBER_FISHING_COMPAT_RUNTIME__"),
+    `${targetPath}: target retains a browser or transport dependency`);
+    let restored = targetSource;
+    for (const name of names) restored = restored.replace(`export const ${name} =`, `const ${name} =`);
+    assert.equal(restored, source, `${targetPath}: non-representation source delta`);
+    if (targetEvaluation) {
+      const observed = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath, source: targetSource });
+      assert.equal(observed.evidenceFingerprint, targetEvaluation.evidenceFingerprint,
+        `${targetPath}: reviewed evaluation fingerprint differs`);
+      assert.deepEqual(observed.observations, targetEvaluation.observations);
+    }
+    return immutableRecord({ currentPath, targetPath, exportName: exports[0], exports,
+      sourceSha256, targetSha256: sha(targetSource), targetSource,
+      validation: { representation: "reviewed-frozen-data-constants-to-named-esm-exports-only",
         importCount: 0, exportCount: exports.length, dynamicImportCount: 0,
         forbiddenDependencyCount: 0, behaviorDelta: "none", stateOwnershipDelta: "none",
         allocationDelta: "none", currentPath, targetPath },

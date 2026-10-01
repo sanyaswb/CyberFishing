@@ -50,8 +50,10 @@ node utils/architecture/stage-3-batch.js --batch NNN --step reconcile
   a proven PASS, everything else executes; see utils/testing/CHECKS.md):
   node utils/run-checks.js --release-gate --report <abs path under node_modules/.cache or outside the project>
 node utils/architecture/stage-3-batch.js --batch NNN --step automated-acceptance --check-report <that report>
-  the owner plays the batch checklist in the browser and reports console counts
-node utils/architecture/stage-3-batch.js --batch NNN --step browser-acceptance \
+  the owner plays the batch checklist in the browser and reports console counts (--performed-by owner),
+  or, only under the owner's authorization, the automated substitute runs game-cycle without seals and
+  reads the browser console (--performed-by automated-substitute --authorization "<owner's words>")
+node utils/architecture/stage-3-batch.js --batch NNN --step browser-acceptance --performed-by owner \
   --statement "<owner's words>" --console "<owner's words>" --errors 0 --warnings 0
 node utils/architecture/stage-3-batch.js --batch NNN --step release-transition            (dry run)
 node utils/architecture/stage-3-batch.js --batch NNN --step release-transition --publish
@@ -80,8 +82,10 @@ Export `PREFLIGHT_PROFILE` (a `StageThreeBatchPreflightProfile` wrapping a
   definition validator rejects any mismatch. `informationalDocumentsExcluded` must be `true`.
 - `reviewedContracts` describe state, results and effects per source. Supported evaluation effects:
   none, one legacy class exposure (`legacyExposure` with `window-property` or `global-this-property`)
-  and private static literal Sets (`privateStaticSets`). Other shapes fail explicitly until the shared
-  side-effect review is extended for them.
+  private static literal Sets (`privateStaticSets`) and, since batch 042, a data source made only of
+  top-level deeply frozen tables (`frozenDataConstants`: exact bindings in source order with their
+  Object.freeze locations and values). Other shapes fail explicitly until the shared side-effect review
+  is extended for them.
 - `RELEASE` holds the title, codename, project-version notes, changelog bullets, a one-line summary and
   the browser checklist context.
 

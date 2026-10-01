@@ -87,4 +87,48 @@ rejects(withContract({ localCompositions: [] }), /localCompositions must name un
 rejects(withContract({ localCompositions: ["Reel", "Reel"] }), /localCompositions must name unique/u,
   "duplicate composition");
 
+// Batch 042: frozenDataConstants accepts only top-level deeply frozen data tables with exact values.
+const { StageThreeReviewedFrozenDataConstants } = require("./domain_batches/stage_three_reviewed_frozen_data_constants");
+const data = new StageThreeReviewedFrozenDataConstants();
+const table = "const Ids = Object.freeze({\n  A: \"a\",\n  B: \"b\",\n});\n\nconst ALL = Object.freeze([...[], Ids.A, Ids.B]);\n";
+const dataSource = "const Ids = Object.freeze({\n  A: \"a\",\n  B: \"b\",\n});\n\nconst MAIN = Object.freeze([Ids.A]);\n\n" +
+  "const ALL = Object.freeze([...MAIN, Ids.B]);\n\nconst CONFIG = Object.freeze({\n  [Ids.A]: Object.freeze({ id: Ids.A, " +
+  "locked: true, size: -1, types: Object.freeze([\"x\"]) }),\n});\n";
+const dataBindings = { Ids: { location: "1:13", values: { A: "a", B: "b" } }, MAIN: { location: "6:14", values: ["a"] },
+  ALL: { location: "8:13", values: ["a", "b"] },
+  CONFIG: { location: "10:16", values: { a: { id: "a", locked: true, size: -1, types: ["x"] } } } };
+const reviewData = (source, bindings = dataBindings) => () => data.review({ source, currentPath: CURRENT, bindings });
+accepts(() => reviewData(dataSource)().freezeCallLocations, ["10:16", "11:12", "11:70", "1:13", "6:14", "8:13"],
+  "reviewed nested freeze locations");
+rejects(reviewData(dataSource.replace("Object.freeze([\"x\"])", "[\"x\"]")), /not a reviewed frozen data table/u,
+  "unfrozen nested table");
+rejects(reviewData(dataSource.replace("[...MAIN, Ids.B]", "[...OTHER, Ids.B]")), /not a reviewed frozen data table/u,
+  "spread of an unknown binding");
+rejects(reviewData(dataSource.replace("Ids.B]", "Ids.C]")), /ALL is not a deeply frozen data table/u, "unresolved read");
+rejects(reviewData(dataSource.replace("[Ids.A]: Object", "[later.A]: Object")), /not a reviewed frozen data table/u,
+  "computed key of an unknown binding");
+rejects(reviewData(dataSource.replace("size: -1", "size: Date.now()")), /not a reviewed frozen data table/u,
+  "call inside a table");
+rejects(reviewData(`${dataSource}globalThis.CONFIG = CONFIG;\n`), /expected exactly 4 frozen data constants/u,
+  "extra top-level statement");
+rejects(reviewData(dataSource.replace("const MAIN", "let MAIN")), /one const declaration per statement/u, "mutable binding");
+rejects(reviewData(dataSource, { ...dataBindings, MAIN: { location: "6:14", values: ["b"] } }),
+  /reviewed constant value differs: MAIN/u, "wrong reviewed value");
+rejects(reviewData(table, { ALL: dataBindings.ALL, Ids: dataBindings.Ids }), /reviewed constant order differs/u,
+  "reordered bindings");
+accepts(() => new RepresentationOnlyReviewedEsmTarget().project({ source: dataSource, currentPath: CURRENT,
+  targetPath: "fixture/target.js", exports: ["ALL", "CONFIG", "Ids", "MAIN"], sourceSha256: sha(dataSource),
+  contract: { frozenDataConstants: { bindings: dataBindings } }, targetEvaluation: null, imports: [] }).targetSource,
+dataSource.replace(/^const /gmu, "export const "), "frozen data constant exports");
+
+// The cumulative evaluation gate accepts a frozen data table only over earlier bindings of the module.
+const { StageThreeReviewedFrozenDataConstants: Grammar } = require("./domain_batches/stage_three_reviewed_frozen_data_constants");
+const espree = require("espree");
+const initOf = source => espree.parse(source, { ecmaVersion: "latest", sourceType: "module" }).body[0].declaration.declarations[0].init;
+accepts(() => Grammar.freezeCalls(initOf("export const A = Object.freeze([...B, C.D, true]);"), new Set(["B", "C"])).length, 1,
+  "gate table over earlier bindings");
+accepts(() => Grammar.freezeCalls(initOf("export const A = Object.freeze([...B]);"), new Set()), null, "gate table over a later binding");
+accepts(() => Grammar.freezeCalls(initOf("export const A = Object.freeze({ k: B.c() });"), new Set(["B"])), null,
+  "gate table with a call");
+
 console.log(`Stage 3 batch reviewed-shape fixtures passed (${cases} cases).`);

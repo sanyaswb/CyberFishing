@@ -15,6 +15,9 @@ const {
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { CumulativeRuntimeLoadSlot } = require("../build/compat_runtime/cumulative_runtime_load_slot");
+const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
+const { CumulativeLiveActivationProbe } = require("./domain_batches/cumulative_live_activation_probe");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-001-inventory-85f44b2e";
 const SOURCE_PROVIDER = "src/core/inventory/equip_target_selection_policy.js";
@@ -169,7 +172,14 @@ class StageThreeInventoryEquipTargetBatchCheck {
     const runtimeIndex = physical.indexOf(runtimePath);
     assert(runtimeIndex >= 0);
     const earliest = [...contract.activationPositions].sort((a,b) => a.legacyScriptIndex-b.legacyScriptIndex || a.id.localeCompare(b.id))[0];
-    assert.equal(physical[runtimeIndex + 1], `${contract.output.directory}${earliest.shimFile}`);
+    // The runtime immediately precedes the earliest activation, or (since prerequisite 031) the whole
+    // earliest Domain slot, which no activation precedes.
+    const load = CumulativeRuntimeLoadSlot.read({ html: this.#read("index.html"),
+      aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract), runtimePath });
+    assert(physical[runtimeIndex + 1] === `${contract.output.directory}${earliest.shimFile}` ||
+      (load.precedesWholeSlot && load.slot <= earliest.legacyScriptIndex &&
+        load.slot === CumulativeLiveActivationProbe.earliestDomainSlot((file) => this.#read(file))),
+    "the runtime must precede the earliest activation or the whole earliest Domain slot");
     assert(physical.indexOf(activationPath) > runtimeIndex);
     assert.equal(physical.filter((source) => source === runtimePath).length, 1);
     assert.equal(physical.some((source) => source.startsWith("dist/legacy-bridges/")), false);

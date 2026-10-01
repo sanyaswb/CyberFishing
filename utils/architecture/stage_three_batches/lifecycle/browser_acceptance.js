@@ -18,6 +18,20 @@ const userBasis = definition => Object.freeze({
   consoleInstrumented: false,
 });
 
+// The owner-authorized automated substitute (batches 036-038, 040+): game-cycle without seals and an
+// instrumented built-in-browser console read; the owner did not play the batch.
+const automatedSubstituteBasis = ownerAuthorization => Object.freeze({
+  performedBy: "claude-automated-substitute",
+  smokeStatus: "passed-owner-authorized-automated-substitute",
+  evidenceType: "owner-authorized-automated-substitute",
+  confirmationType: "owner-authorized-automated-substitute",
+  context: "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+  acceptanceBasis: "Owner-authorized automated substitute: game-cycle without seals and an instrumented built-in-browser console read; the owner did not play this batch.",
+  gate: "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  consoleInstrumented: true,
+  ownerAuthorization,
+});
+
 class StageThreeBrowserAcceptanceRecorder {
   constructor(root, definition) {
     this.root = path.resolve(root);
@@ -26,9 +40,11 @@ class StageThreeBrowserAcceptanceRecorder {
   bytes(file) { return fs.readFileSync(path.join(this.root, file)); }
   json(file) { return JSON.parse(this.bytes(file)); }
 
-  // basis records who performed the smoke. The default is the historical user-performed manual
-  // smoke; an owner-authorized automated substitute must quote the owner's authorization verbatim.
-  run({ sessionStatement, consoleStatement, errors, warnings, basis = userBasis(this.definition) }) {
+  // basis records who performed the smoke and has no default (a silent "user" default recorded batch 039
+  // as owner-played): userBasis only when the owner played the checklist, otherwise an owner-authorized
+  // automated substitute that quotes the owner's authorization verbatim.
+  run({ sessionStatement, consoleStatement, errors, warnings, basis }) {
+    assert(basis && typeof basis === "object", "basis is required: userBasis (the owner played) or automatedSubstituteBasis");
     const PROFILE = this.definition.profile;
     const context = this.definition.context;
     const { automatedAcceptance: AUTOMATED, acceptance: ACCEPTANCE, browser: BROWSER } = context.paths;
@@ -120,4 +136,4 @@ class StageThreeBrowserAcceptanceRecorder {
   }
 }
 
-module.exports = { StageThreeBrowserAcceptanceRecorder, userBasis };
+module.exports = { StageThreeBrowserAcceptanceRecorder, userBasis, automatedSubstituteBasis };

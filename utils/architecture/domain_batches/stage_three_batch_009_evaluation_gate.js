@@ -6,6 +6,7 @@ const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/c
 const { EsmDependencyObserver } = require("../guards/observation/esm_dependency_observer");
 const { immutableRecord } = require("../guards/core/guard_models");
 const { isInertLiteral } = require("./stage_three_inert_literal");
+const { StageThreeReviewedFrozenDataConstants } = require("./stage_three_reviewed_frozen_data_constants");
 
 const BUILTIN_ERRORS = new Set(["Error", "RangeError", "TypeError"]);
 
@@ -144,11 +145,16 @@ class Batch009EarlierEvaluationGate {
               property.type === "Property" && property.kind === "init" && !property.computed &&
               !property.method && property.key.type === "Identifier" &&
               property.value.type === "Literal" && typeof property.value.value === "string"));
-          assert(init?.type === "Literal" || localWeakMap || frozenLiteralRange || frozenLiteralConstant,
-            "unknown eager initializer");
+          // Since batch 042: a deeply frozen data table over literals and earlier bindings of this
+          // module (the reviewed frozenDataConstants grammar), checked only after the older kinds.
+          const frozenDataTable = !frozenLiteralRange && !frozenLiteralConstant && frozenArgument !== null &&
+            StageThreeReviewedFrozenDataConstants.freezeCalls(init, declaredBindings) !== null;
+          assert(init?.type === "Literal" || localWeakMap || frozenLiteralRange || frozenLiteralConstant ||
+            frozenDataTable, "unknown eager initializer");
           initializations.push({ binding: declaration.id.name, kind: localWeakMap
             ? "private-empty-weakmap" : frozenLiteralRange ? "frozen-literal-range"
-              : frozenLiteralConstant ? "frozen-literal-constant" : "primitive-literal" });
+              : frozenLiteralConstant ? "frozen-literal-constant"
+                : frozenDataTable ? "frozen-data-table" : "primitive-literal" });
           declaredBindings.add(declaration.id.name);
         }
       }
@@ -159,7 +165,7 @@ class Batch009EarlierEvaluationGate {
         assert.equal(review?.decision, "approved-compatible", "missing reviewed initialization");
         assert.equal(review.evidenceFingerprint, effect.evidenceFingerprint, "stale effect review");
         assert(initializations.some(i => ["private-empty-weakmap", "frozen-literal-range",
-          "frozen-literal-constant", "frozen-literal-static-field", "local-superclass",
+          "frozen-literal-constant", "frozen-data-table", "frozen-literal-static-field", "local-superclass",
           "private-literal-set-static-field"].includes(i.kind)),
           "review does not prove compatible initialization");
       } else assert(!review, "stale unnecessary review");

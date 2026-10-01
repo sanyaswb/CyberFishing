@@ -16,7 +16,7 @@ const { StageThreeBatchLiveValidation } = require("./stage_three_batches/lifecyc
 const { StageThreeKnownDebtResolution } = require("./stage_three_batches/lifecycle/known_debt");
 const { StageThreeBatchObservationApplication } = require("./stage_three_batches/lifecycle/observation_application");
 const { StageThreeAutomatedAcceptance } = require("./stage_three_batches/lifecycle/automated_acceptance");
-const { StageThreeBrowserAcceptanceRecorder } = require("./stage_three_batches/lifecycle/browser_acceptance");
+const { StageThreeBrowserAcceptanceRecorder, userBasis, automatedSubstituteBasis } = require("./stage_three_batches/lifecycle/browser_acceptance");
 const { StageThreeBatchReleaseProjection, StageThreeBatchReleasePublisher, StageThreeBatchReleaseRegression,
   StageThreeBatchReleaseFinalizer } = require("./stage_three_batches/lifecycle/release");
 const { StageThreeBatchRollback } = require("./stage_three_batches/lifecycle/rollback");
@@ -126,9 +126,17 @@ class StageThreeBatchCommand {
         this.requires(p.automatedAcceptance);
         const statement = this.option("--statement"), consoleStatement = this.option("--console");
         const errors = Number(this.option("--errors")), warnings = Number(this.option("--warnings"));
-        assert(statement && consoleStatement, "--statement and --console are required (the owner's words)");
+        assert(statement && consoleStatement, "--statement and --console are required");
+        // Who performed the smoke is explicit: "owner" only when the owner played the checklist;
+        // "automated-substitute" needs the owner's authorization verbatim (--authorization).
+        const performedBy = this.option("--performed-by");
+        assert(["owner", "automated-substitute"].includes(performedBy),
+          "--performed-by owner|automated-substitute is required");
+        const authorization = this.option("--authorization");
+        assert(performedBy === "owner" || authorization, "--authorization \"<owner's words>\" is required for a substitute");
+        const basis = performedBy === "owner" ? userBasis(d) : automatedSubstituteBasis(authorization);
         return new StageThreeBrowserAcceptanceRecorder(ROOT, d)
-          .run({ sessionStatement: statement, consoleStatement, errors, warnings }).acceptance.status;
+          .run({ sessionStatement: statement, consoleStatement, errors, warnings, basis }).acceptance.status;
       },
       "release-transition": async () => {
         this.requires(p.acceptance, p.browser);

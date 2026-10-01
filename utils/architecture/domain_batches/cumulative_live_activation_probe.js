@@ -5,8 +5,16 @@ const vm = require("node:vm");
 const { LegacyScriptOrderReader } = require("../migration/legacy_script_order_reader");
 const { StageThreeRuntimeScriptAliasResolver } = require("../migration/stage_three_runtime_script_alias_resolver");
 const { ActivationShimRenderer, ActivationShimContractValidator } = require("../../build/compat_runtime/activation_shim");
+const { CumulativeRuntimeLoadSlot } = require("../../build/compat_runtime/cumulative_runtime_load_slot");
 
 class CumulativeLiveActivationProbe {
+  // The earliest logical legacy slot of a Manifest entry whose target boundary is the game Domain.
+  static earliestDomainSlot(read) {
+    const manifest = JSON.parse(read("architecture/migration/module_migration_manifest.json").toString("utf8"));
+    return Math.min(...manifest.modules.filter((entry) => entry.architecture?.targetBoundary === "game-domain" &&
+      Number.isInteger(entry.observed?.legacyLoadOrder)).map((entry) => entry.observed.legacyLoadOrder));
+  }
+
   run({ code, runtime, index, read, projectModules }) {
     let transport, assignments = 0, reads = 0;
     const sandbox = {};
@@ -35,9 +43,15 @@ class CumulativeLiveActivationProbe {
     const firstActivation = [...runtime.activationPositions].sort((left, right) =>
       left.legacyScriptIndex - right.legacyScriptIndex)[0];
     const firstShim = `${runtime.output.directory}${firstActivation.shimFile}`;
-    assert.equal(physical.findIndex((item) => item.currentPath === firstShim),
-      physical.findIndex((item) => item.currentPath === runtimePath) + 1,
-      "Cumulative evaluation must immediately precede the first approved exposure");
+    const runtimeIndex = physical.findIndex((item) => item.currentPath === runtimePath);
+    const firstShimIndex = physical.findIndex((item) => item.currentPath === firstShim);
+    // Since prerequisite 031 the runtime tag may instead immediately precede the whole earliest Domain
+    // slot of the Manifest (owner decision 2026-10-01), still before every approved exposure.
+    const load = CumulativeRuntimeLoadSlot.read({ html: index,
+      aliases: new StageThreeRuntimeScriptAliasResolver().resolve(runtime), runtimePath });
+    assert(firstShimIndex === runtimeIndex + 1 || (firstShimIndex > runtimeIndex && load.precedesWholeSlot &&
+      load.slot === CumulativeLiveActivationProbe.earliestDomainSlot(read) && load.slot <= firstActivation.legacyScriptIndex),
+    "Cumulative evaluation must immediately precede the first approved exposure or the earliest Domain slot");
     const pending = new Map(runtime.activationPositions.map((item) => [item.id, item]));
     assert.equal(pending.size, runtime.activationPositions.length, "Duplicate activation ID");
     const logicalProviders = new Set(logical.map((script) =>

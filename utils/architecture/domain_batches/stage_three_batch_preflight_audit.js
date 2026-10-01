@@ -11,6 +11,7 @@ const { StageThreeStateIdentityReview } = require("./stage_three_state_identity_
 const { StageThreeCompositionIdentityReview } = require("./stage_three_composition_identity_review");
 const { StageThreeReviewedTopLevelFunctions } = require("./stage_three_reviewed_top_level_functions");
 const { StageThreeLocalCompositionReview } = require("./stage_three_local_composition_review");
+const { StageThreeReviewedFrozenDataConstants } = require("./stage_three_reviewed_frozen_data_constants");
 const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
@@ -112,7 +113,8 @@ class StageThreeBatchPreflightAuditBuilder {
         const reviewedEffect = module.effects.reviewedExposure;
         this.#require(evidence && this.#same(evidence.sourceSha256, module.sourceSha256) &&
           (["frozen-literal-ranges", "frozen-literal-constants", "frozen-literal-static-fields",
-            "class-family-global-exposures", "private-static-literal-sets"].includes(evidence.contract?.kind)
+            "class-family-global-exposures", "private-static-literal-sets",
+            "frozen-data-constants"].includes(evidence.contract?.kind)
             ? this.#same(evidence.review, reviewedEffect)
             : this.#same(evidence.contract?.symbol || evidence.symbol, reviewedEffect?.symbol) &&
               this.#same(evidence.contract?.location || evidence.location, reviewedEffect?.location)),
@@ -444,19 +446,35 @@ class StageThreeBatchPreflightAuditBuilder {
     const providerSymbols = manifestEntry.observed.providers.items
       .map((provider) => provider.symbol);
     const topLevelFunctions = reviewed.topLevelFunctions || [];
+    const dataConstants = Object.keys(reviewed.frozenDataConstants?.bindings || {});
     const expectedClasses = reviewed.frozenConstants
       ? [...(reviewed.frozenConstants.classNames || [reviewed.frozenConstants.className])].sort()
-      : expectedSymbols.filter((symbol) => !topLevelFunctions.includes(symbol));
+      : expectedSymbols.filter((symbol) => !topLevelFunctions.includes(symbol) && !dataConstants.includes(symbol));
     this.#require(this.#same(sourceShape.classDeclarations, expectedClasses),
       `class declaration differs: ${module.currentPath}`);
     this.#require(this.#same([...new Set(providerSymbols)].sort(), expectedSymbols),
       `provider facts differ: ${module.currentPath}`);
     this.#require(this.#same(sourceShape.topLevelBindings, reviewed.topLevelFunctions
       ? topLevelFunctions.map(() => "FunctionDeclaration")
-      : Object.keys(reviewed.frozenConstants?.bindings || {}).map(() => "VariableDeclaration")),
+      : Object.keys(reviewed.frozenConstants?.bindings || reviewed.frozenDataConstants?.bindings || {})
+        .map(() => "VariableDeclaration")),
       `top-level binding exists: ${module.currentPath}`);
     let reviewedExposure = null;
-    if (reviewed.frozenConstants) {
+    if (reviewed.frozenDataConstants) {
+      this.#require(this.#same([...dataConstants].sort(), expectedSymbols),
+        `frozen data constants differ from providers: ${module.currentPath}`);
+      reviewedExposure = new StageThreeReviewedFrozenDataConstants().review({
+        source, currentPath: module.currentPath, bindings: reviewed.frozenDataConstants.bindings,
+      });
+      this.#require(this.#same(auditEntry.dependencyAudit.facts.topLevelEffects,
+        reviewedExposure.freezeCallLocations.map((location) => ({
+          kind: "call", location, classification: "observable",
+        }))), `frozen data constant effect differs: ${module.currentPath}`);
+      this.#require(this.#same(sourceShape.topLevelEffects,
+        Object.values(reviewed.frozenDataConstants.bindings).map(({ location }) =>
+          `VariableDeclaration@${location.split(":")[0]}:1`).sort()),
+      `reviewed top-level effect differs: ${module.currentPath}`);
+    } else if (reviewed.frozenConstants) {
       reviewedExposure = new StageThreeReviewedEvaluationEffect().frozenConstants({
         source, currentPath: module.currentPath, ...reviewed.frozenConstants,
       });
@@ -731,7 +749,8 @@ class StageThreeBatchPreflightAuditValidator {
       require(module.performance?.transportLookupsAllowed === 0,
         `transport budget differs: ${module.currentPath}`);
         require(module.effects?.classification === (reviewed?.legacyExposure || reviewed?.frozenConstants ||
-          reviewed?.frozenStaticFields || reviewed?.classFamily || reviewed?.privateStaticSets ?
+          reviewed?.frozenStaticFields || reviewed?.classFamily || reviewed?.privateStaticSets ||
+          reviewed?.frozenDataConstants ?
         "reviewed-compatible" : "safe"), `effect classification differs: ${module.currentPath}`);
       if (reviewed?.legacyExposure && reviewed?.privateStaticSets) {
         require(module.effects?.reviewedExposure?.exposure?.symbol === reviewed.legacyExposure.symbol &&

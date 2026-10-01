@@ -148,6 +148,22 @@ class StageThreeBatchPreflightProfile {
         composed.every((name) => /^[A-Za-z_$][\w$]*$/u.test(name)) && new Set(composed).size === composed.length,
       `${currentPath} localCompositions must name unique composed classes`);
     }
+    for (const [currentPath, contract] of Object.entries(contracts || {})) {
+      const data = contract?.frozenDataConstants;
+      if (data === undefined) continue;
+      require(Boolean(definition?.sideEffectEvidence),
+        `${currentPath} frozenDataConstants requires sideEffectEvidence`);
+      require(!contract.legacyExposure && !contract.frozenConstants && !contract.frozenStaticFields &&
+        !contract.privateStaticSets && !contract.classFamily && !contract.topLevelFunctions &&
+        !contract.localCompositions && contract.instanceFields.length === 0,
+      `${currentPath} frozenDataConstants cannot be combined with another reviewed shape`);
+      const bindings = data?.bindings || {};
+      require(Object.keys(bindings).length > 0 &&
+        Object.keys(bindings).every((name) => /^[A-Za-z_$][\w$]*$/u.test(name)) &&
+        Object.values(bindings).every((binding) => /^\d+:\d+$/u.test(binding?.location) &&
+          binding.values !== null && typeof binding.values === "object"),
+      `${currentPath} frozenDataConstants must name exact bindings, locations and values`);
+    }
     require(Array.isArray(definition?.migrationGates) && definition.migrationGates.length > 0,
       "migrationGates are required");
     if (errors.length > 0) {

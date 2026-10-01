@@ -8,6 +8,7 @@ const { StageThreeReviewedEvaluationEffect } = require("../../domain_batches/sta
 const { StageThreeGlobalExposureReview } = require("../../domain_batches/stage_three_global_exposure_review");
 const { StageThreeBatchSourceObserver } = require("../../domain_batches/stage_three_batch_source_observer");
 const { StageThreeReviewedTopLevelFunctions } = require("../../domain_batches/stage_three_reviewed_top_level_functions");
+const { StageThreeReviewedFrozenDataConstants } = require("../../domain_batches/stage_three_reviewed_frozen_data_constants");
 const { RepresentationOnlyReviewedEsmTarget } = require("../../domain_batches/stage_three_reviewed_representation_target");
 const { StageThreeApprovedPlanSource } = require("../../domain_batches/stage_three_approved_plan_source");
 const { ModuleEvaluationEffectObserver } = require("../../../build/compat_runtime/cumulative_side_effect_gate");
@@ -17,10 +18,14 @@ const { sha } = require("./planning");
 const STATE = "architecture/migration/stage_3_execution_state.json";
 const OBSERVABLE_ASSIGNMENT = location => [{ kind: "assignment", location, classification: "observable" }];
 
-// The reviewed evaluation effect of one classic source: none, one exact legacy class exposure, or
-// private static literal Sets created during class definition (with an optional exposure).
+// The reviewed evaluation effect of one classic source: none, one exact legacy class exposure,
+// private static literal Sets created during class definition (with an optional exposure), or
+// top-level deeply frozen data tables (frozenDataConstants, batch 042).
 function reviewedEffect(contract) {
   const exposure = contract.legacyExposure;
+  if (contract.frozenDataConstants) {
+    return { kind: "frozen-data-constants", bindings: contract.frozenDataConstants.bindings };
+  }
   if (contract.privateStaticSets) {
     return { kind: "private-static-literal-sets", ...contract.privateStaticSets,
       exposure: exposure ? { symbol: exposure.symbol, location: exposure.location } : null };
@@ -74,7 +79,15 @@ class StageThreeSideEffectReview {
       const source = this.bytes(module.currentPath).toString("utf8");
       const frozen = batch.sideEffectReviews.find(item => item.module === module.targetPath) || null;
       let review;
-      if (contract.kind === "private-static-literal-sets") {
+      if (contract.kind === "frozen-data-constants") {
+        assert(frozen, `Missing frozen effect review: ${module.targetPath}`);
+        review = new StageThreeReviewedFrozenDataConstants().review({ source, currentPath: module.currentPath,
+          bindings: contract.bindings });
+        assert.deepEqual(frozen.observations, review.freezeCallLocations.map(location =>
+          ({ kind: "call", location, classification: "observable" })));
+        assert.equal(frozen.status, "required-before-approved-freeze");
+        assert.equal(frozen.requiredDecision, "approved-compatible-or-batch-deferred");
+      } else if (contract.kind === "private-static-literal-sets") {
         assert(frozen, `Missing frozen effect review: ${module.targetPath}`);
         review = new StageThreeReviewedEvaluationEffect().privateStaticSets({ source, currentPath: module.currentPath,
           className: contract.className, bindings: contract.bindings, exposure: contract.exposure });
@@ -118,7 +131,8 @@ class StageThreeSideEffectReview {
       PROFILE.executionProfile.expectedActivationCount);
     assert.equal(modules.filter(item => item.contract.kind !== "effect-free").length, batch.sideEffectReviews.length);
     // The reviewed exposure is removed by the representation. Every ESM target evaluates without
-    // effects, except the reviewed private static Set initializers (approved-compatible).
+    // effects, except the reviewed private static Set initializers and the top-level Object.freeze
+    // calls of reviewed frozen data tables (approved-compatible).
     const imports = StageThreeApprovedPlanSource.reviewedImports(approved, [definition.id]);
     const project = module => {
       const moduleSource = this.bytes(module.currentPath).toString("utf8");
@@ -134,10 +148,25 @@ class StageThreeSideEffectReview {
         ? representation.observationSource(options) : representation.project(options).targetSource;
       return new ModuleEvaluationEffectObserver().observe({ modulePath: module.targetPath, source: targetSource });
     };
-    const withEffects = modules.filter(module => module.contract.kind === "private-static-literal-sets");
+    const withEffects = modules.filter(module => ["private-static-literal-sets", "frozen-data-constants"]
+      .includes(module.contract.kind));
     const targetEvaluations = withEffects.map(module => {
       const observation = project(module);
       assert.equal(observation.classification, "needs-review");
+      if (module.contract.kind === "frozen-data-constants") {
+        // Each exported binding shifts by the `export ` token; nested freezes run inside the call.
+        assert.equal((imports[module.targetPath] || []).length, 0);
+        assert.deepEqual(observation.observations, Object.values(module.contract.bindings).map(item => {
+          const [line, column] = item.location.split(":").map(Number);
+          return { kind: "initializer-execution", classification: "needs-review",
+            location: `${line}:${column + "export ".length}` };
+        }).sort((left, right) => left.location.localeCompare(right.location)));
+        return { module: module.targetPath, decision: "approved-compatible",
+          evidenceFingerprint: observation.evidenceFingerprint, observations: observation.observations,
+          exactEffect: `${module.review.freezeCallLocations.length} Object.freeze calls build ` +
+            `${module.review.topLevelStatementCount} deeply frozen data tables from literals and earlier ` +
+            "bindings of the same module; no external state read or global write" };
+      }
       // The import header (one line per import plus a blank line) shifts target line numbers.
       const importLines = (imports[module.targetPath] || []).length;
       const shift = importLines === 0 ? 0 : importLines + 1;

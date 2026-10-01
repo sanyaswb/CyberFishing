@@ -5,6 +5,8 @@ const vm = require("node:vm");
 const { PATHS } = require("../../domain_batches/stage_three_live_preflight");
 const { DomainBehaviorParityHarness } = require("../../domain_batches/stage_three_batch_focused_harness");
 const { ActivationShimRenderer, ActivationShimContractValidator } = require("../../../build/compat_runtime/activation_shim");
+const { CumulativeRuntimeLoadSlot } = require("../../../build/compat_runtime/cumulative_runtime_load_slot");
+const { StageThreeRuntimeScriptAliasResolver } = require("../../migration/stage_three_runtime_script_alias_resolver");
 
 // Validates a built candidate (or the published runtime) against the classic baseline: activation
 // timing and identity, reviewed imports, behavior parity, retired globals and prior implementations.
@@ -27,9 +29,17 @@ class StageThreeCandidateValidation {
     const renderer = new ActivationShimRenderer();
     const validator = new ActivationShimContractValidator();
     const priorContract = previousRuntimeContract ?? app.json(PATHS.runtimeContract);
-    const runtimePosition = Math.min(...priorContract.activationPositions.map(a => a.legacyScriptIndex));
+    // The runtime evaluates at the logical slot of its tag in index.html (prerequisite 031 placed it
+    // before the earliest Domain slot); until then that slot was always the earliest prior activation.
+    const load = CumulativeRuntimeLoadSlot.read({ html: app.read(PATHS.index),
+      aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract),
+      runtimePath: contract.output.directory + contract.output.runtimeFile });
+    const runtimePosition = load.slot;
+    assert(runtimePosition <= Math.min(...priorContract.activationPositions.map(a => a.legacyScriptIndex)),
+      "runtime must load before every prior activation");
     const earliestNew = Math.min(...plan.compatibility.activations.map(a => a.legacyScriptIndex));
-    assert(runtimePosition < earliestNew, "runtime must load before the batch providers");
+    assert(runtimePosition < earliestNew || (runtimePosition === earliestNew && load.precedesWholeSlot),
+      "runtime must load before the batch providers");
     const retiredLedger = contract.retiredActivations || [];
     const retired = new Map(retiredLedger.filter(record => record.retiredBy === PROFILE.batchId)
       .map(record => [record.activation.legacySymbol, record.activation]));
