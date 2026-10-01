@@ -1,0 +1,3900 @@
+{
+  "kind": "cyber-fishing-check-run-report",
+  "schemaVersion": 1,
+  "runId": "2026-10-01T08-46-13-586Z-27740",
+  "mode": "acceptance",
+  "command": [
+    "node",
+    "utils/run-checks.js",
+    "--acceptance",
+    "--report",
+    "C:/Users/merko/AppData/Local/Temp/claude/D--dev-code-cyber-fishing/da75ce9c-54c1-4e4a-844e-7a78e7194e6d/scratchpad/stage3_final_acceptance.json"
+  ],
+  "jobs": 4,
+  "startedAt": "2026-10-01T08:46:13.586Z",
+  "finishedAt": "2026-10-01T09:57:46.346Z",
+  "source": {
+    "commit": "04d3f5a9ffaed0bf2ca0f075cfe945f695d10b89",
+    "files": 2365,
+    "before": "9c8e2b4b27309f88e35e3e2e0bdbec0268bfc918fa48bbabf91230ebf2966a5d",
+    "after": "9c8e2b4b27309f88e35e3e2e0bdbec0268bfc918fa48bbabf91230ebf2966a5d",
+    "unchanged": true
+  },
+  "catalog": {
+    "sha256": "4766f2288b4a9cf2c1f7ba97d19ebf2c808f05da02415bbdf5e41df367098391",
+    "checks": 251
+  },
+  "selected": [
+    "syntax",
+    "architecture-policy",
+    "architecture-documentation",
+    "migration-manifest-integrity",
+    "migration-manifest-reconciler",
+    "migration-manifest-schema-migration",
+    "migration-manifest-validator",
+    "legacy-symbol-provider-fixtures",
+    "legacy-symbol-provider-corpus",
+    "legacy-external-consumer-fixtures",
+    "legacy-external-consumer-corpus",
+    "provider-resolution-contract",
+    "provider-resolution-fixtures",
+    "provider-resolution-corpus",
+    "migration-observation-persistence-fixtures",
+    "migration-observation-persistence-corpus",
+    "observation-graph-integrity-fixtures",
+    "observation-graph-integrity-corpus",
+    "classification-evidence-fixtures",
+    "classification-evidence-corpus",
+    "stage-1-6-migration-batch-plan",
+    "approved-stage-2-batch-freeze",
+    "architecture-guard-fixtures",
+    "architecture-guard-corpus",
+    "root-package-contract",
+    "native-esm-fixture",
+    "vite-fixture-build",
+    "stage-1-closure",
+    "stage-2-legacy-bridge-build",
+    "stage-2-asset-contracts-check",
+    "stage-2-dependency-contract-check",
+    "stage-2-event-primitives-check",
+    "stage-2-rendering-primitives-check",
+    "stage-3-domain-audit-fixtures",
+    "stage-3-domain-audit-schema-migration",
+    "stage-3-domain-audit-corpus",
+    "stage-3-induced-domain-graph-fixtures",
+    "stage-3-induced-domain-graph-corpus",
+    "stage-3-domain-topology-fixtures",
+    "stage-3-domain-topology-corpus",
+    "stage-3-domain-observation-fixtures",
+    "stage-3-dependency-audit-persistence-fixtures",
+    "stage-3-dependency-audit-integration",
+    "stage-3-semantic-observation-fixtures",
+    "stage-3-semantic-persistence-fixtures",
+    "stage-3-semantic-audit-integration",
+    "stage-3-compatibility-runtime-fixtures",
+    "stage-3-compatibility-runtime-integration",
+    "stage-3-candidate-batch-fixtures",
+    "stage-3-candidate-batch-integration",
+    "stage-3-approved-prefix-fixtures",
+    "stage-3-approved-prefix-integration",
+    "stage-3-batch-006-audit-fixtures",
+    "stage-3-batch-006-audit-integration",
+    "stage-3-batch-006-execution-plan-fixtures",
+    "stage-3-batch-006-execution-plan-integration",
+    "stage-3-batch-006-test-matrix-fixtures",
+    "stage-3-batch-006-focused-test-matrix",
+    "stage-3-batch-006-prebuild-fixtures",
+    "stage-3-batch-006-prebuild-integration",
+    "stage-3-batch-006-runtime",
+    "stage-3-batch-006-observations",
+    "stage-3-batch-006-release-acceptance",
+    "stage-3-batch-007-audit-fixtures",
+    "stage-3-batch-007-audit-integration",
+    "stage-3-batch-tooling-generalization",
+    "stage-3-batch-009-cutover-fixtures",
+    "stage-3-batch-009-observation-fixtures",
+    "stage-3-batch-009-observation",
+    "stage-3-batch-009-live-runtime",
+    "stage-3-batch-009-source-build-fixtures",
+    "stage-3-batch-009-source-build",
+    "stage-3-batch-009-planning-fixtures",
+    "stage-3-batch-009-planning",
+    "stage-3-batch-010-audit-fixtures",
+    "stage-3-batch-010-audit",
+    "stage-3-batch-010-planning-fixtures",
+    "stage-3-batch-010-planning",
+    "stage-3-batch-010-source-build-fixtures",
+    "stage-3-batch-010-source-build",
+    "stage-3-batch-010-live-runtime",
+    "stage-3-batch-010-observations",
+    "stage-3-batch-010-release-fixtures",
+    "stage-3-batch-010-release",
+    "stage-3-batch-011-audit-fixtures",
+    "stage-3-batch-011-audit",
+    "stage-3-batch-011-planning",
+    "stage-3-batch-011-source-build-fixtures",
+    "stage-3-batch-011-source-build",
+    "stage-3-batch-011-cutover-fixtures",
+    "stage-3-batch-011-live-runtime",
+    "stage-3-batch-011-observations",
+    "stage-3-batch-012-audit",
+    "stage-3-batch-012-planning",
+    "stage-3-batch-012-focused-parity",
+    "stage-3-batch-012-source-build",
+    "stage-3-batch-012-cutover-fixtures",
+    "stage-3-batch-012-live-runtime",
+    "stage-3-batch-012-observations",
+    "stage-3-batch-013-architecture",
+    "stage-3-batch-014-architecture",
+    "stage-3-batch-015-architecture",
+    "stage-3-batch-016-architecture",
+    "stage-3-batch-017-architecture",
+    "stage-3-batch-018-architecture",
+    "stage-3-batch-019-architecture",
+    "stage-3-batch-020-architecture",
+    "stage-3-batch-021-architecture",
+    "stage-3-batch-022-architecture",
+    "stage-3-batch-023-architecture",
+    "stage-3-batch-024-architecture",
+    "stage-3-batch-025-architecture",
+    "stage-3-batch-026-architecture",
+    "stage-3-batch-027-architecture",
+    "stage-3-batch-028-architecture",
+    "stage-3-batch-029-architecture",
+    "stage-3-batch-030-architecture",
+    "stage-3-batch-031-architecture",
+    "stage-3-batch-032-architecture",
+    "stage-3-batch-033-architecture",
+    "stage-3-batch-034-architecture",
+    "stage-3-batch-035-architecture",
+    "stage-3-batch-036-architecture",
+    "stage-3-batch-037-architecture",
+    "stage-3-batch-038-architecture",
+    "stage-3-batch-039-architecture",
+    "stage-3-batch-040-architecture",
+    "stage-3-batch-041-architecture",
+    "stage-3-batch-reviewed-shapes-fixtures",
+    "stage-3-34-review-queue-freeze",
+    "stage-3-34-review-queue-freeze-fixtures",
+    "stage-3-36-graph-review",
+    "stage-3-40-graph-review",
+    "stage-3-41-graph-review",
+    "stage-3-41-replacement-plan-fixtures",
+    "stage-3-42-graph-review",
+    "stage-3-prerequisite-001",
+    "stage-3-prerequisite-002",
+    "stage-3-prerequisite-003",
+    "stage-3-prerequisite-004",
+    "stage-3-prerequisite-005",
+    "stage-3-prerequisite-006",
+    "stage-3-prerequisite-007",
+    "stage-3-prerequisite-008",
+    "stage-3-prerequisite-009",
+    "stage-3-prerequisite-010",
+    "stage-3-prerequisite-011",
+    "stage-3-prerequisite-012",
+    "stage-3-prerequisite-013",
+    "stage-3-prerequisite-014",
+    "stage-3-prerequisite-015",
+    "stage-3-prerequisite-016",
+    "stage-3-prerequisite-017",
+    "stage-3-prerequisite-018",
+    "stage-3-prerequisite-019",
+    "stage-3-prerequisite-020",
+    "stage-3-prerequisite-021",
+    "stage-3-prerequisite-022",
+    "stage-3-prerequisite-023",
+    "stage-3-prerequisite-024",
+    "stage-3-prerequisite-025",
+    "stage-3-prerequisite-026",
+    "stage-3-prerequisite-027",
+    "stage-3-prerequisite-028",
+    "stage-3-prerequisite-029",
+    "stage-3-prerequisite-030",
+    "stage-3-prerequisite-031",
+    "stage-3-prerequisite-transition-fixtures",
+    "legacy-slot-split",
+    "stage-3-runtime-load-order",
+    "stage-3-activation-retirement-fixtures",
+    "stage-3-shared-batch-tooling-negative",
+    "stage-3-shared-batch-tooling-equivalence",
+    "stage-3-22-post-freeze-review",
+    "stage-3-batch-008-audit-fixtures",
+    "stage-3-batch-008-audit-integration",
+    "stage-3-batch-008-execution-plan-fixtures",
+    "stage-3-batch-008-execution-plan-integration",
+    "stage-3-batch-008-test-matrix-fixtures",
+    "stage-3-batch-008-focused-test-matrix",
+    "stage-3-batch-008-prebuild-fixtures",
+    "stage-3-batch-008-prebuild-transaction-fixtures",
+    "stage-3-batch-008-prebuild-integration",
+    "stage-3-batch-008-source-build-fixtures",
+    "stage-3-batch-008-source-build-integration",
+    "stage-3-batch-008-cutover-fixtures",
+    "stage-3-batch-008-runtime-cutover",
+    "stage-3-batch-008-live-runtime-fixtures",
+    "stage-3-batch-008-live-runtime-integration",
+    "stage-3-batch-008-observation-fixtures",
+    "stage-3-batch-008-observation-integration",
+    "stage-3-batch-007-execution-plan-fixtures",
+    "stage-3-batch-007-execution-plan-integration",
+    "stage-3-batch-007-test-matrix-fixtures",
+    "stage-3-batch-007-focused-test-matrix",
+    "stage-3-batch-prebuild-tooling-generalization",
+    "stage-3-batch-007-prebuild-fixtures",
+    "stage-3-batch-007-prebuild-transaction-fixtures",
+    "stage-3-batch-007-prebuild-integration",
+    "stage-3-batch-007-source-build-fixtures",
+    "stage-3-batch-007-source-build-integration",
+    "stage-3-inventory-equip-target-batch",
+    "stage-3-reel-auto-recovery-prebuild",
+    "stage-3-batch-007-cutover-fixtures",
+    "stage-3-batch-007-runtime-cutover",
+    "stage-3-batch-007-live-runtime-fixtures",
+    "stage-3-batch-007-live-runtime-integration",
+    "stage-3-batch-007-observation-fixtures",
+    "stage-3-batch-007-observation-integration",
+    "stage-3-reel-auto-recovery-runtime",
+    "stage-3-line-tension-prebuild",
+    "stage-3-line-tension-runtime",
+    "stage-3-rod-capability-prebuild",
+    "stage-3-rod-capability-runtime",
+    "stage-3-fishing-foundation-prebuild",
+    "stage-3-fishing-foundation-runtime",
+    "line-allocation",
+    "float-depth",
+    "inventory-lifecycle",
+    "assembly-domain",
+    "inventory-v2-equipment",
+    "inventory-v2-equipment-hydration",
+    "stage-3-batch-007-reel-retrieve-browser-probe",
+    "stage-3-batch-007-acceptance",
+    "stage-3-batch-007-release-acceptance",
+    "stage-3-batch-008-release-acceptance",
+    "stage-3-batch-008-release-fixtures",
+    "stage-3-batch-009-release-acceptance",
+    "inventory-v2-transaction",
+    "inventory-v2-migration",
+    "inventory-v2-cast-lure",
+    "inventory-v2-line-allocation",
+    "consumable-event-identity",
+    "inventory-v2-integration",
+    "inventory-v2-ui",
+    "bait-effectiveness",
+    "item-freshness-gameplay",
+    "hook-domain-semantics",
+    "item-stat-contract",
+    "fish-rarity",
+    "item-rarity",
+    "item-rarity-roundtrip",
+    "item-progression",
+    "item-condition",
+    "item-state-hardening",
+    "degradation-colors",
+    "rarity-production",
+    "victory-input",
+    "game-cycle",
+    "devtools-links",
+    "check-cache-regression"
+  ],
+  "environment": {
+    "node": "v24.13.0",
+    "platform": "win32",
+    "arch": "x64",
+    "host": "ODIN",
+    "tooling": {
+      "utils/run-checks.js": "214ae7d66b8a9e053277afb6b50cb7a82ab7971f0514d70d36c610fbcc7ce0dd",
+      "utils/testing/core/check_catalog.js": "c88238431ac208b39a760f3e81e3bf097d4ce1c08a237734e61e4cb78d944d9f",
+      "utils/testing/core/check_runner.js": "0a313cf2f789dfb01a3b41a9782d5c6ac6ff6493df43b32a9cf10e5ec634e83c",
+      "utils/testing/core/check_seal.js": "9bc3747444ad2d4ac5b9d0f534a216acb5ec192201525624f7ec6ce8ae00dc15",
+      "utils/testing/core/check_input_tracer.js": "6cf378d09a0bc087d5cb5839e992eec5b9963e12a22723f0245448b5b0a92e45",
+      "utils/testing/core/check_report.js": "456deec3cd9a1626a31eb7ba57fba44bf97064652fe9aad4aae70033267266b0",
+      "utils/testing/core/history_base.js": "971ab4fbd24b5bf675c1ab1e69976a03da959fb1975cb77e0187366e990e04c3",
+      "utils/architecture/stage_three_batches/lifecycle/historical_workspace.js": "502e3d80132681162821042d81525209297eea2480921c91b7aee3de17a13db1",
+      "utils/architecture/stage_three_prerequisites/core/prerequisite_ledger.js": "1cfe07b700c2bd08e9695a1478df44ca9eb938bb0eb578cc72dc3e319b78318b"
+    }
+  },
+  "checks": [
+    {
+      "id": "syntax",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 12704,
+      "outputSha256": "f24014acd4bb9f40e529226046091855476881761c039550cea35a014875c755",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-policy",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 91,
+      "outputSha256": "fa61635c3988ed266876f049155be4f0b4e9d9bd5d9b22bd192f5557b0b971b7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-documentation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 98,
+      "outputSha256": "5ccc69893d0f91c1ca0e68aa51750f14a95ef4d6920f8a1e6d2bd4638e41247a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-integrity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 209,
+      "outputSha256": "a6f3bed391fbe0956575d5a6bf57912e413cba96b93f77f6e2aa6a1495b1daaf",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-reconciler",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 101,
+      "outputSha256": "16f2fcfaf4326fdd0417b1ab8799b0b52af80570f9c8dc8a1cf47599744527a5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-schema-migration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 101,
+      "outputSha256": "6d67ecd68f82c0fe76220928296e44e9f4f2613a86ade2ec20e525488a90d1b8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-validator",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1382,
+      "outputSha256": "dbdb84d4aaad46bae62d7cfe1169bc794cd89a3e4869a2a020ed12fe08dba1aa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-symbol-provider-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 151,
+      "outputSha256": "1a3047647594f8520e1bf4538a1d568973b7a2fcc0ec21fe1c8d502d9b9fcdb5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-symbol-provider-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2464,
+      "outputSha256": "8c6f41cc06b4a9d667dd1505d37bc261d04ed48355160611efb3648d4bb217a2",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-external-consumer-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 177,
+      "outputSha256": "54c8d198dbeda1b1571dcfb6bcaafa06db10a31fd266530da4bbad16cea0e1ba",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-external-consumer-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2511,
+      "outputSha256": "68697a03f9881a57d8abca149cf7a19264cd5dc113b5e8fb9e7e41ce1eb899e3",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 95,
+      "outputSha256": "c04551d4a3adda0ceaeb7da9df8823679f2bfaa550ef800c0555230dc4085438",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 107,
+      "outputSha256": "6cb7f32de36badda2298f15b0f990e80afbbe5fa128e4ec7ea4faf0c612e368c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2571,
+      "outputSha256": "8dd6e25864ae26b094ed325a788f12f3bf4d38cf35632a1f96850a384615c9b1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-observation-persistence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 85,
+      "outputSha256": "eec7adb8144fa9bd41423d734419cc6ad6d2f6b1f118b051132eed78b2b19eaa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-observation-persistence-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 56611,
+      "outputSha256": "aa058d75c730e8ecd3482c34ed28c28e21974aa7c8f40fc55421038d3d1f59b5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "observation-graph-integrity-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 108,
+      "outputSha256": "1d127c2ae03092210db380e115bc765ba940b7cb67262366cf65e832e8cf5aae",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "observation-graph-integrity-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 34831,
+      "outputSha256": "68875a823687f460e60e8c87f7753cc241415e8080804f572da85a0b81549760",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "classification-evidence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 85,
+      "outputSha256": "4ea24cf481e852cdf4c4028e026851e63488975144c6964b9262c495474d17d0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "classification-evidence-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 155,
+      "outputSha256": "da12c0a44a594051047623f5ca55ac22ed56f7c8c9972ab477c3e77a00345ad7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-1-6-migration-batch-plan",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 100,
+      "outputSha256": "18521ec2f719cd6d53c6c443c03c0829846384585dc76676710ddf7452d47752",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "approved-stage-2-batch-freeze",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 202,
+      "outputSha256": "956647134c7fedbbff75c0c855816d5cb6dbd8c92301978460e5f93898a795d2",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-guard-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 163,
+      "outputSha256": "912a4feb2e3141a66d16490ef9bdd5b229410d264068aaade314398d96281716",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-guard-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1109,
+      "outputSha256": "a6f763fb6f353902aa46d759ea0be7b16a7b02a07ee049e7eb46e7e870450590",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "root-package-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 116,
+      "outputSha256": "401e4d5e1ffa4fa3aa33be8f942596daceacb67e6cfa4bac8740d97480649469",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "native-esm-fixture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 116,
+      "outputSha256": "9b0923d338bb4a7974b09dd595863f08c9854233d32d371f7d29e9c4b9204c99",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "vite-fixture-build",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1858,
+      "outputSha256": "8dec6aec317d5f408a899af31b4e40fa0721e67d1d28bf13c3065b74d534f1f5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-1-closure",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 172976,
+      "outputSha256": "cea14416f195f103fc4e4f31426df38a2e192b4db77fa547821c6aac73445ea5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-2-legacy-bridge-build",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 707,
+      "outputSha256": "8dde7d9685fe2de2c705023a510e6532c1c28794dbe8515c33b518b5b22cd8bc",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-2-asset-contracts-check",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 178,
+      "outputSha256": "5e0493869e597a7de0820b5d6fb6811293ec4230341cbc5ce3a903447ada2745",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-2-dependency-contract-check",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 175,
+      "outputSha256": "61f7e539229333b23b481777742979d1691a0f5d0561c455f246979c579cbef0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-2-event-primitives-check",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 173,
+      "outputSha256": "03e2c8712536c47c3303af887f03d75a362d1e428c9f3d0fc3f6dbb32169209a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-2-rendering-primitives-check",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 190,
+      "outputSha256": "72131ccee39e3736b83d9b77879cdcddcbaa4257e063e286e17130a302102d14",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-audit-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 107,
+      "outputSha256": "d8efe7b95b999617e3b98612c66aea4e1f70c092e9b920b7d12009c0d7ee7114",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-audit-schema-migration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 234,
+      "outputSha256": "7ff26531d1b720f562177052f75bc33ba7d75a8fc147cdd5dfd08daff5f80fbe",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-audit-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 169,
+      "outputSha256": "8d7e371a013574db9039614315d6e3fcfd4a953fb63fd1f85b509b74737a439b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-induced-domain-graph-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 111,
+      "outputSha256": "3bfb571b13eba9c6df951391bc430da51c86ff5a1847d5b5e958b2b99dbba0c0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-induced-domain-graph-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2513,
+      "outputSha256": "a12f21dbb253ede779adf69e87b3885f1405a31b19513732bdc96835702a98e4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-topology-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 114,
+      "outputSha256": "e249514aa8348180af8303e6cc9df888e3846f783849d99ba5d4471711bee2fa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-topology-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 36363,
+      "outputSha256": "f3c9fd0f3e54232bd2d37b3a8126e5c162ef66926f4d3ced643f31bbd625e8f5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-domain-observation-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 153,
+      "outputSha256": "b899eeca5d5b6a3e72e1759d98d8c0a5f315914d49932770a0983a5579a9bba9",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-dependency-audit-persistence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 96,
+      "outputSha256": "ce6cbcd5fff498cc4f607e0396701bed2c295e308cb6a93ce10d66a620c2af84",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-dependency-audit-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 231,
+      "outputSha256": "7180fba986b5b2e18c6f6a469367716bf112f4e1bb918e439ae49f0a5bcf08ea",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-semantic-observation-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 140,
+      "outputSha256": "7a32f53902bca9def991b6fe857b1f0ac5913bac458204a9a360542ee3c3c3e9",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-semantic-persistence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 87,
+      "outputSha256": "104c1da36accaeb876e0db263adf7e77c8dd6f613f0db54100462ed284bc74eb",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-semantic-audit-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 229,
+      "outputSha256": "86c8fee9783c17b1cab41957f08e5dbc2fa0a6700590f645cfa38a3a31bdbe5d",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-compatibility-runtime-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 684,
+      "outputSha256": "d07138180f0d88c0db27695a47ba3a9a63183c24e83bcf024bc2c319fdda00b3",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-compatibility-runtime-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1108,
+      "outputSha256": "2561dd322d5a806d130381e0105de4bca67893b0f35694e1dd12d59fe742950f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-candidate-batch-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 731,
+      "outputSha256": "68d86b3859c0e68a8ffd6c71ed5376739e186fa7f67afdf9f9388dba1e510d0a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-candidate-batch-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 548,
+      "outputSha256": "a471ddd48f1b0d8eacae115d507f64cff069e96da5911c9d89f0a6c50b603c6b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-approved-prefix-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 159,
+      "outputSha256": "b289fe3547e37a884f863bcfde3434c1c579b3c77af9f5b48230c4b52a3d2a36",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-approved-prefix-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 356,
+      "outputSha256": "8699a0c3b030a3fbd1df6e50f42ac3f48297514adb1227a6e957fff13395588e",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-006-audit-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1050,
+      "outputSha256": "2479c0359224d26e44cebd72564d3c2db829d5fd43fc37b818f489609ec80499",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-audit-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 705,
+      "outputSha256": "d8876f767dbeafead585382449d568006b0f7758bf01d96ab9c7f2af811984ff",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-execution-plan-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 189,
+      "outputSha256": "cb7cc0ae574d9bcc357c6de44a93e3c81a13e38b6e018ca89f846d8d7c17299a",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-execution-plan-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1200,
+      "outputSha256": "b5540de93678a48b6bee57ac5c0e88bf9900c3cf8ef78271b38cdbac9a834e4b",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-test-matrix-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 690,
+      "outputSha256": "a48d42a301eeb2fcf8d7764060b01d6fa03685cf256af9757396542774a2b0d2",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-focused-test-matrix",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 345,
+      "outputSha256": "8b0f5b8a06682e2f563a8a9a6c7546d48bdad6412e7101e1bcf3c3253c5f8a54",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-006-prebuild-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 517,
+      "outputSha256": "c53a393069b668c3c41e5ba608042d8e2c0eb3754e573afdbf48530c7d571c05",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-prebuild-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2571,
+      "outputSha256": "256631ca0f581c8c35dc8335afdedcad32927ea95fcd1cd09a653dd3e94371c4",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1296,
+      "outputSha256": "2f8d41177dc373949b7ce92ff28e87115d46995e423b7ad866c1b010441c7e40",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-006-observations",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1029,
+      "outputSha256": "972720c205a7dbeec71bbc653e0735642ecd0302a25bf8ba2289a89e1ab4caae",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-006-release-acceptance",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 526,
+      "outputSha256": "2642fc3ba8190b8f307a9090aa4b4e6b273f27b959a3c5d0b82df8be1d8bfd3a",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-audit-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171,
+      "outputSha256": "86a92e3affb94162926a76ca635910f8b3202eccd650e2f2def7439e92d939c4",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-audit-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 217673,
+      "outputSha256": "7a7085d9805aa00456a08555460a8a63e85ad6963d300708461f0614f94cd974",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-tooling-generalization",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 722,
+      "outputSha256": "9c3282b5195b1b368aff3937b2bd4fd0d90ad0cdaf10f0d9a615bd5a7d111b6f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-009-cutover-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 62137,
+      "outputSha256": "1212ac3f348913311a0651b834c8af423e1c8f4230ba63da9b60899076523985",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-observation-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 58763,
+      "outputSha256": "95d1b44f4139b4ccd0a509d3846e29c224a5be895af5a12958a213d9ee865f66",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-observation",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 64287,
+      "outputSha256": "a2e95c6f869d37c7d04ff90a9f5cbfbfbfa09ad6f4157d594e0b5eb1367e4f33",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-live-runtime",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 52239,
+      "outputSha256": "bd08fb78e3d71af832fe47349cd5cc66f53d9cf2b1d9c72aaecb21f6338f89ed",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-source-build-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 57173,
+      "outputSha256": "40e9bb044d7402d593bba377ff5c8262faaed889a312303e14a30ff0dfd87d78",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-source-build",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 53472,
+      "outputSha256": "1dbd1295d175897298413bf42a39bfab21145fd55a4c84a332764889f0db4319",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-planning-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 46799,
+      "outputSha256": "bd6b316dc92555dcf61569749a32393d2341c2b3532ecd79b6471ab33582feca",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-planning",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 50209,
+      "outputSha256": "55d64504117366d130dd94b2f833cd4a752a0120949704e7b3a1a0fe515c9443",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-audit-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 29634,
+      "outputSha256": "2034f4ef7a2daffbbeae684e99e32687c07446f8ade6c95681f6adbd167a6305",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-audit",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 24758,
+      "outputSha256": "5e5a218f8d8443935c3b026e104510ec5e7d28703db0e4cbf479eb1580b1c3e6",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-planning-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 22071,
+      "outputSha256": "d275842b81d07b14b89a4722ff364ef4547ac9abbecac7fdf10a817381184d89",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-planning",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 26350,
+      "outputSha256": "a57f5563de17665a02b753c1c4609be15b3276c4549462c7291379c240606aef",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-source-build-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 25157,
+      "outputSha256": "fd4f25c42df03aed7c3560060d1e1051e8f2595b92f9f1e1aae89adec22bfd07",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-source-build",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 24653,
+      "outputSha256": "1947ae674b7ede58acab48b3c266d375dddba091345bc849485620caad6d335d",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-live-runtime",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 25032,
+      "outputSha256": "320f1e76d7695039220a2bdd7b7ae71e8402b70589a3c8e573547aea42e2103f",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-observations",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 28233,
+      "outputSha256": "a514327f9e76fdee007f90e4506cfba4e78f0ca8c4875d450838b805b4c5b562",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-release-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23369,
+      "outputSha256": "5487e18c9142b0794994e45097c840e3b2919862cbe82fafbdf16155f09bf0a4",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-010-release",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 24104,
+      "outputSha256": "35d8260026eaacfab0937f0a172360ad93c071972e621b7646674a4cf5232280",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-audit-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 33806,
+      "outputSha256": "2285ddc99487185e612d7996c60446e379673b181d8d567566d8cd8c51e94232",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-audit",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 28978,
+      "outputSha256": "5204655fc8603be3773210054a2211a069c218add17b0f5f0a0f93e605fa4d79",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-planning",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 30504,
+      "outputSha256": "879f10480470198138ac9b17aa3ef47b3feb6e66355b003e48eb3e8db3ab0ae4",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-source-build-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 27047,
+      "outputSha256": "8de01259efe6040c166c59d293cb7aeab5a09e921b851f4675f086ee1eea8a40",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-source-build",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37837,
+      "outputSha256": "4d19294bf3381426ab8a80bf52025766aeac8eddbf1928a4bf913e67ee764255",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-cutover-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37494,
+      "outputSha256": "c1090ce6faeb42690c01328ded7512f0f9af8b93c79837822b8f20d90dbf4bdb",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-live-runtime",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 39838,
+      "outputSha256": "7e2fed5a83e0f6b85cea4b412ff5de50a39e57bb309a51c671599afe3fd38bcb",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-011-observations",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 43667,
+      "outputSha256": "b389af1bd3d6260861cc58b3964977fabb7b2f6a3bcb80cad68f41f7a6a0fb12",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-audit",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 29815,
+      "outputSha256": "0eb0a9ab8b1ad5f9d61e30a373a31bc035b63c9cbc1c3425d2907086f6f80fcb",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-planning",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 31341,
+      "outputSha256": "cccdbe1fc142e1e965bb7b9a3c6c3caa80392233e0e44e13046050e84146d61d",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-focused-parity",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 33977,
+      "outputSha256": "e144db8c3ca54cb48da57fbf42e56391b3db5cee84e74508ee66e602a39cb556",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-source-build",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37200,
+      "outputSha256": "e387ec7870b3e39b50f445374033f372e33795e9a7612efe1f43d9d41e14920d",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-cutover-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 35502,
+      "outputSha256": "cf89f463f5316d4ff13a8dd81af3f452f207d7f751b45c1c8d77ae4755a44360",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-live-runtime",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37103,
+      "outputSha256": "5bcbad91bc76f32a43c90e8179f3339c8e2805a859a8b0484e29683bc839c2dc",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-012-observations",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 40375,
+      "outputSha256": "b7dde6c126dfdb9c9d94b1b1e7be0ed65f95f817b7a2a1884187d1bec54a4ab9",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-013-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 109572,
+      "outputSha256": "84cc4a005affeb34cca0df762ad56c69a28585bf05407a76fe997342736a4dc1",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-014-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 102155,
+      "outputSha256": "222a2cfd68e71bac0d63bb5f56db4a4520257a24072898fe70e455b28a02dc14",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-015-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 97305,
+      "outputSha256": "ce3f26f3069f7f10be8d592ce74f24a046874b97bef4d94df3e344a11e06073e",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-016-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 90460,
+      "outputSha256": "cefde41cb61008898b5d407ba8df1450117e1b6a02f4603fdd9d198b7be48993",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-017-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 75055,
+      "outputSha256": "9223235f17b1328ee90e07fa3e95520d80d10436504573c3e98e26dd28130070",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-018-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 72429,
+      "outputSha256": "41ab7581d0296c2aacad6c6afe3f03dbd0bfb1014c9a426c76751f57c2de1c80",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-019-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 67264,
+      "outputSha256": "8732abfdc5dab452836bfc9563b5aabec846d189508dcfb2a560348ffad53411",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-020-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 63892,
+      "outputSha256": "cf8312e426d77655e3f5a4a05c18540f49fd3282628ea4264a5536cc005a6d42",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-021-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 51148,
+      "outputSha256": "e7968f2096307330de54efb4821c8ff4341a4ab0b032db4706e5216b818eaaba",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-022-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 45553,
+      "outputSha256": "f9f88db382db8126dfba15e1536fc9a8bf0e4389e199546cb9ea03ecdba728f8",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-023-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 39071,
+      "outputSha256": "b1ba9205820bdac61dfbd5ac8a46325c682cef8d99173b594aca328ecbed8e86",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-024-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 36291,
+      "outputSha256": "c460c7fda1d499eafab578685f15856dd0db42df95279e774aef072f80d94c18",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-025-architecture",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 44400,
+      "outputSha256": "b815af31c9ab29fee87bcb7698915739912e6574aa587781f3118a534b25a4b7",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-026-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 193248,
+      "outputSha256": "ab2497b05159bcdad376387e6ad03bf56f48e388899a64007d87253d49387a56",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-027-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 189007,
+      "outputSha256": "0b483c20cd43df1e6a013131a5a22b4dc2bd3fa4ebead624ac7f0a221f0c84e0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-028-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 181364,
+      "outputSha256": "05191a0f6553ca5253a5b137fc84a5b3860ac960160890e24828a7acdb313f48",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-029-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171489,
+      "outputSha256": "bdc9ca5ba38310b61c5d76f999f111eeb9e68bc6d440f33fe7a5138e83724e4c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-030-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 168126,
+      "outputSha256": "115e5cbfef526c80e6de413ea5d022d7976280eb28e5ac189edcfd8a0555956c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-031-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 164009,
+      "outputSha256": "89a3ae59e17e3f8543aacfb0deb76848755b9a125515ed3fb5c1025d9e438f8b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-032-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 147325,
+      "outputSha256": "e44388e26da0fe22ecb0ddec172406fc9c3708b177ac3e5f8979fd95dba91bbf",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-033-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 141165,
+      "outputSha256": "873cb5c75607e6de6a36ffd8236dcbc786f865fe7c867f2a7bb9152b572db5f6",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-034-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 130420,
+      "outputSha256": "2f18ff451409b8e6de3e4fcace91e11d0a8d75f1ec1eb5192a1e7b0a4ba65a59",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-035-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 103760,
+      "outputSha256": "e16a674e8bdf6f8ed75292d93d96d6db06b03982652d57b3c508ad9b969b1772",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-036-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 101053,
+      "outputSha256": "e230e24876087ccbf6698d7f8e63228c821e2b59b73beaad4aa9152842370523",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-037-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 90132,
+      "outputSha256": "15896577ffc822cb51061c199ef7fe69543eda7ecdd169c0eb606ccc6cb13af7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-038-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 77346,
+      "outputSha256": "4c9bf6c4c3bd3a950cee2945484d06fb84b1da250429777e2f4cc3013fc1db54",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-039-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 71623,
+      "outputSha256": "bddd0f5994ab3a8f4dd21f63d8df28aa491a80e98debc947d76d315456b967a7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-040-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 63922,
+      "outputSha256": "64e957e654536817cd38e2862af286db21a696e485c6ce2554109603c9d30834",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-041-architecture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 53523,
+      "outputSha256": "c25c762b90c25974ddc7679aeb722adeffef0bbf8af6a061fa51375d5caef436",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-reviewed-shapes-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 178,
+      "outputSha256": "3e99cbaa9a99b4be83016a045816b869451d731ac376c56d7b52b2d4d2e19ab1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-34-review-queue-freeze",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 51382,
+      "outputSha256": "3f37bd87f330ff10a941aaa3d55a688aa75fc1953dc045a56ce9069a61bde52a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-34-review-queue-freeze-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 12720,
+      "outputSha256": "84dfdcfdb1d79c5ba1ce6031ef5c190f4edb9ccffbddd31ceadd212affa5ee86",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-36-graph-review",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 26561,
+      "outputSha256": "426e58219faf39c2747b2477df1b3c0a966c9d716a1502bb08947ba1265df401",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-40-graph-review",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 15415,
+      "outputSha256": "d5eb386d190a8103021005963358c3c92048db4817e0b380bd08797aad7488b7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-41-graph-review",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 11870,
+      "outputSha256": "2614322a89385be6aa1944dee73a65b5525d4782b52cc4d663a96547b909ac81",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-41-replacement-plan-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 261,
+      "outputSha256": "83e772dca6b1366d92c0b6aaff92a0c6e9f4938e79640545e4a6c7fc3e4354ff",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-42-graph-review",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 9039,
+      "outputSha256": "11518c0876596cb26aee64ba1d825ba9d5398130f256389e5b8cbd5fcf1bee47",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-001",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37461,
+      "outputSha256": "6a4a126ff97a1dc5a52ed2f17c856289c07949ed680817fa99344a70d150a74e",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-002",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 36378,
+      "outputSha256": "a1ae16c9152fbe32c9f05f3e78cdcd7713ff37723ed2eb02262b210218147a51",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-003",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 37420,
+      "outputSha256": "cb0ad9aaacbd389053ea264acdabfca84023031219b7b98bf2892149d0e2ddf8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-004",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 43501,
+      "outputSha256": "ddef265a6ede36350fab30ea218b4298f9a96b6b4ec68cb003f4f13e45b84893",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-005",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 42256,
+      "outputSha256": "9f0382e603b65e3b22dfb1662990a8bcdc1b0f36e57c22fdc11ca986ea5c3107",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-006",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 31275,
+      "outputSha256": "272e1b5caa3c53537e5f420fafade1f21475614b66d3895f9f807c4ad329e36d",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-007",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 34170,
+      "outputSha256": "2f0e34369103b63e9aa71f1e48e62849bfa7a0465e25022c24065dcf09edf390",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-008",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23446,
+      "outputSha256": "b21e0d57fef7c44dba9e69326029428e9b7e04106d26a01dfed2832d21f81621",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-009",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 24127,
+      "outputSha256": "2cb0b14cad1da77d424afc7ef5a67ada9fa618192d8ec32fa95f3082fa5246de",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-010",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 22443,
+      "outputSha256": "fb6b4ec53943e0d10c2eae119a6d6846cacbc1bcf0437828b46e98cbcf79ec05",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-011",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 22058,
+      "outputSha256": "e07d79bbaed53ac091c1b34fd5c75fdb691eecb09594baa6470fe7e999bd03fa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-012",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23474,
+      "outputSha256": "d3c0933cb2f0d655c11cf18376029a012418b38ae353dc24d49539b221861ae1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-013",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 27759,
+      "outputSha256": "0218c55f4f7e103ea2bc68321b0570983cfb104eb9adf46391e4db646a9817f5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-014",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23971,
+      "outputSha256": "b8ad947d29bd3ec415f651c6f5092472dea56fd43c522a7774e364d272ba7559",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-015",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 24052,
+      "outputSha256": "102e313e651c25b44ef25b11aa4a7dd08f08d7959532209f915320c70bab36b0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-016",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23647,
+      "outputSha256": "0353a485cf27e0f0c0251b1221c774a569ff7ab9439a0eb6539671dab6554b30",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-017",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 23813,
+      "outputSha256": "82c3e388b2fc3c68f8e7e78edb0382b62aef144a02031236354a3df7a6cd18b2",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-018",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 28055,
+      "outputSha256": "8d1868957fd05fe29949f7862a5385e6d9cd7dbcea8318b73ea8d1303435e62f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-019",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 25600,
+      "outputSha256": "56f982e815bb44cc846c392fc4fa3e3ad1be9a97fa7fc3f20741e5c040221afd",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-020",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 26293,
+      "outputSha256": "e74bd6b56fed036d738c7199b01978db7cc52f7f3ffd90cd06112c25a74ff4a9",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-021",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 27107,
+      "outputSha256": "1e67a449c5ee135f21e8c81393df12676fae4f5239634c505e2b2d5a2e7b3784",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-022",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 25394,
+      "outputSha256": "fa0a3269aa20cb40cb26c9ca1c01f5c5a318001d727b46bd1764825795ec3518",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-023",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 25411,
+      "outputSha256": "571474a003199013b0ad61868b661da4e68f2828106071842481aecf841c951c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-024",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 18656,
+      "outputSha256": "0ed9510b23ae64fc8b42a6b8705633c7d583e74459f3795024ed8000859cafaf",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-025",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 20853,
+      "outputSha256": "6f6cc4abcaed05424ba13b30efc44a183987d884b8a74c47c0b57b04ce97f1c6",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-026",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 20146,
+      "outputSha256": "78c6a3c77eda248abf5166eb61bddde3ca4d708d19ba3617a3d2ab676ca7ec7f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-027",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 22225,
+      "outputSha256": "85e76f48c187cb558a915cbb0efd756b753ba13559058c08b44c7331b3c2b64a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-028",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 9384,
+      "outputSha256": "2f28219c0853f725054ec6951badb056fa747ed448e6d63f3f4e50499ba88e5b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-029",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 10733,
+      "outputSha256": "3535fd16b63040e6646ff29258984020ab102bfd5ba326d5053336701ea885a2",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-030",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 12229,
+      "outputSha256": "402cafd501b55a6536982c1067e9eedea3d1f8f5f44cd9c3bf3465ba578ab216",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-031",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 8763,
+      "outputSha256": "74bd819aaf53ba6df696526f8d0d99dd761aa235598bcb99352430ce39548095",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-prerequisite-transition-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 135,
+      "outputSha256": "35ea91a4c1c063dc06e7d747cfcc9b74f8e2627be0d475c273de65af91cf9a34",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-slot-split",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 166,
+      "outputSha256": "69957e1dc07f9447e811764c7e0bd6ee348078c27d5f044a95f80f8f6426cc15",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-runtime-load-order",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 129,
+      "outputSha256": "4478097f1b9b1a6fb4a4b4c08d2d169587710f057d1f6f0ec29040f8d44d3d78",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-activation-retirement-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 267,
+      "outputSha256": "c8f2b662dfb367dff94cf40b41bd5db328b22c6391292d76e58a66f4ca200515",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-shared-batch-tooling-negative",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 63813,
+      "outputSha256": "edb214cc774300ac9f8a119855b62d516c98f8f1100dc888733b10e364b27646",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-shared-batch-tooling-equivalence",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 174344,
+      "outputSha256": "e6246acd4fb22c35df4251ed39bdf2b9eabb1a5023dd0ca0585bc12915fb24fe",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-22-post-freeze-review",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 71107,
+      "outputSha256": "7c2730347fa8d811a4b62d79adfe0b7448f7511007c24880b9c7ded6ede77540",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-008-audit-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 155,
+      "outputSha256": "ab484c0b57dff10693b7945442f04ddb05534e1e5cde8394613a9e360e512ad2",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-audit-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 94959,
+      "outputSha256": "3a7005d33d9560b0355f2b1a92c0f914cdea32de6e88e03386705b84a7be7f9f",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-execution-plan-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 152,
+      "outputSha256": "bc008ab924fa933a805c85a0b2abcdf9e532e178149cd84d731cff90441b5d15",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-execution-plan-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 111399,
+      "outputSha256": "805dc472b0b6e5d743ce138b81daeaa0fb2e80590f4337e94429b91a892b5e87",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-test-matrix-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 120,
+      "outputSha256": "b6d01f1b399e9f3c754b8e6452a0e29113c0b3d39253a0ffd6ca0d59ff0ea9e3",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-focused-test-matrix",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 32936,
+      "outputSha256": "dd73437f3537e4cfb0fff33053885dfd1aaeb838ebdf794d6d253d918d3c5259",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-008-prebuild-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 223,
+      "outputSha256": "67765393c42aa815d32f8bdd3a1d414d952aa077663a4b0584fb4f0a4f09f74f",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-prebuild-transaction-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 161,
+      "outputSha256": "dc1d797bf21abca4312e8020279d326bf2f13a54d20abf245db41e765dd6a327",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-prebuild-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 103148,
+      "outputSha256": "e49e7a268964b6508dd3d2006ac72059913a4f9d372827773366d0facb5ad583",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-source-build-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 333368,
+      "outputSha256": "f683e4dd4b3634dfe6de9713ec4f0c9888722131f4ed14ec78ffb3f020964704",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-source-build-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 515158,
+      "outputSha256": "d6de020d14f20b55a08ce6f838a7937fb35f214f91c6ac9a253dc2af1dcd03ce",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-008-cutover-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 443719,
+      "outputSha256": "ab14b584cc5cd7fe1976d5e19742fe7a2473188bfc5398249027f96cd1c6991e",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-runtime-cutover",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 108631,
+      "outputSha256": "9f8a060571991c21999c8d582ff5b7a866b108055e670798929e08e43aa4d311",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-008-live-runtime-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 47740,
+      "outputSha256": "d14c539a44ddb107510a72b6f4e3d32c9109bb4c8045549234f42c83b79e55a2",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-live-runtime-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 128246,
+      "outputSha256": "ffc6f65f3baebc3c8d41bf1b8da02e427832dd27bdbdaa00b097a83860373a89",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-008-observation-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 50494,
+      "outputSha256": "7889520fcd9e8f1117313a619e295251bd1d09764e7df959f810f2002e76bc5a",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-observation-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 107584,
+      "outputSha256": "63f341b9a16ce2f31d30a01fd03892a86b4ea887b5a50208e1be03042fb71f0a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-execution-plan-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 161,
+      "outputSha256": "7f57e0d3f4c869c005e50c1786bf62105291aa2cea2071a39184bb44ae16f273",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-execution-plan-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 152,
+      "outputSha256": "4e27d13c3b69bc286e3485703fe3c939b2031f3360a3753729d10d4cd361e504",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-test-matrix-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 124,
+      "outputSha256": "295ea55e8c3f06c043cd3747b2bdb3f83473be6b0b0b302bdc9601f5a3ab7f12",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-focused-test-matrix",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 51756,
+      "outputSha256": "1e7c70bed998014abc3d6b3d427317012792a191a5b72cb23c1e16e8c72e597b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-prebuild-tooling-generalization",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 140,
+      "outputSha256": "bfee6bf7286708c2e634defa694d1993a3d09492a32231ff36b73c07dc9b659b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-prebuild-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 154,
+      "outputSha256": "78c42906ee2a201f6ed1fb0689c12020d708b902e2cc426fce6f739f127ade8a",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-prebuild-transaction-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 123,
+      "outputSha256": "25d3fc68b31a9872ac13f68201cacae1d70b7d699a40c8d7723ea8bf4dccb3fc",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-prebuild-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 43925,
+      "outputSha256": "9fde05ac3ca1e56395237699cbf2cbec6a0325fc84afb8544c9122dcb85c0d94",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-source-build-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 167,
+      "outputSha256": "15723c28f02f3fdd242aedb83df0d50787171ccc03ec8a58bbea31bc0a2ac601",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-source-build-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 59336,
+      "outputSha256": "afabbac70f183799d2d4d159871aaf7002347960634d7933efedab27983703ca",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-inventory-equip-target-batch",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 262,
+      "outputSha256": "4b97acaa0e1b5abf2b8d5265b0f3aae1f54bcab366a68499d1fe7c83e77d62f5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-reel-auto-recovery-prebuild",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 155,
+      "outputSha256": "7b804434b07329b06cb87f513ca2e444075d002b9c7ed582e56dc3f2a85d7a5c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-cutover-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 185,
+      "outputSha256": "aab160c75cf9d3197dc2b808bddf70ba418ad71ba81346f0f11b01dbcd9bb9d5",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-runtime-cutover",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 54717,
+      "outputSha256": "1d5f6e10f0dbb6bd398976df633325d7e728396718ff9ca217267e4b2004c069",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-live-runtime-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 180,
+      "outputSha256": "89b3c2f56f98e68b97ff217ec0d96ad76190765116502cf19259e8902990098b",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-live-runtime-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 54184,
+      "outputSha256": "65b147936f1df658ab44164e150dd8d1baabeba0dd73ed05cacd003011408097",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-observation-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 956693,
+      "outputSha256": "8b814a868450eb6259706a5da22f4b4fbe1212d7b777df1a420209b4c0b1cffb",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-observation-integration",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 907456,
+      "outputSha256": "9fc3d40895db55a06d80637ea79ac07b259981bfc723e7088f5aadc63f856e05",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-reel-auto-recovery-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 834,
+      "outputSha256": "9e94092b077035722e88921ff82ff6c7b4d06c3f43da474f4ec076831da6bc17",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-line-tension-prebuild",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 118,
+      "outputSha256": "0d8fdb541cca94daebc6564af388bf78396af2b0624f37116c703a2fe1492429",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-line-tension-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 834,
+      "outputSha256": "1ef9b8bd9ceb0d1a9661e1ad0d3b140bc9f4e7035ac97ee5a8c8ddba37e9c034",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-rod-capability-prebuild",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 122,
+      "outputSha256": "84ab5341c9f05c2b2f04d3015a089cbad63aabc0905ae358be36cdfc70a9590a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-rod-capability-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 803,
+      "outputSha256": "d4ccff5e642e41b1310b6650f2c2e5f29e256ee60b23446994541b48deada3e1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-fishing-foundation-prebuild",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 184,
+      "outputSha256": "0788610d5a53f144b46a163180273406d3c3c1740941ce361835032046dd164d",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-fishing-foundation-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1002,
+      "outputSha256": "5cd559b47fe79ccc5a377936314e0b30973e963dee21671502849ffe95335ca0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "line-allocation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 148,
+      "outputSha256": "2260a5ca5111119dd482f3cda7807520bb54affe218244f59fe8d4336ab7fb42",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "float-depth",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 150,
+      "outputSha256": "61c1b7802fc4185d34faf5e9e730ac71816415bd0e6af7d4b754f083c225ef07",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-lifecycle",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 165,
+      "outputSha256": "cd8acf4a6a09257d39e28f27eafc1608ea8557513a2de3734b7ded26775536af",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "assembly-domain",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 140,
+      "outputSha256": "1619aa3a92b1b1564531c47c4abd24bf2cd53f31ae8885908dfc3c2124db7d14",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-equipment",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 231,
+      "outputSha256": "ef2a44f1cb19ab42de1adc5a27dca46d17afa79213b2aecb86256076e03a89f4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-equipment-hydration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 33077,
+      "outputSha256": "ac0ff5956f51158993c1184972b1d82e8a0465f6ae506d8fdb927f1ff7be008c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-reel-retrieve-browser-probe",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 377,
+      "outputSha256": "f36e4ebbdc16663cb3142ef20faf6936b39fcce25468de83584a953de90e8a97",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-batch-007-acceptance",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 718,
+      "outputSha256": "65d59d17106d50358808c1879d6a764b09de84da6db56b61f3d58ca4dff1ff48",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-007-release-acceptance",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 187,
+      "outputSha256": "7fb4798c9a1a40b4b8f7b6f9a681ab509436a97a1adfae1009fe69d8ad8eff61",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-release-acceptance",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 50873,
+      "outputSha256": "676f2e57f92636ea05ff1a13d773422a99c94a4a461eb6f81a9d69a38764513d",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-008-release-fixtures",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 52513,
+      "outputSha256": "6fd523db9bf49620b18ed49dc37dd4ff76d78aa6c8fe12f56f5f6ae970ae2eab",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "stage-3-batch-009-release-acceptance",
+      "scope": "history-base-0.24.63",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 21958,
+      "outputSha256": "d92e76134894bb3e8b704389669caab94fdfb585b8fff7965ae533267edf1b92",
+      "cache": {
+        "sealed": true,
+        "reasons": []
+      }
+    },
+    {
+      "id": "inventory-v2-transaction",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 88,
+      "outputSha256": "79c4b9eb11aa3a77d5882ad67384e179a459477ccc58bbda37ce8fed56a5bd52",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-migration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 177,
+      "outputSha256": "763530556d1932b9694cf3327ee52bf372ddcfa1b0eaf61478038060665d245a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-cast-lure",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 147,
+      "outputSha256": "5d057362d41e8385932c14158f099314f5031b9f39609a9f55820d738f611057",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-line-allocation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 99,
+      "outputSha256": "e4ea5229ba7044c1c38438ac1740351a3e61a0b55486e818926f03e662c14dd4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "consumable-event-identity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 128,
+      "outputSha256": "028772d62a2e478d94854fe1f1d3570df1e57f9f4f145703b54bd6bbe3e0a274",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 477,
+      "outputSha256": "f5ccbbe95a8ade3808897f910440ea979612b58fc49f3cbba81f2dfaec381e5d",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-ui",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171,
+      "outputSha256": "143361f40a1e1aefc18e0877598bca283ca7dd42832587a15c1b4adcaf8d4f99",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "bait-effectiveness",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 157,
+      "outputSha256": "d8f8afc97eb38893271e81d4879ff374e55947bf946877901f39030ed4a69435",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-freshness-gameplay",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171,
+      "outputSha256": "4ea81d08a0e150cf283ec6a8baf049f97bb033dc9eb15a0590f43a7692df109a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "hook-domain-semantics",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 149,
+      "outputSha256": "85fbe93381d0cd96aec283aa298fe086fd4ec53b91f62320ceb6b33e82c04565",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-stat-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 131,
+      "outputSha256": "49ea7aa1efb48e705db9ad9471391107be57e075d6ca32267b49b0394e42c6f8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "fish-rarity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 165,
+      "outputSha256": "1b918c6db1b81329517b6c159d9941a380bed92b1fc6f48d4eb4ce0706c2001e",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-rarity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 149,
+      "outputSha256": "dd75de5738e7f3e2ed18b458ef892df97d1f40eab2cd691d3c7ef77db11ebc7a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-rarity-roundtrip",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 139,
+      "outputSha256": "8055edd1a096170f20448a946ce1004ef2fa725a9f8d6f8cbdc0dec08177c020",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-progression",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 182,
+      "outputSha256": "6098e7322e736cc84002c5cdd4e3d6bd8f1120fd687016ebba437f3d70810be3",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-condition",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 155,
+      "outputSha256": "a16cc6ee324c03be764d129b2f2966fefe94ea27c8183d650d40d0f5922e80de",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-state-hardening",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 144,
+      "outputSha256": "bdf873c6af8cdbf0117a65c4dc1bba8755071ccf862897a0aeeada2e835bb330",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "degradation-colors",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 119,
+      "outputSha256": "577233b6ea474633bdfe61f5d271a6a997949108e093b18890174f4c19c4982b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "rarity-production",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 127,
+      "outputSha256": "e86d61b0e0bfa0854bfc0388c574d69331a61b0dbd53fc305f51f739d6fd868a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "victory-input",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 143,
+      "outputSha256": "dced92aad7d4bd5b718495582af0ef1035cb734cf0f825b174288ab9de21140f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "game-cycle",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1595,
+      "outputSha256": "bb2e514c85d765942ce4ef5bc126755d357e7c6567f3d1233271a633dddb3d35",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "devtools-links",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 123,
+      "outputSha256": "7e9a225ac1d95fbe06efbb2c4aeb7d89bab802ea622644ac0a7126346e294bd4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "check-cache-regression",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 8923,
+      "outputSha256": "a17a21c6721e71322b4b09da95f5eefcbcc386c86413fae409cfe3720379a3c1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    }
+  ],
+  "totals": {
+    "selected": 251,
+    "executed": 251,
+    "cached": 0,
+    "passed": 251,
+    "failed": 0,
+    "isolationViolations": 0
+  }
+}
