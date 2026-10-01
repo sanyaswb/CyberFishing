@@ -343,22 +343,6 @@
       ]
     },
     {
-      "id": "bridge-1ef925dd2ea8",
-      "bridge": "src/services/weakest_tackle_limit_resolver.js",
-      "source": "src/systems/tackle_stress_system.js",
-      "target": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "WeakestTackleLimitResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-1fcb4fbde037",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/fishing.js",
@@ -390,22 +374,6 @@
         },
         {
           "symbol": "RecoverableLineCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-225041916b22",
-      "bridge": "src/core/float_tackle_line_budget_policy.js",
-      "source": "src/core/casting_distance.js",
-      "target": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
-      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-006-fishing-e48e70d8",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "FloatTackleLineBudgetPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -482,22 +450,6 @@
       "globalProviders": [
         {
           "symbol": "LineAllocationPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-262c43042ef7",
-      "bridge": "src/core/fishing/rod_stroke_capacity_resolver.js",
-      "source": "src/core/fishing/rod_pull_calculator.js",
-      "target": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
-      "reason": "Preserve the exact synchronous Fishing Foundation consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "RodStrokeCapacityResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -594,6 +546,22 @@
       "globalProviders": [
         {
           "symbol": "StaminaController",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2d85d5d54f3b",
+      "bridge": "src/systems/tackle_stress_system.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/fishing/tackle_stress_system.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "TackleStressSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -727,6 +695,22 @@
       ]
     },
     {
+      "id": "bridge-359a15f20087",
+      "bridge": "src/core/fishing/fish_fight_direction_resolver.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "FishFightDirectionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-37d65c5560c2",
       "bridge": "src/core/inventory/item_assembly_stacking_policy.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -807,6 +791,22 @@
       ]
     },
     {
+      "id": "bridge-3fa564e45db2",
+      "bridge": "src/core/casting_distance.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/casting/cast_distance_calculator.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CastDistanceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-45364c413248",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/application.js",
@@ -866,6 +866,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRecoveryFishSlowdownPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-46f9d5f6a60c",
+      "bridge": "src/core/casting_distance.js",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/domain/casting/cast_distance_calculator.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CastDistanceCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -991,6 +1007,22 @@
       ]
     },
     {
+      "id": "bridge-4f2541c77311",
+      "bridge": "src/core/casting_distance.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/casting/cast_distance_calculator.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CastDistanceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-5021e2c92869",
       "bridge": "src/core/items/progression/target_range_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1039,22 +1071,6 @@
       ]
     },
     {
-      "id": "bridge-537204637b4c",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/systems/player_force_system.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-53764cfb47d0",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/core/inventory/flat_inventory_item_repository.js",
@@ -1087,33 +1103,17 @@
       ]
     },
     {
-      "id": "bridge-54ef64d12545",
-      "bridge": "src/core/fishing/tackle_stress_accumulator.js",
-      "source": "src/systems/tackle_stress_system.js",
-      "target": "src/game/domain/fishing/tackle_stress_accumulator.js",
-      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "id": "bridge-58b9bf61ab47",
+      "bridge": "src/core/fishing/rod_pull_calculator.js",
+      "source": "src/systems/rod_pull_system.js",
+      "target": "src/game/domain/fishing/rod_pull_calculator.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
       "introducedStage": "stage-3",
       "removalStage": "stage-3",
       "globalProviders": [
         {
-          "symbol": "TackleStressAccumulator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-550eed84bb7c",
-      "bridge": "src/core/fishing/tackle_failure_selector.js",
-      "source": "src/systems/tackle_stress_system.js",
-      "target": "src/game/domain/fishing/tackle_failure_selector.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "TackleFailureSelector",
+          "symbol": "RodPullCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -1194,22 +1194,6 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-60d3aa8afcca",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/core/fishing/fish_fight_direction_resolver.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -2031,6 +2015,22 @@
       ]
     },
     {
+      "id": "bridge-9c1b33e1f755",
+      "bridge": "src/core/casting_distance.js",
+      "source": "src/systems/line_system.js",
+      "target": "src/game/domain/casting/cast_distance_calculator.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CastDistanceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9c79441f163f",
       "bridge": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
       "source": "src/app/bootstrap.js",
@@ -2130,22 +2130,6 @@
       "globalProviders": [
         {
           "symbol": "PlayerPressureFatigueCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a2b9c6ef214b",
-      "bridge": "src/core/distance_unit_converter.js",
-      "source": "src/core/casting_distance.js",
-      "target": "src/game/domain/casting/distance_unit_converter.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "DistanceUnitConverter",
           "mechanism": "global-this-property"
         }
       ]
@@ -2370,6 +2354,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ae5067513523",
+      "bridge": "src/systems/player_force_system.js",
+      "source": "src/systems/fish_force_system.js",
+      "target": "src/game/domain/fishing/player_force_system.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-3",
+      "globalProviders": [
+        {
+          "symbol": "PlayerForceSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -2822,6 +2822,22 @@
       "globalProviders": [
         {
           "symbol": "DragForceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e1f35280f471",
+      "bridge": "src/core/inventory/inventory_item_stacking_policy.js",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemStackingPolicy",
           "mechanism": "global-this-property"
         }
       ]

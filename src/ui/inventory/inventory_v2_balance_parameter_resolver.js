@@ -19,8 +19,7 @@ class InventoryV2BalanceParameterResolver {
     this.#config =
       config || globalThis.INVENTORY_V2_BALANCE_TOOLTIP_CONFIG || {};
     this.#physicsConfig = physicsConfig || globalThis.CONFIG?.physics || {};
-    this.#castDistanceCalculator =
-      castDistanceCalculator || this.#createCastDistanceCalculator();
+    this.#castDistanceCalculator = castDistanceCalculator || null;
     this.#retrieveSpeedCalculator =
       retrieveSpeedCalculator || this.#createRetrieveSpeedCalculator();
     this.#reelConfig =
@@ -698,12 +697,6 @@ class InventoryV2BalanceParameterResolver {
 
   #isRod(item) {
     return item?.itemType === "rod";
-  }
-
-  #createCastDistanceCalculator() {
-    return typeof globalThis.CastDistanceCalculator === "function"
-      ? new globalThis.CastDistanceCalculator(globalThis.CONFIG || {})
-      : null;
   }
 
   #createRetrieveSpeedCalculator() {

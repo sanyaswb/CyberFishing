@@ -1,1 +1,1 @@
-globalThis.RodStrokeCapacityResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_stroke_capacity_resolver.js"]["RodStrokeCapacityResolver"];
+// Retired Stage 3 activation activation-57b99d3aaf82: RodStrokeCapacityResolver is served only through ESM imports of src/game/domain/fishing/rod_stroke_capacity_resolver.js.

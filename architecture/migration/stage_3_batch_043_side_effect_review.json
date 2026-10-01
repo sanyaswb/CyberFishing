@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-043-side-effect-review",
+  "batchId": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+  "stage": "3.44.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.80",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+      "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+    },
+    {
+      "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+      "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+    },
+    {
+      "path": "architecture/migration/stage_3_42_graph_review/approved_prefix.json",
+      "sha256": "dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "0060eb18718d58f38498e3384390ebeca94b372a0f79e1ddc8088b0ba7ead845"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/casting_distance.js",
+      "targetPath": "src/game/domain/casting/cast_distance_calculator.js",
+      "sourceSha256": "584dcbec8a2b7450d9bfda9b5decb2d6e9a0e2e8e05730f793629887bdbdb04e",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/casting_distance.js",
+        "sourceSha256": "584dcbec8a2b7450d9bfda9b5decb2d6e9a0e2e8e05730f793629887bdbdb04e"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-544317b07a23",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/core/casting_distance.js",
+          "targetModule": "src/game/domain/casting/cast_distance_calculator.js",
+          "exportName": "CastDistanceCalculator",
+          "legacySymbol": "CastDistanceCalculator",
+          "legacyScriptIndex": 89,
+          "shimFile": "activations/089_castdistancecalculator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+      "targetPath": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "sourceSha256": "311389a3ba2462292c3a9b830a3b6de2d865d46d318d8f73e513a4f2a69fdd92",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/fish_fight_direction_resolver.js",
+        "sourceSha256": "311389a3ba2462292c3a9b830a3b6de2d865d46d318d8f73e513a4f2a69fdd92"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-aa0a15e8a3fa",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/core/fishing/fish_fight_direction_resolver.js",
+          "targetModule": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+          "exportName": "FishFightDirectionResolver",
+          "legacySymbol": "FishFightDirectionResolver",
+          "legacyScriptIndex": 125,
+          "shimFile": "activations/125_fishfightdirectionresolver.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/fishing/rod_pull_calculator.js",
+      "targetPath": "src/game/domain/fishing/rod_pull_calculator.js",
+      "sourceSha256": "e73e8b1dbb448dc88deb7004c8b377da863a4d7b18e7782f1cb95c810271bb93",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/core/fishing/rod_pull_calculator.js",
+        "sourceSha256": "e73e8b1dbb448dc88deb7004c8b377da863a4d7b18e7782f1cb95c810271bb93"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-552c2d2ba80f",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/core/fishing/rod_pull_calculator.js",
+          "targetModule": "src/game/domain/fishing/rod_pull_calculator.js",
+          "exportName": "RodPullCalculator",
+          "legacySymbol": "RodPullCalculator",
+          "legacyScriptIndex": 119,
+          "shimFile": "activations/119_rodpullcalculator.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+      "targetPath": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "sourceSha256": "0af8f3fe0f824635e456f60354acd42c64e5f67fa8c60e841e93ef24ea59b1d8",
+      "contract": {
+        "kind": "private-static-literal-sets",
+        "className": "InventoryItemStackingPolicy",
+        "bindings": {
+          "#ignoredKeys": {
+            "location": "2:25",
+            "values": [
+              "instanceId",
+              "quantity",
+              "buildId",
+              "progression",
+              "ratingPercent",
+              "progressionLevel",
+              "ratingTier",
+              "normalizedRating",
+              "ratingColor",
+              "ratingGradient",
+              "powerPercent",
+              "powerLevel",
+              "normalizedPower",
+              "powerColor",
+              "powerGradient",
+              "qualityMax",
+              "freshness",
+              "freshnessPercent"
+            ]
+          }
+        },
+        "exposure": null
+      },
+      "review": {
+        "kind": "private-static-literal-sets",
+        "currentPath": "src/core/inventory/inventory_item_stacking_policy.js",
+        "sourceSha256": "0af8f3fe0f824635e456f60354acd42c64e5f67fa8c60e841e93ef24ea59b1d8",
+        "className": "InventoryItemStackingPolicy",
+        "bindings": {
+          "#ignoredKeys": {
+            "location": "2:25",
+            "values": [
+              "instanceId",
+              "quantity",
+              "buildId",
+              "progression",
+              "ratingPercent",
+              "progressionLevel",
+              "ratingTier",
+              "normalizedRating",
+              "ratingColor",
+              "ratingGradient",
+              "powerPercent",
+              "powerLevel",
+              "normalizedPower",
+              "powerColor",
+              "powerGradient",
+              "qualityMax",
+              "freshness",
+              "freshnessPercent"
+            ]
+          }
+        },
+        "exposure": null,
+        "topLevelStatementCount": 1,
+        "evaluationCount": 1,
+        "globalPropertiesAdded": [],
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "00737012cbd5cc570a09546496514d0bbac6b3a05932d0ede4db616024549790",
+      "frozenObservations": [
+        {
+          "kind": "instantiation",
+          "location": "2:25",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-42a10e628147",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/core/inventory/inventory_item_stacking_policy.js",
+          "targetModule": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+          "exportName": "InventoryItemStackingPolicy",
+          "legacySymbol": "InventoryItemStackingPolicy",
+          "legacyScriptIndex": 87,
+          "shimFile": "activations/087_inventoryitemstackingpolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/player_force_system.js",
+      "targetPath": "src/game/domain/fishing/player_force_system.js",
+      "sourceSha256": "ed6e22d630d1e69b5562a1ba14af57f8e42d1a00144f5e10e4f54a623a79a687",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/player_force_system.js",
+        "sourceSha256": "ed6e22d630d1e69b5562a1ba14af57f8e42d1a00144f5e10e4f54a623a79a687"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-38802c3efbfc",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/systems/player_force_system.js",
+          "targetModule": "src/game/domain/fishing/player_force_system.js",
+          "exportName": "PlayerForceSystem",
+          "legacySymbol": "PlayerForceSystem",
+          "legacyScriptIndex": 210,
+          "shimFile": "activations/210_playerforcesystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-3"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/tackle_stress_system.js",
+      "targetPath": "src/game/domain/fishing/tackle_stress_system.js",
+      "sourceSha256": "e2ab71e4071dbc0d4632d570b4992663e29c1cc1147a3fbeca391601451ef5ec",
+      "contract": {
+        "kind": "effect-free"
+      },
+      "review": {
+        "kind": "effect-free",
+        "currentPath": "src/systems/tackle_stress_system.js",
+        "sourceSha256": "e2ab71e4071dbc0d4632d570b4992663e29c1cc1147a3fbeca391601451ef5ec"
+      },
+      "frozenEvidenceFingerprint": null,
+      "frozenObservations": [],
+      "activations": [
+        {
+          "id": "activation-1b753bf02256",
+          "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+          "sourceProvider": "src/systems/tackle_stress_system.js",
+          "targetModule": "src/game/domain/fishing/tackle_stress_system.js",
+          "exportName": "TackleStressSystem",
+          "legacySymbol": "TackleStressSystem",
+          "legacyScriptIndex": 219,
+          "shimFile": "activations/219_tacklestresssystem.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-4"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/casting/cast_distance_calculator.js",
+      "classification": "safe",
+      "evidenceFingerprint": "ba22f81469faa70f67edf4e729ff5211db19ce80c92afe6e7061d5d48d281886"
+    },
+    {
+      "module": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "classification": "safe",
+      "evidenceFingerprint": "4ae99c2392e58e2abcb39f52f2d2a47f038c51da66c3f4ff9a01c0942a3021a6"
+    },
+    {
+      "module": "src/game/domain/fishing/player_force_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "5bc82412a86f4a70cf88a5c9b9d8e0f7664d11761d1b2ad33c374f3097ea42d0"
+    },
+    {
+      "module": "src/game/domain/fishing/rod_pull_calculator.js",
+      "classification": "safe",
+      "evidenceFingerprint": "9bbe29ac84887cb6effa513ea1aabdeb08297bf7a4c1eb63a89485cee7f6a681"
+    },
+    {
+      "module": "src/game/domain/fishing/tackle_stress_system.js",
+      "classification": "safe",
+      "evidenceFingerprint": "4f30dbf3625b4a8f312e29944c46f4919e1eab61565c19426d6bd7d02de65b60"
+    }
+  ],
+  "targetEvaluations": [
+    {
+      "module": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "8f561e2535c01da6f5cf0d14f66d039355cbeba75290c1509cef34ef9a5f4165",
+      "observations": [
+        {
+          "kind": "initializer-execution",
+          "classification": "needs-review",
+          "location": "2:25"
+        }
+      ],
+      "exactEffect": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.44.0-live-preflight-and-graph-audit"
+}

@@ -271,6 +271,13 @@
       "decision": "approved-compatible",
       "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
       "reason": "23 Object.freeze calls build 5 deeply frozen data tables from literals and earlier bindings of the same module; no external state read or global write"
+    },
+    {
+      "module": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "evidenceFingerprint": "8f561e2535c01da6f5cf0d14f66d039355cbeba75290c1509cef34ef9a5f4165",
+      "decision": "approved-compatible",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "reason": "one private static Set of string literals created during class definition; unreachable from outside the class; no external state read or global write"
     }
   ],
   "activationPositions": [
@@ -381,6 +388,18 @@
       "shimFile": "activations/148_unlimitedassemblycapacitypolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-1b753bf02256",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/systems/tackle_stress_system.js",
+      "targetModule": "src/game/domain/fishing/tackle_stress_system.js",
+      "exportName": "TackleStressSystem",
+      "legacySymbol": "TackleStressSystem",
+      "legacyScriptIndex": 219,
+      "shimFile": "activations/219_tacklestresssystem.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-1daa30ad1fef",
@@ -527,14 +546,14 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-3b06bb1eb5b8",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "sourceProvider": "src/services/weakest_tackle_limit_resolver.js",
-      "targetModule": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
-      "exportName": "WeakestTackleLimitResolver",
-      "legacySymbol": "WeakestTackleLimitResolver",
-      "legacyScriptIndex": 203,
-      "shimFile": "activations/203_weakesttacklelimitresolver.js",
+      "id": "activation-38802c3efbfc",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/systems/player_force_system.js",
+      "targetModule": "src/game/domain/fishing/player_force_system.js",
+      "exportName": "PlayerForceSystem",
+      "legacySymbol": "PlayerForceSystem",
+      "legacyScriptIndex": 210,
+      "shimFile": "activations/210_playerforcesystem.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
     },
@@ -611,6 +630,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-42a10e628147",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/core/inventory/inventory_item_stacking_policy.js",
+      "targetModule": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "exportName": "InventoryItemStackingPolicy",
+      "legacySymbol": "InventoryItemStackingPolicy",
+      "legacyScriptIndex": 87,
+      "shimFile": "activations/087_inventoryitemstackingpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-46387e5f1ebf",
       "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
       "sourceProvider": "src/core/assemblies/item_assembly_service.js",
@@ -671,6 +702,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-544317b07a23",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/core/casting_distance.js",
+      "targetModule": "src/game/domain/casting/cast_distance_calculator.js",
+      "exportName": "CastDistanceCalculator",
+      "legacySymbol": "CastDistanceCalculator",
+      "legacyScriptIndex": 89,
+      "shimFile": "activations/089_castdistancecalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-54c1801cfb5c",
       "owner": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
       "sourceProvider": "src/core/fishing/stamina/stamina_balance_frame.js",
@@ -683,6 +726,18 @@
       "removalStage": "stage-4"
     },
     {
+      "id": "activation-552c2d2ba80f",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/core/fishing/rod_pull_calculator.js",
+      "targetModule": "src/game/domain/fishing/rod_pull_calculator.js",
+      "exportName": "RodPullCalculator",
+      "legacySymbol": "RodPullCalculator",
+      "legacyScriptIndex": 119,
+      "shimFile": "activations/119_rodpullcalculator.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
+    },
+    {
       "id": "activation-57add99af90d",
       "owner": "stage-3.candidate-002-fishing-944d0790",
       "sourceProvider": "src/core/fishing/reel_auto_recovery_calculator.js",
@@ -693,18 +748,6 @@
       "shimFile": "activations/113_reelautorecoverycalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-57b99d3aaf82",
-      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
-      "sourceProvider": "src/core/fishing/rod_stroke_capacity_resolver.js",
-      "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
-      "exportName": "RodStrokeCapacityResolver",
-      "legacySymbol": "RodStrokeCapacityResolver",
-      "legacyScriptIndex": 118,
-      "shimFile": "activations/118_rodstrokecapacityresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-58191715ba45",
@@ -887,18 +930,6 @@
       "removalStage": "stage-4"
     },
     {
-      "id": "activation-7678742c83cf",
-      "owner": "stage-3.candidate-006-fishing-e48e70d8",
-      "sourceProvider": "src/core/float_tackle_line_budget_policy.js",
-      "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
-      "exportName": "FloatTackleLineBudgetPolicy",
-      "legacySymbol": "FloatTackleLineBudgetPolicy",
-      "legacyScriptIndex": 88,
-      "shimFile": "activations/088_floattacklelinebudgetpolicy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-775fb46bb6ce",
       "owner": "stage-3.candidate-006-fishing-e48e70d8",
       "sourceProvider": "src/core/fishing/line_constraint_state_resolver.js",
@@ -1005,18 +1036,6 @@
       "shimFile": "activations/397_castrules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-8110687cd3e1",
-      "owner": "stage-3.candidate-014-fishing-fefd469b",
-      "sourceProvider": "src/core/fishing/tackle_failure_selector.js",
-      "targetModule": "src/game/domain/fishing/tackle_failure_selector.js",
-      "exportName": "TackleFailureSelector",
-      "legacySymbol": "TackleFailureSelector",
-      "legacyScriptIndex": 137,
-      "shimFile": "activations/137_tacklefailureselector.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-83027557e714",
@@ -1199,18 +1218,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-9f3fc146aed0",
-      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
-      "sourceProvider": "src/core/fishing/tackle_stress_accumulator.js",
-      "targetModule": "src/game/domain/fishing/tackle_stress_accumulator.js",
-      "exportName": "TackleStressAccumulator",
-      "legacySymbol": "TackleStressAccumulator",
-      "legacyScriptIndex": 138,
-      "shimFile": "activations/138_tacklestressaccumulator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-a0ef26ab86ac",
       "owner": "stage-3.candidate-016-fishing-f8c953aa",
       "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
@@ -1293,6 +1300,18 @@
       "shimFile": "activations/129_linetensioncalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "id": "activation-aa0a15e8a3fa",
+      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "sourceProvider": "src/core/fishing/fish_fight_direction_resolver.js",
+      "targetModule": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "exportName": "FishFightDirectionResolver",
+      "legacySymbol": "FishFightDirectionResolver",
+      "legacyScriptIndex": 125,
+      "shimFile": "activations/125_fishfightdirectionresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-3"
     },
     {
       "id": "activation-aad64fe0f08c",
@@ -1856,6 +1875,23 @@
     },
     {
       "activation": {
+        "id": "activation-3b06bb1eb5b8",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/services/weakest_tackle_limit_resolver.js",
+        "targetModule": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+        "exportName": "WeakestTackleLimitResolver",
+        "legacySymbol": "WeakestTackleLimitResolver",
+        "legacyScriptIndex": 203,
+        "shimFile": "activations/203_weakesttacklelimitresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059"
+    },
+    {
+      "activation": {
         "id": "activation-4d4619b15e3c",
         "owner": "stage-3.candidate-008-fishing-f859ccd3",
         "sourceProvider": "src/core/fishing/reel_hold_load_policy.js",
@@ -1870,6 +1906,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-034-fishing-b761d4f1"
+    },
+    {
+      "activation": {
+        "id": "activation-57b99d3aaf82",
+        "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+        "sourceProvider": "src/core/fishing/rod_stroke_capacity_resolver.js",
+        "targetModule": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+        "exportName": "RodStrokeCapacityResolver",
+        "legacySymbol": "RodStrokeCapacityResolver",
+        "legacyScriptIndex": 118,
+        "shimFile": "activations/118_rodstrokecapacityresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059"
     },
     {
       "activation": {
@@ -1890,6 +1943,23 @@
     },
     {
       "activation": {
+        "id": "activation-7678742c83cf",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/float_tackle_line_budget_policy.js",
+        "targetModule": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+        "exportName": "FloatTackleLineBudgetPolicy",
+        "legacySymbol": "FloatTackleLineBudgetPolicy",
+        "legacyScriptIndex": 88,
+        "shimFile": "activations/088_floattacklelinebudgetpolicy.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059"
+    },
+    {
+      "activation": {
         "id": "activation-7a545a4f3325",
         "owner": "stage-3.candidate-018-items-8ea4be10",
         "sourceProvider": "src/core/items/bait/bait_effectiveness_match.js",
@@ -1904,6 +1974,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
+    },
+    {
+      "activation": {
+        "id": "activation-8110687cd3e1",
+        "owner": "stage-3.candidate-014-fishing-fefd469b",
+        "sourceProvider": "src/core/fishing/tackle_failure_selector.js",
+        "targetModule": "src/game/domain/fishing/tackle_failure_selector.js",
+        "exportName": "TackleFailureSelector",
+        "legacySymbol": "TackleFailureSelector",
+        "legacyScriptIndex": 137,
+        "shimFile": "activations/137_tacklefailureselector.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059"
     },
     {
       "activation": {
@@ -1989,6 +2076,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-025-fishing-9bcfae5e"
+    },
+    {
+      "activation": {
+        "id": "activation-9f3fc146aed0",
+        "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
+        "sourceProvider": "src/core/fishing/tackle_stress_accumulator.js",
+        "targetModule": "src/game/domain/fishing/tackle_stress_accumulator.js",
+        "exportName": "TackleStressAccumulator",
+        "legacySymbol": "TackleStressAccumulator",
+        "legacyScriptIndex": 138,
+        "shimFile": "activations/138_tacklestressaccumulator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059"
     },
     {
       "activation": {

@@ -1,1 +1,1 @@
-globalThis.FloatTackleLineBudgetPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/float_tackle_line_budget_policy.js"]["FloatTackleLineBudgetPolicy"];
+// Retired Stage 3 activation activation-7678742c83cf: FloatTackleLineBudgetPolicy is served only through ESM imports of src/game/domain/fishing/float_tackle_line_budget_policy.js.

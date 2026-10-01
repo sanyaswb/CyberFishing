@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.81 - Casting Fishing And Inventory Domain
+
+### Changed
+
+- Migrated six casting, fishing and inventory sources with six named ESM exports and eight completed-prefix imports.
+- Retired the FloatTackleLineBudgetPolicy, RodStrokeCapacityResolver, TackleFailureSelector, TackleStressAccumulator and WeakestTackleLimitResolver activations; their readers now import them.
+- Extended the cumulative runtime from 125 to 131 project modules; 124 active activations and 197 exact bridge relationships.
+- The next task is batch 044 preflight.
+
 ## v0.24.80 - Equipment Slot Catalog Domain
 
 ### Changed

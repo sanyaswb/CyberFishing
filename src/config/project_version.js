@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.80";
+const CURRENT_PROJECT_VERSION = "0.24.81";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "equipment-slot-catalog-domain",
+  codename: "casting-fishing-inventory-domain",
   updatedAt: "2026-10-01",
   notes: Object.freeze([
-    "Migrate the frozen equipment slot ids, slot groups and slot table to the equipment Domain",
-    "Review the five deeply frozen data tables with the new frozenDataConstants shape",
-    "Preserve one hundred twenty-five project modules, one hundred twenty-three active activations and one hundred ninety-six bridges",
+    "Migrate the cast distance calculator, fight direction resolver, rod pull calculator, player force and tackle stress systems and the inventory stacking policy",
+    "Import eight completed-prefix collaborators and retire five activations without classic readers",
+    "Keep the per-frame targets representation-only and the game-cycle output equal",
+    "Preserve one hundred thirty-one project modules, one hundred twenty-four active activations and one hundred ninety-seven bridges",
   ]),
 });
 
