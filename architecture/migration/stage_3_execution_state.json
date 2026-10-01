@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "cyber-fishing-stage-3-execution-state",
-  "releaseVersion": "0.24.83",
+  "releaseVersion": "0.24.84",
   "approvedPlanSha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb",
   "status": "migration-active",
   "completedBatchIds": [
@@ -49,7 +49,8 @@
     "stage-3.replan-342.batch-042-equipment-6f782961",
     "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
     "stage-3.replan-342.batch-044-items-4a1f3966",
-    "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e"
+    "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+    "stage-3.replan-342.batch-046-fishing-9a1447c2"
   ],
   "activeBatchId": null,
   "compatibilityRuntimeActivated": true,

@@ -1,5 +1,14 @@
 # CyberFishing changelog
 
+## v0.24.84 - Idle Retrieve Policy Domain
+
+### Changed
+
+- Migrated RetrievePolicy, PassiveLureRetrievePolicy, PoleIdleRetrievePolicy and IdleRetrievePolicyResolver as named ESM exports; the per-frame retrieve parameters are unchanged.
+- Retired the resolveFightPhysicsConfig activation as a shared-source line removal: the landing policy shim keeps LandingPolicyResolver.
+- Extended the cumulative runtime from 134 to 135 project modules; 126 active activations and 201 exact bridge relationships.
+- The next task is batch 047 preflight.
+
 ## v0.24.83 - Equipment State And Loadout Domain
 
 ### Changed

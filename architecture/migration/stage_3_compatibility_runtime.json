@@ -1122,6 +1122,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-873455999edb",
+      "owner": "stage-3.replan-342.batch-046-fishing-9a1447c2",
+      "sourceProvider": "src/core/fishing/retrieve_policy.js",
+      "targetModule": "src/game/domain/fishing/retrieve_policy.js",
+      "exportName": "IdleRetrievePolicyResolver",
+      "legacySymbol": "IdleRetrievePolicyResolver",
+      "legacyScriptIndex": 121,
+      "shimFile": "activations/121_idleretrievepolicyresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-886fb34615aa",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/render_pass.iife.js",
@@ -1528,18 +1540,6 @@
       "shimFile": "activations/139_simplefightforcecalculator.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-3"
-    },
-    {
-      "id": "activation-cdf4b15936e1",
-      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
-      "sourceProvider": "src/core/fishing/landing_policy.js",
-      "targetModule": "src/game/domain/fishing/landing_policy.js",
-      "exportName": "resolveFightPhysicsConfig",
-      "legacySymbol": "resolveFightPhysicsConfig",
-      "legacyScriptIndex": 120,
-      "shimFile": "activations/120_resolvefightphysicsconfig.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "id": "activation-ce7da074f74a",
@@ -2202,6 +2202,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
+    },
+    {
+      "activation": {
+        "id": "activation-cdf4b15936e1",
+        "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
+        "sourceProvider": "src/core/fishing/landing_policy.js",
+        "targetModule": "src/game/domain/fishing/landing_policy.js",
+        "exportName": "resolveFightPhysicsConfig",
+        "legacySymbol": "resolveFightPhysicsConfig",
+        "legacyScriptIndex": 120,
+        "shimFile": "activations/120_resolvefightphysicsconfig.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-342.batch-046-fishing-9a1447c2"
     },
     {
       "activation": {

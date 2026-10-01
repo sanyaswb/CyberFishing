@@ -258,10 +258,10 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
     {
-      id: "stage-3-batch-045-architecture",
-      title: "Stage 3.46.0–3.46.7 equipment state and loadout domain migration with a reviewed literal constant, a shared-source activation retirement and rollback gates",
+      id: "stage-3-batch-046-architecture",
+      title: "Stage 3.47.0–3.47.7 idle retrieve policy domain migration with reviewed local compositions, an earlier-batch import, an unsplit shared-source activation retirement and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
-      args: ["--batch", "045", "--mode", "architecture"],
+      args: ["--batch", "046", "--mode", "architecture"],
       suites: ["quick", "architecture"],
     },
     {

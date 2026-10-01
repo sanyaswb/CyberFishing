@@ -10,6 +10,8 @@ const { ActivationRetirementProjection, RetiredActivationPlaceholder } =
   require("../build/compat_runtime/activation_retirement");
 const { ControlledMetadataTransaction } = require("./domain_batches/controlled_metadata_transaction");
 const { StageThreeLivePreflight } = require("./domain_batches/stage_three_live_preflight");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
+const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
 
 const ROOT = path.resolve(__dirname, "../..");
 const CONTRACT = "architecture/migration/stage_3_compatibility_runtime.json";
@@ -150,7 +152,15 @@ class ActivationRetirementFixtures {
     assert.equal(projection.index(html, directory, shared.slice(1), sharedSources),
       `<head>\n  <script src="a.js"></script>\n  ${tags[0]}\n  <script src="b.js"></script>\n</head>\n`);
     assert.equal(ActivationRetirementProjection.sharedSources(this.runtime, shared).size, 0);
-    return 9;
+    // Batch 046: the candidate contract no longer aliases the retired shim, so only the projected index
+    // keeps the logical slots (an unsplit retired tag read from the unprojected index adds a slot).
+    const slots = (text, contract) => LegacyScriptOrderReader.logicalSlotCount(new LegacyScriptOrderReader(null,
+      { scriptAliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract) }).parse(text));
+    const projected = projection.index(html, directory, shared.slice(1), sharedSources);
+    assert.equal(slots(html, this.runtime), 3);
+    assert.equal(slots(projected, partial), 3);
+    assert.equal(slots(html, partial), 3 + shared.length - 1);
+    return 12;
   }
 
   // Only activations whose every holding bridge is migrated by the batch may retire.

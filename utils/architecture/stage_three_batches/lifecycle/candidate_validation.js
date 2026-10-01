@@ -14,7 +14,7 @@ class StageThreeCandidateValidation {
   constructor(definition) { this.definition = definition; }
 
   run({ app, report, contract, readOutput, instrumented = false,
-    classicSources = null, previousRuntimeContract = null, previousRuntimeCode = null }) {
+    classicSources = null, previousRuntimeContract = null, previousRuntimeCode = null, indexHtml = null }) {
     const PROFILE = this.definition.profile;
     const CASES = this.definition.cases;
     const counts = new Map();
@@ -31,7 +31,9 @@ class StageThreeCandidateValidation {
     const priorContract = previousRuntimeContract ?? app.json(PATHS.runtimeContract);
     // The runtime evaluates at the logical slot of its tag in index.html (prerequisite 031 placed it
     // before the earliest Domain slot); until then that slot was always the earliest prior activation.
-    const load = CumulativeRuntimeLoadSlot.read({ html: app.read(PATHS.index),
+    // A candidate reads the projected index of its workspace: a shared-source retirement (batch 046)
+    // removes a non-representing shim tag that the candidate contract no longer aliases.
+    const load = CumulativeRuntimeLoadSlot.read({ html: indexHtml ?? app.read(PATHS.index),
       aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract),
       runtimePath: contract.output.directory + contract.output.runtimeFile });
     const runtimePosition = load.slot;

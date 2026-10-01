@@ -119,7 +119,8 @@ class StageThreeBatchSourceBuild {
         sideEffectReviews: this.targetSideEffectReviews(), viteLoader,
         verifyOutput: output => {
           if (failure === "output") throw new Error("injected candidate output rejection");
-          validation = new StageThreeCandidateValidation(this.definition).run({ ...mutateOutput(output), app: this.app, instrumented });
+          validation = new StageThreeCandidateValidation(this.definition).run({ ...mutateOutput(output), app: this.app, instrumented,
+            indexHtml: read(PATHS.index) });
           if (captureOutput) captureOutput(output);
         },
       }).run({

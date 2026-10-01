@@ -1591,22 +1591,6 @@
       ]
     },
     {
-      "id": "bridge-72ec98688ff1",
-      "bridge": "src/core/fishing/landing_policy.js",
-      "source": "src/core/fishing/retrieve_policy.js",
-      "target": "src/game/domain/fishing/landing_policy.js",
-      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "resolveFightPhysicsConfig",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -2734,6 +2718,22 @@
       "globalProviders": [
         {
           "symbol": "ItemRatingTierResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d874102f2cc0",
+      "bridge": "src/core/fishing/retrieve_policy.js",
+      "source": "src/app/states.js",
+      "target": "src/game/domain/fishing/retrieve_policy.js",
+      "reason": "Preserve the exact idle retrieve policy resolver consumer until its legacy symbol is removed.",
+      "owner": "stage-3.replan-342.batch-046-fishing-9a1447c2",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "IdleRetrievePolicyResolver",
           "mechanism": "global-this-property"
         }
       ]
