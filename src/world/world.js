@@ -128,13 +128,16 @@ class LocationMap {
     height: 0,
   };
   #rng;
+  #currentDate;
 
-  constructor(locationId, locationsConfig, rng = null, resources = null) {
+  // The wall clock (time of day without game time) is injected by composition.
+  constructor(locationId, locationsConfig, rng = null, resources = null, currentDate = null) {
     if (!resources || typeof resources !== "object") {
       throw new TypeError("LocationMap requires ready location resources");
     }
     this.#locationsConfig = locationsConfig;
     this.#rng = rng || { next: () => Math.random() };
+    this.#currentDate = currentDate;
     this.#config = JSON.parse(JSON.stringify(locationsConfig.map[locationId]));
     this.#id = locationId;
     this.#dynamicZones = [];
@@ -407,7 +410,7 @@ class LocationMap {
     if (this.#isDynamicBg) {
       let time = gameTimeHours;
       if (time === null) {
-        const now = new Date();
+        const now = this.#currentDate();
         time = now.getHours() + now.getMinutes() / 60;
       }
 

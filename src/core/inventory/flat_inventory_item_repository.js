@@ -4,13 +4,17 @@ class FlatInventoryItemRepository {
   #instanceIdFactory;
   #reservationPolicy;
   #fallbackSequence = 0;
+  #now;
 
+  // The wall clock of the fallback instance id is injected by composition.
   constructor({
     items = [],
     instanceIdFactory = null,
     reservationPolicy = null,
+    now = null,
   } = {}) {
     this.#instanceIdFactory = instanceIdFactory;
+    this.#now = now;
     this.#reservationPolicy = reservationPolicy;
     for (const item of items || []) {
       const normalized = this.#normalizeItem(item);
@@ -319,7 +323,7 @@ class FlatInventoryItemRepository {
         candidate = this.#instanceIdFactory.create(source);
       } else {
         this.#fallbackSequence++;
-        candidate = `${source.instanceId}~${Date.now().toString(36)}-${this.#fallbackSequence}`;
+        candidate = `${source.instanceId}~${this.#now().toString(36)}-${this.#fallbackSequence}`;
       }
     } while (!candidate || this.#items.has(candidate));
     return String(candidate);

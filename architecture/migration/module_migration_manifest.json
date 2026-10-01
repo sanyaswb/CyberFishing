@@ -1524,6 +1524,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
+            "Date",
             "Error",
             "Number",
             "Object",
@@ -19645,7 +19646,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Date",
             "Error",
             "JSON",
             "Map",
@@ -34963,7 +34963,7 @@
             {
               "symbol": "DistanceUnitConverter",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
+              "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
@@ -35030,7 +35030,7 @@
             {
               "symbol": "DistanceUnitConverter",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
+              "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/distance_unit_converter.js",
               "resolution": "confirmed"
@@ -52076,7 +52076,6 @@
           "status": "verified",
           "builtins": [
             "Array",
-            "Date",
             "Infinity",
             "JSON",
             "Math",

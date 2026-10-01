@@ -1086,6 +1086,7 @@ class InventoryManager {
           typeof context === "string" ? context : context?.prefix || "item";
         return this.#makeId(prefix);
       },
+      now: () => Date.now(),
       loadValueProvider: () => this.getMaxTackleLoadKg(),
       lineConfig: this.#lineRules.config,
       itemFreshnessResolver: this.#itemFreshnessResolver,

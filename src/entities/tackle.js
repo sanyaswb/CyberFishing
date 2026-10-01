@@ -378,20 +378,7 @@ class Net {
       physicsConfig ||
       {};
 
-    if (typeof DistanceUnitConverter !== "undefined") {
-      return new DistanceUnitConverter(resolvedPhysics);
-    }
-
-    const pixelsPerMeter = Math.max(
-      1,
-      Number(resolvedPhysics.pixelsPerMeter) || 50,
-    );
-    return {
-      metersToPixels: (meters) => {
-        const value = Number(meters);
-        return Number.isFinite(value) ? value * pixelsPerMeter : 0;
-      },
-    };
+    return new DistanceUnitConverter(resolvedPhysics);
   }
 }
 

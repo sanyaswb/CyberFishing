@@ -12,16 +12,19 @@ class InventoryV2LegacyMigration {
   #itemStateMigration;
   #effectiveStatsResolver;
   #itemSnapshotMapper;
+  #now;
 
   constructor({
     itemDefinitionResolver,
     instanceIdFactory = null,
+    now = null,
     itemStateMigration,
     effectiveStatsResolver,
     itemSnapshotMapper,
   } = {}) {
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
+    this.#now = now;
     this.#itemStateMigration = itemStateMigration;
     this.#effectiveStatsResolver = effectiveStatsResolver;
     this.#itemSnapshotMapper = itemSnapshotMapper;
@@ -50,6 +53,7 @@ class InventoryV2LegacyMigration {
     const repository = new FlatInventoryItemRepository({
       items: repositoryItems,
       instanceIdFactory: this.#instanceIdFactory,
+      now: this.#now,
     });
     const assemblyStates = new AssemblyStateRepository();
     const profileRegistry = new AssemblyProfileRegistry(

@@ -14,6 +14,7 @@ class InventoryV2CompositionRoot {
     itemDefinitionResolver = null,
     itemViewFactory = null,
     instanceIdFactory = null,
+    now = null,
     boatChargeProvider = null,
     loadValueProvider = null,
     warningSink = null,
@@ -57,6 +58,7 @@ class InventoryV2CompositionRoot {
       definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,
+      now,
       itemStateMigration,
       effectiveStatsResolver,
     });
@@ -74,6 +76,7 @@ class InventoryV2CompositionRoot {
       items: snapshot.items,
       instanceIdFactory,
       reservationPolicy,
+      now,
     });
     const assemblyStates = new AssemblyStateRepository({
       states: snapshot.assemblies,
@@ -398,6 +401,7 @@ class InventoryV2CompositionRoot {
     definitionLookup,
     itemSnapshotMapper,
     instanceIdFactory,
+    now,
     itemStateMigration,
     effectiveStatsResolver,
   }) {
@@ -461,6 +465,7 @@ class InventoryV2CompositionRoot {
       itemDefinitionResolver: definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,
+      now,
       itemStateMigration,
       effectiveStatsResolver,
     }).migrate({
