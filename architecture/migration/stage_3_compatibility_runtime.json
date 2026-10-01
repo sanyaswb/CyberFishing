@@ -1326,6 +1326,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-a88f2b193e63",
+      "owner": "stage-3.replan-342.batch-048-equipment-1d22d745",
+      "sourceProvider": "src/core/equipment/equipment_compatibility_policy.js",
+      "targetModule": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "exportName": "EquipmentCompatibilityPolicy",
+      "legacySymbol": "EquipmentCompatibilityPolicy",
+      "legacyScriptIndex": 167,
+      "shimFile": "activations/167_equipmentcompatibilitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-a8e624a68a8e",
       "owner": "stage-3.candidate-003-fishing-9700ad4f",
       "sourceProvider": "src/core/fishing/line_tension_calculator.js",

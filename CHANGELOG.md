@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.24.86 - Equipment Compatibility Policy Domain
+
+### Changed
+
+- Migrated EquipmentCompatibilityPolicy to the equipment Domain; its global exposure moved to the activation shim.
+
 ## v0.24.85 - Equipment Rules Loadout Planner And Line System Domain
 
 ### Changed

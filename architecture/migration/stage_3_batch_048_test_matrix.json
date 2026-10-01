@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-342.batch-048-equipment-1d22d745",
+  "sourceReleaseVersion": "0.24.85",
+  "targetReleaseVersion": "0.24.86",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_048_execution_plan.json",
+    "sha256": "17a91960fdcd2c1e5c541cdfe459e427b3da522632a8934946d1e80067c7d417"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 1
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/EquipmentCompatibilityPolicy/slot-item-rod-compatibility-and-readiness",
+      "kind": "behavior-equivalence",
+      "exportName": "EquipmentCompatibilityPolicy",
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "baselineSourceSha256": "b70b9942f5a0f8cc1d3c611cc0d688022269bcaef95a04eefb73455d7ac0571e",
+      "caseName": "slot-item-rod-compatibility-and-readiness",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-one-exact-export",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-one-exact-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/four-exact-earlier-batch-and-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "kind": "compatibility-invariant",
+      "caseName": "four-exact-earlier-batch-and-completed-prefix-imports-bound-to-the-cumulative-instances",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-reviewed-global-this-exposure-moved-to-the-activation-shim",
+      "kind": "compatibility-invariant",
+      "caseName": "one-reviewed-global-this-exposure-moved-to-the-activation-shim",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-per-target-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-per-target-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-activation-at-its-legacy-position",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-activation-at-its-legacy-position",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-consumer-relationship-and-four-retired-bridges",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-consumer-relationship-and-four-retired-bridges",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "EquipmentCompatibilityPolicy",
+      "caseCount": 1,
+      "cases": [
+        "slot-item-rod-compatibility-and-readiness"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 1,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.42.0-live-observation-and-stage-3.42-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_048_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/equipment/equipment_compatibility_policy.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/equipment/equipment_compatibility_policy.js",
+          "authoritativeOwners": [
+            "EquipmentCompatibilityPolicy#acceptedTypes",
+            "EquipmentCompatibilityPolicy#capabilityResolver",
+            "EquipmentCompatibilityPolicy#isTackleCompatible",
+            "EquipmentCompatibilityPolicy#messages",
+            "EquipmentCompatibilityPolicy#readRootItem",
+            "EquipmentCompatibilityPolicy#readinessPolicy",
+            "EquipmentCompatibilityPolicy#result",
+            "EquipmentCompatibilityPolicy#slotConfig",
+            "EquipmentCompatibilityPolicy#terminalLineResolver",
+            "EquipmentCompatibilityPolicy#type",
+            "EquipmentCompatibilityPolicy#validate",
+            "EquipmentCompatibilityPolicy#visibilityPolicy"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/equipment/equipment_compatibility_policy.js",
+          "authoritativeOwners": [
+            "EquipmentCompatibilityPolicy#acceptedTypes",
+            "EquipmentCompatibilityPolicy#capabilityResolver",
+            "EquipmentCompatibilityPolicy#isTackleCompatible",
+            "EquipmentCompatibilityPolicy#messages",
+            "EquipmentCompatibilityPolicy#readRootItem",
+            "EquipmentCompatibilityPolicy#readinessPolicy",
+            "EquipmentCompatibilityPolicy#result",
+            "EquipmentCompatibilityPolicy#slotConfig",
+            "EquipmentCompatibilityPolicy#terminalLineResolver",
+            "EquipmentCompatibilityPolicy#type",
+            "EquipmentCompatibilityPolicy#validate",
+            "EquipmentCompatibilityPolicy#visibilityPolicy"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "eadac22da1e2f6833224e3b3bb73b25da0b5d49856e6555d7862dbe8f1febf1b",
+        "allocationBaseline": {
+          "objectExpressions": 9,
+          "arrayExpressions": 5,
+          "newExpressions": 3,
+          "objectFreezeCalls": 1,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.49.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

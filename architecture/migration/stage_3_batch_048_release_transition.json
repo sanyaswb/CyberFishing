@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-048-release-transition",
+  "batchId": "stage-3.replan-342.batch-048-equipment-1d22d745",
+  "fromRelease": "0.24.85",
+  "toRelease": "0.24.86",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_048_acceptance_pass.json",
+    "sha256": "110ad29aeba935bf546996ae74d48d602059f6a5965e7f3e6dafa5d0264c1f61"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_048_browser_confirmation.json",
+    "sha256": "d9587cafa303512f4b621f2690126d6f21ee55a3ac7988d8bb6367e0481feaea"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "b07b6eb5eae3d54deb3b92092d9027e05b13ebbae4e6fab1562c6be50f9a7f60",
+      "afterSha256": "f8accef103b21ba057653e472d3308ae201d055d8a5d68983fb14cbf243c1cb7",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.86 - Equipment Compatibility Policy Domain\n\n### Changed\n\n- Migrated EquipmentCompatibilityPolicy to the equipment Domain; its global exposure moved to the activation shim.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "42cc0d59f2d864fc966618144d26a37ddca8d5b2e158896b34fe01438406dfa6",
+      "afterSha256": "f66e2dc16fab4aede97d98c9982410a6204b7a4f2a397ddd89b95cc6a171e3fb",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.85\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\",\n    \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\",\n    \"stage-3.replan-342.batch-041-fishing-71e662d7\",\n    \"stage-3.replan-342.batch-042-equipment-6f782961\",\n    \"stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059\",\n    \"stage-3.replan-342.batch-044-items-4a1f3966\",\n    \"stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e\",\n    \"stage-3.replan-342.batch-046-fishing-9a1447c2\",\n    \"stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-342.batch-048-equipment-1d22d745\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_42_graph_review/approved_prefix.json\",\n    \"sha256\": \"dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.86\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\",\n    \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\",\n    \"stage-3.replan-342.batch-041-fishing-71e662d7\",\n    \"stage-3.replan-342.batch-042-equipment-6f782961\",\n    \"stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059\",\n    \"stage-3.replan-342.batch-044-items-4a1f3966\",\n    \"stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e\",\n    \"stage-3.replan-342.batch-046-fishing-9a1447c2\",\n    \"stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727\",\n    \"stage-3.replan-342.batch-048-equipment-1d22d745\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_42_graph_review/approved_prefix.json\",\n    \"sha256\": \"dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "6199bcdc171a7e04f57886ad44f0b2bfd25bad7eb0fe9e90cc5d5c21405fb7ad",
+      "afterSha256": "37522e8c3ab158423b3b80534e58153ffd4f24889c5db94811820bdb3c289609",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.85\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.86\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "407b52fe1ec3e243b63271fbe2fb81bef3310702b7c5a223b357f06fbac27e37",
+      "afterSha256": "e7438aa95df42a846e599c635f7b9cf2125a426ff95c0978f3b08423aeb40c36",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.85\",",
+          "to": "  \"version\": \"0.24.86\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "0033482d212406236c8630cd8aae0373f62b15808e108896e1c4dfa8e6b4ba64",
+      "afterSha256": "0f05bf5f233099d40af10596cd36fef92880759428581881c2ac1de17bf802ac",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.85\",",
+          "to": "  \"version\": \"0.24.86\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "35ee3f201ce8eced706cf64b2d2228e00c1c4219eb0927e48285a45750224db3",
+      "afterSha256": "f46a8548887849a4a9c62e875242acbba803823e4e97823f0a12a3a3014660d6",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.85\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.86\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"equipment-rules-loadout-planner-line-system-domain\",",
+          "to": "  codename: \"equipment-compatibility-policy-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the slot visibility policy, manual rod change planner with its transition plan, fishing readiness policy, terminal-line slot resolver, loadout transition planner and line system\",\n    \"Import thirteen slot catalog and completed-prefix collaborators and retire the LineSpoolState activation without classic readers\",\n    \"Keep the per-frame line system representation-only and the game-cycle output equal\",\n    \"Preserve one hundred forty-one project modules, one hundred thirty-one active activations and two hundred bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the equipment compatibility policy with its reviewed global exposure\",\n    \"Import the slot catalog, slot visibility, terminal-line and rod capability collaborators\",\n    \"Preserve one hundred forty-two project modules, one hundred thirty-two active activations and one hundred ninety-seven bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

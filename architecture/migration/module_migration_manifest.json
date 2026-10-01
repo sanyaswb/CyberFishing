@@ -15083,11 +15083,6 @@
           "items": [
             {
               "symbol": "EquipmentCompatibilityPolicy",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EquipmentCompatibilityPolicy",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -15098,28 +15093,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EquipmentSlotVisibilityPolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "TerminalLineSlotResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -15127,7 +15104,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
             "globalThis"
           ],
           "browserApis": [],
@@ -15138,7 +15114,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
@@ -15147,71 +15123,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EquipmentSlotVisibilityPolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/equipment_slot_visibility_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "TerminalLineSlotResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/terminal_line_slot_resolver.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_SLOT_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/equipment_slot_visibility_policy.js",
-              "symbols": [
-                "EquipmentSlotVisibilityPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "symbols": [
-                "RodCapabilityResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/terminal_line_slot_resolver.js",
-              "symbols": [
-                "TerminalLineSlotResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -35829,6 +35751,55 @@
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/equipment/auto_refill_policy.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "currentArea": "game/domain/equipment",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
         "migrationWave": 1
       },
       "analysis": {

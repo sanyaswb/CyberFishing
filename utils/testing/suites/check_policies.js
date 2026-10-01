@@ -74,7 +74,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-candidate-batch-integration",
   "stage-3-approved-prefix-fixtures",
   "stage-3-approved-prefix-integration",
-  "stage-3-batch-047-architecture",
+  "stage-3-batch-048-architecture",
   "stage-3-batch-reviewed-shapes-fixtures",
   "stage-3-prerequisite-transition-fixtures",
   "legacy-slot-split",

@@ -579,6 +579,22 @@
       ]
     },
     {
+      "id": "bridge-33d4356e3078",
+      "bridge": "src/core/equipment/equipment_compatibility_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "reason": "Preserve the exact equipment compatibility policy consumer until its legacy symbol is removed.",
+      "owner": "stage-3.replan-342.batch-048-equipment-1d22d745",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentCompatibilityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-340e660ed69c",
       "bridge": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
       "source": "src/assets/asset_preload_coordinator.js",
@@ -867,22 +883,6 @@
       ]
     },
     {
-      "id": "bridge-4c97028596c9",
-      "bridge": "src/core/equipment/rod_capability_resolver.js",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/game/domain/equipment/rod_capability_resolver.js",
-      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-004-equipment-4f2570dc",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RodCapabilityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-4cb8f19fc834",
       "bridge": "src/core/line/line_allocation_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -894,22 +894,6 @@
       "globalProviders": [
         {
           "symbol": "LineAllocationPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-4e3ebadf8b3a",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EQUIPMENT_SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2415,22 +2399,6 @@
       ]
     },
     {
-      "id": "bridge-b26ba8739153",
-      "bridge": "src/core/equipment/terminal_line_slot_resolver.js",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
-      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "TerminalLineSlotResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-b2d34369a857",
       "bridge": "src/systems/rod_lateral_control_system.js",
       "source": "src/app/fishing.js",
@@ -3170,22 +3138,6 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f71c63330b1b",
-      "bridge": "src/core/equipment/equipment_slot_visibility_policy.js",
-      "source": "src/core/equipment/equipment_compatibility_policy.js",
-      "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
-      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EquipmentSlotVisibilityPolicy",
           "mechanism": "global-this-property"
         }
       ]

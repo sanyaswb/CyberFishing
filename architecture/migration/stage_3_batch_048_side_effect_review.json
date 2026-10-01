@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-048-side-effect-review",
+  "batchId": "stage-3.replan-342.batch-048-equipment-1d22d745",
+  "stage": "3.49.0",
+  "status": "reviewed-compatible",
+  "sourceReleaseVersion": "0.24.85",
+  "inputs": [
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    },
+    {
+      "path": "architecture/migration/stage_3_22/approved_prefix.json",
+      "sha256": "4873af4bbc6a11a07a57c17cd198350d8154c0e6eed3a17551b8d02f97eb436c"
+    },
+    {
+      "path": "architecture/migration/stage_3_34_review_queue/freeze_extension.json",
+      "sha256": "5142dcb02f3b9936654440fbf804f66e4e47daff46acca18ce222d22a8ecba00"
+    },
+    {
+      "path": "architecture/migration/stage_3_36_graph_review/approved_prefix.json",
+      "sha256": "f5b2071225b846440768ad90468855bed202510285727263680327bfd6b287b7"
+    },
+    {
+      "path": "architecture/migration/stage_3_40_graph_review/approved_prefix.json",
+      "sha256": "11f805c929ce92b57d38d9c0eaf62a8da21eac0eaf944a946b4233c9ffd27135"
+    },
+    {
+      "path": "architecture/migration/stage_3_41_graph_review/approved_prefix.json",
+      "sha256": "2f7e455d4f2636b7b8c6f79760380e4120534959c1b5ff627be21c89408100b4"
+    },
+    {
+      "path": "architecture/migration/stage_3_42_graph_review/approved_prefix.json",
+      "sha256": "dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "bb23025aa38fd87e189b7723b537ff77fc3662480a5f2ec84082b2cdcd7d528f"
+    }
+  ],
+  "modules": [
+    {
+      "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+      "targetPath": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "sourceSha256": "b70b9942f5a0f8cc1d3c611cc0d688022269bcaef95a04eefb73455d7ac0571e",
+      "contract": {
+        "kind": "global-this-class-exposure",
+        "symbol": "EquipmentCompatibilityPolicy",
+        "location": "119:1"
+      },
+      "review": {
+        "currentPath": "src/core/equipment/equipment_compatibility_policy.js",
+        "symbol": "EquipmentCompatibilityPolicy",
+        "location": "119:1",
+        "sourceSha256": "b70b9942f5a0f8cc1d3c611cc0d688022269bcaef95a04eefb73455d7ac0571e",
+        "topLevelStatements": [
+          "class-declaration",
+          "global-this-assignment"
+        ],
+        "assignmentTarget": "globalThis.EquipmentCompatibilityPolicy",
+        "evaluatedGlobalNames": [
+          "EquipmentCompatibilityPolicy"
+        ],
+        "evaluationCount": 1,
+        "otherTopLevelEffects": 0
+      },
+      "frozenEvidenceFingerprint": "2f36cd4b1c8521c18e08ec417d7060a80fda5295f0faf44707c1f874c5496310",
+      "frozenObservations": [
+        {
+          "kind": "assignment",
+          "location": "119:1",
+          "classification": "observable"
+        }
+      ],
+      "activations": [
+        {
+          "id": "activation-a88f2b193e63",
+          "owner": "stage-3.replan-342.batch-048-equipment-1d22d745",
+          "sourceProvider": "src/core/equipment/equipment_compatibility_policy.js",
+          "targetModule": "src/game/domain/equipment/equipment_compatibility_policy.js",
+          "exportName": "EquipmentCompatibilityPolicy",
+          "legacySymbol": "EquipmentCompatibilityPolicy",
+          "legacyScriptIndex": 167,
+          "shimFile": "activations/167_equipmentcompatibilitypolicy.js",
+          "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+          "removalStage": "stage-5"
+        }
+      ]
+    }
+  ],
+  "targetEvaluation": null,
+  "targetEffectFree": [
+    {
+      "module": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "classification": "safe",
+      "evidenceFingerprint": "1124e4ef19e5b42a0f2c4216437061cea8538f2935932614b1574b317ff96d90"
+    }
+  ],
+  "cutoverAllowedByThisReviewAlone": false,
+  "nextGate": "stage-3.49.0-live-preflight-and-graph-audit"
+}
