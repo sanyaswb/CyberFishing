@@ -307,6 +307,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["architecture"],
     },
     {
+      id: "stage-3-50-review-queue-freeze",
+      title: "Stage 3.50.1 review-queue hot-loop evidence and freeze extension byte-identical replay",
+      file: "utils/architecture/stage-3-50-review-queue-freeze.js",
+      suites: ["architecture"],
+    },
+    {
       id: "stage-3-state-identity-replacement-fixtures",
       title: "Stage 3 state-identity transactional swap, rebuilt index and size read fixtures",
       file: "utils/architecture/stage-3-state-identity-replacement-fixtures-check.js",

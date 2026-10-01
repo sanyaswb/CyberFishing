@@ -42,8 +42,11 @@ class StageThreeHotLoopEquivalence {
     const records = this.json(reference.path).records.filter(record => gated.includes(record.currentPath));
     assert.equal(records.length, gated.length, "hot-loop evidence does not cover every gated module");
     const targets = new Map(batch.modules.map(module => [module.currentPath, module.targetPath]));
-    const traces = this.trace.run(records.map(record => record.className));
-    const modules = records.map(record => {
+    // Stage 3.50 evidence records list several classes per module (`classes`); earlier records one class.
+    const classRecords = record => record.classes || [record];
+    const traces = this.trace.run(records.flatMap(record => classRecords(record).map(item => item.className)));
+    const modules = records.flatMap(module => classRecords(module).map(record => ({ ...record,
+      currentPath: module.currentPath }))).map(record => {
       const targetPath = targets.get(record.currentPath);
       const target = this.sourceReview.review({ source: this.bytes(targetPath).toString("utf8"),
         currentPath: targetPath, className: record.className, sourceType: "module" });
