@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-044-acceptance",
+  "stage": "3.45.8",
+  "batchId": "stage-3.replan-342.batch-044-items-4a1f3966",
+  "releaseVersion": "0.24.81",
+  "plannedReleaseVersion": "0.24.82",
+  "recordedAt": "2026-10-01T10:37:00.385Z",
+  "status": "accepted",
+  "acceptanceOutcome": "PASS",
+  "verdict": "eligible-for-release-closure",
+  "releaseClosureAllowed": true,
+  "completes": {
+    "path": "architecture/migration/stage_3_batch_044_automated_acceptance.json",
+    "sha256": "86fa8817575936840ca8680d72ad664d2dde54e23873775c82e911cfe578f2db",
+    "previousStatus": "automated-pass-awaiting-browser",
+    "previousAttemptPreserved": true
+  },
+  "automatedEvidence": {
+    "full": {
+      "passedChecks": 86,
+      "failedChecks": 0
+    },
+    "fullRun": {
+      "platform": "win32-x64 node v24.13.0",
+      "source": "check run report 2026-10-01T10-35-26-052Z-28116",
+      "report": {
+        "kind": "cyber-fishing-check-run-report",
+        "schemaVersion": 1,
+        "runId": "2026-10-01T10-35-26-052Z-28116",
+        "mode": "release-gate",
+        "sha256": "7d3d7cffefbd67487eec35bab40a33a31e5769ec21141a0ce6330e876e9929e5",
+        "executed": 86,
+        "cached": 0,
+        "catalogSha256": "c6034c552414395c48e2ada819b8ec6d3ee899274cbc3e03a05cbd2b6270f7c6",
+        "sourceSha256": "62dfe4a1934d71b80f5ee2d2e9a9bc7114531e55414f7dfbee1db0f568e781dc",
+        "sourceCommit": "4a59957f3803ad17923185c9e5ffddbbbf7d64da"
+      }
+    },
+    "summary": "release-gate: 86 executed, 0 reused history replays, 0 failed; source unchanged during the run",
+    "countSemantics": "The full suite includes the architecture and quick checks.",
+    "catalog": {
+      "full": 86,
+      "architecture": 57,
+      "quick": 36
+    }
+  },
+  "browserSmoke": {
+    "status": "passed-owner-authorized-automated-substitute",
+    "performedBy": "claude-automated-substitute",
+    "evidenceType": "owner-authorized-automated-substitute",
+    "userStatement": "PASS (automated substitute, owner away): node utils/game-cycle-check.js exit 0 without seals, output byte-identical before and after the cutover; built-in browser load: 132 runtime modules, ItemCatalogBaselineRegistry global identical to its ESM export, 1 canvas.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "acceptanceBasis": "Owner-authorized automated substitute: game-cycle without seals and an instrumented built-in-browser console read; the owner did not play this batch.",
+    "ownerAuthorization": "я поки відійду, тести на тобі game cycle бери за основу якщо треба помилки то відкрий у вбудованому браузері.",
+    "perCheckResults": null,
+    "consoleCounts": {
+      "errors": 0,
+      "warnings": 0,
+      "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)"
+    }
+  },
+  "protectedEvidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_044_live_runtime_validation.json",
+      "sha256": "f093adb58261767fcc4f47740518edb55430abad49ddacc0d37eef10a9cf5ba6"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_044_observation_reconciliation.json",
+      "sha256": "1f6a6ddec8fe3e1d28361fc4da1dae49169d0461c40d7e3c22d18d79a747e235"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "96f83b7fc534be20244319c81ecb1ce098288ef8470fa9b94b20609ad9a63a35"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "b24c3712304a927212497bdf0bfc91ce2db2c2c144bfc4943475e0ad09b31cd9"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "2c9c153ec1bfefc2e9a4470b913cd6b21d4a5ee2ff475521a58c91e8782a7332"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "sha256": "afd29fceca5b832af1444a9a7062a4c152337d103f45bf2d6be51b4568adde83"
+    },
+    {
+      "path": "index.html",
+      "sha256": "e532c32129f35a91192d7233e429983ead16e31ed9f6b3f08510fea4e724c0d0"
+    }
+  ],
+  "lifecycle": {
+    "batchCompleted": false,
+    "activeBatchId": "stage-3.replan-342.batch-044-items-4a1f3966",
+    "activeBatchPhase": "runtime-active",
+    "releaseMetadataChanged": false,
+    "runtimeChanged": false
+  },
+  "nextStage": "Stage 3.45.9 — Release Closure v0.24.82"
+}

@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-focused-test-matrix",
+  "status": "verified",
+  "batchId": "stage-3.replan-342.batch-044-items-4a1f3966",
+  "sourceReleaseVersion": "0.24.81",
+  "targetReleaseVersion": "0.24.82",
+  "sourceExecutionPlan": {
+    "path": "architecture/migration/stage_3_batch_044_execution_plan.json",
+    "sha256": "6969f34153785ca9d19a920666758cff445193f1e11b635a51360e38572b7891"
+  },
+  "scope": {
+    "moduleCount": 1,
+    "exportCount": 1,
+    "activationCount": 1,
+    "consumerRelationshipCount": 1
+  },
+  "behaviorCases": [
+    {
+      "id": "behavior/ItemCatalogBaselineRegistry/cache-identity-key-and-invalidation",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemCatalogBaselineRegistry",
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "baselineSourceSha256": "1220b43f26b2af5cbf504a5dcfd077eccaa3ea3b5d2222002188810a3c513e49",
+      "caseName": "cache-identity-key-and-invalidation",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    },
+    {
+      "id": "behavior/ItemCatalogBaselineRegistry/fixed-catalog-fallback-and-unavailable-baselines",
+      "kind": "behavior-equivalence",
+      "exportName": "ItemCatalogBaselineRegistry",
+      "currentPath": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "targetPath": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "baselineSourceSha256": "1220b43f26b2af5cbf504a5dcfd077eccaa3ea3b5d2222002188810a3c513e49",
+      "caseName": "fixed-catalog-fallback-and-unavailable-baselines",
+      "phases": [
+        "classic-baseline",
+        "temporary-esm-parity",
+        "post-cutover-esm"
+      ],
+      "requiredOutcome": "observable-result-equivalent"
+    }
+  ],
+  "compatibilityCases": [
+    {
+      "id": "compatibility/one-representation-only-named-esm-target-and-one-exact-export",
+      "kind": "compatibility-invariant",
+      "caseName": "one-representation-only-named-esm-target-and-one-exact-export",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-instance-cache-collection-identity-preserved",
+      "kind": "compatibility-invariant",
+      "caseName": "one-instance-cache-collection-identity-preserved",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-esm-evaluation-without-top-level-effects",
+      "kind": "compatibility-invariant",
+      "caseName": "one-esm-evaluation-without-top-level-effects",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-activation-at-its-legacy-position",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-activation-at-its-legacy-position",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/one-exact-classic-consumer-relationship",
+      "kind": "compatibility-invariant",
+      "caseName": "one-exact-classic-consumer-relationship",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    },
+    {
+      "id": "compatibility/single-cumulative-runtime-and-preserved-prior-activations",
+      "kind": "compatibility-invariant",
+      "caseName": "single-cumulative-runtime-and-preserved-prior-activations",
+      "phases": [
+        "pre-build-fixture",
+        "temporary-esm-parity",
+        "post-build-runtime"
+      ],
+      "requiredOutcome": "exact-contract-pass"
+    }
+  ],
+  "coverage": [
+    {
+      "exportName": "ItemCatalogBaselineRegistry",
+      "caseCount": 2,
+      "cases": [
+        "fixed-catalog-fallback-and-unavailable-baselines",
+        "cache-identity-key-and-invalidation"
+      ]
+    }
+  ],
+  "identityContract": {
+    "moduleEvaluationCount": 1,
+    "exactExportReference": true,
+    "globalAbsentBeforeActivation": true,
+    "globalExactAfterActivation": true,
+    "duplicateClassOrStateIdentity": "forbidden"
+  },
+  "consumerContract": {
+    "exactRelationshipCount": 1,
+    "directTransportReadsAllowed": false,
+    "consumerSetSource": "stage-3.42.0-live-observation-and-stage-3.42-frozen-consumer-set"
+  },
+  "statePerformanceContract": {
+    "source": "architecture/migration/stage_3_batch_044_execution_plan.json",
+    "modules": [
+      {
+        "module": "src/core/items/progression/item_catalog_baseline_registry.js",
+        "stateClassification": "authoritative-owner",
+        "authoritativeOwnerPreserved": true,
+        "duplicateStateCopies": "forbidden",
+        "formulasApiDefaultsAndResultShapes": "unchanged",
+        "authoritativeOwnerBefore": {
+          "module": "src/core/items/progression/item_catalog_baseline_registry.js",
+          "authoritativeOwners": [
+            "ItemCatalogBaselineRegistry#cache",
+            "ItemCatalogBaselineRegistry#catalogItems",
+            "ItemCatalogBaselineRegistry#effectiveStatsResolver",
+            "ItemCatalogBaselineRegistry#fixed",
+            "ItemCatalogBaselineRegistry#itemDb",
+            "ItemCatalogBaselineRegistry#logger",
+            "ItemCatalogBaselineRegistry#strategyRegistry",
+            "ItemCatalogBaselineRegistry#unavailable"
+          ]
+        },
+        "authoritativeOwnerAfter": {
+          "module": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+          "authoritativeOwners": [
+            "ItemCatalogBaselineRegistry#cache",
+            "ItemCatalogBaselineRegistry#catalogItems",
+            "ItemCatalogBaselineRegistry#effectiveStatsResolver",
+            "ItemCatalogBaselineRegistry#fixed",
+            "ItemCatalogBaselineRegistry#itemDb",
+            "ItemCatalogBaselineRegistry#logger",
+            "ItemCatalogBaselineRegistry#strategyRegistry",
+            "ItemCatalogBaselineRegistry#unavailable"
+          ]
+        },
+        "publicStateShape": [],
+        "resultShape": [],
+        "stableResultIdentity": false,
+        "mutatesCallerInputs": false,
+        "behaviorFingerprint": "711f269edcf37a8f0bba1b3c6c9836acb8f4c9fca64dbb2d6186de09937814ff",
+        "allocationBaseline": {
+          "objectExpressions": 9,
+          "arrayExpressions": 3,
+          "newExpressions": 3,
+          "objectFreezeCalls": 2,
+          "objectAssignCalls": 0,
+          "roundingCalls": 0
+        },
+        "additionalMigrationAllocationsAllowed": 0,
+        "transportLookupsAllowed": 0,
+        "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast"
+      }
+    ],
+    "additionalMigrationAllocationsAllowed": 0,
+    "transportLookupsAllowed": 0,
+    "representationComparison": "target-ast-after-removing-export-must-equal-frozen-source-ast",
+    "transportSurfaceSource": "architecture/migration/stage_3_compatibility_runtime.json#transport"
+  },
+  "gates": {
+    "baselineBehaviorRequired": true,
+    "postCutoverBehaviorRequired": true,
+    "activationTimingRequired": true,
+    "identityRequired": true,
+    "fullConsumerSetRequired": true,
+    "transportIsolationRequired": true
+  },
+  "prebuildOpenAllowed": true,
+  "runtimeCutoverAllowed": false,
+  "runtimeCutoverUnlockCondition": "stage-3.45.3-prebuild-contract-opened",
+  "verdict": "eligible-for-prebuild-open"
+}

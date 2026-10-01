@@ -258,10 +258,10 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
     {
-      id: "stage-3-batch-043-architecture",
-      title: "Stage 3.44.0–3.44.7 casting, fishing and inventory domain migration with composition identities, a reviewed private static set and rollback gates",
+      id: "stage-3-batch-044-architecture",
+      title: "Stage 3.45.0–3.45.7 item catalog baseline registry domain migration with a reviewed instance cache identity and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
-      args: ["--batch", "043", "--mode", "architecture"],
+      args: ["--batch", "044", "--mode", "architecture"],
       suites: ["quick", "architecture"],
     },
     {

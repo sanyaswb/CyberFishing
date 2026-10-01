@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-044-release-transition",
+  "batchId": "stage-3.replan-342.batch-044-items-4a1f3966",
+  "fromRelease": "0.24.81",
+  "toRelease": "0.24.82",
+  "acceptance": {
+    "path": "architecture/migration/stage_3_batch_044_acceptance_pass.json",
+    "sha256": "b0de8398e73a0895217edceb1468a1b11e1e6a745a4971a904380e18563f7d0b"
+  },
+  "browserProof": {
+    "path": "architecture/migration/stage_3_batch_044_browser_confirmation.json",
+    "sha256": "a5a7af03ff6d5b5287c16cbd295aa6e321d15fdcfb51c740f962386deff53113"
+  },
+  "records": [
+    {
+      "path": "CHANGELOG.md",
+      "beforeSha256": "10833e67ae5e7e9413baee221bdc4a57188fb8f46cb3f58adbc386e0278ec748",
+      "afterSha256": "7415ac1826f278249f261f007827532b67a37c59d4b4f44f094587c07ce3e6f5",
+      "edits": [
+        {
+          "from": "# CyberFishing changelog\n\n",
+          "to": "# CyberFishing changelog\n\n## v0.24.82 - Item Catalog Baseline Registry Domain\n\n### Changed\n\n- Migrated the item catalog baseline registry with one named ESM export; its baseline cache keeps the reviewed get, set and clear identity.\n- Extended the cumulative runtime from 131 to 132 project modules and the active activation set from 124 to 125 contracts, with 198 exact bridge relationships.\n- The next task is batch 045 preflight.\n\n",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "beforeSha256": "96f83b7fc534be20244319c81ecb1ce098288ef8470fa9b94b20609ad9a63a35",
+      "afterSha256": "73f273af8f336fdd2fa9185e0e4c6f0f38a330715086caf9cdb8f11021d51495",
+      "edits": [
+        {
+          "from": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.81\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\",\n    \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\",\n    \"stage-3.replan-342.batch-041-fishing-71e662d7\",\n    \"stage-3.replan-342.batch-042-equipment-6f782961\",\n    \"stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059\"\n  ],\n  \"activeBatchId\": \"stage-3.replan-342.batch-044-items-4a1f3966\",\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_42_graph_review/approved_prefix.json\",\n    \"sha256\": \"dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c\"\n  },\n  \"activeBatchPhase\": \"runtime-active\"\n}",
+          "to": "{\n  \"schemaVersion\": 1,\n  \"kind\": \"cyber-fishing-stage-3-execution-state\",\n  \"releaseVersion\": \"0.24.82\",\n  \"approvedPlanSha256\": \"bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb\",\n  \"status\": \"migration-active\",\n  \"completedBatchIds\": [\n    \"stage-3.candidate-001-inventory-85f44b2e\",\n    \"stage-3.candidate-002-fishing-944d0790\",\n    \"stage-3.candidate-003-fishing-9700ad4f\",\n    \"stage-3.candidate-004-equipment-4f2570dc\",\n    \"stage-3.candidate-005-fishing-45d0c7ce\",\n    \"stage-3.candidate-006-fishing-e48e70d8\",\n    \"stage-3.candidate-007-fishing-bb8b3939\",\n    \"stage-3.candidate-008-fishing-f859ccd3\",\n    \"stage-3.candidate-009-fish-444e8034\",\n    \"stage-3.candidate-010-inventory-e3dffbe7\",\n    \"stage-3.candidate-011-items-11818ee5\",\n    \"stage-3.candidate-012-assemblies-2086347a\",\n    \"stage-3.candidate-013-fishing-0267b3ea\",\n    \"stage-3.candidate-014-fishing-fefd469b\",\n    \"stage-3.candidate-015-fishing-37dc3452\",\n    \"stage-3.candidate-016-fishing-f8c953aa\",\n    \"stage-3.candidate-017-inventory-fd62478b\",\n    \"stage-3.candidate-018-items-8ea4be10\",\n    \"stage-3.candidate-019-items-b0af5033\",\n    \"stage-3.candidate-020-assemblies-43d77861\",\n    \"stage-3.candidate-021-equipment-4044fcef\",\n    \"stage-3.replan-322.batch-022-assemblies-9cb3eecf\",\n    \"stage-3.replan-322.batch-023-items-c91fce82\",\n    \"stage-3.replan-322.batch-024-inventory-21307d68\",\n    \"stage-3.replan-322.batch-025-fishing-9bcfae5e\",\n    \"stage-3.replan-322.batch-026-inventory-ad73f2fb\",\n    \"stage-3.replan-322.batch-027-items-e8f84667\",\n    \"stage-3.replan-322.batch-028-assemblies-f4be469e\",\n    \"stage-3.replan-322.batch-029-fishing-f2a8faba\",\n    \"stage-3.replan-322.batch-030-items-a3bf25f7\",\n    \"stage-3.replan-322.batch-031-fishing-d2f28c0f\",\n    \"stage-3.replan-322.batch-032-items-096b3398\",\n    \"stage-3.replan-322.batch-033-assemblies-3cd39292\",\n    \"stage-3.replan-322.batch-034-fishing-b761d4f1\",\n    \"stage-3.replan-336.batch-035-items-48cb5bbc\",\n    \"stage-3.replan-336.batch-036-items-e1a5aaa4\",\n    \"stage-3.replan-336.batch-037-items-5fccd461\",\n    \"stage-3.replan-336.batch-038-assemblies-d8271d28\",\n    \"stage-3.replan-340.batch-039-fishing-inventory-f92b17ea\",\n    \"stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89\",\n    \"stage-3.replan-342.batch-041-fishing-71e662d7\",\n    \"stage-3.replan-342.batch-042-equipment-6f782961\",\n    \"stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059\",\n    \"stage-3.replan-342.batch-044-items-4a1f3966\"\n  ],\n  \"activeBatchId\": null,\n  \"compatibilityRuntimeActivated\": true,\n  \"continuationPlan\": {\n    \"path\": \"architecture/migration/stage_3_42_graph_review/approved_prefix.json\",\n    \"sha256\": \"dcf3aa4db2927dec3a84658c0f25d1e845339d8d8f71f65c3eb6a05b9f482c8c\"\n  }\n}",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "e532c32129f35a91192d7233e429983ead16e31ed9f6b3f08510fea4e724c0d0",
+      "afterSha256": "719f17ad508eb668a8ec88598c5ace228e69e2cdaf7b17339185d3378a91acc2",
+      "edits": [
+        {
+          "from": "    <script src=\"src/config/project_version.js?v=0.24.81\"></script>",
+          "to": "    <script src=\"src/config/project_version.js?v=0.24.82\"></script>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "beforeSha256": "0568f88e9e68a37a5af9ea7b0edc0cc08f653465625d444e08032282493b9994",
+      "afterSha256": "1c95b6920b1f182214fe7595ea5193b9abf7f0a6d560599d60511a6a4ed5beed",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.81\",",
+          "to": "  \"version\": \"0.24.82\",",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "path": "package.json",
+      "beforeSha256": "40563d6e8272d1b25fc650d09bffbb37bccc3793ab48c554763de4cb695bec7d",
+      "afterSha256": "ee8ac22e9c0f183cf46391df6d346ab4d17da5214e7887984ed5bd3d7b1aa486",
+      "edits": [
+        {
+          "from": "  \"version\": \"0.24.81\",",
+          "to": "  \"version\": \"0.24.82\",",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/config/project_version.js",
+      "beforeSha256": "1bd1acdc3f8519bd92e627ad86a4c2fd85e995ad3f45c7439a921d43829edbcd",
+      "afterSha256": "41bd4d46096ff2e85d09f399f1513f7ad7c96a845c5efa3c7b627f0a4e170d0f",
+      "edits": [
+        {
+          "from": "const CURRENT_PROJECT_VERSION = \"0.24.81\";",
+          "to": "const CURRENT_PROJECT_VERSION = \"0.24.82\";",
+          "count": 1
+        },
+        {
+          "from": "  codename: \"casting-fishing-inventory-domain\",",
+          "to": "  codename: \"item-catalog-baseline-registry-domain\",",
+          "count": 1
+        },
+        {
+          "from": "  notes: Object.freeze([\n    \"Migrate the cast distance calculator, fight direction resolver, rod pull calculator, player force and tackle stress systems and the inventory stacking policy\",\n    \"Import eight completed-prefix collaborators and retire five activations without classic readers\",\n    \"Keep the per-frame targets representation-only and the game-cycle output equal\",\n    \"Preserve one hundred thirty-one project modules, one hundred twenty-four active activations and one hundred ninety-seven bridges\",\n  ]),",
+          "to": "  notes: Object.freeze([\n    \"Migrate the item catalog baseline registry with its reviewed baseline cache\",\n    \"Preserve one hundred thirty-two project modules, one hundred twenty-five active activations and one hundred ninety-eight bridges\",\n  ]),",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

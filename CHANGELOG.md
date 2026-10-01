@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.24.82 - Item Catalog Baseline Registry Domain
+
+### Changed
+
+- Migrated the item catalog baseline registry with one named ESM export; its baseline cache keeps the reviewed get, set and clear identity.
+- Extended the cumulative runtime from 131 to 132 project modules and the active activation set from 124 to 125 contracts, with 198 exact bridge relationships.
+- The next task is batch 045 preflight.
+
 ## v0.24.81 - Casting Fishing And Inventory Domain
 
 ### Changed

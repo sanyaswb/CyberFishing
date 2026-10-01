@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-044-browser-confirmation",
+  "batchId": "stage-3.replan-342.batch-044-items-4a1f3966",
+  "releaseVersion": "0.24.81",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-10-01T10:37:00.385Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute, owner away): node utils/game-cycle-check.js exit 0 without seals, output byte-identical before and after the cutover; built-in browser load: 132 runtime modules, ItemCatalogBaselineRegistry global identical to its ESM export, 1 canvas.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_044_acceptance_pass.json",
+    "sha256": "b0de8398e73a0895217edceb1468a1b11e1e6a745a4971a904380e18563f7d0b"
+  },
+  "historicalSummaryPreserved": true
+}

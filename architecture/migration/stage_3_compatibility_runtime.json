@@ -1662,6 +1662,18 @@
       "removalStage": "stage-5"
     },
     {
+      "id": "activation-ecd31221cae2",
+      "owner": "stage-3.replan-342.batch-044-items-4a1f3966",
+      "sourceProvider": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "targetModule": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "exportName": "ItemCatalogBaselineRegistry",
+      "legacySymbol": "ItemCatalogBaselineRegistry",
+      "legacyScriptIndex": 79,
+      "shimFile": "activations/079_itemcatalogbaselineregistry.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ee66782e3f9e",
       "owner": "stage-3.candidate-014-fishing-fefd469b",
       "sourceProvider": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",

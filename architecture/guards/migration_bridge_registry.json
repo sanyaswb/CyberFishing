@@ -2503,6 +2503,22 @@
       ]
     },
     {
+      "id": "bridge-c148fec7119f",
+      "bridge": "src/core/items/progression/item_catalog_baseline_registry.js",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "reason": "Preserve the exact item catalog baseline registry consumer until its legacy symbol is removed.",
+      "owner": "stage-3.replan-342.batch-044-items-4a1f3966",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemCatalogBaselineRegistry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c17208d5e755",
       "bridge": "src/core/items/effective_item_stats_resolver.js",
       "source": "src/app/bootstrap.js",
