@@ -100,10 +100,23 @@ class StageThreePatchReleaseTransition {
       const historical = `## v${profile.fromRelease} - `;
       assert(old.includes(historical));
       assert(next.includes(historical));
-      assert.equal(next.slice(next.indexOf(historical)), old.slice(old.indexOf(historical)),
-        "Historical changelog changed");
+      assert.equal(next.slice(next.indexOf(historical)),
+        StageThreePatchReleaseTransition.trimmedChangelog(old, profile.changelogTrimFrom, profile.fromRelease)
+          .slice(old.indexOf(historical)), "Historical changelog changed");
       assert(next.startsWith(`# CyberFishing changelog\n\n## v${profile.toRelease} - ${profile.title}\n`));
     }
+  }
+
+  // The changelog kept by a reviewed trim: every entry older than the source release from the heading of
+  // `trimFrom` to the end of the file is dropped; without a trim the changelog is unchanged.
+  static trimmedChangelog(text, trimFrom, sourceRelease) {
+    if (!trimFrom) return text;
+    assert.match(trimFrom, /^\d+\.\d+\.\d+$/u, "Changelog trim version is invalid");
+    const heading = `\n## v${trimFrom} - `;
+    assert.equal(text.split(heading).length - 1, 1, `Changelog trim heading is not unique: ${trimFrom}`);
+    const at = text.indexOf(heading);
+    assert(text.slice(0, at).includes(`## v${sourceRelease} - `), "Changelog trim must keep the source release entry");
+    return text.slice(0, at);
   }
 
   reverse(bytes, item) {

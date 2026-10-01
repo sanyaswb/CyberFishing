@@ -17,7 +17,7 @@
       class="game-version-badge"
       aria-label="Поточна версія гри"
     ></div>
-    <script src="src/config/project_version.js?v=0.24.84"></script>
+    <script src="src/config/project_version.js?v=0.24.85"></script>
     <script src="src/config/rarity/rarity_visual_config.js"></script>
     <script src="src/config/visual/degradation_color_config.js"></script>
     <script src="src/config/items/item_progression_config.js?v=0.24.30"></script>
@@ -118,7 +118,7 @@
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/089_distanceunitconverter.js" data-legacy-slot="89"></script>
     <script src="dist/stage-3-compat-runtime/activations/089_castdistancecalculator.js" data-legacy-slot="89"></script>
-    <script src="dist/stage-3-compat-runtime/activations/090_linespoolstate.js"></script>
+    <script src="src/core/line/line_spool_state.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/091_rodpullstate.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/092_rodstrokestate.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/093_rodstroketracker.js"></script>
@@ -193,24 +193,24 @@
     <script src="dist/stage-3-compat-runtime/activations/155_exactassemblyrefillsignaturepolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/156_itemassemblyservice.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js"></script>
-    <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
-    <script src="src/core/equipment/terminal_line_slot_resolver.js" data-legacy-slot="159"></script>
+    <script src="dist/stage-3-compat-runtime/activations/158_equipmentslotvisibilitypolicy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/159_terminallineslotresolver.js" data-legacy-slot="159"></script>
     <script src="src/ui/inventory/terminal_line_slot_label_resolver.js" data-legacy-slot="159"></script>
     <script src="dist/stage-3-compat-runtime/activations/160_equipmentstate.js"></script>
     <script src="src/core/equipment/equipment_slot_availability_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/162_unlimitedinventorycapacitypolicy.js"></script>
-    <script src="src/core/equipment/equipment_transition_planner.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/163_manualrodchangeplanner.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/164_exactitemsignaturepolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/165_autorefillsettings.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefilltrigger.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefillpolicy.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefillmemory.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefillscope.js"></script>
-    <script src="src/core/equipment/fishing_readiness_policy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/166_fishingreadinesspolicy.js"></script>
     <script src="src/core/equipment/equipment_compatibility_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/168_equipmentloadout.js"></script>
     <script src="src/core/loadouts/equipment_loadout_repository.js"></script>
-    <script src="src/core/loadouts/loadout_equipment_transition_planner.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/170_loadoutequipmenttransitionplanner.js"></script>
 
     <!-- Inventory v2 persistence and application services -->
     <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
@@ -255,7 +255,7 @@
     <script src="dist/stage-3-compat-runtime/activations/207_staminacontroller.js" data-legacy-slot="207"></script>
     <script src="src/systems/buff_manager.js" data-legacy-slot="207"></script>
     <script src="src/systems/drag_system.js"></script>
-    <script src="src/systems/line_system.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/209_linesystem.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/210_playerforcesystem.js"></script>
     <script src="src/systems/fish_force_system.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/212_playerpullmotionsmoother.js"></script>

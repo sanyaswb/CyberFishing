@@ -11,6 +11,7 @@ const {
 const {
   ActivationShimRenderer,
 } = require("../build/compat_runtime/activation_shim");
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-004-equipment-4f2570dc";
@@ -88,7 +89,15 @@ class StageThreeRodCapabilityPrebuildCheck {
     assert.equal(exactShim.includes("function"), false);
     assert.equal(exactShim.includes("new "), false);
 
-    const records = registry.bridges.filter((record) => record.owner === BATCH_ID);
+    // Later batches retire the bridges of consumers they migrate (batch 047); the retired records stay
+    // part of this batch's contract, so active plus retired is still the exact consumer set.
+    const view = new StageThreeRetirementView({ projectRoot: PROJECT_ROOT, runtimeContract: contract });
+    const migrated = view.migratedSources();
+    const active = registry.bridges.filter((record) => record.owner === BATCH_ID);
+    const retired = view.retiredBridgeRecords().filter((record) => record.owner === BATCH_ID);
+    assert(active.every((record) => !migrated.has(record.source)));
+    assert(retired.every((record) => migrated.has(record.source)));
+    const records = [...active, ...retired];
     assert.equal(records.length, CONSUMERS.length);
     assert.deepEqual(records.map((record) => record.source).sort(), [...CONSUMERS]);
     assert.equal(new Set(records.map((record) => record.bridge)).size, 1);
@@ -109,6 +118,7 @@ class StageThreeRodCapabilityPrebuildCheck {
           mechanism: "global-this-property",
         }],
       });
+      if (migrated.has(record.source)) continue;
       const source = this.#read(record.source);
       assert.match(source, /\bRodCapabilityResolver\b/u);
       assert.equal(source.includes(contract.transport.symbol), false);

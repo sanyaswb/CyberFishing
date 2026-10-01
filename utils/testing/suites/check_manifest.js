@@ -258,10 +258,10 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "architecture"],
   },
     {
-      id: "stage-3-batch-046-architecture",
-      title: "Stage 3.47.0–3.47.7 idle retrieve policy domain migration with reviewed local compositions, an earlier-batch import, an unsplit shared-source activation retirement and rollback gates",
+      id: "stage-3-batch-047-architecture",
+      title: "Stage 3.48.0–3.48.7 equipment rules, loadout planner and line system domain migration with composition identities, earlier-batch imports, a per-frame representation-only target and rollback gates",
       file: "utils/architecture/stage-3-batch-check-runner.js",
-      args: ["--batch", "046", "--mode", "architecture"],
+      args: ["--batch", "047", "--mode", "architecture"],
       suites: ["quick", "architecture"],
     },
     {
@@ -292,6 +292,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       id: "stage-3-activation-retirement-fixtures",
       title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
       file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
+      id: "stage-3-changelog-trim-fixtures",
+      title: "Stage 3 reviewed changelog trim release fixtures",
+      file: "utils/architecture/stage-3-changelog-trim-fixtures-check.js",
       suites: ["quick", "architecture"],
     },
   {

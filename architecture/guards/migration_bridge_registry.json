@@ -179,22 +179,6 @@
       ]
     },
     {
-      "id": "bridge-147d6cace9f9",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/fishing_readiness_policy.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EquipmentSlotId",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-165cb09a0730",
       "bridge": "src/core/assemblies/item_assembly_reader.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -451,22 +435,6 @@
       ]
     },
     {
-      "id": "bridge-289f736e1af7",
-      "bridge": "src/core/equipment/inventory_capacity_policy.js",
-      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
-      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
-      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "UnlimitedInventoryCapacityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-292102f00c09",
       "bridge": "src/core/fishing/line_constrained_fish_motion_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -494,22 +462,6 @@
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-299e2a323f55",
-      "bridge": "src/core/equipment/rod_capability_resolver.js",
-      "source": "src/core/equipment/terminal_line_slot_resolver.js",
-      "target": "src/game/domain/equipment/rod_capability_resolver.js",
-      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-004-equipment-4f2570dc",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RodCapabilityResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -659,6 +611,22 @@
       ]
     },
     {
+      "id": "bridge-34f7b899327d",
+      "bridge": "src/core/equipment/terminal_line_slot_resolver.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "TerminalLineSlotResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3532db04f7d4",
       "bridge": "src/core/items/progression/item_capacity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -686,6 +654,22 @@
       "globalProviders": [
         {
           "symbol": "FishFightDirectionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-375b256d362a",
+      "bridge": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LoadoutEquipmentTransitionPlanner",
           "mechanism": "global-this-property"
         }
       ]
@@ -750,22 +734,6 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3d9abab097f9",
-      "bridge": "src/core/line/line_spool_state.js",
-      "source": "src/systems/line_system.js",
-      "target": "src/game/domain/fishing/line_spool_state.js",
-      "reason": "Preserve the exact synchronous Line Spool, Rod Stroke Distance and Reel Hold Load consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-008-fishing-f859ccd3",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-3",
-      "globalProviders": [
-        {
-          "symbol": "LineSpoolState",
           "mechanism": "global-this-property"
         }
       ]
@@ -894,26 +862,6 @@
       "globalProviders": [
         {
           "symbol": "ItemFreshnessStatePolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-4c14b57df8d8",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "EQUIPMENT_SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1142,6 +1090,38 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5c47196deed2",
+      "bridge": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "source": "src/application/inventory/loadout_application_service.js",
+      "target": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LoadoutEquipmentTransitionPlanner",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5cc2dfa4d9d2",
+      "bridge": "src/core/equipment/equipment_transition_planner.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/equipment_transition_planner.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ManualRodChangePlanner",
           "mechanism": "global-this-property"
         }
       ]
@@ -1382,22 +1362,6 @@
       "globalProviders": [
         {
           "symbol": "PlayerForceBudgetAllocator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-691e8a5b2dc1",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/terminal_line_slot_resolver.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EquipmentSlotId",
           "mechanism": "global-this-property"
         }
       ]
@@ -1671,22 +1635,6 @@
       ]
     },
     {
-      "id": "bridge-7b4507b87811",
-      "bridge": "src/core/equipment/rod_capability_resolver.js",
-      "source": "src/core/equipment/fishing_readiness_policy.js",
-      "target": "src/game/domain/equipment/rod_capability_resolver.js",
-      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-004-equipment-4f2570dc",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RodCapabilityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7bdae928832e",
       "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
       "source": "src/app/adapters.js",
@@ -1714,6 +1662,38 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyPath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7f8f28fe4260",
+      "bridge": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentSlotVisibilityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-809ee5af4f2e",
+      "bridge": "src/systems/line_system.js",
+      "source": "src/app/fishing.js",
+      "target": "src/game/domain/fishing/line_system.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -1767,17 +1747,17 @@
       ]
     },
     {
-      "id": "bridge-84f91b03422f",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+      "id": "bridge-8552e9702fef",
+      "bridge": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
       "introducedStage": "stage-3",
       "removalStage": "stage-5",
       "globalProviders": [
         {
-          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "symbol": "EquipmentSlotVisibilityPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1991,6 +1971,22 @@
       ]
     },
     {
+      "id": "bridge-967a0fdf87ae",
+      "bridge": "src/core/equipment/fishing_readiness_policy.js",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "FishingReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9987d14a6b96",
       "bridge": "src/core/fishing/line_radial_movement_splitter.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2054,22 +2050,6 @@
         },
         {
           "symbol": "EQUIPMENT_SLOT_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-9c1b33e1f755",
-      "bridge": "src/core/casting_distance.js",
-      "source": "src/systems/line_system.js",
-      "target": "src/game/domain/casting/cast_distance_calculator.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CastDistanceCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -2355,6 +2335,22 @@
       ]
     },
     {
+      "id": "bridge-aa4b6227399a",
+      "bridge": "src/core/equipment/terminal_line_slot_resolver.js",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "TerminalLineSlotResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ad3945ed8801",
       "bridge": "src/core/items/freshness/bait_freshness_decay_policy.js",
       "source": "src/application/inventory/apply_bait_exposure_service.js",
@@ -2414,6 +2410,22 @@
       "globalProviders": [
         {
           "symbol": "PlayerForceSystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b26ba8739153",
+      "bridge": "src/core/equipment/terminal_line_slot_resolver.js",
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "TerminalLineSlotResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -2574,22 +2586,6 @@
       "globalProviders": [
         {
           "symbol": "EffectiveItemStatsResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c38c025ddc66",
-      "bridge": "src/core/equipment/inventory_capacity_policy.js",
-      "source": "src/core/equipment/equipment_transition_planner.js",
-      "target": "src/game/domain/inventory/inventory_capacity_policy.js",
-      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "UnlimitedInventoryCapacityPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -2987,22 +2983,6 @@
       ]
     },
     {
-      "id": "bridge-eb5bcad15dea",
-      "bridge": "src/config/inventory/equipment_slot_config.js",
-      "source": "src/core/equipment/equipment_transition_planner.js",
-      "target": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "reason": "Preserve the exact equipment slot catalog readers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-ebcf2ae98878",
       "bridge": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -3195,6 +3175,22 @@
       ]
     },
     {
+      "id": "bridge-f71c63330b1b",
+      "bridge": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentSlotVisibilityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-f880b0a474c6",
       "bridge": "src/core/inventory/equip_target_selection_policy.js",
       "source": "src/ui/ui.js",
@@ -3238,22 +3234,6 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fd866aee9c88",
-      "bridge": "src/core/equipment/rod_capability_resolver.js",
-      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
-      "target": "src/game/domain/equipment/rod_capability_resolver.js",
-      "reason": "Preserve the exact synchronous RodCapabilityResolver consumer set until Stage 5 migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-004-equipment-4f2570dc",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RodCapabilityResolver",
           "mechanism": "global-this-property"
         }
       ]

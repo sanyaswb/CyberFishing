@@ -71,6 +71,13 @@ class StageThreeBatchReleaseProjection {
       ...release.notes.map(note => `    ${JSON.stringify(note)},`), "  ]),"].join(eol));
     const changelog = [`## v${to} - ${release.title}`, "", "### Changed", "", ...release.changelog, "", ""].join("\n");
     add("CHANGELOG.md", "# CyberFishing changelog\n\n", `# CyberFishing changelog\n\n${changelog}`);
+    if (release.changelogTrimFrom) {
+      // Reviewed trim: the dropped tail is replaced by the last kept line, so the edit stays reversible.
+      const text = read("CHANGELOG.md").toString();
+      const kept = StageThreeBatchReleaseTransition.trimmedChangelog(text, release.changelogTrimFrom, from);
+      const lastLine = kept.slice(kept.lastIndexOf("\n", kept.length - 2) + 1);
+      add("CHANGELOG.md", lastLine + text.slice(kept.length), lastLine);
+    }
     const transition = {
       schemaVersion: 1, kind: context.kind("release-transition"), batchId: acceptance.batchId,
       fromRelease: from, toRelease: to,

@@ -15,6 +15,7 @@ const {
 } = require("./migration/stage_two_runtime_script_alias_resolver");
 
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageThreeRetirementView } = require("./domain_batches/stage_three_retirement_view");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BATCH_ID = "stage-3.candidate-004-equipment-4f2570dc";
 const SOURCE_PROVIDER = "src/core/equipment/rod_capability_resolver.js";
@@ -251,7 +252,8 @@ class StageThreeRodCapabilityRuntimeCheck {
     assert.equal(new context[LEGACY_SYMBOL]().resolve({
       capabilities: ["reel"],
     }).supportsReel, true);
-    this.#verifyConsumerSources(contract.transport.symbol);
+    this.#verifyConsumerSources(contract.transport.symbol, new StageThreeRetirementView({
+      projectRoot: PROJECT_ROOT, runtimeContract: contract }).migratedSources());
 
     console.log(
       `Stage 3.4 historical runtime passed inside the current ` +
@@ -273,8 +275,10 @@ class StageThreeRodCapabilityRuntimeCheck {
     assert.equal(activation.legacyScriptIndex, 157);
   }
 
-  #verifyConsumerSources(transportSymbol) {
-    for (const consumer of CONSUMERS) {
+  // Consumers migrated by later batches (batch 047) are activation shims now; their ESM targets import
+  // the resolver, so only the remaining classic consumers keep reading the legacy symbol.
+  #verifyConsumerSources(transportSymbol, migratedSources) {
+    for (const consumer of CONSUMERS.filter((source) => !migratedSources.has(source))) {
       const source = this.#read(consumer);
       assert.match(source, /\bRodCapabilityResolver\b/u);
       assert.equal(source.includes(transportSymbol), false);

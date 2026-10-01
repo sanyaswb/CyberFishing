@@ -1,0 +1,1755 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-047-observation-reconciliation",
+  "status": "verified",
+  "batchId": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+  "releaseVersion": "0.24.84",
+  "evidence": [
+    {
+      "path": "architecture/migration/stage_3_batch_047_prebuild_contract.json",
+      "sha256": "ad61e7de25ecfbab1cba3af2bd2aa7ce11aa0aaca2a796fb61d153c49e474eea"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_047_runtime_cutover.json",
+      "sha256": "a7fabd66f96d49c072c4deed52726da75e51faa23f6265690fec98b14f58e083"
+    },
+    {
+      "path": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "806672eabc184a29b0967ebfedec5db648c1dba69fd71f6838a17503fc0ea2b5"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_047_live_runtime_validation.json",
+      "sha256": "3305754b7d159800d80932ee901529031170a801cd88ce01c9de3ed80898e4f8"
+    },
+    {
+      "path": "architecture/migration/stage_3_batch_047_audit.json",
+      "sha256": "9d6ca80b5c7081eff827a5abf896df6421e83a01fe501777c645bc55cd38e588"
+    },
+    {
+      "path": "architecture/migration/stage_3_execution_state.json",
+      "sha256": "b27bb4208e06fd2eb6ab2a7e5458cd6ee75a2b42c3b3a1ba8225200251e1d64b"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "cdb78f2ad2bd0eb3c5987fd24a40d6e4b5d9b7f9c84baef3bfc4728a1d06f7fc"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "sha256": "b0962ee238024e5654d5dd996cbc29dd4be2f78dbdc296c06e5f3545a1e8bec4"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "sha256": "17f2f5161efd781e6afeeb28eef7caa99815100f64c19c45c49596520e062340"
+    },
+    {
+      "path": "architecture/module_architecture.json",
+      "sha256": "7bdd569f446efa7572293e8f672191b078c51d07154eb64f96aca72e23bd9260"
+    },
+    {
+      "path": "architecture/migration/stage_3_approved_batches.json",
+      "sha256": "bcd9a2c246ebff73e836d2761ddc52ad90f34e9f523dfa95d9bac76f0c3131bb"
+    }
+  ],
+  "manifestTransition": {
+    "beforeSha256": "fcf2e3fdd334c0caffdd719dc339019bdee4972fe11b946a3313edd953b2cef4",
+    "afterSha256": "d676c06214b8acd888f4a6d3b147803a1887c17e95f427729e1c7bcb169b8491",
+    "records": [
+      {
+        "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+        "before": {
+          "currentPath": "src/core/equipment/equipment_slot_visibility_policy.js",
+          "currentArea": "core/equipment",
+          "observed": {
+            "legacyLoadOrder": 158,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition",
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "d328967bebd5b6da156c40ae75823e750f873d269e051d723f4344b6662cdc72"
+      },
+      {
+        "currentPath": "src/core/equipment/equipment_transition_planner.js",
+        "before": {
+          "currentPath": "src/core/equipment/equipment_transition_planner.js",
+          "currentArea": "core/equipment",
+          "observed": {
+            "legacyLoadOrder": 163,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition",
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "477255a8a6d2639af162e6bb16c9599e6dba1348000827694b7c6ac616a55c21"
+      },
+      {
+        "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+        "before": {
+          "currentPath": "src/core/equipment/fishing_readiness_policy.js",
+          "currentArea": "core/equipment",
+          "observed": {
+            "legacyLoadOrder": 166,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition",
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "34753e352f6433b7e74dd225e220ec9f5c7fe4e0c9a6e35853b4bae4288c48d6"
+      },
+      {
+        "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+        "before": {
+          "currentPath": "src/core/equipment/terminal_line_slot_resolver.js",
+          "currentArea": "core/equipment",
+          "observed": {
+            "legacyLoadOrder": 159,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition",
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "0da16ac51bbdd50f6df7089e085474f53150bec21b21a3fe500b5329a1dfeef9"
+      },
+      {
+        "currentPath": "src/core/line/line_spool_state.js",
+        "before": {
+          "currentPath": "src/core/line/line_spool_state.js",
+          "currentArea": "core/line",
+          "observed": {
+            "legacyLoadOrder": 90,
+            "providers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "LineSpoolState",
+                  "mechanism": "global-this-property",
+                  "availability": "program-init"
+                }
+              ],
+              "issues": []
+            },
+            "consumers": {
+              "status": "verified",
+              "items": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager"
+                }
+              ],
+              "issues": []
+            },
+            "environment": {
+              "status": "verified",
+              "builtins": [
+                "globalThis"
+              ],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/line_spool_state.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "verified",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [
+                {
+                  "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                  "mechanism": "global-this-property",
+                  "accessRequirement": "required",
+                  "executionPhase": "eager",
+                  "resolution": "unresolved"
+                }
+              ],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "104323d933d1d9a418f510eb7a77eb1b4e3b0246b4b7031a823ebf8f0a455386"
+      },
+      {
+        "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "before": {
+          "currentPath": "src/core/loadouts/loadout_equipment_transition_planner.js",
+          "currentArea": "core/loadouts",
+          "observed": {
+            "legacyLoadOrder": 170,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition",
+                "legacy-global-contract"
+              ]
+            }
+          }
+        },
+        "afterSha256": "605a7102979a58cef3e45e6840e3958e0d8da031bb3b1b242feb762902a372f6"
+      },
+      {
+        "currentPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "currentArea": "game/domain/equipment",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "5f135022780f44efb2f2168f0ad25091245b876d88a6ce51779f91ca0e950e08"
+      },
+      {
+        "currentPath": "src/game/domain/equipment/equipment_transition_planner.js",
+        "before": {
+          "currentPath": "src/game/domain/equipment/equipment_transition_planner.js",
+          "currentArea": "game/domain/equipment",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/equipment_transition_planner.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "c20daa05523e49143e9bd8f43dff0b1123d5f8f1e1ec91777039122fb7cc4218"
+      },
+      {
+        "currentPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+        "before": {
+          "currentPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+          "currentArea": "game/domain/equipment",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/fishing_readiness_policy.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "f9c3c55821f1ad2329c7498d743847f807b9825f49e5909acca87a3214df1fcf"
+      },
+      {
+        "currentPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "before": {
+          "currentPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+          "currentArea": "game/domain/equipment",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "d5f4b9df59596c9984403bbfc68e191bee7df4535a06cc65c0f16e1cb826d797"
+      },
+      {
+        "currentPath": "src/game/domain/fishing/line_system.js",
+        "before": {
+          "currentPath": "src/game/domain/fishing/line_system.js",
+          "currentArea": "game/domain/fishing",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/line_system.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "a735c3ef2de0048deb3eab85a95794007f6bf78dd716082a3b93297d3c0f2b04"
+      },
+      {
+        "currentPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+        "before": {
+          "currentPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+          "currentArea": "game/domain/loadouts",
+          "observed": {
+            "legacyLoadOrder": null,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "migrating",
+            "roles": [
+              "domain-behavior"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+            "migrationWave": 1
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": []
+            }
+          }
+        },
+        "afterSha256": "6137b29cbfc43d1686515db66d02b00d573e1364149d44eede1fcc2d2a4fa5c7"
+      },
+      {
+        "currentPath": "src/systems/line_system.js",
+        "before": {
+          "currentPath": "src/systems/line_system.js",
+          "currentArea": "systems",
+          "observed": {
+            "legacyLoadOrder": 209,
+            "providers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "consumers": {
+              "status": "pending",
+              "items": [],
+              "issues": []
+            },
+            "environment": {
+              "status": "pending",
+              "builtins": [],
+              "browserApis": [],
+              "dynamicConstructs": [],
+              "issues": []
+            }
+          },
+          "architecture": {
+            "migrationStatus": "classified",
+            "roles": [
+              "compatibility-bridge"
+            ],
+            "targetBoundary": "game-domain",
+            "targetPath": "src/game/domain/fishing/line_system.js",
+            "migrationWave": 3
+          },
+          "analysis": {
+            "dependencies": {
+              "status": "pending",
+              "confirmed": [],
+              "items": [],
+              "unresolved": [],
+              "ambiguous": [],
+              "issues": []
+            },
+            "blockers": {
+              "status": "verified",
+              "items": [
+                "high-level-self-composition"
+              ]
+            }
+          }
+        },
+        "afterSha256": "c3e37765766eb4b7b4d4b9759c483e33dd8cb09cfb65570743f616d0c142e8e1"
+      }
+    ]
+  },
+  "totals": {
+    "modules": 574,
+    "providers": 766,
+    "consumers": 912,
+    "confirmed": 801,
+    "unresolved": 111,
+    "ambiguous": 0,
+    "edges": 690
+  },
+  "esm": [
+    {
+      "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "specifier": "./equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 40
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "specifier": "./equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 39
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+          "specifier": "./rod_capability_resolver.js",
+          "resolvedTarget": "src/game/domain/equipment/rod_capability_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 3,
+            "column": 39
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 5,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/equipment/equipment_transition_planner.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/equipment/equipment_transition_planner.js",
+          "specifier": "./equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 41
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/equipment/equipment_transition_planner.js",
+          "specifier": "../inventory/inventory_capacity_policy.js",
+          "resolvedTarget": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 50
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 4,
+            "column": 1
+          }
+        },
+        {
+          "kind": "named",
+          "location": {
+            "line": 31,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/equipment/fishing_readiness_policy.js",
+          "specifier": "./equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 33
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/equipment/fishing_readiness_policy.js",
+          "specifier": "./rod_capability_resolver.js",
+          "resolvedTarget": "src/game/domain/equipment/rod_capability_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 39
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 4,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Array",
+        "Boolean",
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+          "specifier": "./equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 33
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+          "specifier": "./rod_capability_resolver.js",
+          "resolvedTarget": "src/game/domain/equipment/rod_capability_resolver.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 39
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 6,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Object"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/fishing/line_system.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/fishing/line_system.js",
+          "specifier": "../casting/cast_distance_calculator.js",
+          "resolvedTarget": "src/game/domain/casting/cast_distance_calculator.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 40
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/fishing/line_system.js",
+          "specifier": "./line_spool_state.js",
+          "resolvedTarget": "src/game/domain/fishing/line_spool_state.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 32
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 4,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Math",
+        "Number",
+        "undefined"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    },
+    {
+      "source": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "status": "verified",
+      "hasEsmSyntax": true,
+      "observations": [
+        {
+          "source": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+          "specifier": "../equipment/equipment_slot_catalog.js",
+          "resolvedTarget": "src/game/domain/equipment/equipment_slot_catalog.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 1,
+            "column": 41
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        },
+        {
+          "source": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+          "specifier": "../inventory/inventory_capacity_policy.js",
+          "resolvedTarget": "src/game/domain/inventory/inventory_capacity_policy.js",
+          "mechanism": "static-import",
+          "resolutionStatus": "confirmed-project",
+          "location": {
+            "line": 2,
+            "column": 50
+          },
+          "specifierKind": "relative",
+          "hasExplicitJsExtension": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "named",
+          "location": {
+            "line": 4,
+            "column": 1
+          }
+        }
+      ],
+      "globalAssignments": [],
+      "externalIdentifiers": [
+        "Object",
+        "TypeError"
+      ],
+      "globalMemberReads": [],
+      "issues": []
+    }
+  ],
+  "controlledGlobalTransitions": [
+    {
+      "source": "src/core/equipment/fishing_readiness_policy.js",
+      "target": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "symbol": "FishingReadinessPolicy",
+      "activationId": "activation-176b4b50794d",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/equipment/terminal_line_slot_resolver.js",
+      "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "symbol": "TerminalLineSlotResolver",
+      "activationId": "activation-82fd44d25663",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/systems/line_system.js",
+      "target": "src/game/domain/fishing/line_system.js",
+      "symbol": "LineSystem",
+      "activationId": "activation-b850bad23769",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "target": "src/game/domain/equipment/equipment_transition_planner.js",
+      "symbol": "ManualRodChangePlanner",
+      "activationId": "activation-dbb6e36a8919",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "target": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "symbol": "LoadoutEquipmentTransitionPlanner",
+      "activationId": "activation-e2c3aa9d15c2",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    },
+    {
+      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "activationId": "activation-f06b98f0ba90",
+      "fromMechanism": "global-lexical",
+      "toMechanism": "global-this-property",
+      "approval": "exact-existing-activation-and-consumer-registry"
+    }
+  ],
+  "derivedIncomingConsumers": [
+    {
+      "source": "src/app/fishing.js",
+      "symbol": "LineSystem",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/systems/line_system.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "FishingReadinessPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/fishing_readiness_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "LoadoutEquipmentTransitionPlanner",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "ManualRodChangePlanner",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/equipment_transition_planner.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "symbol": "TerminalLineSlotResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/terminal_line_slot_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/application/inventory/loadout_application_service.js",
+      "symbol": "LoadoutEquipmentTransitionPlanner",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_compatibility_policy.js",
+      "symbol": "TerminalLineSlotResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "required",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/terminal_line_slot_resolver.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "TerminalLineSlotResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/terminal_line_slot_resolver.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "guardedConsumers": [
+    {
+      "source": "src/application/inventory/loadout_application_service.js",
+      "symbol": "LoadoutEquipmentTransitionPlanner",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "EquipmentSlotVisibilityPolicy",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "resolution": "confirmed"
+    },
+    {
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "symbol": "TerminalLineSlotResolver",
+      "mechanism": "identifier",
+      "accessRequirement": "guarded",
+      "executionPhase": "deferred",
+      "target": "src/core/equipment/terminal_line_slot_resolver.js",
+      "resolution": "confirmed"
+    }
+  ],
+  "additionalConsumers": [],
+  "dependencyDelta": {
+    "confirmedInterFileEdgesBefore": 690,
+    "confirmedInterFileEdgesAfter": 690,
+    "newlyConfirmedEdges": [],
+    "removedEdges": []
+  },
+  "transportUnresolved": {
+    "count": 6,
+    "classification": "compatibility-transport-outside-src-project-graph",
+    "createsProjectDependencyEdge": false
+  },
+  "removalDependencies": [
+    {
+      "activationId": "activation-176b4b50794d",
+      "source": "src/core/equipment/fishing_readiness_policy.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-82fd44d25663",
+      "source": "src/core/equipment/terminal_line_slot_resolver.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/core/equipment/equipment_compatibility_policy.js",
+        "src/core/equipment/equipment_slot_availability_policy.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-b850bad23769",
+      "source": "src/systems/line_system.js",
+      "consumers": [
+        "src/app/fishing.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-4",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-dbb6e36a8919",
+      "source": "src/core/equipment/equipment_transition_planner.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-e2c3aa9d15c2",
+      "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/application/inventory/loadout_application_service.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    },
+    {
+      "activationId": "activation-f06b98f0ba90",
+      "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+      "consumers": [
+        "src/application/inventory/inventory_v2_composition_root.js",
+        "src/core/equipment/equipment_compatibility_policy.js",
+        "src/core/equipment/equipment_slot_availability_policy.js"
+      ],
+      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+      "removalStage": "stage-5",
+      "removalCondition": "all-listed-legacy-consumers-migrated",
+      "newBridgeApproved": false
+    }
+  ],
+  "globalNamespace": {
+    "newGlobals": [],
+    "removedSymbols": [
+      {
+        "symbol": "EquipmentTransitionPlan",
+        "source": "src/core/equipment/equipment_transition_planner.js",
+        "consumers": 0,
+        "reason": "unactivated-export-kept-as-esm-export-only"
+      },
+      {
+        "symbol": "LineSpoolState",
+        "source": "src/core/line/line_spool_state.js",
+        "consumers": 0,
+        "reason": "retired-activation-all-listed-legacy-consumers-migrated"
+      }
+    ],
+    "mechanismTransitions": [
+      {
+        "source": "src/core/equipment/fishing_readiness_policy.js",
+        "target": "src/game/domain/equipment/fishing_readiness_policy.js",
+        "symbol": "FishingReadinessPolicy",
+        "activationId": "activation-176b4b50794d",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/equipment/terminal_line_slot_resolver.js",
+        "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "symbol": "TerminalLineSlotResolver",
+        "activationId": "activation-82fd44d25663",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/systems/line_system.js",
+        "target": "src/game/domain/fishing/line_system.js",
+        "symbol": "LineSystem",
+        "activationId": "activation-b850bad23769",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/equipment/equipment_transition_planner.js",
+        "target": "src/game/domain/equipment/equipment_transition_planner.js",
+        "symbol": "ManualRodChangePlanner",
+        "activationId": "activation-dbb6e36a8919",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "target": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+        "symbol": "LoadoutEquipmentTransitionPlanner",
+        "activationId": "activation-e2c3aa9d15c2",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      },
+      {
+        "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+        "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "symbol": "EquipmentSlotVisibilityPolicy",
+        "activationId": "activation-f06b98f0ba90",
+        "fromMechanism": "global-lexical",
+        "toMechanism": "global-this-property",
+        "approval": "exact-existing-activation-and-consumer-registry"
+      }
+    ]
+  },
+  "graph": {
+    "modules": 574,
+    "consumers": 912,
+    "confirmed": 801,
+    "selfConfirmed": 3,
+    "unresolved": 111,
+    "ambiguous": 0,
+    "edges": 690,
+    "reverseLinks": 690,
+    "targetsWithConsumers": 395,
+    "unifiedEdges": 874,
+    "reverseConsumers": "derived-only",
+    "verifiedIncoming": [
+      {
+        "sourceProvider": "src/core/equipment/fishing_readiness_policy.js",
+        "targetModule": "src/game/domain/equipment/fishing_readiness_policy.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "FishingReadinessPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/equipment/fishing_readiness_policy.js",
+            "target": "src/game/domain/equipment/fishing_readiness_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-967a0fdf87ae",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/equipment/terminal_line_slot_resolver.js",
+        "targetModule": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "TerminalLineSlotResolver"
+            ]
+          },
+          {
+            "source": "src/core/equipment/equipment_compatibility_policy.js",
+            "symbols": [
+              "TerminalLineSlotResolver"
+            ]
+          },
+          {
+            "source": "src/core/equipment/equipment_slot_availability_policy.js",
+            "symbols": [
+              "TerminalLineSlotResolver"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/equipment/terminal_line_slot_resolver.js",
+            "target": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-34f7b899327d",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-aa4b6227399a",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-b26ba8739153",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/systems/line_system.js",
+        "targetModule": "src/game/domain/fishing/line_system.js",
+        "legacy": [
+          {
+            "source": "src/app/fishing.js",
+            "symbols": [
+              "LineSystem"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/systems/line_system.js",
+            "target": "src/game/domain/fishing/line_system.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-809ee5af4f2e",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/equipment/equipment_transition_planner.js",
+        "targetModule": "src/game/domain/equipment/equipment_transition_planner.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "ManualRodChangePlanner"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/equipment/equipment_transition_planner.js",
+            "target": "src/game/domain/equipment/equipment_transition_planner.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-5cc2dfa4d9d2",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/loadouts/loadout_equipment_transition_planner.js",
+        "targetModule": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "LoadoutEquipmentTransitionPlanner"
+            ]
+          },
+          {
+            "source": "src/application/inventory/loadout_application_service.js",
+            "symbols": [
+              "LoadoutEquipmentTransitionPlanner"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/loadouts/loadout_equipment_transition_planner.js",
+            "target": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-375b256d362a",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-5c47196deed2",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "sourceProvider": "src/core/equipment/equipment_slot_visibility_policy.js",
+        "targetModule": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+        "legacy": [
+          {
+            "source": "src/application/inventory/inventory_v2_composition_root.js",
+            "symbols": [
+              "EquipmentSlotVisibilityPolicy"
+            ]
+          },
+          {
+            "source": "src/core/equipment/equipment_compatibility_policy.js",
+            "symbols": [
+              "EquipmentSlotVisibilityPolicy"
+            ]
+          },
+          {
+            "source": "src/core/equipment/equipment_slot_availability_policy.js",
+            "symbols": [
+              "EquipmentSlotVisibilityPolicy"
+            ]
+          }
+        ],
+        "targetLegacyConsumers": [],
+        "unifiedIncoming": [
+          {
+            "source": "src/core/equipment/equipment_slot_visibility_policy.js",
+            "target": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+            "mechanisms": [
+              "approved-bridge"
+            ],
+            "provenance": [
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-7f8f28fe4260",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-8552e9702fef",
+                "leg": "bridge-target"
+              },
+              {
+                "mechanism": "approved-bridge",
+                "bridgeId": "bridge-f71c63330b1b",
+                "leg": "bridge-target"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "reverseIndexSha256": "8dc6596ecc358b96047122d9dfb37ae7c3a9d071db337c6cbbdf187c01dab445"
+  },
+  "guards": {
+    "failureCount": 0,
+    "knownDebtCount": 145,
+    "diagnosticsSha256": "60dc4a50ac9dd2f2959b2f7238dd241c94e1e8944b7ab6d85d1951e56bdfc2a3",
+    "baselineGlobals": 852
+  },
+  "metadataTransition": {
+    "field": "architecture.migrationStatus",
+    "from": "migrating",
+    "to": "verified",
+    "targets": [
+      "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "src/game/domain/equipment/equipment_transition_planner.js",
+      "src/game/domain/equipment/fishing_readiness_policy.js",
+      "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "src/game/domain/fishing/line_system.js",
+      "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+    ]
+  },
+  "topology": {
+    "modules": 141,
+    "activations": 131,
+    "bridges": 200
+  },
+  "lifecycle": {
+    "completedBatchIds": [
+      "stage-3.candidate-001-inventory-85f44b2e",
+      "stage-3.candidate-002-fishing-944d0790",
+      "stage-3.candidate-003-fishing-9700ad4f",
+      "stage-3.candidate-004-equipment-4f2570dc",
+      "stage-3.candidate-005-fishing-45d0c7ce",
+      "stage-3.candidate-006-fishing-e48e70d8",
+      "stage-3.candidate-007-fishing-bb8b3939",
+      "stage-3.candidate-008-fishing-f859ccd3",
+      "stage-3.candidate-009-fish-444e8034",
+      "stage-3.candidate-010-inventory-e3dffbe7",
+      "stage-3.candidate-011-items-11818ee5",
+      "stage-3.candidate-012-assemblies-2086347a",
+      "stage-3.candidate-013-fishing-0267b3ea",
+      "stage-3.candidate-014-fishing-fefd469b",
+      "stage-3.candidate-015-fishing-37dc3452",
+      "stage-3.candidate-016-fishing-f8c953aa",
+      "stage-3.candidate-017-inventory-fd62478b",
+      "stage-3.candidate-018-items-8ea4be10",
+      "stage-3.candidate-019-items-b0af5033",
+      "stage-3.candidate-020-assemblies-43d77861",
+      "stage-3.candidate-021-equipment-4044fcef",
+      "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
+      "stage-3.replan-322.batch-023-items-c91fce82",
+      "stage-3.replan-322.batch-024-inventory-21307d68",
+      "stage-3.replan-322.batch-025-fishing-9bcfae5e",
+      "stage-3.replan-322.batch-026-inventory-ad73f2fb",
+      "stage-3.replan-322.batch-027-items-e8f84667",
+      "stage-3.replan-322.batch-028-assemblies-f4be469e",
+      "stage-3.replan-322.batch-029-fishing-f2a8faba",
+      "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "stage-3.replan-322.batch-031-fishing-d2f28c0f",
+      "stage-3.replan-322.batch-032-items-096b3398",
+      "stage-3.replan-322.batch-033-assemblies-3cd39292",
+      "stage-3.replan-322.batch-034-fishing-b761d4f1",
+      "stage-3.replan-336.batch-035-items-48cb5bbc",
+      "stage-3.replan-336.batch-036-items-e1a5aaa4",
+      "stage-3.replan-336.batch-037-items-5fccd461",
+      "stage-3.replan-336.batch-038-assemblies-d8271d28",
+      "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
+      "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
+      "stage-3.replan-342.batch-041-fishing-71e662d7",
+      "stage-3.replan-342.batch-042-equipment-6f782961",
+      "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+      "stage-3.replan-342.batch-044-items-4a1f3966",
+      "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+      "stage-3.replan-342.batch-046-fishing-9a1447c2"
+    ],
+    "activeBatchId": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
+    "activeBatchPhase": "runtime-active",
+    "batchCompleted": false
+  },
+  "releaseClosureAuthorized": false,
+  "verdict": "eligible-for-full-acceptance",
+  "nextGate": "stage-3.48.8-full-acceptance-and-browser-smoke"
+}

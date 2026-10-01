@@ -11,6 +11,7 @@ const { StageThreeReviewedTopLevelFunctions } = require("./domain_batches/stage_
 const { StageThreeLocalCompositionReview } = require("./domain_batches/stage_three_local_composition_review");
 const { RepresentationOnlyReviewedEsmTarget } = require("./domain_batches/stage_three_reviewed_representation_target");
 const { PREFLIGHT_PROFILE } = require("./stage_three_batches/definitions/041/profile");
+const { sameMemberMultiset } = require("./domain_batches/stage_three_batch_preflight_audit");
 
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
 const CURRENT = "fixture/policy.js";
@@ -150,5 +151,14 @@ accepts(() => new RepresentationOnlyReviewedEsmTarget().project({ source: withNa
 rejects(() => new RepresentationOnlyReviewedEsmTarget().project({ source: withName, currentPath: CURRENT,
   targetPath: "fixture/target.js", exports: ["Loadout", "NAME"], sourceSha256: sha(withName), contract: {},
   targetEvaluation: null, imports: [] }), /only plain class declarations/u, "unreviewed constant export");
+
+// Reviewed member names (batch 047): multiset equality independent of the observer's listing order.
+const observedFields = ["#lastReleasedMeters", "#lastReleaseResult", "#spoolState"];
+accepts(() => sameMemberMultiset(observedFields, ["#spoolState", "#lastReleaseResult", "#lastReleasedMeters"]), true,
+  "locale-ordered observation equals the reviewed fields");
+accepts(() => sameMemberMultiset(observedFields, ["#lastReleaseResult", "#spoolState"]), false, "missing reviewed field");
+accepts(() => sameMemberMultiset(observedFields, [...observedFields, "#extra"]), false, "extra reviewed field");
+accepts(() => sameMemberMultiset(observedFields, [...observedFields, "#spoolState"]), false, "duplicated reviewed field");
+accepts(() => sameMemberMultiset([...observedFields, "#spoolState"], observedFields), false, "duplicated observed field");
 
 console.log(`Stage 3 batch reviewed-shape fixtures passed (${cases} cases).`);

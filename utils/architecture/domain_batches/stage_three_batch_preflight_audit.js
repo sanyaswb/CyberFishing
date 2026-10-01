@@ -17,6 +17,13 @@ const {
   StageThreeBatchSourceObserver,
 } = require("./stage_three_batch_source_observer");
 
+// Reviewed member names compare as multisets (owner decision 2026-10-01, batch 047): both sides in
+// code-unit order, so the observer's listing order is irrelevant while a missing, extra or duplicated
+// name still differs.
+function sameMemberMultiset(observed, reviewed) {
+  return JSON.stringify([...observed].sort()) === JSON.stringify([...reviewed].sort());
+}
+
 class StageThreeBatchPreflightAuditBuilder {
   #profile;
   #sourceObserver;
@@ -558,13 +565,13 @@ class StageThreeBatchPreflightAuditBuilder {
     }
     this.#require(sourceShape.forbiddenReads.length === 0,
       `forbidden source read exists: ${module.currentPath}`);
-    this.#require(this.#same(
+    this.#require(sameMemberMultiset(
       sourceShape.fields.map((field) => field.name),
-      [...reviewed.instanceFields].sort(),
+      reviewed.instanceFields,
     ), `instance field shape differs: ${module.currentPath}`);
-    this.#require(this.#same(
-      sourceShape.methods.filter((method) => method.kind === "get").map((method) => method.name).sort(),
-      [...reviewed.publicStateShape].sort(),
+    this.#require(sameMemberMultiset(
+      sourceShape.methods.filter((method) => method.kind === "get").map((method) => method.name),
+      reviewed.publicStateShape,
     ), `public getter shape differs: ${module.currentPath}`);
     this.#require(this.#same(sourceShape.allocationTotals, reviewed.allocationBaseline),
       `allocation baseline differs: ${module.currentPath}`);
@@ -740,8 +747,9 @@ class StageThreeBatchPreflightAuditValidator {
       const reviewed = profile.reviewedContracts[module.currentPath];
       require(reviewed !== undefined, `reviewed contract is missing: ${module.currentPath}`);
       require(/^[a-f0-9]{64}$/u.test(module.sourceSha256), `source fingerprint is invalid: ${module.currentPath}`);
-      require(this.#same(module.sourceShape?.fields?.map((field) => field.name),
-        [...(reviewed?.instanceFields || [])].sort()), `instance fields differ: ${module.currentPath}`);
+      require(Array.isArray(module.sourceShape?.fields) && sameMemberMultiset(
+        module.sourceShape.fields.map((field) => field.name), reviewed?.instanceFields || []),
+      `instance fields differ: ${module.currentPath}`);
       require(this.#same(module.state?.publicStateShape,
         [...(reviewed?.publicStateShape || [])].sort()), `public state shape differs: ${module.currentPath}`);
       require(this.#same(module.state?.resultShape,
@@ -784,4 +792,5 @@ class StageThreeBatchPreflightAuditValidator {
 module.exports = {
   StageThreeBatchPreflightAuditBuilder,
   StageThreeBatchPreflightAuditValidator,
+  sameMemberMultiset,
 };

@@ -18,6 +18,8 @@ function releaseProfile(definition) {
     title: definition.release.title,
     transitionPath: context.paths.releaseTransition,
     informationalDocumentsExcluded: true,
+    // Owner decision 2026-10-01: a release may drop the oldest changelog entries from one version on.
+    ...(definition.release.changelogTrimFrom ? { changelogTrimFrom: definition.release.changelogTrimFrom } : {}),
   });
 }
 

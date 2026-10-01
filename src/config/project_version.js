@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.84";
+const CURRENT_PROJECT_VERSION = "0.24.85";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,13 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "idle-retrieve-policy-domain",
+  codename: "equipment-rules-loadout-planner-line-system-domain",
   updatedAt: "2026-10-01",
   notes: Object.freeze([
-    "Migrate the base, passive lure and pole idle retrieve policies and the idle retrieve policy resolver",
-    "Import resolveFightPhysicsConfig from the landing policy module and retire its activation from the shared landing policy shim",
-    "Preserve one hundred thirty-five project modules, one hundred twenty-six active activations and two hundred one bridges",
+    "Migrate the slot visibility policy, manual rod change planner with its transition plan, fishing readiness policy, terminal-line slot resolver, loadout transition planner and line system",
+    "Import thirteen slot catalog and completed-prefix collaborators and retire the LineSpoolState activation without classic readers",
+    "Keep the per-frame line system representation-only and the game-cycle output equal",
+    "Preserve one hundred forty-one project modules, one hundred thirty-one active activations and two hundred bridges",
   ]),
 });
 
