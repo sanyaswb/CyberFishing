@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.25.2 - Stage 4 Closure
+
+### Changed
+
+- Stage 4 closed: all 95 original scope modules accounted for, 36 clusters applied; remaining Bootstrap and version catalog work explicitly assigned to Stage 5, and compatibility retirement paths audited.
+
 ## v0.25.1 - Stage 4 M2 Application Modules
 
 ### Changed

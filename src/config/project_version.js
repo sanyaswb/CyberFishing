@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.25.1";
+const CURRENT_PROJECT_VERSION = "0.25.2";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,11 +13,11 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stage-4-m2-application",
+  codename: "stage-4-closed",
   updatedAt: "2026-10-02",
   notes: Object.freeze([
-    "Complete application orchestration and inventory ESM migration",
-    "Preserve gameplay, hot-loop traces, inventory saves and runtime identities",
+    "Close Application and Platform migration with guarded scope accounting",
+    "Continue Presentation and Bootstrap in Stage 5",
   ]),
 });
 

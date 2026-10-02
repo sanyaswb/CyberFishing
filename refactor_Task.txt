@@ -1,12 +1,12 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.89`
+- **Current release version:** `v0.25.2`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
 - **Stage 3 status (2026-10-02):** CLOSED — all 139 Domain modules migrated (batches 001–051), closure gates verified (`architecture/migration/stage_3_closure.json`, check `stage-3-closure`); runtime 150 modules / 131 activations / 192 bridges, every remaining activation and bridge with a removal stage (4/5/6) and the condition "all listed legacy consumers migrated". Pending: the owner's play check of batches 046–051.
-- **Stage 4 status (2026-10-02, v0.25.0 + clusters 020, 018, 021–028):** M1 released (record `architecture/migration/stage_4/releases/001_m1-config-platform.json`, local tag v0.25.0) — 33 clusters applied (001–008, 010–028, 031–036; 93 ESM targets) + preparations 001–016, 009 deferred to Stage 5, 3 classic modules left in 3 pending records (030, 037 fishing.js, 029; application.js → Stage 5); order frozen in `architecture/migration/stage_4/graph_review_v5.json`. NEXT: M2 — 030, 037, 029 (tier A), then the M2 release 0.25.x with `stage-4-release.js`. Owner play list M1 pending. Working rules in §3 "Stage 4 working rules".
-- **Next step:** tier-A evidence command, cluster 018 storage, cluster 019 game loop/adapters/audio, M1 release 0.25.0; then M2 (clusters 020–030) and the Stage 4 closure.
+- **Stage 4 status (2026-10-02):** CLOSED — v0.25.2, tag stage4-closed; 36 applied clusters / 96 ESM targets / 19 preparations. Original scope: 95 modules, 92 migrated and 3 formally reassigned to Stage 5 (preparations 001/003/015). No pending cluster or active stage-4 retirement obligation. Closure: architecture/migration/stage_4_closure.json; final graph: graph_review_v6.json. Owner manual play remains pending; authorized automated acceptance is recorded.
+- **Next step:** Stage 5 dependency/scope review and frozen Presentation + Bootstrap plan; English execution specification: `architecture/migration/stage_4/stage5_handoff.md`. Historical Stage 4 paragraphs below retain the facts at their checkpoint.
 - **Informational document:** since v0.24.62 this file (and the local, untracked handoff notes `CODEX.md`, formerly `FORCODEX.md`) are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -328,6 +328,8 @@ Stage 3 is complete only when all approved Domain clusters have migrated, state 
 
 # 3. Stage 4 — Application + Platform
 
+**CLOSED at v0.25.2 (2026-10-02).** Final executed plan: graph_review_v6.json; closure record: stage_4_closure.json. M1 v0.25.0 and M2 v0.25.1 released. Clusters 030, 037 and 029 complete with tier-A evidence; five bridges and three activations reassigned to Stage 5 with exact identities and recorded reasons. Runtime 177 active / 124 retired / 7 inert; bridges 206 (162 Stage 5, 44 Stage 6); globals 852; debts 67. Quick 24, Architecture 32, Full catalog 64. No new globals/debts or gameplay/save changes.
+
 Process (owner decisions 2026-09-29 on the Stage 4 process proposal): risk tiers A/B/C derived automatically from facts (hot-loop traces, save-format use); a cohesive cluster per commit with at most one owner of mutable state; a release and the owner's play check per milestone (game-cycle and a browser load on every commit); lighter records with rollback through `git revert` after the history freeze; tooling frozen (a new tool or field only with a written reason and at least two planned uses); the 30 config modules belong to Stage 4, milestone M1, tier C; no hard milestone dates until M1 is done. At Stage 3 closure: one final acceptance Full, then the history replays (and the `stage-3-prerequisite-NNN` replays, moved out of Quick and Architecture) run only at stage closures or on demand.
 
 **Phase 0 decision 0.2 — single live config source (owner 2026-10-02, record `architecture/migration/stage_4_owner_decision_config_source.json`):** option A. One `RuntimeConfig` port is created once in bootstrap as a live facade over `CONFIG`; every getter, `fightPhysicsConfig` included, reads per call (no cache). Application/Platform receive only the port or narrow slices through constructors; direct `CONFIG` access stays only in bootstrap/config and DEV. Consequence: a DEV replacement of the fight-physics adapter reaches every consumer (DEV-only behaviour, nothing player-visible); this resolves the `ConfigProvider` adapter cache. The port reads the live `CONFIG`; `BASE_CONFIG` / `CONFIG_OVERRIDE_STORE` stay a DEV mechanism until Stage 6 (rejected: B, raw live `CONFIG` for every consumer). Stage 4 releases use the 0.25.x line (one release per milestone).
@@ -485,16 +487,30 @@ DOM/Canvas adapters
 
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 
-- [ ] Inject a clock / instance-id factory into `FlatInventoryItemRepository` (its fallback instance id reads `Date.now`; 012, owner decision 2026-09-28). Clock part DONE by prerequisite 033 (injected `now`); remaining: the fallback id itself when no factory is injected (production always injects one).
-- [ ] Inject a clock into `EquipmentLoadout`: its default `createdAt` reads `new Date()` (the only Domain clock reader at the Stage 3 closure, recorded in `architecture/migration/stage_3_closure.json`).
+- [x] FlatInventoryItemRepository clock/id injection: prerequisite 033 injects now; production always injects instanceIdFactory. Optional compatibility fallback removal is explicitly assigned to Stage 7 (API cleanup, not a Stage 4 migration blocker).
+- [x] EquipmentLoadout default clock task accounted for at Stage 4 closure: explicitly moved to Stage 5 because all create/restore composition paths must be wired together; no persisted createdAt change. See the Stage 5 task below.
 - [x] Remove the dead `typeof X !== "undefined"` availability guards in Domain modules (done 2026-10-02 before Stage 4): after the ESM migration every guarded name is an imported or local binding (22 guards in 13 modules, listed in the Stage 3 closure evidence); removing them changes no behaviour (Stage 7 cleanup, no API change).
-- [ ] Remove the visual fields (ratingColor, ratingGradient, powerColor, powerGradient) from saved inventory items, with an explicit save migration (Stage 4/5); `InventoryItemStackingPolicy` ignores them until then (012).
-- [ ] Repository portability (owner decision 2026-09-29: work stays on the Windows machine until then): the evidence hashes exact working-tree bytes (mixed CRLF/LF) while git stores LF-normalized blobs, so a fresh clone fails the ledger drift checks; commit `.gitattributes` with `* -text` plus a renormalization that stores today's bytes, verify with a fresh clone (`core.autocrlf=false`) and Quick; mark the Windows-only `D:/escape.js` fixture cases. Needed before CI or a second machine.
+- [x] Saved-item visual fields task accounted for: explicit versioned save migration assigned to Stage 5, separate from ESM migration; Stage 4 preserves save bytes.
+- [x] Repository portability task accounted for: explicitly assigned to Stage 7/infrastructure, required before CI or a second machine; owner chose current Windows workspace. Exact-byte renormalization and fresh-clone proof remain pending, as listed below.
 - [x] `ConfigProvider` reads the live RuntimeConfig fight-physics adapter per call (Stage 4 preparation 002, owner decision 0.2); focused parity replaces the adapter through the production configurable property and verifies the same Application consumer sees it. The port is composed once in Bootstrap over live CONFIG; BASE_CONFIG + override-store sourcing remains Stage 6.
+
+
+Stage 4 M2 tooling closure (2026-10-02): removed unused HistoryBase workspace reconstruction and its runner/seal policy, plus two unreachable historical helpers (3 archived files, 357 lines; archive tag stage4-m2-tools-archive). No live check removed; cache scope/tooling invalidation regression PASS; acceptance Full 64/64 executed, 0 cached, unchanged source. utils 70,277 lines < M2 baseline 70,358. Corrected cluster 030 browser performer label to actual Codex without changing its evidence.
+
+Stage 4 M2 released (2026-10-02): v0.25.1, release 002_m2-application. 36 clusters / 96 ESM targets, no pending cluster; 009 formally deferred. Runtime 177 active / 124 retired / 7 inert, 206 bridges, 67 debts, 852 globals, 301 classic src tags. Acceptance Full 64/64 at tooling closure; exact release metadata delta validated and cluster records PASS. Owner manual play remains pending; automated substitute is authorized.
+
+
+
+**Stage 4 final closure (2026-10-02, v0.25.2):** closure guard added to the existing records gate (four negative fixtures; no new catalog check). Full 64/64 executed, zero cache/isolation violations and unchanged source; Quick 24/24, Architecture 32/32. Browser: 177 identities, 0 missing/mismatch/errors/warnings; version badge 0.25.2, same inventory buttons after reload. Retrospective M1 A audit: 125 original class members in 014/016/017/033/034/036 equal the actual pre-migration Git parent token bodies; four additive platform methods are approved preparations 012/016. Existing deterministic frame/clock/save scenarios pass. Evidence: architecture/archive/stage4_final_acceptance.json and stage_4_closure.json. English Stage 5 specification: architecture/migration/stage_4/stage5_handoff.md. Owner manual play remains pending under authorized automated substitution.
 
 # 4. Stage 5 — Presentation + Bootstrap
 
+Execution specification: `architecture/migration/stage_4/stage5_handoff.md`. First derive and freeze the actual dependency graph; do not reuse an obsolete Stage 4 pending order.
+
 Stage 4 formal follow-ups (scope accounted by preparation records):
+- [ ] Migrate GameApplication/facades and GameCompositionRoot as Bootstrap composition (application.js preparation 015); preserve injected target/config/logger identities and lifecycle order.
+- [ ] Inject EquipmentLoadout default clock through every create/restore factory; preserve stored createdAt and default timing semantics.
+- [ ] Remove saved inventory visual fields only through a separate explicit, backward-compatible save migration; InventoryItemStackingPolicy keeps ignoring them until then.
 - [ ] Migrate `src/config/config.js` as Bootstrap config composition: preparation 001 moved all authored data to the ESM config owner and host cloning to Platform; retain the same context/catalog/adapter identities and conditional DEV exposure.
 - [ ] Migrate `src/config/project_version.js` as the presentation version catalog, alongside version badge and release tooling: preparation 003 pins the unchanged source and removes the dormant validator's metadata-global read. Stage 4 brief permits keeping this classic file until Stage 5; preserve its existing alias exposure, package/version-copy checks and release projection.
 
@@ -503,8 +519,8 @@ Migrate the rendering pipeline, UI, screens, HUD, `GameApplication`, and `GameCo
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 
 - [ ] The presentation catalogs `EQUIPMENT_SLOT_PRESENTATION` and `INVENTORY_RULE_MESSAGES` (incl. the `rodKinds` section from 023, kept as its own section so it can be separated), `TerminalLineSlotLabelResolver` and the platform `ConsoleLogger` become ESM imports of their composition consumers; their recorded global providers are removed under the removal conditions in records 007, 008 and 021.
-- [ ] Rename the Domain slot catalog `EQUIPMENT_SLOT_CONFIG` to an equipment slot catalog module at its ESM migration (007).
-- [ ] Split `ViewportProjector` (026): its config-derived `getPerspective` is a world fact read by the chum rules (domain), the rest is camera state (presentation); separate them when the projector migrates (an API change for chum_system and the render builders).
+- [x] Domain slot catalog migrated in Stage 3 to src/game/domain/equipment/equipment_slot_catalog.js. No opportunistic public symbol rename; any naming cleanup belongs to Stage 7.
+- [x] ViewportProjector migrated in Stage 4 to game/application/viewport/viewport_projector.js with hot-loop parity. World-perspective/camera responsibility and API split explicitly assigned to Stage 7; no Stage 5 migration remains for this file.
 - [x] Collapse the duplicated global `resolveFightPhysicsConfig` (landing and retrieve policies, kept byte-identical in 015) into one module export — done by prerequisite 030; retrieve policy imports it since batch 046.
 
 # 5. Stage 6 — Development / Production Split
@@ -516,10 +532,15 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 - [ ] Move the DEV test build templates `ITEM_DB.builds.debug_float_build` / `debug_feeder_build` into a DEV data overlay (Stage 4 cluster 004 reviewed them as data-only; moving them changes the data shape).
 - [ ] Move the display of `Fish.activeDebuffName` into the DEV overlay (fishing.js debug data feeds it today; owner decision 2026-09-29).
 - [ ] Split the bootstrap DEV coupling: the DEV hooks reach production only through the injected `DevFlagsProvider` (e.g. the GodMode bite-sequence override since 018), composed from `dev.entry.js`; a production build composes it without GodMode.
-- [ ] Retire the classic script positions: the 46 retired-activation placeholders and the inert migrated-source placeholder of `BuffManager` (batch 050, `inertModules` in the runtime contract) keep their legacy slots until the classic script order is retired.
+- [ ] Retire the classic script positions: the 124 retired activations and 7 inert module placeholders (Stage 4 closure counts), including `BuffManager` (batch 050, `inertModules` in the runtime contract) keep their legacy slots until the classic script order is retired.
 - [ ] Source the `RuntimeConfig` port from `BASE_CONFIG` + `CONFIG_OVERRIDE_STORE` (`src/config/runtime/*`) instead of the live mutable `CONFIG`, with DEV writing only to the override store (owner decision 2026-10-02, Phase 0.2: not in M1).
 
 # 6. Stage 7 — Structural Hardening
+
+- [ ] Repository portability before CI/second machine: review `.gitattributes` with `* -text`, renormalize the exact current mixed CRLF/LF bytes, prove immutable ledger hashes in a fresh clone (`core.autocrlf=false`) and Quick, and identify Windows-only D:/escape.js fixtures. Separate infrastructure transition; never mass-normalize during migration.
+- [ ] Remove FlatInventoryItemRepository optional id fallback after verifying every caller; production already injects the factory and clock.
+- [ ] Separate ViewportProjector world-perspective facts from camera state only in a reviewed behavior/API transition with hot-loop evidence.
+- [ ] Resolve archived architecture:closure package script and struct tooling decision through the separately reviewed package contract.
 
 After ESM is stable:
 
@@ -570,7 +591,3 @@ expand a baseline solely to make a check pass
 ```
 
 Do not bypass these cases with a workaround; review the dependency design.
-
-Stage 4 M2 tooling closure (2026-10-02): removed unused HistoryBase workspace reconstruction and its runner/seal policy, plus two unreachable historical helpers (3 archived files, 357 lines; archive tag stage4-m2-tools-archive). No live check removed; cache scope/tooling invalidation regression PASS; acceptance Full 64/64 executed, 0 cached, unchanged source. utils 70,277 lines < M2 baseline 70,358. Corrected cluster 030 browser performer label to actual Codex without changing its evidence.
-
-Stage 4 M2 released (2026-10-02): v0.25.1, release 002_m2-application. 36 clusters / 96 ESM targets, no pending cluster; 009 formally deferred. Runtime 177 active / 124 retired / 7 inert, 206 bridges, 67 debts, 852 globals, 301 classic src tags. Acceptance Full 64/64 at tooling closure; exact release metadata delta validated and cluster records PASS. Owner manual play remains pending; automated substitute is authorized.

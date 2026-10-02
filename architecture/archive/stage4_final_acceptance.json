@@ -1,0 +1,1077 @@
+{
+  "kind": "cyber-fishing-check-run-report",
+  "schemaVersion": 1,
+  "runId": "2026-10-02T19-51-39-576Z-20956",
+  "mode": "acceptance",
+  "command": [
+    "node",
+    "utils/run-checks.js",
+    "--acceptance",
+    "--report",
+    "D:/dev/code/cyber-fishing/node_modules/.cache/stage-4-clusters/stage4-final-full.json"
+  ],
+  "jobs": 4,
+  "startedAt": "2026-10-02T19:51:39.576Z",
+  "finishedAt": "2026-10-02T19:52:08.765Z",
+  "source": {
+    "commit": "a54858938903deb0e73c6d1cf15ac99c4890d3b3",
+    "files": 1573,
+    "before": "53153303caaa39740cbd57ec7b8cba3e24e2eb9f37d31f4de9f1dd0c3049dfde",
+    "after": "53153303caaa39740cbd57ec7b8cba3e24e2eb9f37d31f4de9f1dd0c3049dfde",
+    "unchanged": true
+  },
+  "catalog": {
+    "sha256": "c52b952d62b7029ba1532952d93d62ae009d7037f255ccdd54d5a7149f5bdf42",
+    "checks": 64
+  },
+  "selected": [
+    "syntax",
+    "architecture-policy",
+    "architecture-documentation",
+    "migration-manifest-integrity",
+    "migration-manifest-reconciler",
+    "migration-manifest-schema-migration",
+    "migration-manifest-validator",
+    "legacy-symbol-provider-fixtures",
+    "legacy-symbol-provider-corpus",
+    "legacy-external-consumer-fixtures",
+    "legacy-external-consumer-corpus",
+    "provider-resolution-contract",
+    "provider-resolution-fixtures",
+    "provider-resolution-corpus",
+    "migration-observation-persistence-fixtures",
+    "observation-graph-integrity-fixtures",
+    "classification-evidence-fixtures",
+    "classification-evidence-corpus",
+    "stage-1-6-migration-batch-plan",
+    "approved-stage-2-batch-freeze",
+    "architecture-guard-fixtures",
+    "architecture-guard-corpus",
+    "root-package-contract",
+    "native-esm-fixture",
+    "vite-fixture-build",
+    "stage-3-compatibility-runtime-fixtures",
+    "legacy-slot-split",
+    "stage-3-runtime-load-order",
+    "stage-3-activation-retirement-fixtures",
+    "stage-3-changelog-trim-fixtures",
+    "domain-boundary",
+    "stage-4-cluster-records",
+    "line-allocation",
+    "float-depth",
+    "inventory-lifecycle",
+    "assembly-domain",
+    "inventory-v2-equipment",
+    "inventory-v2-equipment-hydration",
+    "inventory-v2-transaction",
+    "inventory-v2-migration",
+    "inventory-save-round-trip",
+    "inventory-v2-cast-lure",
+    "inventory-v2-line-allocation",
+    "consumable-event-identity",
+    "inventory-v2-integration",
+    "inventory-v2-ui",
+    "bait-effectiveness",
+    "item-freshness-gameplay",
+    "hook-domain-semantics",
+    "item-stat-contract",
+    "fish-rarity",
+    "item-rarity",
+    "item-rarity-roundtrip",
+    "item-progression",
+    "item-condition",
+    "item-state-hardening",
+    "degradation-colors",
+    "rarity-production",
+    "victory-input",
+    "game-cycle",
+    "devtools-links",
+    "check-cache-regression",
+    "platform-runtime",
+    "config-runtime"
+  ],
+  "environment": {
+    "node": "v24.13.0",
+    "platform": "win32",
+    "arch": "x64",
+    "host": "ODIN",
+    "tooling": {
+      "utils/run-checks.js": "214ae7d66b8a9e053277afb6b50cb7a82ab7971f0514d70d36c610fbcc7ce0dd",
+      "utils/testing/core/check_catalog.js": "c88238431ac208b39a760f3e81e3bf097d4ce1c08a237734e61e4cb78d944d9f",
+      "utils/testing/core/check_runner.js": "32554bbe2affc886e4cbabd60097799279ebd121eaa2eb64269e7ed2a88a8706",
+      "utils/testing/core/check_seal.js": "3c12b85b32928105971f1159ff990dd35802a6d5825cd0844afed537f0f06c92",
+      "utils/testing/core/check_input_tracer.js": "6cf378d09a0bc087d5cb5839e992eec5b9963e12a22723f0245448b5b0a92e45",
+      "utils/testing/core/check_report.js": "456deec3cd9a1626a31eb7ba57fba44bf97064652fe9aad4aae70033267266b0"
+    }
+  },
+  "checks": [
+    {
+      "id": "syntax",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 19519,
+      "outputSha256": "6e42bcf979aad37d6a8a1414342212f7ef47e44f8bc06f05ac6d4d79b88e4cfa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-policy",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 89,
+      "outputSha256": "fa61635c3988ed266876f049155be4f0b4e9d9bd5d9b22bd192f5557b0b971b7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-documentation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 92,
+      "outputSha256": "5ccc69893d0f91c1ca0e68aa51750f14a95ef4d6920f8a1e6d2bd4638e41247a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-integrity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 253,
+      "outputSha256": "462fb536b0f5a0cd99e3def2c2cdb30586fa7b37b8bd40ac48febe72324ab211",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-reconciler",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 88,
+      "outputSha256": "16f2fcfaf4326fdd0417b1ab8799b0b52af80570f9c8dc8a1cf47599744527a5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-schema-migration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 94,
+      "outputSha256": "6d67ecd68f82c0fe76220928296e44e9f4f2613a86ade2ec20e525488a90d1b8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-manifest-validator",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1454,
+      "outputSha256": "dbdb84d4aaad46bae62d7cfe1169bc794cd89a3e4869a2a020ed12fe08dba1aa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-symbol-provider-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 167,
+      "outputSha256": "1a3047647594f8520e1bf4538a1d568973b7a2fcc0ec21fe1c8d502d9b9fcdb5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-symbol-provider-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2281,
+      "outputSha256": "d569a6c1606d4c4d2022683f2f068a405b413fa8a9f7d09e3d5d8514112d8c6c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-external-consumer-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171,
+      "outputSha256": "54c8d198dbeda1b1571dcfb6bcaafa06db10a31fd266530da4bbad16cea0e1ba",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-external-consumer-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2318,
+      "outputSha256": "7ff6c04c360875ed82d040a516e6bf99143e34ea57e203e6aacfc300590f391a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 81,
+      "outputSha256": "c04551d4a3adda0ceaeb7da9df8823679f2bfaa550ef800c0555230dc4085438",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 89,
+      "outputSha256": "6cb7f32de36badda2298f15b0f990e80afbbe5fa128e4ec7ea4faf0c612e368c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "provider-resolution-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 2431,
+      "outputSha256": "f457d5e1f41af97ffde2a3c2159030f49b9b56247dcd470a0d3deb9bc48b5e30",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "migration-observation-persistence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 90,
+      "outputSha256": "eec7adb8144fa9bd41423d734419cc6ad6d2f6b1f118b051132eed78b2b19eaa",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "observation-graph-integrity-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 98,
+      "outputSha256": "1d127c2ae03092210db380e115bc765ba940b7cb67262366cf65e832e8cf5aae",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "classification-evidence-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 95,
+      "outputSha256": "4ea24cf481e852cdf4c4028e026851e63488975144c6964b9262c495474d17d0",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "classification-evidence-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 161,
+      "outputSha256": "84d13f602de5690c60bb40ac2056a3fe15c8667a99e9afcaf7aeb6d89b720564",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-1-6-migration-batch-plan",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 100,
+      "outputSha256": "5b57dbcf43129c996dd80fa5d9e1834f425648e452496dd6e2bcdf6d1e800984",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "approved-stage-2-batch-freeze",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 207,
+      "outputSha256": "956647134c7fedbbff75c0c855816d5cb6dbd8c92301978460e5f93898a795d2",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-guard-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 147,
+      "outputSha256": "745e0c084b835c79752b3f39c3e1bb05133c89e597ce8bbf1fa5acaba065bdf8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "architecture-guard-corpus",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1310,
+      "outputSha256": "4606aa5bc23b89d9795f65b4b5d45901e290330dc26f045dc91c550bc76b4aa1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "root-package-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 178,
+      "outputSha256": "e58a17580b09b1334db10d622071d13d770bc98596c6da550896f65222ec224f",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "native-esm-fixture",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 117,
+      "outputSha256": "9b0923d338bb4a7974b09dd595863f08c9854233d32d371f7d29e9c4b9204c99",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "vite-fixture-build",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1391,
+      "outputSha256": "8dec6aec317d5f408a899af31b4e40fa0721e67d1d28bf13c3065b74d534f1f5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-compatibility-runtime-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 675,
+      "outputSha256": "d07138180f0d88c0db27695a47ba3a9a63183c24e83bcf024bc2c319fdda00b3",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "legacy-slot-split",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 164,
+      "outputSha256": "92fafbd910fa5213dbdcbc67bd95d50dcc47fee5b1936d0c846048b5fd0616c7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-runtime-load-order",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 171,
+      "outputSha256": "22e18c11b80ac8a065c220a6e6c392f740bf36d0d52892dd663acfe897ba9b51",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-activation-retirement-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 298,
+      "outputSha256": "d660c4be1274a2fc8e2d37fbfdc2ef73d69f81bea2d3622555c0ccbfbe55a3b5",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-3-changelog-trim-fixtures",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 115,
+      "outputSha256": "4fabefbbf4d47982f1d56d4fbcf9ba0252c9adf03c575eac9fb9fa44f39ccabd",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "domain-boundary",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 450,
+      "outputSha256": "a30df3a59387a1a3313d7fe47821c8b5219e8f95ca55471b0f8351c9ddf02101",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "stage-4-cluster-records",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 791,
+      "outputSha256": "36c193932fa3e89067431d04f4f42895e82bee999f03c40c56da9a65ae30f8bf",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "line-allocation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 177,
+      "outputSha256": "2260a5ca5111119dd482f3cda7807520bb54affe218244f59fe8d4336ab7fb42",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "float-depth",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 175,
+      "outputSha256": "61c1b7802fc4185d34faf5e9e730ac71816415bd0e6af7d4b754f083c225ef07",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-lifecycle",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 197,
+      "outputSha256": "cd8acf4a6a09257d39e28f27eafc1608ea8557513a2de3734b7ded26775536af",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "assembly-domain",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 170,
+      "outputSha256": "1619aa3a92b1b1564531c47c4abd24bf2cd53f31ae8885908dfc3c2124db7d14",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-equipment",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 188,
+      "outputSha256": "ef2a44f1cb19ab42de1adc5a27dca46d17afa79213b2aecb86256076e03a89f4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-equipment-hydration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 221,
+      "outputSha256": "ac0ff5956f51158993c1184972b1d82e8a0465f6ae506d8fdb927f1ff7be008c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-transaction",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 174,
+      "outputSha256": "79c4b9eb11aa3a77d5882ad67384e179a459477ccc58bbda37ce8fed56a5bd52",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-migration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 211,
+      "outputSha256": "763530556d1932b9694cf3327ee52bf372ddcfa1b0eaf61478038060665d245a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-save-round-trip",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 224,
+      "outputSha256": "6eae3a7506b6aaa911159f4925f8940888a40c33ef96e30f0ac72e4d6ab6fbb9",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-cast-lure",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 190,
+      "outputSha256": "5d057362d41e8385932c14158f099314f5031b9f39609a9f55820d738f611057",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-line-allocation",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 127,
+      "outputSha256": "e4ea5229ba7044c1c38438ac1740351a3e61a0b55486e818926f03e662c14dd4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "consumable-event-identity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 189,
+      "outputSha256": "028772d62a2e478d94854fe1f1d3570df1e57f9f4f145703b54bd6bbe3e0a274",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-integration",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 481,
+      "outputSha256": "f5ccbbe95a8ade3808897f910440ea979612b58fc49f3cbba81f2dfaec381e5d",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "inventory-v2-ui",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 456,
+      "outputSha256": "143361f40a1e1aefc18e0877598bca283ca7dd42832587a15c1b4adcaf8d4f99",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "bait-effectiveness",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 194,
+      "outputSha256": "d8f8afc97eb38893271e81d4879ff374e55947bf946877901f39030ed4a69435",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-freshness-gameplay",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 199,
+      "outputSha256": "4ea81d08a0e150cf283ec6a8baf049f97bb033dc9eb15a0590f43a7692df109a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "hook-domain-semantics",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 192,
+      "outputSha256": "85fbe93381d0cd96aec283aa298fe086fd4ec53b91f62320ceb6b33e82c04565",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-stat-contract",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 195,
+      "outputSha256": "49ea7aa1efb48e705db9ad9471391107be57e075d6ca32267b49b0394e42c6f8",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "fish-rarity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 199,
+      "outputSha256": "1b918c6db1b81329517b6c159d9941a380bed92b1fc6f48d4eb4ce0706c2001e",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-rarity",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 177,
+      "outputSha256": "dd75de5738e7f3e2ed18b458ef892df97d1f40eab2cd691d3c7ef77db11ebc7a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-rarity-roundtrip",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 187,
+      "outputSha256": "8055edd1a096170f20448a946ce1004ef2fa725a9f8d6f8cbdc0dec08177c020",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-progression",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 241,
+      "outputSha256": "6098e7322e736cc84002c5cdd4e3d6bd8f1120fd687016ebba437f3d70810be3",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-condition",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 177,
+      "outputSha256": "a16cc6ee324c03be764d129b2f2966fefe94ea27c8183d650d40d0f5922e80de",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "item-state-hardening",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 183,
+      "outputSha256": "bdf873c6af8cdbf0117a65c4dc1bba8755071ccf862897a0aeeada2e835bb330",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "degradation-colors",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 127,
+      "outputSha256": "577233b6ea474633bdfe61f5d271a6a997949108e093b18890174f4c19c4982b",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "rarity-production",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 158,
+      "outputSha256": "e86d61b0e0bfa0854bfc0388c574d69331a61b0dbd53fc305f51f739d6fd868a",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "victory-input",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 193,
+      "outputSha256": "f7d1528b5c9eaaf8f1aba9ea4c4f84845891e257b10b809cbc125d565e528e0c",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "game-cycle",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 1465,
+      "outputSha256": "b11a4f7a6dc49735c2c5521484dcb322427b401970e0d21a79f847c63498ced4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "devtools-links",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 128,
+      "outputSha256": "7e9a225ac1d95fbe06efbb2c4aeb7d89bab802ea622644ac0a7126346e294bd4",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "check-cache-regression",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 8621,
+      "outputSha256": "a17a21c6721e71322b4b09da95f5eefcbcc386c86413fae409cfe3720379a3c1",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "platform-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 205,
+      "outputSha256": "8acd73dbc6d9a6ac38f0ab2b8d29996df6cfd051e69c25fa61de7f8f0b00a9a7",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    },
+    {
+      "id": "config-runtime",
+      "scope": "live",
+      "status": "passed",
+      "executed": true,
+      "exitCode": 0,
+      "durationMs": 182,
+      "outputSha256": "e465959af21f96e70ec27c18094c737bdeb46aa3c8b32fa167c994369444d007",
+      "cache": {
+        "sealed": false,
+        "reasons": [
+          "cache policy never"
+        ]
+      }
+    }
+  ],
+  "totals": {
+    "selected": 64,
+    "executed": 64,
+    "cached": 0,
+    "passed": 64,
+    "failed": 0,
+    "isolationViolations": 0
+  }
+}

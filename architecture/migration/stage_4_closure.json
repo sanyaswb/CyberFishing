@@ -1,0 +1,1024 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-closure",
+  "status": "closed",
+  "date": "2026-10-02",
+  "release": "0.25.2",
+  "tag": "stage4-closed",
+  "scopeBaseline": "stage3-closed",
+  "graphReview": "architecture/migration/stage_4/graph_review_v6.json",
+  "modules": [
+    {
+      "source": "src/app/adapters.js",
+      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/application.js",
+      "target": "src/bootstrap/production/game_application.js",
+      "status": "deferred",
+      "stage": "stage-5",
+      "preparation": "architecture/migration/stage_4/preparations/015_game-application-to-bootstrap.json",
+      "reason": "Runtime composition of the game (platform and presentation constructions); Stage 5 migrates GameApplication with GameCompositionRoot (refactor_Task.txt Stage 5)."
+    },
+    {
+      "source": "src/app/bite.js",
+      "target": "src/game/application/fishing/bite_environment_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/cast_power.js",
+      "target": "src/game/application/casting/cast_power_aim.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/context.js",
+      "target": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/core/game_clock.js",
+      "target": "src/platform/browser/time/game_clock.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/core/game_loop.js",
+      "target": "src/platform/browser/runtime/game_loop.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/fishing.js",
+      "target": "src/game/application/fishing/fishing_runtime_services.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/inventory.js",
+      "target": "src/game/application/inventory/equipment_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/states.js",
+      "target": "src/game/application/state/game_state_machine.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/app/world.js",
+      "target": "src/game/application/world/game_world_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/apply_bait_exposure_service.js",
+      "target": "src/game/application/inventory/apply_bait_exposure_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/auto_refill_coordinator.js",
+      "target": "src/game/application/inventory/auto_refill_coordinator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "target": "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/equipment_read_model_factory.js",
+      "target": "src/game/application/inventory/equipment_read_model_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/equipment_transition_executor.js",
+      "target": "src/game/application/inventory/equipment_transition_executor.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "target": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_command_service.js",
+      "target": "src/game/application/inventory/inventory_command_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "target": "src/game/application/inventory/inventory_context_item_filter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "target": "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "target": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_facade.js",
+      "target": "src/game/application/inventory/inventory_facade.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "target": "src/game/application/inventory/inventory_gameplay_facade.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "target": "src/game/application/inventory/inventory_item_hydrator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "target": "src/game/application/inventory/inventory_line_allocation_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_loadout_port.js",
+      "target": "src/game/application/inventory/inventory_loadout_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_refill_ports.js",
+      "target": "src/game/application/inventory/inventory_refill_adapters.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "target": "src/game/application/inventory/inventory_transaction_participants.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/application/inventory/loadout_application_service.js",
+      "target": "src/game/application/inventory/loadout_application_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/assets/asset_preload_coordinator.js",
+      "target": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/config.js",
+      "target": "src/bootstrap/production/config_composition.js",
+      "status": "deferred",
+      "stage": "stage-5",
+      "preparation": "architecture/migration/stage_4/preparations/001_config-composition.json",
+      "reason": "After moving data declarations, the source solely composes concrete clone/store/provider/physics collaborators, installs the existing presentation catalog references and publishes the original DEV runtime context. Keep its existing browser debt until Bootstrap migration."
+    },
+    {
+      "source": "src/config/databases/fish/fish_categories.js",
+      "target": "src/game/config/databases/fish/fish_categories.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "target": "src/game/config/factories/fish_profile_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "target": "src/game/config/raw/fish/fish_profile_presets.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/species/event_fish.js",
+      "target": "src/game/config/raw/fish/event_fish.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/species/peaceful_fish.js",
+      "target": "src/game/config/raw/fish/peaceful_fish.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/species/predator_fish.js",
+      "target": "src/game/config/raw/fish/predator_fish.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish/species/rare_fish.js",
+      "target": "src/game/config/raw/fish/rare_fish.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/fish_db.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/item_db.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/databases/map_db.js",
+      "target": "src/game/config/raw/locations/location_database.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/inventory/item_assembly_profile_config.js",
+      "target": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/items/item_progression_config.js",
+      "target": "src/game/config/items/item_progression_config.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/items/item_stat_override_config.js",
+      "target": "src/game/config/raw/items/item_stat_overrides.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/environment_physics_config.js",
+      "target": "src/game/config/raw/physics/environment_physics.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/fight_physics_config.js",
+      "target": "src/game/config/raw/physics/fight_physics.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/physics/physics_config.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/physics_config_adapter.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/physics_units_and_naming.js",
+      "target": "src/game/config/raw/physics/physics_units_and_naming.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/retrieve_physics_config.js",
+      "target": "src/game/config/raw/physics/retrieve_physics.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/tackle_physics_config.js",
+      "target": "src/game/config/raw/physics/tackle_physics.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/physics/tension_physics_config.js",
+      "target": "src/game/config/raw/physics/tension_physics.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/project_version.js",
+      "target": "src/game/presentation/version/project_version.js",
+      "status": "deferred",
+      "stage": "stage-5",
+      "preparation": "architecture/migration/stage_4/preparations/003_project-version-presentation.json",
+      "reason": "Project version is authoritative UI/tool release metadata, not gameplay runtime config. Its only production readers are the presentation badge and a dormant schema validator (no production construction sites); validator metadata is now constructor-injected. Preserve the classic version file byte-for-byte because release projection/package checks/version-copy tooling write/read it. Stage 4 brief explicitly allows this Stage 5 follow-up, with the existing conditional alias exposure preserved. No new global, alias transport, policy exception or debt."
+    },
+    {
+      "source": "src/config/runtime/config_override_store.js",
+      "target": "src/game/config/runtime/config_override_store.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/runtime/immutable_config.js",
+      "target": "src/game/config/runtime/immutable_config.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/runtime/resolved_config_provider.js",
+      "target": "src/game/config/runtime/resolved_config_provider.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/validation/config_schema_validator.js",
+      "target": "src/game/config/validation/config_schema_validator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/validation/item_progression_config_validator.js",
+      "target": "src/game/config/validation/item_progression_config_validator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/validation/item_rarity_config_validator.js",
+      "target": "src/game/config/validation/item_rarity_config_validator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/config/validation/rarity_config_validator.js",
+      "target": "src/game/config/validation/rarity_config_validator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/core/core.js",
+      "target": "src/platform/browser/input/input_manager.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/core/input/fight_input_action_composer.js",
+      "target": "src/game/application/input/fight_input_action_composer.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/core/line/line_inventory_controller.js",
+      "target": "src/game/application/inventory/line_inventory_controller.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/diagnostics/console_logger.js",
+      "target": "src/platform/browser/diagnostics/console_logger.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/location/depth_map_reader.js",
+      "target": "src/platform/browser/location/depth_map_reader.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/location/location_asset_loader.js",
+      "target": "src/platform/browser/location/location_asset_loader.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "target": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "target": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "target": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "target": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "target": "src/game/application/inventory/persistence/inventory_state_store.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "target": "src/game/application/inventory/inventory_transaction_coordinator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "target": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "target": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/input/pull_input_mapper.js",
+      "target": "src/game/application/input/pull_input_mapper.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/render/core/canvas_2d_surface.js",
+      "target": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/render/core/canvas_primitives.js",
+      "target": "src/platform/browser/canvas/canvas_primitives.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/render/core/image_asset_provider.js",
+      "target": "src/platform/browser/assets/image_asset_provider.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/bite_system.js",
+      "target": "src/game/application/fishing/bite_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/chum_system.js",
+      "target": "src/game/application/chum/chum_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/drag_system.js",
+      "target": "src/game/application/fishing/drag_control_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/fight_physics_pipeline.js",
+      "target": "src/game/application/fishing/fight_physics_pipeline.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/application/fishing/fight_physics_orchestrator.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/inventory_item_factory.js",
+      "target": "src/game/application/inventory/inventory_item_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/application/inventory/legacy_inventory_system.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/reel_system.js",
+      "target": "src/game/application/fishing/reel_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/systems/tension_system.js",
+      "target": "src/game/application/fishing/tension_service.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/condition/item_condition_dom_adapter.js",
+      "target": "src/platform/browser/dom/item_condition_dom_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/interaction/horizontal_scroll_controller.js",
+      "target": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "target": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/progression/item_progression_dom_adapter.js",
+      "target": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "target": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "status": "migrated"
+    },
+    {
+      "source": "src/world/viewport_projector.js",
+      "target": "src/game/application/viewport/viewport_projector.js",
+      "status": "migrated"
+    }
+  ],
+  "retirementUpdates": [
+    {
+      "kind": "bridge",
+      "id": "bridge-22513569b93c",
+      "before": {
+        "id": "bridge-22513569b93c",
+        "bridge": "src/app/adapters.js",
+        "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+        "source": "src/app/application.js",
+        "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+        "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "ConfigProvider",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-22513569b93c",
+        "bridge": "src/app/adapters.js",
+        "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+        "source": "src/app/application.js",
+        "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+        "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ConfigProvider",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "bridge",
+      "id": "bridge-2943aa6fa8b8",
+      "before": {
+        "id": "bridge-2943aa6fa8b8",
+        "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "source": "src/app/application.js",
+        "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FishingCastExposureResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-2943aa6fa8b8",
+        "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "source": "src/app/application.js",
+        "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "introducedStage": "stage-3",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "FishingCastExposureResolver",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "bridge",
+      "id": "bridge-583ef0b7fc62",
+      "before": {
+        "id": "bridge-583ef0b7fc62",
+        "bridge": "src/config/physics/physics_config_adapter.js",
+        "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+        "source": "src/config/config.js",
+        "target": "src/game/config/physics/fight_physics_config_adapter.js",
+        "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FightPhysicsConfigAdapter",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-583ef0b7fc62",
+        "bridge": "src/config/physics/physics_config_adapter.js",
+        "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+        "source": "src/config/config.js",
+        "target": "src/game/config/physics/fight_physics_config_adapter.js",
+        "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "FightPhysicsConfigAdapter",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "bridge",
+      "id": "bridge-7059e3a04dab",
+      "before": {
+        "id": "bridge-7059e3a04dab",
+        "bridge": "src/app/core/game_clock.js",
+        "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+        "source": "src/app/application.js",
+        "target": "src/platform/browser/time/game_clock.js",
+        "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "GameClock",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-7059e3a04dab",
+        "bridge": "src/app/core/game_clock.js",
+        "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+        "source": "src/app/application.js",
+        "target": "src/platform/browser/time/game_clock.js",
+        "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "GameClock",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "bridge",
+      "id": "bridge-a5b8a44625d9",
+      "before": {
+        "id": "bridge-a5b8a44625d9",
+        "bridge": "src/config/databases/fish_db.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/app/application.js",
+        "target": "src/game/config/databases/fish_database.js",
+        "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FISH_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-a5b8a44625d9",
+        "bridge": "src/config/databases/fish_db.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/app/application.js",
+        "target": "src/game/config/databases/fish_database.js",
+        "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "FISH_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "activation",
+      "id": "activation-9fb7cf95c59c",
+      "before": {
+        "exportName": "SLOT_CONFIG",
+        "legacyScriptIndex": 28,
+        "legacySymbol": "SLOT_CONFIG",
+        "shimFile": "activations/028_slot_config.js",
+        "sourceProvider": "src/config/runtime/config_data.js",
+        "targetModule": "src/game/config/runtime/game_config.js",
+        "id": "activation-9fb7cf95c59c",
+        "owner": "stage-4.cluster-010-config-root",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "after": {
+        "exportName": "SLOT_CONFIG",
+        "legacyScriptIndex": 28,
+        "legacySymbol": "SLOT_CONFIG",
+        "shimFile": "activations/028_slot_config.js",
+        "sourceProvider": "src/config/runtime/config_data.js",
+        "targetModule": "src/game/config/runtime/game_config.js",
+        "id": "activation-9fb7cf95c59c",
+        "owner": "stage-4.cluster-010-config-root",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "removalStage": "stage-5"
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "activation",
+      "id": "activation-bafccd351254",
+      "before": {
+        "id": "activation-bafccd351254",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "exportName": "FishingCastExposureResolver",
+        "legacySymbol": "FishingCastExposureResolver",
+        "legacyScriptIndex": 67,
+        "shimFile": "activations/067_fishingcastexposureresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "after": {
+        "id": "activation-bafccd351254",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "exportName": "FishingCastExposureResolver",
+        "legacySymbol": "FishingCastExposureResolver",
+        "legacyScriptIndex": 67,
+        "shimFile": "activations/067_fishingcastexposureresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "removalStage": "stage-5"
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    },
+    {
+      "kind": "activation",
+      "id": "activation-edcb5d7fec22",
+      "before": {
+        "exportName": "ConfigProvider",
+        "legacyScriptIndex": 396,
+        "legacySymbol": "ConfigProvider",
+        "shimFile": "activations/396_configprovider.js",
+        "sourceProvider": "src/app/adapters.js",
+        "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+        "id": "activation-edcb5d7fec22",
+        "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "after": {
+        "exportName": "ConfigProvider",
+        "legacyScriptIndex": 396,
+        "legacySymbol": "ConfigProvider",
+        "shimFile": "activations/396_configprovider.js",
+        "sourceProvider": "src/app/adapters.js",
+        "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+        "id": "activation-edcb5d7fec22",
+        "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "removalStage": "stage-5"
+      },
+      "reason": "No Stage 4 consumer remains; Bootstrap migration belongs to Stage 5 (preparations 001/015; SLOT_CONFIG holder relocated in 018/019)."
+    }
+  ],
+  "metrics": {
+    "originalScope": 95,
+    "migratedSources": 92,
+    "deferredSources": 3,
+    "appliedClusters": 36,
+    "esmTargets": 96,
+    "preparations": 19,
+    "activeActivations": 177,
+    "retiredActivations": 124,
+    "inertModules": 7,
+    "bridges": 206,
+    "knownDebts": 67,
+    "globalProviders": 852,
+    "classicScriptTags": 301
+  },
+  "deferredTasks": [
+    {
+      "stage": "stage-5",
+      "task": "EquipmentLoadout clock injection",
+      "reason": "Requires reviewing and wiring every create/restore path through Bootstrap; preserve persisted createdAt values and fallback behavior."
+    },
+    {
+      "stage": "stage-7",
+      "task": "FlatInventoryItemRepository optional id fallback removal",
+      "reason": "Clock injected in prerequisite 033; production already injects an instance-id factory. Removing optional compatibility fallback is an API cleanup."
+    },
+    {
+      "stage": "stage-5",
+      "task": "Saved inventory visual fields migration",
+      "reason": "Versioned save migration must be a separate behavior change after composition is stable; Stage 4 preserves save bytes."
+    },
+    {
+      "stage": "stage-7",
+      "task": "Exact-byte repository portability before CI or second machine",
+      "reason": "Owner chose current Windows workspace; renormalization and fresh-clone proof affect the entire immutable evidence chain and are a separate infrastructure transition."
+    },
+    {
+      "stage": "stage-6",
+      "task": "RuntimeConfig BASE_CONFIG plus DEV override source, DEV templates and hooks",
+      "reason": "Owner phase 0.2 explicitly retains live CONFIG until Development/Production separation."
+    },
+    {
+      "stage": "stage-7",
+      "task": "ViewportProjector responsibility/API split",
+      "reason": "Already migrated with hot-loop parity; separating world perspective from camera state changes consumers and belongs to a separate structural task."
+    }
+  ],
+  "manualPlay": {
+    "status": "pending-owner",
+    "automatedSubstituteAuthorized": true,
+    "scope": "Stage 3 batches 046-051, M1/M2/final cast/fight/catch, inventory, long press, save restore and input smoke"
+  },
+  "verification": {
+    "acceptance": {
+      "report": "architecture/archive/stage4_final_acceptance.json",
+      "reportSha256": "ca4f2af7df6ad68d2649cf6310bf734f6f7abe45f9c5763b2d252bb24d3c565b",
+      "runId": "2026-10-02T19-51-39-576Z-20956",
+      "source": {
+        "commit": "a54858938903deb0e73c6d1cf15ac99c4890d3b3",
+        "files": 1573,
+        "before": "53153303caaa39740cbd57ec7b8cba3e24e2eb9f37d31f4de9f1dd0c3049dfde",
+        "after": "53153303caaa39740cbd57ec7b8cba3e24e2eb9f37d31f4de9f1dd0c3049dfde",
+        "unchanged": true
+      },
+      "catalog": {
+        "sha256": "c52b952d62b7029ba1532952d93d62ae009d7037f255ccdd54d5a7149f5bdf42",
+        "checks": 64
+      },
+      "totals": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0
+      }
+    },
+    "quick": {
+      "totals": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0
+      }
+    },
+    "architecture": {
+      "totals": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0
+      }
+    },
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "version": "0.25.2",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 177,
+      "missingActivations": 0,
+      "identityMismatches": 0,
+      "configAndCatalogIdentities": true,
+      "frozenBase": true,
+      "authoritativeOverrideStore": true,
+      "inventoryOpened": true,
+      "inventoryReloadVisibleButtonsIdentical": true,
+      "visibleButtonsCompared": 52,
+      "limits": "Reload verifies visible inventory restoration; exact save bytes/round trip are covered by acceptance scenarios. Owner manual play is pending."
+    },
+    "postAcceptanceDelta": "Only verification evidence and informational task/plan documents were updated after Full. Runtime, test implementation, dependencies and scenarios unchanged."
+  },
+  "legacyTierAAudit": {
+    "reason": "M1 records predate explicit evidence kind fields. This retrospective audit compares every original class member token body to the actual pre-migration Git parent, including allocation/call sites; final acceptance exercises the strengthened deterministic 120-frame input/long-press, clock/reset/clamp and exact cache save scenarios. No historical before trace is invented.",
+    "cases": [
+      {
+        "cluster": "014",
+        "source": "src/infrastructure/diagnostics/console_logger.js",
+        "target": "src/platform/browser/diagnostics/console_logger.js",
+        "baselineParent": "7cb74fd56f7340bafb25cedb3dfe328a68a0cbe3^",
+        "existingMemberCount": 3,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "7db6952deeb1d3c6c5f0814cc6d45b39a52e7a7feb6b22b45ab59050689dffc4",
+        "addedMembers": [
+          "ConsoleLogger.groupCollapsed:method",
+          "ConsoleLogger.table:method",
+          "ConsoleLogger.groupEnd:method"
+        ],
+        "addedMemberReview": "preparation 016: diagnostics forwarding on the same platform logger; existing members unchanged"
+      },
+      {
+        "cluster": "014",
+        "source": "src/app/core/game_clock.js",
+        "target": "src/platform/browser/time/game_clock.js",
+        "baselineParent": "7cb74fd56f7340bafb25cedb3dfe328a68a0cbe3^",
+        "existingMemberCount": 6,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "0c40c7187a4da04ce0483ed43c5db3fa6e32f1e5acbe28fd661e50146eee9d22",
+        "addedMembers": [
+          "GameClock.highResolutionNow:method"
+        ],
+        "addedMemberReview": "preparation 012: platform high-resolution clock capability injected into Application; existing GameClock members unchanged"
+      },
+      {
+        "cluster": "016",
+        "source": "src/core/core.js",
+        "target": "src/platform/browser/input/input_manager.js",
+        "baselineParent": "75246be7225c83f9ca410d6a204e5091182d5a43^",
+        "existingMemberCount": 71,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "020670ae9a16d3625463895a0845fdf308d269d140db3e4f5e4144828bb3cf35",
+        "addedMembers": [],
+        "addedMemberReview": null
+      },
+      {
+        "cluster": "017",
+        "source": "src/core/input/fight_input_action_composer.js",
+        "target": "src/game/application/input/fight_input_action_composer.js",
+        "baselineParent": "885d898147786e2a4c47dc45e77b6069550f8672^",
+        "existingMemberCount": 9,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "967ebdacccddd9f93c3f91d57020511395b53a1602fbecc3236a2214f0897e99",
+        "addedMembers": [],
+        "addedMemberReview": null
+      },
+      {
+        "cluster": "033",
+        "source": "src/ui/inventory/inventory_v2_long_press_controller.js",
+        "target": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+        "baselineParent": "3079de0a4173679c891a02b9066b76dbccf32520^",
+        "existingMemberCount": 26,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "e8ad13ad9341e7095d818e9e4141158ca546ae2b6d8a4b8f2b56c482da5bacbb",
+        "addedMembers": [],
+        "addedMemberReview": null
+      },
+      {
+        "cluster": "034",
+        "source": "src/input/pull_input_mapper.js",
+        "target": "src/game/application/input/pull_input_mapper.js",
+        "baselineParent": "03174bf239dc4e7f5bb2de0bbb2dfa9f1a570155^",
+        "existingMemberCount": 4,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "9ff87f8ba00b5cb912a0fc849038075d8efb64c874011bc5334529ec3a0ef857",
+        "addedMembers": [],
+        "addedMemberReview": null
+      },
+      {
+        "cluster": "036",
+        "source": "src/infrastructure/storage/cache_manager.js",
+        "target": "src/platform/browser/storage/cache_manager.js",
+        "baselineParent": "70edbe93721749fd23b2772493d5dee24e3c230a^",
+        "existingMemberCount": 6,
+        "existingMemberBodiesIdentical": true,
+        "memberTokenDigest": "51f43a2ab15351bf98dfb8324ad251bdf3e8396829edc5a628f3cdd0a1ae6c88",
+        "addedMembers": [],
+        "addedMemberReview": null
+      }
+    ],
+    "focusedChecks": [
+      "platform-runtime",
+      "inventory-ui",
+      "victory-input"
+    ],
+    "currentScenarioEvidence": "architecture/archive/stage4_final_acceptance.json",
+    "status": "PASS"
+  },
+  "milestoneMetrics": {
+    "lines": {
+      "src": 81261,
+      "utils": 70330,
+      "architecture": 742184
+    },
+    "classicScriptTags": 301,
+    "clusters": {
+      "applied": 36,
+      "pending": [],
+      "deferred": [
+        "009"
+      ]
+    },
+    "activations": {
+      "active": 177,
+      "byRemovalStage": {
+        "stage-5": 134,
+        "stage-6": 43
+      },
+      "retired": 124,
+      "inert": 7
+    },
+    "bridges": {
+      "total": 206,
+      "byRemovalStage": {
+        "stage-6": 44,
+        "stage-5": 162
+      }
+    },
+    "knownDebts": 67,
+    "globalProviders": 852,
+    "stageFourRetirementPath": {
+      "bridgesByPendingCluster": {},
+      "activationsRetiringWithPendingClusters": 0,
+      "activationsHeldBeyondPendingClusters": 0
+    }
+  }
+}

@@ -12,3 +12,11 @@ acceptance Full ran on the complete tree:
 The annotated tag `stage3-evidence-archive` and the branch `migration-archive` point at the commit that adds
 this anchor; every archived check still runs there unchanged. Releases v0.24.46 and later keep their tags.
 The archived checks are listed in `ARCHIVED_CHECKS.md` (added by the cleanup commit on `develop`).
+
+## Stage 4 closure evidence
+
+`stage4_final_acceptance.json`: final v0.25.2 working-tree acceptance, 64/64 executed,
+0 cached/isolation violations, source unchanged. The closure record links its exact digest,
+Quick/Architecture results, M1 retrospective class-body audit and actual Codex browser smoke.
+The only later deltas are verification evidence and informational documents. Historical Stage 3
+acceptance above remains unchanged. M2 unused tooling is recoverable at stage4-m2-tools-archive.

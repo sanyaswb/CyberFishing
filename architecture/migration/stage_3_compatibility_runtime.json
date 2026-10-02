@@ -1865,8 +1865,8 @@
       "targetModule": "src/game/config/runtime/game_config.js",
       "id": "activation-9fb7cf95c59c",
       "owner": "stage-4.cluster-010-config-root",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "BrowserDebugAdapter",
@@ -2141,8 +2141,8 @@
       "legacySymbol": "FishingCastExposureResolver",
       "legacyScriptIndex": 67,
       "shimFile": "activations/067_fishingcastexposureresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-bc66e23232d8",
@@ -2453,8 +2453,8 @@
       "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
       "id": "activation-edcb5d7fec22",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "OffscreenCanvasFactory",

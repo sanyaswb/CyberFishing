@@ -496,9 +496,9 @@
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
       "source": "src/app/application.js",
       "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
-      "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-5",
       "globalProviders": [
         {
           "symbol": "ConfigProvider",
@@ -551,10 +551,10 @@
       "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
       "source": "src/app/application.js",
       "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
+      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "introducedStage": "stage-3",
-      "removalStage": "stage-4",
+      "removalStage": "stage-5",
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
@@ -1088,9 +1088,9 @@
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
       "source": "src/config/config.js",
       "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-5",
       "globalProviders": [
         {
           "symbol": "FightPhysicsConfigAdapter",
@@ -1572,9 +1572,9 @@
       "owner": "stage-4.cluster-014-platform-diagnostics-clock",
       "source": "src/app/application.js",
       "target": "src/platform/browser/time/game_clock.js",
-      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-5",
       "globalProviders": [
         {
           "symbol": "GameClock",
@@ -2312,9 +2312,9 @@
       "owner": "stage-4.cluster-005-config-derived",
       "source": "src/app/application.js",
       "target": "src/game/config/databases/fish_database.js",
-      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-5",
       "globalProviders": [
         {
           "symbol": "FISH_DB",

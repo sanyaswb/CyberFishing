@@ -369,6 +369,59 @@ assert.equal(StageFourTierAEvidence.onlyLosesImports([lookup("A"), lookup("B")],
 assert.equal(StageFourTierAEvidence.onlyLosesImports([lookup("B")], [], imports), false, "lost a non-imported lookup");
 assert.equal(StageFourTierAEvidence.onlyLosesImports([], [lookup("A")], imports), false, "gained a lookup");
 
+// Closure uses the existing ledger gate: complete original scope and exact retirement metadata, no new check.
+const validateClosure = (closure, baseline, entries, preparationRecords, liveBridges, runtime) => {
+  assert(closure.schemaVersion === 1 && closure.kind === "cyber-fishing-stage-4-closure" && closure.status === "closed",
+    "Stage 4 closure identity");
+  assert.deepEqual(closure.modules.map(item=>item.source).sort(), baseline.slice().sort(), "Stage 4 closure scope");
+  for (const item of closure.modules) {
+    const current = entries.get(item.source)?.architecture;
+    assert(current && current.targetPath === item.target, "Stage 4 closure target");
+    if (item.status === "migrated") {
+      assert((current.roles.includes("compatibility-bridge") || current.migrationStatus === "verified") &&
+        entries.get(item.target)?.architecture.migrationStatus === "verified", "Stage 4 closure ESM target");
+    } else {
+      assert(item.status === "deferred" && /^stage-[5-7]$/u.test(item.stage) && item.reason,
+        "Stage 4 closure deferred reason");
+      assert(preparationRecords.some(record=>`architecture/migration/stage_4/preparations/${record.id}_${record.slug}.json` ===
+        item.preparation && record.reclassified?.some(review=>
+        review.currentPath === item.source && review.followUpStage === item.stage && review.reason === item.reason)),
+      "Stage 4 closure deferred review");
+    }
+  }
+  assert(!liveBridges.some(item=>item.removalStage === "stage-4") &&
+    !runtime.activationPositions.some(item=>item.removalStage === "stage-4"), "Stage 4 retirement remains");
+  const ids = new Set();
+  for (const update of closure.retirementUpdates) {
+    assert(!ids.has(update.id) && update.id === update.before.id && update.id === update.after.id && update.reason &&
+      ["bridge", "activation"].includes(update.kind) && update.before.removalStage === "stage-4" &&
+      /^stage-[5-6]$/u.test(update.after.removalStage) && update.after.reason, "Stage 4 retirement identity");
+    ids.add(update.id);
+    assert.deepEqual(update.after, {...update.before, removalStage:update.after.removalStage, reason:update.after.reason},
+      "Stage 4 retirement changed surface");
+    const actual = (update.kind === "bridge" ? liveBridges : runtime.activationPositions).find(item=>item.id === update.id);
+    if (actual) assert.deepEqual(actual, update.after, "Stage 4 retirement metadata drift");
+  }
+};
+const closureFile = "architecture/migration/stage_4_closure.json";
+if (fs.existsSync(path.join(ROOT, closureFile))) {
+  const historical = JSON.parse(require("node:child_process").execFileSync("git",
+    ["show", "stage3-closed:architecture/migration/module_migration_manifest.json"], {cwd:ROOT,maxBuffer:20e6}));
+  const original = historical.modules.filter(item=>["game-application","platform","game-config","game-config-raw"]
+    .includes(item.architecture.targetBoundary)).map(item=>item.currentPath);
+  const closure = json(closureFile), liveBridges = json("architecture/guards/migration_bridge_registry.json").bridges;
+  validateClosure(closure, original, manifest, preparations, liveBridges, contract);
+  assert(!ledger.records.some(record=>!record.output && !record.deferred), "Stage 4 pending cluster");
+  assert(releases.some(record=>record.output && record.toRelease === closure.release), "Stage 4 closure release");
+  for (const changed of [{modules:closure.modules.slice(1)},
+    {modules:closure.modules.map(item=>item.status === "deferred" ? {...item,reason:"unreviewed"} : item)},
+    {retirementUpdates:closure.retirementUpdates.map((item,index)=>index ? item : {...item,after:{...item.after,owner:"wrong"}})}])
+    assert.throws(()=>validateClosure({...closure,...changed},original,manifest,preparations,liveBridges,contract),
+      /Stage 4 closure scope|Stage 4 closure deferred review|Stage 4 retirement changed surface/u);
+  assert.throws(()=>validateClosure(closure,original,manifest,preparations,
+    [...liveBridges,{removalStage:"stage-4"}],contract), /Stage 4 retirement remains/u);
+}
+
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
   `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and ${releaseCases} release fixtures; ` +
   `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);
