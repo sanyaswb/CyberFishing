@@ -10834,42 +10834,17 @@
         "legacyLoadOrder": 31,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -10889,15 +10864,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43418,6 +43385,119 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
+      "currentArea": "game/presentation/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "JSON",
+            "Map",
+            "Math",
+            "Number",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
+      "currentArea": "game/presentation/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "Map",
+            "Math",
+            "NaN",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/inventory/inventory_item_parameter_config.js",
       "currentArea": "game/presentation/inventory",
       "observed": {
@@ -43449,6 +43529,63 @@
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "currentArea": "game/presentation/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
         "migrationWave": 6
       },
       "analysis": {
@@ -43549,6 +43686,58 @@
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_sort_config.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
+      "currentArea": "game/presentation/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "Object",
+            "String"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
         "migrationWave": 6
       },
       "analysis": {
@@ -50546,11 +50735,6 @@
           "items": [
             {
               "symbol": "InventoryV2AssemblyParameterSectionResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2AssemblyParameterSectionResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -50559,18 +50743,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "JSON",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
             "globalThis"
           ],
           "browserApis": [],
@@ -50581,7 +50766,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
@@ -50592,7 +50777,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -50702,11 +50895,6 @@
           "items": [
             {
               "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2BalanceParameterResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -50717,16 +50905,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -50734,18 +50916,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Boolean",
-            "Map",
-            "Math",
-            "NaN",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "TypeError",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -50755,7 +50926,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
@@ -50764,41 +50935,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "symbols": [
-                "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "symbols": [
-                "INVENTORY_V2_RARITY_NAMES"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -51485,21 +51632,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryV2ItemParametersResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -51511,16 +51643,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -51528,16 +51654,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "TypeError",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -51547,7 +51664,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
@@ -51556,35 +51673,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "symbols": [
-                "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-                "INVENTORY_V2_ITEM_PARAMETER_CONFIG"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -51898,21 +51997,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_RESOURCE_METER_DEFINITIONS",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "INVENTORY_V2_RESOURCE_METER_DEFINITIONS",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryV2ResourceMeterResolver",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -51922,16 +52006,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "Object",
-            "String",
             "globalThis"
           ],
           "browserApis": [],
@@ -51942,7 +52029,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
@@ -51953,7 +52040,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },

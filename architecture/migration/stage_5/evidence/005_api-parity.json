@@ -1,0 +1,1845 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "005",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-ui-check.js"
+  ],
+  "classes": {
+    "InventoryV2AssemblyParameterSectionResolver": {
+      "sourcePath": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "members": [
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ed82035fa5a5b609d47ae939b19618cd3bfb20a75422a7527e22ad1f86a631a3",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#signature",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f55fe695d09ddae256e1909e0504f49dead4e5dfd7c5e6b8865588ac45db9b75",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#stableSerialize",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "046c3b0fd32bde76b440d36469d29bb043cbd20e1e5b70e75cd5a734bce36bf0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#section",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2775976096af8f5814c0294d532185cda976aa0b6307940eed539a59f1f183af",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 3,
+        "newExpressions": 2,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "fb06eeb29263e42a53dcb191f9c4da5fd85e401b6b60c98324e1037b217b72a0",
+          "calls": {
+            "resolve": 6
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2BalanceParameterResolver": {
+      "sourcePath": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "members": [
+        {
+          "name": "#config",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ac0c9aa21c698da30613f9b784c31566ac9d769c321a617510d6ff7e1f90974"
+        },
+        {
+          "name": "#castDistanceCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ecacb682ac3c5e539902aa535d1421bcd21a19c445cd09cdc62ab99b111e2ebb"
+        },
+        {
+          "name": "#retrieveSpeedCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4496eece2e2a0ad0f8e5f8ed9c96c3d06bf33799cfeef9085d8e72166c7faff1"
+        },
+        {
+          "name": "#reelConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f9a3c5719d573a76d9f0cd9a65b28ac000697cdb559b396ad57745310cce03a9"
+        },
+        {
+          "name": "#physicsConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "601fbb5c75fc684fd71c6050bbde551fe65f5758a8b5988af81a9fa541bd7b55"
+        },
+        {
+          "name": "#debugConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "483a9dcfbcef7b0d09cf800cd3a38ed1a48f3a713a7245657e8645dafcc4315f"
+        },
+        {
+          "name": "#rarityVisualResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "90fb9d726c1a5d995e389aaacd4171d65c1f3f478b3c9484ea44056554a6e49a"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "4c3db9c4d865fb1e70135b29c518505c20d999dab82a5864f90e9193fba376e1",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b966a031f204d6ef742ce659cf69cbcbef7c3a698228ee8b31c286b66c0829a6",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#composeSections",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "44f42aa4e440441f0bf36f0968b4ac1cf18adccd925c7bded393af86521a2aee",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#progressionRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e83a8f6fe6d5da1b587c03d4ca0436ce25125009875c5e5ad8c21b5b0d19eb92",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#baitEffectivenessRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "71fa497f5434af60ad6ded1c5b263aba4a1281b3b063f8a378f1cf6263a0053e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#effectivenessText",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2fb56f22f475467e97bef82421bb86618fec9095a55ac4677f85e26ec01f2134",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#effectiveStatRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e065a86dbbc1be4731ff96d9e5b987566a264757092421c486314f1712cf33cb",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#derivedRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "75253e705cd42802ca36d6996fd7a72678d9a8a72aa414967e1ea9d40d2be974",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveReelDerivedRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e91c77d9586c5fc44426cc8adec6917bf6cbf524dfa0ddc5dc3d61d52c52bf2d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 8,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveRodDerivedRows",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7726cbb90a1c2cd3519fba13c322ce287250c137c69170b63b5c2242f8d61ad9",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 4,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 3
+          }
+        },
+        {
+          "name": "#resolveProgressionBaselines",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b12ea79ab9c30b19f1217d2663fa63429bece3046ca84e85e7b2a8ec300b8f21",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#flattenEffectiveStats",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c61865ead27c8606de3e73f7a34bd6d3e96f279b67652b5202007d42a29746d6",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#definition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d9df5c77feef5a4375ee41562e5b8b04ec8782dce0411967f2340ee629dfcd32",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#schemaDescriptor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5b2557daf031025c29e10a75385747a745e32f0ee5ee88a2ffc0889dbaf3d000",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#row",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "125cb2494078c046cb7ef53015a6f03af727356fcf849c0a275c4a0d87f242c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#impact",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fabca6e242b84cc2cdbe72e2122fa4a13acc143a282db2ff42845414763cc28c",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#section",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "89cf48dafb0473e7f79f66fae8fe59e37f61ac8e347f9f5520d2afec8806541a",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#formatValue",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f89842f8291e1a2c4343ebf887824e6017903ec608b7eb3161deb1a1b6ca152b",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#signed",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f991fe3abc51fe4e70ba3466c1f7d61d4aa59edab272340d93e3c65d9a6d1d7d",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#formatNumber",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "45cca37db5a334abdce2ed386a5aeb899168e64686a1e17b8bb0505ff261a5d1",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#tone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ae2f4e8489bab180ac1d695e4df38aeff576950ac0e5b382f8485509c1385dfc",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#rarityName",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "690f68a59962cd199e4e2804d32d94e0c15749b60d409a46daf1759308e4dec8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#humanize",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a4baf0f5cea7394cf28f56f7be3ea5972752c66851bb5471a0a91353a3628e77",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isIgnored",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3141182db10f1f37f4410c10e8f970589f2c3a0bb95883ddd93830e71a3d12be",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isScalar",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4cd23b5aa1b9f7ca2eec462a4265c60ad6b4abaed56c700f7456ffc0945131e8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isReel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4affe6d8b9dc3f568d4563f2aa17b2e00a16141c8fd23ef2ef9230548f222af7",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isRod",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "07cc668e1a509c10735571fdcfc58c5d02c32b76b9015fec4bba1d7617c8f9ae",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 38,
+        "arrayExpressions": 33,
+        "newExpressions": 4,
+        "objectFreezeCalls": 8,
+        "objectAssignCalls": 0,
+        "roundingCalls": 6
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#baitEffectivenessRows",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#composeSections",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#composeSections",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectiveStatRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectiveStatRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#flattenEffectiveStats",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#flattenEffectiveStats",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatNumber",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatNumber",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatNumber",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#formatNumber",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#formatNumber",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatValue",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatValue",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#formatValue",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#formatValue",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#humanize",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#impact",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isScalar",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#progressionRows",
+          "kind": "method"
+        },
+        {
+          "name": "INVENTORY_V2_RARITY_NAMES",
+          "member": "#rarityName",
+          "kind": "method"
+        },
+        {
+          "name": "INVENTORY_V2_RARITY_NAMES",
+          "member": "#rarityName",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveProgressionBaselines",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRodDerivedRows",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "NaN",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "NaN",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#row",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#schemaDescriptor",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#schemaDescriptor",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#schemaDescriptor",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#section",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#signed",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#tone",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#tone",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#tone",
+          "kind": "method"
+        },
+        {
+          "name": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+          "member": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_RARITY_NAMES",
+          "member": "#rarityName"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "c9e3d13da824e2dce4b2bda13c4a352d0a3096ccd2071f65e1df04f655929051",
+          "calls": {
+            "resolve": 6
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ItemParametersResolver": {
+      "sourcePath": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "members": [
+        {
+          "name": "#resourceMeterResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "09a82931330e879377be6c977b0eb27bd21f5d7956baf3bde7e208879fed43a3"
+        },
+        {
+          "name": "#progressionDomAdapter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bb2ae712187b0cb2a1509ea0c01e6c05cceaccb25fb4f71e0aa355ae4bda22b3"
+        },
+        {
+          "name": "#rarityVisualResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "90fb9d726c1a5d995e389aaacd4171d65c1f3f478b3c9484ea44056554a6e49a"
+        },
+        {
+          "name": "#parameterConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bb3daf099a023426a77b6775744db6ada989636f37b320e1110de5bd65c96a5f"
+        },
+        {
+          "name": "#parameterAliases",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "2742275e2359789188d415fc7d5344bbbaa8623ad56309d5ee8a123e53be5d6e"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "92b72200e9f72788ae62aad7721727bfee02d06872d4393be960fd0ef98f6127",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "807d3dfa5a749dccbe00b076fd7425e561f29c757c55c02c6bc756adbec1e48e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 9,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 3
+          }
+        },
+        {
+          "name": "#append",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a38008815e92e1f0e5477dd90aa3c33f9907d87e6901b2bfa0d6c6a15dbed578",
+          "parameters": 6,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveDisplaySchemaIds",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "aa12994ae249d0fb5b2d181af1280895fd6c657fd0e0309196368f5728d4c8fc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#schemaLabel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "52f04bc75e88d5a7a4aa9c1dd1e21aea623d93fae6315287fb3479a53e34af52",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveDisplayParameterId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ef05f4a49464f2172c809c50a4723b6d4faedaf5d8beaf8230b3e746da6d2c46",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveRatingTier",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ba9c3f9329a0f06fa0eb191c3ace8c9f95c92fee0339db049455ec2864ba39bd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#isDisplayValue",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ccf1bbb5e874e9949605ac354b9824e62d3986cc33e1f478059f11f6d089c77e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#finiteOrUndefined",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1f2041e2d76469a4e998816f2beb0a36f815f6bab8d5d145e3b9a912579fcd05",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#labelKey",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2bc12e327b5fff5577a406517b0a7cd61941fc5e05e3ec2b011ea309248ff269",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 16,
+        "arrayExpressions": 3,
+        "newExpressions": 3,
+        "objectFreezeCalls": 4,
+        "objectAssignCalls": 0,
+        "roundingCalls": 5
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#append",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#append",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#append",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#finiteOrUndefined",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#finiteOrUndefined",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#finiteOrUndefined",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#isDisplayValue",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#labelKey",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#resolveDisplaySchemaIds",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolveDisplaySchemaIds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#resolveRatingTier",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#schemaLabel",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+          "member": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+          "member": "constructor"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "0eb30a28f8f716b9139f307e5f46f2ec938bb605a71caa353b716544dd424968",
+          "calls": {
+            "resolve": 12
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ResourceMeterResolver": {
+      "sourcePath": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "members": [
+        {
+          "name": "#definitions",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "d00bf22de8ee22e38da79f70b3a098bb7c80a72d1a583d52b7112e1e54d2f20b"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "ea192c5097649d0a9ce863ecad0ccecdf8689cd424204e4a9223e810c53d92bf",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "624dd3e57df7db1381d96d2f1f92cb130ea599b9fd30af5223591e1cac7fe1b2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#title",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "594cba7bf71cbaace2167c73aa2bf732e3e46b379cec47029ff794ac5c7bd03a",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 2,
+        "arrayExpressions": 2,
+        "newExpressions": 0,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#title",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "730b4c67e98d1c8fb4d2e445dce50f54b5b8ec10ea0080f39d2f7c71307de7f7",
+          "calls": {
+            "resolve": 82
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

@@ -558,6 +558,20 @@
       "module": "src/game/presentation/styles/rarity_visual_resolver.js",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
       "reason": "The static EMPTY_DASH freezes a newly allocated empty array once during class evaluation. No external mutation, scheduling, I/O or gameplay config is read; preserve the single frozen array and class identity in the ESM runtime loaded before classic consumers."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "4cc5f34ae4a89cb3b839ccf0a68963b0a125fbc854af2e537432d5c7205125d4",
+      "module": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+      "reason": "The existing Object.freeze initializer creates only the immutable presentation catalog and its local descriptors/read functions. Preserve this exact single catalog instance and functions; no I/O, browser/DEV reads, scheduling or external mutation occurs."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "169d3f1ade3ebbe26dbf4adcf350e6e6e61ded5603e24c04decbadc439a45151",
+      "module": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+      "reason": "The existing Object.freeze initializer creates only the immutable presentation catalog and its local descriptors/read functions. Preserve this exact single catalog instance and functions; no I/O, browser/DEV reads, scheduling or external mutation occurs."
     }
   ],
   "activationPositions": [
@@ -1762,6 +1776,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ResourceMeterResolver",
+      "legacyScriptIndex": 245,
+      "legacySymbol": "InventoryV2ResourceMeterResolver",
+      "shimFile": "activations/245_inventoryv2resourcemeterresolver.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
+      "id": "activation-7d2f0130ab96",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "FISH_DB",
       "legacyScriptIndex": 14,
       "legacySymbol": "FISH_DB",
@@ -1990,6 +2016,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2AssemblyParameterSectionResolver",
+      "legacyScriptIndex": 248,
+      "legacySymbol": "InventoryV2AssemblyParameterSectionResolver",
+      "shimFile": "activations/248_inventoryv2assemblyparametersectionresolver.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
+      "id": "activation-8d6b46e6f6e9",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "ItemConditionDescriptor",
       "legacyScriptIndex": 54,
       "legacySymbol": "ItemConditionDescriptor",
@@ -2146,18 +2184,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-      "legacyScriptIndex": 31,
-      "legacySymbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-      "shimFile": "activations/031_inventory_v2_balance_tooltip_config.js",
-      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
-      "id": "activation-a49cb20dea38",
-      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "InventoryV2TransactionCoordinator",
       "legacyScriptIndex": 178,
       "legacySymbol": "InventoryV2TransactionCoordinator",
@@ -2166,6 +2192,18 @@
       "targetModule": "src/game/application/inventory/inventory_transaction_coordinator.js",
       "id": "activation-a4a07b9a3fd3",
       "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2ItemParametersResolver",
+      "legacyScriptIndex": 247,
+      "legacySymbol": "InventoryV2ItemParametersResolver",
+      "shimFile": "activations/247_inventoryv2itemparametersresolver.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "id": "activation-a5520e73eb57",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2530,18 +2568,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-      "legacyScriptIndex": 31,
-      "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-      "shimFile": "activations/031_inventory_v2_item_parameter_config.js",
-      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
-      "id": "activation-d20afff8190f",
-      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "RarityAnimationResolver",
       "legacyScriptIndex": 380,
       "legacySymbol": "RarityAnimationResolver",
@@ -2854,6 +2880,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "InventoryV2BalanceParameterResolver",
+      "legacyScriptIndex": 243,
+      "legacySymbol": "InventoryV2BalanceParameterResolver",
+      "shimFile": "activations/243_inventoryv2balanceparameterresolver.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
+      "id": "activation-f37fcbb136c2",
+      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "setRuntimeConfigPath",
       "legacyScriptIndex": 27,
       "legacySymbol": "setRuntimeConfigPath",
@@ -2982,18 +3020,6 @@
       "targetModule": "src/game/application/casting/cast_power_aim.js",
       "id": "activation-fd85ee1fe622",
       "owner": "stage-4.cluster-026-world-and-casting",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-      "legacyScriptIndex": 31,
-      "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-      "shimFile": "activations/031_inventory_v2_item_parameter_aliases.js",
-      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
-      "id": "activation-fe1c68242b20",
-      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -4368,6 +4394,23 @@
     },
     {
       "activation": {
+        "exportName": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+        "legacyScriptIndex": 31,
+        "legacySymbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+        "shimFile": "activations/031_inventory_v2_balance_tooltip_config.js",
+        "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+        "id": "activation-a49cb20dea38",
+        "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-005-inventory-parameter-resolvers"
+    },
+    {
+      "activation": {
         "id": "activation-a63204f0676b",
         "owner": "stage-3.candidate-007-fishing-bb8b3939",
         "sourceProvider": "src/core/fishing/rod_pull_state.js",
@@ -4776,6 +4819,23 @@
     },
     {
       "activation": {
+        "exportName": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+        "legacyScriptIndex": 31,
+        "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+        "shimFile": "activations/031_inventory_v2_item_parameter_config.js",
+        "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+        "id": "activation-d20afff8190f",
+        "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-005-inventory-parameter-resolvers"
+    },
+    {
+      "activation": {
         "exportName": "FISH_CATEGORIES",
         "legacyScriptIndex": 13,
         "legacySymbol": "FISH_CATEGORIES",
@@ -5130,6 +5190,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-005-config-derived"
+    },
+    {
+      "activation": {
+        "exportName": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+        "legacyScriptIndex": 31,
+        "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+        "shimFile": "activations/031_inventory_v2_item_parameter_aliases.js",
+        "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+        "id": "activation-fe1c68242b20",
+        "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-005-inventory-parameter-resolvers"
     }
   ],
   "inertModules": [
