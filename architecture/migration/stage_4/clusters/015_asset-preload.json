@@ -6,7 +6,7 @@
   "milestone": "M1",
   "boundary": "platform",
   "tier": "B",
-  "tierEvidence": "Reads RenderAllocationDiagnostics (dev): platform → dev is forbidden → inject from bootstrap first; Stage 2 asset bridges.",
+  "tierEvidence": "One owner of pending asset requests. Preparation 004 injects optional diagnostics from the actual development composition. Shared Platform scenarios cover request coalescing, ready-cache avoidance, optional/critical failure with result/scope, pending removal and retry, and exact diagnostic counts. Class moves byte-for-byte plus named exports/imports. Event-driven, no gameplay or save state.",
   "modules": [
     {
       "currentPath": "src/assets/asset_preload_coordinator.js",
@@ -17,25 +17,200 @@
       "imports": [
         {
           "symbol": "AssetLoadResult",
-          "from": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js"
+          "from": "src/engine/assets/asset_load_result.js"
         },
         {
           "symbol": "AssetManifest",
-          "from": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js"
+          "from": "src/engine/assets/asset_manifest.js"
         },
         {
           "symbol": "ImageAssetProvider",
           "from": "src/platform/browser/assets/image_asset_provider.js"
-        },
-        {
-          "symbol": "RenderAllocationDiagnostics",
-          "from": "src/dev/diagnostics/render_allocation_diagnostics.js"
         }
       ],
-      "allowedGlobals": []
+      "allowedGlobals": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "Reads RenderAllocationDiagnostics (dev): platform → dev is forbidden → inject from bootstrap first; Stage 2 asset bridges."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Reads RenderAllocationDiagnostics (dev): platform → dev is forbidden → inject from bootstrap first; Stage 2 asset bridges."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-015-asset-preload",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/assets/asset_preload_coordinator.js",
+        "targetPath": "src/platform/browser/assets/asset_preload_coordinator.js",
+        "sourceSha256": "dece223d502edfb6ddddbf0f021d9da4da7731dbdfee8062be2d8aa11dbc669b",
+        "targetSha256": "e259565029c26730714d70f0309e71cf0a23bf50948046a0c66cca5a03938fa9"
+      }
+    ],
+    "activations": [
+      "activation-19a9c4c1c9fe"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-765258a53eef",
+      "activation-86e221fafb48"
+    ],
+    "bridgesAdded": [
+      "bridge-8be13ca4ec8e"
+    ],
+    "bridgesRetired": [
+      "bridge-0c0f9cf80110",
+      "bridge-1fdf893ad001",
+      "bridge-340e660ed69c"
+    ],
+    "importEdges": [
+      "src/platform/browser/assets/asset_preload_coordinator.js->src/engine/assets/asset_load_result.js",
+      "src/platform/browser/assets/asset_preload_coordinator.js->src/engine/assets/asset_manifest.js",
+      "src/platform/browser/assets/asset_preload_coordinator.js->src/platform/browser/assets/image_asset_provider.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/015_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "fbe782b927b4efe83922faf380fcf4d219cbcba728ff29012d0d90ba830c6645",
+        "after": "e844e8a2657987853946c4b00f9e13af3a901be34b25cc76c98bfb5ab14e731b"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "8fd07184089c7e3b038c7d06f2e6188977367eb9874190dbc2a699f0539ffd07",
+        "after": "949ba699af0b5f1027de48b60d8dee074e8d22b8afef65d3ad975de8aae20e43"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "6c72caddab4153e82e08d5ef198d4aa48637919e46920adf4c3981a118fbe08e",
+        "after": "a874d576749c0a254600b05e4b13b56729fb90dbeaab8a086de93fcc8dd780d0"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "18b8b829e686bba6a9bec5b461eda9c80ec15eb0df72cb2682cbad0f185708d4",
+        "after": "29014e3071e1670eea69fad77e76e03d2efb7d38975e84ca50f9ce75c0c63f9c"
+      },
+      {
+        "path": "dist/legacy-bridges/asset_load_result.iife.js",
+        "before": null,
+        "after": "751e5ddba2a2c66520ebd0752de0644af70eaf84c4af07d7d2fdf093f9416fab"
+      },
+      {
+        "path": "dist/legacy-bridges/asset_manifest.iife.js",
+        "before": null,
+        "after": "2f3711fd431f1ff27b797dae1053a0aa1a89ecfa4565aef9a91a9eea9b557142"
+      },
+      {
+        "path": "index.html",
+        "before": "1256250de099a552161efa9ce8dc89b30ee5cf04dba7fb6ce0100423f64c1182",
+        "after": "2d122e928900337a28fb62ec8dfc6df17211ab22eb1305a50ed9f913c258b3a0"
+      },
+      {
+        "path": "src/assets/asset_preload_coordinator.js",
+        "before": "dece223d502edfb6ddddbf0f021d9da4da7731dbdfee8062be2d8aa11dbc669b",
+        "after": "c3e62bcea73e58af7bdb70f46b4f8e16bd9a07f3005478986733ad54e2cf5caf"
+      },
+      {
+        "path": "src/platform/browser/assets/asset_preload_coordinator.js",
+        "before": null,
+        "after": "e259565029c26730714d70f0309e71cf0a23bf50948046a0c66cca5a03938fa9"
+      },
+      {
+        "path": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+        "before": "ac716a5f0168ea32086bee31e7a8b85389af2321ec8a1c879926f2a04bb308ac",
+        "after": "2f3711fd431f1ff27b797dae1053a0aa1a89ecfa4565aef9a91a9eea9b557142"
+      },
+      {
+        "path": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+        "before": "e4fbf63658fd3363b258779e0805390cc5f441ca7010baebce7369a57a2d13eb",
+        "after": "751e5ddba2a2c66520ebd0752de0644af70eaf84c4af07d7d2fdf093f9416fab"
+      }
+    ],
+    "retiredStageTwoWrappers": [
+      {
+        "file": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
+        "activationIds": [
+          "activation-765258a53eef"
+        ]
+      },
+      {
+        "file": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
+        "activationIds": [
+          "activation-86e221fafb48"
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 630 modules, 894 unified edges, 852 globals, 117 exact known-debt diagnostics, 0 FAIL in 732ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 630/630 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 158 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 158 activations and 262 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 33 record(s), 17 applied, 45 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "platform-runtime",
+        "status": "PASS",
+        "sha256": "1dee3d9944592fc693a009cb9777f901d1d0e0198bc2e05971b3347c48cab716"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 158,
+      "identityMismatches": 0
+    }
+  }
 }

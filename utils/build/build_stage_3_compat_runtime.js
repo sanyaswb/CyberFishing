@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { RetiredActivationPlaceholder } = require("./compat_runtime/activation_retirement");
 const {
   LegacyScriptOrderReader,
 } = require("../architecture/migration/legacy_script_order_reader");
@@ -54,7 +55,7 @@ class StageThreeCompatibilityBuildApplication {
       "architecture/migration/stage_3_compatibility_runtime.json",
     );
     const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(contract);
-    return new CumulativeRuntimeBuildApplication({
+    const report = await new CumulativeRuntimeBuildApplication({
       projectRoot: this.projectRoot,
       contract,
       // The execution plan source appends an adopted continuation to the historical plan.
@@ -76,6 +77,18 @@ class StageThreeCompatibilityBuildApplication {
         { scriptAliases: aliases },
       ).read(),
     }).run();
+    // Retired Stage 2 exposures held generated classic positions. Regenerate their inert outputs
+    // after the legacy builder cleans its directory; authored sources are never written here.
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(
+      (contract.retiredActivations || []).map(record => record.activation))) {
+      if (!sourceProvider.startsWith("dist/legacy-bridges/")) continue;
+      if (!/^dist\/legacy-bridges\/[a-z0-9_-]+\.iife\.js$/u.test(sourceProvider)) throw new Error("Unsafe retired Stage 2 output");
+      const output = this.#path(sourceProvider);
+      if (path.dirname(output) !== this.#path("dist/legacy-bridges")) throw new Error("Retired output escapes directory");
+      fs.mkdirSync(path.dirname(output), { recursive: true });
+      fs.writeFileSync(output, new RetiredActivationPlaceholder().renderProvider(activations));
+    }
+    return report;
   }
 
   #json(relativePath) {

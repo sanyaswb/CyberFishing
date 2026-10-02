@@ -242,6 +242,7 @@ class CumulativeRuntimeBuildApplication {
       previousStageModules,
       previousRuntimeTransitions: contract.previousRuntimeTransitions,
       activations: contract.activationPositions,
+      retiredActivations: (contract.retiredActivations || []).map(record => record.activation),
     });
     if (graph.issues.length > 0) {
       throw new Error(

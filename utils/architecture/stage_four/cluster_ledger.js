@@ -79,6 +79,22 @@ class StageFourClusterLedger {
       (module.imports || []).map((item) => `${module.targetPath}->${item.from}`)));
   }
 
+  // Keep the Stage 2 approval frozen while deriving its remaining classic consumers from exact
+  // applied Stage 4 retirements. A missing/changed bridge identity never authorizes retirement.
+  stageTwoPlan(plan) {
+    if (!this.applied.length) return plan;
+    const retired = new Map(this.applied.flatMap(record => (record.output.bridgesRetired || [])
+      .map(id => [id, record])));
+    return { ...plan, batches: plan.batches.map(batch => ({ ...batch, bridgeStrategy: { ...batch.bridgeStrategy,
+      bridges: batch.bridgeStrategy.bridges.map(bridge => ({ ...bridge, legacyConsumers: bridge.legacyConsumers.filter(source => {
+        const id = CanonicalBridgeIdentity.id({source,bridge:bridge.wrapperPath,target:bridge.targetModule,owner:batch.id});
+        const record = retired.get(id);
+        if (!record) return true;
+        assert(record.modules.some(module => module.currentPath === source), "Stage 2 retirement has no migrated consumer");
+        return false;
+      }) })) } })) };
+  }
+
   // Stage 4.N after N applied clusters; the Stage 3 label until the first one.
   stageLabel(stageThreeLabel) {
     return this.applied.length > 0 ? `4.${this.applied.length}` : stageThreeLabel;

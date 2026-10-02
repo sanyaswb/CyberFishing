@@ -18,7 +18,7 @@ const { ActivationShimRenderer } = require("../build/compat_runtime/activation_s
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
   require("../build/compat_runtime/activation_retirement");
 const { CanonicalActivationIdentity } = require("../build/compat_runtime/cumulative_runtime_contract");
-const { PATHS, StageFourClusterPlan } = require("./stage_four/cluster_path");
+const { PATHS, StageFourClusterPlan, resolveImportSource } = require("./stage_four/cluster_path");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 
 const ROOT = path.resolve(__dirname, "../..");
@@ -36,6 +36,37 @@ const FORBIDDEN = ["window", "globalThis", "self", "document", "localStorage", "
   "__CYBER_FISHING_COMPAT_RUNTIME__"];
 
 const ledger = StageFourClusterLedger.read(ROOT);
+const stageTwoProvider = {currentPath:"src/engine/compat/stage_2/test.js",architecture:{migrationStatus:"esm"}};
+const stageTwoTarget = {currentPath:"src/engine/test.js",architecture:{migrationStatus:"esm"}};
+const importFacts = {provider:stageTwoProvider,symbol:"Test",consumer:"src/test.js",memberTargets:new Map(),
+  entries:new Map([[stageTwoTarget.currentPath,stageTwoTarget]]),registry:{bridges:[{source:"src/test.js",
+    bridge:stageTwoProvider.currentPath,target:stageTwoTarget.currentPath,globalProviders:[{symbol:"Test"}]}]}};
+assert.equal(resolveImportSource(importFacts),stageTwoTarget.currentPath);
+assert.throws(()=>resolveImportSource({...importFacts,symbol:"Other"}),/one exact registered/u);
+assert.throws(()=>resolveImportSource({...importFacts,registry:{bridges:[]}}),/one exact registered/u);
+assert.throws(()=>resolveImportSource({...importFacts,registry:{bridges:[...importFacts.registry.bridges,...importFacts.registry.bridges]}}),/one exact registered/u);
+assert.throws(()=>resolveImportSource({...importFacts,entries:new Map()}),/not ESM/u);
+const stageTwoPlanFixture = {batches:[{id:"stage-2.fixture",bridgeStrategy:{bridges:[{wrapperPath:stageTwoProvider.currentPath,
+  targetModule:stageTwoTarget.currentPath,legacyConsumers:["src/test.js"]}]}}]};
+const { CanonicalBridgeIdentity } = require("../build/legacy_bridge_build_config");
+const stageTwoRetiredId = CanonicalBridgeIdentity.id({owner:"stage-2.fixture",bridge:stageTwoProvider.currentPath,
+  target:stageTwoTarget.currentPath,source:"src/test.js"});
+const stageTwoRetirementFixture = {modules:[{currentPath:"src/test.js"}],output:{status:"applied",bridgesRetired:[stageTwoRetiredId]}};
+assert.deepEqual(new StageFourClusterLedger([]).stageTwoPlan(stageTwoPlanFixture),stageTwoPlanFixture);
+assert.deepEqual(new StageFourClusterLedger([stageTwoRetirementFixture]).stageTwoPlan(stageTwoPlanFixture)
+  .batches[0].bridgeStrategy.bridges[0].legacyConsumers,[]);
+assert.throws(()=>new StageFourClusterLedger([{...stageTwoRetirementFixture,modules:[]}]).stageTwoPlan(stageTwoPlanFixture),/no migrated consumer/u);
+const { CumulativeGraphPlanner } = require("../build/compat_runtime/cumulative_graph_planner");
+const assetTransition = contract.previousRuntimeTransitions.find(item => item.module === "src/engine/assets/asset_manifest.js");
+const assetActivation = [...contract.activationPositions, ...contract.retiredActivations.map(item => item.activation)]
+  .find(item => assetTransition.activationIds.includes(item.id));
+const assetGraphFixture = {targetModules:[assetTransition.module],previousStageModules:[{source:assetTransition.module,
+  previousRuntime:assetTransition.previousRuntime,previousOutputs:assetTransition.previousOutputs}],
+  previousRuntimeTransitions:[assetTransition],activations:[]};
+const assetPlanner = new CumulativeGraphPlanner({projectRoot:ROOT});
+assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[assetActivation]}).issues.length,0);
+assert.equal(assetPlanner.plan(assetGraphFixture).issues.length,1);
+assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[{...assetActivation,id:"wrong"}]}).issues.length,1);
 const preparations = StageFourClusterLedger.preparations(ROOT);
 const preparationRetired = new Set(preparations.flatMap(record => (record.replacedBridges || []).map(pair => pair.before.id)));
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
@@ -63,6 +94,12 @@ ledger.records.forEach((record, index) => {
   if (record.output === null) return;
   assert.equal(record.output.status, "applied", `${record.file}: output status`);
   const boundary = policy.targetBoundaries.find((item) => item.id === record.boundary);
+  for (const wrapper of record.output.retiredStageTwoWrappers || []) {
+    assert(wrapper.file.startsWith("src/engine/compat/stage_2/"), "retired wrapper outside Stage 2");
+    assert(wrapper.activationIds.every(id => record.output.activationsRetired.includes(id)), "wrapper has no exact retirement");
+    const activations = contract.retiredActivations.filter(item => wrapper.activationIds.includes(item.activation.id)).map(item => item.activation);
+    assert.equal(read(wrapper.file), new RetiredActivationPlaceholder().renderProvider(activations));
+  }
   for (const module of record.modules) {
     targets += 1;
     const file = module.targetPath;

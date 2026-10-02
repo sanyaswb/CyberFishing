@@ -115,22 +115,6 @@
       ]
     },
     {
-      "id": "bridge-0c0f9cf80110",
-      "bridge": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
-      "source": "src/assets/asset_preload_coordinator.js",
-      "target": "src/engine/assets/asset_load_result.js",
-      "reason": "Keep the reviewed classic AssetPreloadCoordinator consumer synchronous until its Stage 4 platform migration.",
-      "owner": "stage-2.1-engine-asset-contracts",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "AssetLoadResult",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-0c69ccfa652e",
       "bridge": "src/config/validation/rarity_config_validator.js",
       "owner": "stage-4.cluster-001-rarity-validators",
@@ -531,22 +515,6 @@
       ]
     },
     {
-      "id": "bridge-1fdf893ad001",
-      "bridge": "src/render/core/image_asset_provider.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/assets/asset_preload_coordinator.js",
-      "target": "src/platform/browser/assets/image_asset_provider.js",
-      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ImageAssetProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-20e653528ef1",
       "bridge": "src/config/runtime/immutable_config.js",
       "owner": "stage-4.cluster-007-config-runtime",
@@ -934,22 +902,6 @@
       "globalProviders": [
         {
           "symbol": "EquipmentCompatibilityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-340e660ed69c",
-      "bridge": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
-      "source": "src/assets/asset_preload_coordinator.js",
-      "target": "src/engine/assets/asset_manifest.js",
-      "reason": "Keep the reviewed classic AssetPreloadCoordinator consumer synchronous until its Stage 4 platform migration.",
-      "owner": "stage-2.1-engine-asset-contracts",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "AssetManifest",
           "mechanism": "global-this-property"
         }
       ]
@@ -2502,6 +2454,22 @@
       "globalProviders": [
         {
           "symbol": "RodStrokeDistanceTracker",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8be13ca4ec8e",
+      "bridge": "src/assets/asset_preload_coordinator.js",
+      "owner": "stage-4.cluster-015-asset-preload",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "reason": "Preserve the exact AssetPreloadCoordinator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "AssetPreloadCoordinator",
           "mechanism": "global-this-property"
         }
       ]

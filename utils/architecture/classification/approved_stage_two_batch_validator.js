@@ -18,6 +18,7 @@ class ApprovedStageTwoBatchValidator {
     bridgeRegistry,
     executionState = null,
     runtimeFacts = null,
+    effectiveBridgePlan = approvedPlan,
   }) {
     const errors = [];
     const migrationStarted = executionState?.esmRuntimeIntegrationStarted === true;
@@ -104,7 +105,7 @@ class ApprovedStageTwoBatchValidator {
       try {
         new ActiveBridgePlanResolver().resolve({
           state: executionState,
-          approvedPlan,
+          approvedPlan: effectiveBridgePlan,
           bridgeRegistry: stageTwoBridgeRegistry,
           runtimeFacts,
         });

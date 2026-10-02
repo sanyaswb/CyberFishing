@@ -608,6 +608,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "AssetPreloadCoordinator",
+      "legacyScriptIndex": 354,
+      "legacySymbol": "AssetPreloadCoordinator",
+      "shimFile": "activations/354_assetpreloadcoordinator.js",
+      "sourceProvider": "src/assets/asset_preload_coordinator.js",
+      "targetModule": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "id": "activation-19a9c4c1c9fe",
+      "owner": "stage-4.cluster-015-asset-preload",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-1b753bf02256",
       "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
       "sourceProvider": "src/systems/tackle_stress_system.js",
@@ -1208,18 +1220,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-765258a53eef",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "dist/legacy-bridges/asset_manifest.iife.js",
-      "targetModule": "src/engine/assets/asset_manifest.js",
-      "exportName": "AssetManifest",
-      "legacySymbol": "AssetManifest",
-      "legacyScriptIndex": 352,
-      "shimFile": "activations/352_assetmanifest.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
-      "removalStage": "stage-4"
-    },
-    {
       "exportName": "ITEM_ASSEMBLY_PROFILE_CONFIG",
       "legacyScriptIndex": 29,
       "legacySymbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
@@ -1421,18 +1421,6 @@
       "legacyScriptIndex": 94,
       "shimFile": "activations/094_rodstrokedistancetracker.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-86e221fafb48",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "dist/legacy-bridges/asset_load_result.iife.js",
-      "targetModule": "src/engine/assets/asset_load_result.js",
-      "exportName": "AssetLoadResult",
-      "legacySymbol": "AssetLoadResult",
-      "legacyScriptIndex": 353,
-      "shimFile": "activations/353_assetloadresult.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-4"
     },
     {
@@ -2851,6 +2839,23 @@
     },
     {
       "activation": {
+        "id": "activation-765258a53eef",
+        "owner": "stage-3.candidate-001-inventory-85f44b2e",
+        "sourceProvider": "dist/legacy-bridges/asset_manifest.iife.js",
+        "targetModule": "src/engine/assets/asset_manifest.js",
+        "exportName": "AssetManifest",
+        "legacySymbol": "AssetManifest",
+        "legacyScriptIndex": 352,
+        "shimFile": "activations/352_assetmanifest.js",
+        "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-015-asset-preload"
+    },
+    {
+      "activation": {
         "id": "activation-7678742c83cf",
         "owner": "stage-3.candidate-006-fishing-e48e70d8",
         "sourceProvider": "src/core/float_tackle_line_budget_policy.js",
@@ -2950,6 +2955,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-011-config-schema-validator"
+    },
+    {
+      "activation": {
+        "id": "activation-86e221fafb48",
+        "owner": "stage-3.candidate-001-inventory-85f44b2e",
+        "sourceProvider": "dist/legacy-bridges/asset_load_result.iife.js",
+        "targetModule": "src/engine/assets/asset_load_result.js",
+        "exportName": "AssetLoadResult",
+        "legacySymbol": "AssetLoadResult",
+        "legacyScriptIndex": 353,
+        "shimFile": "activations/353_assetloadresult.js",
+        "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-015-asset-preload"
     },
     {
       "activation": {

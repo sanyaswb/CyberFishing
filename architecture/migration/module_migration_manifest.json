@@ -10682,7 +10682,7 @@
           "items": [
             {
               "symbol": "AssetPreloadCoordinator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -10692,22 +10692,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "AssetLoadResult",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "AssetManifest",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -10715,12 +10703,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Error",
-            "Map",
-            "Number",
-            "Promise",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -10730,7 +10713,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/assets/asset_preload_coordinator.js",
@@ -10739,56 +10722,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "AssetLoadResult",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "AssetManifest",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/core/image_asset_provider.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
-              "symbols": [
-                "AssetLoadResult"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js",
-              "symbols": [
-                "AssetManifest"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/core/image_asset_provider.js",
-              "symbols": [
-                "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -32770,13 +32714,7 @@
         "legacyLoadOrder": 353,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "AssetLoadResult",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -32786,9 +32724,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -32825,13 +32761,7 @@
         "legacyLoadOrder": 352,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "AssetManifest",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -32841,9 +32771,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -43918,6 +43846,60 @@
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/input/victory_action_gesture_resolver.js",
         "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "currentArea": "platform/browser/assets",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Map",
+            "Number",
+            "Promise",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/assets/asset_preload_coordinator.js",
+        "migrationWave": 5
       },
       "analysis": {
         "dependencies": {

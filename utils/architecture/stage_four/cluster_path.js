@@ -48,6 +48,23 @@ const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const byId = (left, right) => left.id.localeCompare(right.id);
 const latestStage = (stages) => [...stages].sort().at(-1);
 
+function resolveImportSource({ provider, symbol, consumer, memberTargets, entries, registry }) {
+  const member = memberTargets.get(provider?.currentPath);
+  if (member) return member;
+  if (provider?.currentPath.startsWith("src/engine/compat/stage_2/")) {
+    const bridges = registry.bridges.filter(item => item.source === consumer && item.bridge === provider.currentPath &&
+      item.globalProviders.some(surface => surface.symbol === symbol));
+    assert.equal(bridges.length, 1, `${consumer}: ${symbol} needs one exact registered Stage 2 bridge`);
+    const target = entries.get(bridges[0].target);
+    assert(target && ["esm", "verified"].includes(target.architecture.migrationStatus), "Stage 2 target is not ESM");
+    return target.currentPath;
+  }
+  if (provider?.architecture.roles.includes("compatibility-bridge")) return provider.architecture.targetPath;
+  if (provider && ["esm", "verified"].includes(provider.architecture.migrationStatus) &&
+      provider.architecture.targetPath === provider.currentPath) return provider.currentPath;
+  return null;
+}
+
 class StageFourWorkspace {
   constructor(root) { this.root = root; }
   path(file) { return path.join(this.root, file); }
@@ -105,7 +122,7 @@ class StageFourClusterPlan {
       assert.deepEqual([...entry.analysis.blockers.items].sort(),
         (module.reviewedBlockers || []).map((item) => item.blocker).sort(), `${module.currentPath}: blockers need reviewedBlockers`);
       assert((module.reviewedBlockers || []).every((item) => item.reason), `${module.currentPath}: reviewed blocker without reason`);
-      this.#assertImports(module, entry, entries, memberTargets);
+      this.#assertImports(module, entry, entries, memberTargets, registry);
       const projected = projector.project({ source: workspace.text(module.currentPath), currentPath: module.currentPath,
         targetPath: module.targetPath, boundary: record.boundary, exports: module.exports, imports: module.imports || [],
         allowedGlobals: module.allowedGlobals || [] });
@@ -157,7 +174,16 @@ class StageFourClusterPlan {
       bridge.target === activation.targetModule && bridge.globalProviders.some((item) =>
         item.symbol === activation.legacySymbol && item.mechanism === "global-this-property")))
       .sort(byId);
-    const retiringSources = new Map([...members, ...retiredActivations.map((item) => [item.sourceProvider, null])]);
+    // Stage 2 source providers are generated IIFEs; their registered ESM wrappers contain the original
+    // exposure assignment. Wrapper validation proves that surface separately, so it is not a reader.
+    const retiredWrappers = registry.bridges.filter(bridge => retiredActivations.some(activation =>
+      activation.sourceProvider.startsWith("dist/legacy-bridges/") && bridge.target === activation.targetModule &&
+      bridge.globalProviders.some(surface => surface.symbol === activation.legacySymbol)))
+      .map(bridge => ({file:bridge.bridge,activationIds:retiredActivations.filter(activation =>
+        activation.targetModule === bridge.target).map(activation => activation.id)}));
+    const retiredStageTwoWrappers = [...new Map(retiredWrappers.map(wrapper => [wrapper.file,wrapper])).values()];
+    const retiringSources = new Map([...members, ...retiredActivations.map((item) => [item.sourceProvider, null]),
+      ...retiredStageTwoWrappers.map(wrapper => [wrapper.file,null])]);
     assert.deepEqual(this.#propertyReaders(retiredActivations.map((item) => item.legacySymbol), retiringSources), [],
       "a retiring activation still has property readers outside the migrating consumers and shims");
     const load = CumulativeRuntimeLoadSlot.read({ html: workspace.text(PATHS.index),
@@ -175,7 +201,7 @@ class StageFourClusterPlan {
     assert.deepEqual(propertyReaders.map((item) => `${item.file}:${item.symbol}`),
       (record.reviewedPropertyReaders || []).map((item) => `${item.file}:${item.symbol}`).sort(),
       "global property readers that wake up when an activation exposes the symbol must be reviewed");
-    return { owner: this.owner, targets, consumers, activations: activations.sort(byId), inert, retiredActivations,
+    return { owner: this.owner, targets, consumers, activations: activations.sort(byId), inert, retiredActivations, retiredStageTwoWrappers,
       bridgesAdded: bridgesAdded.sort(byId), bridgesRetired, runtimeSlot: load.slot, propertyReaders,
       importEdges: targets.flatMap((target) => (target.module.imports || []).map((item) =>
         `${target.module.targetPath}->${item.from}`)) };
@@ -183,16 +209,17 @@ class StageFourClusterPlan {
 
   // Every confirmed dependency symbol is imported from its ESM target (a member or an already migrated
   // module): an ESM target never reads a classic global.
-  #assertImports(module, entry, entries, memberTargets) {
+  #assertImports(module, entry, entries, memberTargets, registry) {
     const dependencies = entry.analysis.dependencies;
     assert.deepEqual([...dependencies.unresolved, ...dependencies.ambiguous], [],
       `${module.currentPath}: unresolved or ambiguous dependencies`);
     const expected = dependencies.items.flatMap((item) => {
       const provider = entries.get(item.target);
-      const from = memberTargets.get(item.target) ||
-        (provider?.architecture.roles.includes("compatibility-bridge") ? provider.architecture.targetPath : null);
-      assert(from, `${module.currentPath}: dependency ${item.target} is still classic (migrate it first)`);
-      return item.symbols.map((symbol) => `${symbol}<-${from}`);
+      return item.symbols.map((symbol) => {
+        const from = resolveImportSource({ provider, symbol, consumer: module.currentPath, memberTargets, entries, registry });
+        assert(from, `${module.currentPath}: dependency ${item.target} is still classic (migrate it first)`);
+        return `${symbol}<-${from}`;
+      });
     }).sort();
     assert.deepEqual((module.imports || []).map((item) => `${item.symbol}<-${item.from}`).sort(), expected,
       `${module.currentPath}: imports must equal the confirmed dependencies`);
@@ -253,7 +280,7 @@ class StageFourClusterApply {
     const plan = new StageFourClusterPlan(workspace, record).build();
     const touched = [...new Set([...Object.values(PATHS).filter((file) => file !== PATHS.policy),
       ...plan.targets.flatMap((target) => [target.module.currentPath, target.module.targetPath]),
-      ...plan.retiredActivations.map((item) => item.sourceProvider)])].sort();
+      ...plan.retiredActivations.map((item) => item.sourceProvider), ...plan.retiredStageTwoWrappers.map(item => item.file)])].sort();
     const dirty = workspace.git(["status", "--porcelain", "--", ...touched]).trim();
     assert.equal(dirty, "", `touched files must be committed before apply:\n${dirty}`);
     const before = new Map(touched.map((file) => [file, workspace.hash(file)]));
@@ -296,6 +323,8 @@ class StageFourClusterApply {
           .filter(item => item.activation.sourceProvider === sourceProvider).map(item => item.activation)));
     }
     writes.set(PATHS.index, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
+    for (const wrapper of plan.retiredStageTwoWrappers) writes.set(wrapper.file,
+      new RetiredActivationPlaceholder().renderProvider(plan.retiredActivations.filter(item => wrapper.activationIds.includes(item.id))));
     new CumulativeRuntimeContractValidator().validate(future);
     writes.set(PATHS.contract, canonical(future));
     const registry = workspace.json(PATHS.registry);
@@ -312,6 +341,7 @@ class StageFourClusterApply {
       activations: plan.activations.map((item) => item.id), inertModules: plan.inert.map((item) => item.targetModule),
       sideEffectReviews: plan.targets.filter((target) => target.review).map((target) => target.module.targetPath),
       activationsRetired: plan.retiredActivations.map((item) => item.id),
+      retiredStageTwoWrappers: plan.retiredStageTwoWrappers,
       bridgesAdded: plan.bridgesAdded.map((item) => item.id), bridgesRetired: plan.bridgesRetired,
       importEdges: plan.importEdges, gameCycleBefore, files: [] } };
     writes.set(this.recordFile, canonical(applied));
@@ -426,4 +456,4 @@ function recordFileFor(root, id) {
 }
 
 module.exports = { PATHS, RECORD_KIND, REMOVAL_BY_CONSUMER_BOUNDARY, StageFourClusterApply, StageFourClusterPlan,
-  StageFourClusterVerify, StageFourWorkspace, recordFileFor };
+  StageFourClusterVerify, StageFourWorkspace, recordFileFor, resolveImportSource };

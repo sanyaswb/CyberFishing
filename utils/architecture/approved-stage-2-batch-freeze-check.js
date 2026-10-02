@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 const { ArchitecturePolicy } = require("./core/architecture_policy");
 const {
   ApprovedStageTwoBatchValidator,
@@ -10,6 +11,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
 class ApprovedStageTwoBatchFreezeCheck {
   constructor(projectRoot) {
+    this.projectRoot = projectRoot;
     this.paths = Object.freeze({
       policy: path.join(projectRoot, "architecture", "module_architecture.json"),
       manifest: path.join(
@@ -49,6 +51,7 @@ class ApprovedStageTwoBatchFreezeCheck {
   run() {
     const before = this.#readBytes();
     const values = this.#readValues();
+    values.effectiveBridgePlan = StageFourClusterLedger.read(this.projectRoot).stageTwoPlan(values.approvedPlan);
     const validator = new ApprovedStageTwoBatchValidator({
       architecturePolicy: ArchitecturePolicy.load(this.paths.policy),
     });

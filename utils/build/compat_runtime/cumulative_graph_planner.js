@@ -116,6 +116,7 @@ class CumulativeGraphPlanner {
     previousStageModules = [],
     previousRuntimeTransitions = [],
     activations = [],
+    retiredActivations = [],
   }) {
     const targets = this.#canonicalSet(targetModules, "target module");
     const infrastructure = this.#canonicalSet(
@@ -125,6 +126,7 @@ class CumulativeGraphPlanner {
     const previousBySource = this.#previousStageIndex(previousStageModules);
     const transitionsByModule = this.#transitionIndex(previousRuntimeTransitions);
     const activationIdsByModule = this.#activationIdsByModule(activations);
+    const transitionedIdsByModule = this.#activationIdsByModule([...activations, ...retiredActivations]);
     const allowed = new Set([...targets, ...infrastructure, ...previousBySource.keys()]);
     const records = new Map();
     const edges = new Map();
@@ -204,7 +206,7 @@ class CumulativeGraphPlanner {
         continue;
       }
       const transition = transitionsByModule.get(previous.source) || null;
-      const actualActivationIds = activationIdsByModule.get(previous.source) || [];
+      const actualActivationIds = transitionedIdsByModule.get(previous.source) || [];
       const expectedActivationIds = transition?.activationIds || [];
       const transitionMatches = transition &&
         transition.previousRuntime === previous.previousRuntime &&
