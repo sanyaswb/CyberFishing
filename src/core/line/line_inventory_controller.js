@@ -1,1 +1,1 @@
-globalThis.LineInventoryController = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/line_inventory_controller.js"]["LineInventoryController"];
+// Retired Stage 4 activation activation-78df49758c5f: LineInventoryController is served only through ESM imports of src/game/application/inventory/line_inventory_controller.js.

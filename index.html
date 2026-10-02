@@ -120,7 +120,7 @@
     <script src="dist/stage-3-compat-runtime/activations/085_itemprogressionresolver.js"></script>
 
     <script src="dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/087_inventoryitemstackingpolicy.js"></script>
+    <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
     <script src="src/core/float_tackle_line_budget_policy.js"></script>
     <script src="src/core/distance_unit_converter.js" data-legacy-slot="89"></script>
     <script src="dist/stage-3-compat-runtime/activations/089_castdistancecalculator.js" data-legacy-slot="89"></script>
@@ -177,7 +177,7 @@
     <script src="src/core/fishing/landing_lift_tension_calculator.js"></script>
     <script src="src/core/fishing/landing_lift_readiness_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/142_lineallocationpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/143_lineinventorycontroller.js"></script>
+    <script src="src/core/line/line_inventory_controller.js"></script>
 
     <!-- Inventory v2 domain -->
     <script src="dist/stage-3-compat-runtime/activations/144_inventoryitemlocationkind.js"></script>
@@ -278,9 +278,13 @@
     <script src="dist/stage-3-compat-runtime/activations/222_bitesystem.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/222_castmanager.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/223_chummanager.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/224_inventoryitemfactory.js"></script>
+    <script src="src/systems/inventory_item_factory.js"></script>
     <script src="src/systems/inventory_item_view_factory.js?v=0.24.30"></script>
-    <script src="src/systems/inventory_system.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/226_linecompatibilityrules.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/226_inventorymanager.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/226_inventoryruntimeconfigprovider.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/226_inventoryeventbridge.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/226_itemdatabase.js"></script>
 
     <script src="dist/stage-3-compat-runtime/activations/227_horizontalscrollcontroller.js"></script>
     <script src="src/ui/ui.js?v=0.24.30"></script>

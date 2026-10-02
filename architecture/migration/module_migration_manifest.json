@@ -17121,32 +17121,17 @@
         "legacyLoadOrder": 87,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryItemStackingPolicy",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -17166,15 +17151,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -19892,32 +19869,17 @@
         "legacyLoadOrder": 143,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LineInventoryController",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -19937,15 +19899,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -33720,6 +33674,66 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/inventory_transaction_participants.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/legacy_inventory_system.js",
+      "currentArea": "game/application/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Date",
+            "Infinity",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "TypeError",
+            "parseInt",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/legacy_inventory_system.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -48092,32 +48106,17 @@
         "legacyLoadOrder": 224,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryItemFactory",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -48137,15 +48136,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -48249,88 +48240,28 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ConfiguredInventorySeeder",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "DisplayStatsResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EquipmentStateMigrationPolicy",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EquipmentValidator",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "Inventory",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryEquipment",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryEventBridge",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryItemIdMigrationPolicy",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "InventoryManager",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "InventoryRuntimeConfigProvider",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryRuntimeDisplayStatsResolver",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "ItemDatabase",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "LineCompatibilityRules",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "LineRuntimeDisplayStatsResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "ReelRuntimeDisplayStatsResolver",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "RuntimeDisplayStatFormatter",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "RuntimeDisplayStatWriter",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -48340,64 +48271,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CastDistanceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EffectiveItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemStackingPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineAllocationPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineInventoryController",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ReelRetrieveSpeedCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -48405,18 +48282,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Date",
-            "Infinity",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "TypeError",
-            "parseInt",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -48426,7 +48292,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/legacy_inventory_system.js",
@@ -48435,154 +48301,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "CastDistanceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/casting_distance.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EffectiveItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/inventory_item_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemStackingPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/inventory_item_stacking_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/rarity/item_rarity_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineAllocationPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/line/line_allocation_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineInventoryController",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/line/line_inventory_controller.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ReelRetrieveSpeedCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/casting_distance.js",
-              "symbols": [
-                "CastDistanceCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
-              "symbols": [
-                "ReelRetrieveSpeedCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/inventory_item_stacking_policy.js",
-              "symbols": [
-                "InventoryItemStackingPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
-              "symbols": [
-                "EffectiveItemRarityResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/rarity/item_rarity_resolver.js",
-              "symbols": [
-                "ItemRarityResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/line/line_allocation_policy.js",
-              "symbols": [
-                "LineAllocationPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/line/line_inventory_controller.js",
-              "symbols": [
-                "LineInventoryController"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/inventory_item_factory.js",
-              "symbols": [
-                "InventoryItemFactory"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

@@ -547,22 +547,6 @@
       ]
     },
     {
-      "id": "bridge-25641a86cf5e",
-      "bridge": "src/core/line/line_allocation_policy.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/line/line_allocation_policy.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LineAllocationPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-2943aa6fa8b8",
       "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
       "source": "src/app/application.js",
@@ -791,22 +775,6 @@
       ]
     },
     {
-      "id": "bridge-3d0eb05d9af6",
-      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
-      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-3fa564e45db2",
       "bridge": "src/core/casting_distance.js",
       "source": "src/app/bootstrap.js",
@@ -994,22 +962,6 @@
       "globalProviders": [
         {
           "symbol": "DerivedStatMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-46f9d5f6a60c",
-      "bridge": "src/core/casting_distance.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/casting/cast_distance_calculator.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CastDistanceCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -1987,38 +1939,6 @@
       ]
     },
     {
-      "id": "bridge-896a612b2024",
-      "bridge": "src/systems/inventory_item_factory.js",
-      "owner": "stage-4.cluster-023-inventory-lines",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/application/inventory/inventory_item_factory.js",
-      "reason": "Preserve the exact InventoryItemFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8bdcdf5a26c8",
-      "bridge": "src/core/line/line_inventory_controller.js",
-      "owner": "stage-4.cluster-023-inventory-lines",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/application/inventory/line_inventory_controller.js",
-      "reason": "Preserve the exact LineInventoryController consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "LineInventoryController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-8be13ca4ec8e",
       "bridge": "src/assets/asset_preload_coordinator.js",
       "owner": "stage-4.cluster-015-asset-preload",
@@ -2115,6 +2035,38 @@
       ]
     },
     {
+      "id": "bridge-92d5d09f925f",
+      "bridge": "src/systems/inventory_system.js",
+      "owner": "stage-4.cluster-029-inventory-system",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/inventory/legacy_inventory_system.js",
+      "reason": "Preserve the exact InventoryEventBridge, InventoryManager, InventoryRuntimeConfigProvider, ItemDatabase, LineCompatibilityRules consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InventoryEventBridge",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryManager",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryRuntimeConfigProvider",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "ItemDatabase",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "LineCompatibilityRules",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-93b3ed37a13e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/hud/fight_status_bars_renderer.js",
@@ -2174,22 +2126,6 @@
       "globalProviders": [
         {
           "symbol": "FishingReadinessPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-96dd8ba5f258",
-      "bridge": "src/config/physics/physics_config_adapter.js",
-      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -3147,22 +3083,6 @@
       ]
     },
     {
-      "id": "bridge-ddf61a64424b",
-      "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
-      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-007-fishing-bb8b3939",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ReelRetrieveSpeedCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-de699c628b92",
       "bridge": "src/core/fishing/landing_policy.js",
       "source": "src/app/bootstrap.js",
@@ -3206,22 +3126,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2DomFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e1f35280f471",
-      "bridge": "src/core/inventory/inventory_item_stacking_policy.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/inventory/inventory_item_stacking_policy.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemStackingPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -3558,22 +3462,6 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ff8fc75f21d2",
-      "bridge": "src/core/items/rarity/effective_item_rarity_resolver.js",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
-      "reason": "Preserve the exact effective item rarity consumers until their legacy symbol is removed.",
-      "owner": "stage-3.replan-322.batch-032-items-096b3398",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EffectiveItemRarityResolver",
           "mechanism": "global-this-property"
         }
       ]

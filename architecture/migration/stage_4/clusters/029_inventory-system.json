@@ -111,5 +111,176 @@
       ]
     }
   ],
-  "output": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-029-inventory-system",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/systems/inventory_system.js",
+        "targetPath": "src/game/application/inventory/legacy_inventory_system.js",
+        "sourceSha256": "84710cbfc0680c89bfeb365dfa80a9aff82a1088c3bf85e3d46c775f700e5f09",
+        "targetSha256": "df3541fdec4029adae3b6624a93b6555be5c5ac8c85dc582fd05ea64784dedc9"
+      }
+    ],
+    "activations": [
+      "activation-535e8074f2ef",
+      "activation-53dab68b8e3a",
+      "activation-5547ff258fca",
+      "activation-61e22b795651",
+      "activation-e477081b2044"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/application/inventory/legacy_inventory_system.js"
+    ],
+    "activationsRetired": [
+      "activation-33240d352a6f",
+      "activation-42a10e628147",
+      "activation-78df49758c5f"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-92d5d09f925f"
+    ],
+    "bridgesRetired": [
+      "bridge-25641a86cf5e",
+      "bridge-3d0eb05d9af6",
+      "bridge-46f9d5f6a60c",
+      "bridge-896a612b2024",
+      "bridge-8bdcdf5a26c8",
+      "bridge-96dd8ba5f258",
+      "bridge-ddf61a64424b",
+      "bridge-e1f35280f471",
+      "bridge-ff8fc75f21d2"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/casting/cast_distance_calculator.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/config/physics/fight_physics_config_adapter.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/application/inventory/inventory_item_factory.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/items/rarity/item_rarity_resolver.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/line/line_allocation_policy.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/application/inventory/line_inventory_controller.js",
+      "src/game/application/inventory/legacy_inventory_system.js->src/game/domain/fishing/reel_retrieve_speed_calculator.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/029_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "dd025f1ae4b0ef0173ae6dd306606b6bafc0bb7dc828b9d2be90f32757b3bbb8",
+        "after": "fc7194ef22ea3244b2625f58ef9c69c9fdddf244eff20c58ad8f168728c13128"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1",
+        "after": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "7c3aff825cc049bd7258e265deef97870e712821532bd5255b0997067d9b1d55",
+        "after": "e98adc1c867c7a39d518f226e834938dcd506278e2000ef03275b2048f8a2169"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "67f8497ce08ac4f29e90517ca9015fb3432a067f1d186946eb1a5f67d6219ff8",
+        "after": "2011d39b317c64d4902ba196b2334a26cb983fb60bce355d0644a77203bf2d98"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "6415499a4c14fd04c97abd6aa93861abfaa8e7135f5eff5a794d2535513fac41",
+        "after": "cba91afcc2cd8e9140b22f543457fef234ce97da6a29f3e13062e1c35896e58a"
+      },
+      {
+        "path": "index.html",
+        "before": "9357ebeb0a3531632dad1ecbb3b97a1d87511cf2b9d56de55cb50eb26c590503",
+        "after": "333e97f142fd447ac705e106fb6b91eb5243456c0a7b0cb55b0d10ecba8f22e9"
+      },
+      {
+        "path": "src/core/inventory/inventory_item_stacking_policy.js",
+        "before": "0032f294c246e8bc5f70a0e94295140c2cb5ebd8879be681d50d19a21cf7510c",
+        "after": "808728c522f54fd3d85d30830d6a51a1b83970ff6088fcc6b830346973901d01"
+      },
+      {
+        "path": "src/core/line/line_inventory_controller.js",
+        "before": "44fd09f2face9915590ea53614fea94c548e0eccb16134a64da5f5f7aed09ff0",
+        "after": "3707218336ba315ce29a1a046141c2855369b6755da333f3c892b6ce43254b9a"
+      },
+      {
+        "path": "src/game/application/inventory/legacy_inventory_system.js",
+        "before": null,
+        "after": "df3541fdec4029adae3b6624a93b6555be5c5ac8c85dc582fd05ea64784dedc9"
+      },
+      {
+        "path": "src/systems/inventory_item_factory.js",
+        "before": "43b5f04e2647e50192e92cbb98ad3f4e81e858ce9b16ae6d6f2a1c6d5dce7181",
+        "after": "a62b51ca6c2e2d992e06c1caec9a4339c1c4a06ffc2a3309c3e3da07b7950bfd"
+      },
+      {
+        "path": "src/systems/inventory_system.js",
+        "before": "84710cbfc0680c89bfeb365dfa80a9aff82a1088c3bf85e3d46c775f700e5f09",
+        "after": "a424d87a4d9dff5eb0657f1d5863c07411226546e31f2e2334fd571487b5d75f"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 684 modules, 880 unified edges, 852 globals, 67 exact known-debt diagnostics, 0 FAIL in 727ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 684/684 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 177 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 177 activations and 206 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 37 record(s), 36 applied, 96 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "25b6a4e36145afef94401597fed50a91c31bf0b521aa3827bb989ced775c5716"
+      }
+    ],
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 177,
+      "identityMismatches": 0
+    }
+  }
 }
