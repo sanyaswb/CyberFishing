@@ -3,6 +3,22 @@
   "kind": "cyber-fishing-migration-bridges",
   "bridges": [
     {
+      "id": "bridge-005893f35e40",
+      "bridge": "src/core/core.js",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/input/input_manager.js",
+      "reason": "Preserve the exact InputManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InputManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0095bdc3c5cc",
       "bridge": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
       "source": "src/systems/fight_physics_system.js",
@@ -774,22 +790,6 @@
       "globalProviders": [
         {
           "symbol": "TackleStressSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2e8f3cba4637",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/core/core.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -2710,6 +2710,22 @@
       "globalProviders": [
         {
           "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-97a136a8a364",
+      "bridge": "src/core/core.js",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/input/input_manager.js",
+      "reason": "Preserve the exact InputManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InputManager",
           "mechanism": "global-this-property"
         }
       ]

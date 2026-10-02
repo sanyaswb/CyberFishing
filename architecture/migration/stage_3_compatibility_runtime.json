@@ -460,6 +460,13 @@
       "module": "src/platform/browser/dom/item_progression_dom_adapter.js",
       "owner": "stage-4.cluster-013-platform-dom-adapters",
       "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "201a0066d461d0263e0f66877f2f396ec74a0f0a9569fd0581733cc82a4136e5",
+      "module": "src/platform/browser/input/input_manager.js",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "activationPositions": [
@@ -1854,6 +1861,18 @@
       "shimFile": "activations/209_linesystem.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "InputManager",
+      "legacyScriptIndex": 41,
+      "legacySymbol": "InputManager",
+      "shimFile": "activations/041_inputmanager.js",
+      "sourceProvider": "src/core/core.js",
+      "targetModule": "src/platform/browser/input/input_manager.js",
+      "id": "activation-b9637707e94d",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "GameClock",
