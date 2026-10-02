@@ -593,6 +593,13 @@
       "module": "src/game/presentation/inventory/equipment_slot_availability_policy.js",
       "owner": "stage-5.cluster-006-inventory-read-models",
       "reason": "Only existing immutable display catalog/static initializer Object.freeze calls execute during evaluation. They create local catalogs once without external mutation, I/O, browser/DEV or scheduling; preserve original reference identity and evaluation order before consumers."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "95b9b0b847b361ea901daaa716bf64945b5ae65fba38847c5b1ae0a27854a978",
+      "module": "src/game/presentation/inventory/inventory_view_model.js",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "reason": "Only the original Object.freeze action catalog and static slot-order arrays execute during evaluation. These create immutable local values once without I/O, browser/DEV, scheduling or external mutation. Retain the catalog identity injected into Application."
     }
   ],
   "activationPositions": [
@@ -1063,6 +1070,18 @@
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "InventoryV2ViewModelNormalizer",
+      "legacyScriptIndex": 239,
+      "legacySymbol": "InventoryV2ViewModelNormalizer",
+      "shimFile": "activations/239_inventoryv2viewmodelnormalizer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+      "id": "activation-2ea780215625",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-2fc19b0cf09b",
@@ -1545,6 +1564,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ActionType",
+      "legacyScriptIndex": 239,
+      "legacySymbol": "InventoryV2ActionType",
+      "shimFile": "activations/239_inventoryv2actiontype.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+      "id": "activation-609963e4e0d7",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryEventBridge",
       "legacyScriptIndex": 226,
       "legacySymbol": "InventoryEventBridge",
@@ -1555,6 +1586,18 @@
       "owner": "stage-4.cluster-029-inventory-system",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "InventoryV2FacadeContract",
+      "legacyScriptIndex": 239,
+      "legacySymbol": "InventoryV2FacadeContract",
+      "shimFile": "activations/239_inventoryv2facadecontract.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+      "id": "activation-6245ef6547a7",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-649929a35f50",
@@ -2105,6 +2148,18 @@
       "targetModule": "src/game/application/inventory/inventory_refill_adapters.js",
       "id": "activation-8f29d2fdaec7",
       "owner": "stage-4.cluster-022-inventory-refill",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2ActionContract",
+      "legacyScriptIndex": 239,
+      "legacySymbol": "InventoryV2ActionContract",
+      "shimFile": "activations/239_inventoryv2actioncontract.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+      "id": "activation-93c7589fb62d",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },

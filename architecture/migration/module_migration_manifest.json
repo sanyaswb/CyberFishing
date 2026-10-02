@@ -43714,6 +43714,65 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/inventory/inventory_view_model.js",
+      "currentArea": "game/presentation/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "RangeError",
+            "Set",
+            "String",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/inventory/inventory_view_model.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/inventory/inventory_view_model_factory.js",
       "currentArea": "game/presentation/inventory",
       "observed": {
@@ -52739,17 +52798,7 @@
           "items": [
             {
               "symbol": "InventoryV2ActionContract",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ActionContract",
               "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "global-lexical",
               "availability": "program-init"
             },
             {
@@ -52759,17 +52808,7 @@
             },
             {
               "symbol": "InventoryV2FacadeContract",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2FacadeContract",
               "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ViewModelNormalizer",
-              "mechanism": "global-lexical",
               "availability": "program-init"
             },
             {
@@ -52784,10 +52823,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_SORT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -52795,18 +52834,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Boolean",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "RangeError",
-            "Set",
-            "String",
-            "TypeError",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -52816,7 +52844,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/inventory/inventory_view_model.js",
@@ -52825,26 +52853,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "INVENTORY_V2_SORT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/inventory_v2_sort_config.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/inventory_v2_sort_config.js",
-              "symbols": [
-                "INVENTORY_V2_SORT_CONFIG"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

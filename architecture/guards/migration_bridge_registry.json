@@ -2583,6 +2583,22 @@
       ]
     },
     {
+      "id": "bridge-a2d4cf4c4b59",
+      "bridge": "src/ui/inventory/inventory_v2_view_model.js",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/presentation/inventory/inventory_view_model.js",
+      "reason": "Preserve the exact InventoryV2ActionType consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2ActionType",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a56e744e9aab",
       "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
       "owner": "stage-4.cluster-013-platform-dom-adapters",
@@ -2742,22 +2758,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2DomFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ae37ae5eb45f",
-      "bridge": "src/config/inventory/inventory_v2_sort_config.js",
-      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "source": "src/ui/inventory/inventory_v2_view_model.js",
-      "target": "src/game/presentation/inventory/inventory_sort_config.js",
-      "reason": "Preserve the exact INVENTORY_V2_SORT_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "INVENTORY_V2_SORT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3162,6 +3162,34 @@
       "globalProviders": [
         {
           "symbol": "EquipmentTransitionExecutor",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-cb1cf2b0f7e0",
+      "bridge": "src/ui/inventory/inventory_v2_view_model.js",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "source": "src/ui/inventory/inventory_v2_ui.js",
+      "target": "src/game/presentation/inventory/inventory_view_model.js",
+      "reason": "Preserve the exact InventoryV2ActionContract, InventoryV2ActionType, InventoryV2FacadeContract, InventoryV2ViewModelNormalizer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2ActionContract",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryV2ActionType",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryV2FacadeContract",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryV2ViewModelNormalizer",
           "mechanism": "global-this-property"
         }
       ]
@@ -3914,6 +3942,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryEquipTargetSelectionPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f9a552ef2af7",
+      "bridge": "src/ui/inventory/inventory_v2_view_model.js",
+      "owner": "stage-5.cluster-007-inventory-view-contracts",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_view_model.js",
+      "reason": "Preserve the exact InventoryV2ActionType consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2ActionType",
           "mechanism": "global-this-property"
         }
       ]
