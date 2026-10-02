@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-owner-decision",
+  "decisionId": "stage-4.phase-0.3-cluster-path",
+  "recordedAt": "2026-10-02",
+  "decidedBy": "user",
+  "baseCommit": "260c1dc",
+  "spec": ".claude/specs/stage4-phase0-spec.md §3 0.3",
+  "supersedes": "Spec 0.3 proposal to parameterize the stage-3-batch.js lifecycle by boundary.",
+  "decisions": [
+    {
+      "question": "Stage 4 migration tooling",
+      "choice": "light cluster path",
+      "statement": "Do NOT parameterize the 17-step stage-3-batch.js lifecycle (it carries per-batch releases, before-images and history replays, removed by D3/D4). Four steps: (1) plan, dry run: targets, consumers, tier A/B/C, expected edge and bridge delta; (2) apply: ESM targets, activation shims, runtime contract, bridge registry, Manifest, runtime build, reusing the Stage 3 building blocks (shim renderer, runtime builder, bridge identity, Manifest observation), not their lifecycle wrapper; (3) verify: guards plus tier evidence (C: guards + game-cycle; B: public-API parity; A: hot-loop traces and save round-trip); (4) release only at a milestone: version bump, 1-3 CHANGELOG lines, owner play check."
+    },
+    {
+      "question": "Cluster record",
+      "statement": "One small JSON per cluster (tier, hashes before/after, parity digest, guard results, edge/bridge delta): kilobytes, no before-images. Rollback is git revert."
+    },
+    {
+      "question": "Budgets",
+      "statement": "All new Stage 4 tooling stays under ~2,000 lines; a new module needs at least two planned uses; once the cluster path works, archive tooling only Stage 3 needed (domain audit, per-batch artifacts) so utils/ shrinks. No new check file per cluster: one data-driven check validates all cluster records. Quick and Architecture stay under ~1 minute each. Behavior tests are grouped by game area (inventory, fight, input), not by migration step. Milestone report: lines in src/, utils/, architecture/ plus counts of classic scripts in index.html, baseline globals and bridges; if utils/ or architecture/ grow faster than scripts and bridges shrink, stop and simplify."
+    },
+    {
+      "question": "Later (Stage 5)",
+      "statement": "Once the game boots from game.entry.js, replace the custom guards with a standard tool (dependency-cruiser or eslint-plugin-boundaries)."
+    }
+  ]
+}
