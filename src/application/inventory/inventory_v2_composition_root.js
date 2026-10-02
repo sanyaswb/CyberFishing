@@ -328,6 +328,7 @@ class InventoryV2CompositionRoot {
       reservationPolicy,
       instanceIdFactory,
       sortConfig: INVENTORY_V2_SORT_CONFIG,
+      actionTypes: InventoryV2ActionType,
       baitExposureService: itemFreshnessResolver
         ? new ApplyBaitExposureService({
             repository,

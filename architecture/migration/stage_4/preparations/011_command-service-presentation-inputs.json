@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "011",
+  "slug": "command-service-presentation-inputs",
+  "baseCommit": "76fa8065e1e5018000b40423443d72613a093a06",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-browser-capability-414d04c920ba",
+    "debt-boundary-dependency-1cf355c6e1ae",
+    "debt-boundary-dependency-2f5a40841797"
+  ],
+  "files": [
+    {
+      "path": "src/application/inventory/inventory_v2_command_service.js",
+      "before": "d71fb9a43a0b94869268006c79afc8daae894756924a72d967864cf4ca072705",
+      "after": "05fd4e60f90799e488a8c37a2de3b21cebc3e375f91b54ac41efc2584c9210aa"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_composition_root.js",
+      "before": "d2358f28cd7843191d46f00a2f9a98c8e0b5df5826d2933df193eefa72214f01",
+      "after": "44b4b47644bde9a05121bdc07d26dc106d222456f83274b9fb68b2ed5dfc98f2"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04",
+      "after": "428094b447add67d6071943e5f8dee677d28a82dbd7839dafe1a7f530704f115"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "6ae8a9049043aba6fd4b1903c9a73a1e79494b5545171531fd6672fc0205b422",
+      "after": "9b417d3d8ce9d74b2504c085eb10575e859f623cfd51fa3df605af5e4172f493"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 024 moves InventoryV2CommandService to game-application, which may not depend on game-presentation or browser APIs. The service read the presentation action vocabulary InventoryV2ActionType (src/ui/inventory/inventory_v2_view_model.js), defaulted its sort config through a typeof-guarded INVENTORY_V2_SORT_CONFIG fallback (presentation config), defaulted its stacking policy (`|| new ItemAssemblyStackingPolicy()`) and generated fallback ids from globalThis.crypto.randomUUID. Framework Q4/Q3: the composition root (bootstrap-production, may read presentation) injects the action types as `actionTypes` (the dispatch method binds the injected object to the same local name, so the switch is byte-identical); sortConfig and stackingPolicy defaults go because the only production construction passes both; the crypto branch goes because no caller reaches it (production always passes instanceIdFactory, check contexts have no crypto), the existing Date-based fallback stays.",
+  "constructionEvidence": [
+    "grep src utils: `new InventoryV2CommandService` occurs once (InventoryV2CompositionRoot.compose), passing stackingPolicy (new ItemAssemblyStackingPolicy()), instanceIdFactory, sortConfig: INVENTORY_V2_SORT_CONFIG and now actionTypes: InventoryV2ActionType (the same frozen object the global names; compose runs after every classic script loaded).",
+    "InventoryV2CompositionRoot.compose is called by InventorySystem (always passes instanceIdFactory -> #makeId) and by inventory-v2-integration / inventory-save-round-trip checks whose vm contexts are { console } without crypto, so the removed randomUUID branch was unreachable in every caller; ids are unchanged.",
+    "Resolved debts: debt-browser-capability-414d04c920ba (crypto), debt-boundary-dependency-1cf355c6e1ae (INVENTORY_V2_SORT_CONFIG), debt-boundary-dependency-2f5a40841797 (InventoryV2ActionType); the guard corpus reported exactly these as stale."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 90,
+    "knownDebtsAfter": 87,
+    "suites": {
+      "full": "64/64"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpenVisibleNodes": 179,
+      "itemCards": 22,
+      "rodFilterCards": 3,
+      "baitFilterCards": 2,
+      "sortToggled": true,
+      "inventorySaveBytes": 4889
+    }
+  }
+}

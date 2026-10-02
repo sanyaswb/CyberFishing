@@ -109,28 +109,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-1cf355c6e1ae",
-      "rule": "boundary-dependency",
-      "source": "src/application/inventory/inventory_v2_command_service.js",
-      "target": "src/config/inventory/inventory_v2_sort_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "1cf355c6e1ae36596330e42cf1514268a69f08a1228283835db059887614491e",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/application/inventory/inventory_v2_command_service.js",
-        "target": "src/config/inventory/inventory_v2_sort_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-28f5b8bf4610",
       "rule": "boundary-dependency",
       "source": "src/app/script.js",
@@ -151,28 +129,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/script.js",
         "target": "src/core/core.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-2f5a40841797",
-      "rule": "boundary-dependency",
-      "source": "src/application/inventory/inventory_v2_command_service.js",
-      "target": "src/ui/inventory/inventory_v2_view_model.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "2f5a40841797b1f4ebbf25af46c80412623da9ef5ffa17a5a2db2e1ea005da5f",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/application/inventory/inventory_v2_command_service.js",
-        "target": "src/ui/inventory/inventory_v2_view_model.js"
       }
     },
     {
@@ -1143,29 +1099,6 @@
         "source": "src/ui/ui.js",
         "target": "environment:viewport",
         "identifier": "innerWidth"
-      }
-    },
-    {
-      "id": "debt-browser-capability-414d04c920ba",
-      "rule": "browser-capability",
-      "source": "src/application/inventory/inventory_v2_command_service.js",
-      "target": "environment:cryptography",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "414d04c920ba465464251496a7473447e923d835541c286d2727e3281f7bcae4",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/application/inventory/inventory_v2_command_service.js",
-        "target": "environment:cryptography",
-        "identifier": "crypto"
       }
     },
     {

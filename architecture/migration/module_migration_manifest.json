@@ -7318,25 +7318,7 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "INVENTORY_V2_SORT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemAssemblyStackingPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -7360,9 +7342,7 @@
             "TypeError",
             "globalThis"
           ],
-          "browserApis": [
-            "crypto"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -7413,35 +7393,11 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "INVENTORY_V2_SORT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/inventory_v2_sort_config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryItemLocation",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemAssemblyStackingPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/item_assembly_stacking_policy.js",
               "resolution": "confirmed"
             }
           ],
@@ -7451,13 +7407,6 @@
               "symbols": [
                 "EQUIPMENT_ALL_SLOT_IDS",
                 "EQUIPMENT_MAIN_SLOT_IDS"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/inventory/inventory_v2_sort_config.js",
-              "symbols": [
-                "INVENTORY_V2_SORT_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -7476,23 +7425,9 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/inventory/item_assembly_stacking_policy.js",
-              "symbols": [
-                "ItemAssemblyStackingPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/core/loadouts/equipment_loadout.js",
               "symbols": [
                 "EquipmentLoadout"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "symbols": [
-                "InventoryV2ActionType"
               ],
               "resolution": "confirmed"
             }
@@ -7736,6 +7671,12 @@
             },
             {
               "symbol": "InventoryItemSnapshotMapper",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ActionType",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -8253,6 +8194,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ActionType",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
               "resolution": "confirmed"
             },
             {
@@ -8971,6 +8920,13 @@
               "target": "src/infrastructure/storage/legacy_item_state_migration.js",
               "symbols": [
                 "LegacyItemStateMigration"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "symbols": [
+                "InventoryV2ActionType"
               ],
               "resolution": "confirmed"
             },

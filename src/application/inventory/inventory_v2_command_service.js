@@ -32,6 +32,7 @@ class InventoryV2CommandService {
   #reservationPolicy;
   #baitExposureService;
   #sortConfig;
+  #actionTypes;
   #fallbackSequence = 0;
   #uiState = {
     isOpen: false,
@@ -72,9 +73,8 @@ class InventoryV2CommandService {
     reservationPolicy = null,
     baitExposureService = null,
     instanceIdFactory = null,
-    sortConfig = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
-      ? INVENTORY_V2_SORT_CONFIG
-      : null,
+    sortConfig,
+    actionTypes,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -95,12 +95,12 @@ class InventoryV2CommandService {
     this.#hydrator = hydrator;
     this.#lineAllocationService = lineAllocationService;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
-    this.#stackingPolicy =
-      stackingPolicy || new ItemAssemblyStackingPolicy();
+    this.#stackingPolicy = stackingPolicy;
     this.#reservationPolicy = reservationPolicy;
     this.#baitExposureService = baitExposureService;
     this.#instanceIdFactory = instanceIdFactory;
     this.#sortConfig = sortConfig;
+    this.#actionTypes = actionTypes;
     this.#uiState.sortCriterionIds = [
       ...(sortConfig?.defaults?.criterionIds || []),
     ];
@@ -226,6 +226,8 @@ class InventoryV2CommandService {
   }
 
   #dispatch(action) {
+    // The UI action vocabulary is presentation-owned and injected by the composition root.
+    const InventoryV2ActionType = this.#actionTypes;
     switch (action.type) {
       case InventoryV2ActionType.OPEN:
         this.#uiState.isOpen = true;
@@ -1202,9 +1204,6 @@ class InventoryV2CommandService {
     }
     if (typeof this.#instanceIdFactory?.create === "function") {
       return String(this.#instanceIdFactory.create({ prefix }));
-    }
-    if (globalThis.crypto?.randomUUID) {
-      return `${prefix}_${globalThis.crypto.randomUUID()}`;
     }
     this.#fallbackSequence += 1;
     return `${prefix}_${Date.now().toString(36)}_${this.#fallbackSequence}`;
