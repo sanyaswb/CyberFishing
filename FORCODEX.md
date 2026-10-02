@@ -21,6 +21,12 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Cache v2 (utils/testing/CHECKS.md): policy "never" by default, reviewed "snapshot" for history replays; read-only checks run in parallel.
 - Acceptance: node utils/run-checks.js --acceptance --report <abs> (every check executed, ~63 min); batch release gate: --release-gate --report <abs> (history replays may be cached, ~49 min); stage-3-batch.js automated-acceptance takes --check-report.
 
+## Stage 3 closed (2026-10-02)
+- Release v0.24.89: batches 001–051 complete, all 139 Domain modules migrated; runtime 150 modules / 131 activations / 192 bridges (removal stages 4/5/6); one inert module (BuffManager, no classic consumer).
+- Closure gates verified by the check stage-3-closure against architecture/migration/stage_3_closure.json; final acceptance Full 91/91 at f9a41ee (slim catalog after the 2026-10-01 history archive, tag stage3-evidence-archive).
+- Last steps: prerequisite 033 (clock injection, Net converter fallback), Stage 3.50.0 repeated graph review, Stage 3.50.1 freeze extension (class-scoped hot-loop evidence), batches 049–051.
+- Next: Stage 4 (Application + Platform) per refactor_Task.txt; the owner's play check of batches 046–051 is pending.
+
 ## Current state (2026-09-30)
 - Released v0.24.77 (batch 039): batches 001–039 complete, 106 migrated Domain modules; runtime 116 modules / 105 activations / 168 bridges; activeBatchId = null. Batch 039 release gate 240/240 PASS (175 executed / 65 reviewed history seals), owner smoke PASS with 0 errors / 0 warnings, release closure verified. Stage 3.40.0 frozen batches 040–046 remain, followed by evidence and a new freeze for review-queue batches 047–050.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
