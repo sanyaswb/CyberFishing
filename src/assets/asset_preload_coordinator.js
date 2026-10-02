@@ -1,14 +1,16 @@
 class AssetPreloadCoordinator {
   #imageAssets;
   #locationsConfig;
+  #diagnostics;
   #requests = new Map();
 
-  constructor({ imageAssets, locationsConfig }) {
+  constructor({ imageAssets, locationsConfig, diagnostics = null }) {
     if (!imageAssets || typeof imageAssets.preload !== "function") {
       throw new TypeError("AssetPreloadCoordinator requires imageAssets");
     }
     this.#imageAssets = imageAssets;
     this.#locationsConfig = locationsConfig || {};
+    this.#diagnostics = diagnostics;
   }
 
   preloadApplicationAssets() {
@@ -109,9 +111,7 @@ class AssetPreloadCoordinator {
     if (this.#imageAssets.isReady?.(record.id)) return Promise.resolve();
     const existing = this.#requests.get(record.id);
     if (existing) return existing;
-    if (typeof RenderAllocationDiagnostics !== "undefined") {
-      RenderAllocationDiagnostics.recordAssetRequestCreated();
-    }
+    this.#diagnostics?.recordAssetRequestCreated();
     const request = this.#imageAssets
       .preload({ [record.id]: record.src })
       .finally(() => {

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "004",
+  "slug": "asset-diagnostics-composition",
+  "baseCommit": "3079de0a4173679c891a02b9066b76dbccf32520",
+  "reason": "Actual browser entry and composition already construct DevTools/DEV flags and MemoryLeakWatchdog. Classify their existing development composition explicitly rather than allowing production-to-DEV edges. The Game facade delegates to this same development root, including its existing default construction. Source behavior/API/order stay unchanged; Stage 5 must extract a separate production entry/root and attach DEV composition outside it. Asset diagnostics now enter Platform as an optional injected capability; no new global, bridge API, debt or policy exception.",
+  "reclassified": [
+    {
+      "currentPath": "src/app/bootstrap.js",
+      "fromBoundary": "bootstrap-production",
+      "targetBoundary": "bootstrap-development",
+      "followUpStage": "stage-5",
+      "sourceSha256": "a1beb97df832b59caa87935947c5ba8137aab4ebadb9ecca4f388cf0889ce9f8",
+      "reason": "Actual browser entry and composition already construct DevTools/DEV flags and MemoryLeakWatchdog. Classify their existing development composition explicitly rather than allowing production-to-DEV edges. The Game facade delegates to this same development root, including its existing default construction. Source behavior/API/order stay unchanged; Stage 5 must extract a separate production entry/root and attach DEV composition outside it. Asset diagnostics now enter Platform as an optional injected capability; no new global, bridge API, debt or policy exception."
+    },
+    {
+      "currentPath": "src/app/game.js",
+      "fromBoundary": "bootstrap-production",
+      "targetBoundary": "bootstrap-development",
+      "followUpStage": "stage-5",
+      "sourceSha256": "fbb1cf7cf8dd05b956a4720bfc7a14c124685bf6d1626d0d0a08a4628cd3c524",
+      "reason": "Actual browser entry and composition already construct DevTools/DEV flags and MemoryLeakWatchdog. Classify their existing development composition explicitly rather than allowing production-to-DEV edges. The Game facade delegates to this same development root, including its existing default construction. Source behavior/API/order stay unchanged; Stage 5 must extract a separate production entry/root and attach DEV composition outside it. Asset diagnostics now enter Platform as an optional injected capability; no new global, bridge API, debt or policy exception."
+    },
+    {
+      "currentPath": "src/app/script.js",
+      "fromBoundary": "entrypoint-game",
+      "targetBoundary": "entrypoint-dev",
+      "followUpStage": "stage-5",
+      "sourceSha256": "7ae2b98d904548410e0e73bf7a4d025bea84a250a410224ed6e353eecb311bcc",
+      "reason": "Actual browser entry and composition already construct DevTools/DEV flags and MemoryLeakWatchdog. Classify their existing development composition explicitly rather than allowing production-to-DEV edges. The Game facade delegates to this same development root, including its existing default construction. Source behavior/API/order stay unchanged; Stage 5 must extract a separate production entry/root and attach DEV composition outside it. Asset diagnostics now enter Platform as an optional injected capability; no new global, bridge API, debt or policy exception."
+    }
+  ],
+  "constructionEvidence": [
+    "Only production asset coordinator construction is GameCompositionRoot.create; diagnostic class is loaded before the root in index.html.",
+    "GameCompositionRoot constructs DevTools; startCyberFishing creates the DEV watchdog; Game defaults to this root. All three form the current development composition, outside original Stage 4 scope.",
+    "Shared Platform tests verify pending request coalescing, ready-cache avoidance, optional/critical failure and retry, exact diagnostic calls."
+  ],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-boundary-dependency-11929144fbd7",
+    "debt-boundary-dependency-3221578c8031",
+    "debt-boundary-dependency-33cd5bc5db18",
+    "debt-boundary-dependency-4d848e57fc7d",
+    "debt-boundary-dependency-67dd51c5a73d",
+    "debt-boundary-dependency-6d793b2a2d68",
+    "debt-boundary-dependency-70bc6ea9240f",
+    "debt-boundary-dependency-79fdf5fffe5e",
+    "debt-boundary-dependency-dc541b149618",
+    "debt-dev-leakage-38b92e596010",
+    "debt-dev-leakage-4daf4598dd38",
+    "debt-dev-leakage-52be44b70397",
+    "debt-dev-leakage-6d63e9c866e5",
+    "debt-dev-leakage-bc63e5ab0c13",
+    "debt-dev-leakage-bcd7b029c4dc",
+    "debt-dev-leakage-ee9aacb10a68",
+    "debt-dev-leakage-f4cca23f6966",
+    "debt-dev-leakage-f6a288a41a7c",
+    "debt-dev-leakage-f9eaba06d0ef"
+  ],
+  "files": [
+    {
+      "path": "src/assets/asset_preload_coordinator.js",
+      "before": "87e98235cf4785b89e50502d5fb04cce79f43e3f6fbad24edecac12ab37b6243",
+      "after": "dece223d502edfb6ddddbf0f021d9da4da7731dbdfee8062be2d8aa11dbc669b"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "24785472b39bcda11e5005f83afba947ffc41c99f70098da147bb49dcdfca231",
+      "after": "a1beb97df832b59caa87935947c5ba8137aab4ebadb9ecca4f388cf0889ce9f8"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "887bfacc4e3df453e813c7265b844e031a2e08778cac235328f923ba6cf97c9d",
+      "after": "6c72caddab4153e82e08d5ef198d4aa48637919e46920adf4c3981a118fbe08e"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "59fadebbd16d982ae17eb4b6a7b0b68fc33ab82b9c1ab7018442aad4a0d778e7",
+      "after": "1342e5c8addf41ce0a03baedae3fce8bcd84033087e74e070c7ea06969f3c8c5"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "acceptance": {
+      "checks": 80,
+      "executed": 80,
+      "cached": 0,
+      "sourceUnchanged": true,
+      "catalogSha256": "99f585cfebd521ccd25babe6da3c0fcc59f5f921cf7f8b14c8d515d32e09029c"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 159,
+      "identityMismatches": 0
+    }
+  }
+}

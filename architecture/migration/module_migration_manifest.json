@@ -1366,6 +1366,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "RenderAllocationDiagnostics",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "RenderComponent",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1528,8 +1534,8 @@
         "roles": [
           "bootstrap"
         ],
-        "targetBoundary": "bootstrap-production",
-        "targetPath": "src/bootstrap/production/game_composition_root.js",
+        "targetBoundary": "bootstrap-development",
+        "targetPath": "src/bootstrap/development/game_composition_root.js",
         "migrationWave": 7
       },
       "analysis": {
@@ -2633,6 +2639,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "RenderAllocationDiagnostics",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/render/core/render_allocation_diagnostics.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "RenderComponent",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -3417,6 +3431,13 @@
               "target": "src/render/core/image_asset_provider.js",
               "symbols": [
                 "ImageAssetProvider"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/render/core/render_allocation_diagnostics.js",
+              "symbols": [
+                "RenderAllocationDiagnostics"
               ],
               "resolution": "confirmed"
             },
@@ -4852,8 +4873,8 @@
         "roles": [
           "bootstrap"
         ],
-        "targetBoundary": "bootstrap-production",
-        "targetPath": "src/bootstrap/production/game_runtime.js",
+        "targetBoundary": "bootstrap-development",
+        "targetPath": "src/bootstrap/development/game.js",
         "migrationWave": 7
       },
       "analysis": {
@@ -6209,8 +6230,8 @@
         "roles": [
           "entrypoint"
         ],
-        "targetBoundary": "entrypoint-game",
-        "targetPath": "src/entrypoints/game.entry.js",
+        "targetBoundary": "entrypoint-dev",
+        "targetPath": "src/entrypoints/dev.entry.js",
         "migrationWave": 7
       },
       "analysis": {
@@ -10687,12 +10708,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -10748,14 +10763,6 @@
               "executionPhase": "deferred",
               "target": "src/render/core/image_asset_provider.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -10777,13 +10784,6 @@
               "target": "src/render/core/image_asset_provider.js",
               "symbols": [
                 "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "symbols": [
-                "RenderAllocationDiagnostics"
               ],
               "resolution": "confirmed"
             }

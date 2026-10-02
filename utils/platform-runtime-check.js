@@ -75,7 +75,9 @@ async function main() {
     ["src/infrastructure/location/depth_map_reader.js","DepthMapReader"],
     ["src/infrastructure/location/location_asset_loader.js","LocationAssetLoader"],
     ["src/app/core/game_clock.js","GameClock"],
+    ["src/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
   ]) runtime.load(file,{expose:[name]});
+  runtime.run('for (const module of ["src/engine/assets/asset_manifest.js", "src/engine/assets/asset_load_result.js"]) Object.assign(globalThis, globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules[module]);');
   const {GameClock,ImageAssetProvider,OffscreenCanvasFactory,LocationAssetLoader} = runtime.context;
   const clock = new GameClock(100);
   const deltas = [clock.tick(100),clock.tick(116),clock.tick(500),clock.tick(490)];
@@ -110,6 +112,31 @@ async function main() {
   assert.equal(images.length,4,"failed assets must remain retryable");
   images[3].onload();
   await retried;
+
+  let diagnosticCalls=0;
+  const pending=[],ready=new Set();
+  const coordinator=new runtime.context.AssetPreloadCoordinator({locationsConfig:{},
+    imageAssets:{isReady:id=>ready.has(id),preload:manifest=>new Promise((resolve,reject)=>pending.push({manifest,resolve,reject}))},
+    diagnostics:{recordAssetRequestCreated(){diagnosticCalls++;}},
+  });
+  const makeManifest=(id,critical)=>{const manifest=new runtime.context.AssetManifest();manifest.add(id,id+".png",{critical});return manifest;};
+  const firstManifest=makeManifest("shared",true);
+  const firstRequest=coordinator.preloadManifest(firstManifest,"first");
+  const sharedRequest=coordinator.preloadManifest(firstManifest,"shared");
+  assert.equal(pending.length,1);assert.equal(diagnosticCalls,1,"coalesced requests record once");
+  ready.add("shared");pending[0].resolve();
+  assert.equal((await firstRequest).ok,true);assert.equal((await sharedRequest).ok,true);
+  await coordinator.preloadManifest(firstManifest);
+  assert.equal(pending.length,1);assert.equal(diagnosticCalls,1,"ready cache does not request or diagnose");
+  const optional=coordinator.preloadManifest(makeManifest("optional",false));
+  pending.at(-1).reject(new Error("optional failed"));
+  assert.equal((await optional).ok,true);
+  const critical=coordinator.preloadManifest(makeManifest("critical",true),"critical-scope");
+  pending.at(-1).reject(new Error("critical failed"));
+  await assert.rejects(critical,error=>error.critical===true&&error.scope==="critical-scope"&&error.result.ok===false);
+  const retry=coordinator.preloadManifest(makeManifest("critical",true));
+  pending.at(-1).resolve();assert.equal((await retry).ok,true);
+  assert.equal(diagnosticCalls,4,"failed pending entries are removed and can retry");
 
   const factory = new OffscreenCanvasFactory();
   const surface = factory.createSurface(12.9,0,{willReadFrequently:true});

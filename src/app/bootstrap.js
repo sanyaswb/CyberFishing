@@ -74,6 +74,7 @@ class GameCompositionRoot {
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
       locationsConfig: this.#config.locations,
+      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
     });
     contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
       "preloadApplicationAssets",
