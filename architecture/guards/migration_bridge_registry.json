@@ -795,22 +795,6 @@
       ]
     },
     {
-      "id": "bridge-30c9b69ee61a",
-      "bridge": "src/config/databases/fish/fish_categories.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/validation/config_schema_validator.js",
-      "target": "src/game/config/databases/fish/fish_categories.js",
-      "reason": "Preserve the exact FISH_CATEGORIES consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FISH_CATEGORIES",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-310326528653",
       "bridge": "src/core/math/vector2.js",
       "source": "src/world/viewport_projector.js",
@@ -1046,22 +1030,6 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3e7f532ef85e",
-      "bridge": "src/config/physics/physics_units_and_naming.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/validation/config_schema_validator.js",
-      "target": "src/game/config/raw/physics/physics_units_and_naming.js",
-      "reason": "Preserve the exact PHYSICS_UNITS_AND_NAMING consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PHYSICS_UNITS_AND_NAMING",
           "mechanism": "global-this-property"
         }
       ]
@@ -1802,22 +1770,6 @@
       "globalProviders": [
         {
           "symbol": "CompositeRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6e1834884be2",
-      "bridge": "src/config/validation/rarity_config_validator.js",
-      "owner": "stage-4.cluster-001-rarity-validators",
-      "source": "src/config/validation/config_schema_validator.js",
-      "target": "src/game/config/validation/rarity_config_validator.js",
-      "reason": "Preserve the exact RarityConfigValidator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "RarityConfigValidator",
           "mechanism": "global-this-property"
         }
       ]

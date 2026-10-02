@@ -53,5 +53,150 @@
       "script": "utils/rarity-production-check.js"
     }
   ],
-  "output": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-011-config-schema-validator",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/validation/config_schema_validator.js",
+        "targetPath": "src/game/config/validation/config_schema_validator.js",
+        "sourceSha256": "979dc48c560eff876aab60f7ddc7a227a538fb156c549557d229dd82aa457c2b",
+        "targetSha256": "0c82c19a988ebb06cd2f280b64980b93134f3762d167e9265f51dc4c0e23790b"
+      }
+    ],
+    "activations": [],
+    "inertModules": [
+      "src/game/config/validation/config_schema_validator.js"
+    ],
+    "sideEffectReviews": [
+      "src/game/config/validation/config_schema_validator.js"
+    ],
+    "activationsRetired": [
+      "activation-86bfd12c0665",
+      "activation-d3a1db8cae8f"
+    ],
+    "bridgesAdded": [],
+    "bridgesRetired": [
+      "bridge-30c9b69ee61a",
+      "bridge-3e7f532ef85e",
+      "bridge-6e1834884be2"
+    ],
+    "importEdges": [
+      "src/game/config/validation/config_schema_validator.js->src/game/config/databases/fish/fish_categories.js",
+      "src/game/config/validation/config_schema_validator.js->src/game/config/raw/physics/physics_units_and_naming.js",
+      "src/game/config/validation/config_schema_validator.js->src/game/config/validation/rarity_config_validator.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/011_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "74537f66a6a57ce9dd384cccfb9175e8937762ee4a2ff6d2a3972b82136a7a91",
+        "after": "1b067ade565bb3aac231d0da13ca2ccfe13da2dcd0de105fa1368539587eabe4"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "bac7844392a357cee6e46145bff1d5b1a1a6c644bfef3e023d44ea45eb4255fc",
+        "after": "43df07dcc013fab764c439e6881bfd88fdb7b3895e1ae8811598125b1f966349"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "448ed07dc0614ad6647fb6cefeec6e28447a504e07aab1b6381318be1bc20c2c",
+        "after": "bbe6a3845f3e38dcbadb20d9e89a2a76f080d17abdf2d43eabad4bc43e12841d"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "68c5210cd77da09e4cd888b9b5164af04b131a3c4e7d3c4afd65a052cdc1d723",
+        "after": "546d93d830ce38f88ed19e24bafe84190ca173e8d5fe96e5740055f697cf6147"
+      },
+      {
+        "path": "index.html",
+        "before": "a047bd3c38ea20f0607d0aca9a44aab18d4a1a2959f0bec8f693111b58f250b1",
+        "after": "0f00e73cf80789e1256a1d52e8b49ca203ff508c7e1ef52167d0e292bc42577a"
+      },
+      {
+        "path": "src/config/databases/fish/fish_categories.js",
+        "before": "21fed60f8fd237e875453172bba83f3613722bfdcfca8b2b97b7275a315c0451",
+        "after": "cca414c382a06a4f3478e970ba47b818685dca75998babc54281f5b819f17bbe"
+      },
+      {
+        "path": "src/config/physics/physics_units_and_naming.js",
+        "before": "084e50e38d35cabd78ec646348fe839616299d29300721bc39bea24a957d6451",
+        "after": "0eee2f478690919e4b04785717b1fba6b6f9b14d3e014056e4a2f452a27a8c27"
+      },
+      {
+        "path": "src/config/validation/config_schema_validator.js",
+        "before": "979dc48c560eff876aab60f7ddc7a227a538fb156c549557d229dd82aa457c2b",
+        "after": "8ee204e8662e42dd4168acf36cfe0255f43f86b0c83b63eb33ceee0769822818"
+      },
+      {
+        "path": "src/game/config/validation/config_schema_validator.js",
+        "before": null,
+        "after": "0c82c19a988ebb06cd2f280b64980b93134f3762d167e9265f51dc4c0e23790b"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 623 modules, 889 unified edges, 852 globals, 136 exact known-debt diagnostics, 0 FAIL in 698ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 623/623 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 153 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 153 activations and 247 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 31 record(s), 13 applied, 38 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "config-runtime",
+        "status": "PASS",
+        "sha256": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      },
+      {
+        "name": "rarity-production",
+        "status": "PASS",
+        "sha256": "19aca9ea169e8eed412658acd99c68971afbc36baa3fa3ea1ed9633f083b57a5"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 153,
+      "identityMismatches": 0
+    }
+  }
 }

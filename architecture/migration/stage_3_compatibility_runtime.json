@@ -439,6 +439,13 @@
       "module": "src/game/config/runtime/game_config.js",
       "owner": "stage-4.cluster-010-config-root",
       "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "0f55e7bfe61f5c6f41f2f49518a869610aef73c9c94b19cfabbfb9e4ecc5f1f2",
+      "module": "src/game/config/validation/config_schema_validator.js",
+      "owner": "stage-4.cluster-011-config-schema-validator",
+      "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "activationPositions": [
@@ -1343,18 +1350,6 @@
       "removalStage": "stage-4"
     },
     {
-      "exportName": "PHYSICS_UNITS_AND_NAMING",
-      "legacyScriptIndex": 22,
-      "legacySymbol": "PHYSICS_UNITS_AND_NAMING",
-      "shimFile": "activations/022_physics_units_and_naming.js",
-      "sourceProvider": "src/config/physics/physics_units_and_naming.js",
-      "targetModule": "src/game/config/raw/physics/physics_units_and_naming.js",
-      "id": "activation-86bfd12c0665",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
-    },
-    {
       "id": "activation-86e221fafb48",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/asset_load_result.iife.js",
@@ -1929,18 +1924,6 @@
       "shimFile": "activations/205_net.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "exportName": "FISH_CATEGORIES",
-      "legacyScriptIndex": 13,
-      "legacySymbol": "FISH_CATEGORIES",
-      "shimFile": "activations/013_fish_categories.js",
-      "sourceProvider": "src/config/databases/fish/fish_categories.js",
-      "targetModule": "src/game/config/databases/fish/fish_categories.js",
-      "id": "activation-d3a1db8cae8f",
-      "owner": "stage-4.cluster-005-config-derived",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
     },
     {
       "id": "activation-d4bfb713b7de",
@@ -2867,6 +2850,23 @@
     },
     {
       "activation": {
+        "exportName": "PHYSICS_UNITS_AND_NAMING",
+        "legacyScriptIndex": 22,
+        "legacySymbol": "PHYSICS_UNITS_AND_NAMING",
+        "shimFile": "activations/022_physics_units_and_naming.js",
+        "sourceProvider": "src/config/physics/physics_units_and_naming.js",
+        "targetModule": "src/game/config/raw/physics/physics_units_and_naming.js",
+        "id": "activation-86bfd12c0665",
+        "owner": "stage-4.cluster-002-physics-raw-config",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-011-config-schema-validator"
+    },
+    {
+      "activation": {
         "id": "activation-89d032a4a1e8",
         "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
         "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
@@ -3207,6 +3207,23 @@
     },
     {
       "activation": {
+        "exportName": "FISH_CATEGORIES",
+        "legacyScriptIndex": 13,
+        "legacySymbol": "FISH_CATEGORIES",
+        "shimFile": "activations/013_fish_categories.js",
+        "sourceProvider": "src/config/databases/fish/fish_categories.js",
+        "targetModule": "src/game/config/databases/fish/fish_categories.js",
+        "id": "activation-d3a1db8cae8f",
+        "owner": "stage-4.cluster-005-config-derived",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-011-config-schema-validator"
+    },
+    {
+      "activation": {
         "id": "activation-dca4cdb154de",
         "owner": "stage-3.candidate-013-fishing-0267b3ea",
         "sourceProvider": "src/core/fishing/stamina/stamina_regen_calculator.js",
@@ -3352,6 +3369,11 @@
       "owner": "stage-4.cluster-003-fish-species",
       "sourceProvider": "src/config/databases/fish/presets/fish_profile_presets.js",
       "targetModule": "src/game/config/raw/fish/fish_profile_presets.js"
+    },
+    {
+      "owner": "stage-4.cluster-011-config-schema-validator",
+      "sourceProvider": "src/config/validation/config_schema_validator.js",
+      "targetModule": "src/game/config/validation/config_schema_validator.js"
     },
     {
       "owner": "stage-4.cluster-001-rarity-validators",

@@ -11110,32 +11110,17 @@
         "legacyLoadOrder": 13,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11155,15 +11140,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -12497,32 +12474,17 @@
         "legacyLoadOrder": 22,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PHYSICS_UNITS_AND_NAMING",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -12542,15 +12504,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -13123,67 +13077,17 @@
         "legacyLoadOrder": 37,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ConfigSchemaValidator",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "ConfigValidationResult",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PHYSICS_UNITS_AND_NAMING",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Array",
-            "Infinity",
-            "Map",
-            "Number",
-            "Object",
-            "Set",
-            "undefined"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -13192,7 +13096,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/validation/config_schema_validator.js",
@@ -13201,71 +13105,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/databases/fish/fish_categories.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/databases/fish/fish_categories.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PHYSICS_UNITS_AND_NAMING",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_units_and_naming.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/validation/rarity_config_validator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/validation/rarity_config_validator.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/databases/fish/fish_categories.js",
-              "symbols": [
-                "FISH_CATEGORIES"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/physics_units_and_naming.js",
-              "symbols": [
-                "PHYSICS_UNITS_AND_NAMING"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/validation/rarity_config_validator.js",
-              "symbols": [
-                "RarityConfigValidator"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -35256,6 +35097,61 @@
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/runtime/resolved_config_provider.js",
+        "migrationWave": 3
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/validation/config_schema_validator.js",
+      "currentArea": "game/config/validation",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Infinity",
+            "Map",
+            "Number",
+            "Object",
+            "Set",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/validation/config_schema_validator.js",
         "migrationWave": 3
       },
       "analysis": {
