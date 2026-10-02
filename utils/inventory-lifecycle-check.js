@@ -141,7 +141,7 @@ class InventoryRuntimeLoader {
   }
 
   #loadSlotConfig(context) {
-    const source = this.#read("src/config/config.js");
+    const source = this.#read("src/config/runtime/config_data.js");
     const match = source.match(/const SLOT_CONFIG = [\s\S]*?\n};/);
     Assertion.that(match, "SLOT_CONFIG can be loaded for integration checks");
     vm.runInContext(`${match[0]}\nglobalThis.SLOT_CONFIG = SLOT_CONFIG;`, context);

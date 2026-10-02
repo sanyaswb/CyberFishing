@@ -35,6 +35,14 @@ class SourceRuntime {
     return fs.readFileSync(path.join(this.#rootDir, relativePath), "utf8");
   }
 
+  readAuthoredSource(relativePath) {
+    const manifest = JSON.parse(this.read("architecture/migration/module_migration_manifest.json"));
+    const entry = manifest.modules.find(item => item.currentPath === relativePath);
+    const sourcePath = entry?.architecture.roles.includes("compatibility-bridge")
+      ? entry.architecture.targetPath : relativePath;
+    return this.read(sourcePath);
+  }
+
   load(relativePath, { expose = [] } = {}) {
     if (this.#compatibilityLoader?.hasActivation(relativePath)) {
       this.#compatibilityLoader.load(relativePath, expose);

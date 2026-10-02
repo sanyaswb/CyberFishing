@@ -116,7 +116,8 @@ class StageFourEsmTargetProjector {
     if (unexpected.length > 0) throw new Error(`${targetPath}: reads classic or browser globals: ${unexpected.join(", ")}`);
     if (boundary !== "platform") {
       const forbidden = tree.tokens.filter((token, index) => token.type === "Identifier" &&
-        FORBIDDEN_OUTSIDE_PLATFORM.includes(token.value) && tree.tokens[index - 1]?.value !== ".");
+        FORBIDDEN_OUTSIDE_PLATFORM.includes(token.value) && tree.tokens[index - 1]?.value !== "." &&
+        !(token.value === "CONFIG" && boundary === "game-config" && exports.includes("CONFIG")));
       if (forbidden.length > 0) throw new Error(`${targetPath}: names ${forbidden.map((token) => token.value).join(", ")}`);
     }
     return Object.freeze({ exports: exported, importCount: imports.length, freeGlobals });

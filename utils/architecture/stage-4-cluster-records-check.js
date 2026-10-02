@@ -36,11 +36,24 @@ const FORBIDDEN = ["window", "globalThis", "self", "document", "localStorage", "
   "__CYBER_FISHING_COMPAT_RUNTIME__"];
 
 const ledger = StageFourClusterLedger.read(ROOT);
+const preparations = StageFourClusterLedger.preparations(ROOT);
+const preparationRetired = new Set(preparations.flatMap(record => (record.replacedBridges || []).map(pair => pair.before.id)));
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
 const retiredActivations = new Set((contract.retiredActivations || []).map((item) => item.activation.id));
 const inert = new Set((contract.inertModules || []).map((item) => item.targetModule));
-const laterRetiredBridges = (index) => new Set(ledger.records.slice(index + 1)
-  .flatMap((record) => record.output?.bridgesRetired || []));
+const laterRetiredBridges = (index) => new Set([...preparationRetired, ...ledger.records.slice(index + 1)
+  .flatMap((record) => record.output?.bridgesRetired || [])]);
+for (const preparation of preparations) {
+  for (const id of preparation.resolvedDebts) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt=>debt.id===id),
+    `preparation ${preparation.id}: resolved debt remains ${id}`);
+  assert.equal(preparation.verification.globalsBefore, preparation.verification.globalsAfter, "provider relocation cannot add globals");
+  for (const pair of preparation.replacedBridges || []) {
+    assert(ledger.applied.some(record=>record.output.bridgesAdded.includes(pair.before.id)), "original bridge has no applied owner record");
+    assert(!bridges.has(pair.before.id), "original consumer bridge remains active");
+    assert(bridges.has(pair.after.id) || ledger.applied.some(record=>record.output.bridgesRetired.includes(pair.after.id)),
+      "relocated bridge is missing without a retirement record");
+  }
+}
 let targets = 0;
 ledger.records.forEach((record, index) => {
   assert.equal(record.schemaVersion, 1, `${record.file}: schemaVersion`);
@@ -72,7 +85,8 @@ ledger.records.forEach((record, index) => {
     assert.deepEqual([...new Set(free)], [], `${file}: reads globals`);
     if (record.boundary !== "platform") {
       const named = tree.tokens.filter((token, position) => token.type === "Identifier" &&
-        FORBIDDEN.includes(token.value) && tree.tokens[position - 1]?.value !== ".");
+        FORBIDDEN.includes(token.value) && tree.tokens[position - 1]?.value !== "." &&
+        !(token.value === "CONFIG" && record.boundary === "game-config" && module.exports.includes("CONFIG")));
       assert.deepEqual(named.map((token) => token.value), [], `${file}: names a forbidden global`);
     }
     const entry = manifest.get(file);
@@ -118,6 +132,15 @@ assert.equal(fixture("class A {}\n").targetSource, "export class A {}\n");
 assert.deepEqual(fixture("function A() {}\n").providerMechanisms, ["A:global-function"]);
 assert.deepEqual(fixture("const A = {};\n").providerMechanisms, ["A:global-lexical"]);
 assert.throws(() => fixture("class A { run() { return ITEM_DB; } }\n"), /reads classic or browser globals: ITEM_DB/u);
+assert.equal(fixture("const CONFIG = {};\n", {exports:["CONFIG"]}).targetSource,"export const CONFIG = {};\n");
+assert.throws(()=>fixture("const CONFIG = {};\n", {exports:["CONFIG"],boundary:"game-application"}),/names CONFIG/u);
+assert.throws(()=>fixture("class A { run() { return CONFIG; } }\n"),/reads classic or browser globals: CONFIG/u);
+if(preparations.length){
+  const pair=preparations[0].replacedBridges[0];
+  assert.throws(()=>StageFourClusterLedger.validateBridgeRelocation({before:pair.before,after:{...pair.after,id:pair.before.id}}),/relocated bridge identity/u);
+  const changed={...pair.after,reason:"changed"};
+  assert.throws(()=>StageFourClusterLedger.validateBridgeRelocation({before:pair.before,after:changed}),/only consumer path/u);
+}
 assert.throws(() => fixture("class A { run() { return typeof window; } }\n"), /window/u);
 assert.throws(() => fixture("class A {}\nglobalThis.B = A;\n"), /top-level ExpressionStatement/u);
 assert.equal(fixture("class A {}\n\nglobalThis.A = A;\n").targetSource, "export class A {}\n");
@@ -191,4 +214,4 @@ assert.throws(() => loadRetirement({...validOutput, status: "planned"}), /no exa
 assert.throws(() => loadRetirement({...validOutput, owner: "other"}), /no exact applied Stage 4 cluster/u);
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 10 projector and 15 retirement fixtures.`);
+  `${targets} ESM target(s) inside their boundaries; 13 projector, 15 retirement and 2 preparation relocation fixtures.`);

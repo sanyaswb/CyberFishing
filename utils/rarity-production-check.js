@@ -42,7 +42,7 @@ class ProductionRarityConfigLoader {
     const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(JSON.parse(fs.readFileSync(
       path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8")));
     const scripts = [];
-    const pattern = /<script\s+src="([^"]+)"\s*><\/script>/g;
+    const pattern = /<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/gu;
     let match = pattern.exec(html);
     while (match) {
       scripts.push(match[1]);

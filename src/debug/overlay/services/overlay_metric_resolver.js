@@ -1,5 +1,10 @@
 class OverlayMetricResolver {
   #liveData = {};
+  #baseConfig;
+
+  constructor({ baseConfig } = {}) {
+    this.#baseConfig = baseConfig;
+  }
 
   updateLiveData(data) {
     this.#liveData = data || {};
@@ -103,7 +108,7 @@ class OverlayMetricResolver {
       case "CONFIG":
         return typeof CONFIG !== "undefined" ? CONFIG : undefined;
       case "BASE_CONFIG":
-        return typeof BASE_CONFIG !== "undefined" ? BASE_CONFIG : undefined;
+        return this.#baseConfig;
       case "HOOKED_FISH":
         return this.#liveData?.hookedFish || undefined;
       case "DEBUG_DATA":

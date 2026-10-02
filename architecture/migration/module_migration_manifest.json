@@ -679,6 +679,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "CONFIG_RUNTIME_CONTEXT",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "Canvas2DSurface",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1699,6 +1705,14 @@
               "symbol": "CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "CONFIG_RUNTIME_CONTEXT",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/config/config.js",
               "resolution": "confirmed"
@@ -3038,7 +3052,7 @@
             {
               "target": "src/config/config.js",
               "symbols": [
-                "CONFIG"
+                "CONFIG_RUNTIME_CONTEXT"
               ],
               "resolution": "confirmed"
             },
@@ -3060,6 +3074,13 @@
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/config_data.js",
+              "symbols": [
+                "CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -6121,12 +6142,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CYBER_FISHING_GAME_CLEANUP",
               "mechanism": "window-property",
               "accessRequirement": "guarded",
@@ -6158,6 +6173,12 @@
             },
             {
               "symbol": "Game",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "GameCompositionRoot",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -6218,14 +6239,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "CacheManager",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -6258,6 +6271,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "GameCompositionRoot",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/bootstrap.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "GameLoop",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6284,6 +6305,13 @@
           ],
           "items": [
             {
+              "target": "src/app/bootstrap.js",
+              "symbols": [
+                "GameCompositionRoot"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/app/core/game_loop.js",
               "symbols": [
                 "GameLoop"
@@ -6294,13 +6322,6 @@
               "target": "src/app/game.js",
               "symbols": [
                 "Game"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -10815,11 +10836,6 @@
               "availability": "program-init"
             },
             {
-              "symbol": "CONFIG",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "CONFIG_OVERRIDE_STORE",
               "mechanism": "global-lexical",
               "availability": "program-init"
@@ -10835,28 +10851,13 @@
               "availability": "conditional"
             },
             {
-              "symbol": "INVENTORY_CATEGORIES",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "RESOLVED_CONFIG_PROVIDER",
               "mechanism": "global-lexical",
               "availability": "program-init"
             },
             {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "SUBFILTER_MAPPING",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "UI_LAYOUT_CONFIG",
-              "mechanism": "global-lexical",
+              "symbol": "createRuntimeConfigContext",
+              "mechanism": "global-function",
               "availability": "program-init"
             }
           ],
@@ -10866,24 +10867,30 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "conditional"
+            },
+            {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            },
+            {
+              "symbol": "ConfigOverrideStore",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "DEGRADATION_COLOR_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager"
             },
             {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
               "symbol": "FightPhysicsConfigAdapter",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -10891,42 +10898,6 @@
             },
             {
               "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "MAP_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "MAP_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "PHYSICS_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "eager"
@@ -10938,16 +10909,28 @@
               "executionPhase": "eager"
             },
             {
-              "symbol": "createRuntimeConfigContext",
+              "symbol": "ResolvedConfigProvider",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
             },
             {
-              "symbol": "createRuntimeConfigContext",
+              "symbol": "deepCloneConfig",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "deepFreezeConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "setRuntimeConfigPath",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -10955,7 +10938,10 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object"
+            "Array",
+            "Object",
+            "String",
+            "undefined"
           ],
           "browserApis": [
             "window"
@@ -10966,17 +10952,41 @@
       },
       "architecture": {
         "migrationStatus": "classified",
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/config_composition.js",
         "roles": [
-          "config-factory"
+          "bootstrap"
         ],
-        "targetBoundary": "game-config",
-        "targetPath": "src/game/config/runtime/game_config.js",
-        "migrationWave": 3
+        "migrationWave": 7
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
           "confirmed": [
+            {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "conditional",
+              "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ConfigOverrideStore",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/config_override_store.js",
+              "resolution": "confirmed"
+            },
             {
               "symbol": "DEGRADATION_COLOR_CONFIG",
               "mechanism": "identifier",
@@ -10986,22 +10996,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish_db.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/fish_db.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FightPhysicsConfigAdapter",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -11015,54 +11009,6 @@
               "accessRequirement": "guarded",
               "executionPhase": "eager",
               "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/items/item_progression_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/items/item_stat_override_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "MAP_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/map_db.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "MAP_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/map_db.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/physics/physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/physics/physics_config.js",
               "resolution": "confirmed"
             },
             {
@@ -11074,58 +11020,39 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "createRuntimeConfigContext",
+              "symbol": "ResolvedConfigProvider",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/resolved_config_provider.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "deepCloneConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/config/deep_clone_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "deepFreezeConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
               "target": "src/config/runtime/immutable_config.js",
               "resolution": "confirmed"
             },
             {
-              "symbol": "createRuntimeConfigContext",
+              "symbol": "setRuntimeConfigPath",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
               "target": "src/config/runtime/immutable_config.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
-            {
-              "target": "src/config/databases/fish_db.js",
-              "symbols": [
-                "FISH_DB"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/databases/map_db.js",
-              "symbols": [
-                "MAP_DB"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/items/item_progression_config.js",
-              "symbols": [
-                "ITEM_PROGRESSION_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/items/item_stat_override_config.js",
-              "symbols": [
-                "ITEM_STAT_OVERRIDE_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/physics_config.js",
-              "symbols": [
-                "PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
@@ -11141,9 +11068,31 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/config/runtime/config_data.js",
+              "symbols": [
+                "CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/config_override_store.js",
+              "symbols": [
+                "ConfigOverrideStore"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/config/runtime/immutable_config.js",
               "symbols": [
-                "createRuntimeConfigContext"
+                "deepFreezeConfig",
+                "setRuntimeConfigPath"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/resolved_config_provider.js",
+              "symbols": [
+                "ResolvedConfigProvider"
               ],
               "resolution": "confirmed"
             },
@@ -11151,6 +11100,13 @@
               "target": "src/config/visual/degradation_color_config.js",
               "symbols": [
                 "DEGRADATION_COLOR_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/config/deep_clone_config.js",
+              "symbols": [
+                "deepCloneConfig"
               ],
               "resolution": "confirmed"
             }
@@ -11163,10 +11119,7 @@
           "status": "verified",
           "items": [
             "browser-api-coupling",
-            "dev-production-coupling",
-            "high-level-self-composition",
-            "legacy-global-contract",
-            "mixed-responsibility-requires-decomposition"
+            "legacy-global-contract"
           ]
         }
       }
@@ -12936,6 +12889,231 @@
       }
     },
     {
+      "currentPath": "src/config/runtime/config_data.js",
+      "currentArea": "config/runtime",
+      "observed": {
+        "legacyLoadOrder": 28,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "CONFIG",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            },
+            {
+              "symbol": "INVENTORY_CATEGORIES",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            },
+            {
+              "symbol": "SLOT_CONFIG",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            },
+            {
+              "symbol": "SUBFILTER_MAPPING",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            },
+            {
+              "symbol": "UI_LAYOUT_CONFIG",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "FISH_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional"
+            },
+            {
+              "symbol": "FISH_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager"
+            },
+            {
+              "symbol": "ITEM_PROGRESSION_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            },
+            {
+              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            },
+            {
+              "symbol": "MAP_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional"
+            },
+            {
+              "symbol": "MAP_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager"
+            },
+            {
+              "symbol": "PHYSICS_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional"
+            },
+            {
+              "symbol": "PHYSICS_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/runtime/game_config.js",
+        "roles": [
+          "config-factory"
+        ],
+        "migrationWave": 3
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "FISH_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional",
+              "target": "src/config/databases/fish_db.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "FISH_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager",
+              "target": "src/config/databases/fish_db.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ITEM_PROGRESSION_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "target": "src/config/items/item_progression_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "target": "src/config/items/item_stat_override_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "MAP_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional",
+              "target": "src/config/databases/map_db.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "MAP_DB",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager",
+              "target": "src/config/databases/map_db.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "PHYSICS_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "conditional",
+              "target": "src/config/physics/physics_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "PHYSICS_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "eager",
+              "target": "src/config/physics/physics_config.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/config/databases/fish_db.js",
+              "symbols": [
+                "FISH_DB"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/databases/map_db.js",
+              "symbols": [
+                "MAP_DB"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/items/item_progression_config.js",
+              "symbols": [
+                "ITEM_PROGRESSION_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/items/item_stat_override_config.js",
+              "symbols": [
+                "ITEM_STAT_OVERRIDE_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/physics/physics_config.js",
+              "symbols": [
+                "PHYSICS_CONFIG"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/config/runtime/config_override_store.js",
       "currentArea": "config/runtime",
       "observed": {
@@ -12966,9 +13144,7 @@
             "String",
             "undefined"
           ],
-          "browserApis": [
-            "structuredClone"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -13008,16 +13184,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "createRuntimeConfigContext",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "deepCloneConfig",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
               "symbol": "deepFreezeConfig",
               "mechanism": "global-function",
               "availability": "program-init"
@@ -13037,20 +13203,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ResolvedConfigProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -13058,15 +13211,12 @@
           "builtins": [
             "Array",
             "Boolean",
-            "JSON",
             "Object",
             "String",
             "WeakSet",
             "undefined"
           ],
-          "browserApis": [
-            "structuredClone"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -13083,40 +13233,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_override_store.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ResolvedConfigProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/resolved_config_provider.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/runtime/config_override_store.js",
-              "symbols": [
-                "ConfigOverrideStore"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/runtime/resolved_config_provider.js",
-              "symbols": [
-                "ResolvedConfigProvider"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -13148,14 +13266,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -13184,25 +13295,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_override_store.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/runtime/config_override_store.js",
-              "symbols": [
-                "ConfigOverrideStore"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -13237,24 +13331,6 @@
         "consumers": {
           "status": "verified",
           "items": [
-            {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CONFIG_OVERRIDE_STORE",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
             {
               "symbol": "FISH_CATEGORIES",
               "mechanism": "identifier",
@@ -13308,7 +13384,8 @@
             "Map",
             "Number",
             "Object",
-            "Set"
+            "Set",
+            "undefined"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -13328,30 +13405,6 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CONFIG_OVERRIDE_STORE",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "FISH_CATEGORIES",
               "mechanism": "identifier",
@@ -13410,14 +13463,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "BASE_CONFIG",
-                "CONFIG_OVERRIDE_STORE"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/config/databases/fish/fish_categories.js",
               "symbols": [
@@ -14419,12 +14464,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "FightInputActionComposer",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -14476,14 +14515,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FightInputActionComposer",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -14501,13 +14532,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/input/fight_input_action_composer.js",
               "symbols": [
@@ -23220,7 +23244,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "conditional",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -23228,7 +23252,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "eager",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -23394,7 +23418,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -23596,12 +23620,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "CONFIG_RUNTIME_CONTEXT",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CacheManager",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -23781,7 +23799,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -23789,15 +23807,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CONFIG_RUNTIME_CONTEXT",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -23963,14 +23973,6 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG",
-                "CONFIG_RUNTIME_CONTEXT"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/config/databases/fish_db.js",
               "symbols": [
                 "FISH_DB"
@@ -23995,6 +23997,13 @@
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/config_data.js",
+              "symbols": [
+                "CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -24148,7 +24157,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -24156,13 +24165,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -24353,7 +24362,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -24383,7 +24392,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -24505,7 +24514,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -24535,7 +24544,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -24756,7 +24765,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -24778,7 +24787,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -25775,7 +25784,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -25797,7 +25806,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -25907,7 +25916,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -25929,7 +25938,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -26178,7 +26187,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -26200,7 +26209,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -26552,7 +26561,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -26598,7 +26607,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -27023,7 +27032,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -27053,7 +27062,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -27241,7 +27250,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -27255,7 +27264,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -27432,7 +27441,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -27446,7 +27455,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -30173,7 +30182,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -30187,7 +30196,7 @@
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -30944,6 +30953,12 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "BASE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "BehaviorModule",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -31046,6 +31061,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "OverlayConsoleMetricInspector",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "OverlayController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -31071,6 +31092,12 @@
             },
             {
               "symbol": "OverlayMetricInfoBridge",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "OverlayMetricResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -31152,6 +31179,14 @@
           "status": "verified",
           "confirmed": [
             {
+              "symbol": "BASE_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/config.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "BehaviorModule",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -31164,7 +31199,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -31280,6 +31315,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "OverlayConsoleMetricInspector",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "OverlayController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -31317,6 +31360,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "OverlayMetricResolver",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/overlay/services/overlay_metric_resolver.js",
               "resolution": "confirmed"
             },
             {
@@ -31387,6 +31438,13 @@
           "items": [
             {
               "target": "src/config/config.js",
+              "symbols": [
+                "BASE_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -31561,9 +31619,23 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+              "symbols": [
+                "OverlayConsoleMetricInspector"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/debug/overlay/services/overlay_html_builder.js",
               "symbols": [
                 "OverlayHtmlBuilder"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/overlay/services/overlay_metric_resolver.js",
+              "symbols": [
+                "OverlayMetricResolver"
               ],
               "resolution": "confirmed"
             },
@@ -31851,12 +31923,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -31896,27 +31962,18 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "BASE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
-                "BASE_CONFIG",
                 "CONFIG"
               ],
               "resolution": "confirmed"
@@ -32228,13 +32285,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -32831,13 +32888,13 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
               ],
@@ -42536,6 +42593,63 @@
       }
     },
     {
+      "currentPath": "src/infrastructure/config/deep_clone_config.js",
+      "currentArea": "infrastructure/config",
+      "observed": {
+        "legacyLoadOrder": 27,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "deepCloneConfig",
+              "mechanism": "global-function",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "JSON"
+          ],
+          "browserApis": [
+            "structuredClone"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/config/deep_clone_config.js",
+        "roles": [
+          "platform-adapter"
+        ],
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/infrastructure/diagnostics/console_logger.js",
       "currentArea": "infrastructure/diagnostics",
       "observed": {
@@ -48403,7 +48517,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -48531,7 +48645,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -48539,7 +48653,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/config.js",
+              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             }
           ],
@@ -48552,17 +48666,17 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/config/config.js",
+              "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
-                "CONFIG",
-                "SLOT_CONFIG"
+                "FightPhysicsConfigAdapter"
               ],
               "resolution": "confirmed"
             },
             {
-              "target": "src/config/physics/physics_config_adapter.js",
+              "target": "src/config/runtime/config_data.js",
               "symbols": [
-                "FightPhysicsConfigAdapter"
+                "CONFIG",
+                "SLOT_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -52294,14 +52408,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -52330,25 +52437,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -52560,25 +52650,7 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "INVENTORY_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "InventoryEquipTargetSelectionPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SUBFILTER_MAPPING",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -52654,48 +52726,15 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "INVENTORY_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryEquipTargetSelectionPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/inventory/equip_target_selection_policy.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "SUBFILTER_MAPPING",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "INVENTORY_CATEGORIES",
-                "SLOT_CONFIG",
-                "SUBFILTER_MAPPING"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/core.js",
               "symbols": [

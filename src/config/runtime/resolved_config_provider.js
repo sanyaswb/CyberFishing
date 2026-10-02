@@ -1,7 +1,7 @@
 class ResolvedConfigProvider {
   constructor(baseConfig, overrideStore = null) {
     this.baseConfig = baseConfig || {};
-    this.overrideStore = overrideStore || new ConfigOverrideStore();
+    this.overrideStore = overrideStore;
   }
 
   get(path, fallbackValue = undefined) {

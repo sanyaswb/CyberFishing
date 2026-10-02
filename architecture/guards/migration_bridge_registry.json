@@ -179,6 +179,22 @@
       ]
     },
     {
+      "id": "bridge-147a69db5f15",
+      "bridge": "src/config/databases/map_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/config/runtime/config_data.js",
+      "target": "src/game/config/raw/locations/location_database.js",
+      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "MAP_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-165cb09a0730",
       "bridge": "src/core/assemblies/item_assembly_reader.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -286,22 +302,6 @@
       "globalProviders": [
         {
           "symbol": "FlatInventoryItemRepository",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-1beda3fad700",
-      "bridge": "src/config/items/item_stat_override_config.js",
-      "owner": "stage-4.cluster-004-config-data",
-      "source": "src/config/config.js",
-      "target": "src/game/config/raw/items/item_stat_overrides.js",
-      "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -615,22 +615,6 @@
       ]
     },
     {
-      "id": "bridge-2b6eac19f06a",
-      "bridge": "src/config/items/item_progression_config.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/config.js",
-      "target": "src/game/config/items/item_progression_config.js",
-      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ITEM_PROGRESSION_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-2d85d5d54f3b",
       "bridge": "src/systems/tackle_stress_system.js",
       "source": "src/app/fishing.js",
@@ -674,22 +658,6 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyService",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2f4cc1dc93b3",
-      "bridge": "src/config/databases/map_db.js",
-      "owner": "stage-4.cluster-004-config-data",
-      "source": "src/config/config.js",
-      "target": "src/game/config/raw/locations/location_database.js",
-      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "MAP_DB",
           "mechanism": "global-this-property"
         }
       ]
@@ -1238,6 +1206,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5522a7745929",
+      "bridge": "src/config/physics/physics_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/runtime/config_data.js",
+      "target": "src/game/config/physics/physics_config.js",
+      "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1822,22 +1806,6 @@
         },
         {
           "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-72357c0a4da8",
-      "bridge": "src/config/physics/physics_config.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/config.js",
-      "target": "src/game/config/physics/physics_config.js",
-      "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2551,6 +2519,22 @@
       ]
     },
     {
+      "id": "bridge-9fcf741b9756",
+      "bridge": "src/config/databases/fish_db.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/runtime/config_data.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FISH_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a2b17a1794bf",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2903,22 +2887,6 @@
       ]
     },
     {
-      "id": "bridge-b88e0cc26ece",
-      "bridge": "src/config/databases/fish_db.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/config.js",
-      "target": "src/game/config/databases/fish_database.js",
-      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FISH_DB",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-b894531e5b91",
       "bridge": "src/core/items/rarity/effective_item_rarity_resolver.js",
       "source": "src/systems/inventory_item_view_factory.js",
@@ -3174,6 +3142,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d1a3b03f1146",
+      "bridge": "src/config/items/item_stat_override_config.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/config/runtime/config_data.js",
+      "target": "src/game/config/raw/items/item_stat_overrides.js",
+      "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3646,6 +3630,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f6b103f6d6fa",
+      "bridge": "src/config/items/item_progression_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/runtime/config_data.js",
+      "target": "src/game/config/items/item_progression_config.js",
+      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
           "mechanism": "global-this-property"
         }
       ]

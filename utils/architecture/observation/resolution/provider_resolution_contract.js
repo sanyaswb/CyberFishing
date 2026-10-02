@@ -40,6 +40,8 @@ class ProviderResolutionContract {
     consumerPath,
     consumerLoadOrder,
     executionPhase,
+    providerSlotMemberIndex = null,
+    consumerSlotMemberIndex = null,
   }) {
     if (providerPath === consumerPath) {
       return this.model.legacyLoadOrder.sameFileProgramInit;
@@ -53,6 +55,10 @@ class ProviderResolutionContract {
       throw new Error(`Unsupported consumer execution phase: ${executionPhase}`);
     }
     if (rule === "later-provider-allowed") return "eligible";
+    // Reviewed split slots retain one logical number but execute their members in document order.
+    if (providerLoadOrder === consumerLoadOrder && providerSlotMemberIndex !== null && consumerSlotMemberIndex !== null) {
+      return providerSlotMemberIndex < consumerSlotMemberIndex ? "eligible" : "ineligible";
+    }
     return providerLoadOrder < consumerLoadOrder ? "eligible" : "ineligible";
   }
 

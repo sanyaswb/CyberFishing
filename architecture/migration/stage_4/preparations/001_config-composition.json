@@ -1,0 +1,419 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "001",
+  "slug": "config-composition",
+  "baseCommit": "7cb74fd56f7340bafb25cedb3dfe328a68a0cbe3",
+  "reason": "Separate authored live data, host cloning and concrete override-context composition. Same objects, order, clone/freeze/reset and conditional exposure. No new globals; all store/provider production constructions pass dependencies. ConfigSchemaValidator has no production construction sites; context inputs are explicit. DEV readers receive the existing context/base through composition.",
+  "reclassified": [
+    {
+      "currentPath": "src/config/config.js",
+      "fromBoundary": "game-config",
+      "targetBoundary": "bootstrap-production",
+      "followUpStage": "stage-5",
+      "reason": "After moving data declarations, the source solely composes concrete clone/store/provider/physics collaborators, installs the existing presentation catalog references and publishes the original DEV runtime context. Keep its existing browser debt until Bootstrap migration."
+    }
+  ],
+  "movedProviders": [
+    {
+      "currentPath": "src/config/config.js",
+      "symbol": "createRuntimeConfigContext",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "INVENTORY_CATEGORIES",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "SLOT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "SUBFILTER_MAPPING",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "UI_LAYOUT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/config/deep_clone_config.js",
+      "symbol": "deepCloneConfig",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    }
+  ],
+  "replacedBridges": [
+    {
+      "before": {
+        "id": "bridge-1beda3fad700",
+        "bridge": "src/config/items/item_stat_override_config.js",
+        "owner": "stage-4.cluster-004-config-data",
+        "source": "src/config/config.js",
+        "target": "src/game/config/raw/items/item_stat_overrides.js",
+        "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-d1a3b03f1146",
+        "bridge": "src/config/items/item_stat_override_config.js",
+        "owner": "stage-4.cluster-004-config-data",
+        "source": "src/config/runtime/config_data.js",
+        "target": "src/game/config/raw/items/item_stat_overrides.js",
+        "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-2b6eac19f06a",
+        "bridge": "src/config/items/item_progression_config.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/config.js",
+        "target": "src/game/config/items/item_progression_config.js",
+        "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "ITEM_PROGRESSION_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-f6b103f6d6fa",
+        "bridge": "src/config/items/item_progression_config.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/runtime/config_data.js",
+        "target": "src/game/config/items/item_progression_config.js",
+        "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "ITEM_PROGRESSION_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-2f4cc1dc93b3",
+        "bridge": "src/config/databases/map_db.js",
+        "owner": "stage-4.cluster-004-config-data",
+        "source": "src/config/config.js",
+        "target": "src/game/config/raw/locations/location_database.js",
+        "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "MAP_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-147a69db5f15",
+        "bridge": "src/config/databases/map_db.js",
+        "owner": "stage-4.cluster-004-config-data",
+        "source": "src/config/runtime/config_data.js",
+        "target": "src/game/config/raw/locations/location_database.js",
+        "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "MAP_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-72357c0a4da8",
+        "bridge": "src/config/physics/physics_config.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/config.js",
+        "target": "src/game/config/physics/physics_config.js",
+        "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "PHYSICS_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-5522a7745929",
+        "bridge": "src/config/physics/physics_config.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/runtime/config_data.js",
+        "target": "src/game/config/physics/physics_config.js",
+        "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "PHYSICS_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-b88e0cc26ece",
+        "bridge": "src/config/databases/fish_db.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/config.js",
+        "target": "src/game/config/databases/fish_database.js",
+        "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FISH_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-9fcf741b9756",
+        "bridge": "src/config/databases/fish_db.js",
+        "owner": "stage-4.cluster-005-config-derived",
+        "source": "src/config/runtime/config_data.js",
+        "target": "src/game/config/databases/fish_database.js",
+        "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-4",
+        "globalProviders": [
+          {
+            "symbol": "FISH_DB",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    }
+  ],
+  "resolvedDebts": [
+    "debt-boundary-dependency-1a21863f41c5",
+    "debt-boundary-dependency-5b121541e9de",
+    "debt-boundary-dependency-d5f4a29b977c",
+    "debt-boundary-dependency-dac4fd06192d",
+    "debt-boundary-dependency-ecd45102b4a7",
+    "debt-boundary-dependency-f0fedc000c8a",
+    "debt-browser-capability-8ba1285ecac7",
+    "debt-browser-capability-c6231e7d2ed4"
+  ],
+  "files": [
+    {
+      "path": "src/infrastructure/config/deep_clone_config.js",
+      "before": null,
+      "after": "f5fd9aa2eaaa6aeaf4c7a5f5782d2dfad2cec537275627806834e82b08a44bd6"
+    },
+    {
+      "path": "src/config/runtime/immutable_config.js",
+      "before": "6453598543dc3b1c0da3c38a203e692b12cbebb2e7261140d33de464d7d15119",
+      "after": "a3ee720131f27dfd14d0963dd1096e05c3125bc7704f8586337fe5a9e0462a7d"
+    },
+    {
+      "path": "src/config/runtime/config_override_store.js",
+      "before": "5ca2d425f914332539277a36328f88fa5c204c2edcac597e55502f12a5dc5964",
+      "after": "37f563e63f7fbab8e8b4c18d535b52c96e28109057061777dbe0f8b04a862ccd"
+    },
+    {
+      "path": "src/config/runtime/resolved_config_provider.js",
+      "before": "a92189ecba47368015e448bfd96140e8f4a825829cf2327e48af9e9c6b4e9fce",
+      "after": "19aa3a1902f9226f02e59cd96c640f44d81ebd5ba4fb9331101c0d3c4adf4886"
+    },
+    {
+      "path": "src/config/runtime/config_data.js",
+      "before": null,
+      "after": "76b519ca65db1e70d00a44d6063dc25045eb081f994b9652f55b9ab417d38271"
+    },
+    {
+      "path": "src/config/config.js",
+      "before": "a04d0de8784918132786676aca1b777be1f58608636695427483e2e1f8cb6a78",
+      "after": "a07a507933a4a78b7432a416eee6668acc0e847e336a5f299dfa4141bcdff81f"
+    },
+    {
+      "path": "src/core/core.js",
+      "before": "174e6074c2fbf03505de53ab4a25d920e123106d22485e317fc0112d75ba42ca",
+      "after": "95c25c00693b4abfd3eec0d87167e3e7b195a254c63157ae60913e70be4e7ec2"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "63072cdad8f37775dbf371de9a930c2f6b0486618d14cf8b51c8b2a422f5b6f8",
+      "after": "24785472b39bcda11e5005f83afba947ffc41c99f70098da147bb49dcdfca231"
+    },
+    {
+      "path": "utils/victory-input-check.js",
+      "before": "3659c59d55492e556a3fe9fc327eb81ffc66e7e263ad6a353d278cccf119ad00",
+      "after": "c70da128a6f08f6fa21226e170a26db4797dff139151c3e08b17192f862daa40"
+    },
+    {
+      "path": "src/ui/styles/hud_style_resolver.js",
+      "before": "14eb9e6b03321cb938ac110f6595031ce046a6f67b19e2d5a26a3eaec03e994f",
+      "after": "25fbdb2635becc45e86d1af6a0c2a6c484ecf8267f8b35683032b200587dc714"
+    },
+    {
+      "path": "src/ui/ui.js",
+      "before": "c62db18e7ba3d437faa481e27d0cdc8ca49f575ee00793cc381e41ab56f1d0fd",
+      "after": "a1881ee37e53297e90b4ab0b7aa0eb70dc35183b86eff08642cf9b90cab87dac"
+    },
+    {
+      "path": "src/app/script.js",
+      "before": "6f5b33c4922154ef9f1f1aaee55222393e461d592499edd5f94038c364348661",
+      "after": "7ae2b98d904548410e0e73bf7a4d025bea84a250a410224ed6e353eecb311bcc"
+    },
+    {
+      "path": "src/debug/dev_tools.js",
+      "before": "c4ab84208549c5c46a639e6f7f9aee443718df18d78ab28333897ed1a9bde72d",
+      "after": "66029e0e36b50b35c62f3ca98945f6ecb9dcd0a5fe52fa3894cedf8c112f4082"
+    },
+    {
+      "path": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "before": "da205b9ada165bc51e788500032ce628c69af7a5459fa836c55d7b09cf551afe",
+      "after": "a6d06a06924d7ab820639cc2af844fcde789ff9cd2ce294864dd1c91e1c2ec19"
+    },
+    {
+      "path": "src/debug/overlay/overlay_bootstrap.js",
+      "before": "950c35789d341eed2e6a38119d98320e0001dd1afa486f48007bb50b25cbcca9",
+      "after": "f762d003aa499d8b3b9b1356d6593c144cb1e7f5de8eeee40a26d9132b6d0312"
+    },
+    {
+      "path": "src/config/validation/config_schema_validator.js",
+      "before": "0c7dfbf6417ac0a8a5860661dbed918df695b4274feaa29d26b66c669391fd49",
+      "after": "5993648976072532a99f0dcf189d5d75cbacda557cc898fc2591a12a88ca399c"
+    },
+    {
+      "path": "utils/game-cycle-check.js",
+      "before": "0e3ca832f4f20d7f6f619a20176624f18d974dab6e86684ee2108fdcb623dade",
+      "after": "e5d6fd270e62922f80b7cadb683dbac487aca175dc810c5727d8d4c46685f317"
+    },
+    {
+      "path": "utils/inventory-lifecycle-check.js",
+      "before": "1bac02baeae8a9b2ce46e65589510b416246da04fae6abdba5bdea8b5337f618",
+      "after": "79070b28d0d419b10d3976e3b8f39175a4582985899e01a006007935f3654fd7"
+    },
+    {
+      "path": "index.html",
+      "before": "cae05cbd24228367cab11c2403b436b548c8f357205c4faae43a0fd3abaa403e",
+      "after": "0c3fe79625a160a53f785dee24c964bf11e7f8cd6a8c2cc9a484be14af2c4e57"
+    },
+    {
+      "path": "architecture/migration/legacy_slot_splits.json",
+      "before": "b7366c06399a4d26cb5b7fdfd90253edaa2efcb340b3f74edc93ca8f8b80b351",
+      "after": "41e1226139754c18cc12427e45e4dffa1a5d8a39590021492e61e1f40aaab1bd"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e02aa76bd7a43c7d6bce7132a91fc10272430d1b5616726dc92a0790398797f0",
+      "after": "5ed7b7c20fdceaf14bcc85b16f6f037ec5245fcdbea828f085e7f6cbff97ba34"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "before": "b0962ee238024e5654d5dd996cbc29dd4be2f78dbdc296c06e5f3545a1e8bec4",
+      "after": "16762402dc3de54e9fb4d5b9a6f7bd35049417682b6a0064aac07e2edbb6388b"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "before": "d2aa1093314227e2d46ea368c0ea0c3150a8439e69eaf4f11aaa59382c9cd6db",
+      "after": "01e1470252626bab46c5b46c0ac7c3fb31170072be138d795b36c0671b6331b0"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "17f2f5161efd781e6afeeb28eef7caa99815100f64c19c45c49596520e062340",
+      "after": "5997d9322fe7704f350a39b1d62b22d349e4337afbf78a40136ffe4174d0fdc2"
+    },
+    {
+      "path": "utils/rarity-production-check.js",
+      "before": "b64fc370de9a773e72333a315be72b948aafdcc77918ac0c6b0d5c49671ae1d7",
+      "after": "17997da397483e62649122d2207710402357f6dabd1561a2c4a372a46a09f642"
+    },
+    {
+      "path": "utils/testing/core/source_runtime.js",
+      "before": "7dd77fda9337aaf5e66c7356eec792fba80b1562a34298ad4ea2387eb6eeab66",
+      "after": "bd65d4c7fad453cb9fbd29800d7ea3cefeb5d240aeea53f0882aebf6dca8baf1"
+    },
+    {
+      "path": "utils/dev-tools-linked-parameter-check.js",
+      "before": "b55109c793fd244e9e79869419bfade57fb8ba4e963ca751dd9ec55dbe111ca5",
+      "after": "11168af1359bf05ed266206668dcbaa432104d42b0923db391ed2df47c02afa5"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "7e3aa3c638f872fd25e17537db9bb1132c2c4d888bc84ab7c06fa93d7f5ed2ce",
+      "after": "7d364c98c3aa74710f635227008879888fd565e5b3e819189ebf754b0761b02b"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "acceptance": {
+      "checks": 80,
+      "executed": 80,
+      "cached": 0,
+      "sourceUnchanged": true,
+      "catalogSha256": "99f585cfebd521ccd25babe6da3c0fcc59f5f921cf7f8b14c8d515d32e09029c"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 150,
+      "identityMismatches": 0
+    }
+  },
+  "constructionEvidence": [
+    "ConfigOverrideStore: sole production construction in createRuntimeConfigContext now passes deepCloneConfig.",
+    "ResolvedConfigProvider: sole production construction passes the same authoritative store.",
+    "InputManager: sole production construction in GameCompositionRoot passes the live RuntimeConfig; victory-input test composition explicitly passes its fixture.",
+    "HudStyleResolver: sole production construction already passes hudStylesProvider.",
+    "InventoryUI: no construction site in src; data contracts are explicit constructor inputs, no renamed API or new global.",
+    "DevTools and overlay resolver: composition supplies the existing context/base; no production dependency on DEV was introduced.",
+    "The split members preserve logical slots 27/28 and execute data before composition; no module or script slot is renumbered."
+  ]
+}

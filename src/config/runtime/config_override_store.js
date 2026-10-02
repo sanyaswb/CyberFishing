@@ -1,5 +1,10 @@
 class ConfigOverrideStore {
   #overrides = new Map();
+  #cloneValue;
+
+  constructor(cloneValue) {
+    this.#cloneValue = cloneValue;
+  }
 
   set(path, value) {
     const key = this.#normalizePath(path);
@@ -46,7 +51,6 @@ class ConfigOverrideStore {
   }
 
   #clone(value) {
-    if (typeof structuredClone === "function") return structuredClone(value);
-    return JSON.parse(JSON.stringify(value));
+    return this.#cloneValue(value);
   }
 }

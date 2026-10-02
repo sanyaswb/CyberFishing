@@ -1,11 +1,12 @@
 (async function startCyberFishing() {
   window.CYBER_FISHING_GAME_CLEANUP?.();
 
-  const game = new Game("gameCanvas");
+  const compositionRoot = new GameCompositionRoot();
+  const game = new Game("gameCanvas", compositionRoot);
   window.game = game;
   const started = await game.start();
 
-  const memoryConfig = CONFIG.debug?.memoryWatchdog || {};
+  const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
   const watchdog =
     memoryConfig.enabled === true &&
     typeof MemoryLeakWatchdog !== "undefined"

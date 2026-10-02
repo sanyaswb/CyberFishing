@@ -8,6 +8,8 @@ const path = require("node:path");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { LegacySlotSplitRegistry, KIND } = require("./migration/legacy_slot_split_registry");
 const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
+const { LegacyLoadOrderIndex } = require("./observation/resolution/legacy_load_order_index");
+const { ProviderResolutionContract } = require("./observation/resolution/provider_resolution_contract");
 
 const ROOT = path.resolve(__dirname, "../..");
 const html = scripts => scripts.map(([source, slot, type]) => `<script src="${source}"` +
@@ -23,6 +25,17 @@ assert.deepEqual(slots([["src/a.js"], ["src/b.js"], ["src/c.js"]]), ["src/a.js:1
 const classic = [["src/a.js"], ["src/v.js", 2], ["src/core.js", 2], ["src/b.js"]];
 assert.deepEqual(slots(classic), ["src/a.js:1", "src/v.js:2", "src/core.js:2", "src/b.js:3"]);
 registry([[2, ["src/v.js", "src/core.js"]]]).assertMatches(read(classic));
+// An eager reader can use a declaration in an earlier member of its reviewed split slot.
+const loadIndex = new LegacyLoadOrderIndex(read(classic));
+const resolution = new ProviderResolutionContract(require("../../architecture/module_architecture.json")
+  .migrationManifest.observationContract.resolutionModel);
+const assessment = (providerPath, consumerPath) => resolution.assessLoadOrder({providerPath,consumerPath,
+  providerLoadOrder:loadIndex.get(providerPath),consumerLoadOrder:loadIndex.get(consumerPath),executionPhase:"eager",
+  providerSlotMemberIndex:loadIndex.memberIndex(providerPath),consumerSlotMemberIndex:loadIndex.memberIndex(consumerPath)});
+assert.equal(assessment("src/v.js","src/core.js"),"eligible");
+assert.equal(assessment("src/core.js","src/v.js"),"ineligible");
+assert.equal(resolution.assessLoadOrder({providerPath:"src/v.js",consumerPath:"src/core.js",providerLoadOrder:2,
+  consumerLoadOrder:2,executionPhase:"eager"}),"ineligible", "a same-slot number alone proves no physical order");
 // An infrastructure script aliased away between two members keeps them contiguous.
 const runtime = new Map([["dist/runtime.js", null]]);
 const spanning = [["src/a.js"], ["src/core.js", 2], ["dist/runtime.js"], ["src/v.js", 2], ["src/b.js"]];

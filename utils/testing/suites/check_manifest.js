@@ -473,6 +473,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     file: "utils/platform-runtime-check.js",
     suites: ["quick", "gameplay"],
   },
+  {
+    id: "config-runtime",
+    title: "Live configuration and override runtime",
+    file: "utils/config-runtime-check.js",
+    suites: ["quick", "gameplay"],
+  },
 ]);
 
 module.exports = { CHECK_DEFINITIONS };

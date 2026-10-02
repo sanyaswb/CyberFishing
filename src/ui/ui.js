@@ -1076,6 +1076,9 @@ class HoldChargesUI {
 
 class InventoryUI {
   #inventoryManager;
+  #slotConfig;
+  #inventoryCategories;
+  #subfilterMapping;
   #equipTargetPolicy;
   #rarityDomAdapter;
   #progressionDomAdapter;
@@ -1119,14 +1122,20 @@ class InventoryUI {
       rarityDomAdapter = null,
       progressionDomAdapter = null,
       conditionDomAdapter = null,
+      slotConfig = {},
+      inventoryCategories = [],
+      subfilterMapping = {},
     } = {},
   ) {
     this.#inventoryManager = inventoryManager;
     this.#rarityDomAdapter = rarityDomAdapter;
     this.#progressionDomAdapter = progressionDomAdapter;
     this.#conditionDomAdapter = conditionDomAdapter;
+    this.#slotConfig = slotConfig;
+    this.#inventoryCategories = inventoryCategories;
+    this.#subfilterMapping = subfilterMapping;
     this.#equipTargetPolicy = new InventoryEquipTargetSelectionPolicy(
-      typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG : {},
+      this.#slotConfig,
     );
     this.#initBackpackButton();
     this.#initModal();
@@ -1988,7 +1997,7 @@ class InventoryUI {
     };
     fragment.appendChild(funnelBtn);
 
-    INVENTORY_CATEGORIES.forEach((cat) => {
+    this.#inventoryCategories.forEach((cat) => {
       const btn = document.createElement("button");
       btn.className = `inv-category-btn ${this.#activeCategory === cat.id ? "active" : ""}`;
       btn.innerText = cat.label;
@@ -2023,7 +2032,7 @@ class InventoryUI {
     this.#subFilterContainerNode.innerHTML = "";
 
     const items = this.#inventoryManager.getInventoryItems();
-    const catConfig = INVENTORY_CATEGORIES.find(
+    const catConfig = this.#inventoryCategories.find(
       (c) => c.id === this.#activeCategory,
     );
 
@@ -2052,7 +2061,7 @@ class InventoryUI {
         catConfig.acceptTypes.includes(itemData.itemType)
       ) {
         const filterType = itemData.variant || itemData.itemType;
-        const groupLabel = SUBFILTER_MAPPING[filterType] || filterType;
+        const groupLabel = this.#subfilterMapping[filterType] || filterType;
         availableGroups.add(groupLabel);
       }
     });
@@ -2145,7 +2154,7 @@ class InventoryUI {
         }
       });
     } else {
-      const catConfig = INVENTORY_CATEGORIES.find(
+      const catConfig = this.#inventoryCategories.find(
         (c) => c.id === this.#activeCategory,
       );
 
@@ -2174,7 +2183,7 @@ class InventoryUI {
         } else {
           // У всіх інших вкладках фільтруємо за типом (а ящик тепер зникає, якщо не вибраний)
           const filterType = itemData.variant || itemData.itemType;
-          const groupLabel = SUBFILTER_MAPPING[filterType] || filterType;
+          const groupLabel = this.#subfilterMapping[filterType] || filterType;
           if (
             this.#activeSubFilters.size > 0 &&
             !this.#activeSubFilters.has(groupLabel)
@@ -2201,7 +2210,7 @@ class InventoryUI {
         if (this.#highlightedSlotId) {
           const baseSlot = this.#highlightedSlotId.split("_")[0];
           const config =
-            typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
+            this.#slotConfig[baseSlot] || null;
 
           // Спочатку груба перевірка за типом слота
           if (

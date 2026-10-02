@@ -2,6 +2,8 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const assert = require("node:assert/strict");
+const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_config");
 
 const CLUSTER_DIRECTORY = "architecture/migration/stage_4/clusters";
 const RECORD_KIND = "cyber-fishing-stage-4-cluster";
@@ -33,6 +35,30 @@ class StageFourClusterLedger {
       if (Number(record.id) !== index + 1) throw new Error(`Stage 4 cluster ids must be contiguous: ${record.id}`);
     });
     return new StageFourClusterLedger(records);
+  }
+
+  // Preparation records describe exact provider relocations before a cluster. Their bridge pairs
+  // retain the old owner, target and surface; only the consuming declaration moved to a split file.
+  static preparations(projectRoot) {
+    const directory = path.join(projectRoot, "architecture/migration/stage_4/preparations");
+    if (!fs.existsSync(directory)) return [];
+    return fs.readdirSync(directory).filter(name => name.endsWith(".json")).sort().map(name => {
+      const record = JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
+      assert.equal(record.schemaVersion, 1);
+      assert.equal(record.kind, "cyber-fishing-stage-4-preparation");
+      assert(record.reason && /^[0-9a-f]{40}$/u.test(record.baseCommit));
+      assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
+      for (const pair of record.replacedBridges || []) StageFourClusterLedger.validateBridgeRelocation(pair);
+      return record;
+    });
+  }
+
+  static validateBridgeRelocation({ before, after }) {
+    assert.equal(before.id, CanonicalBridgeIdentity.id(before), "original bridge identity");
+    assert.equal(after.id, CanonicalBridgeIdentity.id(after), "relocated bridge identity");
+    assert.notEqual(after.source, before.source, "relocation must move the consumer");
+    assert.deepEqual({ ...after, id: before.id, source: before.source }, before,
+      "relocation may change only consumer path and canonical id");
   }
 
   get records() {

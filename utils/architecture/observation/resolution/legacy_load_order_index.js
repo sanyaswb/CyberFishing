@@ -1,6 +1,7 @@
 class LegacyLoadOrderIndex {
   constructor(legacyScripts) {
     this.orderByPath = new Map();
+    this.memberByPath = new Map();
     for (const script of legacyScripts) this.#register(script);
   }
 
@@ -8,6 +9,10 @@ class LegacyLoadOrderIndex {
     return this.orderByPath.has(currentPath)
       ? this.orderByPath.get(currentPath)
       : null;
+  }
+
+  memberIndex(currentPath) {
+    return this.memberByPath.get(currentPath) ?? null;
   }
 
   #register(script) {
@@ -19,6 +24,7 @@ class LegacyLoadOrderIndex {
       throw new Error(`Duplicate legacy script path: ${currentPath}`);
     }
     this.orderByPath.set(currentPath, script.legacyLoadOrder ?? null);
+    this.memberByPath.set(currentPath, script.slotMember?.index ?? null);
   }
 }
 

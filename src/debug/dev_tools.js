@@ -142,6 +142,7 @@ class DevTools {
     {
       itemProgressionDebugProvider = null,
       itemProgressionResolver = null,
+      configRuntime = null,
     } = {},
   ) {
     if (
@@ -154,10 +155,7 @@ class DevTools {
     }
     this.#config = config;
     this.#hookedFishProfileSynchronizer = hookedFishProfileSynchronizer;
-    this.#configRuntime =
-      typeof CONFIG_RUNTIME_CONTEXT !== "undefined"
-        ? CONFIG_RUNTIME_CONTEXT
-        : null;
+    this.#configRuntime = configRuntime;
     this.#activeFishVisibilityPolicy =
       typeof ActiveFishDevToolsVisibilityPolicy !== "undefined"
         ? new ActiveFishDevToolsVisibilityPolicy()

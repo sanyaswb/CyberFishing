@@ -68,8 +68,10 @@ class ProviderResolutionEngine {
       .map(() => this.contract.assessLoadOrder({
         providerPath: candidate.currentPath,
         providerLoadOrder: this.loadOrderIndex.get(candidate.currentPath),
+        providerSlotMemberIndex: this.loadOrderIndex.memberIndex(candidate.currentPath),
         consumerPath,
         consumerLoadOrder: this.loadOrderIndex.get(consumerPath),
+        consumerSlotMemberIndex: this.loadOrderIndex.memberIndex(consumerPath),
         executionPhase: consumer.executionPhase,
       }));
 

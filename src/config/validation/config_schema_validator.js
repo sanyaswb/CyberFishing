@@ -34,8 +34,12 @@ class ConfigSchemaValidator {
     mapDb = {},
     parameterLabels = {},
     namingConvention = null,
+    baseConfig = undefined,
+    overrideStore = undefined,
   } = {}) {
     this.config = config || {};
+    this.baseConfig = baseConfig;
+    this.overrideStore = overrideStore;
     this.fishDb = Array.isArray(fishDb) ? fishDb : [];
     this.itemDb = itemDb || {};
     this.mapDb = mapDb || {};
@@ -77,6 +81,8 @@ class ConfigSchemaValidator {
 
 
   #validateImmutableBaseConfig() {
+    const BASE_CONFIG = this.baseConfig;
+    const CONFIG_OVERRIDE_STORE = this.overrideStore;
     if (typeof BASE_CONFIG === "undefined") {
       this.#error("BASE_CONFIG", "missing immutable base config snapshot");
       return;

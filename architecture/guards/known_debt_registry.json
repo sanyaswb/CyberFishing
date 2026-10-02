@@ -212,25 +212,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-1a21863f41c5",
-      "rule": "boundary-dependency",
-      "source": "src/ui/styles/hud_style_resolver.js",
-      "target": "src/config/config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "1a21863f41c5abf4dd5cd6ceee17ed95fba65f098977df7e1abd074233935a1b",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/styles/hud_style_resolver.js",
-        "target": "src/config/config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-1cf355c6e1ae",
       "rule": "boundary-dependency",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -650,28 +631,6 @@
         "rule": "boundary-dependency",
         "source": "src/systems/inventory_system.js",
         "target": "src/core/core.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-5b121541e9de",
-      "rule": "boundary-dependency",
-      "source": "src/core/core.js",
-      "target": "src/config/config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "5b121541e9dea222976ed0a4191e1634fd3a27c9f0984d3efb4ac5e16e2eedd2",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/core.js",
-        "target": "src/config/config.js"
       }
     },
     {
@@ -1432,52 +1391,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-d5f4a29b977c",
-      "rule": "boundary-dependency",
-      "source": "src/ui/ui.js",
-      "target": "src/config/config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "d5f4a29b977ccfca4e9edd25e9d3ff600cb5c8681de74c5913dae84ca356ded4",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/ui.js",
-        "target": "src/config/config.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-dac4fd06192d",
-      "rule": "boundary-dependency",
-      "source": "src/config/config.js",
-      "target": "src/config/visual/degradation_color_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "dac4fd06192d1a18bf0cf87096aeedf375974f8f01886a476c1712d265697eba",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/config/config.js",
-        "target": "src/config/visual/degradation_color_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-dc541b149618",
       "rule": "boundary-dependency",
       "source": "src/app/bootstrap.js",
@@ -1580,29 +1493,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-ecd45102b4a7",
-      "rule": "boundary-dependency",
-      "source": "src/config/config.js",
-      "target": "src/config/rarity/rarity_visual_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "ecd45102b4a7ecdf27a1cd15efce9ab66054db8e4c76f9db2a8b364b8a10b6bf",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/config/config.js",
-        "target": "src/config/rarity/rarity_visual_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-ed9dc2f79396",
       "rule": "boundary-dependency",
       "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
@@ -1641,29 +1531,6 @@
         "rule": "boundary-dependency",
         "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
         "target": "src/core/inventory/inventory_item_location.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-f0fedc000c8a",
-      "rule": "boundary-dependency",
-      "source": "src/app/script.js",
-      "target": "src/config/config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "eager-load-order-coupling",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "f0fedc000c8acd1ba6be29cfc909d3ad50c062387b6ff074137ea1587964354e",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/script.js",
-        "target": "src/config/config.js"
       }
     },
     {
@@ -2322,27 +2189,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-8ba1285ecac7",
-      "rule": "browser-capability",
-      "source": "src/config/runtime/immutable_config.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 3,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8ba1285ecac74fdfde34f88fbfc4758ed4876aeac9ed870e29d3b282a499173d",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/config/runtime/immutable_config.js",
-        "target": "environment:browser-runtime",
-        "identifier": "structuredClone"
-      }
-    },
-    {
       "id": "debt-browser-capability-95c69c6ce6be",
       "rule": "browser-capability",
       "source": "src/app/script.js",
@@ -2522,26 +2368,6 @@
         "source": "src/debug/overlay/overlay_bootstrap.js",
         "target": "environment:browser-runtime",
         "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-c6231e7d2ed4",
-      "rule": "browser-capability",
-      "source": "src/config/runtime/config_override_store.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 1,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c6231e7d2ed4f470abb8bcd37910575ccf024b56a308645e3c3a82cf9f9b7097",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/config/runtime/config_override_store.js",
-        "target": "environment:browser-runtime",
-        "identifier": "structuredClone"
       }
     },
     {

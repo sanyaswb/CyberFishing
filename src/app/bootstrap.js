@@ -1,7 +1,23 @@
 class GameCompositionRoot {
   #config;
+  #runtimeConfig;
   constructor(config = null) {
     this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
+    this.#runtimeConfig = {};
+    for (const key of Object.getOwnPropertyNames(this.#config)) {
+      Object.defineProperty(this.#runtimeConfig, key, {
+        enumerable: Object.getOwnPropertyDescriptor(this.#config, key).enumerable,
+        get: () => this.#config[key],
+      });
+    }
+  }
+
+  getRuntimeConfig() {
+    return this.#runtimeConfig;
+  }
+
+  getMemoryWatchdogConfig() {
+    return this.#config.debug?.memoryWatchdog || {};
   }
 
   async build(canvasId) {
@@ -25,7 +41,7 @@ class GameCompositionRoot {
     return new GameApplication({
       canvas,
       canvasMetrics,
-      config: this.#config,
+      config: this.#runtimeConfig,
       compositionRoot: this,
       devFlags,
       audio,
@@ -480,10 +496,13 @@ class GameCompositionRoot {
         rng,
         this.#config.spawns,
       ),
-      input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null),
+      input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
+        runtimeConfig: this.#runtimeConfig,
+      }),
       ui: new UIManager(
         this.#config,
         new DevTools(this.#config, hookedFishProfileSynchronizer, {
+          configRuntime: CONFIG_RUNTIME_CONTEXT,
           itemProgressionDebugProvider,
           itemProgressionResolver,
         }),

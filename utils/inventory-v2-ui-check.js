@@ -2,11 +2,11 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
 const UI_DIRECTORY = path.join(ROOT, "src", "ui", "inventory");
 const STYLE_FILE = path.join(ROOT, "src", "ui", "styles", "inventory_v2.css");
-const CONFIG_FILE = path.join(ROOT, "src", "config", "config.js");
 const ITEM_PARAMETER_CONFIG_FILE = path.join(
   ROOT,
   "src",
@@ -77,7 +77,7 @@ class InventoryV2SourceReader {
   }
 
   readConfig() {
-    return fs.readFileSync(CONFIG_FILE, "utf8");
+    return new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
   }
 
   readApplicationFactory() {

@@ -53,8 +53,10 @@ class InputManager {
   #dragControlEnabled = true;
   #fightInputActionComposer = null;
   #stateSnapshot;
+  #runtimeConfig;
 
-  constructor(canvas, anchorX = null) {
+  constructor(canvas, anchorX = null, { runtimeConfig } = {}) {
+    this.#runtimeConfig = runtimeConfig;
     this.#canvas = canvas;
     this.#anchorX = anchorX;
     this.#isPulling = false;
@@ -201,7 +203,7 @@ class InputManager {
           };
           this.#hasLongPressed = true;
         }
-      }, CONFIG.input?.longPressMs ?? 650);
+      }, this.#runtimeConfig.input?.longPressMs ?? 650);
     });
 
     this.#addEventListener(this.#canvas, "pointermove", (e) => {
@@ -253,7 +255,7 @@ class InputManager {
         this.#pointerReleaseCancelled = e.type === "pointercancel";
         if (this.#isPointerDown) {
           const now = Date.now();
-          const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+          const holdMs = Math.max(0, Number(this.#runtimeConfig.input?.pullHoldMinMs) || 0);
           const elapsedMs = Math.max(0, now - Number(this.#pointerDownAtMs || now));
           const pointerWasClickCandidate =
             this.#pointerAction === PointerAction.PENDING && elapsedMs < holdMs;
@@ -293,7 +295,7 @@ class InputManager {
         this.#rodControlInputRatio = 0;
       }
 
-      const pullKeys = CONFIG.input?.keys?.pull || ["Space"];
+      const pullKeys = this.#runtimeConfig.input?.keys?.pull || ["Space"];
       this.#updatePointerPullState(Date.now());
       this.#isPulling =
         this.#checkKeyHeld(pullKeys) ||
@@ -328,7 +330,7 @@ class InputManager {
       this.#keys[e.code] = true;
       this.#keys[e.key] = true;
 
-      const keys = CONFIG.input?.keys || {};
+      const keys = this.#runtimeConfig.input?.keys || {};
 
       // 1. Тяга
       if (this.#isKeyMatch(e, keys.pull)) {
@@ -361,7 +363,7 @@ class InputManager {
       this.#keys[e.code] = false;
       this.#keys[e.key] = false;
 
-      const keys = CONFIG.input?.keys || {};
+      const keys = this.#runtimeConfig.input?.keys || {};
 
       // Якщо відпустили кнопку тяги
       if (this.#isKeyMatch(e, keys.pull)) {
@@ -386,7 +388,7 @@ class InputManager {
       if (this.#isDragging) {
         const dx = e.clientX - this.#startX;
         // ЗМІНЕНО: Читаємо чутливість із конфігу (за замовчуванням 200)
-        const dy = CONFIG.input?.swipeResistanceY ?? 200;
+        const dy = this.#runtimeConfig.input?.swipeResistanceY ?? 200;
 
         const length = Math.hypot(dx, dy);
         if (length > 0) {
@@ -407,9 +409,9 @@ class InputManager {
     const dx = this.#currentPointerX - this.#startX;
     const dy = this.#currentPointerY - this.#startY;
     const threshold =
-      Number(CONFIG.input?.dragControlActivationPx) ||
+      Number(this.#runtimeConfig.input?.dragControlActivationPx) ||
       Number(
-        CONFIG.fightPhysicsConfig?.getReelDragConfig?.()
+        this.#runtimeConfig.fightPhysicsConfig?.getReelDragConfig?.()
           ?.pointerActivationPx,
       ) ||
       30;
@@ -424,8 +426,8 @@ class InputManager {
   #getLongPressMoveTolerancePx() {
     return Math.max(
       5,
-      Number(CONFIG.input?.longPressMoveTolerancePx) ||
-        Number(CONFIG.input?.dragControlActivationPx) ||
+      Number(this.#runtimeConfig.input?.longPressMoveTolerancePx) ||
+        Number(this.#runtimeConfig.input?.dragControlActivationPx) ||
         30,
     );
   }
@@ -474,7 +476,7 @@ class InputManager {
 
     if (this.#pointerAction !== PointerAction.PENDING) return;
 
-    const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+    const holdMs = Math.max(0, Number(this.#runtimeConfig.input?.pullHoldMinMs) || 0);
     const elapsedMs = Math.max(0, Number(now) - Number(this.#pointerDownAtMs || now));
     if (elapsedMs >= holdMs) {
       this.#pointerAction = PointerAction.PULL;
@@ -491,7 +493,7 @@ class InputManager {
       this.#rodControlPointerActive ||
       this.#pointerAction === PointerAction.ROD_CONTROL_X
     ) {
-      const holdMs = Math.max(0, Number(CONFIG.input?.pullHoldMinMs) || 0);
+      const holdMs = Math.max(0, Number(this.#runtimeConfig.input?.pullHoldMinMs) || 0);
       const elapsedMs = Math.max(
         0,
         Number(now) - Number(this.#pointerDownAtMs || now),
@@ -570,8 +572,8 @@ class InputManager {
 
   #getRodControlInputConfig() {
     return (
-      CONFIG.fightPhysicsConfig?.getRodControlConfig?.()?.input ||
-      CONFIG.physics?.fight?.rodControl?.input ||
+      this.#runtimeConfig.fightPhysicsConfig?.getRodControlConfig?.()?.input ||
+      this.#runtimeConfig.physics?.fight?.rodControl?.input ||
       {}
     );
   }
@@ -602,7 +604,7 @@ class InputManager {
   }
 
   getState() {
-    const keys = CONFIG.input?.keys || {};
+    const keys = this.#runtimeConfig.input?.keys || {};
     const keyboardPulling = this.#checkKeyHeld(keys.pull);
     let keyboardRodDirectionX = 0;
     if (this.#checkKeyHeld(keys.left)) keyboardRodDirectionX -= 1;
@@ -696,7 +698,7 @@ class InputManager {
     const previousFightActions = state.fightActions;
     state.fightActions = null;
     const nextFightActions = composer.compose(state, {
-      keys: CONFIG.input?.keys || {},
+      keys: this.#runtimeConfig.input?.keys || {},
       rodControlInput: rodControlConfig,
     });
     state.fightActions = previousFightActions;

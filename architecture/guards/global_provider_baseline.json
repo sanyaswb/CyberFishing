@@ -790,12 +790,6 @@
     },
     {
       "currentPath": "src/config/config.js",
-      "symbol": "CONFIG",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/config/config.js",
       "symbol": "CONFIG_OVERRIDE_STORE",
       "mechanism": "global-lexical",
       "availability": "program-init"
@@ -814,32 +808,14 @@
     },
     {
       "currentPath": "src/config/config.js",
-      "symbol": "INVENTORY_CATEGORIES",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/config/config.js",
       "symbol": "RESOLVED_CONFIG_PROVIDER",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },
     {
       "currentPath": "src/config/config.js",
-      "symbol": "SLOT_CONFIG",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/config/config.js",
-      "symbol": "SUBFILTER_MAPPING",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/config/config.js",
-      "symbol": "UI_LAYOUT_CONFIG",
-      "mechanism": "global-lexical",
+      "symbol": "createRuntimeConfigContext",
+      "mechanism": "global-function",
       "availability": "program-init"
     },
     {
@@ -1185,21 +1161,39 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/config/runtime/config_override_store.js",
-      "symbol": "ConfigOverrideStore",
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "CONFIG",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },
     {
-      "currentPath": "src/config/runtime/immutable_config.js",
-      "symbol": "createRuntimeConfigContext",
-      "mechanism": "global-function",
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "INVENTORY_CATEGORIES",
+      "mechanism": "global-lexical",
       "availability": "program-init"
     },
     {
-      "currentPath": "src/config/runtime/immutable_config.js",
-      "symbol": "deepCloneConfig",
-      "mechanism": "global-function",
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "SLOT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "SUBFILTER_MAPPING",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_data.js",
+      "symbol": "UI_LAYOUT_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_override_store.js",
+      "symbol": "ConfigOverrideStore",
+      "mechanism": "global-lexical",
       "availability": "program-init"
     },
     {
@@ -3996,6 +3990,12 @@
       "currentPath": "src/entities/tackle.js",
       "symbol": "WobblerEntity",
       "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/config/deep_clone_config.js",
+      "symbol": "deepCloneConfig",
+      "mechanism": "global-function",
       "availability": "program-init"
     },
     {

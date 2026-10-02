@@ -5,7 +5,7 @@ class HudStyleResolver {
   constructor({ hudStylesProvider = null } = {}) {
     this.#hudStylesProvider = typeof hudStylesProvider === "function"
       ? hudStylesProvider
-      : () => (typeof CONFIG !== "undefined" ? CONFIG.ui?.hudStyles : null);
+      : () => null;
   }
 
   resolveBarStyle(path, { overrides = null } = {}) {

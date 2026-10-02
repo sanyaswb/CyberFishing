@@ -137,7 +137,7 @@ class VictoryInputCheck {
     const canvas = new EventTargetStub();
     return {
       canvas,
-      manager: new this.runtime.InputManager(canvas),
+      manager: new this.runtime.InputManager(canvas, null, { runtimeConfig: this.runtime.CONFIG }),
     };
   }
 

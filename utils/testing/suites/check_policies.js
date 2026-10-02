@@ -27,6 +27,7 @@ const SNAPSHOT_CONTRACTS = Object.freeze([
 const WRITERS = Object.freeze([
 ]);
 const READ_ONLY_CHECKS = Object.freeze([
+  "config-runtime",
   "platform-runtime",
   "syntax",
   "architecture-policy",

@@ -112,10 +112,7 @@ class DevToolsLinkedParameterCheck {
   }
 
   #checksCanonicalConfigStorage() {
-    const source = fs.readFileSync(
-      path.join(ROOT, "src/config/config.js"),
-      "utf8",
-    );
+    const source = new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
     const fixedCatchBlock = source.match(/fixedCatch:\s*\{([\s\S]*?)\n\s*\},/u);
     Assertion.that(fixedCatchBlock, "fixedCatch config block exists");
     Assertion.that(

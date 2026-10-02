@@ -61,7 +61,11 @@
   });
   controller.start();
 
-  const metricInfoBridge = new OverlayMetricInfoBridge();
+  const metricInfoBridge = new OverlayMetricInfoBridge({
+    inspector: new OverlayConsoleMetricInspector({
+      resolver: new OverlayMetricResolver({ baseConfig: BASE_CONFIG }),
+    }),
+  });
   metricInfoBridge.start();
 
   window.CYBER_FISHING_DEBUG_OVERLAY = controller;
