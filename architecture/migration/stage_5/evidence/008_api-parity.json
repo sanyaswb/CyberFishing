@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "008",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-ui-check.js"
+  ],
+  "classes": {
+    "InventoryV2AttachmentBadgeRenderer": {
+      "sourcePath": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "members": [
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "286cb7c402bb65d5077596e35d3e7573848e1095d6a3c19041a383a37e8b1d85",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6e522bdc72e7acf07a190f937ade1dd350ff3eee1c70d9bda66a108c2d623c65",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#groupAttachments",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "41094a2a8066703888d618da08efb3c1c7503ad7f3d93a980fe942d9e94d03df",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlacement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9a26152acc2b73b2015c3b0ea1cb4082410f7ef4b6c690a30d9b4f8af5616dc0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 4,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createBadge",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9d42e299c06f06737672d271eefe0d4d463d211937063a81f357fe899294181f",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 7,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#createBadge",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#groupAttachments",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#groupAttachments",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#resolvePlacement",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#resolvePlacement",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "4ea2095a25a34a9b3cb2c6bad7297ee49d95d07e23a8162be5a10ea012976e68",
+          "calls": {
+            "render": 44
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2HeaderRenderer": {
+      "sourcePath": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "members": [
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "286cb7c402bb65d5077596e35d3e7573848e1095d6a3c19041a383a37e8b1d85",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d9247ca5b396db0c03b0395e4c1ff14f213a86def3284a0507939ea1af1124aa",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderLoad",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "64b3a1fc4ddf159a21c92c2946b8849b66d82357d0d543ab68e4aeb0c305409e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderActiveTackle",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2d562ce44ceaf0ae08b4de180554f6e24d3368f464e7684340c4e63520209cd4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderIndicator",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a01101a84bb079073df4b071dc0a8811ac223e332c9d6cd6fa073ba706298c23",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderSettings",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e239f1b5e58ae63810d794a33ea608d6d2d826e105d71da6dc30068822144734",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createToggle",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "852971783f79c6e7ef20e44be41ea713bb076a5f04aa5114d9d43a4f6ff48205",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#format",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e73eb7514e63e58193ac5a86ca5b9b46aa7a2eb4c0ca1b03dc9e8152facaef5e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 5,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Number",
+          "member": "#format",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#format",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#format",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#renderIndicator",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#renderIndicator",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "4dfa0e6ad8656c8ae6467d06271f0e29e2aba1ce4da1d6ece7e70427f1560972",
+          "calls": {
+            "render": 10
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ResourceMeterRenderer": {
+      "sourcePath": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "members": [
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "286cb7c402bb65d5077596e35d3e7573848e1095d6a3c19041a383a37e8b1d85",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "db37f1d1368f24968cc6d67128f0dc8718cf1177a5f1f7c4d0843a80fc92ff30",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a9957474aea9f641f252285e4a8f09041d716e817c4671c2fdf1a90b146bd1ed",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyModel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1266d867f9f70b89951b682ebd87ad9d74671784cd92d3b28b7e236eb318939d",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findDirectMeter",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4f618f1fed701c6439e8e9f187f6578051fb3184bbd4133793759649a577fbcc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 2,
+        "arrayExpressions": 2,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#applyModel",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#findDirectMeter",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "76a1be09a57c7058f16958e359cdfb4013482bfaef2a5680f56cc9a43b6bd267",
+          "calls": {
+            "update": 69,
+            "create": 12
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

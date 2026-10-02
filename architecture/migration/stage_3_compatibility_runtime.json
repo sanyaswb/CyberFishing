@@ -676,6 +676,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ResourceMeterRenderer",
+      "legacyScriptIndex": 246,
+      "legacySymbol": "InventoryV2ResourceMeterRenderer",
+      "shimFile": "activations/246_inventoryv2resourcemeterrenderer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "targetModule": "src/game/presentation/inventory/inventory_resource_meter_renderer.js",
+      "id": "activation-0963870743fc",
+      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "VictoryActionGestureResolver",
       "legacyScriptIndex": 39,
       "legacySymbol": "VictoryActionGestureResolver",
@@ -2560,6 +2572,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2HeaderRenderer",
+      "legacyScriptIndex": 251,
+      "legacySymbol": "InventoryV2HeaderRenderer",
+      "shimFile": "activations/251_inventoryv2headerrenderer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "targetModule": "src/game/presentation/inventory/inventory_header_renderer.js",
+      "id": "activation-badc09ea7915",
+      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-bafccd351254",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
@@ -2964,6 +2988,18 @@
       "legacySymbol": "EquipmentSlotVisibilityPolicy",
       "legacyScriptIndex": 158,
       "shimFile": "activations/158_equipmentslotvisibilitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2AttachmentBadgeRenderer",
+      "legacyScriptIndex": 242,
+      "legacySymbol": "InventoryV2AttachmentBadgeRenderer",
+      "shimFile": "activations/242_inventoryv2attachmentbadgerenderer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "targetModule": "src/game/presentation/inventory/inventory_attachment_badge_renderer.js",
+      "id": "activation-f2f22279b4f6",
+      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
