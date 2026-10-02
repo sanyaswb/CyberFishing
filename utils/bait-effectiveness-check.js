@@ -1,6 +1,6 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
-const { installDescriptorFactories } = require("./testing/runtime/constructor_defaults");
+const { installDescriptorFactories, bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const Assertion = CheckAssertion.create("Bait effectiveness check");
 
@@ -49,6 +49,8 @@ class BaitEffectivenessCheck {
     });
     installDescriptorFactories(this.#sourceRuntime.context, { EffectivenessResolver: "BaitEffectivenessDescriptor" });
     this.#runtime = this.#sourceRuntime.context;
+    this.#runtime.ViewFactory = bindConstructorDefaults(this.#runtime.ViewFactory,
+      () => ({ effectiveRarityResolver: new this.#runtime.EffectiveItemRarityResolver() }));
   }
 
   run() {

@@ -32,15 +32,9 @@ class EquipmentSlotAvailabilityPolicy {
         ? EQUIPMENT_SLOT_PRESENTATION
         : {});
     this.#visibilityPolicy =
-      visibilityPolicy ||
-      (typeof EquipmentSlotVisibilityPolicy !== "undefined"
-        ? new EquipmentSlotVisibilityPolicy({ slotConfig: this.#slotConfig })
-        : null);
+      visibilityPolicy || null;
     this.#terminalLineResolver =
-      terminalLineResolver ||
-      (typeof TerminalLineSlotResolver !== "undefined"
-        ? new TerminalLineSlotResolver()
-        : null);
+      terminalLineResolver || null;
   }
 
   resolve({

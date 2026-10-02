@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "003",
+  "slug": "inventory-read-model-capabilities",
+  "baseCommit": "51313119cfc5d37b7e98ce35da3cd9a647b388b5",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/core/equipment/equipment_slot_availability_policy.js",
+      "before": "89f0ae0ebe0ce002772368cf75c3a067cfe1c9fc38c96edf14d0bb3db0b811b8",
+      "after": "2ad642d84f3a22b13ddbce2f34dbb0273d7014cf4bc39b878990171a882f4f29"
+    },
+    {
+      "path": "src/systems/inventory_item_view_factory.js",
+      "before": "5e91a15166d06a9f7a9391826f094263e932e67583eaa314dfb682a629c04617",
+      "after": "b08fd1c6b4db752f1901b7ad8dd7c7261931591d356c2f03925f1094e7854a9d"
+    },
+    {
+      "path": "utils/item-progression-check.js",
+      "before": "70834b171386ff99b52779eaa94239d94ba42b944a1f20b8961cdd18d966bcdd",
+      "after": "12979c9f41f415c3368b189ef2694290e28317b50a4f7d44eb71ed7fdb3bd4dc"
+    },
+    {
+      "path": "utils/bait-effectiveness-check.js",
+      "before": "151e18734c19f65c0c9c2674c12a4e38cc40f5926ef16e11958dea8d11b64595",
+      "after": "9acd62a1b434ab2da68eaa7fae2723237e4547d98b7f6bf26aef7f11f74bdd1a"
+    },
+    {
+      "path": "utils/inventory-v2-equipment-check.js",
+      "before": "7371f1918e3ee9a100257690248835b526011df6dc0891682127c00c5421c8dc",
+      "after": "7e0ce0f2e6e75f5cb371fa0e01a5d2c6f38efbd4559790274faa478fde50b78b"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "c879131a06c695d1fd0b4e65996cda681b520b3e7e4b2efda2e6ddfb25339eed",
+      "after": "9bfdeb3ae09ac4e680299eecc9931bcc1a788da0d18a0f6ad5c14e2f31037fe1"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen inventory-capabilities preparation bounded to cluster 006: remove high-level default construction of visibility/terminal-line policies and effective rarity only after proving every production construction supplies them. Existing validation, method bodies, config/catalog references and read-model state semantics remain intact; compose legacy-shaped test defaults with the existing constructor proxy.",
+  "constructionEvidence": [
+    "EquipmentSlotAvailabilityPolicy has one production constructor: InventoryV2CompositionRoot passes slotConfig, slotPresentation, visibilityPolicy and terminalLineResolver. No DEV constructor exists. inventory-v2-equipment-check now supplies identical policy instances through bindConstructorDefaults; actual original class/prototype/instanceof are retained.",
+    "InventoryItemViewFactory is created only by the GameCompositionRoot callback. Legacy InventoryManager passes its already composed effectiveRarityResolver in options. Tests: item-rarity-roundtrip already passes it explicitly; item-progression and bait-effectiveness now compose the same class per constructor with bindConstructorDefaults, preserving option override precedence and allocation timing in tests.",
+    "No browser/DEV/raw config/global transport is added. Presentation methods continue reading gameplay through supplied repository/policy/hydration collaborators and hold only their own display state/caches."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 61,
+    "knownDebtsAfter": 61,
+    "focused": {
+      "utils/inventory-v2-equipment-check.js": {
+        "before": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172",
+        "after": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172"
+      },
+      "utils/item-progression-check.js": {
+        "before": "f8b56e02fe5a32f43914a51b12c0b0dd5a116c9262df0b4f0a79d5d623c77f6f",
+        "after": "f8b56e02fe5a32f43914a51b12c0b0dd5a116c9262df0b4f0a79d5d623c77f6f"
+      },
+      "utils/bait-effectiveness-check.js": {
+        "before": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786",
+        "after": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786"
+      },
+      "utils/item-rarity-roundtrip-check.js": {
+        "before": "7442b2b96d59ec92fedc22013b4a1e30704613c83228dc4ed4822c3dea177bae",
+        "after": "7442b2b96d59ec92fedc22013b4a1e30704613c83228dc4ed4822c3dea177bae"
+      },
+      "utils/inventory-v2-integration-check.js": {
+        "before": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271",
+        "after": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      }
+    },
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 206,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true
+    }
+  }
+}

@@ -92,6 +92,8 @@ class RuntimeLoader {
       withPolicy: ["EffectiveStats", "SemanticMigration"],
       withResolver: ["Validator", "Baselines", "Capacity", "Progression", "ViewFactory"],
     });
+    runtime.context.ViewFactory = bindConstructorDefaults(runtime.context.ViewFactory,
+      () => ({ effectiveRarityResolver: new runtime.context.EffectiveItemRarityResolver() }));
     // Default capacity labels are injected the way bootstrap injects them.
     runtime.context.Capacity = bindConstructorDefaults(runtime.context.Capacity, {
       messages: runtime.context.RULE_MESSAGES,

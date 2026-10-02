@@ -13290,19 +13290,7 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "EquipmentSlotVisibilityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "InventoryItemLocationKind",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "TerminalLineSlotResolver",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
@@ -13361,27 +13349,11 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "EquipmentSlotVisibilityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/equipment_slot_visibility_policy.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryItemLocationKind",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "TerminalLineSlotResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/terminal_line_slot_resolver.js",
               "resolution": "confirmed"
             }
           ],
@@ -13398,20 +13370,6 @@
               "target": "src/config/inventory/equipment_slot_presentation_config.js",
               "symbols": [
                 "EQUIPMENT_SLOT_PRESENTATION"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/equipment_slot_visibility_policy.js",
-              "symbols": [
-                "EquipmentSlotVisibilityPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/terminal_line_slot_resolver.js",
-              "symbols": [
-                "TerminalLineSlotResolver"
               ],
               "resolution": "confirmed"
             },
@@ -49763,14 +49721,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EffectiveItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -49796,25 +49747,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EffectiveItemRarityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/items/rarity/effective_item_rarity_resolver.js",
-              "symbols": [
-                "EffectiveItemRarityResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

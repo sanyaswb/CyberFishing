@@ -117,6 +117,9 @@ class RuntimeLoader {
         messages: context.INVENTORY_RULE_MESSAGES,
       });
     }
+    context.EquipmentSlotAvailabilityPolicy = bindConstructorDefaults(context.EquipmentSlotAvailabilityPolicy,
+      () => ({ visibilityPolicy: new context.EquipmentSlotVisibilityPolicy({ slotConfig: context.EQUIPMENT_SLOT_CONFIG }),
+        terminalLineResolver: new context.TerminalLineSlotResolver() }));
     return context;
   }
 
