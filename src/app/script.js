@@ -55,7 +55,5 @@
     );
   }
 
-  if (typeof CacheManager !== "undefined" && CacheManager.printStorageUsage) {
-    CacheManager.printStorageUsage();
-  }
+  compositionRoot.printStorageUsage();
 })();

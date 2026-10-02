@@ -121,9 +121,9 @@ class UIDraggableButton {
 
   // --- МАГІЯ КЕШУ ---
   #restorePosition() {
-    if (typeof CacheManager === "undefined") return;
+    if (!this.#options.cache) return;
 
-    const savedPos = CacheManager.get(`drag_pos_${this.#id}`);
+    const savedPos = this.#options.cache.get(`drag_pos_${this.#id}`);
     if (savedPos) {
       this.#element.style.position = "absolute";
       this.#element.style.margin = "0";
@@ -146,7 +146,7 @@ class UIDraggableButton {
   }
 
   #savePosition() {
-    if (typeof CacheManager === "undefined") return;
+    if (!this.#options.cache) return;
 
     const rect = this.#element.getBoundingClientRect();
     const winWidth = window.innerWidth;
@@ -185,7 +185,7 @@ class UIDraggableButton {
     this.#element.style.bottom = pos.bottom;
 
     // Зберігаємо в кеш
-    CacheManager.set(`drag_pos_${this.#id}`, pos);
+    this.#options.cache.set(`drag_pos_${this.#id}`, pos);
   }
   // -------------------
 
@@ -301,6 +301,7 @@ class UIDraggableButton {
 
 class UIManager {
   #config;
+  #cache;
   #fullscreenBtn;
   #netBtn;
   #isNetReady = false;
@@ -313,7 +314,8 @@ class UIManager {
     this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
   };
 
-  constructor(config, devTools) {
+  constructor(config, devTools, { cache } = {}) {
+    this.#cache = cache;
     if (!devTools || typeof devTools.dispose !== "function") {
       throw new TypeError("UIManager requires devTools");
     }
@@ -377,7 +379,7 @@ class UIManager {
         }
       },
       this.#config,
-      { id: "btn_fullscreen" },
+      { id: "btn_fullscreen", cache: this.#cache },
     );
 
     document.addEventListener(
@@ -419,7 +421,7 @@ class UIManager {
         }
       },
       this.#config,
-      { id: "btn_net" },
+      { id: "btn_net", cache: this.#cache },
     );
 
     document.body.appendChild(this.#netBtn);

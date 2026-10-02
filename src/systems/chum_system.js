@@ -109,9 +109,11 @@ class ChumManager {
   #onBoatReturned;
   #rng;
   #now;
+  #cache;
 
   constructor(locationId, chumConfig, projector, services = {}) {
     this.#chumConfig = chumConfig;
+    this.#cache = services.cache;
     this.#projector = projector;
     this.#rng = services.rng || { next: () => Math.random() };
     this.#now = services.now || (() => Date.now());
@@ -177,7 +179,7 @@ class ChumManager {
   }
 
   loadFromStorage() {
-    const savedZones = CacheManager.get(this.#storageKey, []);
+    const savedZones = this.#cache.get(this.#storageKey, []);
 
     this.#zones.length = 0;
     for (let i = 0; i < savedZones.length; i++) {
@@ -198,11 +200,11 @@ class ChumManager {
       );
     }
 
-    this.#memoryGrid = CacheManager.get(this.#locationMemoryKey, {});
+    this.#memoryGrid = this.#cache.get(this.#locationMemoryKey, {});
   }
 
   saveToStorage() {
-    if (typeof CacheManager === "undefined") return;
+    if (!this.#cache) return;
 
     const zonesToSave = [];
     for (let i = 0; i < this.#zones.length; i++) {
@@ -218,8 +220,8 @@ class ChumManager {
       });
     }
 
-    CacheManager.set(this.#storageKey, zonesToSave);
-    CacheManager.set(this.#locationMemoryKey, this.#memoryGrid);
+    this.#cache.set(this.#storageKey, zonesToSave);
+    this.#cache.set(this.#locationMemoryKey, this.#memoryGrid);
   }
 
   deployBait(targetX, targetY, baitId, activeBoat = null) {

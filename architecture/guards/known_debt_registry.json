@@ -511,29 +511,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-57827722939a",
-      "rule": "boundary-dependency",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/core/core.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "57827722939afb6fd72c2ed42b00a06fc84210bb0a5e794a7e2364efc5205f5a",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/inventory_system.js",
-        "target": "src/core/core.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-5e823037a023",
       "rule": "boundary-dependency",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -899,28 +876,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-8eb0129a22ec",
-      "rule": "boundary-dependency",
-      "source": "src/core/core.js",
-      "target": "src/core/input/fight_input_action_composer.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8eb0129a22ecfc7855ef1a2748979b5ed837b32a3d527bba14dc90a77d0e7033",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/core/core.js",
-        "target": "src/core/input/fight_input_action_composer.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-8ec60d40f201",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
@@ -1148,29 +1103,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-c37bffd60e3d",
-      "rule": "boundary-dependency",
-      "source": "src/ui/ui.js",
-      "target": "src/core/core.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c37bffd60e3d6b6f6a66ff6935a172961103dbbe11e89c7c121fa0680a515180",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/ui.js",
-        "target": "src/core/core.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-c525fe97f83d",
       "rule": "boundary-dependency",
       "source": "src/app/adapters.js",
@@ -1249,28 +1181,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/application.js",
         "target": "src/app/adapters.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-e837581bb495",
-      "rule": "boundary-dependency",
-      "source": "src/systems/chum_system.js",
-      "target": "src/core/core.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "e837581bb495562dd3eed0a62753e7680aed0942265222236e0e1e85dbd79fe5",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/chum_system.js",
-        "target": "src/core/core.js"
       }
     },
     {

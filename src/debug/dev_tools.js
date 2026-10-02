@@ -1560,6 +1560,7 @@ class DevToolsUI {
     if (typeof UIDraggableButton !== "undefined") {
       new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
         id: "devtools_btn",
+        cache: typeof CacheManager !== "undefined" ? CacheManager : null,
         noTransform: true,
       });
     } else {

@@ -664,6 +664,18 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "Canvas2DSurface",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -865,6 +877,12 @@
               "symbol": "FightHudRenderer",
               "mechanism": "identifier",
               "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "FightInputActionComposer",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -1703,6 +1721,22 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "Canvas2DSurface",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1972,6 +2006,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/render/hud/fight_hud_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "FightInputActionComposer",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/core/input/fight_input_action_composer.js",
               "resolution": "confirmed"
             },
             {
@@ -3155,6 +3197,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/core/input/fight_input_action_composer.js",
+              "symbols": [
+                "FightInputActionComposer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
               "symbols": [
                 "BaitEffectivenessCatalogResolver"
@@ -3396,6 +3445,13 @@
               "target": "src/infrastructure/location/offscreen_canvas_factory.js",
               "symbols": [
                 "OffscreenCanvasFactory"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "symbols": [
+                "CacheManager"
               ],
               "resolution": "confirmed"
             },
@@ -6154,12 +6210,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "EventBus",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6238,14 +6288,6 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "EventBus",
               "mechanism": "identifier",
@@ -6328,7 +6370,6 @@
             {
               "target": "src/core/core.js",
               "symbols": [
-                "CacheManager",
                 "InputManager"
               ],
               "resolution": "confirmed"
@@ -8184,7 +8225,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             },
             {
@@ -8913,13 +8954,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
-              "symbols": [
-                "CacheManager"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/core/equipment/auto_refill_policy.js",
               "symbols": [
                 "AutoRefillMemory",
@@ -9037,6 +9071,13 @@
               "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
               "symbols": [
                 "LoadoutEquipmentTransitionPlanner"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "symbols": [
+                "CacheManager"
               ],
               "resolution": "confirmed"
             },
@@ -13997,16 +14038,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CacheManager",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "EventLogger",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InputManager",
               "mechanism": "global-lexical",
               "availability": "program-init"
@@ -14023,12 +14054,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "FightInputActionComposer",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "Vector2",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -14041,7 +14066,6 @@
           "status": "verified",
           "builtins": [
             "Date",
-            "JSON",
             "Math",
             "Number",
             "Object",
@@ -14049,10 +14073,6 @@
           ],
           "browserApis": [
             "clearTimeout",
-            "console",
-            "crypto",
-            "fetch",
-            "localStorage",
             "setTimeout",
             "window"
           ],
@@ -14066,21 +14086,13 @@
           "platform-adapter"
         ],
         "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/runtime/legacy_core_runtime.js",
+        "targetPath": "src/platform/browser/input/input_manager.js",
         "migrationWave": 5
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "FightInputActionComposer",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/input/fight_input_action_composer.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "Vector2",
               "mechanism": "identifier",
@@ -14091,13 +14103,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/input/fight_input_action_composer.js",
-              "symbols": [
-                "FightInputActionComposer"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/math/vector2.js",
               "symbols": [
@@ -23374,7 +23379,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             },
             {
@@ -23567,13 +23572,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
-              "symbols": [
-                "CacheManager"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/debug/debug.js",
               "symbols": [
                 "DEBUG_MODULES"
@@ -23621,6 +23619,13 @@
               "target": "src/debug/services/location_dev_tools_schema.js",
               "symbols": [
                 "LocationDevToolsSchema"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "symbols": [
+                "CacheManager"
               ],
               "resolution": "confirmed"
             },
@@ -26059,6 +26064,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "OverlayScaleControls",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -26121,6 +26132,14 @@
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "CacheManager",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             },
             {
@@ -26190,6 +26209,13 @@
               "target": "src/debug/overlay/dom/overlay_window_drag_controller.js",
               "symbols": [
                 "OverlayWindowDragController"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/storage/cache_manager.js",
+              "symbols": [
+                "CacheManager"
               ],
               "resolution": "confirmed"
             },
@@ -26599,7 +26625,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             },
             {
@@ -26607,7 +26633,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             },
             {
@@ -26628,7 +26654,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "symbols": [
                 "CacheManager"
               ],
@@ -42543,6 +42569,71 @@
       }
     },
     {
+      "currentPath": "src/infrastructure/diagnostics/event_logger.js",
+      "currentArea": "infrastructure/diagnostics",
+      "observed": {
+        "legacyLoadOrder": 41,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "EventLogger",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Date",
+            "JSON"
+          ],
+          "browserApis": [
+            "console",
+            "crypto",
+            "fetch"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/diagnostics/event_logger.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "high-level-self-composition",
+            "legacy-global-contract",
+            "mixed-responsibility-requires-decomposition"
+          ]
+        }
+      }
+    },
+    {
       "currentPath": "src/infrastructure/location/depth_map_reader.js",
       "currentArea": "infrastructure/location",
       "observed": {
@@ -42726,6 +42817,69 @@
         "blockers": {
           "status": "verified",
           "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/infrastructure/storage/cache_manager.js",
+      "currentArea": "infrastructure/storage",
+      "observed": {
+        "legacyLoadOrder": 41,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "CacheManager",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "JSON"
+          ],
+          "browserApis": [
+            "console",
+            "localStorage"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/storage/cache_manager.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "high-level-self-composition",
+            "legacy-global-contract",
+            "mixed-responsibility-requires-decomposition"
+          ]
         }
       }
     },
@@ -43457,13 +43611,13 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/core/core.js",
+              "target": "src/infrastructure/storage/cache_manager.js",
               "symbols": [
                 "CacheManager"
               ],
@@ -47304,18 +47458,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "Vector2",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -47353,22 +47495,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "Vector2",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -47378,13 +47504,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "CacheManager"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/math/vector2.js",
               "symbols": [
@@ -48624,12 +48743,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CastDistanceCalculator",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -48773,14 +48886,6 @@
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/runtime/config_data.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
               "resolution": "confirmed"
             },
             {
@@ -48939,13 +49044,6 @@
               "target": "src/core/casting_distance.js",
               "symbols": [
                 "CastDistanceCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "CacheManager"
               ],
               "resolution": "confirmed"
             },
@@ -52912,18 +53010,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "HorizontalScrollController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -52982,22 +53068,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/core.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "HorizontalScrollController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -53015,13 +53085,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/core/core.js",
-              "symbols": [
-                "CacheManager"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/inventory/equip_target_selection_policy.js",
               "symbols": [

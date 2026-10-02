@@ -16,6 +16,10 @@ class GameCompositionRoot {
     return this.#runtimeConfig;
   }
 
+  printStorageUsage() {
+    if (typeof CacheManager !== "undefined" && CacheManager.printStorageUsage) CacheManager.printStorageUsage();
+  }
+
   getMemoryWatchdogConfig() {
     return this.#config.debug?.memoryWatchdog || {};
   }
@@ -455,6 +459,7 @@ class GameCompositionRoot {
       baitEffectivenessCatalogResolver,
       effectiveItemStatsResolver,
       itemStatOverridePolicy,
+      CacheManager,
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
@@ -499,6 +504,7 @@ class GameCompositionRoot {
       ),
       input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
+        fightInputActionComposer: typeof FightInputActionComposer !== "undefined" ? new FightInputActionComposer() : null,
       }),
       ui: new UIManager(
         this.#config,
@@ -507,8 +513,10 @@ class GameCompositionRoot {
           itemProgressionDebugProvider,
           itemProgressionResolver,
         }),
+        { cache: CacheManager },
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
+        cache: CacheManager,
         rng,
         now: () => clock.realNow,
         onBoatReturned: (context) =>

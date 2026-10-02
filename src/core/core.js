@@ -55,7 +55,7 @@ class InputManager {
   #stateSnapshot;
   #runtimeConfig;
 
-  constructor(canvas, anchorX = null, { runtimeConfig } = {}) {
+  constructor(canvas, anchorX = null, { runtimeConfig, fightInputActionComposer = null } = {}) {
     this.#runtimeConfig = runtimeConfig;
     this.#canvas = canvas;
     this.#anchorX = anchorX;
@@ -80,10 +80,7 @@ class InputManager {
     this.#panDeltaY = 0;
     this.#clickPos = null;
     this.#pointerGestureId = 0;
-    this.#fightInputActionComposer =
-      typeof FightInputActionComposer !== "undefined"
-        ? new FightInputActionComposer()
-        : null;
+    this.#fightInputActionComposer = fightInputActionComposer;
     this.#stateSnapshot = {
       isPulling: false,
       pullDirection: this.#pullDirection,
@@ -744,105 +741,3 @@ class InputManager {
   }
 }
 
-class EventLogger {
-  #endpoint;
-  #enabled;
-
-  constructor(endpoint, enabled = true) {
-    this.#endpoint = endpoint;
-    this.#enabled = enabled;
-  }
-
-  async logEvent(eventType, eventData) {
-    if (!this.#enabled || !this.#endpoint) return;
-
-    const payload = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      event: eventType,
-      ...eventData,
-    };
-
-    try {
-      const response = await fetch(this.#endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        console.log(`[EventLogger] Event ${eventType} successfully sent.`);
-      }
-    } catch (error) {
-      console.error("[EventLogger] Failed to send event.", error);
-    }
-  }
-}
-
-class CacheManager {
-  static PREFIX = "fishing_game_";
-
-  static set(key, value) {
-    try {
-      localStorage.setItem(this.PREFIX + key, JSON.stringify(value));
-    } catch (e) {
-      console.warn(
-        "[CacheManager] Помилка збереження в кеш. Можливо, перевищено ліміт 5MB:",
-        e,
-      );
-    }
-  }
-
-  static get(key, defaultValue = null) {
-    try {
-      const item = localStorage.getItem(this.PREFIX + key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch (e) {
-      console.warn("[CacheManager] Помилка читання з кешу:", e);
-      return defaultValue;
-    }
-  }
-
-  static remove(key) {
-    localStorage.removeItem(this.PREFIX + key);
-  }
-
-  static clearAll() {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith(this.PREFIX)) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach((k) => localStorage.removeItem(k));
-    console.log("[CacheManager] Весь кеш гри очищено.");
-  }
-
-  static printStorageUsage() {
-    let totalBytes = 0;
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const value = localStorage.getItem(key);
-
-      totalBytes += (key.length + value.length) * 2;
-    }
-
-    const kb = (totalBytes / 1024).toFixed(2);
-    const mb = (totalBytes / (1024 * 1024)).toFixed(3);
-    const limitMb = 5.0;
-    const percentage = ((totalBytes / (limitMb * 1024 * 1024)) * 100).toFixed(
-      2,
-    );
-
-    let color = "#00ff80";
-    if (percentage > 70) color = "#ffaa00";
-    if (percentage > 90) color = "#ff4444";
-
-    console.log(
-      `%c💾 [CacheManager] Використано: ${kb} KB (${mb} MB) з ~${limitMb} MB | Заповнено на ${percentage}%`,
-      `color: ${color}; font-weight: bold; font-family: monospace;`,
-    );
-  }
-}

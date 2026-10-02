@@ -985,6 +985,7 @@ class InventoryManager {
   #itemStatOverridePolicy;
   #effectiveRarityResolver;
   #itemFreshnessResolver;
+  #cache;
 
   constructor(
     itemDB,
@@ -1002,13 +1003,15 @@ class InventoryManager {
     baitEffectivenessCatalogResolver = null,
     effectiveStatsResolver,
     itemStatOverridePolicy,
+    cache,
   ) {
+    this.#cache = cache;
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
-      CacheManager.get("player_inventory") || playerConfig.inventory || [],
+      this.#cache.get("player_inventory") || playerConfig.inventory || [],
     );
     const cachedEquipment = EquipmentStateMigrationPolicy.migrate({
       equipment:
-        CacheManager.get("player_equipment") || playerConfig.equipment || {},
+        this.#cache.get("player_equipment") || playerConfig.equipment || {},
       inventoryItems: cachedInventory,
       itemDB,
     });
@@ -1075,7 +1078,7 @@ class InventoryManager {
   #initializeInventoryV2(legacyEquipment, playerConfig) {
     if (typeof InventoryV2CompositionRoot === "undefined") return;
     this.#inventoryV2 = InventoryV2CompositionRoot.compose({
-      cache: CacheManager,
+      cache: this.#cache,
       legacyItems: this.#inventory.getAll(),
       legacyEquipment,
       legacySettings: playerConfig?.inventorySettings || {},
@@ -2460,8 +2463,8 @@ class InventoryManager {
   #saveAndNotify({ save = true, notify = true } = {}) {
     this.#equippedCache = null;
     if (save) {
-      CacheManager.set("player_inventory", this.#inventory.getAll());
-      CacheManager.set("player_equipment", this.#equipment.getRawState());
+      this.#cache.set("player_inventory", this.#inventory.getAll());
+      this.#cache.set("player_equipment", this.#equipment.getRawState());
     }
 
     if (notify) {

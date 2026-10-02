@@ -262,6 +262,7 @@ class InventoryFixtureFactory {
       null, null, null, null, null, null, null,
       this.#effectiveStatsResolver,
       this.#itemStatOverridePolicy,
+      MemoryCacheManager,
     );
     return { manager, events };
   }

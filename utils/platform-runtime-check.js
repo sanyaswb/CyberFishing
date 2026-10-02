@@ -76,6 +76,7 @@ async function main() {
     ["src/infrastructure/location/location_asset_loader.js","LocationAssetLoader"],
     ["src/app/core/game_clock.js","GameClock"],
     ["src/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
+    ["src/infrastructure/storage/cache_manager.js","CacheManager"],
   ]) runtime.load(file,{expose:[name]});
   runtime.run('for (const module of ["src/engine/assets/asset_manifest.js", "src/engine/assets/asset_load_result.js"]) Object.assign(globalThis, globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules[module]);');
   const {GameClock,ImageAssetProvider,OffscreenCanvasFactory,LocationAssetLoader} = runtime.context;
@@ -137,6 +138,24 @@ async function main() {
   const retry=coordinator.preloadManifest(makeManifest("critical",true));
   pending.at(-1).resolve();assert.equal((await retry).ok,true);
   assert.equal(diagnosticCalls,4,"failed pending entries are removed and can retry");
+
+  const saved=new Map([["foreign","keep"]]);
+  runtime.context.localStorage={get length(){return saved.size;},key:index=>[...saved.keys()][index],
+    setItem:(key,value)=>saved.set(key,value),getItem:key=>saved.get(key)||null,removeItem:key=>saved.delete(key)};
+  const CacheManager=runtime.context.CacheManager;
+  const save={version:1,items:[{id:"item-1",condition:0.73}],equipped:{rodId:"item-1"}};
+  CacheManager.set("save",save);
+  assert.equal(saved.get("fishing_game_save"),JSON.stringify(save),"save prefix and JSON bytes are unchanged");
+  assert.equal(JSON.stringify(CacheManager.get("save")),JSON.stringify(save));
+  assert.notEqual(CacheManager.get("save"),save);
+  CacheManager.remove("save");assert.equal(CacheManager.get("save","default"),"default");
+  saved.set("fishing_game_broken","invalid JSON");
+  const warnings=[];
+  runtime.context.console={log(){},warn:(...args)=>warnings.push(args),error:console.error};
+  assert.equal(CacheManager.get("broken","safe fallback"),"safe fallback");
+  assert.equal(warnings.length,1,"failed reads retain their warning and caller fallback");
+  CacheManager.set("one",save);CacheManager.set("two",[]);CacheManager.clearAll();
+  assert.deepEqual([...saved],[ ["foreign","keep"] ],"clearAll preserves other applications' keys");
 
   const factory = new OffscreenCanvasFactory();
   const surface = factory.createSurface(12.9,0,{willReadFrequently:true});

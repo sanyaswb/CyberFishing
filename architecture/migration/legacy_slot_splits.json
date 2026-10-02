@@ -31,9 +31,11 @@
       "slot": 41,
       "members": [
         "src/core/core.js",
+        "src/infrastructure/diagnostics/event_logger.js",
+        "src/infrastructure/storage/cache_manager.js",
         "src/core/math/vector2.js"
       ],
-      "transition": "architecture/migration/stage_3_prerequisites/027_vector2-engine-activation.json"
+      "transition": "architecture/migration/stage_4/preparations/005_core-input-capabilities.json"
     },
     {
       "slot": 79,

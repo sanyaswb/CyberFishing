@@ -100,7 +100,7 @@ vm.runInContext(
       },
     },
     {},
-    { onBoatReturned: (event) => boatReturnEvents.push(event) },
+    { cache: CacheManager, onBoatReturned: (event) => boatReturnEvents.push(event) },
   );
   const tripBoat = chumManager.spawnIdleBoat(0, 0, {
     instanceId: "boat-trip-root",

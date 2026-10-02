@@ -60,6 +60,7 @@ class OverlayDomAdapter {
     ) {
       new UIDraggableButton(this.#container, null, CONFIG, {
         id: "debug_overlay",
+        cache: typeof CacheManager !== "undefined" ? CacheManager : null,
         noTransform: true,
       });
     }

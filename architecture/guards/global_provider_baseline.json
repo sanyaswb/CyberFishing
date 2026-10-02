@@ -1348,18 +1348,6 @@
     },
     {
       "currentPath": "src/core/core.js",
-      "symbol": "CacheManager",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/core/core.js",
-      "symbol": "EventLogger",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/core/core.js",
       "symbol": "InputManager",
       "mechanism": "global-lexical",
       "availability": "program-init"
@@ -4005,6 +3993,12 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/infrastructure/diagnostics/event_logger.js",
+      "symbol": "EventLogger",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/infrastructure/location/depth_map_reader.js",
       "symbol": "DepthMapReader",
       "mechanism": "global-lexical",
@@ -4019,6 +4013,12 @@
     {
       "currentPath": "src/infrastructure/location/offscreen_canvas_factory.js",
       "symbol": "OffscreenCanvasFactory",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/cache_manager.js",
+      "symbol": "CacheManager",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },
