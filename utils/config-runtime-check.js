@@ -16,6 +16,7 @@ function check(structured) {
     ["src/config/config.js",["createRuntimeConfigContext","CONFIG_RUNTIME_CONTEXT","BASE_CONFIG","CONFIG_OVERRIDE_STORE","RESOLVED_CONFIG_PROVIDER"]],
     ["src/app/bootstrap.js",["GameCompositionRoot"]],
     ["src/app/adapters.js",["ConfigProvider"]],
+    ["src/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
     ["src/debug/overlay/services/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});
   const {CONFIG_RUNTIME_CONTEXT:ctx,BASE_CONFIG:base,CONFIG_OVERRIDE_STORE:store,RESOLVED_CONFIG_PROVIDER:provider} = runtime.context;
@@ -62,6 +63,10 @@ function check(structured) {
   assert.equal(Object.keys(anotherPort).includes("fightPhysicsConfig"),false);
   const metrics=new runtime.context.OverlayMetricResolver({baseConfig:base});
   assert.equal(metrics.resolvePath("BASE_CONFIG.physics.nested.value").value,1);
+  const validateVersion=projectVersion=>new runtime.context.ConfigSchemaValidator({config,baseConfig:base,overrideStore:store,projectVersion}).validate();
+  assert.equal(validateVersion(undefined).warnings.filter(issue=>issue.path==="project.version").length,1);
+  assert.equal(validateVersion({version:"0.25.0"}).errors.filter(issue=>issue.path==="PROJECT_VERSION_CONFIG.version").length,0);
+  assert.equal(validateVersion({version:"invalid"}).errors.filter(issue=>issue.path==="PROJECT_VERSION_CONFIG.version").length,1);
   const date = new Date("2020-01-01T00:00:00Z");
   const clonedDate=runtime.context.deepCloneConfig({date});
   if(structured){assert(clonedDate.date instanceof Date);assert(cloneCalls>0);}

@@ -12747,11 +12747,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "raw-config"
+          "presentation"
         ],
-        "targetBoundary": "game-config-raw",
-        "targetPath": "src/game/config/raw/project_version.js",
-        "migrationWave": 1
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/version/project_version.js",
+        "migrationWave": 6
       },
       "analysis": {
         "dependencies": {
@@ -13159,18 +13159,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "RarityConfigValidator",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -13239,22 +13227,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/project_version.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/project_version.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "RarityConfigValidator",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -13283,13 +13255,6 @@
               "target": "src/config/physics/physics_units_and_naming.js",
               "symbols": [
                 "PHYSICS_UNITS_AND_NAMING"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/project_version.js",
-              "symbols": [
-                "PROJECT_VERSION_CONFIG"
               ],
               "resolution": "confirmed"
             },

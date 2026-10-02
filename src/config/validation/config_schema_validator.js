@@ -36,10 +36,12 @@ class ConfigSchemaValidator {
     namingConvention = null,
     baseConfig = undefined,
     overrideStore = undefined,
+    projectVersion = undefined,
   } = {}) {
     this.config = config || {};
     this.baseConfig = baseConfig;
     this.overrideStore = overrideStore;
+    this.projectVersion = projectVersion;
     this.fishDb = Array.isArray(fishDb) ? fishDb : [];
     this.itemDb = itemDb || {};
     this.mapDb = mapDb || {};
@@ -120,6 +122,7 @@ class ConfigSchemaValidator {
   }
 
   #validateProjectVersion() {
+    const PROJECT_VERSION_CONFIG = this.projectVersion;
     if (typeof PROJECT_VERSION_CONFIG === "undefined") {
       this.#warn("project.version", "PROJECT_VERSION_CONFIG is not loaded");
       return;

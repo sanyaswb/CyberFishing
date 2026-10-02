@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "003",
+  "slug": "project-version-presentation",
+  "baseCommit": "2ff000586094a620e6e9d0ac629957bccd1a9ae5",
+  "reason": "Project version is authoritative UI/tool release metadata, not gameplay runtime config. Its only production readers are the presentation badge and a dormant schema validator (no production construction sites); validator metadata is now constructor-injected. Preserve the classic version file byte-for-byte because release projection/package checks/version-copy tooling write/read it. Stage 4 brief explicitly allows this Stage 5 follow-up, with the existing conditional alias exposure preserved. No new global, alias transport, policy exception or debt.",
+  "reclassified": [
+    {
+      "currentPath": "src/config/project_version.js",
+      "fromBoundary": "game-config-raw",
+      "targetBoundary": "game-presentation",
+      "followUpStage": "stage-5",
+      "sourceSha256": "ceacb099f91e493f19c6679a8b536ca47f4c0165b6cc7950ad52e1ea346f22d5",
+      "reason": "Project version is authoritative UI/tool release metadata, not gameplay runtime config. Its only production readers are the presentation badge and a dormant schema validator (no production construction sites); validator metadata is now constructor-injected. Preserve the classic version file byte-for-byte because release projection/package checks/version-copy tooling write/read it. Stage 4 brief explicitly allows this Stage 5 follow-up, with the existing conditional alias exposure preserved. No new global, alias transport, policy exception or debt."
+    }
+  ],
+  "constructionEvidence": [
+    "src/ui/version_badge.js reads only displayed version/label/channel/title metadata; no gameplay or mutable runtime ownership.",
+    "ConfigSchemaValidator has no construction in src or existing utils; new shared config-runtime fixtures explicitly inject metadata and preserve valid/invalid/missing diagnostics.",
+    "Release projection, root package check, Stage 1 closure and create-version-copy still read the classic file; byte-identical source retained."
+  ],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-boundary-dependency-4afc317a7252"
+  ],
+  "files": [
+    {
+      "path": "src/config/validation/config_schema_validator.js",
+      "before": "5993648976072532a99f0dcf189d5d75cbacda557cc898fc2591a12a88ca399c",
+      "after": "979dc48c560eff876aab60f7ddc7a227a538fb156c549557d229dd82aa457c2b"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "663442d079243e8fa049c849cd73e5f7fc520461908098994dae0713fb3dcf75",
+      "after": "44b42b8632ff6efdeef6ed1b1213efeaa1ffdd45ea8ee258594f6e39ff87c636"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "4c0de8cc01f509161b92c7c8523717abbc7babe5f73e27dcab8be17311bf4acd",
+      "after": "448ed07dc0614ad6647fb6cefeec6e28447a504e07aab1b6381318be1bc20c2c"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "5997d9322fe7704f350a39b1d62b22d349e4337afbf78a40136ffe4174d0fdc2",
+      "after": "59fadebbd16d982ae17eb4b6a7b0b68fc33ab82b9c1ab7018442aad4a0d778e7"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "acceptance": {
+      "checks": 80,
+      "executed": 80,
+      "cached": 0,
+      "sourceUnchanged": true,
+      "catalogSha256": "99f585cfebd521ccd25babe6da3c0fcc59f5f921cf7f8b14c8d515d32e09029c"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 155,
+      "identityMismatches": 0
+    }
+  }
+}

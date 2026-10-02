@@ -6,7 +6,7 @@
   "milestone": "M1",
   "boundary": "game-config",
   "tier": "C",
-  "tierEvidence": "Reads BASE_CONFIG, CONFIG_OVERRIDE_STORE, PROJECT_VERSION_CONFIG: after 009/010.",
+  "tierEvidence": "Configuration diagnostics only; errors/warnings are reset per validation call. Base config, authoritative override store and presentation version metadata are constructor inputs after preparations 001/003. No production construction site, gameplay state, frame work or save writes. Remaining validator/category/naming dependencies are already ESM config owners. Both classes and diagnostic APIs move byte-for-byte plus imports/exports; shared config-runtime covers missing/valid/invalid version and injected base/store.",
   "modules": [
     {
       "currentPath": "src/config/validation/config_schema_validator.js",
@@ -17,14 +17,6 @@
       ],
       "imports": [
         {
-          "symbol": "BASE_CONFIG",
-          "from": "src/game/config/runtime/game_config.js"
-        },
-        {
-          "symbol": "CONFIG_OVERRIDE_STORE",
-          "from": "src/game/config/runtime/game_config.js"
-        },
-        {
           "symbol": "FISH_CATEGORIES",
           "from": "src/game/config/databases/fish/fish_categories.js"
         },
@@ -33,18 +25,33 @@
           "from": "src/game/config/raw/physics/physics_units_and_naming.js"
         },
         {
-          "symbol": "PROJECT_VERSION_CONFIG",
-          "from": "src/game/config/raw/project_version.js"
-        },
-        {
           "symbol": "RarityConfigValidator",
           "from": "src/game/config/validation/rarity_config_validator.js"
         }
       ],
-      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+      "reviewedBlockers": [
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Configuration diagnostics only; errors/warnings are reset per validation call. Base config, authoritative override store and presentation version metadata are constructor inputs after preparations 001/003. No production construction site, gameplay state, frame work or save writes. Remaining validator/category/naming dependencies are already ESM config owners. Both classes and diagnostic APIs move byte-for-byte plus imports/exports; shared config-runtime covers missing/valid/invalid version and injected base/store."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Configuration diagnostics only; errors/warnings are reset per validation call. Base config, authoritative override store and presentation version metadata are constructor inputs after preparations 001/003. No production construction site, gameplay state, frame work or save writes. Remaining validator/category/naming dependencies are already ESM config owners. Both classes and diagnostic APIs move byte-for-byte plus imports/exports; shared config-runtime covers missing/valid/invalid version and injected base/store."
+        }
+      ],
+      "sideEffectReview": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
+  "evidenceCommands": [
+    {
+      "name": "config-runtime",
+      "script": "utils/config-runtime-check.js"
+    },
+    {
+      "name": "rarity-production",
+      "script": "utils/rarity-production-check.js"
+    }
+  ],
   "output": null
 }
