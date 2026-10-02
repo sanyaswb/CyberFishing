@@ -2051,6 +2051,22 @@
       ]
     },
     {
+      "id": "bridge-8618fd1f8932",
+      "bridge": "src/config/validation/item_progression_config_validator.js",
+      "owner": "stage-4.cluster-008-item-progression-validator",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/validation/item_progression_config_validator.js",
+      "reason": "Preserve the exact ItemProgressionConfigValidator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemProgressionConfigValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8654ddb73e7e",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/render/fishing/line_visual_state_controller.js",

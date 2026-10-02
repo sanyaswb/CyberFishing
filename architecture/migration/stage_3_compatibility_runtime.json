@@ -425,6 +425,13 @@
       "module": "src/game/config/physics/physics_config.js",
       "owner": "stage-4.cluster-005-config-derived",
       "reason": "Module-level configuration objects built from literals and imported raw tables (no external read): the single cumulative-runtime instance creates them once and the activation shim exposes that identity to config.js, so CONFIG composition and in-place DEV edits reach the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "b956fc6e7cd278d47e0d745e1034705511ef5eeecc97913bfe4b90fdc7ec4159",
+      "module": "src/game/config/validation/item_progression_config_validator.js",
+      "owner": "stage-4.cluster-008-item-progression-validator",
+      "reason": "Static validation sets and configuration data are initialized once in the cumulative runtime. No external mutation; the same export identity reaches each existing classic consumer through its activation shim."
     }
   ],
   "activationPositions": [
@@ -619,6 +626,18 @@
       "shimFile": "activations/155_exactassemblyrefillsignaturepolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "ItemProgressionConfigValidator",
+      "legacyScriptIndex": 35,
+      "legacySymbol": "ItemProgressionConfigValidator",
+      "shimFile": "activations/035_itemprogressionconfigvalidator.js",
+      "sourceProvider": "src/config/validation/item_progression_config_validator.js",
+      "targetModule": "src/game/config/validation/item_progression_config_validator.js",
+      "id": "activation-2b4035f0dead",
+      "owner": "stage-4.cluster-008-item-progression-validator",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-2fc19b0cf09b",

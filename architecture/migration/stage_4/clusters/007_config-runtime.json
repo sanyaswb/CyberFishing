@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "007",
+  "slug": "config-runtime",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Config runtime helpers retain the existing authoritative override store and immutable base context. No gameplay state or per-frame work: the Stage 4 config scope is owner-approved tier C. The composition remains byte-identical; M1 RuntimeConfig reads live CONFIG, these existing helpers remain the Stage 6 DEV source follow-up. PARKED: policy browser-capability guard forbids structuredClone in game-config; graph v1 permission was incorrect. Prerequisite must inject the host clone capability from bootstrap/platform, preserve both structuredClone and JSON-fallback semantics, and account for every construction site. No policy/debt/whitelist change is permitted.",
+  "modules": [
+    {
+      "currentPath": "src/config/runtime/config_override_store.js",
+      "targetPath": "src/game/config/runtime/config_override_store.js",
+      "exports": [
+        "ConfigOverrideStore"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/config/runtime/resolved_config_provider.js",
+      "targetPath": "src/game/config/runtime/resolved_config_provider.js",
+      "exports": [
+        "ResolvedConfigProvider"
+      ],
+      "imports": [
+        {
+          "symbol": "ConfigOverrideStore",
+          "from": "src/game/config/runtime/config_override_store.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/config/runtime/immutable_config.js",
+      "targetPath": "src/game/config/runtime/immutable_config.js",
+      "exports": [
+        "createRuntimeConfigContext",
+        "deepCloneConfig",
+        "deepFreezeConfig",
+        "getRuntimeConfigPath",
+        "setRuntimeConfigPath"
+      ],
+      "imports": [
+        {
+          "symbol": "ConfigOverrideStore",
+          "from": "src/game/config/runtime/config_override_store.js"
+        },
+        {
+          "symbol": "ResolvedConfigProvider",
+          "from": "src/game/config/runtime/resolved_config_provider.js"
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}
