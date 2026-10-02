@@ -2,9 +2,12 @@ class ReusableRenderList {
   #items = [];
   #count = 0;
   #bufferId;
+  #diagnostics;
 
-  constructor(bufferId = "renderList") {
+  // diagnostics: the render allocation diagnostics port injected by composition (DEV), or null.
+  constructor(bufferId = "renderList", diagnostics = null) {
     this.#bufferId = bufferId;
+    this.#diagnostics = diagnostics;
   }
 
   reset() {
@@ -17,9 +20,7 @@ class ReusableRenderList {
     if (!record) {
       record = {};
       this.#items[this.#count] = record;
-      if (typeof RenderAllocationDiagnostics !== "undefined") {
-        RenderAllocationDiagnostics.recordBufferGrowth(this.#bufferId);
-      }
+      this.#diagnostics?.recordBufferGrowth(this.#bufferId);
     }
     this.#count += 1;
     return record;
@@ -52,10 +53,8 @@ class ReusableRenderList {
 }
 
 class GameRenderFrame {
-  constructor() {
-    if (typeof RenderAllocationDiagnostics !== "undefined") {
-      RenderAllocationDiagnostics.recordFrameCreated();
-    }
+  constructor(diagnostics = null) {
+    diagnostics?.recordFrameCreated();
     this.frameNumber = 0;
     this.dt = 0;
     this.stateName = "";
@@ -67,14 +66,14 @@ class GameRenderFrame {
     this.world = {
       visible: false,
       backgroundColor: "#0f171e",
-      backgroundLayers: new ReusableRenderList("world.backgroundLayers"),
-      clipRegions: new ReusableRenderList("world.clipRegions"),
+      backgroundLayers: new ReusableRenderList("world.backgroundLayers", diagnostics),
+      clipRegions: new ReusableRenderList("world.clipRegions", diagnostics),
       debugImage: { visible: false },
-      dynamicZones: new ReusableRenderList("world.dynamicZones"),
-      chumZones: new ReusableRenderList("world.chumZones"),
-      waypoints: new ReusableRenderList("world.waypoints"),
-      boats: new ReusableRenderList("world.boats"),
-      sensorRays: new ReusableRenderList("world.sensorRays"),
+      dynamicZones: new ReusableRenderList("world.dynamicZones", diagnostics),
+      chumZones: new ReusableRenderList("world.chumZones", diagnostics),
+      waypoints: new ReusableRenderList("world.waypoints", diagnostics),
+      boats: new ReusableRenderList("world.boats", diagnostics),
+      sensorRays: new ReusableRenderList("world.sensorRays", diagnostics),
       invalidCastMarker: { visible: false },
     };
     this.casting = {
@@ -87,9 +86,9 @@ class GameRenderFrame {
       visible: false,
       fightAreas: {
         visible: false,
-        clipRegions: new ReusableRenderList("fightAreas.clipRegions"),
-        sectorPoints: new ReusableRenderList("sectorPoints"),
-        lineRadiusPoints: new ReusableRenderList("lineRadiusPoints"),
+        clipRegions: new ReusableRenderList("fightAreas.clipRegions", diagnostics),
+        sectorPoints: new ReusableRenderList("sectorPoints", diagnostics),
+        lineRadiusPoints: new ReusableRenderList("lineRadiusPoints", diagnostics),
         catchZone: { visible: false },
         lastDashZone: { visible: false },
         netZone: { visible: false },
@@ -114,7 +113,7 @@ class GameRenderFrame {
       gameOver: { visible: false },
       victory: {
         visible: false,
-        stats: new ReusableRenderList("victory.stats"),
+        stats: new ReusableRenderList("victory.stats", diagnostics),
       },
     };
     this.debug = { visible: false };
@@ -174,7 +173,11 @@ class GameRenderFrame {
 }
 
 class RenderFrameBuffer {
-  #frame = new GameRenderFrame();
+  #frame;
+
+  constructor({ diagnostics = null } = {}) {
+    this.#frame = new GameRenderFrame(diagnostics);
+  }
 
   acquire(frameNumber = this.#frame.frameNumber + 1, dt = 0, stateName = "") {
     return this.#frame.reset(frameNumber, dt, stateName);

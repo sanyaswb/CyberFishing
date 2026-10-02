@@ -46509,14 +46509,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -46544,25 +46537,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "symbols": [
-                "RenderAllocationDiagnostics"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -47498,12 +47474,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "RenderOrder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -47541,14 +47511,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "RenderOrder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -47558,13 +47520,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "symbols": [
-                "RenderAllocationDiagnostics"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/render/core/render_order.js",
               "symbols": [
@@ -48054,14 +48009,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -48087,25 +48035,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "symbols": [
-                "RenderAllocationDiagnostics"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

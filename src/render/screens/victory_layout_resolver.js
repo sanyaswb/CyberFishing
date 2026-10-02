@@ -19,10 +19,8 @@ class VictoryLayoutResolver {
     release: {},
   };
 
-  constructor() {
-    if (typeof RenderAllocationDiagnostics !== "undefined") {
-      RenderAllocationDiagnostics.recordVictoryLayoutCreated();
-    }
+  constructor({ diagnostics = null } = {}) {
+    diagnostics?.recordVictoryLayoutCreated();
   }
 
   resolve({ width, height, config, statCount = 3 }) {

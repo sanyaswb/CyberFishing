@@ -2,7 +2,7 @@ class GameRenderPipeline {
   #passes;
   #passIds;
 
-  constructor({ passes }) {
+  constructor({ passes, diagnostics = null }) {
     if (!Array.isArray(passes) || passes.length === 0) {
       throw new TypeError("GameRenderPipeline requires render passes");
     }
@@ -21,9 +21,7 @@ class GameRenderPipeline {
       }
       seenIds.add(id);
       passIds.push(id);
-      if (typeof RenderAllocationDiagnostics !== "undefined") {
-        RenderAllocationDiagnostics.recordRenderPassCreated();
-      }
+      diagnostics?.recordRenderPassCreated();
     }
     this.#passes = Object.freeze(passes.slice());
     this.#passIds = Object.freeze(passIds);

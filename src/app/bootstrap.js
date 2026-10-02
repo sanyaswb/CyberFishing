@@ -214,7 +214,9 @@ class GameCompositionRoot {
       "itemProgressionDomAdapter",
       ["apply", "appendTooltip", "updateCapacity", "clear"],
     );
-    const victoryLayoutResolver = new VictoryLayoutResolver();
+    const victoryLayoutResolver = new VictoryLayoutResolver({
+      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+    });
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
     ]);
@@ -364,6 +366,7 @@ class GameCompositionRoot {
       invalidCastMarkerRenderer,
     });
     const pipeline = new GameRenderPipeline({
+      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
       passes: RenderOrder.createPassList({
         world: new WorldRenderPass({
           components: [
@@ -953,7 +956,9 @@ class GameCompositionRoot {
     });
     const renderCoordinator = new GameRenderCoordinator({
       stateMachine,
-      frameBuffer: new RenderFrameBuffer(),
+      frameBuffer: new RenderFrameBuffer({
+        diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+      }),
       frameBuilder,
       pipeline: runtime.rendering.pipeline,
       getBounds: appPorts.getDynamicBounds,
