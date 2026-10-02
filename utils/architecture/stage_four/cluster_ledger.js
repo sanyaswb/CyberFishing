@@ -50,6 +50,7 @@ class StageFourClusterLedger {
       assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
       StageFourClusterLedger.validatePreparationImports(record);
       for (const pair of record.replacedBridges || []) StageFourClusterLedger.validateBridgeRelocation(pair);
+      for (const merge of record.mergedBridges || []) StageFourClusterLedger.validateBridgeMerge(merge);
       return record;
     });
   }
@@ -74,6 +75,17 @@ class StageFourClusterLedger {
     }
     assert.equal(new Set((record.importEdges || []).map(edge => `${edge.source}->${edge.target}`)).size,
       (record.importEdges || []).length, "duplicate preparation import");
+  }
+
+  // A relocated consumer may already have a bridge to the same module. Canonical identities are
+  // per consumer/module: combine only the two existing surfaces, never create another global.
+  static validateBridgeMerge({ from, before, after }) {
+    for (const bridge of [from, before, after]) assert.equal(bridge.id, CanonicalBridgeIdentity.id(bridge), "merge bridge identity");
+    assert.notEqual(from.source, before.source, "merge must relocate a consumer");
+    for (const key of ["owner", "target", "bridge"]) assert.equal(from[key], before[key], "merge must keep the provider and owner");
+    const surfaces = [...new Map([...before.globalProviders, ...from.globalProviders]
+      .map(surface => [JSON.stringify(surface), surface])).values()].sort((a,b)=>a.symbol.localeCompare(b.symbol));
+    assert.deepEqual(after, { ...before, globalProviders: surfaces }, "merge may only combine the exact existing surfaces");
   }
 
   get records() {

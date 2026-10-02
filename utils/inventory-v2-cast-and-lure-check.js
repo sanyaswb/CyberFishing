@@ -353,10 +353,7 @@ class CompositionSeamCheck {
   run() {
     const bootstrap = fs.readFileSync(path.join(ROOT, "src/app/bootstrap.js"), "utf8");
     const application = fs.readFileSync(path.join(ROOT, "src/app/application.js"), "utf8");
-    const inventory = fs.readFileSync(
-      path.join(ROOT, "src/systems/inventory_system.js"),
-      "utf8",
-    );
+    const inventory = new SourceRuntime().readAuthoredSource("src/systems/inventory_system.js");
 
     Assertion.that(
       bootstrap.includes("castReadinessEvaluator: (equipment) =>") &&

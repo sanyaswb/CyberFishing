@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "2.5k lines; reads presentation and bootstrap classes, CONFIG, DOM events → prerequisites first; own group.",
+  "tierEvidence": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7.",
   "modules": [
     {
       "currentPath": "src/systems/inventory_system.js",
@@ -32,16 +32,8 @@
       ],
       "imports": [
         {
-          "symbol": "CacheManager",
-          "from": "src/platform/browser/runtime/legacy_core_runtime.js"
-        },
-        {
           "symbol": "CastDistanceCalculator",
           "from": "src/game/domain/casting/cast_distance_calculator.js"
-        },
-        {
-          "symbol": "CONFIG",
-          "from": "src/game/config/runtime/game_config.js"
         },
         {
           "symbol": "EffectiveItemRarityResolver",
@@ -60,18 +52,6 @@
           "from": "src/game/domain/inventory/inventory_item_stacking_policy.js"
         },
         {
-          "symbol": "InventoryItemViewFactory",
-          "from": "src/game/presentation/inventory/inventory_item_view_factory.js"
-        },
-        {
-          "symbol": "InventoryV2ActionType",
-          "from": "src/game/presentation/inventory/inventory_view_model.js"
-        },
-        {
-          "symbol": "InventoryV2CompositionRoot",
-          "from": "src/bootstrap/production/inventory_composition_root.js"
-        },
-        {
           "symbol": "ItemRarityResolver",
           "from": "src/game/domain/items/rarity/item_rarity_resolver.js"
         },
@@ -86,16 +66,50 @@
         {
           "symbol": "ReelRetrieveSpeedCalculator",
           "from": "src/game/domain/fishing/reel_retrieve_speed_calculator.js"
-        },
-        {
-          "symbol": "SLOT_CONFIG",
-          "from": "src/game/config/runtime/game_config.js"
         }
       ],
-      "planningPrerequisite": "src/game/application/inventory/legacy_inventory_system.js: reads classic or browser globals: CustomEvent, document, globalThis"
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7."
+        },
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "InventoryManager is the owner of the cohesive legacy inventory/equipment aggregate and its save orchestration. Preparation 018 injects host, raw-config and presentation/bootstrap dependencies. No browser, DEV, storage or raw-config global reads remain. Preserve class bodies, initialization order, save data and deterministic inventory/equipment lifecycle traces; defer API/formatting decomposition to Stage 7."
+        }
+      ],
+      "sideEffectReview": "Existing declarations initialize once with the same identities; no new external writes or resources. Original global exposure moves into the compatibility shim."
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "029",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "InventoryManager,Inventory,InventoryEquipment",
+        "--scenarios",
+        "utils/inventory-lifecycle-check.js,utils/inventory-v2-integration-check.js"
+      ]
+    }
+  ],
   "output": null
 }

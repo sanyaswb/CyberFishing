@@ -80,7 +80,8 @@ for(const change of [{source:"src/app/unrecorded.js"},{target:"../escape.js"},{r
     importEdges:[{...preparationImport.importEdges[0],...change}]}),/preparation import/u);
 assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
   importEdges:[preparationImport.importEdges[0],preparationImport.importEdges[0]]}),/duplicate/u);
-const preparationRetired = new Set(preparations.flatMap(record => (record.replacedBridges || []).map(pair => pair.before.id)));
+const preparationRetired = new Set(preparations.flatMap(record => [
+  ...(record.replacedBridges || []).map(pair => pair.before.id), ...(record.mergedBridges || []).map(merge => merge.from.id)]));
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
 const retiredActivations = new Set((contract.retiredActivations || []).map((item) => item.activation.id));
 const inert = new Set((contract.inertModules || []).map((item) => item.targetModule));
@@ -89,6 +90,15 @@ const inert = new Set((contract.inertModules || []).map((item) => item.targetMod
 const laterRetiredBridges = (index) => new Set([...preparationRetired, ...ledger.records.filter((_, other) => other !== index)
   .flatMap((record) => record.output?.bridgesRetired || [])]);
 for (const preparation of preparations) {
+  for (const merge of preparation.mergedBridges || []) {
+    assert(ledger.applied.some(record=>record.output.bridgesAdded.includes(merge.from.id)), "merged bridge has no original owner");
+    assert(!bridges.has(merge.from.id), "merged consumer bridge remains");
+    assert(bridges.has(merge.after.id) || ledger.applied.some(record=>record.output.bridgesRetired.includes(merge.after.id)),
+      "merged bridge is missing without retirement");
+    assert.throws(()=>StageFourClusterLedger.validateBridgeMerge({...merge,after:{...merge.after,globalProviders:[]}}),/exact existing surfaces/u);
+    assert.throws(()=>StageFourClusterLedger.validateBridgeMerge({...merge,from:{...merge.from,target:"src/other.js"}}),/identity/u);
+    assert.throws(()=>StageFourClusterLedger.validateBridgeMerge({...merge,after:{...merge.after,reason:"changed"}}),/exact existing surfaces/u);
+  }
   for (const id of preparation.resolvedDebts) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt=>debt.id===id),
     `preparation ${preparation.id}: resolved debt remains ${id}`);
   assert.equal(preparation.verification.globalsBefore, preparation.verification.globalsAfter, "provider relocation cannot add globals");

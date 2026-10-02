@@ -52,7 +52,7 @@ class ItemStatContractCheck {
     const capabilities = this.#sourceRuntime.read(
       "src/core/equipment/rod_capability_resolver.js",
     );
-    const inventory = this.#sourceRuntime.read("src/systems/inventory_system.js");
+    const inventory = this.#sourceRuntime.readAuthoredSource("src/systems/inventory_system.js");
     const ordering = this.#sourceRuntime.read(
       "src/application/inventory/inventory_v2_item_order_resolver.js",
     );

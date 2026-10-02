@@ -73,10 +73,7 @@ class ItemFreshnessGameplayCheck {
   }
 
   #checkProductionWiring() {
-    const source = fs.readFileSync(
-      path.join(ROOT, "src/systems/inventory_system.js"),
-      "utf8",
-    );
+    const source = new SourceRuntime().readAuthoredSource("src/systems/inventory_system.js");
     Assertion.that(
       source.includes("itemFreshnessResolver: this.#itemFreshnessResolver"),
       "InventoryManager forwards its stored Freshness dependency to Inventory V2",

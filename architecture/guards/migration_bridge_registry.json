@@ -1759,26 +1759,6 @@
       ]
     },
     {
-      "id": "bridge-788cc8ebf801",
-      "bridge": "src/config/runtime/config_data.js",
-      "owner": "stage-4.cluster-010-config-root",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/game/config/runtime/game_config.js",
-      "reason": "Preserve the exact CONFIG, SLOT_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "SLOT_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7ad54eebd99a",
       "bridge": "src/systems/bite_system.js",
       "owner": "stage-4.cluster-027-bite-chum",
@@ -2418,6 +2398,10 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]

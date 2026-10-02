@@ -136,7 +136,7 @@ class InventoryRuntimeLoader {
     );
     this.#loadSlotConfigFile(context, "src/config/inventory/equipment_slot_presentation_config.js");
     this.#loadSlotConfigFile(context, "src/config/inventory/inventory_rule_messages.js");
-    this.#loadClass(context, "src/systems/inventory_system.js", "InventoryManager");
+    this.#compatibilityLoader.load("src/systems/inventory_system.js", ["InventoryManager", "LineCompatibilityRules", "InventoryEventBridge"]);
     vm.runInContext("globalThis.LineCompatibilityRules = LineCompatibilityRules;\n" +
       "globalThis.INVENTORY_RULE_MESSAGES = INVENTORY_RULE_MESSAGES;", context);
     return context;
@@ -265,7 +265,7 @@ class InventoryFixtureFactory {
       this.#effectiveStatsResolver,
       this.#itemStatOverridePolicy,
       MemoryCacheManager,
-      { slotConfig: this.#slotConfig },
+      { slotConfig: this.#slotConfig, now: () => 1700000000000 },
     );
     return { manager, events };
   }
