@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "B",
-  "tierEvidence": "high-level-self-composition / mixed blockers: review per framework.",
+  "tierEvidence": "api-parity (member review + public method traces incl. thrown errors) over five inventory scenarios; preparation 008 removed the hidden compositions; blockers reviewed per framework Q4/Q9.",
   "modules": [
     {
       "currentPath": "src/application/inventory/equipment_transition_executor.js",
@@ -15,7 +15,13 @@
         "EquipmentTransitionExecutor",
         "EquipmentTransitionPort"
       ],
-      "imports": []
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Two classes, one fact: EquipmentTransitionPort is the contract EquipmentTransitionExecutor drives (runAtomic + root moves + equipment commit), declared next to its only client; the executor applies a planned manual rod transition through it. No forbidden edge, text, config, DEV or browser access: framework Q9 reclassifies with evidence (api-parity traces incl. the base-port contract scenario)."
+        }
+      ]
     },
     {
       "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
@@ -45,14 +51,20 @@
         {
           "symbol": "EquipmentLoadout",
           "from": "src/game/domain/loadouts/equipment_loadout.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 008 (53837c2): the capacity policy and transition planner defaults are gone (InventoryV2CompositionRoot passes both). The remaining default mainSlotIds = EQUIPMENT_MAIN_SLOT_IDS is a Domain constant (import) that production relies on (Q4 keeps it); EquipmentLoadout construction in createFromEquipment is the use case itself (it creates the loadout entity it saves)."
         },
         {
-          "symbol": "LoadoutEquipmentTransitionPlanner",
-          "from": "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes LoadoutApplicationPort and LoadoutApplicationService through globalThis assignments; the cluster moves them into the activation shims (unmigrated consumers keep the exact globals). After preparation 008 (53837c2) the module reads no classic global: its remaining Domain symbols are ESM imports (allowed game-application -> game-domain)."
         },
         {
-          "symbol": "UnlimitedInventoryCapacityPolicy",
-          "from": "src/game/domain/inventory/inventory_capacity_policy.js"
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "LoadoutApplicationPort is the contract of LoadoutApplicationService (declared beside its only client); the service owns the loadout use cases (create from equipment, equip, disassemble) over that port. One responsibility, no forbidden edge/text/config/DEV/browser access: Q9 reclassified with api-parity evidence."
         }
       ]
     },
@@ -79,13 +91,21 @@
       "exports": [
         "EquipmentReadModelFactory"
       ],
-      "imports": [
+      "imports": [],
+      "planningPrerequisite": "src/game/application/inventory/equipment_read_model_factory.js: reads classic or browser globals: RegExp",
+      "reviewedBlockers": [
         {
-          "symbol": "RodCapabilityResolver",
-          "from": "src/game/domain/equipment/rod_capability_resolver.js"
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 008 (53837c2): the RodCapabilityResolver default is gone (InventoryV2CompositionRoot passes the resolver); the factory only stores injected readers."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One responsibility: projects EquipmentState plus item/assembly readers into the canonical equipment read model (roots, unfolded line/leader/rig children, capabilities). No forbidden edge, text, config, DEV or browser access: Q9 reclassified with api-parity evidence (hydration, equipment, cast/lure, integration scenarios)."
         }
       ],
-      "planningPrerequisite": "src/game/application/inventory/equipment_read_model_factory.js: reads classic or browser globals: RegExp"
+      "allowedGlobals": [
+        "RegExp"
+      ]
     },
     {
       "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
@@ -95,15 +115,305 @@
         "EquipmentInventoryContextFilterStrategy",
         "InventoryV2ContextItemFilter"
       ],
-      "imports": [
+      "imports": [],
+      "reviewedBlockers": [
         {
-          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes InventoryV2ContextItemFilter and its two strategies through globalThis assignments; the cluster moves them into the activation shims (unmigrated consumers keep the exact globals). After preparation 008 (53837c2) the module reads no classic global: its remaining Domain symbols are ESM imports (allowed game-application -> game-domain)."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "A strategy family: InventoryV2ContextItemFilter selects the assembly or equipment context strategy and both strategies answer the same question (which items the current context shows). Cohesive, no forbidden edge/text/config/DEV/browser access: Q9 reclassified with api-parity evidence."
         }
       ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "021",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "EquipmentTransitionPort,EquipmentTransitionExecutor,InventoryV2EquipmentTransitionPort,LoadoutApplicationPort,LoadoutApplicationService,InventoryV2LoadoutPort,EquipmentReadModelFactory,AssemblyInventoryContextFilterStrategy,EquipmentInventoryContextFilterStrategy,InventoryV2ContextItemFilter",
+        "--scenarios",
+        "utils/inventory-v2-integration-check.js,utils/inventory-v2-equipment-check.js,utils/inventory-v2-equipment-hydration-check.js,utils/inventory-v2-cast-and-lure-check.js,utils/inventory-v2-ui-check.js"
+      ]
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    },
+    {
+      "name": "inventory-v2-equipment",
+      "script": "utils/inventory-v2-equipment-check.js"
+    },
+    {
+      "name": "inventory-v2-equipment-hydration",
+      "script": "utils/inventory-v2-equipment-hydration-check.js"
+    },
+    {
+      "name": "inventory-v2-cast-and-lure",
+      "script": "utils/inventory-v2-cast-and-lure-check.js"
+    },
+    {
+      "name": "inventory-v2-ui",
+      "script": "utils/inventory-v2-ui-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/application/inventory/equipment_transition_executor.js",
+        "targetPath": "src/game/application/inventory/equipment_transition_executor.js",
+        "sourceSha256": "f0f3b9f3be87705253d93d8f564accaa8aa248a0760c9133ac9d10c9a0c7d32e",
+        "targetSha256": "ff212944279aa403200f763bbd99f9193e7bc9f0467b6251cf3cc927601b2f91"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+        "targetPath": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+        "sourceSha256": "767107222e002d1fd11cc4c19b365c02a76cdf3693873b5ee2f1f78c476372be",
+        "targetSha256": "2f3a2abfa38787002597182db625f8d1dd4217185cc94cdcc88d6c8541e05221"
+      },
+      {
+        "currentPath": "src/application/inventory/loadout_application_service.js",
+        "targetPath": "src/game/application/inventory/loadout_application_service.js",
+        "sourceSha256": "b1ab69e201d75c4b62316c88048dcfe00c405ac6c5762476d96cde5e01efe1fc",
+        "targetSha256": "9af13f50b6ac90a75460567b709a8f1774f77e15f9689993477f712f902be0e8"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+        "targetPath": "src/game/application/inventory/inventory_loadout_adapter.js",
+        "sourceSha256": "b3e23fafeab87a0a2a06a5cad57334650107bdef877ec2c9051a9c0fcf841f88",
+        "targetSha256": "23a3c16a34d0a2285bbf9e4bde937e9fac7603ef9fee56e326f6fb5c733ac1e5"
+      },
+      {
+        "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+        "targetPath": "src/game/application/inventory/equipment_read_model_factory.js",
+        "sourceSha256": "d3127721c89094602b9f841e13ce6146da1d56413f04f4c294c9095880db15c8",
+        "targetSha256": "5122dd0b99ad175be82bba774025fd9a5dd17a2a4a3e75ce3135e4e009cf0ba6"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+        "targetPath": "src/game/application/inventory/inventory_context_item_filter.js",
+        "sourceSha256": "28aeaed9d9636c339badf20262ccdad2ed050ac680ccbb2026741aad0f0fc934",
+        "targetSha256": "908b9c5f69f3e4fb9cdd7d10e2f6e78ba24f6fe23e17bebba0aa4fc715700909"
+      }
+    ],
+    "activations": [
+      "activation-046b225e37ac",
+      "activation-2af009b4d5ac",
+      "activation-678bb0225d85",
+      "activation-6a887fb7cbe9",
+      "activation-86d179cedaaa",
+      "activation-874b3c10074b",
+      "activation-ab01adedee5f",
+      "activation-f7ef4909b06d"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-441065b29f78",
+      "bridge-69da665c35e3",
+      "bridge-8e8280a54064",
+      "bridge-c65844ee3c0e",
+      "bridge-c87d82cd37cb",
+      "bridge-d0d596a0959c"
+    ],
+    "bridgesRetired": [
+      "bridge-4f68e27e6b7b",
+      "bridge-5c47196deed2",
+      "bridge-8f5ad06b2f6f",
+      "bridge-92c7ce13cb8b",
+      "bridge-a481c78efd89",
+      "bridge-f3446ce3cb4c",
+      "bridge-f6bcda55f86a"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/inventory_equipment_transition_adapter.js->src/game/application/inventory/equipment_transition_executor.js",
+      "src/game/application/inventory/loadout_application_service.js->src/game/domain/equipment/equipment_slot_catalog.js",
+      "src/game/application/inventory/loadout_application_service.js->src/game/domain/loadouts/equipment_loadout.js",
+      "src/game/application/inventory/inventory_loadout_adapter.js->src/game/domain/inventory/inventory_item_location.js",
+      "src/game/application/inventory/inventory_loadout_adapter.js->src/game/application/inventory/loadout_application_service.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/021_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "a4d125b536a5204e2dc0543f26da3e647a3507ba832d8639fedcc4e530934441",
+        "after": "33c8ce225ca69a77cdbebd36c05c6ff12bc665f56ac59184df4abd3a01c279d1"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04",
+        "after": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "2ea0617975f346b8fd5d9d56622d916719603592aea5ccc149ca8ee8c260956e",
+        "after": "1439ce9e13831dd0e48827ae323336a858dc2c061cc4cb9088913d90602518bf"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "0e053295d556dc1965f8c7a816c3fbe220f1d4ac51f83a2ef28585366600fa27",
+        "after": "514579c52c610c874151a42b52dd97e4e22aee7528eab5f7fd5439b3c5407e81"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "9d13909e78eb46da9d40779e5f860ebb3f3f495cee57ab7dc2665afcff2fb23a",
+        "after": "6677f7ac355410c1391fe16ccd1de3eead07ceaee40111360b3a4f1e8e0ef839"
+      },
+      {
+        "path": "index.html",
+        "before": "69990e340e1bcd0f3a8f75e8fdb3510a728ac5fd73043474bb569d6161da7ada",
+        "after": "57ba6e3192a72e10f8790a9ed7d86d0752a421894cca8d23fdb2f84ac737f2d0"
+      },
+      {
+        "path": "src/application/inventory/equipment_read_model_factory.js",
+        "before": "d3127721c89094602b9f841e13ce6146da1d56413f04f4c294c9095880db15c8",
+        "after": "24caa1bbce0094103dbc458300e0a5a907265934d5dfeb716f584f07937d2490"
+      },
+      {
+        "path": "src/application/inventory/equipment_transition_executor.js",
+        "before": "f0f3b9f3be87705253d93d8f564accaa8aa248a0760c9133ac9d10c9a0c7d32e",
+        "after": "59cbec38eb12e0850db284ce1409f0013360274ab0b77050c6ce8aca3c425462"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_context_item_filter.js",
+        "before": "28aeaed9d9636c339badf20262ccdad2ed050ac680ccbb2026741aad0f0fc934",
+        "after": "5fdf234daab557740df6d659e7300a27f3ba45a6654643aeb3bb10b9a3858618"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+        "before": "767107222e002d1fd11cc4c19b365c02a76cdf3693873b5ee2f1f78c476372be",
+        "after": "03a1a06771b94bc4faadb5916071af3d026732d3cf6df0a2f34d6d24260f0e2d"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_loadout_port.js",
+        "before": "b3e23fafeab87a0a2a06a5cad57334650107bdef877ec2c9051a9c0fcf841f88",
+        "after": "262d83a8363dc670b0f7abc665a180f040dd8892408d6dcb37adcd89f27bd062"
+      },
+      {
+        "path": "src/application/inventory/loadout_application_service.js",
+        "before": "b1ab69e201d75c4b62316c88048dcfe00c405ac6c5762476d96cde5e01efe1fc",
+        "after": "8ef5d3a2b7685f8e7f45328eeb239fd85d73494ed3b48ad3b90493b498babe14"
+      },
+      {
+        "path": "src/game/application/inventory/equipment_read_model_factory.js",
+        "before": null,
+        "after": "5122dd0b99ad175be82bba774025fd9a5dd17a2a4a3e75ce3135e4e009cf0ba6"
+      },
+      {
+        "path": "src/game/application/inventory/equipment_transition_executor.js",
+        "before": null,
+        "after": "ff212944279aa403200f763bbd99f9193e7bc9f0467b6251cf3cc927601b2f91"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_context_item_filter.js",
+        "before": null,
+        "after": "908b9c5f69f3e4fb9cdd7d10e2f6e78ba24f6fe23e17bebba0aa4fc715700909"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+        "before": null,
+        "after": "2f3a2abfa38787002597182db625f8d1dd4217185cc94cdcc88d6c8541e05221"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_loadout_adapter.js",
+        "before": null,
+        "after": "23a3c16a34d0a2285bbf9e4bde937e9fac7603ef9fee56e326f6fb5c733ac1e5"
+      },
+      {
+        "path": "src/game/application/inventory/loadout_application_service.js",
+        "before": null,
+        "after": "9af13f50b6ac90a75460567b709a8f1774f77e15f9689993477f712f902be0e8"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 657 modules, 908 unified edges, 852 globals, 90 exact known-debt diagnostics, 0 FAIL in 656ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 657/657 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 188 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 188 activations and 265 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 26 applied, 70 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "f1b8bdc604a3920b5cc8a1b14b34f415d6218f6f1f8163eb79742d084f0da7cf"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      {
+        "name": "inventory-v2-equipment",
+        "status": "PASS",
+        "sha256": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172"
+      },
+      {
+        "name": "inventory-v2-equipment-hydration",
+        "status": "PASS",
+        "sha256": "6bef6cf61086f91793e42a9caed7b446fd677db3fca395949028bae141d4a2ca"
+      },
+      {
+        "name": "inventory-v2-cast-and-lure",
+        "status": "PASS",
+        "sha256": "a17a6d61ca11d0638cdec2731dd2df1decd1c6d7570a9e0e0fbcce887fb3a765"
+      },
+      {
+        "name": "inventory-v2-ui",
+        "status": "PASS",
+        "sha256": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      }
+    ]
+  }
 }

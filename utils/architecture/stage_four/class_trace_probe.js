@@ -59,7 +59,15 @@ const INSTALL = `((host) => {
       const stats = record.methods[traced] ||= { calls: 0, dtMin: null, dtMax: null };
       Object.defineProperty(Class.prototype, method, { ...descriptor, [accessor ? "get" : "value"]: function (...args) {
         const input = JSON.stringify(encode(args));
-        const output = original.apply(this, args);
+        let output;
+        try {
+          output = original.apply(this, args);
+        } catch (error) {
+          // A thrown error is part of the API: record it, then rethrow unchanged.
+          stats.calls += 1;
+          host.update(name, traced + "\\u0000" + input + "\\u0000" + JSON.stringify({ $throws: String(error?.message) }) + "\\n");
+          throw error;
+        }
         stats.calls += 1;
         for (const key of ["dtSec", "dtMs", "deltaTime", "dt"]) {
           const dt = args[0] && typeof args[0] === "object" ? args[0][key] : undefined;

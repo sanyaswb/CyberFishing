@@ -67,6 +67,12 @@ class RuntimeLoader {
       "EquipmentTransitionPort",
       "EquipmentTransitionExecutor",
     ]);
+    loader.load("src/application/inventory/inventory_v2_equipment_transition_port.js", [
+      "InventoryV2EquipmentTransitionPort",
+    ]);
+    loader.load("src/application/inventory/inventory_v2_loadout_port.js", [
+      "InventoryV2LoadoutPort",
+    ]);
     loader.load("src/core/loadouts/equipment_loadout.js", [
       "LOADOUT_DISPLAY_NAME",
       "EquipmentLoadout",
@@ -183,6 +189,36 @@ class InventoryV2EquipmentCheck {
     this.#checkCanonicalReadModel();
     this.#checkFishingReadiness();
     this.#checkExactAutoRefill();
+    this.#checkPortContracts();
+  }
+
+  // The base ports are contracts: every operation an adapter must provide throws until it is overridden.
+  #checkPortContracts() {
+    const r = this.#runtime;
+    // The base ports have no classic consumer (no activation): reach them through their adapters.
+    const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryV2EquipmentTransitionPort);
+    const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryV2LoadoutPort);
+    const transitionPort = new EquipmentTransitionPort();
+    for (const name of ["runAtomic", "moveRootToInventory", "moveRootToEquipment", "commitEquipmentState"]) {
+      Assertion.throws(() => transitionPort[name](), `EquipmentTransitionPort.${name} requires an implementation`);
+    }
+    // The inventory adapter delegates atomicity to its transaction; root moves are no-ops (state lives in EquipmentState).
+    const operations = [];
+    const adapter = new r.InventoryV2EquipmentTransitionPort({
+      transaction: { runAtomic: (operation) => { operations.push(operation); return operation(); } },
+    });
+    Assertion.that(adapter instanceof EquipmentTransitionPort, "inventory adapter implements EquipmentTransitionPort");
+    Assertion.equal(adapter.runAtomic(() => "done"), "done", "adapter runs the operation through its transaction");
+    Assertion.equal(operations.length, 1, "adapter delegates exactly once");
+    for (const name of ["moveRootToInventory", "moveRootToEquipment", "commitEquipmentState"]) {
+      Assertion.equal(adapter[name]("rod-a", "rod"), undefined, `adapter ${name} is a no-op`);
+    }
+    const loadoutPort = new LoadoutApplicationPort();
+    Assertion.equal(loadoutPort.getRootOwner("rod"), null, "LoadoutApplicationPort has no default owner");
+    for (const name of ["runAtomic", "assignRootToLoadout", "releaseRootFromLoadout", "saveLoadout", "removeLoadout",
+      "applyEquipmentMovement", "commitEquipmentState"]) {
+      Assertion.throws(() => loadoutPort[name](), `LoadoutApplicationPort.${name} requires an implementation`);
+    }
   }
 
   #checkStableSlotsAndVisibility() {

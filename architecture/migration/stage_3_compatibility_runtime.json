@@ -492,6 +492,18 @@
   ],
   "activationPositions": [
     {
+      "exportName": "EquipmentTransitionExecutor",
+      "legacyScriptIndex": 180,
+      "legacySymbol": "EquipmentTransitionExecutor",
+      "shimFile": "activations/180_equipmenttransitionexecutor.js",
+      "sourceProvider": "src/application/inventory/equipment_transition_executor.js",
+      "targetModule": "src/game/application/inventory/equipment_transition_executor.js",
+      "id": "activation-046b225e37ac",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-0621e81b56b8",
       "owner": "stage-3.candidate-014-fishing-fefd469b",
       "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
@@ -802,6 +814,18 @@
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "InventoryV2EquipmentTransitionPort",
+      "legacyScriptIndex": 181,
+      "legacySymbol": "InventoryV2EquipmentTransitionPort",
+      "shimFile": "activations/181_inventoryv2equipmenttransitionport.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "targetModule": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+      "id": "activation-2af009b4d5ac",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "ItemProgressionConfigValidator",
@@ -1296,6 +1320,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ContextItemFilter",
+      "legacyScriptIndex": 195,
+      "legacySymbol": "InventoryV2ContextItemFilter",
+      "shimFile": "activations/195_inventoryv2contextitemfilter.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "targetModule": "src/game/application/inventory/inventory_context_item_filter.js",
+      "id": "activation-678bb0225d85",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "InventoryV2Facade",
       "legacyScriptIndex": 201,
       "legacySymbol": "InventoryV2Facade",
@@ -1304,6 +1340,18 @@
       "targetModule": "src/game/application/inventory/inventory_facade.js",
       "id": "activation-67962a63c4a1",
       "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "LoadoutApplicationService",
+      "legacyScriptIndex": 182,
+      "legacySymbol": "LoadoutApplicationService",
+      "shimFile": "activations/182_loadoutapplicationservice.js",
+      "sourceProvider": "src/application/inventory/loadout_application_service.js",
+      "targetModule": "src/game/application/inventory/loadout_application_service.js",
+      "id": "activation-6a887fb7cbe9",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1608,6 +1656,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "EquipmentInventoryContextFilterStrategy",
+      "legacyScriptIndex": 195,
+      "legacySymbol": "EquipmentInventoryContextFilterStrategy",
+      "shimFile": "activations/195_equipmentinventorycontextfilterstrategy.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "targetModule": "src/game/application/inventory/inventory_context_item_filter.js",
+      "id": "activation-86d179cedaaa",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "ConsoleLogger",
       "legacyScriptIndex": 79,
       "legacySymbol": "ConsoleLogger",
@@ -1642,6 +1702,18 @@
       "shimFile": "activations/121_idleretrievepolicyresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "AssemblyInventoryContextFilterStrategy",
+      "legacyScriptIndex": 195,
+      "legacySymbol": "AssemblyInventoryContextFilterStrategy",
+      "shimFile": "activations/195_assemblyinventorycontextfilterstrategy.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "targetModule": "src/game/application/inventory/inventory_context_item_filter.js",
+      "id": "activation-874b3c10074b",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-886fb34615aa",
@@ -1976,6 +2048,18 @@
       "legacySymbol": "LineAllocationPolicy",
       "legacyScriptIndex": 142,
       "shimFile": "activations/142_lineallocationpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "EquipmentReadModelFactory",
+      "legacyScriptIndex": 184,
+      "legacySymbol": "EquipmentReadModelFactory",
+      "shimFile": "activations/184_equipmentreadmodelfactory.js",
+      "sourceProvider": "src/application/inventory/equipment_read_model_factory.js",
+      "targetModule": "src/game/application/inventory/equipment_read_model_factory.js",
+      "id": "activation-ab01adedee5f",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2576,6 +2660,18 @@
       "legacySymbol": "ChumRules",
       "legacyScriptIndex": 397,
       "shimFile": "activations/397_chumrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2LoadoutPort",
+      "legacyScriptIndex": 183,
+      "legacySymbol": "InventoryV2LoadoutPort",
+      "shimFile": "activations/183_inventoryv2loadoutport.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_loadout_port.js",
+      "targetModule": "src/game/application/inventory/inventory_loadout_adapter.js",
+      "id": "activation-f7ef4909b06d",
+      "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
