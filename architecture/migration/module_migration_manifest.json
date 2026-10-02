@@ -50718,19 +50718,13 @@
           "items": [
             {
               "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
-              "symbol": "ReelRetrieveSpeedCalculator",
-              "mechanism": "global-this-property",
+              "symbol": "INVENTORY_V2_RARITY_NAMES",
+              "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
             }
@@ -50773,26 +50767,18 @@
           "confirmed": [
             {
               "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
               "resolution": "confirmed"
             },
             {
               "symbol": "INVENTORY_V2_RARITY_NAMES",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ReelRetrieveSpeedCalculator",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
               "resolution": "confirmed"
             }
           ],
@@ -50801,13 +50787,6 @@
               "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
               "symbols": [
                 "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
-              "symbols": [
-                "ReelRetrieveSpeedCalculator"
               ],
               "resolution": "confirmed"
             },
@@ -51533,20 +51512,14 @@
           "items": [
             {
               "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
               "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             }
           ],
@@ -51586,26 +51559,18 @@
           "confirmed": [
             {
               "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
               "resolution": "confirmed"
             },
             {
               "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/inventory/inventory_v2_item_parameter_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
               "resolution": "confirmed"
             }
           ],
@@ -51615,13 +51580,6 @@
               "symbols": [
                 "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
                 "INVENTORY_V2_ITEM_PARAMETER_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-              "symbols": [
-                "InventoryV2ResourceMeterResolver"
               ],
               "resolution": "confirmed"
             }

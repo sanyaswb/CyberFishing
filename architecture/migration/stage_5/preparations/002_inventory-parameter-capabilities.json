@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "002",
+  "slug": "inventory-parameter-capabilities",
+  "baseCommit": "d69830d618749d5eb2e7251a27b41dd9a756f308",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "before": "784b129e7a4d206d35e9b4faa75c903022b41a8c25fbe4b02adce4e33f1eb488",
+      "after": "605906f43ff950540faf459670fc51ed062c5ecc17247191e63f60e0a0f7eb73"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "before": "94828a00a8d997b83ceaf80bd4ebe156c13e693ca612d249ba082d495a72df30",
+      "after": "ab91cc4bdcdfbf2b15fe33f7542ac19ef8cdfa3d1dfee92c04374071603d7617"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "b02be58468387a2e015339fdc882791b843c8d32ee37e00e0d488fa9183f9e2c",
+      "after": "48fce1ecc747b93cc2a2d4020424b484c3190ffd271c972d58168d8b84af67ef"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "a5b9a689313283c34ae04c5e865a1118b069218730bcdf364e441cebac432e64",
+      "after": "8fceb3f667a0cb79a35091ddc78dfcdb677e09cb860d44bbe9ee1ebed6a7b442"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "f72a838b3c4e9d58b0b7811b7cdd7d6642645dafa5846b9e800419bb3ae0a507",
+      "after": "f72a838b3c4e9d58b0b7811b7cdd7d6642645dafa5846b9e800419bb3ae0a507"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen inventory-capabilities preparation, bounded to cluster 005. Remove hidden resource-meter and retrieve-speed construction only after auditing every production constructor. Convert immutable presentation-catalog property reads to ordinary named bindings (with the same absent-catalog fallback); cluster 005 will import those exact catalogs. No DEV mutation of these catalog/class properties exists outside their reviewed exposure statements. No browser, raw config, new global, new validation or saved field change.",
+  "constructionEvidence": [
+    "InventoryV2ItemParametersResolver is constructed by InventoryV2UI with its resolvedResourceMeterResolver and by ItemParametersRenderer only as a fallback. The sole production ItemParametersRenderer construction in InventoryV2UI always passes the resolver; no DEV construction exists. Three area checks audited: bait-effectiveness and item-rarity-roundtrip pass a resource resolver explicitly; inventory-v2-ui supplies the same instance type through the existing test-only constructor defaults proxy.",
+    "InventoryV2BalanceParameterResolver is constructed by GameCompositionRoot with new ReelRetrieveSpeedCalculator. InventoryV2Bootstrap receives that balance resolver; InventoryV2UI passes it to TooltipPresenter, so their legacy fallbacks are not taken in the production composition. Tests with retrieve behavior inject their calculator explicitly. No new throws/default validation introduced; the unused hidden factory was removed.",
+    "rg src/utils confirmed no DEV writes or overrides of INVENTORY_V2_ITEM_PARAMETER_CONFIG/ALIASES, INVENTORY_V2_BALANCE_TOOLTIP_CONFIG, INVENTORY_V2_RARITY_NAMES, InventoryV2ResourceMeterResolver or ReelRetrieveSpeedCalculator beyond their existing exposures. Catalog references/option precedence and absent-catalog fallback are retained.",
+    "inventory-v2-ui uses a separate sandbox.globalThis object. Its activation exports are mirrored into the vm global bindings to model browser global-property/bare-binding identity; existing ESM identity assertions run before the test constructor proxy is installed. All existing interaction assertions remain intact."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 61,
+    "knownDebtsAfter": 61,
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/bait-effectiveness-check.js": {
+        "before": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786",
+        "after": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786"
+      },
+      "utils/item-rarity-roundtrip-check.js": {
+        "before": "7442b2b96d59ec92fedc22013b4a1e30704613c83228dc4ed4822c3dea177bae",
+        "after": "7442b2b96d59ec92fedc22013b4a1e30704613c83228dc4ed4822c3dea177bae"
+      }
+    },
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 205,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsIdenticalToCluster004": true,
+      "saveBytesIdenticalToCluster004": true
+    }
+  }
+}

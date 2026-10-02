@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
 const UI_DIRECTORY = path.join(ROOT, "src", "ui", "inventory");
@@ -938,8 +939,12 @@ class InventoryV2StaticContractCheck {
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
+    for (const name of ["INVENTORY_V2_ITEM_PARAMETER_CONFIG", "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG", "INVENTORY_V2_RARITY_NAMES"]) context[name] = sandbox[name];
     const identities=runtime.run('(() => { let checked=0; for (const exports of Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules)) for (const [name,value] of Object.entries(exports)) if (Object.hasOwn(globalThis,name)) { if (globalThis[name] !== value) throw new Error("UI export identity changed: "+name); checked++; } return checked; })()');
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
+    sandbox.InventoryV2ItemParametersResolver = bindConstructorDefaults(sandbox.InventoryV2ItemParametersResolver,
+      () => ({ resourceMeterResolver: new sandbox.InventoryV2ResourceMeterResolver() }));
 
     const dispatched = [];
     const observed = [];

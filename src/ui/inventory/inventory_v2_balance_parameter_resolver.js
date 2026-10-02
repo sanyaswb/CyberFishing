@@ -17,11 +17,11 @@ class InventoryV2BalanceParameterResolver {
     rarityVisualResolver = null,
   } = {}) {
     this.#config =
-      config || globalThis.INVENTORY_V2_BALANCE_TOOLTIP_CONFIG || {};
+      config || (typeof INVENTORY_V2_BALANCE_TOOLTIP_CONFIG !== "undefined" ? INVENTORY_V2_BALANCE_TOOLTIP_CONFIG : null) || {};
     this.#physicsConfig = physicsConfig || {};
     this.#castDistanceCalculator = castDistanceCalculator || null;
     this.#retrieveSpeedCalculator =
-      retrieveSpeedCalculator || this.#createRetrieveSpeedCalculator();
+      retrieveSpeedCalculator || null;
     this.#reelConfig =
       reelConfig || this.#physicsConfig?.tackle?.reel || {};
     this.#debugConfig =
@@ -667,7 +667,7 @@ class InventoryV2BalanceParameterResolver {
     const rarityId = this.#rarityVisualResolver?.resolve(rarity)?.id ||
       rarity.id ||
       "";
-    return globalThis.INVENTORY_V2_RARITY_NAMES?.[rarityId] || rarityId;
+    return (typeof INVENTORY_V2_RARITY_NAMES !== "undefined" ? INVENTORY_V2_RARITY_NAMES : null)?.[rarityId] || rarityId;
   }
 
   #humanize(value) {
@@ -699,11 +699,7 @@ class InventoryV2BalanceParameterResolver {
     return item?.itemType === "rod";
   }
 
-  #createRetrieveSpeedCalculator() {
-    return typeof globalThis.ReelRetrieveSpeedCalculator === "function"
-      ? new globalThis.ReelRetrieveSpeedCalculator()
-      : null;
-  }
+
 }
 
 globalThis.InventoryV2BalanceParameterResolver =

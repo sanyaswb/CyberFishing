@@ -22,7 +22,7 @@ class InventoryV2ItemParametersResolver {
     parameterAliases = null,
   } = {}) {
     this.#resourceMeterResolver =
-      resourceMeterResolver || new globalThis.InventoryV2ResourceMeterResolver();
+      resourceMeterResolver;
     this.#progressionDomAdapter = progressionDomAdapter;
     if (
       rarityVisualResolver &&
@@ -34,9 +34,9 @@ class InventoryV2ItemParametersResolver {
     }
     this.#rarityVisualResolver = rarityVisualResolver;
     this.#parameterConfig =
-      parameterConfig || globalThis.INVENTORY_V2_ITEM_PARAMETER_CONFIG || {};
+      parameterConfig || (typeof INVENTORY_V2_ITEM_PARAMETER_CONFIG !== "undefined" ? INVENTORY_V2_ITEM_PARAMETER_CONFIG : null) || {};
     this.#parameterAliases =
-      parameterAliases || globalThis.INVENTORY_V2_ITEM_PARAMETER_ALIASES || {};
+      parameterAliases || (typeof INVENTORY_V2_ITEM_PARAMETER_ALIASES !== "undefined" ? INVENTORY_V2_ITEM_PARAMETER_ALIASES : null) || {};
   }
 
   resolve(item) {
