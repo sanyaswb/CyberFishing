@@ -77,7 +77,7 @@ class FightPhysicsSystem {
       ? new StaminaBalanceFrame()
       : null;
   #composedInputScratch = {};
-  #pipeline = new FightPhysicsPipeline();
+  #pipeline;
   #fishRetrieveSystem;
   #staminaBudgetOverflowWarningActive = false;
   #fishWasInCatchZone = false;
@@ -102,7 +102,9 @@ class FightPhysicsSystem {
   };
   #debug = {};
 
-  constructor(config) {
+  // stepClock: high-resolution clock for the pipeline's diagnostic step durations (injected by bootstrap).
+  constructor(config, { stepClock = null } = {}) {
+    this.#pipeline = new FightPhysicsPipeline({ now: stepClock });
     this.#config = config || {};
     this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
     this.#fishRetrieveSystem = new FishRetrieveSystem(this.#physicsConfig);

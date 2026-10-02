@@ -709,6 +709,7 @@ class GameCompositionRoot {
         runtimeConfig,
         castDistanceCalculator: runtime.castDistanceCalculator,
         logger: new ConsoleLogger(),
+        stepClock: () => clock.highResolutionNow(),
       }),
     });
 

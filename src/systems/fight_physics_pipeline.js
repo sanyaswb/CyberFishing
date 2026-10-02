@@ -34,8 +34,15 @@ class FightPhysicsPipeline {
     "write_debug_snapshot",
   ]);
 
+  #now;
+
+  // now: the injected high-resolution clock (platform); without it a frame reads Date.now().
+  constructor({ now = null } = {}) {
+    this.#now = now;
+  }
+
   startFrame() {
-    return new FightPhysicsPipelineFrame(FightPhysicsPipeline.STEPS);
+    return new FightPhysicsPipelineFrame(FightPhysicsPipeline.STEPS, this.#now);
   }
 }
 
@@ -43,23 +50,21 @@ class FightPhysicsPipelineFrame {
   #steps;
   #nextIndex = 0;
   #completed = [];
+  #now;
 
-  constructor(steps) {
+  constructor(steps, now = null) {
     this.#steps = Array.isArray(steps) ? steps.slice() : [];
+    this.#now = now;
   }
 
   run(stepName, operation) {
     this.#assertKnownStep(stepName);
     this.#assertOrder(stepName);
     const startedAt =
-      typeof performance !== "undefined" && performance.now
-        ? performance.now()
-        : Date.now();
+      this.#now ? this.#now() : Date.now();
     const result = typeof operation === "function" ? operation() : undefined;
     const finishedAt =
-      typeof performance !== "undefined" && performance.now
-        ? performance.now()
-        : Date.now();
+      this.#now ? this.#now() : Date.now();
     this.#completed.push({
       step: stepName,
       durationMs: Math.max(0, finishedAt - startedAt),

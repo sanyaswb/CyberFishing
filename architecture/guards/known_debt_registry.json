@@ -1057,27 +1057,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-3cea85d3c1ba",
-      "rule": "browser-capability",
-      "source": "src/systems/fight_physics_pipeline.js",
-      "target": "environment:timing",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "3cea85d3c1ba864252332fd3923cd8a3a39f7fb022b41ddff8193ab45a082e33",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/fight_physics_pipeline.js",
-        "target": "environment:timing",
-        "identifier": "performance"
-      }
-    },
-    {
       "id": "debt-browser-capability-4123f686a74a",
       "rule": "browser-capability",
       "source": "src/ui/ui.js",

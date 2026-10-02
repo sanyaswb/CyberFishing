@@ -27,6 +27,11 @@ export class GameClock {
     return this.delta;
   }
 
+  // Monotonic high-resolution timestamp for diagnostics (fight pipeline step durations).
+  highResolutionNow() {
+    return performance.now();
+  }
+
   reset(frameTime = performance.now()) {
     this.#lastFrameTime = frameTime;
     this.now = frameTime;

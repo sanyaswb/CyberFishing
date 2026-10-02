@@ -48248,9 +48248,7 @@
             "Object",
             "undefined"
           ],
-          "browserApis": [
-            "performance"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
