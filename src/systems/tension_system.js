@@ -1,7 +1,1 @@
-class TensionSystem {
-  #calculator = new LineTensionCalculator();
-
-  calculate(context = {}) {
-    return this.#calculator.calculate(context);
-  }
-}
+globalThis.TensionSystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/fishing/tension_service.js"]["TensionSystem"];

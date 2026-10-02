@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "Per-frame (A): hot-loop equivalence. performance (pipeline) → injected clock or platform allowed? Application may not read performance → prerequisite.",
+  "tierEvidence": "Per-frame (A): hot-loop evidence over game-cycle (5 classes; game-cycle now injects a deterministic step clock, the stand-in for the platform clock bootstrap injects since preparation 012) plus identical game-cycle output.",
   "modules": [
     {
       "currentPath": "src/systems/drag_system.js",
@@ -14,7 +14,13 @@
       "exports": [
         "DragSystem"
       ],
-      "imports": []
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One fact: the reel drag setting (0..1) and the gesture/keyboard input that changes it per frame (deadzone, swipe anchor, clamps), plus its debug read-out. Hot loop: framework Q7 cohesive, reclassified with hot-loop evidence (member bodies, allocation sites and per-frame traces over game-cycle)."
+        }
+      ]
     },
     {
       "currentPath": "src/systems/reel_system.js",
@@ -26,6 +32,16 @@
         {
           "symbol": "ReelAutoRecoveryCalculator",
           "from": "src/game/domain/fishing/reel_auto_recovery_calculator.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "The private field #autoRecoveryCalculator = new ReelAutoRecoveryCalculator() is a stateless Domain calculator the system owns for its per-frame calculation (allowed game-application -> game-domain import, created once per system instance, never per frame); the only production construction (FightSessionFactory) passes no calculator, so framework Q4 keeps it."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One fact: per-frame line recovery by the reel (speed, auto-recovery). Hot loop: Q7 cohesive, reclassified with hot-loop evidence."
         }
       ]
     },
@@ -40,6 +56,16 @@
           "symbol": "LineTensionCalculator",
           "from": "src/game/domain/fishing/line_tension_calculator.js"
         }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "The private field #calculator = new LineTensionCalculator() is a stateless Domain calculator the system owns for its per-frame calculation (allowed game-application -> game-domain import, created once per system instance, never per frame); the only production construction (FightSessionFactory) passes no calculator, so framework Q4 keeps it."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "An eight-line per-frame facade over LineTensionCalculator.calculate: nothing to split (Q7/Q9)."
+        }
       ]
     },
     {
@@ -50,10 +76,248 @@
         "FightPhysicsPipelineFrame"
       ],
       "imports": [],
-      "planningPrerequisite": "src/game/application/fishing/fight_physics_pipeline.js: reads classic or browser globals: performance"
+      "planningPrerequisite": "src/game/application/fishing/fight_physics_pipeline.js: reads classic or browser globals: performance",
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Resolved by preparation 012 (37662fd): step durations come from the injected platform clock (GameClock.highResolutionNow via bootstrap -> FightSessionFactory -> FightPhysicsSystem), Date.now() without one; the module names no browser global."
+        },
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "No DEV read: the frame records step order and durations that FightPhysicsSystem copies into its own debug snapshot (`fightPipeline`); DEV tooling may read that snapshot (dev -> production), the pipeline never reads DEV. eslint-scope free names are language built-ins (Array, Date, Error, Math, Object)."
+        }
+      ],
+      "sideEffectReview": "The static field STEPS is Object.freeze over an inert string-literal array evaluated once at class definition; it reads no external state and writes no global."
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "025",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "DragSystem,ReelSystem,TensionSystem,FightPhysicsPipeline,FightPhysicsPipelineFrame",
+        "--scenarios",
+        "utils/game-cycle-check.js"
+      ]
+    },
+    {
+      "name": "victory-input",
+      "script": "utils/victory-input-check.js"
+    },
+    {
+      "name": "hook-domain-semantics",
+      "script": "utils/hook-domain-semantics-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-025-fight-systems-small",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/systems/drag_system.js",
+        "targetPath": "src/game/application/fishing/drag_control_service.js",
+        "sourceSha256": "2465c62aef4280bc7e84d75bff1c937a25a459d4da6d99013dc551c7310a09a5",
+        "targetSha256": "1c372d473472b07b639a09334c0d6bb08b7316877fa9375a031549044ce31c8f"
+      },
+      {
+        "currentPath": "src/systems/reel_system.js",
+        "targetPath": "src/game/application/fishing/reel_service.js",
+        "sourceSha256": "496f81c5289fb37aa2c00c1047ba6c808abedabe3e1e47968fe8c8ebe1a8c0de",
+        "targetSha256": "79d7e8dc43287c63fb752710aca108cf45f1ff4801d2b93322d7e209fe8a048d"
+      },
+      {
+        "currentPath": "src/systems/tension_system.js",
+        "targetPath": "src/game/application/fishing/tension_service.js",
+        "sourceSha256": "fc93a580c8256bc5bf45bed75ed9fe56d86b74cdcf24f199698dea85e907fd1d",
+        "targetSha256": "8ad10acfff95d4feb8c4daff5ec1266ceca5746dafa3a0e38c10f326456a8b77"
+      },
+      {
+        "currentPath": "src/systems/fight_physics_pipeline.js",
+        "targetPath": "src/game/application/fishing/fight_physics_pipeline.js",
+        "sourceSha256": "78b082fa2f8812d249c00691ff0decf97c3b993553b097b8359cfd0b9e9d259a",
+        "targetSha256": "126570709af70407928d59674a80ab59451b77c30671694c1af0928ecdb75ea4"
+      }
+    ],
+    "activations": [
+      "activation-4e29d07d13e4",
+      "activation-797d1d421d94",
+      "activation-d4676f47c36f",
+      "activation-f1491864f7de"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/application/fishing/fight_physics_pipeline.js"
+    ],
+    "activationsRetired": [
+      "activation-57add99af90d",
+      "activation-a8e624a68a8e"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-0dfeb893a1a3",
+      "bridge-63b8bc2e19a7",
+      "bridge-732c933f8554",
+      "bridge-a0c3a8d37e08"
+    ],
+    "bridgesRetired": [
+      "bridge-63afd58b4545",
+      "bridge-6aabd924bf06"
+    ],
+    "importEdges": [
+      "src/game/application/fishing/reel_service.js->src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "src/game/application/fishing/tension_service.js->src/game/domain/fishing/line_tension_calculator.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/025_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "c0f8c04a32f1b6929e6b67c1798098e6757d4377f35bd1f1148aae8de33eacb7",
+        "after": "434a17bc70a09275fccfffb1a2639572f3334a241e084f41162bfd9629ea2c71"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "ab9fa081ed07d4351ee0db3ec0e2027e94348395b2f4d6516af0ad9f8d7e7a49",
+        "after": "ab9fa081ed07d4351ee0db3ec0e2027e94348395b2f4d6516af0ad9f8d7e7a49"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "fc77159c38cd8a1d698ef514c4103931cfb3dd168da66025511bad38d5378794",
+        "after": "d4e3c30f4a04b6e4e5793069682b879b9a95d2ade4f0913dddad9cd957abcd89"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "a9c4766663355401a5052fc07844eab2340deb4777c73724478aee65ed52d7e0",
+        "after": "8501842c95dd24698b97d525d9dd9c1952aaefe0175c3ea96d0c6085d66f95c1"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "e7c5600a647e55b6371637ba69b44398c8937bd2ab20c5f42f60f3e45b13cafc",
+        "after": "d7b2e3e9b96e1d31b5d0ffd610048a6ebc6c9b65d1e7ce330b179d0604e5f930"
+      },
+      {
+        "path": "index.html",
+        "before": "a66a24397c13ce1835d39f61a518eb571d7788cfeab260aed36b8104eeadd327",
+        "after": "44486d16260990401a2c937d5855fbb94b4892e9eed9b7b82f4c98351fe975fa"
+      },
+      {
+        "path": "src/core/fishing/line_tension_calculator.js",
+        "before": "15a7818493cd292bc68edf28218718c5ab960cd61db0a583401e3fcb1746d411",
+        "after": "bc20ae2c8ead1a860b347eb6ab21d5c30599e8a79712877556801a65cf796956"
+      },
+      {
+        "path": "src/core/fishing/reel_auto_recovery_calculator.js",
+        "before": "d0fee6b406b2f98943440dc3aa3e911342ae6557ee9108820a8017162a6eb9ca",
+        "after": "e862b61e6dbea7e75d3a3a73692239c0693329c8196c9046742c139ee968580d"
+      },
+      {
+        "path": "src/game/application/fishing/drag_control_service.js",
+        "before": null,
+        "after": "1c372d473472b07b639a09334c0d6bb08b7316877fa9375a031549044ce31c8f"
+      },
+      {
+        "path": "src/game/application/fishing/fight_physics_pipeline.js",
+        "before": null,
+        "after": "126570709af70407928d59674a80ab59451b77c30671694c1af0928ecdb75ea4"
+      },
+      {
+        "path": "src/game/application/fishing/reel_service.js",
+        "before": null,
+        "after": "79d7e8dc43287c63fb752710aca108cf45f1ff4801d2b93322d7e209fe8a048d"
+      },
+      {
+        "path": "src/game/application/fishing/tension_service.js",
+        "before": null,
+        "after": "8ad10acfff95d4feb8c4daff5ec1266ceca5746dafa3a0e38c10f326456a8b77"
+      },
+      {
+        "path": "src/systems/drag_system.js",
+        "before": "2465c62aef4280bc7e84d75bff1c937a25a459d4da6d99013dc551c7310a09a5",
+        "after": "4421c0cee9b749eb4d2cf6c2f8dc60db9500c237d813705c447e1f2e94954b8b"
+      },
+      {
+        "path": "src/systems/fight_physics_pipeline.js",
+        "before": "78b082fa2f8812d249c00691ff0decf97c3b993553b097b8359cfd0b9e9d259a",
+        "after": "59284c74168507d685ed6797dba2fd82f19fc5c16932baaba72343fe76d6899c"
+      },
+      {
+        "path": "src/systems/reel_system.js",
+        "before": "496f81c5289fb37aa2c00c1047ba6c808abedabe3e1e47968fe8c8ebe1a8c0de",
+        "after": "3fd4ff28679d97b93a037f8c8b2d03ab9e1fa9f5b40e4ae2353946176cc65f79"
+      },
+      {
+        "path": "src/systems/tension_system.js",
+        "before": "fc93a580c8256bc5bf45bed75ed9fe56d86b74cdcf24f199698dea85e907fd1d",
+        "after": "293095c1fee705cc69346cded276fffa85535037c336c09ca62a5556d9103eba"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 671 modules, 909 unified edges, 852 globals, 86 exact known-debt diagnostics, 0 FAIL in 768ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 671/671 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 194 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 194 activations and 261 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 30 applied, 84 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "07829dde9141f22a52483c0f71f66b597a325e1fb8b1acb37d5fb4e0b04bbcc2"
+      },
+      {
+        "name": "victory-input",
+        "status": "PASS",
+        "sha256": "65ccd7b0ee59df5455fbc20d75ae2e9ee5de98b25774188c9149f00540c9efd5"
+      },
+      {
+        "name": "hook-domain-semantics",
+        "status": "PASS",
+        "sha256": "429776b9f5dc0f3f5c3ad04908bb4f318cb4aae762beb811de14df7d89177d40"
+      }
+    ]
+  }
 }

@@ -1,0 +1,997 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "025",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/game-cycle-check.js"
+  ],
+  "classes": {
+    "DragSystem": {
+      "sourcePath": "src/systems/drag_system.js",
+      "members": [
+        {
+          "name": "#value",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3690f2402dab4a769b4c78e0a2a05927f8c01d0578f0d34b68ab21677b21b742"
+        },
+        {
+          "name": "#targetValue",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ba6e521c6b113d6fc2daa2bb8389d3d47c87e4b2a128f2026c863e07e4713e55"
+        },
+        {
+          "name": "#changeSpeed",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "20d4685050ce67aa238dbbfe8f326222b9d63a7d0737f1e154460ffe31a41119"
+        },
+        {
+          "name": "#config",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ac0c9aa21c698da30613f9b784c31566ac9d769c321a617510d6ff7e1f90974"
+        },
+        {
+          "name": "#gestureActive",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a926635a43c21937cae2cf80b623053631ceca3ee48280b936d49470f0786cce"
+        },
+        {
+          "name": "#dragSupported",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ec30bca62e5093915db753a2f02874b03b55df5dd29b7d99fc709469bb6f6348"
+        },
+        {
+          "name": "#gestureStartY",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "829d63a2f823efd0c248f3caf2592bb2e75686bfd304a760ff29f7b01b7fcf08"
+        },
+        {
+          "name": "#gestureStartValue",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e8efa04d6d4186cf3e925f35df96a1980b41f7ea59151ef5aaa8eca3c9d28ec5"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "ed93565cde6e85c9d6893a384aa60f204e1e61707db7d43e6ea6097f897fe547",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateEquipment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3a261617073ae1bed1a419cb48cf58d57d0ed130a5ed61798810440e15b95e8d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7a454e7cca5d2a7229113fbee362124e1ac1399209dfcdd1677279ab61062859",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "applySwipe",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a8d6e0c7718682dbdf297906f49105535e13a3f097463b6e3ec3fa69652322a7",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setValue",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "043860013281f4e9095bc9939b5f243492373e786131b8538b2275368cdece8d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "value",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "c2c52e0368992a05dc69f087e3c8c75356daf3fb28c2f8762f6934d17fa1e789",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "targetValue",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "d34f2376d5b0d96bd52a28b179b28571292c7a1f04ce2dcce61f0c2c6eb0ec0e",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "isSupported",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b1206c52a89fe1630c73759ee7f216576312908f5063ae44e7c5a85e93eebea8",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getDebugData",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "043a6c2bef8ca32f7cab89c6db50655f6dc6039a08a9f102485a06ffebec2d3a",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateFromKeyboard",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5d3c3dbb3c827259624932fc8537ae0923c4ac826f90a97eead6b9e67376e85b",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateFromPointer",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fa226b1fa2d6f865468c4c54025115ac2cf3ba75f924374bb40063003356dfc1",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateDragDeltaRatio",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "54c75e7173a2fca7b242f693f5c2a65ada6eefdab952929de65f5439c92ba50f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateGestureAnchor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f75a7e00ce341f35fc2078c6e2549166f1e901d5c12fe7db35e9cfc1d12bb06c",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resetGesture",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "31d0cdf682a7141e5cc69a7f8efbfd4cb1937a04d7a7e78e42b149f3f0ac7005",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#swipePx",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a81a907f19286634b1af4d1f07b716cd8d58803c2c4703d398e21ae8f1ddde9f",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#deadzonePx",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9283250cfcbe18bef0107017edaf4663428a6b0980ca9b8c406f9e957c107fa0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1d6d4c9cfc6f5151da330454b64e508bd64a13ce32e843128916ab665a28de59",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#min",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3520113fcf714e7d2b4acd032e2227f24bfb521ce658cc51ceec11339d88baef",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#max",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c449dcef9c02f96728dceb08a4ee8c3b9a8da95e0215cf79803a0014fd832f56",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clamp",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "57f48a16f2364fe29a22a93a5d54913f3679364f482e08f737f268cf873448e0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 3,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Number",
+          "member": "#calculateDragDeltaRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateDragDeltaRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#deadzonePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#deadzonePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#deadzonePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#deadzonePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#max",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#max",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#max",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#min",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#swipePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#swipePx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#swipePx",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFromKeyboard",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFromKeyboard",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFromKeyboard",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFromPointer",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFromPointer",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFromPointer",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGestureAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "applySwipe",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "applySwipe",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "updateEquipment",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "updateEquipment",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "a35fbacd72636bc19a7eb666a3449d74ee61af8fca2a6d791e6bd82a4c31c01d",
+          "calls": {
+            "updateEquipment": 13,
+            "update": 501,
+            "applySwipe": 0,
+            "setValue": 0,
+            "get value": 2004,
+            "get targetValue": 0,
+            "isSupported": 0,
+            "getDebugData": 501
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "FightPhysicsPipeline": {
+      "sourcePath": "src/systems/fight_physics_pipeline.js",
+      "members": [
+        {
+          "name": "STEPS",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "34aa1f3878ec7bc9f0333f35a8fcc9e88cffa7825a5020ebaf06b3a53e06b660"
+        },
+        {
+          "name": "#now",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8d361a887e774c4723f8a836e6e0c14f287239e701757f97462a4d263123d9a1"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "6b42b84e32dfc4c0b94b320522429156487fc7342c268587d1df5229524f0c58",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "startFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3d01eb8e60c9b1ee7804813db32eb697ee7e061c4b791d2c259aa360ca4b6c81",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 1,
+        "newExpressions": 1,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Object",
+          "member": "STEPS",
+          "kind": "field"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "fabbc48482eafeb543d3247a45135708dc2ff1c970e24fef8dfbf35ad11bf735",
+          "calls": {
+            "startFrame": 501
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "FightPhysicsPipelineFrame": {
+      "sourcePath": "src/systems/fight_physics_pipeline.js",
+      "members": [
+        {
+          "name": "#steps",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "829d163459bdfea7325d0aa4ed99857b09ed6a9c6112bc1403436277327e674b"
+        },
+        {
+          "name": "#nextIndex",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fbf1ca740613b77a8b29842a36fbaf53395797afdd0568c232254bcc71bdf1aa"
+        },
+        {
+          "name": "#completed",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ec4ea56819d81090c9f18079ac4e362e219e89a078440ce28de10d8c18a2665"
+        },
+        {
+          "name": "#now",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8d361a887e774c4723f8a836e6e0c14f287239e701757f97462a4d263123d9a1"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "aebc1513ed89467bec15e09c07b1846f3186716872b9e73b41b65c0f672a5ca0",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "run",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a68b7119bd7650629381cb307a0fb972ffb4b90b55bbac46ad87ee54b8c6619f",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "toDebugData",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f5f3c22f5a190ca2265b162ff251cb0c74f06a06ab5f08441d13b24681db8079",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#assertKnownStep",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4fb9a2b4367d237ea0d4c384563d749f09a7b84efbac5db2a37046e93ebd4384",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#assertOrder",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9a2bec1f79d6538ebff67059262e69418c192fdc966c023bf7ba95fa78972c31",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 2,
+        "arrayExpressions": 2,
+        "newExpressions": 2,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Error",
+          "member": "#assertKnownStep",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#assertOrder",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Date",
+          "member": "run",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "run",
+          "kind": "method"
+        },
+        {
+          "name": "Date",
+          "member": "run",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "run",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [
+        {
+          "name": "Date",
+          "member": "run",
+          "kind": "method"
+        },
+        {
+          "name": "Date",
+          "member": "run",
+          "kind": "method"
+        }
+      ],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "a313a6045b513b989b167bae525e78c4d1c79b1a30cd19eb1778cae1ed0e55b8",
+          "calls": {
+            "run": 12525,
+            "toDebugData": 501
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "ReelSystem": {
+      "sourcePath": "src/systems/reel_system.js",
+      "members": [
+        {
+          "name": "#config",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ac0c9aa21c698da30613f9b784c31566ac9d769c321a617510d6ff7e1f90974"
+        },
+        {
+          "name": "#autoRecoveryCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c29881b3d98bb0b77a01c8766e8aaa2705dac157e4a9422bd45d1755880be42e"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "2ba921bbf48a9004e7472584fe7c91c70b71ac4d23415f881923132db035ee22",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "recoverLineCredit",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a90bcb4f0a02f648b84400f1e26cdf6190daa0b0326044b4b20921d34b773e6c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "recoverRodStrokeCredit",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a0f3ad874a6471068cbdf191d11633d733b91eb27324a785da144c809587405f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 9,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "ReelAutoRecoveryCalculator",
+          "member": "#autoRecoveryCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "Math",
+          "member": "recoverRodStrokeCredit",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "recoverRodStrokeCredit",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "recoverRodStrokeCredit",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "recoverRodStrokeCredit",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "recoverRodStrokeCredit",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "c03b500fe894bfe17f3511d5f916608a70748bed55c798a82e2867a89f561d5d",
+          "calls": {
+            "recoverLineCredit": 185,
+            "recoverRodStrokeCredit": 502
+          },
+          "deltaTime": {
+            "recoverLineCredit": {
+              "minSeconds": 0.03333333333333333,
+              "maxSeconds": 0.03333333333333333
+            },
+            "recoverRodStrokeCredit": {
+              "minSeconds": 0.03333333333333333,
+              "maxSeconds": 1
+            }
+          }
+        }
+      }
+    },
+    "TensionSystem": {
+      "sourcePath": "src/systems/tension_system.js",
+      "members": [
+        {
+          "name": "#calculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9fcca820991f8f885745a57bba7ed0dbd1164e0c6bf6984e7d16ce5aa956ba26"
+        },
+        {
+          "name": "calculate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ed2978a4acc5b1300640e107ea0cec22aeb6fd54df442d7efbc1a335bf1b5766",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "LineTensionCalculator",
+          "member": "#calculator",
+          "kind": "field"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "b6be9914a32b60f600aa37f6e608e62bbc8fd78b25c92857db6c95494b65ed25",
+          "calls": {
+            "calculate": 1002
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

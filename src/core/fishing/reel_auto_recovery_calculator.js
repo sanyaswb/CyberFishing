@@ -1,1 +1,1 @@
-globalThis.ReelAutoRecoveryCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/reel_auto_recovery_calculator.js"]["ReelAutoRecoveryCalculator"];
+// Retired Stage 3 activation activation-57add99af90d: ReelAutoRecoveryCalculator is served only through ESM imports of src/game/domain/fishing/reel_auto_recovery_calculator.js.

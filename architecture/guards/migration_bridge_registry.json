@@ -195,6 +195,22 @@
       ]
     },
     {
+      "id": "bridge-0dfeb893a1a3",
+      "bridge": "src/systems/reel_system.js",
+      "owner": "stage-4.cluster-025-fight-systems-small",
+      "source": "src/app/fishing.js",
+      "target": "src/game/application/fishing/reel_service.js",
+      "reason": "Preserve the exact ReelSystem consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ReelSystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0f4da996fde3",
       "bridge": "src/core/fishing/landing_policy.js",
       "source": "src/app/fishing.js",
@@ -1599,17 +1615,17 @@
       ]
     },
     {
-      "id": "bridge-63afd58b4545",
-      "bridge": "src/core/fishing/reel_auto_recovery_calculator.js",
-      "source": "src/systems/reel_system.js",
-      "target": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
-      "reason": "Preserve the exact synchronous ReelSystem consumer until application migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-002-fishing-944d0790",
-      "introducedStage": "stage-3",
+      "id": "bridge-63b8bc2e19a7",
+      "bridge": "src/systems/drag_system.js",
+      "owner": "stage-4.cluster-025-fight-systems-small",
+      "source": "src/app/fishing.js",
+      "target": "src/game/application/fishing/drag_control_service.js",
+      "reason": "Preserve the exact DragSystem consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
       "removalStage": "stage-4",
       "globalProviders": [
         {
-          "symbol": "ReelAutoRecoveryCalculator",
+          "symbol": "DragSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -1798,22 +1814,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2CommandService",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6aabd924bf06",
-      "bridge": "src/core/fishing/line_tension_calculator.js",
-      "source": "src/systems/tension_system.js",
-      "target": "src/game/domain/fishing/line_tension_calculator.js",
-      "reason": "Preserve the exact synchronous TensionSystem consumer until application migration removes the legacy symbol.",
-      "owner": "stage-3.candidate-003-fishing-9700ad4f",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "LineTensionCalculator",
           "mechanism": "global-this-property"
         }
       ]
@@ -2058,6 +2058,22 @@
       "globalProviders": [
         {
           "symbol": "MAP_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-732c933f8554",
+      "bridge": "src/systems/fight_physics_pipeline.js",
+      "owner": "stage-4.cluster-025-fight-systems-small",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/application/fishing/fight_physics_pipeline.js",
+      "reason": "Preserve the exact FightPhysicsPipeline consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsPipeline",
           "mechanism": "global-this-property"
         }
       ]
@@ -2770,6 +2786,22 @@
       "globalProviders": [
         {
           "symbol": "StaminaBalanceFrame",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a0c3a8d37e08",
+      "bridge": "src/systems/tension_system.js",
+      "owner": "stage-4.cluster-025-fight-systems-small",
+      "source": "src/app/fishing.js",
+      "target": "src/game/application/fishing/tension_service.js",
+      "reason": "Preserve the exact TensionSystem consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "TensionSystem",
           "mechanism": "global-this-property"
         }
       ]

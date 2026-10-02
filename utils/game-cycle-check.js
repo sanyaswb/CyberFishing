@@ -516,6 +516,8 @@ function runFloatDepthIntegrationChecks() {
     devFlags: createDevFlags(),
     // The live runtime config the tackle entities read, as the composition passes it.
     runtimeConfig: CONFIG,
+    // Deterministic stand-in for the platform high-resolution clock bootstrap injects (pipeline step durations).
+    stepClock: createStepClock(),
   }).create(
     createFish({ weightKg: 0.25 }),
     equipment,
@@ -579,11 +581,7 @@ function runTouchHoldControlBuildCheck() {
   });
   const rng = createRng();
   const cast = createCast({ config, equipment, distanceMeters: 2.0 });
-  const fight = new FightService({
-    config,
-    rng,
-    devFlags: createDevFlags(),
-  });
+  const fight = createFightService({ config, rng });
   fight.startFight(fishData, equipment);
   fight.updateFight(1000 / 30, {
     floatEntity: cast.floatEntity,
@@ -1332,11 +1330,7 @@ function runReelHoldPostStrokeOrderCheck() {
     speedMultiplier: 0.8,
   });
   const cast = createCast({ config, equipment, distanceMeters: 5.8 });
-  const fight = new FightService({
-    config,
-    rng: createRng(),
-    devFlags: createDevFlags(),
-  });
+  const fight = createFightService({ config, rng: createRng() });
   fight.startFight(fishData, equipment);
 
   let fullStrokeDebug = null;
@@ -1453,11 +1447,7 @@ function runFightScenario({
   const config = createConfig();
   const rng = createRng();
   const cast = createCast({ config, equipment, distanceMeters: startDistanceMeters });
-  const fight = new FightService({
-    config,
-    rng,
-    devFlags: createDevFlags(),
-  });
+  const fight = createFightService({ config, rng });
   fight.startFight(fishData, equipment);
 
   let transition = null;
@@ -1666,14 +1656,23 @@ assert(
 assert(breakCase.transition?.name === "failed", "fish-pressure overload scenario fails");
 assert(breakCase.transition?.data?.reason === "line", "fish-pressure overload scenario breaks the line");
 
+// Deterministic stand-in for the platform high-resolution clock bootstrap injects (pipeline step durations).
+function createStepClock() {
+  let ticks = 0;
+  return () => (ticks += 0.25);
+}
+
+// FightService with its default fight session factory (same config, rng and DEV flags objects) plus the step clock.
+function createFightService({ config, rng }) {
+  const devFlags = createDevFlags();
+  return new FightService({ config, rng, devFlags,
+    fightSessionFactory: new FightSessionFactory({ config, rng, devFlags, stepClock: createStepClock() }) });
+}
+
 function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters, frames, checkWater = () => true, closeDrag = true }) {
   const config = createConfig();
   const cast = createCast({ config, equipment, distanceMeters: startDistanceMeters });
-  const fight = new FightService({
-    config,
-    rng: createRng(),
-    devFlags: createDevFlags(),
-  });
+  const fight = createFightService({ config, rng: createRng() });
   fight.startFight(fishData, equipment);
   const phases = new Set();
   let debuffFrame = null;
