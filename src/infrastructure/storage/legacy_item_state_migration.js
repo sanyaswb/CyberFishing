@@ -85,7 +85,7 @@ class LegacyItemStateMigration {
     const groupId = definition?.progressionProfile?.groupId;
     const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
       ? ITEM_PROGRESSION_CONFIG
-      : globalThis.ITEM_PROGRESSION_CONFIG;
+      : undefined;
     const capability = config?.groups?.[groupId]?.freshness;
     if (!capability) {
       warnings?.push?.(

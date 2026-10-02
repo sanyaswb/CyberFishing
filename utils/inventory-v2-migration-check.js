@@ -68,6 +68,7 @@ vm.runInContext(
     ...itemStatCollaborators,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
     instanceIdFactory: (source) => source.instanceId + "~split-" + (++sequence),
+    assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
   });
   globalThis.migrationResult = migration.migrate({
     legacyItems: [

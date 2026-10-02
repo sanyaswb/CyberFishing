@@ -51,7 +51,7 @@ class InventoryItemSnapshotMapper {
         const groupId = definition?.progressionProfile?.groupId;
         const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
           ? ITEM_PROGRESSION_CONFIG
-          : globalThis.ITEM_PROGRESSION_CONFIG;
+          : undefined;
         return config?.groups?.[groupId]?.freshness || null;
       });
   }

@@ -43268,12 +43268,6 @@
           "items": [
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
@@ -43317,14 +43311,6 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/items/item_progression_config.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",
@@ -43439,12 +43425,6 @@
             },
             {
               "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -43580,14 +43560,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/item_assembly_profile_config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryItemLocation",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -43633,13 +43605,6 @@
               "target": "src/config/inventory/equipment_slot_config.js",
               "symbols": [
                 "EQUIPMENT_SLOT_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/inventory/item_assembly_profile_config.js",
-              "symbols": [
-                "ITEM_ASSEMBLY_PROFILE_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -43927,14 +43892,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -43964,25 +43922,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "CacheManager",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/cache_manager.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/infrastructure/storage/cache_manager.js",
-              "symbols": [
-                "CacheManager"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -44159,12 +44100,6 @@
           "items": [
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
@@ -44206,14 +44141,6 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/items/item_progression_config.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",

@@ -468,6 +468,7 @@ class InventoryV2CompositionRoot {
       now,
       itemStateMigration,
       effectiveStatsResolver,
+      assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
     }).migrate({
       legacyItems: sourceItems,
       legacyEquipment: sourceEquipment,

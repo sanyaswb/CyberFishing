@@ -13,6 +13,7 @@ class InventoryV2LegacyMigration {
   #effectiveStatsResolver;
   #itemSnapshotMapper;
   #now;
+  #assemblyProfileConfig;
 
   constructor({
     itemDefinitionResolver,
@@ -21,6 +22,7 @@ class InventoryV2LegacyMigration {
     itemStateMigration,
     effectiveStatsResolver,
     itemSnapshotMapper,
+    assemblyProfileConfig,
   } = {}) {
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
@@ -28,6 +30,7 @@ class InventoryV2LegacyMigration {
     this.#itemStateMigration = itemStateMigration;
     this.#effectiveStatsResolver = effectiveStatsResolver;
     this.#itemSnapshotMapper = itemSnapshotMapper;
+    this.#assemblyProfileConfig = assemblyProfileConfig;
   }
 
   migrate({ legacyItems = [], legacyEquipment = {}, settings = {} } = {}) {
@@ -57,7 +60,7 @@ class InventoryV2LegacyMigration {
     });
     const assemblyStates = new AssemblyStateRepository();
     const profileRegistry = new AssemblyProfileRegistry(
-      ITEM_ASSEMBLY_PROFILE_CONFIG,
+      this.#assemblyProfileConfig,
       { itemDefinitionResolver: this.#itemDefinitionResolver },
     );
     const assemblyReader = new ItemAssemblyReader({

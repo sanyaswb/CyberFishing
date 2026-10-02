@@ -13,7 +13,7 @@ class InventoryV2StateStore {
   #itemSnapshotMapper;
 
   constructor({
-    cache = typeof CacheManager !== "undefined" ? CacheManager : null,
+    cache,
     key = "player_inventory_v2",
     itemSnapshotMapper,
   } = {}) {
