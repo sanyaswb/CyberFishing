@@ -16097,32 +16097,17 @@
         "legacyLoadOrder": 128,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "DragForceCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16142,15 +16127,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16167,32 +16144,17 @@
         "legacyLoadOrder": 111,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EnduranceMovementDebuffCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16212,15 +16174,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16284,32 +16238,17 @@
         "legacyLoadOrder": 125,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FishFightDirectionResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16329,15 +16268,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16473,32 +16404,17 @@
         "legacyLoadOrder": 123,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "HoldOppositionResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16518,15 +16434,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -18701,32 +18609,17 @@
         "legacyLoadOrder": 139,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "SimpleFightForceCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -18746,15 +18639,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -36221,6 +36106,58 @@
       }
     },
     {
+      "currentPath": "src/game/domain/fishing/fish_force_system.js",
+      "currentArea": "game/domain/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "Number",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "domain-behavior"
+        ],
+        "targetBoundary": "game-domain",
+        "targetPath": "src/game/domain/fishing/fish_force_system.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/fishing/fish_retrieve_result.js",
       "currentArea": "game/domain/fishing",
       "observed": {
@@ -46724,7 +46661,7 @@
           "items": [
             {
               "symbol": "FishForceSystem",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -46734,52 +46671,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "DragForceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EnduranceMovementDebuffCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishFightDirectionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishPhysicsProfile",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "HoldOppositionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerForceSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SimpleFightForceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -46787,10 +46682,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Math",
-            "Number",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -46800,7 +46692,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "domain-behavior"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-domain",
         "targetPath": "src/game/domain/fishing/fish_force_system.js",
@@ -46809,131 +46701,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "DragForceCalculator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/drag_force_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EnduranceMovementDebuffCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishFightDirectionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/fish_fight_direction_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishPhysicsProfile",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/entities/fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "HoldOppositionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/hold_opposition_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerForceSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/player_force_system.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "SimpleFightForceCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/simple_fight_force_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/fishing/drag_force_calculator.js",
-              "symbols": [
-                "DragForceCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
-              "symbols": [
-                "EnduranceMovementDebuffCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/fish_fight_direction_resolver.js",
-              "symbols": [
-                "FishFightDirectionResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/hold_opposition_resolver.js",
-              "symbols": [
-                "HoldOppositionResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/simple_fight_force_calculator.js",
-              "symbols": [
-                "SimpleFightForceCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/entities/fish.js",
-              "symbols": [
-                "FishPhysicsProfile"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/player_force_system.js",
-              "symbols": [
-                "PlayerForceSystem"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -47751,32 +47529,17 @@
         "legacyLoadOrder": 210,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerForceSystem",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -47796,15 +47559,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

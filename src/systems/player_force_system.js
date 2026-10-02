@@ -1,1 +1,1 @@
-globalThis.PlayerForceSystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/player_force_system.js"]["PlayerForceSystem"];
+// Retired Stage 3 activation activation-38802c3efbfc: PlayerForceSystem is served only through ESM imports of src/game/domain/fishing/player_force_system.js.

@@ -1,1 +1,1 @@
-globalThis.SimpleFightForceCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/simple_fight_force_calculator.js"]["SimpleFightForceCalculator"];
+// Retired Stage 3 activation activation-ccddea60d16c: SimpleFightForceCalculator is served only through ESM imports of src/game/domain/fishing/simple_fight_force_calculator.js.

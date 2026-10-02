@@ -84,9 +84,11 @@ class StageThreeBatchPreflightAuditBuilder {
       ...(runtimeContract.approvedInfrastructureModules || []),
     ]);
     // A retired activation's ESM module stays in the cumulative graph for its importers.
-    const actualRuntimeModules = new Set([...runtimeContract.activationPositions,
+    // Inert modules (batch 050) are graph modules without an activation.
+    const actualRuntimeModules = new Set([...[...runtimeContract.activationPositions,
       ...(runtimeContract.retiredActivations || []).map((record) => record.activation)]
-      .map((activation) => activation.targetModule));
+      .map((activation) => activation.targetModule),
+    ...(runtimeContract.inertModules || []).map((record) => record.targetModule)]);
     this.#require(this.#same([...actualRuntimeModules].sort(), [...existingModules].sort()),
       "live runtime module set differs from completed frozen topology");
     this.#require(runtimeFacts.projectModuleCount === existingModules.size,

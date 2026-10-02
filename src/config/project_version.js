@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.24.88";
+const CURRENT_PROJECT_VERSION = "0.24.89";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,13 +13,12 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "fish-tackle-inventory-repository-world-domain",
-  updatedAt: "2026-10-01",
+  codename: "fish-force-system-domain",
+  updatedAt: "2026-10-02",
   notes: Object.freeze([
-    "Adopt the Stage 3.50.1 freeze extension with its hot-loop equivalence evidence",
-    "Migrate the fish entities, tackle entities, flat inventory repository, buff manager, rod pull system and location world",
-    "Keep every per-frame target representation-only and the game-cycle output equal",
-    "Preserve one hundred forty-eight project modules, one hundred thirty-six active activations and one hundred ninety-nine bridges",
+    "Migrate the fish force system with its owned per-frame collaborators",
+    "Retire six activations whose last classic reader was the fish force system",
+    "Preserve one hundred fifty project modules, one hundred thirty-one active activations and one hundred ninety-two bridges",
   ]),
 });
 

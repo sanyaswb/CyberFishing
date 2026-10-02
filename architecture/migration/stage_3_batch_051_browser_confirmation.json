@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-3-batch-051-browser-confirmation",
+  "batchId": "stage-3.replan-350.batch-051-fishing-95a74a4a",
+  "releaseVersion": "0.24.88",
+  "status": "passed",
+  "performedBy": "claude-automated-substitute",
+  "recordedAt": "2026-10-02T00:02:13.793Z",
+  "evidenceType": "owner-authorized-automated-substitute",
+  "gate": "passed-owner-authorized-automated-substitute-with-instrumented-zero-console-counts",
+  "browserSummary": {
+    "userStatement": "PASS (automated substitute): game-cycle re-executed without seals, exit 0, 217-line output byte-identical to the pre-cutover run (per-frame FishForceSystem); game loaded in the built-in browser: FishForceSystem global identical to the runtime ESM export, six retired globals undefined, FishPhysicsProfile kept, 150 runtime modules, canvas present; console errors 0, warnings 0.",
+    "context": "Automated substitute under the owner's authorization: game-cycle re-executed without seals and a built-in-browser load of the game with an instrumented console read.",
+    "individualResultsProvided": false,
+    "independentlyInstrumented": true
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0,
+    "userStatement": "errors 0, warnings 0 (instrumented read of the built-in browser console after load)",
+    "independentlyInstrumented": true
+  },
+  "supplements": {
+    "path": "architecture/migration/stage_3_batch_051_acceptance_pass.json",
+    "sha256": "c381c1df6e0dccddd998226da863bfe679b67acf225c8bbf0507ffe1e9808a40"
+  },
+  "historicalSummaryPreserved": true
+}

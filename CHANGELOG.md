@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.24.89 - Fish Force System Domain
+
+### Changed
+
+- Migrated FishForceSystem to the fishing Domain (per-frame, representation-only, game-cycle output unchanged); all 139 Domain modules are migrated.
+
 ## v0.24.88 - Fish Tackle Inventory Repository And World Domain
 
 ### Changed

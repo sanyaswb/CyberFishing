@@ -529,18 +529,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-38802c3efbfc",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "sourceProvider": "src/systems/player_force_system.js",
-      "targetModule": "src/game/domain/fishing/player_force_system.js",
-      "exportName": "PlayerForceSystem",
-      "legacySymbol": "PlayerForceSystem",
-      "legacyScriptIndex": 210,
-      "shimFile": "activations/210_playerforcesystem.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-3a560121fa29",
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "sourceProvider": "src/core/inventory/flat_inventory_item_repository.js",
@@ -563,6 +551,18 @@
       "shimFile": "activations/030_equipmentslotid.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "id": "activation-3c43fc3b9397",
+      "owner": "stage-3.replan-350.batch-051-fishing-95a74a4a",
+      "sourceProvider": "src/systems/fish_force_system.js",
+      "targetModule": "src/game/domain/fishing/fish_force_system.js",
+      "exportName": "FishForceSystem",
+      "legacySymbol": "FishForceSystem",
+      "legacyScriptIndex": 211,
+      "shimFile": "activations/211_fishforcesystem.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-3c866d430a42",
@@ -671,18 +671,6 @@
       "shimFile": "activations/076_targetrangemetricstrategy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-4e28fdf337a3",
-      "owner": "stage-3.candidate-005-fishing-45d0c7ce",
-      "sourceProvider": "src/core/fishing/drag_force_calculator.js",
-      "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
-      "exportName": "DragForceCalculator",
-      "legacySymbol": "DragForceCalculator",
-      "legacyScriptIndex": 128,
-      "shimFile": "activations/128_dragforcecalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-527be2eff1e7",
@@ -1165,18 +1153,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-9857928fc9d0",
-      "owner": "stage-3.candidate-006-fishing-e48e70d8",
-      "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
-      "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
-      "exportName": "HoldOppositionResolver",
-      "legacySymbol": "HoldOppositionResolver",
-      "legacyScriptIndex": 123,
-      "shimFile": "activations/123_holdoppositionresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-99430ac00c3f",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/auto_refill_policy.js",
@@ -1331,18 +1307,6 @@
       "shimFile": "activations/206_fish_fight_event.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "id": "activation-aa0a15e8a3fa",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "sourceProvider": "src/core/fishing/fish_fight_direction_resolver.js",
-      "targetModule": "src/game/domain/fishing/fish_fight_direction_resolver.js",
-      "exportName": "FishFightDirectionResolver",
-      "legacySymbol": "FishFightDirectionResolver",
-      "legacyScriptIndex": 125,
-      "shimFile": "activations/125_fishfightdirectionresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-aad64fe0f08c",
@@ -1547,18 +1511,6 @@
       "shimFile": "activations/169_equipmentloadoutrepository.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-ccddea60d16c",
-      "owner": "stage-3.candidate-007-fishing-bb8b3939",
-      "sourceProvider": "src/core/fishing/simple_fight_force_calculator.js",
-      "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
-      "exportName": "SimpleFightForceCalculator",
-      "legacySymbol": "SimpleFightForceCalculator",
-      "legacyScriptIndex": 139,
-      "shimFile": "activations/139_simplefightforcecalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
     },
     {
       "id": "activation-ce7da074f74a",
@@ -1873,18 +1825,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-fa95b209e285",
-      "owner": "stage-3.candidate-015-fishing-37dc3452",
-      "sourceProvider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
-      "targetModule": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
-      "exportName": "EnduranceMovementDebuffCalculator",
-      "legacySymbol": "EnduranceMovementDebuffCalculator",
-      "legacyScriptIndex": 111,
-      "shimFile": "activations/111_endurancemovementdebuffcalculator.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-3"
-    },
-    {
       "id": "activation-fae9ef46057a",
       "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
       "sourceProvider": "src/core/equipment/inventory_capacity_policy.js",
@@ -2094,6 +2034,23 @@
     },
     {
       "activation": {
+        "id": "activation-38802c3efbfc",
+        "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+        "sourceProvider": "src/systems/player_force_system.js",
+        "targetModule": "src/game/domain/fishing/player_force_system.js",
+        "exportName": "PlayerForceSystem",
+        "legacySymbol": "PlayerForceSystem",
+        "legacyScriptIndex": 210,
+        "shimFile": "activations/210_playerforcesystem.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
+    },
+    {
+      "activation": {
         "id": "activation-3890808eb3cc",
         "owner": "stage-3.candidate-013-fishing-0267b3ea",
         "sourceProvider": "src/core/fishing/rod_control_angle_resolver.js",
@@ -2159,6 +2116,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-034-fishing-b761d4f1"
+    },
+    {
+      "activation": {
+        "id": "activation-4e28fdf337a3",
+        "owner": "stage-3.candidate-005-fishing-45d0c7ce",
+        "sourceProvider": "src/core/fishing/drag_force_calculator.js",
+        "targetModule": "src/game/domain/fishing/drag_force_calculator.js",
+        "exportName": "DragForceCalculator",
+        "legacySymbol": "DragForceCalculator",
+        "legacyScriptIndex": 128,
+        "shimFile": "activations/128_dragforcecalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
     },
     {
       "activation": {
@@ -2366,6 +2340,23 @@
     },
     {
       "activation": {
+        "id": "activation-9857928fc9d0",
+        "owner": "stage-3.candidate-006-fishing-e48e70d8",
+        "sourceProvider": "src/core/fishing/hold_opposition_resolver.js",
+        "targetModule": "src/game/domain/fishing/hold_opposition_resolver.js",
+        "exportName": "HoldOppositionResolver",
+        "legacySymbol": "HoldOppositionResolver",
+        "legacyScriptIndex": 123,
+        "shimFile": "activations/123_holdoppositionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
+    },
+    {
+      "activation": {
         "id": "activation-9c5651e4f765",
         "owner": "stage-3.candidate-005-fishing-45d0c7ce",
         "sourceProvider": "src/core/fishing/fish_retrieve_result.js",
@@ -2451,6 +2442,23 @@
     },
     {
       "activation": {
+        "id": "activation-aa0a15e8a3fa",
+        "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
+        "sourceProvider": "src/core/fishing/fish_fight_direction_resolver.js",
+        "targetModule": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+        "exportName": "FishFightDirectionResolver",
+        "legacySymbol": "FishFightDirectionResolver",
+        "legacyScriptIndex": 125,
+        "shimFile": "activations/125_fishfightdirectionresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
+    },
+    {
+      "activation": {
         "id": "activation-b3d160e2af4c",
         "owner": "stage-3.candidate-020-assemblies-43d77861",
         "sourceProvider": "src/core/assemblies/assembly_state.js",
@@ -2499,6 +2507,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c"
+    },
+    {
+      "activation": {
+        "id": "activation-ccddea60d16c",
+        "owner": "stage-3.candidate-007-fishing-bb8b3939",
+        "sourceProvider": "src/core/fishing/simple_fight_force_calculator.js",
+        "targetModule": "src/game/domain/fishing/simple_fight_force_calculator.js",
+        "exportName": "SimpleFightForceCalculator",
+        "legacySymbol": "SimpleFightForceCalculator",
+        "legacyScriptIndex": 139,
+        "shimFile": "activations/139_simplefightforcecalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
     },
     {
       "activation": {
@@ -2601,6 +2626,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-034-fishing-b761d4f1"
+    },
+    {
+      "activation": {
+        "id": "activation-fa95b209e285",
+        "owner": "stage-3.candidate-015-fishing-37dc3452",
+        "sourceProvider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "targetModule": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+        "exportName": "EnduranceMovementDebuffCalculator",
+        "legacySymbol": "EnduranceMovementDebuffCalculator",
+        "legacyScriptIndex": 111,
+        "shimFile": "activations/111_endurancemovementdebuffcalculator.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-3"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
     }
   ],
   "inertModules": [
