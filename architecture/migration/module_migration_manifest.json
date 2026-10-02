@@ -51,21 +51,9 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "EventBus",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             }
           ],
@@ -106,45 +94,15 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/debug.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "EventBus",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/debug/god_mode.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
-            {
-              "target": "src/debug/debug.js",
-              "symbols": [
-                "DEBUG_MODULES"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/god_mode.js",
-              "symbols": [
-                "GodMode"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
               "symbols": [
@@ -766,6 +724,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "DebugService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1015,6 +979,12 @@
               "symbol": "GameWorld",
               "mechanism": "identifier",
               "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "GodMode",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -1857,6 +1827,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/debug.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "DebugService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2190,6 +2168,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/app/world.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "GodMode",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/debug/god_mode.js",
               "resolution": "confirmed"
             },
             {
@@ -3386,9 +3372,23 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/debug/debug.js",
+              "symbols": [
+                "DEBUG_MODULES"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/debug/dev_tools.js",
               "symbols": [
                 "DevTools"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/god_mode.js",
+              "symbols": [
+                "GodMode"
               ],
               "resolution": "confirmed"
             },

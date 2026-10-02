@@ -28,7 +28,12 @@ class GameCompositionRoot {
     const canvas = document.getElementById(canvasId);
     const canvasMetrics = new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
-    const devFlags = new DevFlagsProvider({ config: this.#config });
+    const devFlags = new DevFlagsProvider({
+      config: this.#config,
+      godModeSource: () => (typeof GodMode !== "undefined" ? GodMode : null),
+      debugModulesSource: () =>
+        typeof window !== "undefined" ? window.DEBUG_MODULES : null,
+    });
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
     const debugEvents = new BrowserDebugAdapter(document, () =>

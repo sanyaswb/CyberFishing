@@ -697,26 +697,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-7d722a31a7e0",
-      "rule": "boundary-dependency",
-      "source": "src/app/adapters.js",
-      "target": "src/debug/debug.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "7d722a31a7e0495ed8739f762917fe1e04498bc55b2359a068cc2eeaab94377f",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/adapters.js",
-        "target": "src/debug/debug.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-7fbe49b61767",
       "rule": "boundary-dependency",
       "source": "src/app/adapters.js",
@@ -1100,26 +1080,6 @@
         "rule": "boundary-dependency",
         "source": "src/ui/inventory/inventory_v2_ui.js",
         "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-c525fe97f83d",
-      "rule": "boundary-dependency",
-      "source": "src/app/adapters.js",
-      "target": "src/debug/god_mode.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c525fe97f83de5e86d18c0f1599e762d675e34f9ce16a1b8ce2d313e337c536c",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/adapters.js",
-        "target": "src/debug/god_mode.js"
       }
     },
     {
@@ -2267,26 +2227,6 @@
       }
     },
     {
-      "id": "debt-dev-leakage-6162864b5bdc",
-      "rule": "dev-leakage",
-      "source": "src/app/adapters.js",
-      "target": "src/debug/debug.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy dev-leakage debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "6162864b5bdc648ee4bfda7d0c2a676bc06338424f0e3b9ef4d68e91d9ffa165",
-      "identity": {
-        "rule": "dev-leakage",
-        "source": "src/app/adapters.js",
-        "target": "src/debug/debug.js"
-      }
-    },
-    {
       "id": "debt-dev-leakage-811c8cd1e216",
       "rule": "dev-leakage",
       "source": "src/app/fishing.js",
@@ -2306,26 +2246,6 @@
         "rule": "dev-leakage",
         "source": "src/app/fishing.js",
         "target": "src/debug/debug.js"
-      }
-    },
-    {
-      "id": "debt-dev-leakage-a2116bc4c03d",
-      "rule": "dev-leakage",
-      "source": "src/app/adapters.js",
-      "target": "src/debug/god_mode.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy dev-leakage debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "a2116bc4c03dac6b8aad2bc1bf074cbbad3998d9cd316f0682f9c1f86b786be1",
-      "identity": {
-        "rule": "dev-leakage",
-        "source": "src/app/adapters.js",
-        "target": "src/debug/god_mode.js"
       }
     },
     {

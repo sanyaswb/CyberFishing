@@ -13,9 +13,8 @@ class DevFlagsProvider {
 
   constructor({
     config,
-    godModeSource = () => (typeof GodMode !== "undefined" ? GodMode : null),
-    debugModulesSource = () =>
-      typeof window !== "undefined" ? window.DEBUG_MODULES : null,
+    godModeSource,
+    debugModulesSource,
   } = {}) {
     this.#config = config || {};
     this.#godModeSource = godModeSource;
