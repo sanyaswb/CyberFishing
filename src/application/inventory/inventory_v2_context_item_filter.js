@@ -53,9 +53,7 @@ class EquipmentInventoryContextFilterStrategy {
     visibilityPolicy,
     targetResolver,
     itemReader,
-    slotIds = typeof EQUIPMENT_ALL_SLOT_IDS !== "undefined"
-      ? EQUIPMENT_ALL_SLOT_IDS
-      : [],
+    slotIds,
   } = {}) {
     if (!equipmentState?.snapshot) {
       throw new TypeError(

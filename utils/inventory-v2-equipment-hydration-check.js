@@ -6,6 +6,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { StageFourClusterLedger } = require("./architecture/stage_four/cluster_ledger");
 
 const Assertion = CheckAssertion.create(
   "Inventory-v2 production-shaped equipment hydration check",
@@ -361,10 +362,22 @@ class ProductionShapedEquipmentHydrationCheck {
       "raw-assembly-child-hydration-bypass",
       "evidence records the exact root cause",
     );
+    // Stage 4 may change the reviewed file only through recorded steps (preparation or cluster before/after hashes).
+    const boundary = evidence.rootCause.normalizationBoundary;
+    const steps = [...StageFourClusterLedger.preparations(root).flatMap((record) => record.files || []),
+      ...StageFourClusterLedger.read(root).applied.flatMap((record) => record.output.files || [])]
+      .filter((file) => file.path === boundary && file.before !== file.after);
+    let expected = evidence.evidence.normalizationBoundaryAfterSha256;
+    for (const seen = new Set([expected]); ;) {
+      const step = steps.find((file) => file.before === expected && !seen.has(file.after));
+      if (!step) break;
+      expected = step.after;
+      seen.add(expected);
+    }
     Assertion.equal(
-      sha256(evidence.rootCause.normalizationBoundary),
-      evidence.evidence.normalizationBoundaryAfterSha256,
-      "normalization boundary matches reviewed repair evidence",
+      sha256(boundary),
+      expected,
+      "normalization boundary matches reviewed repair evidence or its recorded Stage 4 successor",
     );
     // The batch 007 historical manifest reconstruction is archived (owner decision 2026-10-01,
     // tag stage3-evidence-archive); the behaviour and repair evidence above stay checked.

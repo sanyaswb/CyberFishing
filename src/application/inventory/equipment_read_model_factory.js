@@ -14,11 +14,7 @@ class EquipmentReadModelFactory {
   } = {}) {
     this.#itemReader = itemReader;
     this.#assemblyReader = assemblyReader;
-    this.#capabilityResolver =
-      capabilityResolver ||
-      (typeof RodCapabilityResolver !== "undefined"
-        ? new RodCapabilityResolver()
-        : null);
+    this.#capabilityResolver = capabilityResolver;
   }
 
   create(equipmentState) {

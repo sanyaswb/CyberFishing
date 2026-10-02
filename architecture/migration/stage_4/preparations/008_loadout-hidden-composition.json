@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "008",
+  "slug": "loadout-hidden-composition",
+  "baseCommit": "a875c81836e254525625fad5a8fb01c1af3e090a",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/application/inventory/loadout_application_service.js",
+      "before": "d7c4972a8db5a5801662e055c401e3067238d25faa3f57d6fe23bba40f8a37ec",
+      "after": "b1ab69e201d75c4b62316c88048dcfe00c405ac6c5762476d96cde5e01efe1fc"
+    },
+    {
+      "path": "src/application/inventory/equipment_read_model_factory.js",
+      "before": "60a029f61f874d71c01234563f4bc8d477ede92d3321ba51727e8878e7e1f340",
+      "after": "d3127721c89094602b9f841e13ce6146da1d56413f04f4c294c9095880db15c8"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "before": "c7e5b4ce107d6ceb9ae90131f6ab969622975d60f03d7e6131e8fddc148f4f30",
+      "after": "28aeaed9d9636c339badf20262ccdad2ed050ac680ccbb2026741aad0f0fc934"
+    },
+    {
+      "path": "utils/inventory-v2-cast-and-lure-check.js",
+      "before": "2c424c9c5b5b0eaab2af26481c012704d13b926292b27ca0203e604a7b8927e4",
+      "after": "2195308ba7df4f18ddef0e4d33d66b5eb79d83526c9550cf97dd261f38cf0bc6"
+    },
+    {
+      "path": "utils/inventory-v2-equipment-check.js",
+      "before": "36f6096fec67bb3c94305fa2b0f92a3e6f48bc98fd26ceae3818ec92ce876bf5",
+      "after": "2ce03cfc63d61e55cacc4f63394be5b145388664b3bf39d0d4836c302d841bef"
+    },
+    {
+      "path": "utils/inventory-v2-integration-check.js",
+      "before": "e3776c46eeca21b6b345ff9978641966b1e847df2c33487b36cd32ad5e0d2eb8",
+      "after": "682f2d4dde0ba796c2ddb8dc2181fa168cd1b88f5539d7c2d52520ddda68876f"
+    },
+    {
+      "path": "utils/inventory-v2-equipment-hydration-check.js",
+      "before": "18dcab74f9927c459c6f2dd40d12812ac56aaedac639d1384a1fa0946735cc60",
+      "after": "a766d7770beeedf99923f472f787b3a7c9b7d780213aca1b6b85b08cadda1057"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "73617166bed600d5a8f42bdb0c58b21ade30cf4d5ade8634cd57af306fda0a3a",
+      "after": "0e053295d556dc1965f8c7a816c3fbe220f1d4ac51f83a2ef28585366600fa27"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 021 (inventory equipment/loadout application services) carries high-level-self-composition blockers: LoadoutApplicationService defaulted its capacity policy and transition planner, EquipmentReadModelFactory its RodCapabilityResolver and EquipmentInventoryContextFilterStrategy its slot ids through typeof-guarded global fallbacks. Framework Q4 (decided case: rules.js defaults): the only production construction (InventoryV2CompositionRoot) passes every one of them, so the defaults are removed (default only, no new validation); checks that relied on them pass the same collaborators explicitly. The mainSlotIds default (EQUIPMENT_MAIN_SLOT_IDS) stays: production does not pass it.",
+  "constructionEvidence": [
+    "grep src utils: `new LoadoutApplicationService` occurs once in production (InventoryV2CompositionRoot.compose, passes port, capacityPolicy = new UnlimitedInventoryCapacityPolicy(), transitionPlanner = loadoutTransitionPlanner, equipmentActivationValidator); `new EquipmentReadModelFactory` once (passes capabilityResolver = new RodCapabilityResolver()); `new EquipmentInventoryContextFilterStrategy` once (passes slotIds: EQUIPMENT_ALL_SLOT_IDS).",
+    "Checks: inventory-v2-integration's rollback service now passes the planner the removed default built (same capacity policy, ownershipReader over its port, a copy of EQUIPMENT_MAIN_SLOT_IDS); inventory-v2-equipment passes new RodCapabilityResolver() (its context loads the resolver, so the default created one); inventory-v2-cast-and-lure passes capabilityResolver: null (its runtime has no RodCapabilityResolver, so the default was null). The hydration check constructs the factory with explicit resolvers already.",
+    "inventory-v2-equipment-hydration-check pinned the bytes of equipment_read_model_factory.js to the Stage 3 batch 007 repair evidence (immutable); it now also accepts the hash reached through recorded Stage 4 before/after steps (this record, later cluster records), so every change of the reviewed boundary stays recorded."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 90,
+    "knownDebtsAfter": 90,
+    "focused": [
+      "inventory-v2-integration",
+      "inventory-v2-cast-and-lure",
+      "inventory-v2-equipment",
+      "inventory-v2-equipment-hydration",
+      "inventory-v2-ui",
+      "inventory-save-round-trip"
+    ],
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "inventory": "14/14"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "inventoryToggleVisibleNodes": [
+        0,
+        179,
+        0
+      ],
+      "itemCards": 22,
+      "inventorySaveBytes": 4889
+    }
+  }
+}

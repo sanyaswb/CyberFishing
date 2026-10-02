@@ -7171,14 +7171,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -7209,25 +7202,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "symbols": [
-                "RodCapabilityResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -9171,14 +9147,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -9207,25 +9176,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_ALL_SLOT_IDS"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -10503,18 +10455,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LoadoutEquipmentTransitionPlanner",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "UnlimitedInventoryCapacityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -10560,22 +10500,6 @@
               "executionPhase": "deferred",
               "target": "src/core/loadouts/equipment_loadout.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "LoadoutEquipmentTransitionPlanner",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "UnlimitedInventoryCapacityPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/inventory_capacity_policy.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -10587,23 +10511,9 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/core/equipment/inventory_capacity_policy.js",
-              "symbols": [
-                "UnlimitedInventoryCapacityPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/core/loadouts/equipment_loadout.js",
               "symbols": [
                 "EquipmentLoadout"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/loadouts/loadout_equipment_transition_planner.js",
-              "symbols": [
-                "LoadoutEquipmentTransitionPlanner"
               ],
               "resolution": "confirmed"
             }

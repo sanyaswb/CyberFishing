@@ -1644,9 +1644,15 @@ vm.runInContext(
       },
     },
   });
+  const rollbackCapacityPolicy = new UnlimitedInventoryCapacityPolicy();
   const rollbackService = new LoadoutApplicationService({
     port: rollbackPort,
-    capacityPolicy: new UnlimitedInventoryCapacityPolicy(),
+    capacityPolicy: rollbackCapacityPolicy,
+    transitionPlanner: new LoadoutEquipmentTransitionPlanner({
+      capacityPolicy: rollbackCapacityPolicy,
+      ownershipReader: (instanceId) => rollbackPort.getRootOwner?.(instanceId),
+      mainSlotIds: [...EQUIPMENT_MAIN_SLOT_IDS],
+    }),
   });
   const rollbackResult = rollbackService.equip({
     loadout: rollbackLoadouts.require("rollback-kit"),

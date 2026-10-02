@@ -58,26 +58,14 @@ class LoadoutApplicationService {
       throw new TypeError("LoadoutApplicationService requires LoadoutApplicationPort");
     }
     this.#port = port;
-    this.#capacityPolicy =
-      capacityPolicy ||
-      (typeof UnlimitedInventoryCapacityPolicy !== "undefined"
-        ? new UnlimitedInventoryCapacityPolicy()
-        : null);
+    this.#capacityPolicy = capacityPolicy;
     this.#mainSlotIds = [
       ...(mainSlotIds ||
         (typeof EQUIPMENT_MAIN_SLOT_IDS !== "undefined"
           ? EQUIPMENT_MAIN_SLOT_IDS
           : ["rod", "reel", "terminalLine", "tackle", "float"])),
     ];
-    this.#transitionPlanner =
-      transitionPlanner ||
-      (typeof LoadoutEquipmentTransitionPlanner !== "undefined"
-        ? new LoadoutEquipmentTransitionPlanner({
-            capacityPolicy: this.#capacityPolicy,
-            ownershipReader: (instanceId) => this.#port.getRootOwner?.(instanceId),
-            mainSlotIds: this.#mainSlotIds,
-          })
-        : null);
+    this.#transitionPlanner = transitionPlanner;
     this.#equipmentActivationValidator = equipmentActivationValidator;
   }
 

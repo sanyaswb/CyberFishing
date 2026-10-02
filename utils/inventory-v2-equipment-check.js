@@ -371,6 +371,7 @@ class InventoryV2EquipmentCheck {
     const readModel = new r.EquipmentReadModelFactory({
       itemReader: (id) => items.get(id),
       assemblyReader: assemblies,
+      capabilityResolver: new r.RodCapabilityResolver(),
     }).create(state);
     Assertion.equal(readModel.line.instanceId, "reel-line", "read model unfolds reel line");
     Assertion.equal(readModel.leader.instanceId, "leader", "read model maps terminal leader");

@@ -77,6 +77,7 @@ class LureProjectionAndBiteCheck {
         const readModelFactory = new EquipmentReadModelFactory({
           itemReader,
           assemblyReader,
+          capabilityResolver: null,
         });
         const controller = new FishingController({
           inventory: {},
