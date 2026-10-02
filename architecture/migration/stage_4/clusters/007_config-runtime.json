@@ -6,7 +6,7 @@
   "milestone": "M1",
   "boundary": "game-config",
   "tier": "C",
-  "tierEvidence": "Config runtime helpers retain the existing authoritative override store and immutable base context. No gameplay state or per-frame work: the Stage 4 config scope is owner-approved tier C. The composition remains byte-identical; M1 RuntimeConfig reads live CONFIG, these existing helpers remain the Stage 6 DEV source follow-up. PARKED: policy browser-capability guard forbids structuredClone in game-config; graph v1 permission was incorrect. Prerequisite must inject the host clone capability from bootstrap/platform, preserve both structuredClone and JSON-fallback semantics, and account for every construction site. No policy/debt/whitelist change is permitted.",
+  "tierEvidence": "Configuration store is the sole owner of overrides, provider derives from its injected store/base, and immutable helpers are pure. Host cloning and concrete context composition moved to Platform/Bootstrap in preparation 001, proven for both clone branches. Owner-approved config tier C; no gameplay/frame/save changes. Live RuntimeConfig remains the M1 Application source; BASE_CONFIG + override-store port sourcing is deferred to Stage 6.",
   "modules": [
     {
       "currentPath": "src/config/runtime/config_override_store.js",
@@ -14,7 +14,13 @@
       "exports": [
         "ConfigOverrideStore"
       ],
-      "imports": []
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Configuration store is the sole owner of overrides, provider derives from its injected store/base, and immutable helpers are pure. Host cloning and concrete context composition moved to Platform/Bootstrap in preparation 001, proven for both clone branches. Owner-approved config tier C; no gameplay/frame/save changes. Live RuntimeConfig remains the M1 Application source; BASE_CONFIG + override-store port sourcing is deferred to Stage 6."
+        }
+      ]
     },
     {
       "currentPath": "src/config/runtime/resolved_config_provider.js",
@@ -22,36 +28,191 @@
       "exports": [
         "ResolvedConfigProvider"
       ],
-      "imports": [
-        {
-          "symbol": "ConfigOverrideStore",
-          "from": "src/game/config/runtime/config_override_store.js"
-        }
-      ]
+      "imports": []
     },
     {
       "currentPath": "src/config/runtime/immutable_config.js",
       "targetPath": "src/game/config/runtime/immutable_config.js",
       "exports": [
-        "createRuntimeConfigContext",
-        "deepCloneConfig",
         "deepFreezeConfig",
         "getRuntimeConfigPath",
         "setRuntimeConfigPath"
       ],
-      "imports": [
+      "imports": [],
+      "reviewedBlockers": [
         {
-          "symbol": "ConfigOverrideStore",
-          "from": "src/game/config/runtime/config_override_store.js"
+          "blocker": "browser-api-coupling",
+          "reason": "Configuration store is the sole owner of overrides, provider derives from its injected store/base, and immutable helpers are pure. Host cloning and concrete context composition moved to Platform/Bootstrap in preparation 001, proven for both clone branches. Owner-approved config tier C; no gameplay/frame/save changes. Live RuntimeConfig remains the M1 Application source; BASE_CONFIG + override-store port sourcing is deferred to Stage 6."
         },
         {
-          "symbol": "ResolvedConfigProvider",
-          "from": "src/game/config/runtime/resolved_config_provider.js"
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Configuration store is the sole owner of overrides, provider derives from its injected store/base, and immutable helpers are pure. Host cloning and concrete context composition moved to Platform/Bootstrap in preparation 001, proven for both clone branches. Owner-approved config tier C; no gameplay/frame/save changes. Live RuntimeConfig remains the M1 Application source; BASE_CONFIG + override-store port sourcing is deferred to Stage 6."
         }
       ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "config-runtime",
+      "script": "utils/config-runtime-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-007-config-runtime",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/runtime/config_override_store.js",
+        "targetPath": "src/game/config/runtime/config_override_store.js",
+        "sourceSha256": "37f563e63f7fbab8e8b4c18d535b52c96e28109057061777dbe0f8b04a862ccd",
+        "targetSha256": "9bdfa2a463f13225014854cc8d929b8f7d207881ec62a97e50ad48a1a8e904d4"
+      },
+      {
+        "currentPath": "src/config/runtime/resolved_config_provider.js",
+        "targetPath": "src/game/config/runtime/resolved_config_provider.js",
+        "sourceSha256": "19aa3a1902f9226f02e59cd96c640f44d81ebd5ba4fb9331101c0d3c4adf4886",
+        "targetSha256": "6665c5cf217d0ab92e53d95665506e08ce8737c2e0e6cd4fad93e49b76c2a5eb"
+      },
+      {
+        "currentPath": "src/config/runtime/immutable_config.js",
+        "targetPath": "src/game/config/runtime/immutable_config.js",
+        "sourceSha256": "a3ee720131f27dfd14d0963dd1096e05c3125bc7704f8586337fe5a9e0462a7d",
+        "targetSha256": "04b4c169a6d26d12b29915317a6b54fe67acd02113fc35d2fc4bb1b62c3008a3"
+      }
+    ],
+    "activations": [
+      "activation-256de641d185",
+      "activation-c1a6acc96ce5",
+      "activation-e461775c453b",
+      "activation-f41fa91bd5c9"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "bridgesAdded": [
+      "bridge-20e653528ef1",
+      "bridge-41a8900e7a86",
+      "bridge-cb9cf133dd58"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/007_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "1d1dcceee915b864a638fbf5382e3fe539e580fdd081baf8d39404263232ce25",
+        "after": "62ddc6b45fe9fd9ebdb905c7fdc7d925ccfb9c321ffa356fb1840e2e6cea6af3"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "01e1470252626bab46c5b46c0ac7c3fb31170072be138d795b36c0671b6331b0",
+        "after": "bfd86609fb8959af19161f2dd97040eefbb12665027fe3b99af89ee259b2ca9f"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "10919e115d5f2e5b5b3fa7395329ee20b1c75c0f880c5cffdff116c436d9273c",
+        "after": "3e4d32b643800fc467b4eebc88e1f075bd5a88738d19e40bfc8ffabe20a6295d"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "1f7e7ef4b47c7b3e2758018c3278b0887b63443adfc943d20e0c17513ad84d31",
+        "after": "b9869b57d7b417a95400f02f4575fffbc623fa5ea49b4615aebf33f845a0071a"
+      },
+      {
+        "path": "index.html",
+        "before": "0c3fe79625a160a53f785dee24c964bf11e7f8cd6a8c2cc9a484be14af2c4e57",
+        "after": "14b9ee7fff947da4d8f9e1fceadcecca6f5cdac004a6fa11a366ad1c20b5bffc"
+      },
+      {
+        "path": "src/config/runtime/config_override_store.js",
+        "before": "37f563e63f7fbab8e8b4c18d535b52c96e28109057061777dbe0f8b04a862ccd",
+        "after": "6349d5e0040b8c4396a48d8bbfcdb8d3bd0790872e1d4349a16106319d206ed9"
+      },
+      {
+        "path": "src/config/runtime/immutable_config.js",
+        "before": "a3ee720131f27dfd14d0963dd1096e05c3125bc7704f8586337fe5a9e0462a7d",
+        "after": "bd00b035493ce785814dec5dbaa705dd4f997e84a40bb444ff882817f7844fe9"
+      },
+      {
+        "path": "src/config/runtime/resolved_config_provider.js",
+        "before": "19aa3a1902f9226f02e59cd96c640f44d81ebd5ba4fb9331101c0d3c4adf4886",
+        "after": "f59305e7ea4a9d419e1e29bfc4237c531de755d260349016af3f61fd05331d33"
+      },
+      {
+        "path": "src/game/config/runtime/config_override_store.js",
+        "before": null,
+        "after": "9bdfa2a463f13225014854cc8d929b8f7d207881ec62a97e50ad48a1a8e904d4"
+      },
+      {
+        "path": "src/game/config/runtime/immutable_config.js",
+        "before": null,
+        "after": "04b4c169a6d26d12b29915317a6b54fe67acd02113fc35d2fc4bb1b62c3008a3"
+      },
+      {
+        "path": "src/game/config/runtime/resolved_config_provider.js",
+        "before": null,
+        "after": "6665c5cf217d0ab92e53d95665506e08ce8737c2e0e6cd4fad93e49b76c2a5eb"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 620 modules, 892 unified edges, 852 globals, 137 exact known-debt diagnostics, 0 FAIL in 670ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 620/620 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 154 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 154 activations and 233 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 30 record(s), 10 applied, 35 ESM target(s) inside their boundaries; 13 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "config-runtime",
+        "status": "PASS",
+        "sha256": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 154,
+      "identityMismatches": 0
+    }
+  }
 }

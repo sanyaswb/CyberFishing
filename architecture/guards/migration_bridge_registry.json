@@ -387,6 +387,26 @@
       ]
     },
     {
+      "id": "bridge-20e653528ef1",
+      "bridge": "src/config/runtime/immutable_config.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/config.js",
+      "target": "src/game/config/runtime/immutable_config.js",
+      "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "deepFreezeConfig",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "setRuntimeConfigPath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-218534519854",
       "bridge": "src/core/fishing/recoverable_line_calculator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -962,6 +982,22 @@
       "globalProviders": [
         {
           "symbol": "CastDistanceCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-41a8900e7a86",
+      "bridge": "src/config/runtime/config_override_store.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/config.js",
+      "target": "src/game/config/runtime/config_override_store.js",
+      "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ConfigOverrideStore",
           "mechanism": "global-this-property"
         }
       ]
@@ -3126,6 +3162,22 @@
         },
         {
           "symbol": "FishCondition",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-cb9cf133dd58",
+      "bridge": "src/config/runtime/resolved_config_provider.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/config.js",
+      "target": "src/game/config/runtime/resolved_config_provider.js",
+      "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ResolvedConfigProvider",
           "mechanism": "global-this-property"
         }
       ]
