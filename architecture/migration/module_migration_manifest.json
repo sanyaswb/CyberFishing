@@ -63,12 +63,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "GodMode",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -128,14 +122,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "GodMode",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -145,13 +131,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/debug/debug.js",
               "symbols": [
@@ -49926,12 +49905,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
               "mechanism": "global-this-property",
               "accessRequirement": "required",
@@ -50034,15 +50007,7 @@
               "resolution": "confirmed"
             }
           ],
-          "unresolved": [
-            {
-              "symbol": "CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

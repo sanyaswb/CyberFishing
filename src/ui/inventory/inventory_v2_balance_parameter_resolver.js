@@ -18,14 +18,14 @@ class InventoryV2BalanceParameterResolver {
   } = {}) {
     this.#config =
       config || globalThis.INVENTORY_V2_BALANCE_TOOLTIP_CONFIG || {};
-    this.#physicsConfig = physicsConfig || globalThis.CONFIG?.physics || {};
+    this.#physicsConfig = physicsConfig || {};
     this.#castDistanceCalculator = castDistanceCalculator || null;
     this.#retrieveSpeedCalculator =
       retrieveSpeedCalculator || this.#createRetrieveSpeedCalculator();
     this.#reelConfig =
       reelConfig || this.#physicsConfig?.tackle?.reel || {};
     this.#debugConfig =
-      debugConfig || globalThis.CONFIG?.debug?.inventory || {};
+      debugConfig || {};
     if (
       rarityVisualResolver &&
       typeof rarityVisualResolver.resolve !== "function"

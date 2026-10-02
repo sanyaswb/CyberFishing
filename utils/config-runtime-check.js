@@ -15,6 +15,7 @@ function check(structured) {
     ["src/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
     ["src/config/config.js",["createRuntimeConfigContext","CONFIG_RUNTIME_CONTEXT","BASE_CONFIG","CONFIG_OVERRIDE_STORE","RESOLVED_CONFIG_PROVIDER"]],
     ["src/app/bootstrap.js",["GameCompositionRoot"]],
+    ["src/app/adapters.js",["ConfigProvider"]],
     ["src/debug/overlay/services/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});
   const {CONFIG_RUNTIME_CONTEXT:ctx,BASE_CONFIG:base,CONFIG_OVERRIDE_STORE:store,RESOLVED_CONFIG_PROVIDER:provider} = runtime.context;
@@ -48,10 +49,15 @@ function check(structured) {
   assert.equal(port.physics,replacement,"the RuntimeConfig port reads root replacements live");
   const adapter={getRodControlConfig:()=>({value:1})};
   // A production config exposes this property before its port is created.
-  Object.defineProperty(config,"fightPhysicsConfig",{value:adapter,writable:true,configurable:true,enumerable:false});
+  Object.defineProperty(config,"fightPhysicsConfig",{value:adapter,configurable:true,enumerable:false});
   const anotherPort=new runtime.context.GameCompositionRoot(config).getRuntimeConfig();
   assert.equal(anotherPort.fightPhysicsConfig,adapter);
-  const replacementAdapter={getRodControlConfig:()=>({value:2})};config.fightPhysicsConfig=replacementAdapter;
+  const consumerConfig=new runtime.context.ConfigProvider(anotherPort);
+  assert.equal(consumerConfig.fightPhysicsConfig,adapter);
+  const replacementAdapter={getRodControlConfig:()=>({value:2})};
+  Object.defineProperty(config,"fightPhysicsConfig",{value:replacementAdapter,configurable:true,enumerable:false});
+  assert.equal(consumerConfig.fightPhysicsConfig,replacementAdapter,"existing Application consumers read adapter overrides live");
+  assert.equal(consumerConfig.physics,replacement);
   assert.equal(anotherPort.fightPhysicsConfig,replacementAdapter,"adapter overrides are read per call");
   assert.equal(Object.keys(anotherPort).includes("fightPhysicsConfig"),false);
   const metrics=new runtime.context.OverlayMetricResolver({baseConfig:base});

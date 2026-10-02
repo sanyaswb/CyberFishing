@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "002",
+  "slug": "live-config-readers",
+  "baseCommit": "4ca527c0183375e776dd0074da6e67e270970864",
+  "reason": "Separate waking CONFIG fallback removal before its activation. Sole production InventoryV2BalanceParameterResolver construction in GameCompositionRoot passes physicsConfig/debugConfig. Sole production ConfigProvider construction in GameApplication receives the live RuntimeConfig, with fightPhysicsConfig composed before use. Remove cached adapter/default composition; the getter reads the same port per call, including DEV replacement (owner decision 0.2). No gameplay formula, save data, production API or allocation change.",
+  "constructionEvidence": [
+    "GameCompositionRoot creates CONFIG.fightPhysicsConfig before GameApplication; the live port preserves its non-enumerable property.",
+    "GameApplication: sole ConfigProvider construction passes config. Existing consumer retains its identity across Object.defineProperty adapter replacement.",
+    "GameCompositionRoot: sole balance resolver construction explicitly passes physicsConfig:this.#config.physics and debugConfig:this.#config.debug?.inventory. Authored CONFIG provides both; no production caller uses the fallback."
+  ],
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/app/adapters.js",
+      "before": "33b7cbe31f73dae1e95acbd5c0995c3a265021e4fe8edfdc995d6a355b6ec10d",
+      "after": "9390a61ebd15aee4a71c9406ab4a06baec2e5ca4273753eac87f5b5d8f1955c1"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "before": "b1ccd30323fd66226a01c6eccea0900a0cf60406671f9a4e72e8bc7ed0a93dde",
+      "after": "94828a00a8d997b83ceaf80bd4ebe156c13e693ca612d249ba082d495a72df30"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "6510ba861996a9ef428f6101852ade3bbf232f2a3fe7204c1d7f856264ec1ba2",
+      "after": "663442d079243e8fa049c849cd73e5f7fc520461908098994dae0713fb3dcf75"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "5ed7b7c20fdceaf14bcc85b16f6f037ec5245fcdbea828f085e7f6cbff97ba34",
+      "after": "10919e115d5f2e5b5b3fa7395329ee20b1c75c0f880c5cffdff116c436d9273c"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "acceptance": {
+      "checks": 80,
+      "executed": 80,
+      "cached": 0,
+      "sourceUnchanged": true,
+      "catalogSha256": "99f585cfebd521ccd25babe6da3c0fcc59f5f921cf7f8b14c8d515d32e09029c"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 150,
+      "identityMismatches": 0
+    }
+  }
+}
