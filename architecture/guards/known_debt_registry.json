@@ -1399,26 +1399,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-11f2858fef0f",
-      "rule": "browser-capability",
-      "source": "src/core/input/fight_input_action_composer.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "legacy-browser-capability"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "11f2858fef0ffa628638b9ce06ad416c7a2dd9bb3976e5b14d49de01eaa6639f",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/core/input/fight_input_action_composer.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
       "id": "debt-browser-capability-1839f595e52b",
       "rule": "browser-capability",
       "source": "src/ui/ui.js",

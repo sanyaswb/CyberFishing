@@ -18,6 +18,8 @@ const { MigrationBridgeRegistryValidator } = require("../guards/contracts/guard_
 const { ManifestEntryFactory } = require("../migration/manifest_entry_factory");
 const { CurrentAreaResolver } = require("../migration/current_area_resolver");
 const { StageThreeRuntimeScriptAliasResolver } = require("../migration/stage_three_runtime_script_alias_resolver");
+const { ArchitectureGuardSnapshotBuilder } = require("../guards/corpus/architecture_guard_snapshot_builder");
+const { ArchitectureGuardEngine } = require("../guards/architecture_guard_engine");
 
 const PATHS = Object.freeze({
   manifest: "architecture/migration/module_migration_manifest.json",
@@ -26,6 +28,7 @@ const PATHS = Object.freeze({
   registry: "architecture/guards/migration_bridge_registry.json",
   packageContract: "architecture/build/package_contract.json",
   index: "index.html",
+  debtRegistry: "architecture/guards/known_debt_registry.json",
 });
 // A bridge lives until its classic consumer migrates: the consumer boundary names that stage.
 const REMOVAL_BY_CONSUMER_BOUNDARY = Object.freeze({
@@ -335,6 +338,7 @@ class StageFourClusterApply {
     writes.set(PATHS.registry, canonical(nextRegistry));
     writes.set(PATHS.manifest, canonical(this.#manifest(plan)));
     writes.set(PATHS.packageContract, this.#packageContract(future));
+    writes.set(PATHS.debtRegistry, workspace.text(PATHS.debtRegistry));
     const applied = { ...record, output: { status: "applied", owner: plan.owner, runtimeSlot: plan.runtimeSlot,
       targets: plan.targets.map((target) => ({ currentPath: target.module.currentPath, targetPath: target.module.targetPath,
         sourceSha256: target.sourceSha256, targetSha256: target.targetSha256 })),
@@ -354,6 +358,20 @@ class StageFourClusterApply {
         const result = workspace.node(script);
         assert.equal(result.status, 0, `${label} failed:\n${result.stderr || result.stdout}`);
       }
+      const debtRegistry = workspace.json(PATHS.debtRegistry);
+      const snapshot = new ArchitectureGuardSnapshotBuilder({projectRoot:workspace.root,
+        policy:workspace.json(PATHS.policy,{strict:false}),manifest:workspace.json(PATHS.manifest),
+        bridgeRegistry:workspace.json(PATHS.registry),globalBaseline:workspace.json("architecture/guards/global_provider_baseline.json"),
+        debtRegistry}).build();
+      const report = new ArchitectureGuardEngine({projectRoot:workspace.root}).run(snapshot);
+      assert.deepEqual(report.diagnostics.filter(item => item.status === "FAIL" && item.rule !== "stale-known-debt"), [],
+        "migration introduced an architecture failure");
+      const resolved = debtRegistry.debts.filter(debt => report.diagnostics.some(item =>
+        item.rule === "stale-known-debt" && item.message.endsWith(debt.id)));
+      assert(resolved.every(debt => plan.targets.some(target => target.module.currentPath === debt.source)),
+        "stale debt outside the migrating source requires a separate preparation");
+      applied.output.resolvedDebts = resolved.map(debt => debt.id);
+      workspace.write(PATHS.debtRegistry, canonical({...debtRegistry,debts:debtRegistry.debts.filter(debt => !resolved.includes(debt))}));
     } catch (error) {
       for (const [file, bytes] of originals) {
         if (bytes === null) fs.rmSync(workspace.path(file), { force: true });

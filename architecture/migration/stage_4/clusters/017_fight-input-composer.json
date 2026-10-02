@@ -6,7 +6,7 @@
   "milestone": "M1",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "Conditional window exposure → shim; per-frame input composition (A: game-cycle trace identity).",
+  "tierEvidence": "Single owner of immutable composed input result. Split graph v1's independent PullInputMapper edge-history owner to derived cluster 034. Existing per-frame control priority, clamps, fallback/defaults and returned identities move byte-for-byte. Shared input check verifies 120 frames, four frozen output objects per compose as before, immutable previous snapshots and precomposed pass-through identity. No deltaTime/host clock or save state.",
   "modules": [
     {
       "currentPath": "src/core/input/fight_input_action_composer.js",
@@ -15,17 +15,143 @@
         "FightInputActionComposer"
       ],
       "imports": []
-    },
-    {
-      "currentPath": "src/input/pull_input_mapper.js",
-      "targetPath": "src/game/application/input/pull_input_mapper.js",
-      "exports": [
-        "PullInputMapper"
-      ],
-      "imports": []
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "input-gestures",
+      "script": "utils/victory-input-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-017-fight-input-composer",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/core/input/fight_input_action_composer.js",
+        "targetPath": "src/game/application/input/fight_input_action_composer.js",
+        "sourceSha256": "9e63644e11aab7882a9ef85923856cdcd32fcb1b27492f87212de0ee003f974b",
+        "targetSha256": "f91bd858fb3e9033b3eaaea6117543200555d64c5a44bb01e7ae6186c6d935be"
+      }
+    ],
+    "activations": [
+      "activation-dd0f990829a5"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-563373e1e10a",
+      "bridge-d26db2b6bd9e"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/017_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "e844e8a2657987853946c4b00f9e13af3a901be34b25cc76c98bfb5ab14e731b",
+        "after": "491d685e7853f9f8f711871ae4214a3f71c02d61f18f027a66a1ebc554742380"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "949ba699af0b5f1027de48b60d8dee074e8d22b8afef65d3ad975de8aae20e43",
+        "after": "6aee82ee2afe67ab48a6fa1262ee67c8949b7ef59a67427206f49e0402ae3285"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "08c2b3a39c6ffc0d84d3ff6f16ef64c33f20edffa652e9a1b62b26fa943e8b54",
+        "after": "c9a111b95b533bd7eb1e3ccfcc2e757ba5fb1d3a05fe7db5f4ee3700b9e83aaf"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "29014e3071e1670eea69fad77e76e03d2efb7d38975e84ca50f9ce75c0c63f9c",
+        "after": "023bcdab2d8ff073fa7eb9aae54b8e5202ff6f91bb66a01e198d1733ab202a93"
+      },
+      {
+        "path": "index.html",
+        "before": "d2faced1315d7ccdd1660ce1210d9a59edcd5015ec862bffe1bdd60c41d16dc5",
+        "after": "8226e7012d5df4c934bd080afa42955a1acb3ea9acfe29d681ee6604d21683b7"
+      },
+      {
+        "path": "src/core/input/fight_input_action_composer.js",
+        "before": "9e63644e11aab7882a9ef85923856cdcd32fcb1b27492f87212de0ee003f974b",
+        "after": "11851acbb2a7830a7796338aab10f15694ba50c46163a6a5f7e9c949967f0fcb"
+      },
+      {
+        "path": "src/game/application/input/fight_input_action_composer.js",
+        "before": null,
+        "after": "f91bd858fb3e9033b3eaaea6117543200555d64c5a44bb01e7ae6186c6d935be"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "bce339af256e30d6b10c17621c9f3e83a133dea7f1f62196a6ef55461b2f51a0",
+        "after": "a2b6158c33ca12f3179f0f1708aa88981906ec843dc710d729b43c4c4cad1ac4"
+      }
+    ],
+    "resolvedDebts": [
+      "debt-browser-capability-11f2858fef0f"
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 633 modules, 894 unified edges, 852 globals, 112 exact known-debt diagnostics, 0 FAIL in 727ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 633/633 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 159 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 159 activations and 264 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 18 applied, 46 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "input-gestures",
+        "status": "PASS",
+        "sha256": "65ccd7b0ee59df5455fbc20d75ae2e9ee5de98b25774188c9149f00540c9efd5"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 159,
+      "identityMismatches": 0
+    }
+  }
 }

@@ -2048,6 +2048,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "FightInputActionComposer",
+      "legacyScriptIndex": 40,
+      "legacySymbol": "FightInputActionComposer",
+      "shimFile": "activations/040_fightinputactioncomposer.js",
+      "sourceProvider": "src/core/input/fight_input_action_composer.js",
+      "targetModule": "src/game/application/input/fight_input_action_composer.js",
+      "id": "activation-dd0f990829a5",
+      "owner": "stage-4.cluster-017-fight-input-composer",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-e092bb522808",
       "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
       "sourceProvider": "src/core/fishing/reel_hold_recovery_system.js",

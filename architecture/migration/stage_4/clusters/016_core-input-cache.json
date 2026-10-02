@@ -6,44 +6,22 @@
   "milestone": "M1",
   "boundary": "platform",
   "tier": "A",
-  "tierEvidence": "Decompose core.js into InputManager / EventLogger / CacheManager (byte-for-byte class moves, split slots), then migrate; reads CONFIG (config.js) and FightInputActionComposer (application) → after 010 and 017.",
+  "tierEvidence": "Single owner of browser input/listeners and reused state snapshot; PointerAction belongs to this owner. Preparation 005 injects the Application composer from Bootstrap. Existing pointer hold/rod-control/release/cancellation/key-ramp paths and clocks move byte-for-byte, with the same live config. No save writes. Victory input verifies consumed gestures and listener disposal; game-cycle verifies composed input in the full fight.",
   "modules": [
     {
-      "currentPath": "src/core/core.js",
-      "targetPath": "src/platform/browser/runtime/legacy_core_runtime.js",
-      "exports": [
-        "CacheManager",
-        "EventLogger",
-        "InputManager",
-        "PointerAction"
-      ],
-      "imports": [
-        {
-          "symbol": "CONFIG",
-          "from": "src/game/config/runtime/game_config.js"
-        },
-        {
-          "symbol": "FightInputActionComposer",
-          "from": "src/game/application/input/fight_input_action_composer.js"
-        },
-        {
-          "symbol": "Vector2",
-          "from": "src/engine/math/vector2.js"
-        }
-      ],
-      "allowedGlobals": [
-        "clearTimeout",
-        "console",
-        "crypto",
-        "fetch",
-        "localStorage",
-        "setTimeout",
-        "window"
-      ],
-      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+      "currentPath": "src/core/core.js"
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
+  "evidenceCommands": [
+    {
+      "name": "input-gestures",
+      "script": "utils/victory-input-check.js"
+    },
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
   "output": null
 }

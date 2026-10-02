@@ -1375,6 +1375,22 @@
       ]
     },
     {
+      "id": "bridge-563373e1e10a",
+      "bridge": "src/core/input/fight_input_action_composer.js",
+      "owner": "stage-4.cluster-017-fight-input-composer",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/application/input/fight_input_action_composer.js",
+      "reason": "Preserve the exact FightInputActionComposer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightInputActionComposer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-583ef0b7fc62",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -3614,6 +3630,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d26db2b6bd9e",
+      "bridge": "src/core/input/fight_input_action_composer.js",
+      "owner": "stage-4.cluster-017-fight-input-composer",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/input/fight_input_action_composer.js",
+      "reason": "Preserve the exact FightInputActionComposer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightInputActionComposer",
           "mechanism": "global-this-property"
         }
       ]

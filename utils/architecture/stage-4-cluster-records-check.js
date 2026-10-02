@@ -93,6 +93,8 @@ ledger.records.forEach((record, index) => {
   assert(/^M\d$/u.test(record.milestone), `${record.file}: milestone`);
   if (record.output === null) return;
   assert.equal(record.output.status, "applied", `${record.file}: output status`);
+  for (const id of record.output.resolvedDebts || []) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt => debt.id === id),
+    `${record.file}: resolved debt remains ${id}`);
   const boundary = policy.targetBoundaries.find((item) => item.id === record.boundary);
   for (const wrapper of record.output.retiredStageTwoWrappers || []) {
     assert(wrapper.file.startsWith("src/engine/compat/stage_2/"), "retired wrapper outside Stage 2");

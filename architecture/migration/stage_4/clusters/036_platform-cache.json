@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "036",
+  "slug": "platform-cache",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/storage/cache_manager.js"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": null
+}

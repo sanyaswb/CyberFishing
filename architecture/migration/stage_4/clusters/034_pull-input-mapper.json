@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "034",
+  "slug": "pull-input-mapper",
+  "milestone": "M1",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "Single owner of pull edge history. 120-frame shared input scenario proves held/start/release flags, reset and the same mutable output identity with no per-frame replacement. Byte-identical class, no deltaTime/clock/save state.",
+  "modules": [
+    {
+      "currentPath": "src/input/pull_input_mapper.js"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "input-gestures",
+      "script": "utils/victory-input-check.js"
+    }
+  ],
+  "output": null
+}

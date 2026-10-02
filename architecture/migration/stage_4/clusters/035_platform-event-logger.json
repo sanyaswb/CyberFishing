@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "035",
+  "slug": "platform-event-logger",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "C",
+  "tierEvidence": "Stateless optional browser event diagnostics with no production readers. Preparation 005 extracts its exact class slice; original UUID/timestamp/fetch/error behavior remains byte-identical. No gameplay/frame/save ownership; export-only with no global activation.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/diagnostics/event_logger.js"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": null
+}

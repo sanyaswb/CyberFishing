@@ -274,3 +274,40 @@ class VictoryInputCheck {
 }
 
 new VictoryInputCheck(new RuntimeLoader().load()).run();
+
+// Shared fight-input coverage: independent result and edge-history owners, exercised on every frame.
+function checkFightInputFrames() {
+  const assert=require("node:assert/strict");
+  const runtime=new SourceRuntime({globals:{window:{}}});
+  runtime.load("src/core/input/fight_input_action_composer.js",{expose:["FightInputActionComposer"]});
+  runtime.load("src/input/pull_input_mapper.js",{expose:["PullInputMapper"]});
+  runtime.run('globalThis.inputFreezeCount=0; const originalInputFreeze=Object.freeze; Object.freeze=value=>{globalThis.inputFreezeCount++;return originalInputFreeze(value);};');
+  const composer=new runtime.context.FightInputActionComposer(),mapper=new runtime.context.PullInputMapper();
+  const before=runtime.run("globalThis.inputFreezeCount");
+  let previousHeld=false,previousActions=null,mappedIdentity=null;
+  for(let frame=0;frame<120;frame++){
+    const held=frame%24<12,left=frame%3===0;
+    const input={isPulling:held,keys:{KeyA:left},pointerDown:true,pointerDelta:{x:90,y:0}};
+    const actions=composer.compose(input);
+    assert.equal(actions.hold.active,held);
+    assert.equal(actions.lateralControl.source,left?"keyboard":"pointer");
+    assert.equal(actions.lateralControl.directionX,left?-1:1);
+    assert.equal(actions.lateralControl.inputRatio,1);
+    assert([actions,actions.hold,actions.lateralControl,actions.raw].every(Object.isFrozen));
+    if(previousActions)assert.notEqual(actions,previousActions,"previous immutable snapshots remain detached");
+    previousActions=actions;
+    const mapped=mapper.update(input);
+    if(mappedIdentity)assert.equal(mapped,mappedIdentity,"edge mapper reuses its output on every frame");
+    mappedIdentity=mapped;
+    assert.equal(mapped.pullHeld,held);assert.equal(mapped.pullStartedThisFrame,held&&!previousHeld);
+    assert.equal(mapped.pullReleasedThisFrame,!held&&previousHeld);previousHeld=held;
+  }
+  assert.equal(runtime.run("globalThis.inputFreezeCount")-before,480,"original four frozen output objects per composed frame");
+  assert.equal(composer.compose({fightActions:previousActions}),previousActions,"precomposed input returns the original identity");
+  assert.equal(runtime.run("globalThis.inputFreezeCount")-before,480,"pass-through adds no frozen output allocation");
+  mapper.reset();
+  assert.equal(mappedIdentity.pullHeld,false);assert.equal(mappedIdentity.pullStartedThisFrame,false);assert.equal(mappedIdentity.pullReleasedThisFrame,false);
+  assert.equal(mapper.update({isPulling:true}).pullStartedThisFrame,true,"reset clears prior held history");
+  console.log("Fight input passed: 120 frames, control priority/clamps, unchanged four frozen outputs per compose, pass-through identity, reused edge state and reset.");
+}
+checkFightInputFrames();
