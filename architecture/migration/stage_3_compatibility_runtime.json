@@ -578,6 +578,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "BiteEnvironmentService",
+      "legacyScriptIndex": 403,
+      "legacySymbol": "BiteEnvironmentService",
+      "shimFile": "activations/403_biteenvironmentservice.js",
+      "sourceProvider": "src/app/bite.js",
+      "targetModule": "src/game/application/fishing/bite_environment_service.js",
+      "id": "activation-11f9b832bd1b",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-1203aa3f3b14",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "sourceProvider": "src/core/inventory/inventory_item_location.js",
@@ -734,6 +746,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "EnvironmentSystem",
+      "legacyScriptIndex": 400,
+      "legacySymbol": "EnvironmentSystem",
+      "shimFile": "activations/400_environmentsystem.js",
+      "sourceProvider": "src/app/world.js",
+      "targetModule": "src/game/application/world/game_world_service.js",
+      "id": "activation-1fc4a0462534",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "ItemConditionDomAdapter",
       "legacyScriptIndex": 236,
       "legacySymbol": "ItemConditionDomAdapter",
@@ -830,6 +854,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "ViewportProjector",
+      "legacyScriptIndex": 204,
+      "legacySymbol": "ViewportProjector",
+      "shimFile": "activations/204_viewportprojector.js",
+      "sourceProvider": "src/world/viewport_projector.js",
+      "targetModule": "src/game/application/viewport/viewport_projector.js",
+      "id": "activation-2ad75f0b0db9",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2EquipmentTransitionPort",
       "legacyScriptIndex": 181,
       "legacySymbol": "InventoryV2EquipmentTransitionPort",
@@ -876,6 +912,18 @@
       "shimFile": "activations/120_landingpolicyresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "MutableFightFrameContext",
+      "legacyScriptIndex": 399,
+      "legacySymbol": "MutableFightFrameContext",
+      "shimFile": "activations/399_mutablefightframecontext.js",
+      "sourceProvider": "src/app/context.js",
+      "targetModule": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "id": "activation-2fd52fdf50f2",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-32c2b6cd025d",
@@ -1428,6 +1476,18 @@
       "shimFile": "activations/188_refillcompatiblesignaturepolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "EquipmentService",
+      "legacyScriptIndex": 401,
+      "legacySymbol": "EquipmentService",
+      "shimFile": "activations/401_equipmentservice.js",
+      "sourceProvider": "src/app/inventory.js",
+      "targetModule": "src/game/application/inventory/equipment_service.js",
+      "id": "activation-74ec949e7a6f",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-754e57609bef",
@@ -2402,6 +2462,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "LocationManager",
+      "legacyScriptIndex": 400,
+      "legacySymbol": "LocationManager",
+      "shimFile": "activations/400_locationmanager.js",
+      "sourceProvider": "src/app/world.js",
+      "targetModule": "src/game/application/world/game_world_service.js",
+      "id": "activation-d495108d6f4c",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-d4bfb713b7de",
       "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
       "sourceProvider": "src/core/items/effective_item_stats_resolver.js",
@@ -2508,6 +2580,18 @@
       "shimFile": "activations/216_fishretrievesystem.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "GameWorld",
+      "legacyScriptIndex": 400,
+      "legacySymbol": "GameWorld",
+      "shimFile": "activations/400_gameworld.js",
+      "sourceProvider": "src/app/world.js",
+      "targetModule": "src/game/application/world/game_world_service.js",
+      "id": "activation-e26b8e4e3f59",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-e2c3aa9d15c2",
@@ -2806,6 +2890,18 @@
       "legacySymbol": "UnlimitedInventoryCapacityPolicy",
       "legacyScriptIndex": 162,
       "shimFile": "activations/162_unlimitedinventorycapacitypolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "CastPowerAim",
+      "legacyScriptIndex": 398,
+      "legacySymbol": "CastPowerAim",
+      "shimFile": "activations/398_castpoweraim.js",
+      "sourceProvider": "src/app/cast_power.js",
+      "targetModule": "src/game/application/casting/cast_power_aim.js",
+      "id": "activation-fd85ee1fe622",
+      "owner": "stage-4.cluster-026-world-and-casting",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },

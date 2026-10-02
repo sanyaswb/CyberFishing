@@ -407,7 +407,7 @@
           "items": [
             {
               "symbol": "BiteEnvironmentService",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -415,13 +415,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -431,7 +438,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/bite_environment_service.js",
@@ -442,7 +449,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -3813,7 +3828,7 @@
           "items": [
             {
               "symbol": "CastPowerAim",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -3823,10 +3838,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -3834,8 +3849,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -3845,7 +3859,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/casting/cast_power_aim.js",
@@ -3854,26 +3868,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -3998,7 +4003,7 @@
           "items": [
             {
               "symbol": "MutableFightFrameContext",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -4006,12 +4011,21 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [],
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -4020,7 +4034,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/mutable_fight_frame_context.js",
@@ -4031,7 +4045,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -4952,7 +4974,7 @@
           "items": [
             {
               "symbol": "EquipmentService",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -4960,13 +4982,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -4976,7 +5005,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/equipment_service.js",
@@ -4987,7 +5016,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -6716,17 +6753,17 @@
           "items": [
             {
               "symbol": "EnvironmentSystem",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "GameWorld",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "LocationManager",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -6736,10 +6773,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -6747,8 +6784,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -6758,7 +6794,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/world/game_world_service.js",
@@ -6767,26 +6803,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -33032,6 +33059,105 @@
       }
     },
     {
+      "currentPath": "src/game/application/casting/cast_power_aim.js",
+      "currentArea": "game/application/casting",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/casting/cast_power_aim.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/fishing/bite_environment_service.js",
+      "currentArea": "game/application/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/bite_environment_service.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/application/fishing/drag_control_service.js",
       "currentArea": "game/application/fishing",
       "observed": {
@@ -33118,6 +33244,53 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/fight_physics_pipeline.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "currentArea": "game/application/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/mutable_fight_frame_context.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -33526,6 +33699,55 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/equipment_read_model_factory.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/equipment_service.js",
+      "currentArea": "game/application/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/equipment_service.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -34768,6 +34990,105 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/viewport/viewport_projector.js",
+      "currentArea": "game/application/viewport",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/viewport/viewport_projector.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/world/game_world_service.js",
+      "currentArea": "game/application/world",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/world/game_world_service.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -53982,7 +54303,7 @@
           "items": [
             {
               "symbol": "ViewportProjector",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53992,10 +54313,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -54003,7 +54324,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -54013,7 +54334,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/viewport/viewport_projector.js",
@@ -54022,26 +54343,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

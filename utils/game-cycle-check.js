@@ -121,6 +121,10 @@ const LEGACY_FILES = [
   "src/core/inventory/flat_inventory_item_repository.js",
   "src/systems/buff_manager.js",
   "src/world/world.js",
+  "src/world/viewport_projector.js",
+  "src/app/world.js",
+  "src/app/context.js",
+  "src/app/bite.js",
 ];
 
 const context = vm.createContext({
@@ -1978,6 +1982,52 @@ const cell = lake.getCellAtVirtualPos(35, 35, 10);
 assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   Number.isFinite(castable.left + castable.right + castable.top + castable.bottom),
   "location map exposes its grid and castable bounds");
+
+// World services over the same lake map (silent: hot-loop evidence for Stage 4 cluster 026, output unchanged).
+{
+  const verify = (condition, message) => { if (!condition) throw new Error(message); };
+  const viewConfig = { ...worldConfig, map: { lake: { ...worldConfig.map.lake, initialAlignment: { x: "center", y: "center" },
+    safeZone: { top: 0, bottom: 60 }, perspective: { angleTop: 0, angleBottom: 30 } } } };
+  const location = new LocationManager(viewConfig);
+  verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
+    location.currentEnvironment === null, "location manager resolves the configured location");
+  const projector = new ViewportProjector(viewConfig, location.id);
+  const gameConfig = createConfig();
+  const environment = new EnvironmentSystem(new LocationManager(gameConfig.locations).config, 6, new SeededRng(7),
+    gameConfig.spawns);
+  const chum = { update() {}, updateBoats() {}, getChumDataAt() { return null; } };
+  const canvasMetrics = { width: 100, height: 60 };
+  const clock = { now: 0, realNow: 0 };
+  const gameWorld = new GameWorld({ map: lake, env: environment, chum, projector, location, canvasMetrics, clock,
+    locationConfig: viewConfig });
+  gameWorld.refreshViewport(true);
+  const frameContext = new MutableFightFrameContext();
+  const floatEntity = { getPosition: () => ({ x: 35, y: 35 }), getCurrentHookDepth: () => 2 };
+  const biteService = new BiteEnvironmentService({ world: gameWorld, env: environment, chum,
+    inventory: { getEquipped: () => ({}) }, floatRef: () => floatEntity, clock,
+    castManager: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => false },
+    getCurrentHookDepth: () => 2, getCastStartTime: () => 0, getDayOfWeek: () => 3, getTimeScale: () => 1,
+    getGameStateName: () => "waiting", consumeExpiredFeederChum: () => {}, biteEnvData: { chumTargets: [] } });
+  let lastBounds = null;
+  for (let frame = 0; frame < 120; frame++) {
+    clock.now += 1000 / 60;
+    clock.realNow += 1000 / 60;
+    lastBounds = gameWorld.getDynamicBounds();
+    frameContext.reset();
+    frameContext.setBounds(lastBounds);
+    frameContext.setEnvironment(gameWorld.update(1000 / 60, 60, lastBounds));
+    if (frame % 30 === 0) gameWorld.pan(1, 0);
+    projector.focusOnVirtualPos(35, 1000 / 60);
+    verify(biteService.getBiteEnvData().dayOfWeek === 3, "bite environment snapshot is assembled each frame");
+  }
+  const screen = projector.virtualToScreen(35, 35);
+  const virtual = projector.screenToVirtual(screen.x, screen.y);
+  verify(Number.isFinite(lastBounds.left + lastBounds.right + lastBounds.top + lastBounds.bottom) &&
+    Number.isFinite(virtual.x + virtual.y + projector.getScale() + projector.getPerspective(35).scale) &&
+    biteService.checkWater(35, 35) === gameWorld.checkWater(35, 35) &&
+    environment.getSnapshot().time > 6 && typeof environment.getPhysicsEnv() === "object",
+    "world services advance the environment, viewport and bite snapshot over the lake");
+}
 
 console.log("game-cycle-check passed:");
 console.log("- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%");

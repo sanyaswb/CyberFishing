@@ -839,22 +839,6 @@
       ]
     },
     {
-      "id": "bridge-310326528653",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/world/viewport_projector.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-32071390ea55",
       "bridge": "src/core/assemblies/assembly_state_repository.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1094,6 +1078,22 @@
       "globalProviders": [
         {
           "symbol": "ConfigOverrideStore",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-41b3d187b767",
+      "bridge": "src/world/viewport_projector.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/viewport/viewport_projector.js",
+      "reason": "Preserve the exact ViewportProjector consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ViewportProjector",
           "mechanism": "global-this-property"
         }
       ]
@@ -2435,6 +2435,22 @@
       ]
     },
     {
+      "id": "bridge-8baeb2427c94",
+      "bridge": "src/app/cast_power.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/states.js",
+      "target": "src/game/application/casting/cast_power_aim.js",
+      "reason": "Preserve the exact CastPowerAim consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "CastPowerAim",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8bdcdf5a26c8",
       "bridge": "src/core/line/line_inventory_controller.js",
       "owner": "stage-4.cluster-023-inventory-lines",
@@ -2510,6 +2526,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2LoadoutPort",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8f04f959d38c",
+      "bridge": "src/app/context.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/states.js",
+      "target": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "reason": "Preserve the exact MutableFightFrameContext consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "MutableFightFrameContext",
           "mechanism": "global-this-property"
         }
       ]
@@ -2919,6 +2951,22 @@
       ]
     },
     {
+      "id": "bridge-a7f5fbf01c6a",
+      "bridge": "src/app/inventory.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/inventory/equipment_service.js",
+      "reason": "Preserve the exact EquipmentService consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "EquipmentService",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a807c8a1e192",
       "bridge": "src/app/core/game_loop.js",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
@@ -3307,6 +3355,22 @@
       ]
     },
     {
+      "id": "bridge-bccdb01913d8",
+      "bridge": "src/app/bite.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/fishing/bite_environment_service.js",
+      "reason": "Preserve the exact BiteEnvironmentService consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BiteEnvironmentService",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bd39dcf4c81c",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -3583,22 +3647,6 @@
       ]
     },
     {
-      "id": "bridge-d1231113ad43",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/cast_power.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-d14e3135091c",
       "bridge": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
       "owner": "stage-4.cluster-018-storage",
@@ -3722,6 +3770,22 @@
       "globalProviders": [
         {
           "symbol": "IdleRetrievePolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d99a24a6bdc4",
+      "bridge": "src/app/cast_power.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/chum.js",
+      "target": "src/game/application/casting/cast_power_aim.js",
+      "reason": "Preserve the exact CastPowerAim consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CastPowerAim",
           "mechanism": "global-this-property"
         }
       ]
@@ -3951,6 +4015,30 @@
       ]
     },
     {
+      "id": "bridge-e888c42008d2",
+      "bridge": "src/app/world.js",
+      "owner": "stage-4.cluster-026-world-and-casting",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/world/game_world_service.js",
+      "reason": "Preserve the exact EnvironmentSystem, GameWorld, LocationManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "EnvironmentSystem",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "GameWorld",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "LocationManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ea578f08c07c",
       "bridge": "src/app/rules.js",
       "source": "src/app/bootstrap.js",
@@ -4162,22 +4250,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f57fc81d1499",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/world.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]

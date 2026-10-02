@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "app/world reads app/utils.js (classic engine utility): migrate the utility or inject.",
+  "tierEvidence": "Per-frame (A): hot-loop evidence over game-cycle (which gained a silent 120-frame world-services scenario: LocationManager, ViewportProjector, EnvironmentSystem, GameWorld, MutableFightFrameContext, BiteEnvironmentService over the lake map; output unchanged), float-depth and consumable-event-identity; preparation 013 removed the SeededRng default.",
   "modules": [
     {
       "currentPath": "src/world/viewport_projector.js",
@@ -18,6 +18,12 @@
         {
           "symbol": "Vector2",
           "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes ViewportProjector as a global; the cluster moves the exposure into the activation shim. The module reads only Vector2 (engine import) and the injected locations config; no browser, DEV or raw-config global. Its config-derived getPerspective vs camera-state split is the recorded Stage 5 follow-up (an API change for chum rules and render builders), not part of this byte-for-byte move."
         }
       ]
     },
@@ -31,12 +37,18 @@
       ],
       "imports": [
         {
-          "symbol": "SeededRng",
-          "from": "src/engine/random/seeded_rng.js"
-        },
-        {
           "symbol": "Vector2",
           "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 013 (577948d): EnvironmentSystem's `rng = new SeededRng()` default is gone (bootstrap passes its SeededRng); the remaining allocations are the owned Vector2 scratch points and bounds object of GameWorld (created once per instance, reused every frame)."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Three small world services composed together by bootstrap: LocationManager (which location is current), EnvironmentSystem (game time, phase, weather and wind per frame) and GameWorld (per-frame world update over the map, chum and viewport, castable bounds, water checks). No forbidden edge, player-facing text, raw config, DEV or browser access; hot loop: framework Q7 'cohesive, reclassify with evidence' (hot-loop traces of all three over 120 frames) instead of a per-class file split (a Stage 7 tidy-up)."
         }
       ]
     },
@@ -50,6 +62,12 @@
         {
           "symbol": "Vector2",
           "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One fact: the cast aim/power gesture (charge, aim marker, release target) driven per frame by input over the injected projector/viewport callbacks and rng. No forbidden edge, text, config global, DEV or browser access; hot loop: Q7 cohesive with hot-loop evidence."
         }
       ]
     },
@@ -79,6 +97,259 @@
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "026",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "ViewportProjector,EnvironmentSystem,GameWorld,LocationManager,CastPowerAim,MutableFightFrameContext,EquipmentService,BiteEnvironmentService",
+        "--scenarios",
+        "utils/game-cycle-check.js,utils/float-depth-cast-check.js,utils/consumable-event-identity-check.js"
+      ]
+    },
+    {
+      "name": "float-depth",
+      "script": "utils/float-depth-cast-check.js"
+    },
+    {
+      "name": "consumable-event-identity",
+      "script": "utils/consumable-event-identity-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-026-world-and-casting",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/world/viewport_projector.js",
+        "targetPath": "src/game/application/viewport/viewport_projector.js",
+        "sourceSha256": "03b4a89cccb377d77f5ac38073041bf57f407cc16c8bd918a1459b9871aa2787",
+        "targetSha256": "67467f1798cf4cf4319143b3d4994f38db7de9c5ae9e88a931fcb8ddf945dbd3"
+      },
+      {
+        "currentPath": "src/app/world.js",
+        "targetPath": "src/game/application/world/game_world_service.js",
+        "sourceSha256": "f0f31852943a410641fd6e8849d24c9acc638b22e38c415ef9b830c772271d63",
+        "targetSha256": "660b47aeddcfaf8a8ab5d050140d2be704b9cee63d76934a3ab46f4a65e2c0cc"
+      },
+      {
+        "currentPath": "src/app/cast_power.js",
+        "targetPath": "src/game/application/casting/cast_power_aim.js",
+        "sourceSha256": "ec02a22c2e9f57c3777c01b960615398e51aa3b4e48015ec8fed27921b820e4e",
+        "targetSha256": "6daf84c7cb9344b00f2b8b83f60c0894fd61d0638e1ea20c5e3b8e04de187ae5"
+      },
+      {
+        "currentPath": "src/app/context.js",
+        "targetPath": "src/game/application/fishing/mutable_fight_frame_context.js",
+        "sourceSha256": "dbc35c56a5db7f481bf9d6a3ea4544da2acc7a59db12146170a9110fbbeca2ef",
+        "targetSha256": "c1b9f88ff7953cf3acd2f40b93c37018b74936d36989cda765cfbc75cd780045"
+      },
+      {
+        "currentPath": "src/app/inventory.js",
+        "targetPath": "src/game/application/inventory/equipment_service.js",
+        "sourceSha256": "64e6fb27aabbcd9fc42f2aafd762790962bdf2a1ebe2857b68fcae3f90b501ca",
+        "targetSha256": "d2529a5dc7ab865b52397ed1b4c16ade860ce8af40986bc23dfd2ad43bf7f348"
+      },
+      {
+        "currentPath": "src/app/bite.js",
+        "targetPath": "src/game/application/fishing/bite_environment_service.js",
+        "sourceSha256": "caf94e90aa79abd185012a2b0c73c35a9358c120f243ebeecee704531fe210eb",
+        "targetSha256": "f4f4b8f1ce1be91e0e8355141a4038fd50528f66ae352ca6101021713320b12f"
+      }
+    ],
+    "activations": [
+      "activation-11f9b832bd1b",
+      "activation-1fc4a0462534",
+      "activation-2ad75f0b0db9",
+      "activation-2fd52fdf50f2",
+      "activation-74ec949e7a6f",
+      "activation-d495108d6f4c",
+      "activation-e26b8e4e3f59",
+      "activation-fd85ee1fe622"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-41b3d187b767",
+      "bridge-8baeb2427c94",
+      "bridge-8f04f959d38c",
+      "bridge-a7f5fbf01c6a",
+      "bridge-bccdb01913d8",
+      "bridge-d99a24a6bdc4",
+      "bridge-e888c42008d2"
+    ],
+    "bridgesRetired": [
+      "bridge-310326528653",
+      "bridge-d1231113ad43",
+      "bridge-f57fc81d1499"
+    ],
+    "importEdges": [
+      "src/game/application/viewport/viewport_projector.js->src/engine/math/vector2.js",
+      "src/game/application/world/game_world_service.js->src/engine/math/vector2.js",
+      "src/game/application/casting/cast_power_aim.js->src/engine/math/vector2.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/026_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "434a17bc70a09275fccfffb1a2639572f3334a241e084f41162bfd9629ea2c71",
+        "after": "d17707b14bc7420f7168865fabe012e107a356b110aea955a768c62efbcf9d7e"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "ab9fa081ed07d4351ee0db3ec0e2027e94348395b2f4d6516af0ad9f8d7e7a49",
+        "after": "ab9fa081ed07d4351ee0db3ec0e2027e94348395b2f4d6516af0ad9f8d7e7a49"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "d4e3c30f4a04b6e4e5793069682b879b9a95d2ade4f0913dddad9cd957abcd89",
+        "after": "6549129f47e5f20ff990198651fee8da1b3c2c2d6d644fd86415838374eed45d"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "10a13a12780c618a892a203cbf3400f7c15556ee8f8d59b89d02a369a36dcfd7",
+        "after": "16a69c5064767b926f9504633b6d0e0e19d3284824a6c2daa2a84ce93ce441c8"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "d7b2e3e9b96e1d31b5d0ffd610048a6ebc6c9b65d1e7ce330b179d0604e5f930",
+        "after": "5fce92b0e8c1d069c947c63fede6dd750e9fb46f41f5e9591ebe7399d35f1a74"
+      },
+      {
+        "path": "index.html",
+        "before": "44486d16260990401a2c937d5855fbb94b4892e9eed9b7b82f4c98351fe975fa",
+        "after": "3fa5c99b82e704c0c86028f5d1aee36f0618e31e580baf45f8ec4b42b246450a"
+      },
+      {
+        "path": "src/app/bite.js",
+        "before": "caf94e90aa79abd185012a2b0c73c35a9358c120f243ebeecee704531fe210eb",
+        "after": "1d989df3171e50cde427bdff33959caf681690d21f0741f62ae5e0b3d40e7033"
+      },
+      {
+        "path": "src/app/cast_power.js",
+        "before": "ec02a22c2e9f57c3777c01b960615398e51aa3b4e48015ec8fed27921b820e4e",
+        "after": "d97d91874621704bf07c9d4f8fe0a88141a798668eb8f5e204161f34a93c351b"
+      },
+      {
+        "path": "src/app/context.js",
+        "before": "dbc35c56a5db7f481bf9d6a3ea4544da2acc7a59db12146170a9110fbbeca2ef",
+        "after": "470c503ae947a9fd4e9f38cd6116d30226625e01b610a38b250806dd7d65e770"
+      },
+      {
+        "path": "src/app/inventory.js",
+        "before": "64e6fb27aabbcd9fc42f2aafd762790962bdf2a1ebe2857b68fcae3f90b501ca",
+        "after": "2d8a876c1bd9b9efd30483eb72086cc8dd115d134c87e8d43b3d636cede171dc"
+      },
+      {
+        "path": "src/app/world.js",
+        "before": "f0f31852943a410641fd6e8849d24c9acc638b22e38c415ef9b830c772271d63",
+        "after": "5f94329833efe2b49083654f71b4cde2e73cc98e91df9ac027361ba20de6507b"
+      },
+      {
+        "path": "src/game/application/casting/cast_power_aim.js",
+        "before": null,
+        "after": "6daf84c7cb9344b00f2b8b83f60c0894fd61d0638e1ea20c5e3b8e04de187ae5"
+      },
+      {
+        "path": "src/game/application/fishing/bite_environment_service.js",
+        "before": null,
+        "after": "f4f4b8f1ce1be91e0e8355141a4038fd50528f66ae352ca6101021713320b12f"
+      },
+      {
+        "path": "src/game/application/fishing/mutable_fight_frame_context.js",
+        "before": null,
+        "after": "c1b9f88ff7953cf3acd2f40b93c37018b74936d36989cda765cfbc75cd780045"
+      },
+      {
+        "path": "src/game/application/inventory/equipment_service.js",
+        "before": null,
+        "after": "d2529a5dc7ab865b52397ed1b4c16ade860ce8af40986bc23dfd2ad43bf7f348"
+      },
+      {
+        "path": "src/game/application/viewport/viewport_projector.js",
+        "before": null,
+        "after": "67467f1798cf4cf4319143b3d4994f38db7de9c5ae9e88a931fcb8ddf945dbd3"
+      },
+      {
+        "path": "src/game/application/world/game_world_service.js",
+        "before": null,
+        "after": "660b47aeddcfaf8a8ab5d050140d2be704b9cee63d76934a3ab46f4a65e2c0cc"
+      },
+      {
+        "path": "src/world/viewport_projector.js",
+        "before": "03b4a89cccb377d77f5ac38073041bf57f407cc16c8bd918a1459b9871aa2787",
+        "after": "6c2270fff6e518eb093edaa9826442b264f1871149960d68ea466cd43c764851"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 677 modules, 914 unified edges, 852 globals, 86 exact known-debt diagnostics, 0 FAIL in 728ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 677/677 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 202 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 202 activations and 265 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 31 applied, 90 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "c7172d4878dd0a98ee37b7d9a10d4ed148d7c008b682a15b1ce306853e366497"
+      },
+      {
+        "name": "float-depth",
+        "status": "PASS",
+        "sha256": "fb2555dd0e79d65c5bf9b1a68fa91527c9b8f1c76016c5b82599daada3926e35"
+      },
+      {
+        "name": "consumable-event-identity",
+        "status": "PASS",
+        "sha256": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a"
+      }
+    ]
+  }
 }
