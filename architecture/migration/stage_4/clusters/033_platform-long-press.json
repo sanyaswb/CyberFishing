@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "033",
+  "slug": "platform-long-press",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "Single owner of press bindings, timeout and animation-frame progress. Timing/per-frame owner: 1500ms inventory/800ms equipped deadlines, movement tolerance and cancellation stay byte-identical. Shared inventory-ui exercises deadlines, cancellation and click suppression; platform-runtime exercises frame callback reuse, exact scheduling/clock/style calls and no DOM queries or frame allocations. No deltaTime input (progress reads monotonic elapsed time), no game state or save writes.",
+  "modules": [
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "targetPath": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "exports": [
+        "InventoryV2LongPressController"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "cancelAnimationFrame",
+        "clearTimeout",
+        "document",
+        "globalThis",
+        "performance",
+        "requestAnimationFrame",
+        "setTimeout"
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Single owner of press bindings, timeout and animation-frame progress. Timing/per-frame owner: 1500ms inventory/800ms equipped deadlines, movement tolerance and cancellation stay byte-identical. Shared inventory-ui exercises deadlines, cancellation and click suppression; platform-runtime exercises frame callback reuse, exact scheduling/clock/style calls and no DOM queries or frame allocations. No deltaTime input (progress reads monotonic elapsed time), no game state or save writes."
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "inventory-ui",
+      "script": "utils/inventory-v2-ui-check.js"
+    },
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": null
+}

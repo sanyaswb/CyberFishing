@@ -99,6 +99,22 @@
       ]
     },
     {
+      "id": "bridge-0964c0c9f535",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_ui.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0c0f9cf80110",
       "bridge": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js",
       "source": "src/assets/asset_preload_coordinator.js",
@@ -142,6 +158,22 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-0d9fd2b91b42",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -238,6 +270,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyReader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-172576dcae79",
+      "bridge": "src/ui/progression/item_progression_dom_adapter.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "reason": "Preserve the exact ItemProgressionDomAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemProgressionDomAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -875,6 +923,22 @@
       ]
     },
     {
+      "id": "bridge-342acc2f1ac4",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3479b9326142",
       "bridge": "src/core/items/freshness/item_freshness_state_policy.js",
       "source": "src/application/inventory/freshest_refill_candidate_policy.js",
@@ -1370,6 +1434,22 @@
       "globalProviders": [
         {
           "symbol": "LoadoutEquipmentTransitionPlanner",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5c772f8178f1",
+      "bridge": "src/ui/condition/item_condition_dom_adapter.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/dom/item_condition_dom_adapter.js",
+      "reason": "Preserve the exact ItemConditionDomAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemConditionDomAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -2671,6 +2751,22 @@
       ]
     },
     {
+      "id": "bridge-9cccb50bbc32",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9ce49a18f3b2",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -2762,6 +2858,22 @@
       "globalProviders": [
         {
           "symbol": "UnlimitedInventoryCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a56e744e9aab",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -2954,6 +3066,22 @@
       "globalProviders": [
         {
           "symbol": "FISH_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ad0dabc3f9d3",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_header_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -3199,6 +3327,22 @@
       ]
     },
     {
+      "id": "bridge-bc90e3c9229a",
+      "bridge": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "reason": "Preserve the exact ItemRarityDomAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ItemRarityDomAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bd39dcf4c81c",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -3406,6 +3550,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d1dfc3beaa6f",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -3630,6 +3790,38 @@
       "globalProviders": [
         {
           "symbol": "LandingPolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-de8cf47ababc",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-deef07c09be0",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -3926,6 +4118,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f66fd9d31dec",
+      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "source": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]

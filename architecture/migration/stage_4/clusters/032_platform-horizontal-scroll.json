@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "032",
+  "slug": "platform-horizontal-scroll",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "B",
+  "tierEvidence": "Single owner of DOM drag/scroll binding state; event-driven pointer/wheel orchestration, no game state or per-frame update. attach/detach, clamping, 6px drag threshold and 250ms click suppression move byte-for-byte; shared Inventory V2 UI scenarios cover wheel directions, pointer ownership, overflow and listener cleanup.",
+  "modules": [
+    {
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "exports": [
+        "HorizontalScrollController"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "globalThis"
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "inventory-ui",
+      "script": "utils/inventory-v2-ui-check.js"
+    }
+  ],
+  "output": null
+}

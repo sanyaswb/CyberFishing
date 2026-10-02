@@ -66,10 +66,10 @@ class InventoryV2SourceReader {
   }
 
   readJavaScriptFiles() {
-    return UI_SCRIPT_ORDER.map((name) => ({
-      name,
-      source: fs.readFileSync(path.join(UI_DIRECTORY, name), "utf8"),
-    }));
+    return UI_SCRIPT_ORDER.map((name) => {
+      const relativePath=path.relative(ROOT,path.join(UI_DIRECTORY,name)).split(path.sep).join("/");
+      return {name,relativePath,source:new SourceRuntime().readAuthoredSource(relativePath)};
+    });
   }
 
   readStyle() {
@@ -931,12 +931,11 @@ class InventoryV2StaticContractCheck {
       clearTimeout: (id) => timers.clearTimeout(id),
     };
     sandbox.globalThis = sandbox;
-    const context = vm.createContext(sandbox);
-    vm.runInContext(this.#reader.readItemParameterConfig(), context, {
-      filename: "inventory_v2_item_parameter_config.js",
-    });
+    const runtime = new SourceRuntime({globals:sandbox});
+    const context = runtime.context;
+    runtime.load("src/config/inventory/inventory_v2_item_parameter_config.js");
     files.forEach((file) => {
-      vm.runInContext(file.source, context, { filename: file.name });
+      runtime.load(file.relativePath);
     });
 
     const dispatched = [];

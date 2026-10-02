@@ -826,10 +826,7 @@ class ItemProgressionCheck {
     ]) {
       Assertion.that(css.includes(selector), `${selector} is styled`);
     }
-    const adapter = fs.readFileSync(
-      path.join(ROOT, "src/ui/progression/item_progression_dom_adapter.js"),
-      "utf8",
-    );
+    const adapter = new SourceRuntime().readAuthoredSource("src/ui/progression/item_progression_dom_adapter.js");
     Assertion.that(
       !adapter.includes('className = "inv-slot__rating-bar"') &&
         !adapter.includes('className = "inv-slot__quality-bar"'),

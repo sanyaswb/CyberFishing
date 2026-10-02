@@ -446,6 +446,20 @@
       "module": "src/game/config/validation/config_schema_validator.js",
       "owner": "stage-4.cluster-011-config-schema-validator",
       "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "3b13218740f8e81472f45f10e7b76f0edd5fb7a4825182adfcb9aedd0a10dfb4",
+      "module": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "6d91fdfd1e245e860d61c0e80428c65040722c7a1b376f13c6f6227b59d5e3e3",
+      "module": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "activationPositions": [
@@ -614,6 +628,18 @@
       "legacySymbol": "ItemAssemblyStackingPolicy",
       "legacyScriptIndex": 147,
       "shimFile": "activations/147_itemassemblystackingpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ItemConditionDomAdapter",
+      "legacyScriptIndex": 236,
+      "legacySymbol": "ItemConditionDomAdapter",
+      "shimFile": "activations/236_itemconditiondomadapter.js",
+      "sourceProvider": "src/ui/condition/item_condition_dom_adapter.js",
+      "targetModule": "src/platform/browser/dom/item_condition_dom_adapter.js",
+      "id": "activation-2052f08d9757",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -894,6 +920,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "ItemProgressionDomAdapter",
+      "legacyScriptIndex": 238,
+      "legacySymbol": "ItemProgressionDomAdapter",
+      "shimFile": "activations/238_itemprogressiondomadapter.js",
+      "sourceProvider": "src/ui/progression/item_progression_dom_adapter.js",
+      "targetModule": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "id": "activation-46bdf96f8686",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-490b698c2a9d",
       "owner": "stage-3.replan-322.batch-024-inventory-21307d68",
       "sourceProvider": "src/core/inventory/inventory_item_reservation_policy.js",
@@ -1022,6 +1060,18 @@
       "legacySymbol": "RodCapabilityResolver",
       "legacyScriptIndex": 157,
       "shimFile": "activations/157_rodcapabilityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2DomFactory",
+      "legacyScriptIndex": 240,
+      "legacySymbol": "InventoryV2DomFactory",
+      "shimFile": "activations/240_inventoryv2domfactory.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "targetModule": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "id": "activation-5b0c13d957dc",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1334,6 +1384,18 @@
       "legacySymbol": "FishRarityResolver",
       "legacyScriptIndex": 42,
       "shimFile": "activations/042_fishrarityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ItemRarityDomAdapter",
+      "legacyScriptIndex": 235,
+      "legacySymbol": "ItemRarityDomAdapter",
+      "shimFile": "activations/235_itemraritydomadapter.js",
+      "sourceProvider": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "targetModule": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "id": "activation-8659694947db",
+      "owner": "stage-4.cluster-013-platform-dom-adapters",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
