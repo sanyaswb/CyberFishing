@@ -290,6 +290,7 @@ class StateDepsFactory {
       services: {
         devFlags: this.#root.devFlags,
         audio: this.#root.audio,
+        logger: this.#root.logger,
         debug: {
           isEnabled: this.#root.isDebugEnabled,
           emit: this.#root.emitDebugEvent,
@@ -785,17 +786,8 @@ class ScoutingState extends GameState {
     if (this.#isUiDimmed === isDimmed) return;
 
     this.#isUiDimmed = isDimmed;
-    document.body.classList.toggle("scouting-pointer-hold", isDimmed);
-
-    if (isDimmed) {
-      document.body.classList.remove("scouting-pointer-release");
-      return;
-    }
-
-    document.body.classList.add("scouting-pointer-release");
-    requestAnimationFrame(() => {
-      document.body.classList.remove("scouting-pointer-release");
-    });
+    // The page-level pointer feedback (body classes) belongs to the UI.
+    this.deps.ui.setScoutingPointerDimmed(isDimmed);
   }
 
   #populateAccuracyPreview(target, bounds, aim, visual) {
@@ -1604,11 +1596,11 @@ class PlayingState extends GameState {
     fightContext.checkWater = this.#checkWater;
 
     if (this.deps.services.debug.isEnabled()) {
-      console.log(
+      this.deps.services.logger?.log(
         `%c🎣 КЛЮНУВ: ${fishData.name}!`,
         "color: #00ff00; font-size: 16px; font-weight: bold;",
       );
-      console.table({
+      this.deps.services.logger?.table({
         "Тип Вудки": eq.rod?.variant || "float",
         "Наявність Котушки":
           (eq.rod?.effectiveStats?.hasReel ?? true)

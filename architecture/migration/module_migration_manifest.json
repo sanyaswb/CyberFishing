@@ -679,6 +679,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "CatchResolutionService",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "ChumController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -706,6 +712,12 @@
               "symbol": "ConsoleLogger",
               "mechanism": "identifier",
               "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -1772,6 +1784,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "CatchResolutionService",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/fishing.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "ChumController",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1809,6 +1829,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/infrastructure/diagnostics/console_logger.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/debug/debug.js",
               "resolution": "confirmed"
             },
             {
@@ -2901,6 +2929,7 @@
               "target": "src/app/fishing.js",
               "symbols": [
                 "CastService",
+                "CatchResolutionService",
                 "FightService",
                 "FightSessionFactory",
                 "FishingController"
@@ -4347,12 +4376,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "DragSystem",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -4478,11 +4501,7 @@
             "Object",
             "String"
           ],
-          "browserApis": [
-            "console",
-            "document",
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -4514,14 +4533,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/casting_distance.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/debug/debug.js",
               "resolution": "confirmed"
             },
             {
@@ -4703,13 +4714,6 @@
               "target": "src/core/math/vector2.js",
               "symbols": [
                 "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/debug.js",
-              "symbols": [
-                "DEBUG_MODULES"
               ],
               "resolution": "confirmed"
             },
@@ -6556,11 +6560,7 @@
             "Number",
             "Object"
           ],
-          "browserApis": [
-            "console",
-            "document",
-            "requestAnimationFrame"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }

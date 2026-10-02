@@ -5,8 +5,11 @@ class FishingController {
   #equipmentRules;
   #baitRules;
   #debugEvents;
+  #logger;
 
-  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules, debugEvents = null }) {
+  // logger: the platform diagnostics logger (GodMode notices); without it the notices are skipped.
+  constructor({ inventory, equipment, devFlags, equipmentRules, baitRules, debugEvents = null, logger = null }) {
+    this.#logger = logger;
     this.#inventory = inventory;
     this.#equipment = equipment;
     this.#devFlags = devFlags;
@@ -97,7 +100,7 @@ class FishingController {
 
   applyFailureEquipmentLoss(reason, eq, failure = {}) {
     if (this.#devFlags.isEnabled("noEquipmentLoss")) {
-      console.log(
+      this.#logger?.log(
         "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!",
         "color: #00ff00;",
       );
@@ -164,7 +167,7 @@ class FishingController {
     if (!rng.chance(lossChance)) return false;
 
     if (this.#devFlags.isEnabled("noEquipmentLoss")) {
-      console.log(
+      this.#logger?.log(
         "%c[GOD MODE] 🛡️ Риба намагалась вкрасти наживку, але Бог не дозволив!",
         "color: #00ff00;",
       );
@@ -658,9 +661,14 @@ class FishingForceService {
 
 class CatchResolutionService {
   #landingPolicyResolver;
+  #logger;
+  #isLogEnabled;
 
-  constructor({ landingPolicyResolver = null } = {}) {
+  // logger + isLogEnabled: the DEV catch-resolution console report (DEBUG_MODULES.catchResolution), composed by bootstrap.
+  constructor({ landingPolicyResolver = null, logger = null, isLogEnabled = null } = {}) {
     this.#landingPolicyResolver = landingPolicyResolver || new LandingPolicyResolver();
+    this.#logger = logger;
+    this.#isLogEnabled = isLogEnabled;
   }
 
   reset() {}
@@ -806,9 +814,7 @@ class CatchResolutionService {
     landingFrame,
     fightDebug,
   }) {
-    if (typeof console === "undefined") return;
-    if (typeof window === "undefined" || !window?.document) return;
-    if (window.DEBUG_MODULES?.catchResolution !== true) return;
+    if (!this.#logger || this.#isLogEnabled?.() !== true) return;
 
     const fishWeightKg = Math.max(0, Number(fishData?.weight) || 0);
     const maxRatio = Math.max(
@@ -892,13 +898,9 @@ class CatchResolutionService {
       hardLineLimit: !!fightDebug?.hardLineLimit,
     };
 
-    console.groupCollapsed?.("[CatchResolution] victory: " + reason);
-    if (typeof console.table === "function") {
-      console.table(values);
-    } else {
-      console.log(values);
-    }
-    console.groupEnd?.();
+    this.#logger.groupCollapsed("[CatchResolution] victory: " + reason);
+    this.#logger.table(values);
+    this.#logger.groupEnd();
   }
 }
 

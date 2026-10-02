@@ -580,28 +580,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-98238a7a45f1",
-      "rule": "boundary-dependency",
-      "source": "src/app/fishing.js",
-      "target": "src/debug/debug.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "98238a7a45f1748b3621ee75557065caef09e5f8e430920bbf30d1decf9d4aea",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/fishing.js",
-        "target": "src/debug/debug.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-984ab301df5d",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_item_card_renderer.js",
@@ -921,29 +899,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-24d043fb605b",
-      "rule": "browser-capability",
-      "source": "src/app/fishing.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "24d043fb605b0407441fa9e7bc73e4c41d3922bddc4546dddcd05c9a3f490657",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/fishing.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-2d65e06ba655",
       "rule": "browser-capability",
       "source": "src/systems/inventory_system.js",
@@ -1104,29 +1059,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-6b1b23c951c4",
-      "rule": "browser-capability",
-      "source": "src/app/fishing.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "6b1b23c951c456abefe304bcb848e78cfcb50ea0f9a7099e2a9f0ea37bb3a2bf",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/fishing.js",
-        "target": "environment:dom",
-        "identifier": "document"
-      }
-    },
-    {
       "id": "debt-browser-capability-6cbfc667197a",
       "rule": "browser-capability",
       "source": "src/ui/ui.js",
@@ -1195,29 +1127,6 @@
         "source": "src/ui/inventory/inventory_v2_ui.js",
         "target": "environment:timing",
         "identifier": "setTimeout"
-      }
-    },
-    {
-      "id": "debt-browser-capability-84892e4a7994",
-      "rule": "browser-capability",
-      "source": "src/app/states.js",
-      "target": "environment:timing",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "84892e4a799453a697d9539ccfd123bf70b7a4835de2d5c396d9d2212a9840a9",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/states.js",
-        "target": "environment:timing",
-        "identifier": "requestAnimationFrame"
       }
     },
     {
@@ -1310,29 +1219,6 @@
         "source": "src/app/script.js",
         "target": "environment:browser-runtime",
         "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-98ea593d4ca8",
-      "rule": "browser-capability",
-      "source": "src/app/states.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "98ea593d4ca80fda45ba06b332909236883a14d97312058e33533d2c0e0bc908",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/states.js",
-        "target": "environment:dom",
-        "identifier": "document"
       }
     },
     {
@@ -1471,29 +1357,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-c726c1c27773",
-      "rule": "browser-capability",
-      "source": "src/app/states.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c726c1c27773f36f6c89a5ced74e77d4b27337cabb8aa03961972b1a8d4d99c8",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/states.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-d19780e817d0",
       "rule": "browser-capability",
       "source": "src/systems/inventory_system.js",
@@ -1515,29 +1378,6 @@
         "source": "src/systems/inventory_system.js",
         "target": "environment:cryptography",
         "identifier": "crypto"
-      }
-    },
-    {
-      "id": "debt-browser-capability-d3774df33998",
-      "rule": "browser-capability",
-      "source": "src/app/fishing.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "d3774df3399896c213b45a93415320b080269e4cf29e3f41f454aed0fcd50a29",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/fishing.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
       }
     },
     {
@@ -1674,28 +1514,6 @@
         "source": "src/app/script.js",
         "target": "environment:browser-events",
         "identifier": "addEventListener"
-      }
-    },
-    {
-      "id": "debt-dev-leakage-811c8cd1e216",
-      "rule": "dev-leakage",
-      "source": "src/app/fishing.js",
-      "target": "src/debug/debug.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy dev-leakage debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "811c8cd1e216a93802770d7fda05ecaf090801ddc64c9122d20d42bafd47f061",
-      "identity": {
-        "rule": "dev-leakage",
-        "source": "src/app/fishing.js",
-        "target": "src/debug/debug.js"
       }
     },
     {

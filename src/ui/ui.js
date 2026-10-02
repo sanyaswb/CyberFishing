@@ -516,6 +516,21 @@ class UIManager {
     this.#continueBtn.style.display = isVisible ? "block" : "none";
   }
 
+  // Scouting pointer feedback: dims the page while the pointer is held, flashes the release class for one frame.
+  setScoutingPointerDimmed(isDimmed) {
+    document.body.classList.toggle("scouting-pointer-hold", isDimmed);
+
+    if (isDimmed) {
+      document.body.classList.remove("scouting-pointer-release");
+      return;
+    }
+
+    document.body.classList.add("scouting-pointer-release");
+    requestAnimationFrame(() => {
+      document.body.classList.remove("scouting-pointer-release");
+    });
+  }
+
   setOutcomeOverlayActive(isActive) {
     document.body?.classList.toggle(
       "victory-outcome-active",

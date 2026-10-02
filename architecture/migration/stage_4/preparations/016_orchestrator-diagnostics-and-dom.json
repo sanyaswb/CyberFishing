@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "016",
+  "slug": "orchestrator-diagnostics-and-dom",
+  "baseCommit": "461c35fc8c91deef28c2ed6f30a3a7ade50448e8",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-browser-capability-d3774df33998",
+    "debt-browser-capability-24d043fb605b",
+    "debt-browser-capability-6b1b23c951c4",
+    "debt-boundary-dependency-98238a7a45f1",
+    "debt-dev-leakage-811c8cd1e216",
+    "debt-browser-capability-c726c1c27773",
+    "debt-browser-capability-98ea593d4ca8",
+    "debt-browser-capability-84892e4a7994"
+  ],
+  "files": [
+    {
+      "path": "src/platform/browser/diagnostics/console_logger.js",
+      "before": "f79cdc011d5c8faf33a0b4f604c856d844ec99fa4a6d11b76b83ca689cec9762",
+      "after": "d3132ed9e6efc7f6de390285c1523a77df5b6244a81775b521f199a6f94652df"
+    },
+    {
+      "path": "src/app/fishing.js",
+      "before": "a2fe80b04f90e2f4c79914d4c12c40f477260b25efe93b9dabf9be28676a4d98",
+      "after": "7544468cd265e65d9685b51aad0cc9560414618eb7b7fe7d84e11b6ada9eb6f5"
+    },
+    {
+      "path": "src/app/states.js",
+      "before": "ccfe2ecd915de2c5eef2d6a327155bbaf9f093a94dde86deaccbbb23e2a235aa",
+      "after": "4b918b6b130647b2378424e4a1b2b9e0cd4f78d004d9cc7ad5d5e4928b4dceed"
+    },
+    {
+      "path": "src/ui/ui.js",
+      "before": "821d704e0f4d4bc76c8d82160c8a0467f9b26abd42d5465363aef8e21b662231",
+      "after": "8b71ed11c478fecdcd588d38cac5591269b5b567874ae49faa11cab9fcc8d48d"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "cc61d4b00956996f411a144a397ca3e59bebaa4dbd3e37c7afb5dbcd76eacfd0",
+      "after": "fdf77f81e3ece04b56b6c5865b7cbdbb94218b8fbcc2d99e486f54d45284ae8c"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "12ca28f7e19a2d97a2f5c77a010df7b05e5eca362c17e4634e01d9b97ad8e041",
+      "after": "c8812b857660d470a9a0f5e4377126fc08cde04401d77aa74dfaf3ca8fe05ef6"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "aba94ed92152b705784ccde3cc5e32c0f9a72cda272e2e53b46e538802cb61e6",
+      "after": "20ffb5344322b5ee9ff74c2484e5e9c61e072cf4287dcd92cfcbbd4d9e2d127c"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 028 moves fishing.js and states.js to game-application (no browser, DEV or console access). fishing.js printed GodMode notices with console.log, and CatchResolutionService gated a console report on window.document and window.DEBUG_MODULES.catchResolution; states.js toggled document.body classes (with requestAnimationFrame) for the scouting pointer feedback and printed the hooked-fish report with console.log/table. Framework Q5: developer diagnostics stay diagnostics, only console access is injected as the platform logger (ConsoleLogger gains groupCollapsed/table/groupEnd with the same console calls); the DEBUG_MODULES gate is a bootstrap closure (bootstrap already carries the reviewed browser-runtime debt); the body classes are page UI and move verbatim into UIManager.setScoutingPointerDimmed (ui.js already carries the dom/timing debts). No new debt or edge.",
+  "constructionEvidence": [
+    "grep src: `new FishingController` once in production (bootstrap, now logger: new ConsoleLogger()); `new CatchResolutionService` only as FightService's default; bootstrap now passes catchResolver: new CatchResolutionService({ logger, isLogEnabled }) (the default plus diagnostics); StateDepsFactory services gain logger from the bootstrap root (logger: new ConsoleLogger()); ScoutingState calls deps.ui.setScoutingPointerDimmed (UIManager is deps.ui).",
+    "Checks construct FishingController / FightService / StateDepsFactory without a logger: the notices and reports are skipped, as they never printed in any check (grep of check outputs: 0 GOD MODE / CatchResolution lines); inventory-v2-cast-and-lure, consumable-event-identity, victory-input, hook-domain-semantics, float-depth and game-cycle unchanged.",
+    "Browser probes: UIManager.setScoutingPointerDimmed reproduces the hold class, the one-frame release class and its removal; FishingController with an injected logger emits the same GodMode notice text.",
+    "Resolved debts (reported stale by the guard corpus): fishing.js browser-runtime, diagnostics, dom, boundary-dependency and dev-leakage to src/debug/debug.js; states.js diagnostics, dom, timing (82 -> 74)."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 82,
+    "knownDebtsAfter": 74,
+    "suites": {
+      "full": "64/64"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "scoutingPointerClasses": {
+        "held": [
+          "scouting-pointer-hold"
+        ],
+        "released": [
+          "scouting-pointer-release"
+        ],
+        "nextFrame": []
+      },
+      "godModeNotice": "%c[GOD MODE] 🛡️ Снасті та наживку врятовано від втрати!"
+    }
+  }
+}

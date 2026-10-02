@@ -603,6 +603,7 @@ class GameCompositionRoot {
       equipmentRules,
       baitRules,
       debugEvents,
+      logger: new ConsoleLogger(),
     });
     const net = new Net(
       eq.net || { active: false, maxWeight: 0, length: 10 },
@@ -703,6 +704,11 @@ class GameCompositionRoot {
       config,
       rng,
       devFlags,
+      catchResolver: new CatchResolutionService({
+        logger: new ConsoleLogger(),
+        isLogEnabled: () => typeof window !== "undefined" && !!window.document &&
+          window.DEBUG_MODULES?.catchResolution === true,
+      }),
       fightSessionFactory: new FightSessionFactory({
         config,
         rng,
@@ -736,6 +742,7 @@ class GameCompositionRoot {
     });
 
     const stateFactoryRoot = {
+      logger: new ConsoleLogger(),
       inventory: runtime.inventory,
       input: runtime.input,
       projector: runtime.projector,

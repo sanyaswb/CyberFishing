@@ -14,4 +14,20 @@ export class ConsoleLogger {
   error(...args) {
     console.error(...args);
   }
+
+  groupCollapsed(...args) {
+    console.groupCollapsed?.(...args);
+  }
+
+  table(data) {
+    if (typeof console.table === "function") {
+      console.table(data);
+    } else {
+      console.log(data);
+    }
+  }
+
+  groupEnd() {
+    console.groupEnd?.();
+  }
 }
