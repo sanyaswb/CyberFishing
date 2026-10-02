@@ -1,0 +1,4524 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "030",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/game-cycle-check.js"
+  ],
+  "classes": {
+    "FightPhysicsSystem": {
+      "sourcePath": "src/systems/fight_physics_system.js",
+      "members": [
+        {
+          "name": "#config",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ac0c9aa21c698da30613f9b784c31566ac9d769c321a617510d6ff7e1f90974"
+        },
+        {
+          "name": "#physicsConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "601fbb5c75fc684fd71c6050bbde551fe65f5758a8b5988af81a9fa541bd7b55"
+        },
+        {
+          "name": "#velocityScratch",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "931669233010f3427f2f418db7bf038601808e4d4df502831bf5e3f876b39ef0"
+        },
+        {
+          "name": "#radialTargetVelocity",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c15558348eaa4a4d543a7f8b43a980e5735f92ce924b286af74d1e7e66f8a37f"
+        },
+        {
+          "name": "#waterProbePoint",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "25f1e5af05f770d9db2b14f411d4ba70463e1f55ce3eb06e886142d4df642ac7"
+        },
+        {
+          "name": "#recoverableLineCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "54a2f0398bbd705193c701206c25a5eb17836b546d14cd76f7a62d6f0d6a6527"
+        },
+        {
+          "name": "#looseLineCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "359b65aa1176b63470bbabaec25e4a3ae05957992bf338087b37dcc5e2a5adb4"
+        },
+        {
+          "name": "#rodStrokeTracker",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "513eec8c549dd68e276b16615918a5e48ca41a0cfcbf292420b0114aa86c4043"
+        },
+        {
+          "name": "#rodStrokeDistanceTracker",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6c71801c6f8d0ba40a4a0d106fa96f992dc2b79df822d1a418424ef0d0d1910c"
+        },
+        {
+          "name": "#playerPullMotionSmoother",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f500f0977f8549011f2fd2e33a32761fc8ff17b2a9b2a06aa8df5728b3b6a468"
+        },
+        {
+          "name": "#reelHoldRecoverySystem",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8ea9294f7843cc19eb102359b385b2099a041eb09f15567ede1fe0ffdad00977"
+        },
+        {
+          "name": "#recoveryFishSlowdownPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e593faba6c5c2efb9f2989325b903f0995e0d3d11342a307e5fee268a2d3bfe3"
+        },
+        {
+          "name": "#landingPolicyResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "54977fd73feaeb3ee95dc4497b5aa2f157f6f3d5444581de01a52365e72c2fa7"
+        },
+        {
+          "name": "#landingLiftCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3957a9e00c6fc15f0054f16d2dc315fcf6cd5c8d6bad70228e0ee3cebb234996"
+        },
+        {
+          "name": "#landingLiftReadinessPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1cae128e91e5bfc6dece4d0faf0ea1af3d5ce49bf0bda5a2d4c29c6403ff5310"
+        },
+        {
+          "name": "#lineConstraintStateResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "35fa3e40cdae5d822a2092eaef0431af8683fdf0bb3208ef6b29c731a75e319d"
+        },
+        {
+          "name": "#lineConstrainedFishMotionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "dfd5413a09e8c0bd3402a15925c836c1ce26104292eac981324d5f65e867fdfa"
+        },
+        {
+          "name": "#lineConstrainedFishMotionPreviewResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "cdf8426582d3365f9fa76306292b885cb4f90d8d5f5f3cc3b88d085b74ca4969"
+        },
+        {
+          "name": "#lineRadialMovementSplitter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "baa0b1661c3ebe373c667cf94d34ba6eabc45c7a0e85c30484036ce3733ae92b"
+        },
+        {
+          "name": "#modelFishVelocityScratch",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "60e4fcc8d45b10754fedf94451ba9cf33dba6336c0c9d6f8090aa73f7f5cc3e9"
+        },
+        {
+          "name": "#previewLineConstraintStateScratch",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fc487d53f43b517c649985f92972c394014e1d306c50b4d442ca3f50d5ea5f68"
+        },
+        {
+          "name": "#rodControlMovementProjector",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "98738e8c044885753dd516bc6dae879e5f0f0d2ff29aa6cd21a99165733d8a0a"
+        },
+        {
+          "name": "#poleFightSectorConstraint",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c99e2dbc7212c132f091f13f68b4c9ed311c3e55cf66654fa300f216b30f8a31"
+        },
+        {
+          "name": "#poleFightSectorAngleConstraint",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fe93689329cf137e3facaea19046ebbc517e82c8e1fdfa46a62b42ab1e3e2a00"
+        },
+        {
+          "name": "#fightInputActionComposer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "40b45aa773c8b5bf9afa95cbd68e3d6f3fed9f035a970094f102efcdaa912454"
+        },
+        {
+          "name": "#playerForceBudgetAllocator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "5c71076dcc52b0fb173e3fb612287e369a81ef3b06d26c752d8c3be6ab943db1"
+        },
+        {
+          "name": "#playerPressureGainResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ae3564d703c9188b6b61722ee7c26a7211ac0df13fc3a8625a1eec4a75c416f1"
+        },
+        {
+          "name": "#playerTensionBuildRateResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "5a75d1eec6ef3ef59ad3c8e8ac5ae0abacb9d26eb807070fced3cc0d8f690382"
+        },
+        {
+          "name": "#playerPressureFatigueCalculator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "11f99bb60042d2ab58f4eed81bbedefc0cc35e78e4c38c8775dbcd31c65dbc6d"
+        },
+        {
+          "name": "#playerPressureFatigueSourceResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4a9045adbe64c569cfeffe52d943cfdc0b46248b76224fc06e9ed8e339c48bd8"
+        },
+        {
+          "name": "#playerPressureFatigueState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "057ae8fd439a0ed885b569470e0e33cbe056580ec35bf47d1047b18d3172bf36"
+        },
+        {
+          "name": "#playerReelFatigueSession",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c0ca2288db7491669e3ca2834545665a648afcf741141392e78dd14c287eb2e9"
+        },
+        {
+          "name": "#staminaBalanceFrame",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4dd4c86755477d8ec5df1f2a05e953e6d6d6b62927c0e0a6c67e9273f2a818e3"
+        },
+        {
+          "name": "#composedInputScratch",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a58d85ac5cdd97780ef66928d9799ee773950ffb4c33147fd587f1ac53c62e3a"
+        },
+        {
+          "name": "#pipeline",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ae8b6ac1d41cbcf393908e167b22a97daf211274dce39d651dc20718e7616fd8"
+        },
+        {
+          "name": "#logger",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6c56e7a29d8e030c22a10c92d423852688c49c63de67dc0d3ffc4ad70faecde7"
+        },
+        {
+          "name": "#fishRetrieveSystem",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "12ee904e15db8ccfbb2aba4d3c43b3864c3417b78426ea2c793cfc43f95d1707"
+        },
+        {
+          "name": "#staminaBudgetOverflowWarningActive",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9f73b356459d07f1ed4ea519195c58f5d61b965250aa5df8dff20b7473c56b2b"
+        },
+        {
+          "name": "#fishWasInCatchZone",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "03046b221e678e22e45b57cea23d738edc6398d7fab9a3b39e0f32d675dd34eb"
+        },
+        {
+          "name": "#landingLiftHoldKg",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "de3539916ad0e1309a14eb40435d3636dadc8f914e35c1d8330a001470c81196"
+        },
+        {
+          "name": "#holdReelRecoverState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a81e087db34e275754c43db37b39ab1ae022c57389d8c720c677ab8791fe4fd4"
+        },
+        {
+          "name": "#lineRecoveryFishSlowdownState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "0a660a40c48b66e50511b4a0538db0099d78d38224531adbcf217b655ee79bbe"
+        },
+        {
+          "name": "#debug",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e7b36639d631b551facd81ad782b44e23fd445d0e551dbc2f1b8f5d7c7f0325b"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "501c6c8c492e8ae279dad2d9d48b4a269decb4de2265cea7054fe2de42fbd669",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "step",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "41d01c7c8c131a0fd2021dc19d2b92af78b0f525d57f98ea8085a9bb96918473",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 34,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getDtSec",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8d4a0b640eaf1b1fb73dd4cda0f51e263e8524055a1d70432a8e9eac66d820cb",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#composeFightInput",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ac760e3593347be9c7b7d2b2123ad0e7a4040030e5231629595b7b8d98542cbd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 1,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateInput",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fba696c16dd7006f728a464576a56153a09d1fabb6a2564c4710fc923e6fedeb",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveRodControlIntent",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2807a9f58fa91a08dec3b627ca3e4fcf8b5eb6acad14f51190e0d331db6941f2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveRodControlTargetAnchor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1e84f8370c84d98bba21e383eb249e1f693814302a79586ae9479a7991a6c7e6",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasPoint",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9e016bebdf0e251158d97c5fa9eab189d4b87aa5d7249a3dfd0d4e30f16b1777",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerForceBudget",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "68c0e35e115efae523137b2a3f2880b48101b51dfb7c00d99eafe572d8594e3f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPressureGain",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4db9f23c9b1037eadc63dca8b960f116d15fba9abb17e39c4cc585b65a8b1715",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPressureGainConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "18d100bbfa036575d57e4c59f33fc56ad410f3fbec24b7a9f24356c461df6d3b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerTensionBuildRate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "65a2374c080441933f53c0e50b2d94f403b91f386f5c57ebe9c394e44b9ecd32",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerTensionBuildRateConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "20d5e7175a7e9b70be81e42eb55f315976c65f7923e1b9bb55a19cc5204134a9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPressureFatigueSource",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6a281a899fd4b3f3d0272c6d43bd1d991ec0346a70f27c5b04b203f0286e06d9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updatePlayerReelFatigueSession",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7cd7d1f5aa701622dcaaa079020da62e216acd8e7041ea14d2142788632a05ec",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildPlayerPressureFatigueApplicationFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1095582f15cf154168bf715ffff8207c80c26839479fc4e845eb2d1c89e503ec",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updatePlayerPressureFatigueFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bdfb86a00d970c9c261c81054a027e9cddb74ab7d701584de2bef5853c2131cd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPressureFatigueConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "188fdfa8667b8023c5c37710fbd78f1cec9159bc3e39ba6f46334288053ab085",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPressureFatigueChannels",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d6f0f3c591aaacc0805f148dee03bd5034c4f93c1bce4ab962d8492ba987f204",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateFishMotion",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fa79aed0379e1754950030373b27771eba7bbf2d9d3eda85f6c143b577701dbb",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 23,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 1,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveDragContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "070ff3e4ae59d50a19aa51a3851e7075e4d0b0d5210606876775e98918270260",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishMotionDragContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4190b5141773bca8b1f517c420e4a06efd290f0f1b9af9d84a83279f22ddf234",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateShoreLandingDistanceMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1d572360ac9c1620392348e8ace1c06ae73a8967dee52e5f65541c42500dd940",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateRodPull",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "146d1e0ad36a3b6494336f2713c463d6f3f4c38c6e28d0dfe0ba20795ed9f5db",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 14,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#recordRodStrokeDistance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6fe311ca100c66ce521c442bb78293a70a68986e14acf14bb454cafd9db61c87",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateRodStrokeDistanceFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9787f2dde9cfbc500da3b9bd1dba6e1897620ca601bba7437feb0e91b6ee5c3c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "89f7b5befdb2f031ce4dad17e091f6caf74c28d71d87544949d8787978981a1d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isRodStrokeMovementBlocked",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7d86202e3677ca6c230b82449f25911afdae7b78e8e9ee724f3f6bb299a0d8ee",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateRodControl",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cf2babef3ef47288172128316e5095f6222ac97f010273ed8425cc0ae8ea5bcf",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 12,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 1,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#emptyRodControlResult",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "274434f2914950817d9d743519210631b8a209667f817373ec6c08c73b26b683",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resetPlayerPullMotion",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "731a046c5538e6962b5815e09777dc0d57ee84221e1cc7f543720ab89fed5766",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateTension",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b17a87b8b3dfcf3123dd8bb02cc3f5244177abd78cbf6d941c4d227dad0d7869",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateTension",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e64aa516de0f65dad5ac34732100e7c8ab5a61a5329225def9494abdcc09c02e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateLandingLift",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "007a06a528b9c995d1f7931d284eb0822924e3f98c295ccac49407feffedbc0e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildLandingFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "97116ad5393d4586b653b8258649511c22c6052814cd387b094bfa9a7e55d491",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildStaminaFrame",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "49ef1dbb4088ca30157db32785b9402b3cc863dbaeec80e9eb45b3809921db6b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 11,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFrameEnduranceProgress",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "64f9b6c1ff4aa7153f6c2fd2422e7f2da47d899aa69545c0118a106e72f1b6dd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLineTautRatio",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "afe0f1e7300c13d50579b82e5577534ed76ba39aabd54b20109301cc86ea1677",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishBehaviorName",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5547229a9f25c53d002567639c00c30f994fddb1bd660a3419ade89aeaaef64e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLineAngleDeg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a2d9c062aa4defc52bbfe0d2d155e84f260eb54f9abf052977a0843fa658534f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveStaminaLateralContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ba5cdb1a82f79679fff3dc85f89750d63b2367625bd52d07896c0c038213fbbf",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveRawStaminaInputActive",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "43075837840bc3d7cba3f6198d7a516a9c14e247ce4040daf433dc5e2b8f59ef",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishStaminaResistanceKg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b1a2116690143d6d7023c05687b844f2da08cdb4a3552dfe680449b9c1fcedc4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#warnStaminaBudgetOverflow",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2b4cc9fc26f3ba6010e1cefd63a308b623407b58e83d5ee2a5077cb9d0a455c5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLandingReadiness",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4073d0091afe6a6ea363904b0205c90ecf29f80c9b5a8a9e8b8a3bae6a71057b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishWeightKg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bab7410110909a1c80c57901cc854c1f710601baae527e56fe888aa9ade2d623",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#recoverLineCredit",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1124db16cdb18c372c05f040e8fbb8d405e44ef293e1d001ce6f9c0357ecff2b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#recoverRodStrokeCredit",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "22e89908c3ea4bac69ab67c9395a32168a8d59c6afe517df0407f010b4f41a99",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveReelRecoveryLoad",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cf46d961176895b7bbe3485af317706504f49e008bdde3b8d207748f9be1a48e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateHoldReelRecovery",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee90697c2955e4332d05a439455c1b8720079f945a04d1a2a8cf30ed81f92575",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLineLimit",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f240951f536a18368a5bff3cc142aa17363062f69a6194ff5e3eef8bb6063d3f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#inspectPoleFightSector",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6aa88412a851078fd344c0320e60d1f4deb0d90f8af9f0620a44019906428c72",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyPoleFightSectorMovement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f6d9f1fbe1a9600ecb7cdf8275fec491f666ed1e453351254b1560de0605cbe5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyPoleFightSectorAngleMovement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "891210a902206e9224a4cf5ddbe0a78cd6685143fe9d4fe70d1537f6cb6014d0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildDebugSnapshot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1a944ec44ae0d3e8fd1f1b820c0c9c8018f5484f7da6852a52575147eb436866",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#lineHasReserve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e7cd3eba7323582e1f7930116a4ca476c546c9e2337cd16146bca34e7b2ecfa5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePlayerPullMovementMode",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "30fdce70df6dc9a0bf44c29ea4838edc4b550e6981cc24513a6224127ec9951f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishMovementMode",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee09b84466e828e65242e01c207274ff6639dba2268fd66e155e1b06c5b03e25",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishActualBlockedReason",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f4006db838f77a2f8283c3cafe3425f64601d4ac0396fca72d054e1b70b44c35",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishMovementSummary",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "91e37ac9db67a97480f6f1c2cec8bbec5a8d352c64190fedf319abfbdc998d7e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishPressureSummary",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4af3f7cc7335b268113853ed3971880150d6bc1e8793ef35434e63fbabce5a8d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishMovementRelation",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "74e0cfde8f3d01e549f52de4e08993fda3220cd7f8139549ea61851141b716b5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#fishMovementRelationLabel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ef94f0c16957c1cd0f7a16391861b674399866710a645914ce8a8517438a05ed",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishMovementStrengthKg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b9c1d518a35bd6be93dc6bf91f9c7bf6be0e8bb3b8ce5099873b114c450b84dd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveEightWayDirection",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8bd20d24a1f2c422bfec53cde4c7f5241d6d85345cf82c7ac074d85bede21de3",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#eightWayDirectionLabel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f1a20d88d079c28da491da6d013981fb470b63fd1bfcf4ba26305b2ea051394a",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#directionAxis",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cb5f3e4ba13d673f26c26103d0ddaff690f293cf63266745ee2d0e3d643ba726",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isLineTaut",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c5d9621cdc20e1aaf79ea015100a5b3c3937424cfe7b8343cadc042e27bb77d0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateAllowedPullMoveMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b83a40a3e9eeaffe57a28216dd01d8010b2f0eb0e6ef62006fe43e48c8891889",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#smoothPlayerPullAxis",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d8ed8cb42ae57a813791fb35bc0e1c79dc70774c0791f37867a698ad5b04f3ae",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#limitRodControlMoveTowardTarget",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4a78a31f1d1a62087cbf5c1b4a0f13f36774b59dcaded784f9a56f7b5e3d3e96",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyRodPullMovement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9ab8f0fc5a4e03d82d938d7e5569d451b010738cfc51c7035f830e79904a556d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyRodControlMovement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d36d4b66e3154cfa18a77fa4c3cc541df8f5aa0db9dde267c3a41c06ef9b8094",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePoleFightSectorLimitRadiusPx",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b87b808a82e62367f43bfdfb951efdb6dbedf3c82524f1b62ae2a56a97af53fd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLineConstraintState",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f41886d44e2104ae4057d40ddc3f67ee088188ac99a40a79c51171f7cee5af86",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getLineConstraintConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e6c03ebe8da783c21c72b2b1331fd42b834ee5aa14fda5e315393f4b397e0dbd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildLinePayoutContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1ea2ba7d269966987d313511262089e7ba0b9c2d7eaf4ccc5e1668cd221b79a7",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#movementResult",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5c1f28e34957af26070f99eaa2ba59a4ff293c4ecc2e78ae4893247231462d09",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findLastWaterPoint",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "66c4328c41442e667fe65cce7b22f4bfcd2fc5362de6d9cdc60fa7ec443503ea",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clampToBounds",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bce48ae332c9418d188ace1d2de8667b4ef704df744bd705a6568cf119ee0f1e",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getDebugData",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a8d833950de503f0b5aff35ae80167fffe4214572e014f01f823b9cfa00fec46",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePhysicsConfigAdapter",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7fd51040f44f8a8d088b47316226211443fe32c609f1f8e3299f37a6073754bc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getRuntimePhysicsConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "43943d066d732d57706d0b1b973c57bf7e4b7b401e755af697f2d65998a3b449",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#positive",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "183e38b8bf18e28bd15725c43c83f4b8e53a202c361afc1d5dff208e504db5ca",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d83af4989e7e804a2d0132d8b974b6851b0055188ff40be7e971ea9b5fe791f1",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 249,
+        "arrayExpressions": 2,
+        "newExpressions": 31,
+        "objectFreezeCalls": 22,
+        "objectAssignCalls": 3,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Number",
+          "member": "#applyPoleFightSectorAngleMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyPoleFightSectorAngleMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyPoleFightSectorMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyPoleFightSectorMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodControlMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyRodPullMovement",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildDebugSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildLandingFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildLinePayoutContext",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildPlayerPressureFatigueApplicationFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#buildStaminaFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateAllowedPullMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateHoldReelRecoverMoveMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateRodStrokeDistanceFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateRodStrokeDistanceFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateRodStrokeDistanceFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateRodStrokeDistanceFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateShoreLandingDistanceMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateShoreLandingDistanceMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateShoreLandingDistanceMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateShoreLandingDistanceMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#calculateTension",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clampToBounds",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#composeFightInput",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#composeFightInput",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#composeFightInput",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#composeFightInput",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#composeFightInput",
+          "kind": "method"
+        },
+        {
+          "name": "FightInputActionComposer",
+          "member": "#fightInputActionComposer",
+          "kind": "field"
+        },
+        {
+          "name": "FightInputActionComposer",
+          "member": "#fightInputActionComposer",
+          "kind": "field"
+        },
+        {
+          "name": "Math",
+          "member": "#getDtSec",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#getDtSec",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#getDtSec",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#getLineConstraintConfig",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#getLineConstraintConfig",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#getLineConstraintConfig",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#hasPoint",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#hasPoint",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#hasPoint",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#hasPoint",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#inspectPoleFightSector",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#isLineTaut",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isLineTaut",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isLineTaut",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isLineTaut",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#isRodStrokeMovementBlocked",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isRodStrokeMovementBlocked",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#isRodStrokeMovementBlocked",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isRodStrokeMovementBlocked",
+          "kind": "method"
+        },
+        {
+          "name": "LandingLiftTensionCalculator",
+          "member": "#landingLiftCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "LandingLiftReadinessPolicy",
+          "member": "#landingLiftReadinessPolicy",
+          "kind": "field"
+        },
+        {
+          "name": "LandingLiftReadinessPolicy",
+          "member": "#landingLiftReadinessPolicy",
+          "kind": "field"
+        },
+        {
+          "name": "LandingPolicyResolver",
+          "member": "#landingPolicyResolver",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#limitRodControlMoveTowardTarget",
+          "kind": "method"
+        },
+        {
+          "name": "LineConstrainedFishMotionResolver",
+          "member": "#lineConstrainedFishMotionPreviewResolver",
+          "kind": "field"
+        },
+        {
+          "name": "LineConstrainedFishMotionResolver",
+          "member": "#lineConstrainedFishMotionResolver",
+          "kind": "field"
+        },
+        {
+          "name": "LineConstraintStateResolver",
+          "member": "#lineConstraintStateResolver",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#lineHasReserve",
+          "kind": "method"
+        },
+        {
+          "name": "LineRadialMovementSplitter",
+          "member": "#lineRadialMovementSplitter",
+          "kind": "field"
+        },
+        {
+          "name": "LooseLineCalculator",
+          "member": "#looseLineCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "Math",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#movementResult",
+          "kind": "method"
+        },
+        {
+          "name": "PlayerForceBudgetAllocator",
+          "member": "#playerForceBudgetAllocator",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerForceBudgetAllocator",
+          "member": "#playerForceBudgetAllocator",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueCalculator",
+          "member": "#playerPressureFatigueCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueCalculator",
+          "member": "#playerPressureFatigueCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueSourceResolver",
+          "member": "#playerPressureFatigueSourceResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueSourceResolver",
+          "member": "#playerPressureFatigueSourceResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueState",
+          "member": "#playerPressureFatigueState",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureFatigueState",
+          "member": "#playerPressureFatigueState",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureGainResolver",
+          "member": "#playerPressureGainResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPressureGainResolver",
+          "member": "#playerPressureGainResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerPullMotionSmoother",
+          "member": "#playerPullMotionSmoother",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerReelFatigueSession",
+          "member": "#playerReelFatigueSession",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerReelFatigueSession",
+          "member": "#playerReelFatigueSession",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerTensionBuildRateResolver",
+          "member": "#playerTensionBuildRateResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PlayerTensionBuildRateResolver",
+          "member": "#playerTensionBuildRateResolver",
+          "kind": "field"
+        },
+        {
+          "name": "PoleFightSectorAngleConstraint",
+          "member": "#poleFightSectorAngleConstraint",
+          "kind": "field"
+        },
+        {
+          "name": "PoleFightSectorAngleConstraint",
+          "member": "#poleFightSectorAngleConstraint",
+          "kind": "field"
+        },
+        {
+          "name": "PoleFightSectorConstraint",
+          "member": "#poleFightSectorConstraint",
+          "kind": "field"
+        },
+        {
+          "name": "PoleFightSectorConstraint",
+          "member": "#poleFightSectorConstraint",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#positive",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#positive",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#positive",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#positive",
+          "kind": "method"
+        },
+        {
+          "name": "Vector2",
+          "member": "#radialTargetVelocity",
+          "kind": "field"
+        },
+        {
+          "name": "RecoverableLineCalculator",
+          "member": "#recoverableLineCalculator",
+          "kind": "field"
+        },
+        {
+          "name": "ReelRecoveryFishSlowdownPolicy",
+          "member": "#recoveryFishSlowdownPolicy",
+          "kind": "field"
+        },
+        {
+          "name": "ReelRecoveryFishSlowdownPolicy",
+          "member": "#recoveryFishSlowdownPolicy",
+          "kind": "field"
+        },
+        {
+          "name": "ReelHoldRecoverySystem",
+          "member": "#reelHoldRecoverySystem",
+          "kind": "field"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishActualBlockedReason",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishActualBlockedReason",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishActualBlockedReason",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishActualBlockedReason",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#resolveFishBehaviorName",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMotionDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMotionDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMotionDragContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementMode",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementStrengthKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishMovementSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishPressureSummary",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishStaminaResistanceKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishStaminaResistanceKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFishWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFishWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFrameEnduranceProgress",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFrameEnduranceProgress",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFrameEnduranceProgress",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveFrameEnduranceProgress",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveFrameEnduranceProgress",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLandingReadiness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLineAngleDeg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLineTautRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLineTautRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineTautRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLineTautRatio",
+          "kind": "method"
+        },
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfigAdapter",
+          "kind": "method"
+        },
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfigAdapter",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerForceBudget",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerPressureFatigueChannels",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerPressureFatigueSource",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerPressureGain",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerPullMovementMode",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePlayerPullMovementMode",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerTensionBuildRate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolvePlayerTensionBuildRate",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePoleFightSectorLimitRadiusPx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePoleFightSectorLimitRadiusPx",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolvePoleFightSectorLimitRadiusPx",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolvePoleFightSectorLimitRadiusPx",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveReelRecoveryLoad",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelRecoveryLoad",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveReelRecoveryLoad",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveReelRecoveryLoad",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolveRodControlTargetAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodControlTargetAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveRodControlTargetAnchor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#resolveStaminaLateralContext",
+          "kind": "method"
+        },
+        {
+          "name": "RodControlMovementProjector",
+          "member": "#rodControlMovementProjector",
+          "kind": "field"
+        },
+        {
+          "name": "RodStrokeDistanceTracker",
+          "member": "#rodStrokeDistanceTracker",
+          "kind": "field"
+        },
+        {
+          "name": "RodStrokeDistanceTracker",
+          "member": "#rodStrokeDistanceTracker",
+          "kind": "field"
+        },
+        {
+          "name": "RodStrokeTracker",
+          "member": "#rodStrokeTracker",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#smoothPlayerPullAxis",
+          "kind": "method"
+        },
+        {
+          "name": "StaminaBalanceFrame",
+          "member": "#staminaBalanceFrame",
+          "kind": "field"
+        },
+        {
+          "name": "StaminaBalanceFrame",
+          "member": "#staminaBalanceFrame",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "FISH_FIGHT_EVENT",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateFishMotion",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateHoldReelRecovery",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateLandingLift",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateLandingLift",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateLandingLift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateLandingLift",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#updateLandingLift",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#updatePlayerPressureFatigueFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#updatePlayerPressureFatigueFrame",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#updatePlayerReelFatigueSession",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#updateRodControl",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateRodPull",
+          "kind": "method"
+        },
+        {
+          "name": "Vector2",
+          "member": "#velocityScratch",
+          "kind": "field"
+        },
+        {
+          "name": "FightPhysicsPipeline",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "FishRetrieveSystem",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "RodStrokeDistanceTracker",
+          "member": "#rodStrokeDistanceTracker"
+        },
+        {
+          "name": "ReelRecoveryFishSlowdownPolicy",
+          "member": "#recoveryFishSlowdownPolicy"
+        },
+        {
+          "name": "LandingLiftReadinessPolicy",
+          "member": "#landingLiftReadinessPolicy"
+        },
+        {
+          "name": "PoleFightSectorConstraint",
+          "member": "#poleFightSectorConstraint"
+        },
+        {
+          "name": "PoleFightSectorAngleConstraint",
+          "member": "#poleFightSectorAngleConstraint"
+        },
+        {
+          "name": "FightInputActionComposer",
+          "member": "#fightInputActionComposer"
+        },
+        {
+          "name": "PlayerForceBudgetAllocator",
+          "member": "#playerForceBudgetAllocator"
+        },
+        {
+          "name": "PlayerPressureGainResolver",
+          "member": "#playerPressureGainResolver"
+        },
+        {
+          "name": "PlayerTensionBuildRateResolver",
+          "member": "#playerTensionBuildRateResolver"
+        },
+        {
+          "name": "PlayerPressureFatigueCalculator",
+          "member": "#playerPressureFatigueCalculator"
+        },
+        {
+          "name": "PlayerPressureFatigueSourceResolver",
+          "member": "#playerPressureFatigueSourceResolver"
+        },
+        {
+          "name": "PlayerPressureFatigueState",
+          "member": "#playerPressureFatigueState"
+        },
+        {
+          "name": "PlayerReelFatigueSession",
+          "member": "#playerReelFatigueSession"
+        },
+        {
+          "name": "StaminaBalanceFrame",
+          "member": "#staminaBalanceFrame"
+        },
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfigAdapter"
+        }
+      ],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "56da425077531c80a8bcabc0e6d70c223334616e12ad1d6c3082c1a9197e4e71",
+          "calls": {
+            "step": 501,
+            "resetPlayerPullMotion": 12,
+            "getDebugData": 0
+          },
+          "deltaTime": {
+            "step": {
+              "minSeconds": 0.03333333333333333,
+              "maxSeconds": 0.03333333333333333
+            }
+          }
+        }
+      }
+    }
+  }
+}
