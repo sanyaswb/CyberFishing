@@ -544,6 +544,13 @@
       "module": "src/game/presentation/visual/degradation_color_config.js",
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "reason": "A top-level IIFE deep-freezes one literal color table once (Object.values/Object.freeze over its own literal, WeakSet scratch; no external read or write); the activation shim exposes the same frozen object to the classic consumers."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "c09daa5bfbc1077539c58cf05a23b19ec12dd6053613bf4d0ecfc70649ea6c7e",
+      "module": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "owner": "stage-5.cluster-002-inventory-rule-messages",
+      "reason": "A top-level IIFE builds one frozen message catalog once (local formatter closures, Object.freeze over literals and functions; the locked-slot message reads the imported EQUIPMENT_SLOT_PRESENTATION lazily at call time). No external write; the activation shim exposes the same frozen object to bootstrap and the inventory composition root."
     }
   ],
   "activationPositions": [
@@ -594,6 +601,18 @@
       "shimFile": "activations/074_numericstatmetricstrategy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "INVENTORY_RULE_MESSAGES",
+      "legacyScriptIndex": 30,
+      "legacySymbol": "INVENTORY_RULE_MESSAGES",
+      "shimFile": "activations/030_inventory_rule_messages.js",
+      "sourceProvider": "src/config/inventory/inventory_rule_messages.js",
+      "targetModule": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "id": "activation-0e69ed74cc78",
+      "owner": "stage-5.cluster-002-inventory-rule-messages",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "FightPhysicsConfigAdapter",

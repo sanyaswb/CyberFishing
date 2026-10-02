@@ -3019,6 +3019,22 @@
       ]
     },
     {
+      "id": "bridge-d49bc31ed975",
+      "bridge": "src/config/inventory/inventory_rule_messages.js",
+      "owner": "stage-5.cluster-002-inventory-rule-messages",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "reason": "Preserve the exact INVENTORY_RULE_MESSAGES consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_RULE_MESSAGES",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d633e493731d",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -3243,17 +3259,17 @@
       ]
     },
     {
-      "id": "bridge-e1b381b04a9a",
-      "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
-      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "source": "src/config/inventory/inventory_rule_messages.js",
-      "target": "src/game/presentation/inventory/equipment_slot_presentation.js",
-      "reason": "Preserve the exact EQUIPMENT_SLOT_PRESENTATION consumer until its legacy symbol is removed.",
+      "id": "bridge-e19ae4529758",
+      "bridge": "src/config/inventory/inventory_rule_messages.js",
+      "owner": "stage-5.cluster-002-inventory-rule-messages",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "reason": "Preserve the exact INVENTORY_RULE_MESSAGES consumer until its legacy symbol is removed.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
-          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+          "symbol": "INVENTORY_RULE_MESSAGES",
           "mechanism": "global-this-property"
         }
       ]

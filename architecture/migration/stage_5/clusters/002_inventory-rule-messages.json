@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "002",
+  "slug": "inventory-rule-messages",
+  "milestone": "M3",
+  "boundary": "game-presentation",
+  "tier": "C",
+  "tierEvidence": "Existing player-facing rule messages referring to the slot presentation catalog. Graph review stage_5 v1 cluster 002 (tier C).",
+  "modules": [
+    {
+      "currentPath": "src/config/inventory/inventory_rule_messages.js",
+      "targetPath": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "exports": [
+        "INVENTORY_RULE_MESSAGES"
+      ],
+      "imports": [
+        {
+          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+          "from": "src/game/presentation/inventory/equipment_slot_presentation.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes INVENTORY_RULE_MESSAGES as a global lexical binding that bootstrap and the inventory composition root inject into the rules (framework Q5: player-facing text is a presentation catalog, injected); the cluster keeps that exact frozen object through the activation shim. Its only dependency, EQUIPMENT_SLOT_PRESENTATION, is now an ESM import of the cluster 001 target; no classic, browser, DEV or raw-config global is read."
+        }
+      ],
+      "sideEffectReview": "A top-level IIFE builds one frozen message catalog once (local formatter closures, Object.freeze over literals and functions; the locked-slot message reads the imported EQUIPMENT_SLOT_PRESENTATION lazily at call time). No external write; the activation shim exposes the same frozen object to bootstrap and the inventory composition root."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "inventory-v2-equipment",
+      "script": "utils/inventory-v2-equipment-check.js"
+    },
+    {
+      "name": "inventory-v2-line-allocation",
+      "script": "utils/inventory-v2-line-allocation-check.js"
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-002-inventory-rule-messages",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/inventory/inventory_rule_messages.js",
+        "targetPath": "src/game/presentation/inventory/inventory_rule_messages.js",
+        "sourceSha256": "ca5271b6f2b5ea811d6ed0c407374fba3f0727c3f6c2125753a570ecb17b7032",
+        "targetSha256": "dc1bddf1d92a92d194be7cbb13879090b895b8d62563c166a0857387623f6a73"
+      }
+    ],
+    "activations": [
+      "activation-0e69ed74cc78"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/presentation/inventory/inventory_rule_messages.js"
+    ],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-d49bc31ed975",
+      "bridge-e19ae4529758"
+    ],
+    "bridgesRetired": [
+      "bridge-e1b381b04a9a"
+    ],
+    "importEdges": [
+      "src/game/presentation/inventory/inventory_rule_messages.js->src/game/presentation/inventory/equipment_slot_presentation.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/002_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "f38fe91640f5705a7061a6aa2eb543ab67b4a730734928d25e211a96b81e0688",
+        "after": "d2a27ed6eb0627e2eb39b5a95393f7fe259fc4c414c01cf8aa5691512e8922c3"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1",
+        "after": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "d17826bd57aa7815a3d8be876c3936b40a98d33194e57c0ae9eca5c119f5fcba",
+        "after": "ce22e497ae653387f3e321423a1765555a259302acfcc6083fed41b1db9a4f79"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "9a29fd4ec6212346bf25296f5fc5da21a5bec4114b3c070e83107bc7b99e653c",
+        "after": "dbe698f1264a79c50e485b142291fa4c51f815b5dbdfd995147d5b8f385d94da"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "eb5d21208611476afac6a6187a84928420a302129cefa8a081958addf954ac61",
+        "after": "bfdcab09b9abd216c635015479659d9e63bf224722c970150ab018b63b0fa189"
+      },
+      {
+        "path": "index.html",
+        "before": "cf15129fae0ef385f8a21758dad880a0537a4d29ec303d0b16a04a28675e7eef",
+        "after": "dbd07eb20773ccc7baec1da6730985ddf15b2c513b9e60dee9ed2970c90d9d81"
+      },
+      {
+        "path": "src/config/inventory/inventory_rule_messages.js",
+        "before": "ca5271b6f2b5ea811d6ed0c407374fba3f0727c3f6c2125753a570ecb17b7032",
+        "after": "dc37523e41d59f2c1ac8115770af81ff8865fe1b6e55a431a3f88ecec5820aca"
+      },
+      {
+        "path": "src/game/presentation/inventory/inventory_rule_messages.js",
+        "before": null,
+        "after": "dc1bddf1d92a92d194be7cbb13879090b895b8d62563c166a0857387623f6a73"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 690 modules, 886 unified edges, 852 globals, 67 exact known-debt diagnostics, 0 FAIL in 752ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 690/690 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 185 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 185 activations and 219 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 39 record(s), 38 applied, 102 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "inventory-v2-equipment",
+        "status": "PASS",
+        "sha256": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172"
+      },
+      {
+        "name": "inventory-v2-line-allocation",
+        "status": "PASS",
+        "sha256": "04c5fa7b9487e68320fc4d123224da11642f6c76a324c58cd2163873906515d2"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      }
+    ]
+  }
+}
