@@ -42657,13 +42657,7 @@
         "legacyLoadOrder": 41,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EventLogger",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -42673,15 +42667,8 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Date",
-            "JSON"
-          ],
-          "browserApis": [
-            "console",
-            "crypto",
-            "fetch"
-          ],
+          "builtins": [],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -42689,7 +42676,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/diagnostics/event_logger.js",
@@ -44470,6 +44457,60 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/diagnostics/console_logger.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/diagnostics/event_logger.js",
+      "currentArea": "platform/browser/diagnostics",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Date",
+            "JSON"
+          ],
+          "browserApis": [
+            "console",
+            "crypto",
+            "fetch"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/diagnostics/event_logger.js",
         "migrationWave": 5
       },
       "analysis": {

@@ -3537,6 +3537,11 @@
       "targetModule": "src/game/domain/fishing/buff_manager.js"
     },
     {
+      "owner": "stage-4.cluster-035-platform-event-logger",
+      "sourceProvider": "src/infrastructure/diagnostics/event_logger.js",
+      "targetModule": "src/platform/browser/diagnostics/event_logger.js"
+    },
+    {
       "owner": "stage-4.cluster-012-platform-canvas-assets",
       "sourceProvider": "src/infrastructure/location/depth_map_reader.js",
       "targetModule": "src/platform/browser/location/depth_map_reader.js"
