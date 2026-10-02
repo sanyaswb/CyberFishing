@@ -282,6 +282,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
+      id: "stage-4-cluster-records",
+      title: "Stage 4 cluster records: ESM targets inside their boundaries, recorded shims, activations and bridges",
+      file: "utils/architecture/stage-4-cluster-records-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-state-identity-replacement-fixtures",
       title: "Stage 3 state-identity transactional swap, rebuilt index and size read fixtures",
       file: "utils/architecture/stage-3-state-identity-replacement-fixtures-check.js",

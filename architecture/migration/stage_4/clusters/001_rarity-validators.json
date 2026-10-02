@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "001",
+  "slug": "rarity-validators",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Stateless validators: each validate() call builds its own error list; no per-frame use (startup and config validation only), no saved data, no browser API, no classic global read (only path strings).",
+  "modules": [
+    {
+      "currentPath": "src/config/validation/item_rarity_config_validator.js",
+      "targetPath": "src/game/config/validation/item_rarity_config_validator.js",
+      "exports": [
+        "ItemRarityConfigValidator"
+      ],
+      "imports": [],
+      "sideEffectReview": "The static field DEFAULT_NULL_PROFILE_TYPES is Object.freeze over an inert string-literal array, evaluated once at class definition; it reads no external state and writes no global."
+    },
+    {
+      "currentPath": "src/config/validation/rarity_config_validator.js",
+      "targetPath": "src/game/config/validation/rarity_config_validator.js",
+      "exports": [
+        "RarityConfigValidator"
+      ],
+      "imports": [
+        {
+          "symbol": "ItemRarityConfigValidator",
+          "from": "src/game/config/validation/item_rarity_config_validator.js"
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "item-rarity",
+      "script": "utils/item-rarity-check.js"
+    },
+    {
+      "name": "fish-rarity",
+      "script": "utils/fish-rarity-check.js"
+    },
+    {
+      "name": "rarity-production",
+      "script": "utils/rarity-production-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-001-rarity-validators",
+    "runtimeSlot": 30,
+    "targets": [
+      {
+        "currentPath": "src/config/validation/item_rarity_config_validator.js",
+        "targetPath": "src/game/config/validation/item_rarity_config_validator.js",
+        "sourceSha256": "3cef0fdbd768d54d6eb8a3ddd4f8f4151b41784fa7deac96e2beb0b5ef8fba97",
+        "targetSha256": "8bab58106753814f45689a00c3df3c9adedd3c1ce177f80d0146c6315f8618f4"
+      },
+      {
+        "currentPath": "src/config/validation/rarity_config_validator.js",
+        "targetPath": "src/game/config/validation/rarity_config_validator.js",
+        "sourceSha256": "cdc95d417cc7995a24d466fa6c9a24553f943b785d2eb754b006566dce583a1d",
+        "targetSha256": "4e34da4152475cac6273fbdb28898f5ec3a9eb4d2d7b97385525e7ec3689eb6b"
+      }
+    ],
+    "activations": [
+      "activation-8a0c48751471"
+    ],
+    "inertModules": [
+      "src/game/config/validation/item_rarity_config_validator.js"
+    ],
+    "sideEffectReviews": [
+      "src/game/config/validation/item_rarity_config_validator.js"
+    ],
+    "bridgesAdded": [
+      "bridge-0c69ccfa652e",
+      "bridge-6e1834884be2"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [
+      "src/game/config/validation/rarity_config_validator.js->src/game/config/validation/item_rarity_config_validator.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/001_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "b10553b5647c94e85314fac22bcb779b86da87923e839f95edb3ffb3f18e0459",
+        "after": "72de28434041e47adfa260be18322ba1268e548733e9a9555b11fa4d628fc247"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "c2eabf0ec695184e33e97a7c266059d572e6d180aad4fd45157077a409b22e09",
+        "after": "e715102c33bf48450b1c40a388a5399d8fb544d8e8652705e2ef18e8af2188d6"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "0d5241d2971e3ecfdbce00822dbbbf29d5bdb5f34bb07037e9786dc024c96901",
+        "after": "59f4791d39b17292376e70a76fc64b1fd30a87a440cbbf08139866160384ddf6"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "7c0c3d7efe5836699a148391860d0750780ce759c021e8e7af6fd52d1104f776",
+        "after": "39223e423f5ceacd14b3a823c7333eec87236e3e827d2092aacf9cb9c087d1a3"
+      },
+      {
+        "path": "index.html",
+        "before": "693a8face4b813c2260925febcfd6003b77545d5e0db46761ed5f02dd5d3d04b",
+        "after": "33175e1cbf726286e274e0bd45ca57601b83e7807fbfdd10ecf99e7e22b50220"
+      },
+      {
+        "path": "src/config/validation/item_rarity_config_validator.js",
+        "before": "3cef0fdbd768d54d6eb8a3ddd4f8f4151b41784fa7deac96e2beb0b5ef8fba97",
+        "after": "a4401cdbb476ea92f178856e71a027784db0522f58e85694ad0cd7409f6ecbcb"
+      },
+      {
+        "path": "src/config/validation/rarity_config_validator.js",
+        "before": "cdc95d417cc7995a24d466fa6c9a24553f943b785d2eb754b006566dce583a1d",
+        "after": "f122d32133340b1f59ea138d72148853c42ff58501c9ebc25e3d03bb6bc963d3"
+      },
+      {
+        "path": "src/game/config/validation/item_rarity_config_validator.js",
+        "before": null,
+        "after": "8bab58106753814f45689a00c3df3c9adedd3c1ce177f80d0146c6315f8618f4"
+      },
+      {
+        "path": "src/game/config/validation/rarity_config_validator.js",
+        "before": null,
+        "after": "4e34da4152475cac6273fbdb28898f5ec3a9eb4d2d7b97385525e7ec3689eb6b"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 585 modules, 870 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 623ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 585/585 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 30 before 132 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 132 activations and 194 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 1 record(s), 1 applied, 2 ESM target(s) inside their boundaries; 6 projector fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "item-rarity",
+        "status": "PASS",
+        "sha256": "ca10584639ee11a66ccf6a0fb8e2eb852afedbb5eb8a87722faf28f069dbd0c6"
+      },
+      {
+        "name": "fish-rarity",
+        "status": "PASS",
+        "sha256": "98cdb259ed46c862717d62a1de44367ddc6b5c53b6b8db63f68b88a72f8ba2ee"
+      },
+      {
+        "name": "rarity-production",
+        "status": "PASS",
+        "sha256": "19aca9ea169e8eed412658acd99c68971afbc36baa3fa3ea1ed9633f083b57a5"
+      }
+    ]
+  }
+}

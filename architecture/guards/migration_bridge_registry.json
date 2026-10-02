@@ -83,6 +83,22 @@
       ]
     },
     {
+      "id": "bridge-0c69ccfa652e",
+      "bridge": "src/config/validation/rarity_config_validator.js",
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/validation/rarity_config_validator.js",
+      "reason": "Preserve the exact RarityConfigValidator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RarityConfigValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0f4da996fde3",
       "bridge": "src/core/fishing/landing_policy.js",
       "source": "src/app/fishing.js",
@@ -1462,6 +1478,22 @@
       "globalProviders": [
         {
           "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6e1834884be2",
+      "bridge": "src/config/validation/rarity_config_validator.js",
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "source": "src/config/validation/config_schema_validator.js",
+      "target": "src/game/config/validation/rarity_config_validator.js",
+      "reason": "Preserve the exact RarityConfigValidator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "RarityConfigValidator",
           "mechanism": "global-this-property"
         }
       ]

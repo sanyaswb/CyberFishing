@@ -144,9 +144,9 @@ class ActivationRetirementProjection {
 // A migrated classic source without any activation (no classic consumer; batch 050 BuffManager) keeps its
 // legacy script position as an inert placeholder: one comment line naming the ESM target, no global.
 class MigratedSourcePlaceholder {
-  render({ currentPath, targetPath, exports }) {
+  render({ currentPath, targetPath, exports, stage = "Stage 3" }) {
     if (!Array.isArray(exports) || exports.length === 0) throw new Error(`Migrated source has no exports: ${currentPath}`);
-    return `// Migrated Stage 3 source ${currentPath}: ${[...exports].sort().join(", ")} ` +
+    return `// Migrated ${stage} source ${currentPath}: ${[...exports].sort().join(", ")} ` +
       `served only through ESM imports of ${targetPath}.\n`;
   }
 

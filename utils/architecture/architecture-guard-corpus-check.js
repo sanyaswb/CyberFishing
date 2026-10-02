@@ -6,6 +6,7 @@ const { ArchitectureGuardSnapshotBuilder } = require("./guards/corpus/architectu
 const { ArchitectureGuardEngine } = require("./guards/architecture_guard_engine");
 const { GuardReportFormatter } = require("./guards/core/guard_report_formatter");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -43,11 +44,13 @@ const selectedBatchIds = new Set([...stageThreeState.completedBatchIds,
 const reviewedImportEdges = stageThreePlan.batches.filter((batch) => selectedBatchIds.has(batch.id))
   .flatMap((batch) => StageThreeApprovedPlanSource.resolvedImportRecords(stageThreePlan, batch)
     .map((item) => `${batch.modules.find((module) => module.currentPath === item.consumer).targetPath}->${item.from}`));
+// Stage 4: plus the reviewed imports of applied cluster records.
 const approvedEsmEdges = [...new Set([
   ...bridgeRegistry.bridges
     .filter((item) => item.introducedStage === "stage-2")
     .map((item) => `${item.bridge}->${item.target}`),
   ...reviewedImportEdges,
+  ...StageFourClusterLedger.read(PROJECT_ROOT).reviewedImportEdges(),
 ])].sort();
 if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {
   throw new Error(`Live ESM edges must equal exact approved bridge edges: expected ${approvedEsmEdges.join(", ") || "none"}; received ${actualEsmEdges.join(", ") || "none"}`);

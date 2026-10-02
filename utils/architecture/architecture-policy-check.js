@@ -593,8 +593,9 @@ class MigrationManifestPolicyValidator {
     const expectedRoleCompatibility = {
       // compatibility-bridge: the activation shim of an Engine export (Vector2, owner decision 2026-09-29).
       engine: ["compatibility-bridge", "engine-contract", "engine-runtime", "engine-utility"],
-      "game-config-raw": ["raw-config"],
-      "game-config": ["config-factory"],
+      // The Stage 4 boundaries reuse the activation shims (owner decision 0.3, 2026-10-02).
+      "game-config-raw": ["compatibility-bridge", "raw-config"],
+      "game-config": ["compatibility-bridge", "config-factory"],
       "game-domain": [
         "compatibility-bridge",
         "domain-behavior",
@@ -602,9 +603,9 @@ class MigrationManifestPolicyValidator {
         "value-object",
       ],
       "game-application-ports": ["application-port"],
-      "game-application": ["application-service"],
+      "game-application": ["application-service", "compatibility-bridge"],
       "game-presentation": ["presentation"],
-      platform: ["platform-adapter"],
+      platform: ["compatibility-bridge", "platform-adapter"],
       dev: ["dev-tool"],
       "bootstrap-production": ["bootstrap"],
       "bootstrap-development": ["bootstrap"],

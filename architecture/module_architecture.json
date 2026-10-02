@@ -904,9 +904,11 @@
           "engine-utility"
         ],
         "game-config-raw": [
+          "compatibility-bridge",
           "raw-config"
         ],
         "game-config": [
+          "compatibility-bridge",
           "config-factory"
         ],
         "game-domain": [
@@ -919,12 +921,14 @@
           "application-port"
         ],
         "game-application": [
-          "application-service"
+          "application-service",
+          "compatibility-bridge"
         ],
         "game-presentation": [
           "presentation"
         ],
         "platform": [
+          "compatibility-bridge",
           "platform-adapter"
         ],
         "dev": [

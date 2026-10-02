@@ -1,6 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const {
+  StageThreeRuntimeScriptAliasResolver,
+} = require("./architecture/migration/stage_three_runtime_script_alias_resolver");
 
 const ROOT = path.resolve(__dirname, "..");
 const VALIDATOR_SCRIPT = "src/config/validation/rarity_config_validator.js";
@@ -35,12 +38,16 @@ class ProductionRarityConfigLoader {
 
   #readConfigScriptPaths() {
     const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+    // A migrated validator loads through its activation shim, which resolves to the classic provider.
+    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(JSON.parse(fs.readFileSync(
+      path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8")));
     const scripts = [];
     const pattern = /<script\s+src="([^"]+)"\s*><\/script>/g;
     let match = pattern.exec(html);
     while (match) {
       scripts.push(match[1]);
-      if (this.#toFilePath(match[1]) === VALIDATOR_SCRIPT) return scripts;
+      const filePath = this.#toFilePath(match[1]);
+      if ((aliases.get(filePath) ?? filePath) === VALIDATOR_SCRIPT) return scripts;
       match = pattern.exec(html);
     }
     throw new Error(`${VALIDATOR_SCRIPT} is not loaded by index.html`);

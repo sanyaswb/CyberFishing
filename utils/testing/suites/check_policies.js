@@ -75,6 +75,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-changelog-trim-fixtures",
   "stage-3-state-identity-replacement-fixtures",
   "domain-boundary",
+  "stage-4-cluster-records",
   "line-allocation",
   "float-depth",
   "inventory-lifecycle",

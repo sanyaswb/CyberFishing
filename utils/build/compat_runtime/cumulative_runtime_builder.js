@@ -191,8 +191,11 @@ class CumulativeRuntimeBuildApplication {
     viteLoader = () => import("vite"),
     outputManager = null,
     scriptOrderProvider = null,
+    additionalTargetModules = [],
   } = {}) {
     this.projectRoot = path.resolve(projectRoot);
+    // Stage 4: ESM targets of applied cluster records join the Stage 3 selection.
+    this.additionalTargetModules = additionalTargetModules;
     this.contract = contract;
     this.approvedPlan = approvedPlan;
     this.executionState = executionState;
@@ -234,7 +237,7 @@ class CumulativeRuntimeBuildApplication {
         })
         : []);
     const graph = new CumulativeGraphPlanner({ projectRoot: this.projectRoot }).plan({
-      targetModules: selection.targetModules,
+      targetModules: [...selection.targetModules, ...this.additionalTargetModules],
       approvedInfrastructureModules: contract.approvedInfrastructureModules,
       previousStageModules,
       previousRuntimeTransitions: contract.previousRuntimeTransitions,

@@ -13929,13 +13929,7 @@
         "legacyLoadOrder": 33,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ItemRarityConfigValidator",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -13945,14 +13939,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Error",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "WeakSet"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -13961,7 +13948,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/validation/item_rarity_config_validator.js",
@@ -13992,7 +13979,7 @@
           "items": [
             {
               "symbol": "RarityConfigValidator",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -14002,16 +13989,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ItemRarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemRarityConfigValidator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -14019,16 +14000,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Error",
-            "Infinity",
-            "Math",
-            "NaN",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -14038,7 +14010,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/validation/rarity_config_validator.js",
@@ -14047,34 +14019,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ItemRarityConfigValidator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/validation/item_rarity_config_validator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemRarityConfigValidator",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/validation/item_rarity_config_validator.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/validation/item_rarity_config_validator.js",
-              "symbols": [
-                "ItemRarityConfigValidator"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -34598,6 +34553,118 @@
       }
     },
     {
+      "currentPath": "src/game/config/validation/item_rarity_config_validator.js",
+      "currentArea": "game/config/validation",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "WeakSet"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/validation/item_rarity_config_validator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/validation/rarity_config_validator.js",
+      "currentArea": "game/config/validation",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Error",
+            "Infinity",
+            "Math",
+            "NaN",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/validation/rarity_config_validator.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
       "currentArea": "game/domain/assemblies",
       "observed": {
@@ -35347,9 +35414,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Object"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []

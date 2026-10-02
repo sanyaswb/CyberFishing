@@ -5,6 +5,7 @@ const { PackageContractValidator } = require("./package_contract/package_contrac
 const { RootPackageValidator } = require("./package_contract/root_package_validator");
 const { PackageLockValidator } = require("./package_contract/package_lock_validator");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -43,9 +44,10 @@ class PackageContractCheck {
       bytes.get("stageThreeRuntime").toString("utf8"),
     );
     const expectedStage = {
-      current: new StageThreeApprovedPlanSource({
+      // Stage 4.N after N applied cluster records; the Stage 3 label until the first one.
+      current: StageFourClusterLedger.read(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
         read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
-      }).currentStage(stageThreeState),
+      }).currentStage(stageThreeState)),
       // A retired activation's ESM module stays in the cumulative graph for its importers.
       // Inert modules (batch 050) are graph modules without an activation.
       runtimeInputs: new Set([...[

@@ -14,6 +14,9 @@ const {
 const {
   StageThreeApprovedPlanSource,
 } = require("../architecture/domain_batches/stage_three_approved_plan_source");
+const {
+  StageFourClusterLedger,
+} = require("../architecture/stage_four/cluster_ledger");
 
 class StageThreeCompatibilityBuildApplication {
   constructor({
@@ -67,6 +70,7 @@ class StageThreeCompatibilityBuildApplication {
       ),
       viteLoader: this.viteLoader,
       outputManager: this.outputManager,
+      additionalTargetModules: StageFourClusterLedger.read(this.projectRoot).targetModules(),
       scriptOrderProvider: () => new LegacyScriptOrderReader(
         this.#path("index.html"),
         { scriptAliases: aliases },

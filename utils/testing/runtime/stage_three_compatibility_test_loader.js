@@ -11,6 +11,7 @@ class StageThreeCompatibilityTestLoader {
   #contract;
   #activationBySource;
   #retiredBySource;
+  #inertBySource;
   #runtimeLoaded = false;
 
   constructor({ projectRoot, context }) {
@@ -37,10 +38,14 @@ class StageThreeCompatibilityTestLoader {
     for (const activations of this.#activationBySource.values()) {
       activations.sort((left, right) => left.id.localeCompare(right.id));
     }
+    // An inert module (no classic consumer, no activation) is likewise exposed test-only with its exports.
+    this.#inertBySource = new Map((this.#contract.inertModules || [])
+      .map((record) => [record.sourceProvider, record.targetModule]));
   }
 
   hasActivation(relativePath) {
-    return this.#activationBySource.has(relativePath) || this.#retiredBySource.has(relativePath);
+    return this.#activationBySource.has(relativePath) || this.#retiredBySource.has(relativePath) ||
+      this.#inertBySource.has(relativePath);
   }
 
   loadRuntime() {
@@ -48,6 +53,14 @@ class StageThreeCompatibilityTestLoader {
   }
 
   load(relativePath, exposedNames = []) {
+    const inertTarget = this.#inertBySource.get(relativePath);
+    if (inertTarget) {
+      this.#loadRuntime();
+      vm.runInContext(`for (const [name, value] of Object.entries(globalThis.${this.#contract.transport.symbol}` +
+        `.modules[${JSON.stringify(inertTarget)}])) globalThis[name] = value;`, this.#context,
+      { filename: `test-only-inert:${relativePath}` });
+      return relativePath;
+    }
     const retired = this.#retiredBySource.get(relativePath);
     if (retired) {
       this.#loadRuntime();

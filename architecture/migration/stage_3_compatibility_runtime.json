@@ -285,6 +285,13 @@
       "decision": "approved-compatible",
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "reason": "1 top-level Object.freeze call(s) over inert literals beside the classes; no external state read or global write"
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "7fd02c64f8bed82969a42e3c9b0d7d455b8661e48c437a925ea30b6a025c382d",
+      "module": "src/game/config/validation/item_rarity_config_validator.js",
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "reason": "The static field DEFAULT_NULL_PROFILE_TYPES is Object.freeze over an inert string-literal array, evaluated once at class definition; it reads no external state and writes no global."
     }
   ],
   "activationPositions": [
@@ -1102,6 +1109,18 @@
       "legacyScriptIndex": 358,
       "shimFile": "activations/358_renderpass.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "RarityConfigValidator",
+      "legacyScriptIndex": 34,
+      "legacySymbol": "RarityConfigValidator",
+      "shimFile": "activations/034_rarityconfigvalidator.js",
+      "sourceProvider": "src/config/validation/rarity_config_validator.js",
+      "targetModule": "src/game/config/validation/rarity_config_validator.js",
+      "id": "activation-8a0c48751471",
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {
@@ -2646,6 +2665,11 @@
     }
   ],
   "inertModules": [
+    {
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "sourceProvider": "src/config/validation/item_rarity_config_validator.js",
+      "targetModule": "src/game/config/validation/item_rarity_config_validator.js"
+    },
     {
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "sourceProvider": "src/systems/buff_manager.js",
