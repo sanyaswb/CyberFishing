@@ -1,6 +1,6 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({
@@ -61,8 +61,9 @@ vm.runInContext(
   context,
 );
 
+// Migrated classic paths are activation shims (or retired ones): the loader runs the runtime first and renders
+// retired activations test-only, so the check keeps naming the same classes.
 const files = [
-  "dist/stage-3-compat-runtime/compat_runtime.iife.js",
   "src/core/equipment/auto_refill_policy.js",
   "src/application/inventory/equipment_auto_refill_target_provider.js",
   "src/app/inventory.js",
@@ -71,11 +72,7 @@ const files = [
   "src/systems/chum_system.js",
 ];
 
-for (const file of files) {
-  vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), context, {
-    filename: file,
-  });
-}
+new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(files);
 
 vm.runInContext(
   `

@@ -1,1 +1,1 @@
-globalThis.BaitFreshnessDecayPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/freshness/bait_freshness_decay_policy.js"]["BaitFreshnessDecayPolicy"];
+// Retired Stage 3 activation activation-e5ee66b391d6: BaitFreshnessDecayPolicy is served only through ESM imports of src/game/domain/items/freshness/bait_freshness_decay_policy.js.

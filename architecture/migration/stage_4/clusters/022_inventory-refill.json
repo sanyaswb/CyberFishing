@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "B",
-  "tierEvidence": "Planned from graph review v1; exact ownership, construction, API and performance facts must be verified before apply.",
+  "tierEvidence": "api-parity (member review + public method traces incl. thrown errors) over five inventory/refill scenarios; preparation 009 removed the hidden compositions production passes; blockers reviewed per Q4/Q9.",
   "modules": [
     {
       "currentPath": "src/application/inventory/equipment_auto_refill_target_provider.js",
@@ -16,12 +16,14 @@
       ],
       "imports": [
         {
-          "symbol": "AutoRefillMemory",
-          "from": "src/game/domain/equipment/auto_refill_policy.js"
-        },
-        {
           "symbol": "AutoRefillScope",
           "from": "src/game/domain/equipment/auto_refill_policy.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 009 (e69f79a): the AutoRefillMemory default is gone (InventoryV2CompositionRoot, the only production construction, passes it); the class only stores injected collaborators."
         }
       ]
     },
@@ -33,14 +35,15 @@
         "AutoRefillPort",
         "ExactInventoryAutoRefillPort"
       ],
-      "imports": [
+      "imports": [],
+      "reviewedBlockers": [
         {
-          "symbol": "ExactAssemblyRefillSignaturePolicy",
-          "from": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js"
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 009 (e69f79a): the refill signature policy default is gone (InventoryV2CompositionRoot, the only production construction, passes it); the class only stores injected collaborators."
         },
         {
-          "symbol": "ExactItemSignaturePolicy",
-          "from": "src/game/domain/equipment/exact_item_signature_policy.js"
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One use case with its port: AutoRefillCoordinator refills scoped targets through the AutoRefillPort contract, ExactInventoryAutoRefillPort is that port's inventory implementation (take one exact item, write the target). No forbidden edge, text, config, DEV or browser access: framework Q9 reclassifies with api-parity evidence (incl. the base-port contract scenario)."
         }
       ]
     },
@@ -53,16 +56,22 @@
       ],
       "imports": [
         {
-          "symbol": "FreshestRefillCandidatePolicy",
-          "from": "src/game/application/inventory/freshest_refill_candidate_policy.js"
-        },
-        {
           "symbol": "InventoryItemLocation",
           "from": "src/game/domain/inventory/inventory_item_location.js"
         },
         {
           "symbol": "ItemAssemblyPath",
           "from": "src/game/domain/assemblies/item_assembly_reader.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 009 (e69f79a): the FreshestRefillCandidatePolicy candidate policy default is gone (InventoryV2CompositionRoot, the only production construction, passes it); the class only stores injected collaborators."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "The two inventory adapters of the refill port pair: InventoryV2RefillInventoryPort takes the freshest exact unreserved stack, InventoryV2RefillTargetWriter writes it into the equipment/assembly target. Cohesive (one refill transaction), no forbidden edge/text/config/DEV/browser access: Q9 with api-parity evidence."
         }
       ]
     },
@@ -76,6 +85,12 @@
         {
           "symbol": "ItemFreshnessStatePolicy",
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Keeps the default freshnessStatePolicy = new ItemFreshnessStatePolicy(): stateless Domain policies (allowed game-application -> game-domain imports) that the only production construction (InventoryV2CompositionRoot) relies on, so framework Q4 forbids removing them (the same decision as ItemFreshnessStatePolicy in cluster 018)."
         }
       ]
     },
@@ -94,10 +109,322 @@
           "symbol": "ItemFreshnessStatePolicy",
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
         }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Keeps the default freshnessStatePolicy = new ItemFreshnessStatePolicy() and decayPolicy = new BaitFreshnessDecayPolicy(): stateless Domain policies (allowed game-application -> game-domain imports) that the only production construction (InventoryV2CompositionRoot) relies on, so framework Q4 forbids removing them (the same decision as ItemFreshnessStatePolicy in cluster 018)."
+        }
       ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "022",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "AutoRefillPort,ExactInventoryAutoRefillPort,AutoRefillCoordinator,EquipmentAutoRefillTargetProvider,FreshestRefillCandidatePolicy,InventoryV2RefillInventoryPort,InventoryV2RefillTargetWriter,ApplyBaitExposureService",
+        "--scenarios",
+        "utils/inventory-v2-equipment-check.js,utils/inventory-v2-integration-check.js,utils/consumable-event-identity-check.js,utils/item-freshness-gameplay-check.js,utils/bait-effectiveness-check.js"
+      ]
+    },
+    {
+      "name": "inventory-v2-equipment",
+      "script": "utils/inventory-v2-equipment-check.js"
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    },
+    {
+      "name": "consumable-event-identity",
+      "script": "utils/consumable-event-identity-check.js"
+    },
+    {
+      "name": "item-freshness-gameplay",
+      "script": "utils/item-freshness-gameplay-check.js"
+    },
+    {
+      "name": "bait-effectiveness",
+      "script": "utils/bait-effectiveness-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-022-inventory-refill",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/application/inventory/equipment_auto_refill_target_provider.js",
+        "targetPath": "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+        "sourceSha256": "80fb4d6cdee581185073d8615416b5667af881d1751e9f79eba5f420e519bbe5",
+        "targetSha256": "f1784d742d881fd654df6fba2d9b7479496abd43ac4727ddf7074aebf15aff60"
+      },
+      {
+        "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+        "targetPath": "src/game/application/inventory/auto_refill_coordinator.js",
+        "sourceSha256": "87112edc06631d38c1970094bb4bb750fa378d8335dd8c269c7dcb5646216522",
+        "targetSha256": "36f78a70f884f62a2b625d4f469b2476d40999f919f1b14597c4bcc31e6dc3fd"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+        "targetPath": "src/game/application/inventory/inventory_refill_adapters.js",
+        "sourceSha256": "0ce179ae1299903697cabaf99408e3917ab72f2cc7cb2dae0486f0c7ce4e3103",
+        "targetSha256": "def02d8174de8d1041ba39ef8dd24cbf8c126b632a6fa0ec0a343d182ce8b99c"
+      },
+      {
+        "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+        "targetPath": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+        "sourceSha256": "cb2479cae59f4e5d3cdede9da697901878607f9c9b0620c5d5e7836e4e672994",
+        "targetSha256": "bb69e148008004d055463a47f73733df3f50853037017baf3ca444a58de2bada"
+      },
+      {
+        "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+        "targetPath": "src/game/application/inventory/apply_bait_exposure_service.js",
+        "sourceSha256": "7fca3e5f3264b62e35065845c13eb031442d499b71580c6cf3643ded6cdccc42",
+        "targetSha256": "ad3e6032d289c51e01549a6b3921d75ce2f46f30c5bd479916cc218f4c63cbd6"
+      }
+    ],
+    "activations": [
+      "activation-349ad41b8132",
+      "activation-7a000b7507e2",
+      "activation-89ad4f1ff101",
+      "activation-8f29d2fdaec7",
+      "activation-b758bb45c273",
+      "activation-d3b9ad8fd982",
+      "activation-f03f670cc7e6"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-28ccfbfa82e2",
+      "activation-3496b09d5f7c",
+      "activation-a658f15200ed",
+      "activation-ab53a7e2f8cc",
+      "activation-b1c0f1f37980",
+      "activation-e5ee66b391d6"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-53cb7e880017",
+      "bridge-66dad7562e21",
+      "bridge-681ba1fc6edb",
+      "bridge-90a55dd9d8f9",
+      "bridge-b3d3acbcb451"
+    ],
+    "bridgesRetired": [
+      "bridge-085faac976d6",
+      "bridge-242afef6802f",
+      "bridge-3479b9326142",
+      "bridge-497d2debe2ba",
+      "bridge-7d2a79c0168c",
+      "bridge-8cec1d46f092",
+      "bridge-a7acd7dabc86",
+      "bridge-ad3945ed8801"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/equipment_auto_refill_target_provider.js->src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/application/inventory/inventory_refill_adapters.js->src/game/domain/inventory/inventory_item_location.js",
+      "src/game/application/inventory/inventory_refill_adapters.js->src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/application/inventory/freshest_refill_candidate_policy.js->src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/application/inventory/apply_bait_exposure_service.js->src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/application/inventory/apply_bait_exposure_service.js->src/game/domain/items/freshness/item_freshness_state_policy.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/022_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "33c8ce225ca69a77cdbebd36c05c6ff12bc665f56ac59184df4abd3a01c279d1",
+        "after": "7acd0c8d7b6146e806e100d85d5ff57e4d34d19f6c729af37cb384fb85baca90"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04",
+        "after": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "1439ce9e13831dd0e48827ae323336a858dc2c061cc4cb9088913d90602518bf",
+        "after": "00ed004b0d17d2b1cbd2fd9d6dac09f7d1e269ea42047c05a24c492f892df66a"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "fe1d6ac6e5c7bb6527c2a94d9801ab59fdf639ce0c518182f1df50eb28a88790",
+        "after": "c74be302af6a298488f4269f1f6c76508e915e85e277dbf478702e5d0ec8c0a8"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "6677f7ac355410c1391fe16ccd1de3eead07ceaee40111360b3a4f1e8e0ef839",
+        "after": "371327d3f039dae3a132bd730085f8fd71c3eb7dc8608990ba2cf171a40c494b"
+      },
+      {
+        "path": "index.html",
+        "before": "57ba6e3192a72e10f8790a9ed7d86d0752a421894cca8d23fdb2f84ac737f2d0",
+        "after": "190e3c1801b3d6b931a78e7808e11b467a31c33ab6313f425d5308dbf49c70d0"
+      },
+      {
+        "path": "src/application/inventory/apply_bait_exposure_service.js",
+        "before": "7fca3e5f3264b62e35065845c13eb031442d499b71580c6cf3643ded6cdccc42",
+        "after": "be83cf0764eebda83fea5e313c6320edef21e88f7e2c5097ec0025b5cacda615"
+      },
+      {
+        "path": "src/application/inventory/auto_refill_coordinator.js",
+        "before": "87112edc06631d38c1970094bb4bb750fa378d8335dd8c269c7dcb5646216522",
+        "after": "3493cad71267f688b4234152fe70ccad0cf77002986849ec77f7203b5893d83b"
+      },
+      {
+        "path": "src/application/inventory/equipment_auto_refill_target_provider.js",
+        "before": "80fb4d6cdee581185073d8615416b5667af881d1751e9f79eba5f420e519bbe5",
+        "after": "a241fa24e0d4ac791a7f77f08e8e828bba4f7716cc3b40be2fdbc29d14a2bf90"
+      },
+      {
+        "path": "src/application/inventory/freshest_refill_candidate_policy.js",
+        "before": "cb2479cae59f4e5d3cdede9da697901878607f9c9b0620c5d5e7836e4e672994",
+        "after": "d6a0da2ff8b588e61a19072476ba9835c157d513a8c5a8108933aad5fce57fd8"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_refill_ports.js",
+        "before": "0ce179ae1299903697cabaf99408e3917ab72f2cc7cb2dae0486f0c7ce4e3103",
+        "after": "1db8f3b73f1eff3ecc17f59b99467549f000a253a9737c2471b1777d0c37b81e"
+      },
+      {
+        "path": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+        "before": "ca9777d388a86429d882b56392bfda6df716d2d4d5dc27b8e11b0a6a1e13d290",
+        "after": "72421b993b50a10c8197d69566ffa64d39b47383283d362a2346f92deccc4435"
+      },
+      {
+        "path": "src/core/assemblies/item_assembly_reader.js",
+        "before": "6eda3b20a581bd4f2ca64fdb977c5a2afab80c0186c6d81152853c6d41218b5b",
+        "after": "c2de87cdfbacc78d33449a8c2ea50c0818545a5b568714f35e30abeb6cac574d"
+      },
+      {
+        "path": "src/core/equipment/auto_refill_policy.js",
+        "before": "f2eb3843f24cf0e4dfa04263521a01e2f92af8e0507442f83d1d5315691905c2",
+        "after": "2419b7d723cd4835c702ed6d35ca8b39f2dac4a668885641da038cfbb487f777"
+      },
+      {
+        "path": "src/core/equipment/exact_item_signature_policy.js",
+        "before": "d1610ee9a02bf5efb044d4f5709bfede84377afb125dfbde626cd132a51441c5",
+        "after": "4846983582acdf1e185f0938e97ddda649905a25cf1d54d0438ed97d4c63c564"
+      },
+      {
+        "path": "src/core/items/freshness/bait_freshness_decay_policy.js",
+        "before": "75d80109a30b236f85f449678ce135442b5346e300150174c728913bcb6a9406",
+        "after": "3b83075ba454798e9568a3d07597339af2d022d3e43e32a01ec6b2fea884116b"
+      },
+      {
+        "path": "src/core/items/freshness/item_freshness_state_policy.js",
+        "before": "7af3bafd64c3844f0e2d904d62299e0cf9f78649159be913f3be6d55c4d4d0b6",
+        "after": "c5b78a375066ecc01d82555618f3af5c2534bb4e8fb2e2299cbb0b3786ef06ca"
+      },
+      {
+        "path": "src/game/application/inventory/apply_bait_exposure_service.js",
+        "before": null,
+        "after": "ad3e6032d289c51e01549a6b3921d75ce2f46f30c5bd479916cc218f4c63cbd6"
+      },
+      {
+        "path": "src/game/application/inventory/auto_refill_coordinator.js",
+        "before": null,
+        "after": "36f78a70f884f62a2b625d4f469b2476d40999f919f1b14597c4bcc31e6dc3fd"
+      },
+      {
+        "path": "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+        "before": null,
+        "after": "f1784d742d881fd654df6fba2d9b7479496abd43ac4727ddf7074aebf15aff60"
+      },
+      {
+        "path": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+        "before": null,
+        "after": "bb69e148008004d055463a47f73733df3f50853037017baf3ca444a58de2bada"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_refill_adapters.js",
+        "before": null,
+        "after": "def02d8174de8d1041ba39ef8dd24cbf8c126b632a6fa0ec0a343d182ce8b99c"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 662 modules, 906 unified edges, 852 globals, 90 exact known-debt diagnostics, 0 FAIL in 666ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 662/662 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 189 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 189 activations and 262 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 27 applied, 75 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "4c001529f5e268f43b0518f4ac44a72fbfa7dc4b12809687abb2412a4c9a09b2"
+      },
+      {
+        "name": "inventory-v2-equipment",
+        "status": "PASS",
+        "sha256": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      {
+        "name": "consumable-event-identity",
+        "status": "PASS",
+        "sha256": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a"
+      },
+      {
+        "name": "item-freshness-gameplay",
+        "status": "PASS",
+        "sha256": "5691f8cf11a97935b94cf19c43185dcd10da83bfc385032e0f558a79a91ed4bb"
+      },
+      {
+        "name": "bait-effectiveness",
+        "status": "PASS",
+        "sha256": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786"
+      }
+    ]
+  }
 }

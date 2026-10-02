@@ -213,6 +213,8 @@ class InventoryV2EquipmentCheck {
     for (const name of ["moveRootToInventory", "moveRootToEquipment", "commitEquipmentState"]) {
       Assertion.equal(adapter[name]("rod-a", "rod"), undefined, `adapter ${name} is a no-op`);
     }
+    const AutoRefillPort = Object.getPrototypeOf(r.ExactInventoryAutoRefillPort);
+    Assertion.throws(() => new AutoRefillPort().refillExact({}, {}), "AutoRefillPort.refillExact requires an implementation");
     const loadoutPort = new LoadoutApplicationPort();
     Assertion.equal(loadoutPort.getRootOwner("rod"), null, "LoadoutApplicationPort has no default owner");
     for (const name of ["runAtomic", "assignRootToLoadout", "releaseRootFromLoadout", "saveLoadout", "removeLoadout",

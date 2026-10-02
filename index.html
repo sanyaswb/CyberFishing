@@ -88,8 +88,8 @@
     <script src="src/core/items/condition/item_condition_descriptor.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/055_itemconditionresolver.js"></script>
     <script src="src/core/items/freshness/item_freshness_descriptor.js?v=0.24.30"></script>
-    <script src="dist/stage-3-compat-runtime/activations/057_itemfreshnessstatepolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/058_baitfreshnessdecaypolicy.js"></script>
+    <script src="src/core/items/freshness/item_freshness_state_policy.js"></script>
+    <script src="src/core/items/freshness/bait_freshness_decay_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/059_baitfreshnessmodifier.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/060_itemfreshnessresolver.js"></script>
     <script src="src/core/items/bait/bait_effectiveness_descriptor.js?v=0.24.30"></script>
@@ -191,10 +191,9 @@
     <script src="dist/stage-3-compat-runtime/activations/150_assemblystaterepository.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/151_assemblyprofileregistry.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/152_itemassemblyreader.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/152_itemassemblypath.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/153_assemblyattachmenttargetresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/154_assemblycompletionpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/155_exactassemblyrefillsignaturepolicy.js"></script>
+    <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/156_itemassemblyservice.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/158_equipmentslotvisibilitypolicy.js"></script>
@@ -204,12 +203,11 @@
     <script src="src/core/equipment/equipment_slot_availability_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/162_unlimitedinventorycapacitypolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/163_manualrodchangeplanner.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/164_exactitemsignaturepolicy.js"></script>
+    <script src="src/core/equipment/exact_item_signature_policy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/165_autorefillsettings.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefilltrigger.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefillpolicy.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/165_autorefillmemory.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/165_autorefillscope.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/166_fishingreadinesspolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/167_equipmentcompatibilitypolicy.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/168_equipmentloadout.js"></script>
@@ -233,12 +231,14 @@
     <script src="dist/stage-3-compat-runtime/activations/182_loadoutapplicationservice.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/183_inventoryv2loadoutport.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/184_equipmentreadmodelfactory.js"></script>
-    <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
-    <script src="src/application/inventory/auto_refill_coordinator.js"></script>
-    <script src="src/application/inventory/inventory_v2_refill_ports.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/185_equipmentautorefilltargetprovider.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/186_autorefillcoordinator.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/186_exactinventoryautorefillport.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/187_inventoryv2refillinventoryport.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/187_inventoryv2refilltargetwriter.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/188_refillcompatiblesignaturepolicy.js"></script>
-    <script src="src/application/inventory/freshest_refill_candidate_policy.js?v=0.24.30"></script>
-    <script src="src/application/inventory/apply_bait_exposure_service.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/189_freshestrefillcandidatepolicy.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/190_applybaitexposureservice.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/191_inventoryv2itemhydrator.js"></script>
     <script src="src/application/inventory/inventory_v2_item_view_factory.js"></script>
     <script src="src/application/inventory/inventory_v2_subfilter_resolver.js"></script>

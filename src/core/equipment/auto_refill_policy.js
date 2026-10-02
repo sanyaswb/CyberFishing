@@ -2,4 +2,3 @@ globalThis.AutoRefillSettings = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modu
 globalThis.AutoRefillTrigger = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/auto_refill_policy.js"]["AutoRefillTrigger"];
 globalThis.AutoRefillPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/auto_refill_policy.js"]["AutoRefillPolicy"];
 globalThis.AutoRefillMemory = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/auto_refill_policy.js"]["AutoRefillMemory"];
-globalThis.AutoRefillScope = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/auto_refill_policy.js"]["AutoRefillScope"];
