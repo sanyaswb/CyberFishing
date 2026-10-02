@@ -20,12 +20,138 @@
       ]
     }
   ],
-  "reviewedPropertyReaders": [],
+  "reviewedPropertyReaders": [
+    {
+      "file": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "symbol": "HorizontalScrollController",
+      "reason": "This browser property is already exposed by the classic source before migration. Constructor fallback reads the same existing class identity; moving the exact exposure into its activation introduces no new branch or value."
+    }
+  ],
   "evidenceCommands": [
     {
       "name": "inventory-ui",
       "script": "utils/inventory-v2-ui-check.js"
     }
   ],
-  "output": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-032-platform-horizontal-scroll",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+        "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+        "sourceSha256": "dc224122a4181f0b2eac59d023d007e545abbdbfcd87a45d49dbb8f808d560a0",
+        "targetSha256": "0d22bdbb71e213efc19328a1a80b450d463462b017e21ffb0ceab4c984bee40f"
+      }
+    ],
+    "activations": [
+      "activation-7956fbe2a8a1"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "bridgesAdded": [
+      "bridge-12d09f9e3ac2",
+      "bridge-4dc615f80537"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/032_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "2f14e5f55ef0cef998069c3e01428385d6e9639ea23d603c6a58bea962d6ac13",
+        "after": "2de7afb49d13a643248221867505aed99993b64aeec0a52a91c2d879c020fb5c"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "04edb8be7051cb2d77c5e8a15d2f087fa1782b4b9cd598868fba32f8bb462476",
+        "after": "430451303f31ee12afd0ba3e9c01ff2cfee6a2e15d54d1a9cce130709dcfd1ef"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "5da3c1b0bdc08d97d3c195a23529f36bc618df2b3d98fb18bf6442b7ec3f36d7",
+        "after": "40de8e90ee8bcb2669870b310e96e9bbfd572370fb5ce33fa8aef0852e22a0b6"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "7774a141790dcad0efdcb51803b64422eb7df952b684742b89d0ee09316bd264",
+        "after": "875f9a2e7b8f20274fd01e59be6d267f8b9082e019f14044f687da61299180b8"
+      },
+      {
+        "path": "index.html",
+        "before": "347c8772453c5c7ec7d9413b6683d208a4bbc14c4379182b5e33d9baac1d7b97",
+        "after": "7f67f3fb0cab13c00444c0b52cce607b4d0c3adcaee1215cf732039ef7ef6675"
+      },
+      {
+        "path": "src/platform/browser/dom/horizontal_scroll_controller.js",
+        "before": null,
+        "after": "0d22bdbb71e213efc19328a1a80b450d463462b017e21ffb0ceab4c984bee40f"
+      },
+      {
+        "path": "src/ui/interaction/horizontal_scroll_controller.js",
+        "before": "dc224122a4181f0b2eac59d023d007e545abbdbfcd87a45d49dbb8f808d560a0",
+        "after": "ab295b029f4893313063e536e896549f580920962dda174dae5d3b8d9ab9569f"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 628 modules, 894 unified edges, 852 globals, 136 exact known-debt diagnostics, 0 FAIL in 723ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 628/628 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 158 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 158 activations and 262 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 33 record(s), 15 applied, 43 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "inventory-ui",
+        "status": "PASS",
+        "sha256": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 158,
+      "identityMismatches": 0
+    }
+  }
 }

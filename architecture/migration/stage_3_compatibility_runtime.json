@@ -1256,6 +1256,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "HorizontalScrollController",
+      "legacyScriptIndex": 227,
+      "legacySymbol": "HorizontalScrollController",
+      "shimFile": "activations/227_horizontalscrollcontroller.js",
+      "sourceProvider": "src/ui/interaction/horizontal_scroll_controller.js",
+      "targetModule": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "id": "activation-7956fbe2a8a1",
+      "owner": "stage-4.cluster-032-platform-horizontal-scroll",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-79ef4d67c996",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/player_force_budget_allocator.js",

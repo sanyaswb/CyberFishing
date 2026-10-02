@@ -44253,6 +44253,59 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "currentArea": "platform/browser/dom",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Date",
+            "Math",
+            "Number",
+            "TypeError",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/platform/browser/dom/inventory_v2_dom_factory.js",
       "currentArea": "platform/browser/dom",
       "observed": {
@@ -49708,11 +49761,6 @@
           "items": [
             {
               "symbol": "HorizontalScrollController",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "HorizontalScrollController",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -49721,17 +49769,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Date",
-            "Math",
-            "Number",
-            "TypeError",
-            "WeakMap",
             "globalThis"
           ],
           "browserApis": [],
@@ -49742,7 +49792,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
@@ -49753,7 +49803,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },

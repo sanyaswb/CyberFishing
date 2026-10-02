@@ -6,7 +6,7 @@
   "milestone": "M1",
   "boundary": "platform",
   "tier": "A",
-  "tierEvidence": "Single owner of press bindings, timeout and animation-frame progress. Timing/per-frame owner: 1500ms inventory/800ms equipped deadlines, movement tolerance and cancellation stay byte-identical. Shared inventory-ui exercises deadlines, cancellation and click suppression; platform-runtime exercises frame callback reuse, exact scheduling/clock/style calls and no DOM queries or frame allocations. No deltaTime input (progress reads monotonic elapsed time), no game state or save writes.",
+  "tierEvidence": "Single owner of press bindings, timeout and animation-frame progress. Timing/per-frame owner: 1500ms inventory/800ms equipped deadlines, movement tolerance and cancellation stay byte-identical. Shared inventory-ui exercises deadlines, cancellation and click suppression; platform-runtime exercises 120 frames on both performance/Date clocks, callback reuse and exactly one clock/style/scheduling call per frame, no DOM queries or new DOM nodes/callbacks. The existing formatted progress string allocation remains unchanged. Class body restoration proves allocation/call sites byte-identical. No deltaTime input (progress reads elapsed time), no game state or save writes.",
   "modules": [
     {
       "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
@@ -32,7 +32,18 @@
       ]
     }
   ],
-  "reviewedPropertyReaders": [],
+  "reviewedPropertyReaders": [
+    {
+      "file": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "symbol": "InventoryV2LongPressController",
+      "reason": "This browser property is already exposed by the classic source before migration. Constructor fallback reads the same existing class identity; moving the exact exposure into its activation introduces no new branch or value."
+    },
+    {
+      "file": "src/ui/inventory/inventory_v2_ui.js",
+      "symbol": "InventoryV2LongPressController",
+      "reason": "This browser property is already exposed by the classic source before migration. Constructor fallback reads the same existing class identity; moving the exact exposure into its activation introduces no new branch or value."
+    }
+  ],
   "evidenceCommands": [
     {
       "name": "inventory-ui",
