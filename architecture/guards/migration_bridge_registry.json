@@ -307,6 +307,22 @@
       ]
     },
     {
+      "id": "bridge-1f80570b7aed",
+      "bridge": "src/config/physics/tackle_physics_config.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/raw/physics/tackle_physics.js",
+      "reason": "Preserve the exact TACKLE_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "TACKLE_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1fcb4fbde037",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/fishing.js",
@@ -818,6 +834,50 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-3e473acdf294",
+      "bridge": "src/config/physics/retrieve_physics_config.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/raw/physics/retrieve_physics.js",
+      "reason": "Preserve the exact BITE_FALLBACK_PHYSICS_CONFIG, LURE_RETRIEVE_PHYSICS_CONFIG, PASSIVE_RETRIEVE_PHYSICS_CONFIG, POLE_IDLE_RETRIEVE_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-3e7f532ef85e",
+      "bridge": "src/config/physics/physics_units_and_naming.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/validation/config_schema_validator.js",
+      "target": "src/game/config/raw/physics/physics_units_and_naming.js",
+      "reason": "Preserve the exact PHYSICS_UNITS_AND_NAMING consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PHYSICS_UNITS_AND_NAMING",
           "mechanism": "global-this-property"
         }
       ]
@@ -1583,6 +1643,22 @@
       ]
     },
     {
+      "id": "bridge-70ca0c6d897d",
+      "bridge": "src/config/physics/fight_physics_config.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/raw/physics/fight_physics.js",
+      "reason": "Preserve the exact FIGHT_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FIGHT_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-71b223bc178a",
       "bridge": "src/config/inventory/equipment_slot_config.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -2183,6 +2259,22 @@
       ]
     },
     {
+      "id": "bridge-a41584b6f170",
+      "bridge": "src/config/physics/tension_physics_config.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/raw/physics/tension_physics.js",
+      "reason": "Preserve the exact TENSION_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "TENSION_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a481c78efd89",
       "bridge": "src/core/equipment/inventory_capacity_policy.js",
       "source": "src/application/inventory/loadout_application_service.js",
@@ -2338,6 +2430,26 @@
       "globalProviders": [
         {
           "symbol": "TerminalLineSlotResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-abba67f3c1b5",
+      "bridge": "src/config/physics/environment_physics_config.js",
+      "owner": "stage-4.cluster-002-physics-raw-config",
+      "source": "src/config/physics/physics_config.js",
+      "target": "src/game/config/raw/physics/environment_physics.js",
+      "reason": "Preserve the exact ENVIRONMENT_PHYSICS_CONFIG, WATER_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "WATER_PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]

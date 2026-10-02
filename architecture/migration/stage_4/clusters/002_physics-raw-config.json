@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "002",
+  "slug": "physics-raw-config",
+  "milestone": "M1",
+  "boundary": "game-config-raw",
+  "tier": "C",
+  "tierEvidence": "Literal configuration tables only (const declarations of object literals): no code, no state owner, no per-frame logic, no saved data, no browser or classic global read.",
+  "modules": [
+    {
+      "currentPath": "src/config/physics/environment_physics_config.js",
+      "targetPath": "src/game/config/raw/physics/environment_physics.js",
+      "exports": [
+        "ENVIRONMENT_PHYSICS_CONFIG",
+        "WATER_PHYSICS_CONFIG"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/retrieve_physics_config.js",
+      "targetPath": "src/game/config/raw/physics/retrieve_physics.js",
+      "exports": [
+        "BITE_FALLBACK_PHYSICS_CONFIG",
+        "LURE_RETRIEVE_PHYSICS_CONFIG",
+        "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
+        "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/fight_physics_config.js",
+      "targetPath": "src/game/config/raw/physics/fight_physics.js",
+      "exports": [
+        "FIGHT_PHYSICS_CONFIG"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "The file is one const declaration of a literal table (eslint-scope: no free global, no top-level statement, no function); the fight sections it groups are read through one owner (PHYSICS_CONFIG.fight). Nothing mixes code, text, DEV or browser access, so it is reclassified without a split (framework Q9)."
+        }
+      ],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/tackle_physics_config.js",
+      "targetPath": "src/game/config/raw/physics/tackle_physics.js",
+      "exports": [
+        "TACKLE_PHYSICS_CONFIG"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/tension_physics_config.js",
+      "targetPath": "src/game/config/raw/physics/tension_physics.js",
+      "exports": [
+        "TENSION_PHYSICS_CONFIG"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/physics_units_and_naming.js",
+      "targetPath": "src/game/config/raw/physics/physics_units_and_naming.js",
+      "exports": [
+        "PHYSICS_UNITS_AND_NAMING"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "line-allocation",
+      "script": "utils/line-allocation-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-002-physics-raw-config",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/physics/environment_physics_config.js",
+        "targetPath": "src/game/config/raw/physics/environment_physics.js",
+        "sourceSha256": "b07b0f214522c6815360b1a73561ebaf5389e83c10584ade05c08474f2507edc",
+        "targetSha256": "7618171b171fdd6036a9315bee6ddad872bef0a17aa0c65d667e4d36a16d2bde"
+      },
+      {
+        "currentPath": "src/config/physics/retrieve_physics_config.js",
+        "targetPath": "src/game/config/raw/physics/retrieve_physics.js",
+        "sourceSha256": "fb9401ab076659b0c2f206751bea0a86ac98900f6f687c3b0aa43965ebc12455",
+        "targetSha256": "82b9fdd9f0e29f11d524a113f38acd77ab9df3387a1a7b674656e7aeca75a9c4"
+      },
+      {
+        "currentPath": "src/config/physics/fight_physics_config.js",
+        "targetPath": "src/game/config/raw/physics/fight_physics.js",
+        "sourceSha256": "3ecb51b84db34dafe91f79fa5b457d7c2b176b84b4314421c2ed031ce3f2c69d",
+        "targetSha256": "686787a7698fc3c8e42abadf4f2d2c3f13233751e8e8fd5a1ed1079071176344"
+      },
+      {
+        "currentPath": "src/config/physics/tackle_physics_config.js",
+        "targetPath": "src/game/config/raw/physics/tackle_physics.js",
+        "sourceSha256": "916d42c1ea3625e03c2eb5072f4ba0a88c876ceb7729f555f2ed3853a7392b94",
+        "targetSha256": "208b5a9299f296d34a1e2c5df7b0bde3289859c940a1ce593cb060aa5fb349fe"
+      },
+      {
+        "currentPath": "src/config/physics/tension_physics_config.js",
+        "targetPath": "src/game/config/raw/physics/tension_physics.js",
+        "sourceSha256": "b765785cb4059d4be9a8a0bdb0c75ff17077797277bec32120e3387c9aa7db91",
+        "targetSha256": "4673c1a5185a66e26c47bdda0577b0ee4c9ec481dc11ef11d2ea8d43c2f5aaa6"
+      },
+      {
+        "currentPath": "src/config/physics/physics_units_and_naming.js",
+        "targetPath": "src/game/config/raw/physics/physics_units_and_naming.js",
+        "sourceSha256": "500f21a4880f643b505e28e01e276356ab3dd6a18142a0fb59398d1c8cc26a9a",
+        "targetSha256": "37282edc842deed093fd9c872731bf0f35f51c880b5ba6fc0f96b7df3363ff6b"
+      }
+    ],
+    "activations": [
+      "activation-219355546149",
+      "activation-4112438fb305",
+      "activation-54c276c98220",
+      "activation-6b2b51c23e90",
+      "activation-6eebf9789eca",
+      "activation-7d46546e0593",
+      "activation-86bfd12c0665",
+      "activation-ca6d5f4428b4",
+      "activation-cdbd960edb9c",
+      "activation-fbe7832875b6"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/config/raw/physics/environment_physics.js",
+      "src/game/config/raw/physics/retrieve_physics.js",
+      "src/game/config/raw/physics/fight_physics.js",
+      "src/game/config/raw/physics/tackle_physics.js",
+      "src/game/config/raw/physics/tension_physics.js",
+      "src/game/config/raw/physics/physics_units_and_naming.js"
+    ],
+    "bridgesAdded": [
+      "bridge-1f80570b7aed",
+      "bridge-3e473acdf294",
+      "bridge-3e7f532ef85e",
+      "bridge-70ca0c6d897d",
+      "bridge-a41584b6f170",
+      "bridge-abba67f3c1b5"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/002_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "72de28434041e47adfa260be18322ba1268e548733e9a9555b11fa4d628fc247",
+        "after": "773b0658517c6b19dfaeb925106907148286241b8eda8334f21274a3b31717c8"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "e715102c33bf48450b1c40a388a5399d8fb544d8e8652705e2ef18e8af2188d6",
+        "after": "9cd9c3b2eb0e8222bffe0a25d97d75c6eb187c4f1f7cb85d7189bc77e683cd10"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "59f4791d39b17292376e70a76fc64b1fd30a87a440cbbf08139866160384ddf6",
+        "after": "ac04eff47aee6d621315fec48cb0a6dcf865690c90bc2c6e100158538f01e8e1"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "39223e423f5ceacd14b3a823c7333eec87236e3e827d2092aacf9cb9c087d1a3",
+        "after": "be7499574f6807a93e251f1446a1adf188e716eeddee51e495d0f8feb45bf83c"
+      },
+      {
+        "path": "index.html",
+        "before": "4b34d525167b2e35e5b2511a6d38fc43a0536ed23374e0764bc70e58d213eb15",
+        "after": "f2aeb4fe4c7d562742a79e98a14fd881334c76d3cd687c789b1bc29ca00d197d"
+      },
+      {
+        "path": "src/config/physics/environment_physics_config.js",
+        "before": "b07b0f214522c6815360b1a73561ebaf5389e83c10584ade05c08474f2507edc",
+        "after": "68f2bb51e2c3c8c54a18f0576c1437e2e9757a409c89767642640099b002bf9b"
+      },
+      {
+        "path": "src/config/physics/fight_physics_config.js",
+        "before": "3ecb51b84db34dafe91f79fa5b457d7c2b176b84b4314421c2ed031ce3f2c69d",
+        "after": "f15786874eb73a0f219ec13c99784fc58bf4975dbabeafbf9523cb9e8145d703"
+      },
+      {
+        "path": "src/config/physics/physics_units_and_naming.js",
+        "before": "500f21a4880f643b505e28e01e276356ab3dd6a18142a0fb59398d1c8cc26a9a",
+        "after": "084e50e38d35cabd78ec646348fe839616299d29300721bc39bea24a957d6451"
+      },
+      {
+        "path": "src/config/physics/retrieve_physics_config.js",
+        "before": "fb9401ab076659b0c2f206751bea0a86ac98900f6f687c3b0aa43965ebc12455",
+        "after": "05ce872f0006280311eee001322a98a1f98ed40353c7abff1c8f2022fe097fdd"
+      },
+      {
+        "path": "src/config/physics/tackle_physics_config.js",
+        "before": "916d42c1ea3625e03c2eb5072f4ba0a88c876ceb7729f555f2ed3853a7392b94",
+        "after": "d366f3295d43b79d5ede667ceba4dfd28504e22b5f6080648159e558406dda91"
+      },
+      {
+        "path": "src/config/physics/tension_physics_config.js",
+        "before": "b765785cb4059d4be9a8a0bdb0c75ff17077797277bec32120e3387c9aa7db91",
+        "after": "9efa359cfe25cdfa38a080135939bb4c136052ac1aa70c4a6d873416e4e4bee0"
+      },
+      {
+        "path": "src/game/config/raw/physics/environment_physics.js",
+        "before": null,
+        "after": "7618171b171fdd6036a9315bee6ddad872bef0a17aa0c65d667e4d36a16d2bde"
+      },
+      {
+        "path": "src/game/config/raw/physics/fight_physics.js",
+        "before": null,
+        "after": "686787a7698fc3c8e42abadf4f2d2c3f13233751e8e8fd5a1ed1079071176344"
+      },
+      {
+        "path": "src/game/config/raw/physics/physics_units_and_naming.js",
+        "before": null,
+        "after": "37282edc842deed093fd9c872731bf0f35f51c880b5ba6fc0f96b7df3363ff6b"
+      },
+      {
+        "path": "src/game/config/raw/physics/retrieve_physics.js",
+        "before": null,
+        "after": "82b9fdd9f0e29f11d524a113f38acd77ab9df3387a1a7b674656e7aeca75a9c4"
+      },
+      {
+        "path": "src/game/config/raw/physics/tackle_physics.js",
+        "before": null,
+        "after": "208b5a9299f296d34a1e2c5df7b0bde3289859c940a1ce593cb060aa5fb349fe"
+      },
+      {
+        "path": "src/game/config/raw/physics/tension_physics.js",
+        "before": null,
+        "after": "4673c1a5185a66e26c47bdda0577b0ee4c9ec481dc11ef11d2ea8d43c2f5aaa6"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 591 modules, 876 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 645ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 591/591 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 142 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 142 activations and 200 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 2 record(s), 2 applied, 8 ESM target(s) inside their boundaries; 6 projector fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "line-allocation",
+        "status": "PASS",
+        "sha256": "2041fe934816e9c9a4fb7a9ef8de3624ae2c36626646ba5218f474c4492df6c3"
+      }
+    ]
+  }
+}

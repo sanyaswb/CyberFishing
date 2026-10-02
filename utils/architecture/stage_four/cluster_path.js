@@ -103,6 +103,10 @@ class StageFourClusterPlan {
       const providers = entry.observed.providers.items;
       assert.deepEqual(providers.map((item) => `${item.symbol}:${item.mechanism}`).sort(),
         [...module.exports].sort().map((symbol) => `${symbol}:global-lexical`), `${module.currentPath}: providers differ`);
+      // A Manifest blocker is resolved only by a written review in the record (framework Q9: reclassify with evidence).
+      assert.deepEqual([...entry.analysis.blockers.items].sort(),
+        (module.reviewedBlockers || []).map((item) => item.blocker).sort(), `${module.currentPath}: blockers need reviewedBlockers`);
+      assert((module.reviewedBlockers || []).every((item) => item.reason), `${module.currentPath}: reviewed blocker without reason`);
       this.#assertImports(module, entry, entries, memberTargets);
       const projected = projector.project({ source: workspace.text(module.currentPath), currentPath: module.currentPath,
         targetPath: module.targetPath, boundary: record.boundary, exports: module.exports, imports: module.imports || [],
