@@ -465,6 +465,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "FightPhysicsConfigAdapter",
+      "legacyScriptIndex": 23,
+      "legacySymbol": "FightPhysicsConfigAdapter",
+      "shimFile": "activations/023_fightphysicsconfigadapter.js",
+      "sourceProvider": "src/config/physics/physics_config_adapter.js",
+      "targetModule": "src/game/config/physics/fight_physics_config_adapter.js",
+      "id": "activation-1104641c6cb5",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-1203aa3f3b14",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "sourceProvider": "src/core/inventory/inventory_item_location.js",

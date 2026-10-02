@@ -147,6 +147,22 @@
       ]
     },
     {
+      "id": "bridge-11bab2b81092",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-145734990113",
       "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
       "source": "src/app/bootstrap.js",
@@ -482,6 +498,22 @@
       "globalProviders": [
         {
           "symbol": "FISH_FIGHT_EVENT",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2652b9d0957e",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/app/fishing.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -1158,6 +1190,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-583ef0b7fc62",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/config/config.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -1907,6 +1955,22 @@
       ]
     },
     {
+      "id": "bridge-81d027dbcdd3",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-81fd90ae9bb0",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/app/application.js",
@@ -2019,6 +2083,22 @@
       ]
     },
     {
+      "id": "bridge-8b07404a539b",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/app/adapters.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8b99e1c44103",
       "bridge": "src/core/fishing/rod_stroke_distance_tracker.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2078,6 +2158,22 @@
       "globalProviders": [
         {
           "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-91fb0437d801",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/systems/fight_physics_system.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -2190,6 +2286,22 @@
       "globalProviders": [
         {
           "symbol": "FishingReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-96dd8ba5f258",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -2770,6 +2882,22 @@
       "globalProviders": [
         {
           "symbol": "ReelHoldRecoverySystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bd39dcf4c81c",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/systems/bite_system.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]

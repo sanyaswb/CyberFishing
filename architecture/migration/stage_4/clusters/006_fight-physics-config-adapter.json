@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "006",
+  "slug": "fight-physics-config-adapter",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Stateless configuration adapter: constructor holds the passed live config identity, getters derive values per call; no gameplay state, per-frame update, save writes, browser or classic global reads. The class body moves byte-for-byte plus export.",
+  "modules": [
+    {
+      "currentPath": "src/config/physics/physics_config_adapter.js",
+      "targetPath": "src/game/config/physics/fight_physics_config_adapter.js",
+      "exports": [
+        "FightPhysicsConfigAdapter"
+      ],
+      "imports": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/physics/physics_config_adapter.js",
+        "targetPath": "src/game/config/physics/fight_physics_config_adapter.js",
+        "sourceSha256": "1fc5b351ac686fff057bbeff350346b3bfbcbe3ac6f4dd8e6c63545b95429c47",
+        "targetSha256": "4be6b2eb107a27378af64e7a9821c66ca1f8537afb45ff3817fa006d3ea33eb0"
+      }
+    ],
+    "activations": [
+      "activation-1104641c6cb5"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "bridgesAdded": [
+      "bridge-11bab2b81092",
+      "bridge-2652b9d0957e",
+      "bridge-583ef0b7fc62",
+      "bridge-81d027dbcdd3",
+      "bridge-8b07404a539b",
+      "bridge-91fb0437d801",
+      "bridge-96dd8ba5f258",
+      "bridge-bd39dcf4c81c"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/006_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "c5087613af8bd46ca7a1da0451852ce43be29e7e83ef05bcc41a9192eb9e1872",
+        "after": "32453108608853699098bed4a94de680ee787234fd5c8a6df8c8f7a7e8e9da13"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "9f8434feee3ea7c0c0778cf87f7f30d689f77deae9825da39b0190804a6ce585",
+        "after": "e86df5fdf14844fb82bd1760100c8659ae16f0888c845b3dcc3bdcee7a66bede"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "affdd0b7aa8a78646de87ab09120f7076f161d138c35c73d6675320b0f98c909",
+        "after": "52f5f10ab0f27578bf8f30a4f6067164e33c2f7e53dd049d48f748678154c243"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "e58c971c465d96eee69da9fcf50e5b8f78051968456520dd23ce177b9c42d7fd",
+        "after": "56b8bb1bcd05fe7bc061189f6b86c3c509126102f678468d87b476e3bdbe7bfa"
+      },
+      {
+        "path": "index.html",
+        "before": "65bfcad0bca03df8fc64a78067912e93ba9d9a6ab06af17f783c66e5a970a5c4",
+        "after": "807de28fdcaa6c67f969b5b80311a77b4eaa931e3abca70759832d749e9cd24c"
+      },
+      {
+        "path": "src/config/physics/physics_config_adapter.js",
+        "before": "1fc5b351ac686fff057bbeff350346b3bfbcbe3ac6f4dd8e6c63545b95429c47",
+        "after": "0c5af0a805d0061ad61f280db6a75a01ff863bf33c06b2d1fbf36189816019d4"
+      },
+      {
+        "path": "src/game/config/physics/fight_physics_config_adapter.js",
+        "before": null,
+        "after": "4be6b2eb107a27378af64e7a9821c66ca1f8537afb45ff3817fa006d3ea33eb0"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 606 modules, 880 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 658ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 606/606 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 142 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 142 activations and 219 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 6 record(s), 6 applied, 23 ESM target(s) inside their boundaries; 10 projector and 12 retirement fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 142,
+      "identityMismatches": 0
+    }
+  }
+}
