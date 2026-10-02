@@ -591,6 +591,22 @@
       ]
     },
     {
+      "id": "bridge-22513569b93c",
+      "bridge": "src/app/adapters.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/application.js",
+      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ConfigProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-242afef6802f",
       "bridge": "src/core/equipment/auto_refill_policy.js",
       "source": "src/application/inventory/equipment_auto_refill_target_provider.js",
@@ -1126,6 +1142,34 @@
       "globalProviders": [
         {
           "symbol": "ImageAssetProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-428b2b351677",
+      "bridge": "src/app/adapters.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "reason": "Preserve the exact BrowserAudioAdapter, BrowserDebugAdapter, CanvasMetricsProvider, DevFlagsProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BrowserAudioAdapter",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "BrowserDebugAdapter",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "CanvasMetricsProvider",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "DevFlagsProvider",
           "mechanism": "global-this-property"
         }
       ]
@@ -2219,22 +2263,6 @@
       ]
     },
     {
-      "id": "bridge-7bdae928832e",
-      "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
-      "source": "src/app/adapters.js",
-      "target": "src/engine/events/event_bus.js",
-      "reason": "Keep the reviewed classic adapters consumer synchronous until its Stage 5 application migration.",
-      "owner": "stage-2.3-engine-event-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EventBus",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7c4e1d0210cd",
       "bridge": "src/config/databases/item_db.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -2502,22 +2530,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8b07404a539b",
-      "bridge": "src/config/physics/physics_config_adapter.js",
-      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
-      "source": "src/app/adapters.js",
-      "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]
@@ -3119,6 +3131,22 @@
       ]
     },
     {
+      "id": "bridge-a807c8a1e192",
+      "bridge": "src/app/core/game_loop.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/runtime/game_loop.js",
+      "reason": "Preserve the exact GameLoop consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameLoop",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a8155a87814b",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/location_debug_render_frame_builder.js",
@@ -3450,6 +3478,22 @@
       "globalProviders": [
         {
           "symbol": "ReelHoldRecoverySystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc8a4f2acb5f",
+      "bridge": "src/app/core/game_loop.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/runtime/game_loop.js",
+      "reason": "Preserve the exact GameLoop consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameLoop",
           "mechanism": "global-this-property"
         }
       ]

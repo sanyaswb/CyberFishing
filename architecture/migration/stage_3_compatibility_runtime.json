@@ -723,6 +723,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "CanvasMetricsProvider",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "CanvasMetricsProvider",
+      "shimFile": "activations/396_canvasmetricsprovider.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-2a09d1c3f130",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "ItemProgressionConfigValidator",
       "legacyScriptIndex": 35,
       "legacySymbol": "ItemProgressionConfigValidator",
@@ -733,6 +745,18 @@
       "owner": "stage-4.cluster-008-item-progression-validator",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "GameLoop",
+      "legacyScriptIndex": 394,
+      "legacySymbol": "GameLoop",
+      "shimFile": "activations/394_gameloop.js",
+      "sourceProvider": "src/app/core/game_loop.js",
+      "targetModule": "src/platform/browser/runtime/game_loop.js",
+      "id": "activation-2db0890135e3",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-2fc19b0cf09b",
@@ -999,6 +1023,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "BrowserAudioAdapter",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "BrowserAudioAdapter",
+      "shimFile": "activations/396_browseraudioadapter.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-548ee28e44c0",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-54c1801cfb5c",
       "owner": "stage-3.replan-322.batch-031-fishing-d2f28c0f",
       "sourceProvider": "src/core/fishing/stamina/stamina_balance_frame.js",
@@ -1177,6 +1213,18 @@
       "shimFile": "activations/098_playerreelfatiguesession.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "DevFlagsProvider",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "DevFlagsProvider",
+      "shimFile": "activations/396_devflagsprovider.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-70d2b3423dae",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-71f9e7f66e9c",
@@ -1633,6 +1681,18 @@
       "shimFile": "activations/099_playerpressurefatiguesourceresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "BrowserDebugAdapter",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "BrowserDebugAdapter",
+      "shimFile": "activations/396_browserdebugadapter.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-a3d718da7b86",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-a44add7fda39",
@@ -2233,6 +2293,18 @@
       "shimFile": "activations/079_itemcatalogbaselineregistry.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ConfigProvider",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "ConfigProvider",
+      "shimFile": "activations/396_configprovider.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-edcb5d7fec22",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-ee66782e3f9e",

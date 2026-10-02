@@ -697,26 +697,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-7fbe49b61767",
-      "rule": "boundary-dependency",
-      "source": "src/app/adapters.js",
-      "target": "src/config/physics/physics_config_adapter.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 5,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "7fbe49b617671fdd481d26f57d8e1b62fc5b166aded9135c36341cc0038ae25f",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/adapters.js",
-        "target": "src/config/physics/physics_config_adapter.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-883690d84be3",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",

@@ -1,10 +1,11 @@
 "use strict";
 
 // Preloaded (`node --require`) into a scenario check by StageFourTierAEvidence, never by the game. After every
-// vm.runInContext call it wraps each public prototype method of the traced classes found in that context (classic
-// declaration, global, or cumulative-runtime export), counting calls, recording deltaTime ranges and fingerprinting
-// each call's arguments and result in call order (wall-clock ISO timestamps masked). Traces of all contexts are merged per class and written as one
-// JSON line to the file named by the environment when the process exits.
+// vm.runInContext call it wraps each public prototype method and getter ("get name") of the traced classes found in
+// that context (classic declaration, global, or cumulative-runtime export), counting calls, recording deltaTime ranges
+// and fingerprinting each call's arguments and result in call order (wall-clock ISO timestamps masked). Traces of all
+// contexts are merged per class and written as one JSON line to the file named by the environment when the process
+// exits.
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const vm = require("node:vm");
@@ -51,10 +52,12 @@ const INSTALL = `((host) => {
     for (const method of Object.getOwnPropertyNames(Class.prototype)) {
       if (method === "constructor") continue;
       const descriptor = Object.getOwnPropertyDescriptor(Class.prototype, method);
-      if (typeof descriptor.value !== "function") continue;
-      const original = descriptor.value;
-      const stats = record.methods[method] ||= { calls: 0, dtMin: null, dtMax: null };
-      Object.defineProperty(Class.prototype, method, { ...descriptor, value: function (...args) {
+      const accessor = typeof descriptor.get === "function";
+      if (typeof descriptor.value !== "function" && !accessor) continue;
+      const original = accessor ? descriptor.get : descriptor.value;
+      const traced = accessor ? "get " + method : method;
+      const stats = record.methods[traced] ||= { calls: 0, dtMin: null, dtMax: null };
+      Object.defineProperty(Class.prototype, method, { ...descriptor, [accessor ? "get" : "value"]: function (...args) {
         const input = JSON.stringify(encode(args));
         const output = original.apply(this, args);
         stats.calls += 1;
@@ -66,7 +69,7 @@ const INSTALL = `((host) => {
             stats.dtMax = stats.dtMax === null ? seconds : Math.max(stats.dtMax, seconds);
           }
         }
-        host.update(name, method + "\\u0000" + input + "\\u0000" + JSON.stringify(encode(output)) + "\\n");
+        host.update(name, traced + "\\u0000" + input + "\\u0000" + JSON.stringify(encode(output)) + "\\n");
         return output;
       } });
     }

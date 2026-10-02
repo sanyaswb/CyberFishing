@@ -13,6 +13,10 @@ const EVIDENCE_KIND = "cyber-fishing-stage-4-tier-a-evidence";
 const KINDS = Object.freeze(["hot-loop", "save-round-trip"]);
 const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const withoutLocation = (items) => items.map(({ location, ...item }) => item);
+// A scenario that never calls the class has one form, whether or not the class was resolvable in its context (a
+// migrated class becomes visible through the cumulative-runtime exports of contexts that never use it).
+const exercised = (scenarios) => Object.fromEntries(Object.entries(scenarios).map(([scenario, trace]) =>
+  [scenario, Object.values(trace.calls).some((calls) => calls > 0) ? trace : { sha256: null, calls: {}, deltaTime: {} }]));
 
 // Tier A evidence of one Stage 4 cluster (working rule 4). `capture` runs before apply and writes the baseline:
 // per traced class, the static member review (body SHA-256, allocation sites, free identifiers, wall-clock,
@@ -59,7 +63,8 @@ class StageFourTierAEvidence {
       const before = baseline.classes[name];
       const after = current.classes[name];
       for (const key of ["members", "allocationTotals", "wallClockReads", "realmLookups", "typeofLookups", "scenarios"]) {
-        if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) differences.push(`${name}.${key}`);
+        const [left, right] = key === "scenarios" ? [exercised(before[key]), exercised(after[key])] : [before[key], after[key]];
+        if (JSON.stringify(left) !== JSON.stringify(right)) differences.push(`${name}.${key}`);
       }
       const remaining = new Set(after.freeIdentifiers.map((item) => JSON.stringify(item)));
       const added = [...remaining].filter((item) => !before.freeIdentifiers.some((old) => JSON.stringify(old) === item));
@@ -99,13 +104,13 @@ class StageFourTierAEvidence {
         wallClockReads: withoutLocation(review.wallClockReads),
         realmLookups: withoutLocation(review.realmLookups),
         typeofLookups: withoutLocation(review.typeofLookups),
-        scenarios: Object.fromEntries(this.scenarios.map((scenario) => {
+        scenarios: exercised(Object.fromEntries(this.scenarios.map((scenario) => {
           const trace = traces[scenario][name] || { methods: {}, sha256: null };
           return [scenario, { sha256: trace.sha256,
             calls: Object.fromEntries(Object.entries(trace.methods).map(([method, stats]) => [method, stats.calls])),
             deltaTime: Object.fromEntries(Object.entries(trace.methods).filter(([, stats]) => stats.dtMin !== null)
               .map(([method, stats]) => [method, { minSeconds: stats.dtMin, maxSeconds: stats.dtMax }])) }];
-        })),
+        }))),
       }];
     }));
     return { schemaVersion: 1, kind: EVIDENCE_KIND, cluster: this.record.id, evidenceKind: this.kind,

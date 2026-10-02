@@ -60,6 +60,128 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(listeners.size,0);assert.equal(removedNodes,1);assert.equal(frames.size,0);assert.equal(timers.size,0);
 }
 
+// Game loop frames and the browser runtime adapters (cluster 019): one reused frame callback, the clock's deltaTime
+// passed through, duplicate-start refusal and stop; DEV flag sources, debug events, audio players, canvas metrics.
+async function checkGameLoopAndAdapters() {
+  const frames=new Map(),cancelled=[],dispatched=[],errors=[];let nextFrame=0;
+  class CustomEventProbe { constructor(type,init){this.type=type;this.detail=init?.detail;} }
+  const audios=[];
+  class AudioProbe { constructor(src){this.src=src;this.calls=[];audios.push(this);}
+    pause(){this.calls.push("pause");} play(){this.calls.push(`play:${this.currentTime}:${this.volume}`);return Promise.resolve();}
+    removeAttribute(name){this.calls.push(`remove:${name}`);} load(){this.calls.push("load");} }
+  const window={dispatchEvent:event=>{dispatched.push(event);return true;},innerWidth:800,innerHeight:600};
+  const fetched=[];
+  const runtime=new SourceRuntime({globals:{window,CustomEvent:CustomEventProbe,Audio:AudioProbe,
+    fetch:async src=>{fetched.push(src);return {arrayBuffer:async()=>`bytes:${src}`};},
+    console:{log(){},warn(){},error:error=>errors.push(error)},
+    requestAnimationFrame(callback){frames.set(++nextFrame,callback);return nextFrame;},
+    cancelAnimationFrame(id){cancelled.push(id);frames.delete(id);}}});
+  runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
+  runtime.run('globalThis.EventBus = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/events/event_bus.js"].EventBus;');
+  runtime.load("src/app/core/game_loop.js",{expose:["GameLoop"]});
+  runtime.load("src/app/adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
+    "BrowserEventTargetAdapter","CanvasMetricsProvider","ConfigProvider","DevFlagsProvider"]});
+  // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
+  const adapters=runtime.run('globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/runtime/legacy_runtime_adapters.js"]')||{};
+  const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter}=runtime.context;
+  const BrowserEventTargetAdapter=runtime.context.BrowserEventTargetAdapter||adapters.BrowserEventTargetAdapter;
+  const json=value=>JSON.stringify(value);
+
+  const clockCalls=[],updates=[];let draws=0;
+  const clock={reset(){clockCalls.push("reset");},tick(time){clockCalls.push(time);return time/1000;}};
+  const loop=new GameLoop(clock,dt=>updates.push(dt),()=>draws++);
+  assert.equal(loop.start(),true);assert.equal(loop.start(),true,"a running loop starts idempotently");
+  assert.equal(loop.isRunning,true);assert.equal(frames.size,1);
+  const callback=frames.get(1);
+  for(let frame=1;frame<=120;frame++) {
+    const [id,current]=frames.entries().next().value;
+    assert.equal(current,callback,"one frame callback is reused on every frame");
+    frames.delete(id);current(frame*16);
+    assert.equal(frames.size,1,"one scheduled continuation per frame");
+  }
+  assert.equal(updates.length,120);assert.equal(draws,120);
+  assert.equal(updates[0],0.016);assert.equal(updates[119],1.92,"the clock's deltaTime is passed through unchanged");
+  assert.equal(json(clockCalls.slice(0,3)),json(["reset",16,32]));
+  const second=new GameLoop(clock,()=>{},()=>{});
+  assert.equal(second.start(),false,"a second active loop is refused");
+  assert.equal(errors.length,1);assert.equal(dispatched.length,1);
+  assert.equal(dispatched[0].type,"cyber-fishing-memory-warning");
+  assert.equal(json(dispatched[0].detail.issue),json({code:"duplicate_game_loop_start",severity:"critical",
+    message:"[GameLoop] Refused to start a second active game loop."}));
+  assert.equal(json(GameLoop.getDiagnostics()),json({activeCount:1,duplicateStartAttempts:1}));
+  loop.stop();loop.stop();
+  assert.equal(loop.isRunning,false);assert.equal(json(cancelled),json([121]));assert.equal(frames.size,0);
+  assert.equal(json(GameLoop.getDiagnostics()),json({activeCount:0,duplicateStartAttempts:1}));
+  assert.equal(second.start(),true,"a stopped loop releases the active slot");second.stop();
+
+  const bare=new DevFlagsProvider({config:{}});
+  assert.equal(bare.isEnabled("noLineBreak"),false);assert.equal(bare.godModeValue("noLineBreak"),undefined);
+  assert.equal(bare.isDebugEnabled(),false,"without DEV sources the provider is inactive");
+  const dev=new DevFlagsProvider({config:{debug:{consoleModules:{fish:false}}},
+    godModeSource:()=>({noLineBreak:true,fixedBiteChancePercent:40}),debugModulesSource:()=>({fish:true})});
+  assert.equal(dev.isEnabled("noLineBreak"),true);assert.equal(dev.isEnabled("fixedBiteChancePercent"),false);
+  assert.equal(dev.godModeValue("fixedBiteChancePercent"),40);assert.equal(dev.isDebugEnabled(),true);
+  for(const [config,expected] of [[{debug:{overlay:true}},true],[{debug:{events:true}},true],[{logs:{events:true}},true],
+    [{debug:{consoleModules:{fish:false}}},false],[{debug:{consoleModules:{fish:true}}},true]]) {
+    assert.equal(new DevFlagsProvider({config}).isDebugEnabled(),expected,json(config));
+  }
+
+  let debugEnabled=false;const targetEvents=[],received=[];
+  const debug=new BrowserDebugAdapter({dispatchEvent:event=>targetEvents.push(event)},()=>debugEnabled);
+  const unsubscribe=debug.on("bite",detail=>received.push(detail));
+  debug.emit("bite",{n:1});
+  assert.equal(received.length+targetEvents.length,0,"disabled debug events are dropped");
+  debugEnabled=true;debug.emit("bite",{n:2});
+  assert.equal(json(received),json([{n:2}]));assert.equal(targetEvents[0].type,"bite");assert.equal(targetEvents[0].detail.n,2);
+  unsubscribe();debug.emit("bite",{n:3});assert.equal(received.length,1);assert.equal(targetEvents.length,2);
+  debug.on("bite",detail=>received.push(detail));debug.clear();debug.emit("bite",{n:4});assert.equal(received.length,1);
+
+  const listeners=[];
+  const events=new BrowserEventTargetAdapter({addEventListener:(...args)=>listeners.push(["add",...args]),
+    removeEventListener:(...args)=>listeners.push(["remove",...args]),dispatchEvent:event=>targetEvents.push(event)});
+  const handler=()=>{};const remove=events.add("resize",handler,{passive:true});remove();events.emit("ready",{ok:true});
+  assert.equal(json(listeners.map(item=>[item[0],item[1],item[3]])),json([["add","resize",{passive:true}],["remove","resize",{passive:true}]]));
+  assert.equal(listeners[1][2],handler);assert.equal(targetEvents.at(-1).type,"ready");
+
+  const canvas={width:1,height:1};
+  const metrics=new CanvasMetricsProvider(canvas);metrics.resizeToViewport();
+  assert.equal(json([metrics.width,metrics.height]),json([800,600]),"default viewport reads the window size");
+  const custom=new CanvasMetricsProvider(canvas,()=>({width:320,height:200}));custom.resizeToViewport();
+  assert.equal(json([canvas.width,canvas.height]),json([320,200]));
+
+  const raw={physics:{g:1},debug:{overlay:true},fightPhysicsConfig:{f:1}};
+  const provider=new ConfigProvider(raw);
+  assert.equal(provider.raw,raw);assert.equal(provider.physics,raw.physics);assert.equal(provider.fightPhysicsConfig,raw.fightPhysicsConfig);
+  assert.equal(json([provider.tension,provider.ui,provider.casting,provider.feederConfig]),json([{},{},{},{}]));
+  assert.equal(new ConfigProvider({}).fightPhysicsConfig,null);
+
+  const pooled=new BrowserAudioAdapter().createPlayer("splash.mp3");
+  assert.equal(pooled.src,"splash.mp3");assert.equal(audios.length,4,"no AudioContext: a pool of four elements");
+  await pooled.warm();
+  for(let index=0;index<5;index++) pooled.play(index/10);
+  assert.equal(json(audios.map(audio=>audio.calls.filter(call=>call.startsWith("play")))),
+    json([["play:0:0","play:0:0.4"],["play:0:0.1"],["play:0:0.2"],["play:0:0.3"]]),"the pool cycles its cursor");
+  pooled.dispose();assert(audios.every(audio=>audio.calls.slice(-2).join()==="remove:src,load"));
+
+  const graph=[];
+  class AudioContextProbe { constructor(){this.state="suspended";this.destination="destination";}
+    async decodeAudioData(data){graph.push(`decode:${data}`);return `buffer:${data}`;}
+    resume(){graph.push("resume");this.state="running";return Promise.resolve();}
+    close(){graph.push("close");this.state="closed";return Promise.resolve();}
+    createGain(){const gain={gain:{value:0},connect:target=>graph.push(`gain->${target}`),disconnect(){graph.push("gain-off");}};return gain;}
+    createBufferSource(){const source={connect:()=>graph.push("source->gain"),disconnect(){graph.push("source-off");},
+      start:at=>graph.push(`start:${at}:${source.buffer}`)};return source;} }
+  window.AudioContext=AudioContextProbe;
+  const buffered=new BrowserAudioAdapter().createPlayer("reel.mp3");
+  buffered.play(0.5);
+  await buffered.warm();await Promise.resolve();
+  buffered.dispose();
+  assert.equal(json(fetched),json(["reel.mp3"]));
+  assert.equal(json(graph),json(["decode:bytes:reel.mp3","resume","source->gain","gain->destination",
+    "start:0:buffer:bytes:reel.mp3","close"]),"a play before decoding waits for the buffer");
+  delete window.AudioContext;
+}
+
 async function main() {
   let dateReads = 0, performanceReads = 0;
   class FixedDate extends Date { static now() { dateReads++; return 1700; } }
@@ -172,7 +294,9 @@ async function main() {
   assert.equal(calls.at(-1)[0],images[1]);
   checkLongPressFrames(true);
   checkLongPressFrames(false);
+  await checkGameLoopAndAdapters();
   console.log("Platform runtime passed: frame delta clamp/reset and clock read counts; pending/ready/failed asset cache identity; injected canvas and location depth loading.");
   console.log("Long press passed: 120 frames on performance/Date clocks; same callback, one clock/style/scheduling call per frame, no DOM nodes/queries; deadline, click suppression and listener/frame disposal.");
+  console.log("Game loop and adapters passed: 120 frames with one reused callback and pass-through deltaTime, duplicate start refused and reported, stop cancels; DEV flag sources, debug events, event target, canvas metrics, config provider, pooled and buffered audio.");
 }
 main().catch(error=>{console.error(error);process.exitCode=1;});
