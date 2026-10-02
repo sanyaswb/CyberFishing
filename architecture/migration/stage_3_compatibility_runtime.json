@@ -1060,6 +1060,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "deepCloneConfig",
+      "legacyScriptIndex": 27,
+      "legacySymbol": "deepCloneConfig",
+      "shimFile": "activations/027_deepcloneconfig.js",
+      "sourceProvider": "src/infrastructure/config/deep_clone_config.js",
+      "targetModule": "src/platform/browser/config/deep_clone_config.js",
+      "id": "activation-65855576983d",
+      "owner": "stage-4.cluster-031-platform-config-clone",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-6ba241908a4c",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/dependency_contract_validator.iife.js",

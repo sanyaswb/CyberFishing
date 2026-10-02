@@ -42768,7 +42768,7 @@
           "items": [
             {
               "symbol": "deepCloneConfig",
-              "mechanism": "global-function",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -42776,17 +42776,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "JSON"
+            "globalThis"
           ],
-          "browserApis": [
-            "structuredClone"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -42796,7 +42801,7 @@
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/config/deep_clone_config.js",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "migrationWave": 5
       },
@@ -42805,7 +42810,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -44408,6 +44421,57 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/config/deep_clone_config.js",
+      "currentArea": "platform/browser/config",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "JSON"
+          ],
+          "browserApis": [
+            "structuredClone"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/config/deep_clone_config.js",
         "migrationWave": 5
       },
       "analysis": {

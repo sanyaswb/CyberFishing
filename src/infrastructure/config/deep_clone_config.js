@@ -1,4 +1,1 @@
-function deepCloneConfig(value) {
-  if (typeof structuredClone === "function") return structuredClone(value);
-  return JSON.parse(JSON.stringify(value));
-}
+globalThis.deepCloneConfig = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/config/deep_clone_config.js"]["deepCloneConfig"];

@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "031",
+  "slug": "platform-config-clone",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "C",
+  "tierEvidence": "Host clone capability extracted as the exact function from original config helpers in preparation 001. Uses structuredClone when present and the original JSON fallback otherwise; injected into the single override store by Bootstrap. No gameplay state, frame work or save writes.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/config/deep_clone_config.js",
+      "targetPath": "src/platform/browser/config/deep_clone_config.js",
+      "exports": [
+        "deepCloneConfig"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "structuredClone"
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "config-runtime",
+      "script": "utils/config-runtime-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-031-platform-config-clone",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/infrastructure/config/deep_clone_config.js",
+        "targetPath": "src/platform/browser/config/deep_clone_config.js",
+        "sourceSha256": "f5fd9aa2eaaa6aeaf4c7a5f5782d2dfad2cec537275627806834e82b08a44bd6",
+        "targetSha256": "149d0d7025deb16b72580c1c51670ecf01f09f5cc83f086907522eb28214348a"
+      }
+    ],
+    "activations": [
+      "activation-65855576983d"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "bridgesAdded": [
+      "bridge-8772d5d2473d"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/031_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "62ddc6b45fe9fd9ebdb905c7fdc7d925ccfb9c321ffa356fb1840e2e6cea6af3",
+        "after": "68b98644239afd77a689bfa16dcf6adeafdb022055efaa26cb88e5cbc256b512"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "bfd86609fb8959af19161f2dd97040eefbb12665027fe3b99af89ee259b2ca9f",
+        "after": "1b79058f3b48351db6e0aacc64a592aaa07faaa4745efa78410e8b374cbc6643"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "3e4d32b643800fc467b4eebc88e1f075bd5a88738d19e40bfc8ffabe20a6295d",
+        "after": "f4f89156fa3261871579197d64ba62400dfb31ce36a5fbf2f4d05e0ef96e95e8"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "b9869b57d7b417a95400f02f4575fffbc623fa5ea49b4615aebf33f845a0071a",
+        "after": "ca92a5b1d88672a9e426b790fffdfc2b5174b7e60c6031a637a73b7109bbe952"
+      },
+      {
+        "path": "index.html",
+        "before": "14b9ee7fff947da4d8f9e1fceadcecca6f5cdac004a6fa11a366ad1c20b5bffc",
+        "after": "0dee0d85d9df7bbb6e3ccc4fae2d6a0ba9a363790c4677cb959fe1996f4629e8"
+      },
+      {
+        "path": "src/infrastructure/config/deep_clone_config.js",
+        "before": "f5fd9aa2eaaa6aeaf4c7a5f5782d2dfad2cec537275627806834e82b08a44bd6",
+        "after": "734f5bb18a5339164cd8d2920c1ba612bee6861c2e09b3a93d16e2e291333db1"
+      },
+      {
+        "path": "src/platform/browser/config/deep_clone_config.js",
+        "before": null,
+        "after": "149d0d7025deb16b72580c1c51670ecf01f09f5cc83f086907522eb28214348a"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 621 modules, 893 unified edges, 852 globals, 137 exact known-debt diagnostics, 0 FAIL in 646ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 621/621 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 155 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 155 activations and 234 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 31 record(s), 11 applied, 36 ESM target(s) inside their boundaries; 13 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "config-runtime",
+        "status": "PASS",
+        "sha256": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 155,
+      "identityMismatches": 0
+    }
+  }
+}

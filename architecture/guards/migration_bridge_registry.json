@@ -2167,6 +2167,22 @@
       ]
     },
     {
+      "id": "bridge-8772d5d2473d",
+      "bridge": "src/infrastructure/config/deep_clone_config.js",
+      "owner": "stage-4.cluster-031-platform-config-clone",
+      "source": "src/config/config.js",
+      "target": "src/platform/browser/config/deep_clone_config.js",
+      "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "deepCloneConfig",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-87740b3c6660",
       "bridge": "src/core/fishing/pole_fight_sector_geometry.js",
       "source": "src/app/bootstrap.js",
