@@ -45,7 +45,7 @@ class PackageContractCheck {
     );
     const expectedStage = {
       // Stage 4.N after N applied cluster records; the Stage 3 label until the first one.
-      current: StageFourClusterLedger.read(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
+      current: StageFourClusterLedger.cumulative(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
         read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
       }).currentStage(stageThreeState)),
       // A retired activation's ESM module stays in the cumulative graph for its importers.

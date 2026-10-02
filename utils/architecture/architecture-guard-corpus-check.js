@@ -50,8 +50,8 @@ const approvedEsmEdges = [...new Set([
     .filter((item) => item.introducedStage === "stage-2")
     .map((item) => `${item.bridge}->${item.target}`),
   ...reviewedImportEdges,
-  ...StageFourClusterLedger.read(PROJECT_ROOT).reviewedImportEdges(),
-  ...StageFourClusterLedger.preparations(PROJECT_ROOT).flatMap(record =>
+  ...StageFourClusterLedger.cumulative(PROJECT_ROOT).reviewedImportEdges(),
+  ...StageFourClusterLedger.cumulativePreparations(PROJECT_ROOT).flatMap(record =>
     (record.importEdges || []).map(edge => `${edge.source}->${edge.target}`)),
 ])].sort();
 if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {

@@ -364,8 +364,8 @@ class ProductionShapedEquipmentHydrationCheck {
     );
     // Stage 4 may change the reviewed file only through recorded steps (preparation or cluster before/after hashes).
     const boundary = evidence.rootCause.normalizationBoundary;
-    const steps = [...StageFourClusterLedger.preparations(root).flatMap((record) => record.files || []),
-      ...StageFourClusterLedger.read(root).applied.flatMap((record) => record.output.files || [])]
+    const steps = [...StageFourClusterLedger.cumulativePreparations(root).flatMap((record) => record.files || []),
+      ...StageFourClusterLedger.cumulative(root).applied.flatMap((record) => record.output.files || [])]
       .filter((file) => file.path === boundary && file.before !== file.after);
     let expected = evidence.evidence.normalizationBoundaryAfterSha256;
     for (const seen = new Set([expected]); ;) {

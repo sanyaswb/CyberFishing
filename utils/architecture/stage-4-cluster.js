@@ -13,13 +13,15 @@ const option = (name) => {
   return index > 0 ? process.argv[index + 1] : null;
 };
 const id = option("cluster");
+// --stage 5 selects the Stage 5 ledger (same mechanism, stage-qualified records); Stage 4 is the default.
+const stage = Number(option("stage") || 4);
 const step = option("step");
 if (!/^\d{3}$/u.test(id || "") || !["plan", "apply", "verify"].includes(step)) {
-  console.error("Usage: node utils/architecture/stage-4-cluster.js --cluster NNN --step plan|apply|verify");
+  console.error("Usage: node utils/architecture/stage-4-cluster.js --cluster NNN --step plan|apply|verify [--stage 4|5]");
   process.exit(2);
 }
 const workspace = new StageFourWorkspace(ROOT);
-const recordFile = recordFileFor(ROOT, id);
+const recordFile = recordFileFor(ROOT, id, stage);
 const summary = (plan) => [
   `targets: ${plan.targets.map((item) => `${item.module.currentPath} -> ${item.module.targetPath}`).join("; ")}`,
   `consumers: ${plan.consumers.map((item) => `${item.consumer} [${item.boundary}] ${item.symbols.join(",")}`).join("; ") || "none"}`,

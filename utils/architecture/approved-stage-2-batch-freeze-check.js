@@ -51,7 +51,7 @@ class ApprovedStageTwoBatchFreezeCheck {
   run() {
     const before = this.#readBytes();
     const values = this.#readValues();
-    values.effectiveBridgePlan = StageFourClusterLedger.read(this.projectRoot).stageTwoPlan(values.approvedPlan);
+    values.effectiveBridgePlan = StageFourClusterLedger.cumulative(this.projectRoot).stageTwoPlan(values.approvedPlan);
     const validator = new ApprovedStageTwoBatchValidator({
       architecturePolicy: ArchitecturePolicy.load(this.paths.policy),
     });

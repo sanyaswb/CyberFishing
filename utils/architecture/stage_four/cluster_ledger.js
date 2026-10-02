@@ -8,6 +8,22 @@ const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_con
 const CLUSTER_DIRECTORY = "architecture/migration/stage_4/clusters";
 const RECORD_KIND = "cyber-fishing-stage-4-cluster";
 const RECORD_NAME = /^(\d{3})_[a-z0-9-]+\.json$/u;
+// Stage 5 reuses this mechanism (graph review stage_5 v1, toolingTransition): each stage keeps its own record
+// directory, kind and owner prefix; Stage 4 stays the default so its frozen readers and closure pins are unchanged.
+const LEDGER_STAGES = Object.freeze([4, 5]);
+const stageDirectories = (stage) => Object.freeze({
+  clusters: `architecture/migration/stage_${stage}/clusters`,
+  preparations: `architecture/migration/stage_${stage}/preparations`,
+  evidence: `architecture/migration/stage_${stage}/evidence`,
+});
+const recordKind = (stage) => `cyber-fishing-stage-${stage}-cluster`;
+const preparationKind = (stage) => `cyber-fishing-stage-${stage}-preparation`;
+// The stage a cluster record belongs to, from its kind (stage-qualified identity).
+const recordStage = (record) => {
+  const stage = Number(/^cyber-fishing-stage-(\d)-cluster$/u.exec(record?.kind || "")?.[1]);
+  assert(LEDGER_STAGES.includes(stage), `unknown cluster record kind: ${record?.kind}`);
+  return stage;
+};
 
 // The Stage 4 cluster ledger (owner decision 0.3): one small JSON record per cluster, read in id order.
 // Applied records add ESM targets to the cumulative runtime, reviewed import edges to the guard corpus and
@@ -19,33 +35,42 @@ class StageFourClusterLedger {
     this.#records = Object.freeze([...records]);
   }
 
-  static read(projectRoot) {
-    const directory = path.join(projectRoot, CLUSTER_DIRECTORY);
+  static read(projectRoot, stage = 4) {
+    assert(LEDGER_STAGES.includes(stage), `no cluster ledger for stage ${stage}`);
+    const relative = stageDirectories(stage).clusters;
+    const directory = path.join(projectRoot, relative);
     if (!fs.existsSync(directory)) return new StageFourClusterLedger([]);
     const records = fs.readdirSync(directory).filter((name) => name.endsWith(".json")).sort().map((name) => {
       const match = RECORD_NAME.exec(name);
-      if (!match) throw new Error(`Stage 4 cluster record name is not canonical: ${name}`);
+      if (!match) throw new Error(`Stage ${stage} cluster record name is not canonical: ${name}`);
       const record = JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
-      if (record.kind !== RECORD_KIND || record.id !== match[1]) {
-        throw new Error(`Stage 4 cluster record identity differs from its file name: ${name}`);
+      if (record.kind !== recordKind(stage) || record.id !== match[1]) {
+        throw new Error(`Stage ${stage} cluster record identity differs from its file name: ${name}`);
       }
-      return Object.freeze({ ...record, file: `${CLUSTER_DIRECTORY}/${name}` });
+      return Object.freeze({ ...record, file: `${relative}/${name}` });
     });
     records.forEach((record, index) => {
-      if (Number(record.id) !== index + 1) throw new Error(`Stage 4 cluster ids must be contiguous: ${record.id}`);
+      if (Number(record.id) !== index + 1) throw new Error(`Stage ${stage} cluster ids must be contiguous: ${record.id}`);
     });
     return new StageFourClusterLedger(records);
   }
 
+  // Every stage's records in stage order: the runtime, guard corpus, package contract and Stage 2 plan consume
+  // the cumulative applied facts; Stage 4 closure and release validation keep reading `read(root)` (Stage 4 only).
+  static cumulative(projectRoot) {
+    return new StageFourClusterLedger(LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.read(projectRoot, stage).records));
+  }
+
   // Preparation records describe exact provider relocations before a cluster. Their bridge pairs
   // retain the old owner, target and surface; only the consuming declaration moved to a split file.
-  static preparations(projectRoot) {
-    const directory = path.join(projectRoot, "architecture/migration/stage_4/preparations");
+  static preparations(projectRoot, stage = 4) {
+    assert(LEDGER_STAGES.includes(stage), `no preparation ledger for stage ${stage}`);
+    const directory = path.join(projectRoot, stageDirectories(stage).preparations);
     if (!fs.existsSync(directory)) return [];
     return fs.readdirSync(directory).filter(name => name.endsWith(".json")).sort().map(name => {
       const record = JSON.parse(fs.readFileSync(path.join(directory, name), "utf8"));
       assert.equal(record.schemaVersion, 1);
-      assert.equal(record.kind, "cyber-fishing-stage-4-preparation");
+      assert.equal(record.kind, preparationKind(stage));
       assert(record.reason && /^[0-9a-f]{40}$/u.test(record.baseCommit));
       assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
       StageFourClusterLedger.validatePreparationImports(record);
@@ -53,6 +78,10 @@ class StageFourClusterLedger {
       for (const merge of record.mergedBridges || []) StageFourClusterLedger.validateBridgeMerge(merge);
       return record;
     });
+  }
+
+  static cumulativePreparations(projectRoot) {
+    return LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.preparations(projectRoot, stage));
   }
 
   static validateBridgeRelocation({ before, after }) {
@@ -122,10 +151,14 @@ class StageFourClusterLedger {
       }) })) } })) };
   }
 
-  // Stage 4.N after N applied clusters; the Stage 3 label until the first one.
+  // Stage S.N after N applied clusters of the latest stage with an applied record; the Stage 3 label until the first.
   stageLabel(stageThreeLabel) {
-    return this.applied.length > 0 ? `4.${this.applied.length}` : stageThreeLabel;
+    const applied = this.applied;
+    if (applied.length === 0) return stageThreeLabel;
+    const stage = recordStage(applied.at(-1));
+    return `${stage}.${applied.filter((record) => recordStage(record) === stage).length}`;
   }
 }
 
-module.exports = { CLUSTER_DIRECTORY, RECORD_KIND, StageFourClusterLedger };
+module.exports = { CLUSTER_DIRECTORY, LEDGER_STAGES, RECORD_KIND, StageFourClusterLedger, preparationKind, recordKind,
+  recordStage, stageDirectories };

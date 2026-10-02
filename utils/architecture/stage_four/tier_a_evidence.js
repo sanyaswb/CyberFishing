@@ -6,10 +6,13 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { StageThreeHotLoopSourceReview } = require("../review_queue/hot_loop_source_review");
+const { recordStage, stageDirectories } = require("./cluster_ledger");
 
 const PROBE = path.join(__dirname, "class_trace_probe.js");
 const EVIDENCE_DIRECTORY = "architecture/migration/stage_4/evidence";
 const EVIDENCE_KIND = "cyber-fishing-stage-4-tier-a-evidence";
+// Stage-qualified evidence: Stage 4 keeps its directory and kind; a Stage 5 record writes under stage_5/evidence.
+const evidenceKind = (stage) => `cyber-fishing-stage-${stage}-tier-a-evidence`;
 // Tier B (public-API parity) uses the same member review and method traces as tier A.
 const KINDS = Object.freeze(["api-parity", "hot-loop", "save-round-trip"]);
 const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -35,7 +38,10 @@ class StageFourTierAEvidence {
     this.classes = [...classes].sort();
     this.scenarios = [...scenarios];
     this.sourceReview = sourceReview;
-    this.file = `${EVIDENCE_DIRECTORY}/${record.id}_${kind}.json`;
+    this.stage = recordStage(record);
+    this.directory = stageDirectories(this.stage).evidence;
+    this.evidenceKind = evidenceKind(this.stage);
+    this.file = `${this.directory}/${record.id}_${kind}.json`;
   }
 
   capture() {
@@ -47,14 +53,14 @@ class StageFourTierAEvidence {
       assert(Object.values(item.scenarios).some((trace) => Object.values(trace.calls).some((calls) => calls > 0)),
         `${name}: no scenario exercises the class`);
     }
-    fs.mkdirSync(path.join(this.root, EVIDENCE_DIRECTORY), { recursive: true });
+    fs.mkdirSync(path.join(this.root, this.directory), { recursive: true });
     fs.writeFileSync(path.join(this.root, this.file), canonical(evidence));
     return evidence;
   }
 
   compare() {
     const baseline = JSON.parse(fs.readFileSync(path.join(this.root, this.file), "utf8"));
-    assert.equal(baseline.kind, EVIDENCE_KIND);
+    assert.equal(baseline.kind, this.evidenceKind);
     assert.deepEqual({ cluster: baseline.cluster, evidenceKind: baseline.evidenceKind, scenarios: baseline.scenarios },
       { cluster: this.record.id, evidenceKind: this.kind, scenarios: this.scenarios }, "evidence command differs");
     const current = this.#build(this.record.output ? "targetPath" : "currentPath");
@@ -121,7 +127,7 @@ class StageFourTierAEvidence {
         }))),
       }];
     }));
-    return { schemaVersion: 1, kind: EVIDENCE_KIND, cluster: this.record.id, evidenceKind: this.kind,
+    return { schemaVersion: 1, kind: this.evidenceKind, cluster: this.record.id, evidenceKind: this.kind,
       scenarios: this.scenarios, classes };
   }
 

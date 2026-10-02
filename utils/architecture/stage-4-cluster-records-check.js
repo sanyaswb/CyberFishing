@@ -12,7 +12,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const espree = require("espree");
 const eslintScope = require("eslint-scope");
-const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
+const { StageFourClusterLedger, recordStage } = require("./stage_four/cluster_ledger");
 const { LANGUAGE_BUILTINS, StageFourEsmTargetProjector } = require("./stage_four/esm_target_projector");
 const { ActivationShimRenderer } = require("../build/compat_runtime/activation_shim");
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
@@ -38,7 +38,10 @@ const boundaryOf = (file) => policy.targetBoundaries
 const FORBIDDEN = ["window", "globalThis", "self", "document", "localStorage", "sessionStorage", "navigator", "CONFIG",
   "__CYBER_FISHING_COMPAT_RUNTIME__"];
 
-const ledger = StageFourClusterLedger.read(ROOT);
+// Every stage's records are validated by this one gate (Stage 5 reuses the Stage 4 mechanism); the Stage 4 closure
+// pins below keep reading the Stage 4 ledger and preparations only.
+const ledger = StageFourClusterLedger.cumulative(ROOT);
+const stageFourLedger = StageFourClusterLedger.read(ROOT);
 const stageTwoProvider = {currentPath:"src/engine/compat/stage_2/test.js",architecture:{migrationStatus:"esm"}};
 const stageTwoTarget = {currentPath:"src/engine/test.js",architecture:{migrationStatus:"esm"}};
 const importFacts = {provider:stageTwoProvider,symbol:"Test",consumer:"src/test.js",memberTargets:new Map(),
@@ -70,7 +73,8 @@ const assetPlanner = new CumulativeGraphPlanner({projectRoot:ROOT});
 assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[assetActivation]}).issues.length,0);
 assert.equal(assetPlanner.plan(assetGraphFixture).issues.length,1);
 assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[{...assetActivation,id:"wrong"}]}).issues.length,1);
-const preparations = StageFourClusterLedger.preparations(ROOT);
+const preparations = StageFourClusterLedger.cumulativePreparations(ROOT);
+const stageFourPreparations = StageFourClusterLedger.preparations(ROOT);
 // Exact preparation imports: reject an unrecorded source, implicit paths, duplicates or missing review.
 const preparationImport = {files:[{path:"src/app/bootstrap.js"}],importEdges:[{
   source:"src/app/bootstrap.js",target:"src/platform/browser/inventory/random_inventory_id.js",reason:"UUID port"}]};
@@ -115,9 +119,11 @@ ledger.records.forEach((record, index) => {
   assert(policy.targetBoundaries.some((item) => item.id === record.boundary), `${record.file}: unknown boundary`);
   assert(["A", "B", "C"].includes(record.tier) && record.tierEvidence, `${record.file}: tier and tierEvidence`);
   assert(/^M\d$/u.test(record.milestone), `${record.file}: milestone`);
-  // A deferred record names the later stage that owns its modules now; it can never be applied in Stage 4.
+  // A deferred record names a later stage that owns its modules now; it can never be applied in its own stage.
+  const recordStageNumber = recordStage(record);
   if (record.deferred) {
-    assert(record.output === null && /^stage-[5-7]$/u.test(record.deferred.stage) && record.deferred.reason,
+    assert(record.output === null && /^stage-[5-7]$/u.test(record.deferred.stage) &&
+      Number(record.deferred.stage.slice(6)) > recordStageNumber && record.deferred.reason,
       `${record.file}: deferred record needs output null, a later stage and a reason`);
     for (const module of record.modules) {
       assert.notEqual(manifest.get(module.currentPath)?.architecture.targetBoundary, record.boundary,
@@ -174,7 +180,7 @@ ledger.records.forEach((record, index) => {
       `${module.currentPath}: classic source is not its activation shims`);
     } else if (inert.has(file)) {
       new MigratedSourcePlaceholder().validate({ code: read(module.currentPath), currentPath: module.currentPath,
-        targetPath: file, exports: module.exports, stage: "Stage 4" });
+        targetPath: file, exports: module.exports, stage: `Stage ${recordStageNumber}` });
     } else {
       const retired = (contract.retiredActivations || []).filter((item) =>
         item.activation.sourceProvider === module.currentPath).map((item) => item.activation);
@@ -235,7 +241,7 @@ const activation = (symbol) => {
 const b1 = activation("B1"), b2 = activation("B2");
 const bridge = (source, symbol) => ({ id: `${source}:${symbol}`, source, target: b1.targetModule,
   globalProviders: [{ symbol, mechanism: "global-this-property" }] });
-const retirementPlan = (held, propertyReader = false) => {
+const retirementPlan = (held, propertyReader = false, stage = 4) => {
   const entry = { currentPath: "src/a.js", architecture: { roles: ["config-factory"], targetBoundary: "game-config",
     targetPath: "src/game/config/a.js" }, observed: { legacyLoadOrder: 2,
     providers: { items: [{ symbol: "A", mechanism: "global-lexical" }] } },
@@ -251,7 +257,8 @@ const retirementPlan = (held, propertyReader = false) => {
         '<script src="dist/fixture/activations/001_b2.js"></script>\n<script src="src/a.js"></script>\n'
       : propertyReader && file === "src/config/project_version.js" ? "globalThis.B1;\n"
         : "class A { read() { return B1; } }\n" };
-  return new StageFourClusterPlan(workspace, { id: "003", slug: "fixture", boundary: "game-config", modules: [{
+  return new StageFourClusterPlan(workspace, { kind: `cyber-fishing-stage-${stage}-cluster`, id: "003", slug: "fixture",
+    boundary: "game-config", modules: [{
     currentPath: entry.currentPath, targetPath: entry.architecture.targetPath, exports: ["A"],
     imports: [{ symbol: "B1", from: b1.targetModule }] }] }).build();
 };
@@ -286,6 +293,65 @@ assert(loadRetirement(validOutput).document.batches.length > 0);
 assert.throws(() => loadRetirement({...validOutput, activationsRetired: []}), /no exact applied Stage 4 cluster/u);
 assert.throws(() => loadRetirement({...validOutput, status: "planned"}), /no exact applied Stage 4 cluster/u);
 assert.throws(() => loadRetirement({...validOutput, owner: "other"}), /no exact applied Stage 4 cluster/u);
+
+// Stage-qualified identities (Stage 5 tooling transition): records, preparations, owners, evidence and the package
+// label carry their stage; a Stage 5 retirement resolves only to an exact applied Stage 5 record; Stage 4 stays frozen.
+let stageCases = 0;
+const stageCase = (condition, message) => { assert(condition, message); stageCases += 1; };
+const stageThrows = (action, pattern, message) => { assert.throws(action, pattern, message); stageCases += 1; };
+const loadStageFiveRetirement = (kind, output) => new StageThreeApprovedPlanSource({ read: file => {
+  if (file === PATHS.contract) return Buffer.from(JSON.stringify({retiredActivations: [{activation: b1,
+    retiredBy: "stage-5.cluster-001-fixture"}]}));
+  if (file === "architecture/migration/stage_5/clusters/001_fixture.json") return Buffer.from(JSON.stringify({
+    kind, id: "001", slug: "fixture", output}));
+  return Buffer.from(read(file));
+} }).load(state);
+const stageFiveOutput = {status: "applied", owner: "stage-5.cluster-001-fixture", activationsRetired: [b1.id]};
+stageCase(loadStageFiveRetirement("cyber-fishing-stage-5-cluster", stageFiveOutput).document.batches.length > 0,
+  "a Stage 5 retirement resolves to its applied Stage 5 record");
+stageThrows(() => loadStageFiveRetirement("cyber-fishing-stage-4-cluster", stageFiveOutput),
+  /no exact applied Stage 5 cluster/u, "a Stage 5 owner never resolves to a Stage 4 kind");
+const temporaryRoot = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "stage-ledger-"));
+try {
+  const writeRecord = (relative, value) => {
+    fs.mkdirSync(path.dirname(path.join(temporaryRoot, relative)), { recursive: true });
+    fs.writeFileSync(path.join(temporaryRoot, relative), JSON.stringify(value));
+  };
+  writeRecord("architecture/migration/stage_5/clusters/001_fixture.json", { kind: "cyber-fishing-stage-4-cluster", id: "001" });
+  stageThrows(() => StageFourClusterLedger.read(temporaryRoot, 5), /identity differs/u, "Stage 4 kind in the Stage 5 ledger");
+  writeRecord("architecture/migration/stage_5/clusters/001_fixture.json", { kind: "cyber-fishing-stage-5-cluster", id: "001" });
+  writeRecord("architecture/migration/stage_5/clusters/003_gap.json", { kind: "cyber-fishing-stage-5-cluster", id: "003" });
+  stageThrows(() => StageFourClusterLedger.read(temporaryRoot, 5), /contiguous/u, "Stage 5 ids are contiguous per stage");
+  fs.rmSync(path.join(temporaryRoot, "architecture/migration/stage_5/clusters/003_gap.json"));
+  writeRecord("architecture/migration/stage_4/clusters/001_old.json", { kind: "cyber-fishing-stage-4-cluster", id: "001" });
+  stageCase(StageFourClusterLedger.cumulative(temporaryRoot).records.map(recordStage).join(",") === "4,5",
+    "the cumulative ledger lists Stage 4 then Stage 5 records, each numbered from 001");
+  writeRecord("architecture/migration/stage_5/preparations/001_fixture.json", { schemaVersion: 1,
+    kind: "cyber-fishing-stage-4-preparation" });
+  stageThrows(() => StageFourClusterLedger.preparations(temporaryRoot, 5), /cyber-fishing-stage-5-preparation/u,
+    "a Stage 5 preparation carries the Stage 5 kind");
+} finally {
+  fs.rmSync(temporaryRoot, { recursive: true, force: true });
+}
+stageThrows(() => recordStage({ kind: "cyber-fishing-stage-6-cluster" }), /unknown cluster record kind/u, "no Stage 6 ledger yet");
+const appliedFixture = (stage) => ({ kind: `cyber-fishing-stage-${stage}-cluster`, output: { status: "applied" } });
+stageCase(new StageFourClusterLedger([appliedFixture(4), appliedFixture(4), appliedFixture(5)]).stageLabel("3.x") === "5.1",
+  "the package label follows the latest stage with an applied record");
+stageCase(new StageFourClusterLedger([appliedFixture(4), { kind: "cyber-fishing-stage-5-cluster", output: null }])
+  .stageLabel("3.x") === "4.1", "a pending Stage 5 record leaves the Stage 4 label");
+stageCase(stageFourLedger.records.every((record) => recordStage(record) === 4) &&
+  JSON.stringify(ledger.records.slice(0, stageFourLedger.records.length)) === JSON.stringify(stageFourLedger.records),
+  "Stage 4 records stay the frozen prefix of the cumulative ledger");
+const stageFiveEvidence = new StageFourTierAEvidence({ root: ROOT, record: { kind: "cyber-fishing-stage-5-cluster", id: "001",
+  modules: [] }, kind: "api-parity", classes: ["A"], scenarios: ["utils/x-check.js"] });
+stageCase(stageFiveEvidence.file === "architecture/migration/stage_5/evidence/001_api-parity.json" &&
+  stageFiveEvidence.evidenceKind === "cyber-fishing-stage-5-tier-a-evidence", "Stage 5 evidence has its own directory and kind");
+const stageFivePlan = retirementPlan([], false, 5);
+stageCase(stageFivePlan.owner === "stage-5.cluster-003-fixture" && stageFivePlan.stage === 5 &&
+  stageFivePlan.retiredActivations.length === 2 && stageFivePlan.inert.every((item) => item.owner === stageFivePlan.owner),
+  "a Stage 5 plan owns its retirements and inert modules as stage-5");
+stageCase(new MigratedSourcePlaceholder().render({ currentPath: "src/a.js", targetPath: "src/game/presentation/a.js",
+  exports: ["A"], stage: "Stage 5" }).startsWith("// Migrated Stage 5 source "), "a Stage 5 inert placeholder names its stage");
 
 // Stage 4 releases: one chain from the last Stage 3 release; every version pin equals the latest applied release
 // (the Stage 3 release until the first one) and the CHANGELOG holds its entry. Fixtures: a release delta changes
@@ -410,18 +476,18 @@ if (fs.existsSync(path.join(ROOT, closureFile))) {
   const original = historical.modules.filter(item=>["game-application","platform","game-config","game-config-raw"]
     .includes(item.architecture.targetBoundary)).map(item=>item.currentPath);
   const closure = json(closureFile), liveBridges = json("architecture/guards/migration_bridge_registry.json").bridges;
-  validateClosure(closure, original, manifest, preparations, liveBridges, contract);
-  assert(!ledger.records.some(record=>!record.output && !record.deferred), "Stage 4 pending cluster");
+  validateClosure(closure, original, manifest, stageFourPreparations, liveBridges, contract);
+  assert(!stageFourLedger.records.some(record=>!record.output && !record.deferred), "Stage 4 pending cluster");
   assert(releases.some(record=>record.output && record.toRelease === closure.release), "Stage 4 closure release");
   for (const changed of [{modules:closure.modules.slice(1)},
     {modules:closure.modules.map(item=>item.status === "deferred" ? {...item,reason:"unreviewed"} : item)},
     {retirementUpdates:closure.retirementUpdates.map((item,index)=>index ? item : {...item,after:{...item.after,owner:"wrong"}})}])
-    assert.throws(()=>validateClosure({...closure,...changed},original,manifest,preparations,liveBridges,contract),
+    assert.throws(()=>validateClosure({...closure,...changed},original,manifest,stageFourPreparations,liveBridges,contract),
       /Stage 4 closure scope|Stage 4 closure deferred review|Stage 4 retirement changed surface/u);
-  assert.throws(()=>validateClosure(closure,original,manifest,preparations,
+  assert.throws(()=>validateClosure(closure,original,manifest,stageFourPreparations,
     [...liveBridges,{removalStage:"stage-4"}],contract), /Stage 4 retirement remains/u);
 }
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and ${releaseCases} release fixtures; ` +
+  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
   `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);

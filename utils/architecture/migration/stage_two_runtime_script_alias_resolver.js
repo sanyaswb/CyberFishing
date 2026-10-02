@@ -40,7 +40,7 @@ class StageTwoRuntimeScriptAliasResolver {
     };
     const aliases = this.resolve({
       state: readJson("architecture/migration/stage_2_execution_state.json"),
-      approvedPlan: StageFourClusterLedger.read(projectRoot).stageTwoPlan(readJson(
+      approvedPlan: StageFourClusterLedger.cumulative(projectRoot).stageTwoPlan(readJson(
         "architecture/migration/stage_2_approved_batches.json",
       )),
       bridgeRegistry: stageTwoBridgeRegistry,

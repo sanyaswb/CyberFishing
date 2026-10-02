@@ -71,7 +71,7 @@ class StageThreeCompatibilityBuildApplication {
       ),
       viteLoader: this.viteLoader,
       outputManager: this.outputManager,
-      additionalTargetModules: StageFourClusterLedger.read(this.projectRoot).targetModules(),
+      additionalTargetModules: StageFourClusterLedger.cumulative(this.projectRoot).targetModules(),
       scriptOrderProvider: () => new LegacyScriptOrderReader(
         this.#path("index.html"),
         { scriptAliases: aliases },

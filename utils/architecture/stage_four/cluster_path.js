@@ -5,7 +5,7 @@ const childProcess = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
-const { CLUSTER_DIRECTORY, RECORD_KIND, StageFourClusterLedger } = require("./cluster_ledger");
+const { RECORD_KIND, StageFourClusterLedger, recordStage, stageDirectories } = require("./cluster_ledger");
 const { StageFourEsmTargetProjector } = require("./esm_target_projector");
 const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
@@ -103,7 +103,9 @@ class StageFourClusterPlan {
   constructor(workspace, record) {
     this.workspace = workspace;
     this.record = record;
-    this.owner = `stage-4.cluster-${record.id}-${record.slug}`;
+    // Stage-qualified identities: owner, activation floor and bridge stage come from the record kind.
+    this.stage = recordStage(record);
+    this.owner = `stage-${this.stage}.cluster-${record.id}-${record.slug}`;
   }
 
   build() {
@@ -162,7 +164,7 @@ class StageFourClusterPlan {
           shimFile: `activations/${String(slot).padStart(3, "0")}_${symbol.toLowerCase()}.js`,
           sourceProvider: currentPath, targetModule: targetPath };
         activations.push({ ...identity, id: CanonicalActivationIdentity.id(identity), owner: this.owner,
-          reason: ACTIVATION_REASON, removalStage: latestStage(["stage-4", ...readers.map((item) => item.removalStage)]) });
+          reason: ACTIVATION_REASON, removalStage: latestStage([`stage-${this.stage}`, ...readers.map((item) => item.removalStage)]) });
       }
       if (!activations.some((item) => item.sourceProvider === currentPath)) {
         inert.push({ owner: this.owner, sourceProvider: currentPath, targetModule: targetPath });
@@ -172,7 +174,7 @@ class StageFourClusterPlan {
         const identity = { bridge: currentPath, owner: this.owner, source: reader.consumer, target: targetPath };
         bridgesAdded.push({ id: CanonicalBridgeIdentity.id(identity), ...identity,
           reason: `Preserve the exact ${symbols.join(", ")} consumer until its legacy symbol is removed.`,
-          introducedStage: "stage-4", removalStage: reader.removalStage,
+          introducedStage: `stage-${this.stage}`, removalStage: reader.removalStage,
           globalProviders: symbols.map((symbol) => ({ symbol, mechanism: "global-this-property" })) });
       }
     }
@@ -210,7 +212,7 @@ class StageFourClusterPlan {
     assert.deepEqual(propertyReaders.map((item) => `${item.file}:${item.symbol}`),
       (record.reviewedPropertyReaders || []).map((item) => `${item.file}:${item.symbol}`).sort(),
       "global property readers that wake up when an activation exposes the symbol must be reviewed");
-    return { owner: this.owner, targets, consumers, activations: activations.sort(byId), inert, retiredActivations, retiredStageTwoWrappers,
+    return { owner: this.owner, stage: this.stage, targets, consumers, activations: activations.sort(byId), inert, retiredActivations, retiredStageTwoWrappers,
       bridgesAdded: bridgesAdded.sort(byId), bridgesRetired, runtimeSlot: load.slot, propertyReaders,
       importEdges: targets.flatMap((target) => (target.module.imports || []).map((item) =>
         `${target.module.targetPath}->${item.from}`)) };
@@ -297,7 +299,7 @@ class StageFourClusterApply {
       JSON.parse(workspace.git(["show", `HEAD:${PATHS.manifest}`])), workspace.json(PATHS.manifest), record);
     assert(dirty === "" || reclassifiesOnly, `touched files must be committed before apply:\n${dirty}`);
     const before = new Map(touched.map((file) => [file, workspace.hash(file)]));
-    const gameCycleBefore = this.#gameCycle("before", record.id);
+    const gameCycleBefore = this.#gameCycle("before", record.id, recordStage(record));
     // Every write is computed first; a failure after the first write restores the exact original bytes.
     const contract = workspace.json(PATHS.contract);
     const shim = new ActivationShimRenderer();
@@ -309,7 +311,7 @@ class StageFourClusterApply {
       const activations = plan.activations.filter((item) => item.sourceProvider === currentPath);
       writes.set(currentPath, activations.length > 0
         ? activations.map((item) => shim.render(item, contract.transport.symbol)).join("")
-        : new MigratedSourcePlaceholder().render({ currentPath, targetPath, exports, stage: "Stage 4" }));
+        : new MigratedSourcePlaceholder().render({ currentPath, targetPath, exports, stage: `Stage ${plan.stage}` }));
       if (activations.length === 0) continue;
       const tag = new RegExp(`<script src="${currentPath.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}(?:\\?[^"]*)?"` +
         `( data-legacy-slot="\\d+")?></script>`, "gu");
@@ -347,7 +349,7 @@ class StageFourClusterApply {
     new MigrationBridgeRegistryValidator().validate(nextRegistry);
     writes.set(PATHS.registry, canonical(nextRegistry));
     writes.set(PATHS.manifest, canonical(this.#manifest(plan)));
-    writes.set(PATHS.packageContract, this.#packageContract(future));
+    writes.set(PATHS.packageContract, this.#packageContract(future, plan.stage));
     writes.set(PATHS.debtRegistry, workspace.text(PATHS.debtRegistry));
     const applied = { ...record, output: { status: "applied", owner: plan.owner, runtimeSlot: plan.runtimeSlot,
       targets: plan.targets.map((target) => ({ currentPath: target.module.currentPath, targetPath: target.module.targetPath,
@@ -413,10 +415,10 @@ class StageFourClusterApply {
     return manifest;
   }
 
-  // The package contract mirrors the live runtime: Stage 4.N once this is the Nth applied cluster.
-  #packageContract(contract) {
+  // The package contract mirrors the live runtime: Stage S.N once this is the Nth applied cluster of stage S.
+  #packageContract(contract, stage) {
     const packageContract = this.workspace.json(PATHS.packageContract);
-    packageContract.stage.current = `4.${StageFourClusterLedger.read(this.workspace.root).applied.length + 1}`;
+    packageContract.stage.current = `${stage}.${StageFourClusterLedger.read(this.workspace.root, stage).applied.length + 1}`;
     packageContract.stage.cumulativeRuntimeBuild.runtimeInputs = new Set([...[...contract.activationPositions,
       ...(contract.retiredActivations || []).map((item) => item.activation)].map((item) => item.targetModule),
     ...(contract.inertModules || []).map((item) => item.targetModule)]).size;
@@ -433,15 +435,15 @@ class StageFourClusterApply {
     return canonical(restored) === canonical(head) && canonical(current) !== canonical(head);
   }
 
-  #gameCycle(phase, id) {
+  #gameCycle(phase, id, stage = 4) {
     const result = this.workspace.node("utils/game-cycle-check.js");
     assert.equal(result.status, 0, `game-cycle ${phase} failed:\n${result.stderr || result.stdout}`);
-    const file = `node_modules/.cache/stage-4-clusters/${id}_game_cycle_${phase}.txt`;
+    const file = `node_modules/.cache/stage-${stage}-clusters/${id}_game_cycle_${phase}.txt`;
     this.workspace.write(file, result.stdout);
     return { file, sha256: sha256(result.stdout), lines: result.stdout.split("\n").length - 1 };
   }
 
-  gameCycle(phase, id) { return this.#gameCycle(phase, id); }
+  gameCycle(phase, id, stage = 4) { return this.#gameCycle(phase, id, stage); }
 }
 
 // Step 3: guards and tier evidence on the applied tree (C: guards + identical game-cycle output; B and A add
@@ -471,7 +473,7 @@ class StageFourClusterVerify {
       return { check, status: result.status === 0 ? "PASS" : "FAIL",
         summary: (result.status === 0 ? result.stdout : result.stderr || result.stdout).trim().split("\n").at(-1).slice(0, 300) };
     });
-    const gameCycleAfter = new StageFourClusterApply(workspace, this.recordFile).gameCycle("after", record.id);
+    const gameCycleAfter = new StageFourClusterApply(workspace, this.recordFile).gameCycle("after", record.id, recordStage(record));
     const evidence = (record.evidenceCommands || []).map((item) => {
       const result = workspace.node(item.script, item.args || []);
       return { name: item.name, status: result.status === 0 ? "PASS" : "FAIL", sha256: sha256(result.stdout) };
@@ -485,11 +487,12 @@ class StageFourClusterVerify {
   }
 }
 
-function recordFileFor(root, id) {
-  const directory = path.join(root, CLUSTER_DIRECTORY);
+function recordFileFor(root, id, stage = 4) {
+  const relative = stageDirectories(stage).clusters;
+  const directory = path.join(root, relative);
   const name = fs.existsSync(directory) ? fs.readdirSync(directory).find((file) => file.startsWith(`${id}_`)) : null;
-  if (!name) throw new Error(`No Stage 4 cluster record ${id} in ${CLUSTER_DIRECTORY}`);
-  return `${CLUSTER_DIRECTORY}/${name}`;
+  if (!name) throw new Error(`No Stage ${stage} cluster record ${id} in ${relative}`);
+  return `${relative}/${name}`;
 }
 
 module.exports = { PATHS, RECORD_KIND, REMOVAL_BY_CONSUMER_BOUNDARY, StageFourClusterApply, StageFourClusterPlan,
