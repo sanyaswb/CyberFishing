@@ -572,6 +572,27 @@
       "module": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
       "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
       "reason": "The existing Object.freeze initializer creates only the immutable presentation catalog and its local descriptors/read functions. Preserve this exact single catalog instance and functions; no I/O, browser/DEV reads, scheduling or external mutation occurs."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "2a2e506ef4cab8c204ef3e9a590e6dc1f06e97717d1164123edeebb2299fcca0",
+      "module": "src/game/presentation/inventory/inventory_subfilter_resolver.js",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Only existing immutable display catalog/static initializer Object.freeze calls execute during evaluation. They create local catalogs once without external mutation, I/O, browser/DEV or scheduling; preserve original reference identity and evaluation order before consumers."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "2e5edb4c612cd552ed310e15bf7383d6d36865e195461d9a0920ae0e8cd11108",
+      "module": "src/game/presentation/inventory/inventory_view_model_factory.js",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Only existing immutable display catalog/static initializer Object.freeze calls execute during evaluation. They create local catalogs once without external mutation, I/O, browser/DEV or scheduling; preserve original reference identity and evaluation order before consumers."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "34689f414199ce2cb9083ee8fa6243db1b74a7b93a8bcc6daf62c5f5acf1b1bc",
+      "module": "src/game/presentation/inventory/equipment_slot_availability_policy.js",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Only existing immutable display catalog/static initializer Object.freeze calls execute during evaluation. They create local catalogs once without external mutation, I/O, browser/DEV or scheduling; preserve original reference identity and evaluation order before consumers."
     }
   ],
   "activationPositions": [
@@ -706,18 +727,6 @@
       "owner": "stage-4.cluster-026-world-and-casting",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "id": "activation-1203aa3f3b14",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "sourceProvider": "src/core/inventory/inventory_item_location.js",
-      "targetModule": "src/game/domain/inventory/inventory_item_location.js",
-      "exportName": "InventoryItemLocationKind",
-      "legacySymbol": "InventoryItemLocationKind",
-      "legacyScriptIndex": 144,
-      "shimFile": "activations/144_inventoryitemlocationkind.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "exportName": "ImageAssetProvider",
@@ -1032,6 +1041,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryItemViewFactory",
+      "legacyScriptIndex": 225,
+      "legacySymbol": "InventoryItemViewFactory",
+      "shimFile": "activations/225_inventoryitemviewfactory.js",
+      "sourceProvider": "src/systems/inventory_item_view_factory.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_view_factory.js",
+      "id": "activation-2cf7276ff8cc",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "GameLoop",
       "legacyScriptIndex": 394,
       "legacySymbol": "GameLoop",
@@ -1140,18 +1161,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-3c14e876e15d",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "sourceProvider": "src/config/inventory/equipment_slot_config.js",
-      "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "exportName": "EquipmentSlotId",
-      "legacySymbol": "EquipmentSlotId",
-      "legacyScriptIndex": 30,
-      "shimFile": "activations/030_equipmentslotid.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "CatchResolutionService",
       "legacyScriptIndex": 402,
       "legacySymbol": "CatchResolutionService",
@@ -1236,6 +1245,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "InventoryV2ItemViewFactory",
+      "legacyScriptIndex": 192,
+      "legacySymbol": "InventoryV2ItemViewFactory",
+      "shimFile": "activations/192_inventoryv2itemviewfactory.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "targetModule": "src/game/presentation/inventory/inventory_v2_item_view_factory.js",
+      "id": "activation-432075ed522e",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "FishingController",
       "legacyScriptIndex": 402,
       "legacySymbol": "FishingController",
@@ -1292,6 +1313,18 @@
       "legacySymbol": "InventoryItemReservationPolicy",
       "legacyScriptIndex": 145,
       "shimFile": "activations/145_inventoryitemreservationpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2ItemOrderResolver",
+      "legacyScriptIndex": 194,
+      "legacySymbol": "InventoryV2ItemOrderResolver",
+      "shimFile": "activations/194_inventoryv2itemorderresolver.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_order_resolver.js",
+      "id": "activation-4c4bdab36bfd",
+      "owner": "stage-5.cluster-006-inventory-read-models",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1424,18 +1457,6 @@
       "targetModule": "src/game/application/inventory/inventory_item_hydrator.js",
       "id": "activation-5790f13a346f",
       "owner": "stage-4.cluster-020-inventory-storage-application",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-58caa603fdd9",
-      "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
-      "sourceProvider": "src/config/inventory/equipment_slot_config.js",
-      "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
-      "exportName": "EQUIPMENT_MAIN_SLOT_IDS",
-      "legacySymbol": "EQUIPMENT_MAIN_SLOT_IDS",
-      "legacyScriptIndex": 30,
-      "shimFile": "activations/030_equipment_main_slot_ids.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1630,6 +1651,18 @@
       "owner": "stage-4.cluster-028-orchestrators",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "EquipmentSlotAvailabilityPolicy",
+      "legacyScriptIndex": 161,
+      "legacySymbol": "EquipmentSlotAvailabilityPolicy",
+      "shimFile": "activations/161_equipmentslotavailabilitypolicy.js",
+      "sourceProvider": "src/core/equipment/equipment_slot_availability_policy.js",
+      "targetModule": "src/game/presentation/inventory/equipment_slot_availability_policy.js",
+      "id": "activation-70566c4aff41",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "DevFlagsProvider",
@@ -1872,6 +1905,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ViewModelFactory",
+      "legacyScriptIndex": 196,
+      "legacySymbol": "InventoryV2ViewModelFactory",
+      "shimFile": "activations/196_inventoryv2viewmodelfactory.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "targetModule": "src/game/presentation/inventory/inventory_view_model_factory.js",
+      "id": "activation-8481bfdba8c4",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-85b75b58221b",
       "owner": "stage-3.candidate-009-fish-444e8034",
       "sourceProvider": "src/core/fish/fish_rarity_resolver.js",
@@ -2060,18 +2105,6 @@
       "targetModule": "src/game/application/inventory/inventory_refill_adapters.js",
       "id": "activation-8f29d2fdaec7",
       "owner": "stage-4.cluster-022-inventory-refill",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-91c2b60ce51e",
-      "owner": "stage-3.replan-322.batch-032-items-096b3398",
-      "sourceProvider": "src/core/items/rarity/effective_item_rarity_resolver.js",
-      "targetModule": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
-      "exportName": "EffectiveItemRarityResolver",
-      "legacySymbol": "EffectiveItemRarityResolver",
-      "legacyScriptIndex": 50,
-      "shimFile": "activations/050_effectiveitemrarityresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2434,6 +2467,18 @@
       "owner": "stage-5.cluster-004-visual-style-resolvers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "InventoryV2SubfilterResolver",
+      "legacyScriptIndex": 193,
+      "legacySymbol": "InventoryV2SubfilterResolver",
+      "shimFile": "activations/193_inventoryv2subfilterresolver.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "targetModule": "src/game/presentation/inventory/inventory_subfilter_resolver.js",
+      "id": "activation-b90a23caedc1",
+      "owner": "stage-5.cluster-006-inventory-read-models",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "InputManager",
@@ -3102,6 +3147,23 @@
     },
     {
       "activation": {
+        "id": "activation-1203aa3f3b14",
+        "owner": "stage-3.candidate-017-inventory-fd62478b",
+        "sourceProvider": "src/core/inventory/inventory_item_location.js",
+        "targetModule": "src/game/domain/inventory/inventory_item_location.js",
+        "exportName": "InventoryItemLocationKind",
+        "legacySymbol": "InventoryItemLocationKind",
+        "legacyScriptIndex": 144,
+        "shimFile": "activations/144_inventoryitemlocationkind.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-006-inventory-read-models"
+    },
+    {
+      "activation": {
         "id": "activation-13045d7d5103",
         "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
         "sourceProvider": "src/entities/fish.js",
@@ -3493,6 +3555,23 @@
     },
     {
       "activation": {
+        "id": "activation-3c14e876e15d",
+        "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+        "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+        "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "exportName": "EquipmentSlotId",
+        "legacySymbol": "EquipmentSlotId",
+        "legacyScriptIndex": 30,
+        "shimFile": "activations/030_equipmentslotid.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-006-inventory-read-models"
+    },
+    {
+      "activation": {
         "id": "activation-3c43fc3b9397",
         "owner": "stage-3.replan-350.batch-051-fishing-95a74a4a",
         "sourceProvider": "src/systems/fish_force_system.js",
@@ -3762,6 +3841,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-037-fishing-runtime-services"
+    },
+    {
+      "activation": {
+        "id": "activation-58caa603fdd9",
+        "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
+        "sourceProvider": "src/config/inventory/equipment_slot_config.js",
+        "targetModule": "src/game/domain/equipment/equipment_slot_catalog.js",
+        "exportName": "EQUIPMENT_MAIN_SLOT_IDS",
+        "legacySymbol": "EQUIPMENT_MAIN_SLOT_IDS",
+        "legacyScriptIndex": 30,
+        "shimFile": "activations/030_equipment_main_slot_ids.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-006-inventory-read-models"
     },
     {
       "activation": {
@@ -4204,6 +4300,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-030-fight-physics-system"
+    },
+    {
+      "activation": {
+        "id": "activation-91c2b60ce51e",
+        "owner": "stage-3.replan-322.batch-032-items-096b3398",
+        "sourceProvider": "src/core/items/rarity/effective_item_rarity_resolver.js",
+        "targetModule": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+        "exportName": "EffectiveItemRarityResolver",
+        "legacySymbol": "EffectiveItemRarityResolver",
+        "legacyScriptIndex": 50,
+        "shimFile": "activations/050_effectiveitemrarityresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-006-inventory-read-models"
     },
     {
       "activation": {

@@ -1,0 +1,2157 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "006",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-integration-check.js",
+    "utils/inventory-v2-equipment-check.js",
+    "utils/item-progression-check.js",
+    "utils/item-rarity-roundtrip-check.js"
+  ],
+  "classes": {
+    "EquipmentSlotAvailabilityPolicy": {
+      "sourcePath": "src/core/equipment/equipment_slot_availability_policy.js",
+      "members": [
+        {
+          "name": "#slotConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "eec6dc8dc2fe91c0f8df5d77c0097a9f8ae0a7aca5d67bf4479e063ce65bf02d"
+        },
+        {
+          "name": "#visibilityPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "62a067553613134d426af60bf1c8477bf8ca6060d8ff26e687032910811e80a6"
+        },
+        {
+          "name": "#terminalLineResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3cfac42ab431c7bc6b023ef3bf537b675249ec5b1951424412b56102ecc74e99"
+        },
+        {
+          "name": "#slotPresentation",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "2a152854f275ed28da140ee22a70796f8d06e61887e2e5f5da0f8cac2c24f24d"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "6d93b632db33da7529052204f42f933d2e80faae0b94756bc1a5b15daf4660f1",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1a43bd1cec518240ac884aff4cd0a5c48a437c9a3213fec9dee6a6596c103621",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getClickWarning",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fc49b0ae5cb315d4efe62ce307afa52abea3e2d81c79bb210e3ac35d69f45bce",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveAcceptedTypes",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0e463ee220437da9515746d670af083cfae9a77fc2743bcd96435cb195117e74",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getRootInstanceId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a0ab847a132cbe3ce72ee387266dde4807b3df332c8d8df2bee9e86cd81eedcf",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isAccessibleInventoryRoot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8e847521a301ed05681e036604b50d2300c18d227e3ea98880e70d4e3fd670f8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#result",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9ffd0cd40222500312719afba37da9c5b94e9214ca3e17e8cf4c2b5eba18dd48",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 12,
+        "arrayExpressions": 5,
+        "newExpressions": 0,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "undefined",
+          "member": "#isAccessibleInventoryRoot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isAccessibleInventoryRoot",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#isAccessibleInventoryRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocationKind",
+          "member": "#isAccessibleInventoryRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocationKind",
+          "member": "#isAccessibleInventoryRoot",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentSlotId",
+          "member": "#resolveAcceptedTypes",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentSlotId",
+          "member": "#resolveAcceptedTypes",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#result",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_PRESENTATION",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_PRESENTATION",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Boolean",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "constructor"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_PRESENTATION",
+          "member": "constructor"
+        },
+        {
+          "name": "EquipmentSlotId",
+          "member": "#resolveAcceptedTypes"
+        },
+        {
+          "name": "InventoryItemLocationKind",
+          "member": "#isAccessibleInventoryRoot"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "5326326addbaaa1f525d0c8abd59227d7f469b8b2f2ee10488e1291d56a02018",
+          "calls": {
+            "resolve": 1508,
+            "getClickWarning": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": "b06e9a0623d351c407634c44ba0d1df8e6767ee8a293abb8d3ce403089bc87ca",
+          "calls": {
+            "resolve": 4,
+            "getClickWarning": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryItemViewFactory": {
+      "sourcePath": "src/systems/inventory_item_view_factory.js",
+      "members": [
+        {
+          "name": "#itemDatabase",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bf2549a39e945e94594e16319ff133e5525ca0da514f01c66f52839be7a753e5"
+        },
+        {
+          "name": "#progressionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "589b77afac29bed2f9ed2a8117723cb8505a39cb3f02dd203c84489869dfaedc"
+        },
+        {
+          "name": "#conditionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f10e88dbf2339ae75f121cbe8aa0f1e11ad2c6b4d5474f3cc616e4c8a904654d"
+        },
+        {
+          "name": "#freshnessResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6c942935c5659012e753a649c5859fc6335eab0f8214cbd9685ceeab3e606f66"
+        },
+        {
+          "name": "#displayStatsResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f55ee7d085d1ba2cea424ddd9e652467c47c2d7a359875f9a87084a22936a0f3"
+        },
+        {
+          "name": "#runtimeContextProvider",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3eb13a110fdab628cf607cd717febc183eb6c5361eb4872f5d70f87b8a2bda20"
+        },
+        {
+          "name": "#effectiveStatsResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "606070f40b9df67538f6d37d43b2929a573b44a9bf8d1c9e0435fda9bf3315c4"
+        },
+        {
+          "name": "#effectiveRarityResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "d97928728790bf86c4f61659dce224d474117092f4660b551d1585f48fa25cdd"
+        },
+        {
+          "name": "#baitEffectivenessCatalogResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "2e510cf48745b2a5af47805849e1fd4bc0d3599d43e543bf3f1727dd17dfac11"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "479f53cff59e200f7e9233c27aa4a287bcaa209f761b77fc42ded8e2d5547e69",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 6,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee0bfcdce4f5dcfc41de24f6aabd5b5b028638bcdd3bd7f5618521a93cca454f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 10,
+        "arrayExpressions": 0,
+        "newExpressions": 6,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "undefined",
+          "member": "create",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": "2ac1f5089ac46bd0fcbd3ca6f158868ebe7e4e0796d203c91836bf5b8706fcab",
+          "calls": {
+            "create": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": "47b18f00fec1d9d1a82d84475a91d55b89e156dbce4e13f5b4543e5850b5d00d",
+          "calls": {
+            "create": 12
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ItemOrderResolver": {
+      "sourcePath": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "members": [
+        {
+          "name": "#config",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9ac0c9aa21c698da30613f9b784c31566ac9d769c321a617510d6ff7e1f90974"
+        },
+        {
+          "name": "#typeRanks",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fdc3f3560a3e5b98a30315287f8690194fd88e634f2267a10f57eeb3c242a6f2"
+        },
+        {
+          "name": "#rarityOptions",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1f8f675cb9038b7bc573160e50ef06e6cdeb5cafb67375f2e40db11c82615971"
+        },
+        {
+          "name": "#rarityRanks",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fee4f123130886ae9aeb8fcd5203ac82e6dd600597e90d5d7b347d4e5a6666a0"
+        },
+        {
+          "name": "#activePlacementKey",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "42e49b20e5efed34602f3ebb4ce72c2444f2b1954e53b7c9f8aa630f323c116b"
+        },
+        {
+          "name": "#placementOrder",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "be884adb1221b54628e81b73621a31eb861f1889c595f796347946be07203af0"
+        },
+        {
+          "name": "#lastResolvedOrder",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a1c174a7aca68fe15f70f1cfa4333f8ec2394d8b7d4bfaca187aecb16eabcfeb"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "a7ade678872457594b355ab3b7dff89dd2b207cf9223628500fb18e10679d3a2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 4,
+            "newExpressions": 4,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3ede5aa226485533e157c44370799bf5925904ed11e4423b74d9ca1e7290430c",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 4,
+            "newExpressions": 1,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "createControls",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c8da89f0ab74edad66231128b955aec8434b4e02c9ee1ee9af309a2f07ad42fe",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 5,
+            "newExpressions": 1,
+            "objectFreezeCalls": 9,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolveRarityId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7dbdbafb672014238e34f942de86a826888e32bc205946e125136802fd0073b7",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 3
+          }
+        },
+        {
+          "name": "#compare",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "58b7ad86641225c898e801c26cc17c9c85e6e3fa8a226ff75ce5afae9c62a883",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#numericValue",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "51561aae80af748060e40c1245e3e6823e55c93ed8d103321cbfb08a112b432b",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#readPath",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "21eadb8752337b55ef351bafc78354cef0e91b79cb41840aa196956f9ce184d0",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyPlacementOrder",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f86ae85b81b750d07496782dd2473a122d7fd1f127b2ee5eb9b6f59d8dc0ab60",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 6,
+            "newExpressions": 1,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#criterionIds",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5b37c13aa887588ed901939f263b1a650fa6480c9151c59adedfe95156cf13f9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 2,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#directionId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "dc4a40184c6731ebe4405de4b4809ad6ce7687d7aeaad348cbda048df4f9158f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#validRarityIds",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4f721d8a3b7f77b6cfaa205bdb800f24bd9f020bd74108c58dc0b57ad7e60d16",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#cssColor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3b75ae770d7e6b25862f1ab62a8c5508798faf33e4e9295f7234b97bdde12b35",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 9,
+        "arrayExpressions": 30,
+        "newExpressions": 10,
+        "objectFreezeCalls": 17,
+        "objectAssignCalls": 0,
+        "roundingCalls": 3
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#applyPlacementOrder",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#applyPlacementOrder",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#applyPlacementOrder",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#applyPlacementOrder",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#compare",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#compare",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#criterionIds",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#criterionIds",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#criterionIds",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#criterionIds",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#cssColor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#cssColor",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#cssColor",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#cssColor",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#directionId",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#lastResolvedOrder",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#numericValue",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#numericValue",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#placementOrder",
+          "kind": "field"
+        },
+        {
+          "name": "String",
+          "member": "#readPath",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#readPath",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#validRarityIds",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#validRarityIds",
+          "kind": "method"
+        },
+        {
+          "name": "INVENTORY_V2_SORT_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_SORT_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "RARITY_VISUAL_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "RARITY_VISUAL_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Map",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "String",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "String",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "String",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Map",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "createControls",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "resolveRarityId",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "INVENTORY_V2_SORT_CONFIG",
+          "member": "constructor"
+        },
+        {
+          "name": "RARITY_VISUAL_CONFIG",
+          "member": "constructor"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "57f7a4eac2f6966224dd885d02cf2d6efac74f49fc9788d3f55535a89bc30394",
+          "calls": {
+            "resolve": 214,
+            "createControls": 214,
+            "resolveRarityId": 1419
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": "7727e54534ce262f51b64d5f0031a36d0c4ae98bfd77710c111028d1f6dddea2",
+          "calls": {
+            "resolve": 3,
+            "createControls": 1,
+            "resolveRarityId": 33
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ItemViewFactory": {
+      "sourcePath": "src/application/inventory/inventory_v2_item_view_factory.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#assemblyStates",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a0fa797f79cf80b254789efa5ed888dda3813003769c08d159dddb43fe55b21b"
+        },
+        {
+          "name": "#assemblyReader",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3a1cd8bf5402ff86852e9c453c8501ff0ba67feca233653112ed7474ea5ceba8"
+        },
+        {
+          "name": "#completionPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "142231c7d35f4b4e37a7714567fea945e35f7dab77f68775bf8b5e32fe7700ff"
+        },
+        {
+          "name": "#hydrate",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ecfb555d596c75fa766542aa8db10355279f956c7f50c88281b3a0fa64f7587b"
+        },
+        {
+          "name": "#boatChargeProvider",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bb54f64646a535bf64ebb694dfe6f029270997d585322228de083da48270897b"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "34f743c83e85617511e3c9df8d51ceab232751a2df77b48a398a833690252add",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setBoatChargeProvider",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f1e0ed2efcb7d150cec18391ea9fcf8ba65d15b1234061d3bc9474c3b5a27b80",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f85f4fb0fdd7289584abad0a2d93cfb3497d7ea61684e6f7837c9823c8115542",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "createLoadout",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cd677b095e2070c0746070ed7f25f3bed8a280f2a7a193e2f37939d1c2c6ef17",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hydrateItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f1fcc64752d3d9b3525de4fbf36f3f76d04a2f9cc5cccaff8548b8377e744ced",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createAttachmentBadges",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3eadf1fb7418b48e503f32a3999f4d79e28dc3bde14119692cda37ef369a8682",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#placement",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9ddd225e7538775937833301770bf5b5aa5197f02eaf0b06243f8382a8a8c687",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createBoatCharge",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f88fb9b0ad42e2e11fa8e2bc1744e99bfc68499fac83cff70bf7fd4cdd827329",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 2,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Number",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#createBoatCharge",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "5ee70187d9a060c523d80f72a461ac7d503abc7a7aeccf0d235bbc49eb6b5314",
+          "calls": {
+            "setBoatChargeProvider": 1,
+            "create": 8298,
+            "createLoadout": 27
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2SubfilterResolver": {
+      "sourcePath": "src/application/inventory/inventory_v2_subfilter_resolver.js",
+      "members": [
+        {
+          "name": "DEFAULT_GROUPS",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "bc3eee7bd508b76b23b3e3ad5adf1ce9a614d2cbaa302f28d80c82fbe895ddd5"
+        },
+        {
+          "name": "#groups",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "5449516685570f5c35dafcfb0918bc0778a664b0a0db7464856e42a595571877"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "ef8519422de16399c3bf0c0ec1f9e4abf811ef3b4eb0467a28a93891829d8f01",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "resolve",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "47478eb44c580e728fcbde004c4208458b6143a6c819aaaa8997f1cfa1b7808c",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 33,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 31,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "DEFAULT_GROUPS",
+          "kind": "field"
+        },
+        {
+          "name": "String",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "resolve",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "resolve",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "2b699389e7180afc031ab8af114916cf511b8511e075729d09144bb464515ef3",
+          "calls": {
+            "resolve": 570
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ViewModelFactory": {
+      "sourcePath": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "members": [
+        {
+          "name": "#categories",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "35b7e935a13e0fbe72a4a82c3e4eea1a3b0cdd80e0fd6acd96c32585667286fe"
+        },
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#assemblyStates",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a0fa797f79cf80b254789efa5ed888dda3813003769c08d159dddb43fe55b21b"
+        },
+        {
+          "name": "#attachmentTargetResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4f5d4b985f3504f658eebe7a3b7e97b785e91e4f28eef70b3b65aa363a59c558"
+        },
+        {
+          "name": "#contextItemFilter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b0203c61ad12437f1063ff12755d5b18139c7f5735124a40737e005a1904b1ac"
+        },
+        {
+          "name": "#equipmentState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "504fd44c38c1df1092996f1d3e8b8800ac30884f952a0bf23b90240035da4980"
+        },
+        {
+          "name": "#loadouts",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1509bbb3fe5d559a3b636fc1c0dab75bfaef4378afe67a0d5ad30bf42ebe064f"
+        },
+        {
+          "name": "#itemViews",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c64ba82648f5a4d31186c13a2ed68f979ec71a05fc56e501e161122ec4afcb58"
+        },
+        {
+          "name": "#subfilterResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c0b1f9a81c51dc8d89323adfbcb72ac21ee5d1b0314ec8196f0655ab83257f4a"
+        },
+        {
+          "name": "#itemOrderResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6de3cf67a3f955aada1d81124c0f05bee7b307b78ae7a36ff7fc7e765393ea14"
+        },
+        {
+          "name": "#visibilityPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "62a067553613134d426af60bf1c8477bf8ca6060d8ff26e687032910811e80a6"
+        },
+        {
+          "name": "#availabilityPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "669385c26c007e1456266eb435a1c39412222b71b1ab20bbaa5b8dd75721d9e0"
+        },
+        {
+          "name": "#terminalLineLabelResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e258977cbdb7ecead36bf2ccfff3c70035da0c248dad0b2d3283042e4cc8e211"
+        },
+        {
+          "name": "#compatibilityPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9715c26e0630be3756f3c8c95850f5811652d17af15e8278abd9e3cf8cb50aa4"
+        },
+        {
+          "name": "#equipmentLineReadinessPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9a0d40108594e8ac8612ab505284cec6113f88ae3e198857d5bd31ab03da827d"
+        },
+        {
+          "name": "#equipmentReadModelFactory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b9d8249f899b43ef661b224c7c74c6848ea5a0f34366777b1cb1736e72ad8274"
+        },
+        {
+          "name": "#settings",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "28329d75918cebc7eeda1ca12b7891c45a11043cc5fb4ce437411a3eff3e5c90"
+        },
+        {
+          "name": "#loadValueProvider",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "18b6bf108862ff0aa06d968bb7337783aaf936b77cf9e9971cbd99dcc6fa2b46"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "50fc3ae77e7f94b17fd37681ae1e0eb8bf1521245264b926ffab179743de0157",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 1,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cec5302159cc46f5b6db3c137e34b190d3208259603e7976753b67c45a04a565",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 7,
+            "arrayExpressions": 4,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createEquipmentPanel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7e02ee2d1101b0522042c9cc062e444ff54e4e350e077e19fe1a6843be7270f4",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createAssemblyEditor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "64cf959eab7753c70467f4d9ca5ff9e184fb75f0a562d2ed491080f3dcdb8673",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 4,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveAssemblyEquipAvailability",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6d948bc8777075ceee8c70c2a51a23730be666bdfacc98c89137a82730c3955f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#validateActivationReadiness",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d0e1be2f74dd15d3666d4d3b12214f906781c3603a564c9d88eabacfa6caf144",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createEquippedRodParameterItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "36bebacb7a6639adcf29de24b1552f24430a960925a0c96a027346b13d8fa0c8",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 5,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createSavedLoadoutPreview",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0d7d370062e1f01f54118514550436dfd978639d0a7864cfc025deed5cd8474f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createInventory",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bceab10ce35c550ee13b2cca5d7a9ea30d5ad01b5b05de6ab4fd6809e28f8971",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 9,
+            "arrayExpressions": 4,
+            "newExpressions": 6,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#accessibleInventoryItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c71ea9036d0b929daef29e036635a5078e748b2beda9c89eb37d3353c9ffcfa4",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#matchesCategory",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7eebcbbf08a309941936ef64aa5f45502b9683624732ef165713bb6c69c1cb68",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 5,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#itemType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cf0d5ca86182d5f2a6b518c72fc8c3a696be33da8487edf04e0c9430c6e3b4de",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#variant",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "479b2ef33e818e9e7d3deee2141a71884590ef19ba6025a49d68eba81d51aa60",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createProjectedItemView",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9ec5a298847674eedd3a2c9b765bfa837c4725974bce8c4d1a0245f70db9c8e6",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createTooltipContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9a07185cb53024a51e8b8934dbf0be528589be0bc28e422126eb13c408defd85",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#equipmentLabel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7dba508edca6599b4e1eb1778a8b23ac0fa5173a0ee4ecb942c936cb5737f5a6",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#socketLabel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "964f9c0d3543db57e67d567f3873b89fbd45ba73030981867393fdadf22c8d46",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#slotState",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0871f1c18ec5497519652c34cda43da3017380366f877f371e60b3e689d7c09c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 58,
+        "arrayExpressions": 31,
+        "newExpressions": 13,
+        "objectFreezeCalls": 3,
+        "objectAssignCalls": 1,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Set",
+          "member": "#accessibleInventoryItems",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#accessibleInventoryItems",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#accessibleInventoryItems",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#accessibleInventoryItems",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#categories",
+          "kind": "field"
+        },
+        {
+          "name": "Set",
+          "member": "#createAssemblyEditor",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#createAssemblyEditor",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_ALL_SLOT_IDS",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_MAIN_SLOT_IDS",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createEquipmentPanel",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#createEquippedRodParameterItems",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createInventory",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_MAIN_SLOT_IDS",
+          "member": "#createSavedLoadoutPreview",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createSavedLoadoutPreview",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#createTooltipContext",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_PRESENTATION",
+          "member": "#equipmentLabel",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "#resolveAssemblyEquipAvailability",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "#resolveAssemblyEquipAvailability",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_ALL_SLOT_IDS",
+          "member": "#resolveAssemblyEquipAvailability",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentSlotAvailabilityState",
+          "member": "#slotState",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentSlotAvailabilityState",
+          "member": "#slotState",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentSlotAvailabilityState",
+          "member": "#slotState",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Boolean",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "#resolveAssemblyEquipAvailability"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "f67b8b7d564dc3e6f89c7c4039204b804aa5fc0928a33fb34854306c134b724f",
+          "calls": {
+            "create": 214
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-equipment-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

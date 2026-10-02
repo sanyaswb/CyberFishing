@@ -117,6 +117,8 @@ class RuntimeLoader {
         messages: context.INVENTORY_RULE_MESSAGES,
       });
     }
+    context.EquipmentSlotAvailabilityState ||= context.__CYBER_FISHING_COMPAT_RUNTIME__.modules[
+      "src/game/presentation/inventory/equipment_slot_availability_policy.js"]?.EquipmentSlotAvailabilityState;
     context.EquipmentSlotAvailabilityPolicy = bindConstructorDefaults(context.EquipmentSlotAvailabilityPolicy,
       () => ({ visibilityPolicy: new context.EquipmentSlotVisibilityPolicy({ slotConfig: context.EQUIPMENT_SLOT_CONFIG }),
         terminalLineResolver: new context.TerminalLineSlotResolver() }));

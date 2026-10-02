@@ -82,11 +82,11 @@ class InventoryV2SourceReader {
   }
 
   readApplicationFactory() {
-    return fs.readFileSync(VIEW_MODEL_FACTORY_FILE, "utf8");
+    return new SourceRuntime().readAuthoredSource(path.relative(ROOT, VIEW_MODEL_FACTORY_FILE).replaceAll("\\", "/"));
   }
 
   readItemViewFactory() {
-    return fs.readFileSync(ITEM_VIEW_FACTORY_FILE, "utf8");
+    return new SourceRuntime().readAuthoredSource(path.relative(ROOT, ITEM_VIEW_FACTORY_FILE).replaceAll("\\", "/"));
   }
 
   readCommandService() {

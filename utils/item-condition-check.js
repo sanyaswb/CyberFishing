@@ -237,9 +237,8 @@ class ItemConditionCheck {
   }
 
   #checkLifecycleContract() {
-    const factory = fs.readFileSync(
-      path.join(ROOT, "src/systems/inventory_item_view_factory.js"),
-      "utf8",
+    const factory = new SourceRuntime().readAuthoredSource(
+      "src/systems/inventory_item_view_factory.js",
     );
     const inventoryFactory = fs.readFileSync(
       path.join(ROOT, "src/game/application/inventory/inventory_item_factory.js"),
