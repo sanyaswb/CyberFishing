@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "DEV hooks via DevFlagsProvider; browser access via M1 platform ports; application.js reads RodVisualOffsetSystem (presentation).",
+  "tierEvidence": "Per-frame (A) orchestrators: fishing.js (cast/fight services, session factory) and states.js (game state machine). Graph review v4: src/app/application.js (GameApplication + facades) left this cluster for bootstrap-production (Stage 5, with GameCompositionRoot). DEV hooks and browser access are injected by preparations before apply.",
   "modules": [
     {
       "currentPath": "src/app/fishing.js",
@@ -152,59 +152,6 @@
         }
       ],
       "planningPrerequisite": "src/game/application/state/game_state_machine.js: reads classic or browser globals: console, document, requestAnimationFrame"
-    },
-    {
-      "currentPath": "src/app/application.js",
-      "targetPath": "src/game/application/runtime/game_application.js",
-      "exports": [
-        "GameApplication",
-        "GameDebugFacade",
-        "GameFishingFacade",
-        "GameViewportFacade"
-      ],
-      "imports": [
-        {
-          "symbol": "BaitFactory",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "ConfigProvider",
-          "from": "src/platform/browser/runtime/legacy_runtime_adapters.js"
-        },
-        {
-          "symbol": "EventLifecycle",
-          "from": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js"
-        },
-        {
-          "symbol": "FISH_DB",
-          "from": "src/game/config/databases/fish_database.js"
-        },
-        {
-          "symbol": "FishingCastExposureResolver",
-          "from": "src/game/domain/fishing/fishing_cast_exposure_resolver.js"
-        },
-        {
-          "symbol": "GameClock",
-          "from": "src/platform/browser/time/game_clock.js"
-        },
-        {
-          "symbol": "InventoryItemLocation",
-          "from": "src/game/domain/inventory/inventory_item_location.js"
-        },
-        {
-          "symbol": "Net",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "RodVisualOffsetSystem",
-          "from": "src/game/presentation/fishing/rod_visual_offset_system.js"
-        },
-        {
-          "symbol": "Vector2",
-          "from": "src/engine/math/vector2.js"
-        }
-      ],
-      "planningPrerequisite": "src/game/application/runtime/game_application.js: reads classic or browser globals: console"
     }
   ],
   "reviewedPropertyReaders": [],

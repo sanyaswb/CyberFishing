@@ -217,11 +217,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "bootstrap"
         ],
-        "targetBoundary": "game-application",
-        "targetPath": "src/game/application/runtime/game_application.js",
-        "migrationWave": 4
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game_application.js",
+        "migrationWave": 7
       },
       "analysis": {
         "dependencies": {
