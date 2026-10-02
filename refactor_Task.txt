@@ -401,6 +401,7 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 - [ ] Rename the production diagnostic snapshots called "debug" in `FishForceSystem` and `TackleStressSystem` to diagnostics (017).
 - [ ] Rename `LocationMap.getDebugRevision` to `getRevision`: it is the revision of the map's source data, owned by the map (owner decision 2026-09-29; an API change, deferred).
 - [ ] `LocationMap.update()` builds the `currentDebugState` string from config flags every frame (a hot-loop allocation): replace it with a "config changed" flag from the DEV override store without changing behaviour (Stage 6/7, owner decision 2026-09-29).
+- [ ] Delete the unread fish profile helpers `fish_profile_presets.js` (Stage 4 cluster 003) and `fish_profile_factory.js` (cluster 005): no reader in src, migrated export-only (inert); their classic globals are gone since the migration.
 - [ ] Decide the fate of unused code kept during migration (never deleted in Stage 3): `BuffManager` (016), `InventoryV2GameplayBridge.evaluateBiteReadiness` / `evaluateChumBonus` and `FishingReadinessPolicy.evaluateChumBonus`.
 
 ---

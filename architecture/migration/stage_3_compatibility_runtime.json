@@ -334,6 +334,41 @@
       "module": "src/game/config/raw/physics/physics_units_and_naming.js",
       "owner": "stage-4.cluster-002-physics-raw-config",
       "reason": "Module-level mutable literal tables (no code, no external read): the single cumulative-runtime instance creates the same objects once; the activation shim exposes that identity to classic readers, so PHYSICS_CONFIG composition and in-place DEV config edits reach the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "123ac1ad58b0b7126edfa620cdc640693439d7b08a4521202129298916cb1a69",
+      "module": "src/game/config/raw/fish/peaceful_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "fd3167365a01c51e4213da3eba1e8fe1d9481de83c2c22c79496526265195aa8",
+      "module": "src/game/config/raw/fish/predator_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "bc6e2de0577bfc0aa6563880c6fdc6bea7691e2d1c324ee2ade41faa44794cfb",
+      "module": "src/game/config/raw/fish/rare_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "fb8b9c71bf369c7dc3771962527ab2a075c5bdfce7e42f854a8a473252966b3e",
+      "module": "src/game/config/raw/fish/event_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "3dc7964bc9462dbc0483d779cc8339ef082503ae306d060249f03a60b9918309",
+      "module": "src/game/config/raw/fish/fish_profile_presets.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level literal tables with no reader in src (export-only inert target, batch 028 precedent; Stage 7 task deletes the unread fish profile helpers); evaluation reads nothing external and writes no global."
     }
   ],
   "activationPositions": [
@@ -506,6 +541,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "PEACEFUL_FISH",
+      "legacyScriptIndex": 9,
+      "legacySymbol": "PEACEFUL_FISH",
+      "shimFile": "activations/009_peaceful_fish.js",
+      "sourceProvider": "src/config/databases/fish/species/peaceful_fish.js",
+      "targetModule": "src/game/config/raw/fish/peaceful_fish.js",
+      "id": "activation-25c6afec116d",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-28138de81e82",
       "owner": "stage-3.22.prerequisite.vector2-extraction",
       "sourceProvider": "src/core/math/vector2.js",
@@ -672,6 +719,18 @@
       "shimFile": "activations/361_rendercomponent.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "PREDATOR_FISH",
+      "legacyScriptIndex": 10,
+      "legacySymbol": "PREDATOR_FISH",
+      "shimFile": "activations/010_predator_fish.js",
+      "sourceProvider": "src/config/databases/fish/species/predator_fish.js",
+      "targetModule": "src/game/config/raw/fish/predator_fish.js",
+      "id": "activation-3f7facf4eaf0",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-3fee104fb111",
@@ -1514,6 +1573,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "EVENT_FISH",
+      "legacyScriptIndex": 12,
+      "legacySymbol": "EVENT_FISH",
+      "shimFile": "activations/012_event_fish.js",
+      "sourceProvider": "src/config/databases/fish/species/event_fish.js",
+      "targetModule": "src/game/config/raw/fish/event_fish.js",
+      "id": "activation-b16470ddb6b9",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-b1c0f1f37980",
       "owner": "stage-3.replan-322.batch-022-assemblies-9cb3eecf",
       "sourceProvider": "src/core/assemblies/item_assembly_reader.js",
@@ -1644,6 +1715,18 @@
       "shimFile": "activations/144_inventoryitemlocation.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "RARE_FISH",
+      "legacyScriptIndex": 11,
+      "legacySymbol": "RARE_FISH",
+      "shimFile": "activations/011_rare_fish.js",
+      "sourceProvider": "src/config/databases/fish/species/rare_fish.js",
+      "targetModule": "src/game/config/raw/fish/rare_fish.js",
+      "id": "activation-c81bb199375e",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "exportName": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
@@ -2827,6 +2910,11 @@
     }
   ],
   "inertModules": [
+    {
+      "owner": "stage-4.cluster-003-fish-species",
+      "sourceProvider": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "targetModule": "src/game/config/raw/fish/fish_profile_presets.js"
+    },
     {
       "owner": "stage-4.cluster-001-rarity-validators",
       "sourceProvider": "src/config/validation/item_rarity_config_validator.js",

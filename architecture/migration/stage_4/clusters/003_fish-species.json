@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "003",
+  "slug": "fish-species",
+  "milestone": "M1",
+  "boundary": "game-config-raw",
+  "tier": "C",
+  "tierEvidence": "Literal fish species tables and unread profile presets: const declarations only, no code, no state owner, no per-frame logic, no saved data, no browser or classic global read.",
+  "modules": [
+    {
+      "currentPath": "src/config/databases/fish/species/peaceful_fish.js",
+      "targetPath": "src/game/config/raw/fish/peaceful_fish.js",
+      "exports": [
+        "PEACEFUL_FISH"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/predator_fish.js",
+      "targetPath": "src/game/config/raw/fish/predator_fish.js",
+      "exports": [
+        "PREDATOR_FISH"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/rare_fish.js",
+      "targetPath": "src/game/config/raw/fish/rare_fish.js",
+      "exports": [
+        "RARE_FISH"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/species/event_fish.js",
+      "targetPath": "src/game/config/raw/fish/event_fish.js",
+      "exports": [
+        "EVENT_FISH"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level mutable literal table (no code, no external read): the single cumulative-runtime instance creates the same array once and the activation shim exposes that identity to fish_categories.js, so FISH_DB aggregation reads the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "targetPath": "src/game/config/raw/fish/fish_profile_presets.js",
+      "exports": [
+        "COMMON_LAST_DASH_BEHAVIOR",
+        "COMMON_LAST_DASH_TRIGGER",
+        "FISH_PROFILE_PRESETS",
+        "PEACEFUL_DIRECTION",
+        "PREDATOR_DIRECTION"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level literal tables with no reader in src (export-only inert target, batch 028 precedent; Stage 7 task deletes the unread fish profile helpers); evaluation reads nothing external and writes no global."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "fish-rarity",
+      "script": "utils/fish-rarity-check.js"
+    },
+    {
+      "name": "rarity-production",
+      "script": "utils/rarity-production-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-003-fish-species",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/databases/fish/species/peaceful_fish.js",
+        "targetPath": "src/game/config/raw/fish/peaceful_fish.js",
+        "sourceSha256": "e650daf32b7af1e44f36ebff0ab5ee049af511499bba84ca3ca406ff71793a37",
+        "targetSha256": "03523df0da9c802fc6dd5b4705885fde728bf6c059d6c73f19585897fcfd0f0a"
+      },
+      {
+        "currentPath": "src/config/databases/fish/species/predator_fish.js",
+        "targetPath": "src/game/config/raw/fish/predator_fish.js",
+        "sourceSha256": "f9cbbc0a87c3d4703abb556b713f185abca57bcc64ff81570457519691ac3357",
+        "targetSha256": "8029e8a1213ef46413736921f4880eb097957f81e4273cb03717d9ee1b6a4339"
+      },
+      {
+        "currentPath": "src/config/databases/fish/species/rare_fish.js",
+        "targetPath": "src/game/config/raw/fish/rare_fish.js",
+        "sourceSha256": "ade48be55962a7af12f9f0c989fbe72ffba061e44537b3cfd40b231ed20d0908",
+        "targetSha256": "c4a659f3c6d403b7bbde47220335e14cb206fb047076d676c776d6db79e92cf3"
+      },
+      {
+        "currentPath": "src/config/databases/fish/species/event_fish.js",
+        "targetPath": "src/game/config/raw/fish/event_fish.js",
+        "sourceSha256": "e103787e88952cde5e123589a63067b63870fbbe342c8b30f5261ac8da8b6f8b",
+        "targetSha256": "d8e80e231f162b1815f3b088aab8a840959ca5c61e361692c59e1ef0b2484950"
+      },
+      {
+        "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+        "targetPath": "src/game/config/raw/fish/fish_profile_presets.js",
+        "sourceSha256": "1c86bf66d41703c0e6699105e5900fcb11c2b8f8b7485da6140b3d5a019b3724",
+        "targetSha256": "1dd6adf2be15a41253d947248a40a5c71b8e551496f0f0f5bbfb9cfa22e464c9"
+      }
+    ],
+    "activations": [
+      "activation-25c6afec116d",
+      "activation-3f7facf4eaf0",
+      "activation-b16470ddb6b9",
+      "activation-c81bb199375e"
+    ],
+    "inertModules": [
+      "src/game/config/raw/fish/fish_profile_presets.js"
+    ],
+    "sideEffectReviews": [
+      "src/game/config/raw/fish/peaceful_fish.js",
+      "src/game/config/raw/fish/predator_fish.js",
+      "src/game/config/raw/fish/rare_fish.js",
+      "src/game/config/raw/fish/event_fish.js",
+      "src/game/config/raw/fish/fish_profile_presets.js"
+    ],
+    "bridgesAdded": [
+      "bridge-5dfaf9067160",
+      "bridge-668a07650e82",
+      "bridge-6d6d44df7e95",
+      "bridge-a7ef408222f8"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/003_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "773b0658517c6b19dfaeb925106907148286241b8eda8334f21274a3b31717c8",
+        "after": "e71bf73b79e21d20a2097f7fe4cd80c18d2ba85593a415d1ca534c759a90b9d8"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "9cd9c3b2eb0e8222bffe0a25d97d75c6eb187c4f1f7cb85d7189bc77e683cd10",
+        "after": "52430d3eb774ef6a611e599280f34ceb5b5e959debfda19c743646523e35dfa8"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "ac04eff47aee6d621315fec48cb0a6dcf865690c90bc2c6e100158538f01e8e1",
+        "after": "1159b9efea693b41fa9491325b52482202314bc6c5ff1321c960284850e89449"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "be7499574f6807a93e251f1446a1adf188e716eeddee51e495d0f8feb45bf83c",
+        "after": "f1a728b6adb89cd6bf94a96e07081569ae89e59a7859195cb1fee3253680bea5"
+      },
+      {
+        "path": "index.html",
+        "before": "f2aeb4fe4c7d562742a79e98a14fd881334c76d3cd687c789b1bc29ca00d197d",
+        "after": "69c4b88dc1facf203312829084c81c6c92d4ed31b661b125e4abac09c1c1ffeb"
+      },
+      {
+        "path": "src/config/databases/fish/presets/fish_profile_presets.js",
+        "before": "1c86bf66d41703c0e6699105e5900fcb11c2b8f8b7485da6140b3d5a019b3724",
+        "after": "f6cef454af1029c8aee385e39409187ea1f9885341334b352e9f3e4d76e698b0"
+      },
+      {
+        "path": "src/config/databases/fish/species/event_fish.js",
+        "before": "e103787e88952cde5e123589a63067b63870fbbe342c8b30f5261ac8da8b6f8b",
+        "after": "ac513575a0062222c7f096fd5965417e4d988bb39e9a8c82615cc5bb5140d29d"
+      },
+      {
+        "path": "src/config/databases/fish/species/peaceful_fish.js",
+        "before": "e650daf32b7af1e44f36ebff0ab5ee049af511499bba84ca3ca406ff71793a37",
+        "after": "7d45e83764c8667e7f14e09432dbdfaf11e418dd8558ec6d823fa8b3e8c66e04"
+      },
+      {
+        "path": "src/config/databases/fish/species/predator_fish.js",
+        "before": "f9cbbc0a87c3d4703abb556b713f185abca57bcc64ff81570457519691ac3357",
+        "after": "16bcd9c890899597d939aa7b88651ee9c9332224733fdc2f15f1669eceea7eca"
+      },
+      {
+        "path": "src/config/databases/fish/species/rare_fish.js",
+        "before": "ade48be55962a7af12f9f0c989fbe72ffba061e44537b3cfd40b231ed20d0908",
+        "after": "a6c4d57d9952d7e5019646a09f0b6cc64d7e8aaee5d9f34ee3bec867d00a1ac3"
+      },
+      {
+        "path": "src/game/config/raw/fish/event_fish.js",
+        "before": null,
+        "after": "d8e80e231f162b1815f3b088aab8a840959ca5c61e361692c59e1ef0b2484950"
+      },
+      {
+        "path": "src/game/config/raw/fish/fish_profile_presets.js",
+        "before": null,
+        "after": "1dd6adf2be15a41253d947248a40a5c71b8e551496f0f0f5bbfb9cfa22e464c9"
+      },
+      {
+        "path": "src/game/config/raw/fish/peaceful_fish.js",
+        "before": null,
+        "after": "03523df0da9c802fc6dd5b4705885fde728bf6c059d6c73f19585897fcfd0f0a"
+      },
+      {
+        "path": "src/game/config/raw/fish/predator_fish.js",
+        "before": null,
+        "after": "8029e8a1213ef46413736921f4880eb097957f81e4273cb03717d9ee1b6a4339"
+      },
+      {
+        "path": "src/game/config/raw/fish/rare_fish.js",
+        "before": null,
+        "after": "c4a659f3c6d403b7bbde47220335e14cb206fb047076d676c776d6db79e92cf3"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 596 modules, 880 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 674ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 596/596 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 146 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 146 activations and 204 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 3 record(s), 3 applied, 13 ESM target(s) inside their boundaries; 6 projector fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "fish-rarity",
+        "status": "PASS",
+        "sha256": "98cdb259ed46c862717d62a1de44367ddc6b5c53b6b8db63f68b88a72f8ba2ee"
+      },
+      {
+        "name": "rarity-production",
+        "status": "PASS",
+        "sha256": "19aca9ea169e8eed412658acd99c68971afbc36baa3fa3ea1ed9633f083b57a5"
+      }
+    ]
+  }
+}

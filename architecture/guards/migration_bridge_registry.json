@@ -1207,6 +1207,22 @@
       ]
     },
     {
+      "id": "bridge-5dfaf9067160",
+      "bridge": "src/config/databases/fish/species/rare_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "source": "src/config/databases/fish/fish_categories.js",
+      "target": "src/game/config/raw/fish/rare_fish.js",
+      "reason": "Preserve the exact RARE_FISH consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "RARE_FISH",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-5f6c783bbcd7",
       "bridge": "src/core/items/rarity/item_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -1415,6 +1431,22 @@
       ]
     },
     {
+      "id": "bridge-668a07650e82",
+      "bridge": "src/config/databases/fish/species/event_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "source": "src/config/databases/fish/fish_categories.js",
+      "target": "src/game/config/raw/fish/event_fish.js",
+      "reason": "Preserve the exact EVENT_FISH consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "EVENT_FISH",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-68a669b68de3",
       "bridge": "src/core/fishing/player_force_budget_allocator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1538,6 +1570,22 @@
       "globalProviders": [
         {
           "symbol": "CompositeRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6d6d44df7e95",
+      "bridge": "src/config/databases/fish/species/peaceful_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "source": "src/config/databases/fish/fish_categories.js",
+      "target": "src/game/config/raw/fish/peaceful_fish.js",
+      "reason": "Preserve the exact PEACEFUL_FISH consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PEACEFUL_FISH",
           "mechanism": "global-this-property"
         }
       ]
@@ -2366,6 +2414,22 @@
       "globalProviders": [
         {
           "symbol": "AssemblyStateRepository",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a7ef408222f8",
+      "bridge": "src/config/databases/fish/species/predator_fish.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "source": "src/config/databases/fish/fish_categories.js",
+      "target": "src/game/config/raw/fish/predator_fish.js",
+      "reason": "Preserve the exact PREDATOR_FISH consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PREDATOR_FISH",
           "mechanism": "global-this-property"
         }
       ]
