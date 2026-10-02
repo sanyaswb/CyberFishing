@@ -68,7 +68,7 @@ class InventoryV2SourceReader {
   readJavaScriptFiles() {
     return UI_SCRIPT_ORDER.map((name) => {
       const relativePath=path.relative(ROOT,path.join(UI_DIRECTORY,name)).split(path.sep).join("/");
-      return {name,relativePath,source:new SourceRuntime().readAuthoredSource(relativePath)};
+      return {name,relativePath,legacySource:fs.readFileSync(path.join(ROOT,relativePath),"utf8"),source:new SourceRuntime().readAuthoredSource(relativePath)};
     });
   }
 
@@ -367,7 +367,7 @@ class InventoryV2StaticContractCheck {
     const legacyUi = this.#reader.readLegacyUi();
 
     this.#assertSafeTextRendering(combined);
-    this.#assertGlobalClasses(combined);
+    this.#assertGlobalClasses([parameterConfig,...files.map(file=>file.legacySource)].join("\n"));
     this.#assertLongPressContract(combined, style);
     this.#assertHorizontalScrollContract(combined, legacyUi, style);
     this.#assertVisualContract(style);
@@ -937,6 +937,8 @@ class InventoryV2StaticContractCheck {
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
+    const identities=runtime.run('(() => { let checked=0; for (const exports of Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules)) for (const [name,value] of Object.entries(exports)) if (Object.hasOwn(globalThis,name)) { if (globalThis[name] !== value) throw new Error("UI export identity changed: "+name); checked++; } return checked; })()');
+    assert.ok(identities>0,"UI scenario must verify published ESM identities");
 
     const dispatched = [];
     const observed = [];

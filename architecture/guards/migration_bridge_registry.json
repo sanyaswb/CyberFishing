@@ -259,6 +259,22 @@
       ]
     },
     {
+      "id": "bridge-13204706cb10",
+      "bridge": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "owner": "stage-4.cluster-033-platform-long-press",
+      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "target": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "reason": "Preserve the exact InventoryV2LongPressController consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2LongPressController",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-145734990113",
       "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
       "source": "src/app/bootstrap.js",
@@ -2214,6 +2230,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyPath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7de71e5a166d",
+      "bridge": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "owner": "stage-4.cluster-033-platform-long-press",
+      "source": "src/ui/inventory/inventory_v2_ui.js",
+      "target": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "reason": "Preserve the exact InventoryV2LongPressController consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2LongPressController",
           "mechanism": "global-this-property"
         }
       ]

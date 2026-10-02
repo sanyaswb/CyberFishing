@@ -44361,6 +44361,69 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "currentArea": "platform/browser/dom",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Date",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "globalThis",
+            "undefined"
+          ],
+          "browserApis": [
+            "cancelAnimationFrame",
+            "clearTimeout",
+            "document",
+            "performance",
+            "requestAnimationFrame",
+            "setTimeout"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/platform/browser/dom/item_condition_dom_adapter.js",
       "currentArea": "platform/browser/dom",
       "observed": {
@@ -51217,11 +51280,6 @@
           "items": [
             {
               "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2LongPressController",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -51230,29 +51288,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Date",
-            "Math",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
-          "browserApis": [
-            "cancelAnimationFrame",
-            "clearTimeout",
-            "document",
-            "performance",
-            "requestAnimationFrame",
-            "setTimeout"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -51260,7 +51311,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
@@ -51271,7 +51322,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },

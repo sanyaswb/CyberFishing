@@ -2324,6 +2324,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2LongPressController",
+      "legacyScriptIndex": 241,
+      "legacySymbol": "InventoryV2LongPressController",
+      "shimFile": "activations/241_inventoryv2longpresscontroller.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "targetModule": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "id": "activation-fac254bdd3da",
+      "owner": "stage-4.cluster-033-platform-long-press",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-fae9ef46057a",
       "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
       "sourceProvider": "src/core/equipment/inventory_capacity_policy.js",
