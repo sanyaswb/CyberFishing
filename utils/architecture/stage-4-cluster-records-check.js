@@ -292,8 +292,8 @@ const releaseTexts = (version, extra = null) => new Map([
   ["package-lock.json", canonicalJson({ version, packages: { "": { version, ...(extra ? { extra } : {}) } } })],
   ["package.json", canonicalJson({ version, scripts: extra ? { a: extra } : {} })],
   ["src/config/project_version.js", crlf(`const CURRENT_PROJECT_VERSION = "${version}";`, "const C = Object.freeze({",
-    '  codename: "old",', '  updatedAt: "2026-01-01",', "  notes: Object.freeze([", '    "a",', '    "b",', "  ]),", "});",
-    "")],
+    '  codename: "old",', '  updatedAt: "2026-01-01",', ["  notes: Object.freeze([", '    "a",', '    "b",', "  ]),"].join("\n"),
+    "});", "")],
 ]);
 const releaseDelta = (record, file, before, after) => () => StageFourRelease.validateDelta(record, file, before, after);
 let releaseCases = 0;
@@ -305,7 +305,7 @@ for (const record of [releaseFixture, { ...releaseFixture, changelogTrimFrom: "0
     assert.doesNotThrow(releaseDelta(record, file, before.get(file), after), file);
     releaseCases += 1;
     if (file === "CHANGELOG.md") assert.equal(after.includes("v0.9.0"), !record.changelogTrimFrom);
-    if (file === "src/config/project_version.js") assert(after.includes('  codename: "new",\r\n') && after.includes('    "note",\r\n'));
+    if (file === "src/config/project_version.js") assert(after.includes('  codename: "new",\r\n') && after.includes('    "note",\n  ]),\r\n'));
   }
 }
 const [oldTexts, newTexts] = [releaseTexts("1.0.0"), releaseTexts("1.1.0", "b")];
@@ -321,6 +321,8 @@ rejectsRelease("CHANGELOG.md", oldTexts.get("CHANGELOG.md").replace(releaseHeade
 rejectsRelease("src/config/project_version.js", newTexts.get("src/config/project_version.js").replace("Object.freeze({", "Object.seal({"),
   /version statements/u);
 rejectsRelease("src/config/project_version.js", oldTexts.get("src/config/project_version.js"), /version/u);
+rejectsRelease("src/config/project_version.js", newTexts.get("src/config/project_version.js").replaceAll(",\n", ",\r\n")
+  .replace("([\n", "([\r\n"), /line endings/u);
 assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, changelog: ["a", "b", "c", "d"] }), /1-3 lines/u);
 assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, toRelease: "1.0.0" }), /newer/u);
 releaseCases += 2;

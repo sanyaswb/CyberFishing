@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.25.0 - Stage 4 M1 Config And Platform Modules
+
+### Changed
+
+- Stage 4 M1: migrated the configuration (data, derived config, runtime config port, validators) and the browser platform layer (canvas, DOM, input, storage, game loop, audio adapters) to layered ESM modules; gameplay, timing and saves are unchanged.
+
 ## v0.24.89 - Fish Force System Domain
 
 ### Changed

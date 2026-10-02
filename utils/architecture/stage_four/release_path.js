@@ -107,15 +107,18 @@ class StageFourRelease {
       changelogEdits.push({ from: lastLine + changelog.slice(trimmed.length), to: lastLine, count: 1 });
     }
     const source = texts.get(FILES.source);
-    const block = StageFourRelease.sourceBlock(record, eolOf(source));
+    // Each statement keeps its own line endings (the file mixes CRLF and LF).
+    const statement = (pattern, index) => {
+      const from = pattern.exec(source)?.[0];
+      return { from, to: StageFourRelease.sourceBlock(record, eolOf(from || ""))[index], count: 1 };
+    };
     return new Map([
       [FILES.changelog, changelogEdits],
       [FILES.index, [{ from: `src/config/project_version.js?v=${record.fromRelease}"`,
         to: `src/config/project_version.js?v=${record.toRelease}"`, count: 1 }]],
       [FILES.lock, [{ from: `"version": "${record.fromRelease}"`, to: `"version": "${record.toRelease}"`, count: 2 }]],
       [FILES.package, [{ from: `"version": "${record.fromRelease}"`, to: `"version": "${record.toRelease}"`, count: 1 }]],
-      [FILES.source, SOURCE_STATEMENTS.map((pattern, index) => ({ from: pattern.exec(source)?.[0], to: block[index],
-        count: 1 })).filter((edit) => edit.from !== edit.to)],
+      [FILES.source, SOURCE_STATEMENTS.map(statement).filter((edit) => edit.from !== edit.to)],
     ]);
   }
 
@@ -150,6 +153,8 @@ class StageFourRelease {
         return value.replace(pattern, "<release>");
       }, text);
       assert.equal(blank(after), blank(before), `${file}: release changed more than the version statements`);
+      const notes = SOURCE_STATEMENTS[3];
+      assert.equal(eolOf(notes.exec(after)[0]), eolOf(notes.exec(before)[0]), `${file}: notes line endings changed`);
       assert(after.includes(StageFourRelease.sourceBlock(record, eolOf(after))[0]), `${file}: version`);
     } else {
       throw new Error(`Not a release file: ${file}`);
