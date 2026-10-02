@@ -102,9 +102,8 @@ class DegradationColorCheck {
   }
 
   #checkCapacityIntegration() {
-    const source = fs.readFileSync(
-      path.join(ROOT, "src/ui/progression/item_progression_visual_resolver.js"),
-      "utf8",
+    const source = new SourceRuntime().readAuthoredSource(
+      "src/ui/progression/item_progression_visual_resolver.js",
     );
     const css = fs.readFileSync(
       path.join(ROOT, "src/ui/styles/style.css"),

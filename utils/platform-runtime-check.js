@@ -3,6 +3,65 @@
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
+// Presentation frame consumers share style caches and reused line/layout frames; invalidation reads live config.
+function checkVisualFrames() {
+  const runtime=new SourceRuntime();
+  runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
+  runtime.run('globalThis.RenderMath = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/rendering/render_math.js"].RenderMath;');
+  const definitions=[
+    ['src/ui/styles/fight_area_style_resolver.js','FightAreaStyleResolver'],
+    ['src/ui/styles/hud_style_resolver.js','HudStyleResolver'],
+    ['src/ui/styles/outcome_style_resolver.js','OutcomeStyleResolver'],
+    ['src/render/screens/rarity_animation_resolver.js','RarityAnimationResolver'],
+    ['src/ui/styles/rarity_visual_resolver.js','RarityVisualResolver'],
+    ['src/render/screens/victory_theme_resolver.js','VictoryThemeResolver'],
+    ['src/render/screens/victory_layout_resolver.js','VictoryLayoutResolver'],
+    ['src/render/fishing/line_visual_state_controller.js','LineVisualStateController'],
+    ['src/systems/rod_visual_offset_system.js','RodVisualOffsetSystem'],
+  ];
+  for(const [path,name] of definitions) runtime.load(path,{expose:[name]});
+  const c=runtime.context;
+  let fightConfig={color:'red'},hudConfig={bars:{shared:{width:12,dash:[1,2]},tension:{width:20}}},outcomeConfig={panelWidth:450};
+  const fight=new c.FightAreaStyleResolver({configProvider:()=>fightConfig});
+  const hud=new c.HudStyleResolver({hudStylesProvider:()=>hudConfig});
+  const outcome=new c.OutcomeStyleResolver({configProvider:()=>outcomeConfig});
+  const fightStyle=fight.resolve(),hudStyle=hud.resolveBarStyle('tension'),outcomeStyle=outcome.resolveVictory();
+  assert(Object.isFrozen(fightStyle));assert(Object.isFrozen(fightStyle.lastDashDash));
+  assert.equal(hudStyle.width,20);assert.notEqual(hudStyle.dash,hudConfig.bars.shared.dash);
+  assert.equal(hud.resolveBarStyle('tension',{overrides:{width:30}}).width,30);
+  const animation=new c.RarityAnimationResolver();
+  const rarity=new c.RarityVisualResolver({configProvider:()=>({colorStops:[{id:'first',position:0,color:[0,0,0]},{id:'last',position:1,color:[255,255,255]}],uniqueEffects:{pulseDurationMs:1200}}),animationResolver:animation});
+  const theme=new c.VictoryThemeResolver({rarityVisualResolver:rarity});
+  const ordinary=theme.resolve({level:2,maxLevel:4},0);
+  const animated=theme.resolve({level:4,maxLevel:4,isUnique:true},0);
+  let layoutCreations=0;
+  const layout=new c.VictoryLayoutResolver({diagnostics:{recordVictoryLayoutCreated(){layoutCreations++;}}});
+  const firstLayout=layout.resolve({width:1280,height:720,config:outcomeStyle,statCount:3}),panel=firstLayout.panel;
+  const line=new c.LineVisualStateController(),rod=new c.RodVisualOffsetSystem();
+  let lineFrame=null;
+  for(let frame=0;frame<120;frame++) {
+    assert.equal(fight.resolve(),fightStyle);assert.equal(hud.resolveBarStyle('tension'),hudStyle);assert.equal(outcome.resolveVictory(),outcomeStyle);
+    assert.equal(theme.resolve({level:2,maxLevel:4},frame*16),ordinary);
+    assert.equal(theme.resolve({level:4,maxLevel:4,isUnique:true},frame*16),animated);
+    const currentLayout=layout.resolve({width:frame<60?1280:360,height:720,config:outcomeStyle,statCount:frame<60?3:7});
+    assert.equal(currentLayout,firstLayout);assert.equal(currentLayout.panel,panel);
+    const currentLine=line.update({state:frame<40?'waiting':frame<80?'biting':'playing',nowMs:1000+frame*16,castStartTime:1000,inputPulling:frame>=60,hookDepth:3,castDistanceRatio:0.5,tensionRatio:0.7,sinkRate:1,lineConfig:{shrinkPercent:30}});
+    if(lineFrame)assert.equal(currentLine,lineFrame);lineFrame=currentLine;
+    assert(currentLine.lengthRatio>=0&&currentLine.lengthRatio<=1);assert(Number.isFinite(currentLine.dropOffset));
+    rod.update({dtSec:0.016,inputState:{rodControlActive:frame<90,rodControlDirectionX:1,rodControlInputRatio:0.8},fightDebug:{lineCanRelease:frame<40,reelSlip:frame>=40&&frame<80},config:{},canvasWidth:800});
+    const screenX=rod.resolveScreenX({baseX:790,canvasWidth:800,config:{}});
+    assert(screenX<=784);assert.equal(rod.isClamped(),true);assert(Number.isFinite(rod.getOffsetPx()));
+    assert.equal(rod.getFrame().lineMode,frame<40?'free_line':frame<80?'drag_slip':'tight_line');
+  }
+  assert.equal(layoutCreations,1);assert(lineFrame.straightFactor>0);
+  rod.reset();assert.equal(rod.getOffsetPx(),0);assert.equal(rod.isClamped(),false);
+  fightConfig={color:'blue'};hudConfig={bars:{shared:{width:40}}};outcomeConfig={panelWidth:600};
+  fight.invalidate();hud.invalidate();outcome.invalidate();
+  assert.equal(fight.resolve().catchFill,'blue');assert.equal(hud.resolveBarStyle('tension').width,40);assert.equal(outcome.resolveVictory().panelWidth,600);
+  assert.notEqual(fight.resolve(),fightStyle);assert.notEqual(hud.resolveBarStyle('tension'),hudStyle);assert.notEqual(outcome.resolveVictory(),outcomeStyle);
+  console.log('Visual frames passed: 120 cached styles and ordinary/animated themes; reused layout/line identities, viewport changes, line waiting/biting/playing and rod free/slip/tight/reset states; live config invalidation.');
+}
+
 function checkLongPressFrames(usePerformance) {
   let now=0,clockReads=0,frameRequests=0,nextFrame=0,styleWrites=0,createdNodes=0,removedNodes=0,fired=0,clicks=0;
   const frames=new Map(),timers=new Map(),listeners=new Map(),styles=new Map();
@@ -292,6 +351,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkVisualFrames();
   checkLongPressFrames(true);
   checkLongPressFrames(false);
   await checkGameLoopAndAdapters();

@@ -551,9 +551,28 @@
       "module": "src/game/presentation/inventory/inventory_rule_messages.js",
       "owner": "stage-5.cluster-002-inventory-rule-messages",
       "reason": "A top-level IIFE builds one frozen message catalog once (local formatter closures, Object.freeze over literals and functions; the locked-slot message reads the imported EQUIPMENT_SLOT_PRESENTATION lazily at call time). No external write; the activation shim exposes the same frozen object to bootstrap and the inventory composition root."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "e5f7f8c987088eb4d1a532b991cc9d5ab4e05230446e24721e0aba695d268fe9",
+      "module": "src/game/presentation/styles/rarity_visual_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "The static EMPTY_DASH freezes a newly allocated empty array once during class evaluation. No external mutation, scheduling, I/O or gameplay config is read; preserve the single frozen array and class identity in the ESM runtime loaded before classic consumers."
     }
   ],
   "activationPositions": [
+    {
+      "exportName": "RodVisualOffsetSystem",
+      "legacyScriptIndex": 215,
+      "legacySymbol": "RodVisualOffsetSystem",
+      "shimFile": "activations/215_rodvisualoffsetsystem.js",
+      "sourceProvider": "src/systems/rod_visual_offset_system.js",
+      "targetModule": "src/game/presentation/fishing/rod_visual_offset_system.js",
+      "id": "activation-00b0efde0486",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
     {
       "exportName": "EquipmentTransitionExecutor",
       "legacyScriptIndex": 180,
@@ -565,6 +584,18 @@
       "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "LineVisualStateController",
+      "legacyScriptIndex": 372,
+      "legacySymbol": "LineVisualStateController",
+      "shimFile": "activations/372_linevisualstatecontroller.js",
+      "sourceProvider": "src/render/fishing/line_visual_state_controller.js",
+      "targetModule": "src/game/presentation/fishing/line_visual_state_controller.js",
+      "id": "activation-05d774f5802d",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "FailedState",
@@ -1347,6 +1378,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "OutcomeStyleResolver",
+      "legacyScriptIndex": 232,
+      "legacySymbol": "OutcomeStyleResolver",
+      "shimFile": "activations/232_outcomestyleresolver.js",
+      "sourceProvider": "src/ui/styles/outcome_style_resolver.js",
+      "targetModule": "src/game/presentation/styles/outcome_style_resolver.js",
+      "id": "activation-569f9d6dd78d",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "CONFIG",
       "legacyScriptIndex": 28,
       "legacySymbol": "CONFIG",
@@ -1443,6 +1486,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "DegradationColorResolver",
+      "legacyScriptIndex": 234,
+      "legacySymbol": "DegradationColorResolver",
+      "shimFile": "activations/234_degradationcolorresolver.js",
+      "sourceProvider": "src/ui/styles/degradation_color_resolver.js",
+      "targetModule": "src/game/presentation/styles/degradation_color_resolver.js",
+      "id": "activation-5c6f28b96b93",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2LineAllocationService",
       "legacyScriptIndex": 197,
       "legacySymbol": "InventoryV2LineAllocationService",
@@ -1537,6 +1592,18 @@
       "shimFile": "activations/395_dependencycontractvalidator.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "FightAreaStyleResolver",
+      "legacyScriptIndex": 231,
+      "legacySymbol": "FightAreaStyleResolver",
+      "shimFile": "activations/231_fightareastyleresolver.js",
+      "sourceProvider": "src/ui/styles/fight_area_style_resolver.js",
+      "targetModule": "src/game/presentation/styles/fight_area_style_resolver.js",
+      "id": "activation-6bfcf119f04d",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "VictoryState",
@@ -1971,6 +2038,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "VictoryThemeResolver",
+      "legacyScriptIndex": 382,
+      "legacySymbol": "VictoryThemeResolver",
+      "shimFile": "activations/382_victorythemeresolver.js",
+      "sourceProvider": "src/render/screens/victory_theme_resolver.js",
+      "targetModule": "src/game/presentation/screens/victory_theme_resolver.js",
+      "id": "activation-954bb71650e5",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-974deda48a6f",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",
@@ -2029,6 +2108,18 @@
       "owner": "stage-4.cluster-010-config-root",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "RarityVisualResolver",
+      "legacyScriptIndex": 233,
+      "legacySymbol": "RarityVisualResolver",
+      "shimFile": "activations/233_rarityvisualresolver.js",
+      "sourceProvider": "src/ui/styles/rarity_visual_resolver.js",
+      "targetModule": "src/game/presentation/styles/rarity_visual_resolver.js",
+      "id": "activation-a2f19b819e84",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "BrowserDebugAdapter",
@@ -2295,6 +2386,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "VictoryLayoutResolver",
+      "legacyScriptIndex": 379,
+      "legacySymbol": "VictoryLayoutResolver",
+      "shimFile": "activations/379_victorylayoutresolver.js",
+      "sourceProvider": "src/render/screens/victory_layout_resolver.js",
+      "targetModule": "src/game/presentation/screens/victory_layout_resolver.js",
+      "id": "activation-b7e493071781",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InputManager",
       "legacyScriptIndex": 41,
       "legacySymbol": "InputManager",
@@ -2437,6 +2540,18 @@
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "RarityAnimationResolver",
+      "legacyScriptIndex": 380,
+      "legacySymbol": "RarityAnimationResolver",
+      "shimFile": "activations/380_rarityanimationresolver.js",
+      "sourceProvider": "src/render/screens/rarity_animation_resolver.js",
+      "targetModule": "src/game/presentation/screens/rarity_animation_resolver.js",
+      "id": "activation-d21336c48b8a",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-d36f5f18f7e5",
@@ -2619,6 +2734,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "HudStyleResolver",
+      "legacyScriptIndex": 230,
+      "legacySymbol": "HudStyleResolver",
+      "shimFile": "activations/230_hudstyleresolver.js",
+      "sourceProvider": "src/ui/styles/hud_style_resolver.js",
+      "targetModule": "src/game/presentation/styles/hud_style_resolver.js",
+      "id": "activation-e64213437f53",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-e85348eb50a6",
       "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
       "sourceProvider": "src/core/assemblies/assembly_profile_registry.js",
@@ -2797,6 +2924,18 @@
       "shimFile": "activations/397_baitrules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ItemProgressionVisualResolver",
+      "legacyScriptIndex": 237,
+      "legacySymbol": "ItemProgressionVisualResolver",
+      "shimFile": "activations/237_itemprogressionvisualresolver.js",
+      "sourceProvider": "src/ui/progression/item_progression_visual_resolver.js",
+      "targetModule": "src/game/presentation/inventory/item_progression_visual_resolver.js",
+      "id": "activation-f9de6241a272",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-fa2fa2abbda3",

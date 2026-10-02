@@ -115,6 +115,22 @@
       ]
     },
     {
+      "id": "bridge-099ee6b83cde",
+      "bridge": "src/ui/progression/item_progression_visual_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/item_progression_visual_resolver.js",
+      "reason": "Preserve the exact ItemProgressionVisualResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ItemProgressionVisualResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-09e247f43f1c",
       "bridge": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
       "owner": "stage-4.cluster-018-storage",
@@ -179,6 +195,22 @@
       ]
     },
     {
+      "id": "bridge-0ef2bdf5d9fb",
+      "bridge": "src/ui/styles/hud_style_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/styles/hud_style_resolver.js",
+      "reason": "Preserve the exact HudStyleResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HudStyleResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-11bab2b81092",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -238,6 +270,22 @@
       "globalProviders": [
         {
           "symbol": "BaitFreshnessModifier",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-15347aabf196",
+      "bridge": "src/ui/styles/outcome_style_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/styles/outcome_style_resolver.js",
+      "reason": "Preserve the exact OutcomeStyleResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "OutcomeStyleResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -643,6 +691,22 @@
       ]
     },
     {
+      "id": "bridge-32e76a7b6e47",
+      "bridge": "src/systems/rod_visual_offset_system.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/application.js",
+      "target": "src/game/presentation/fishing/rod_visual_offset_system.js",
+      "reason": "Preserve the exact RodVisualOffsetSystem consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RodVisualOffsetSystem",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-32ecd6bd8f9d",
       "bridge": "src/core/loadouts/equipment_loadout_repository.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -750,6 +814,22 @@
       "globalProviders": [
         {
           "symbol": "LoadoutEquipmentTransitionPlanner",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-394299e6e95b",
+      "bridge": "src/ui/styles/fight_area_style_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/styles/fight_area_style_resolver.js",
+      "reason": "Preserve the exact FightAreaStyleResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightAreaStyleResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -995,6 +1075,22 @@
       ]
     },
     {
+      "id": "bridge-461d6cf38f15",
+      "bridge": "src/render/screens/victory_theme_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/victory_theme_resolver.js",
+      "reason": "Preserve the exact VictoryThemeResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "VictoryThemeResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-46299b2121aa",
       "bridge": "src/core/items/bait/bait_effectiveness_descriptor.js",
       "owner": "stage-5.cluster-003-item-and-fish-descriptors",
@@ -1174,6 +1270,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-58165fffa69d",
+      "bridge": "src/ui/styles/rarity_visual_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/styles/rarity_visual_resolver.js",
+      "reason": "Preserve the exact RarityVisualResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RarityVisualResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -1791,6 +1903,22 @@
       ]
     },
     {
+      "id": "bridge-74c3524f1202",
+      "bridge": "src/render/fishing/line_visual_state_controller.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/line_visual_state_controller.js",
+      "reason": "Preserve the exact LineVisualStateController consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "LineVisualStateController",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-74ff3d1ea14b",
       "bridge": "src/core/items/item_stat_override_policy.js",
       "source": "src/app/bootstrap.js",
@@ -1971,6 +2099,22 @@
       ]
     },
     {
+      "id": "bridge-8422f9724300",
+      "bridge": "src/ui/styles/degradation_color_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/styles/degradation_color_resolver.js",
+      "reason": "Preserve the exact DegradationColorResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "DegradationColorResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8552e9702fef",
       "bridge": "src/core/equipment/equipment_slot_visibility_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1998,22 +2142,6 @@
       "globalProviders": [
         {
           "symbol": "ItemProgressionConfigValidator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8654ddb73e7e",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/render/fishing/line_visual_state_controller.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
           "mechanism": "global-this-property"
         }
       ]
@@ -2763,6 +2891,22 @@
       ]
     },
     {
+      "id": "bridge-ba5fe0aa9f4e",
+      "bridge": "src/render/screens/victory_layout_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/victory_layout_resolver.js",
+      "reason": "Preserve the exact VictoryLayoutResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "VictoryLayoutResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bc38f49d00dc",
       "bridge": "src/core/items/hook/hook_power_policy.js",
       "source": "src/debug/services/debug_formatters.js",
@@ -3190,6 +3334,22 @@
       "globalProviders": [
         {
           "symbol": "ItemRatingTierResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d967695547ee",
+      "bridge": "src/render/screens/rarity_animation_resolver.js",
+      "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/rarity_animation_resolver.js",
+      "reason": "Preserve the exact RarityAnimationResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RarityAnimationResolver",
           "mechanism": "global-this-property"
         }
       ]
