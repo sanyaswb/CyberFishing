@@ -240,6 +240,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["inventory", "inventory-v2"],
   },
   {
+    id: "inventory-save-round-trip",
+    title: "Inventory save round trip (old, current and previous-schema saves)",
+    file: "utils/inventory-save-round-trip-check.js",
+    suites: ["inventory", "inventory-v2"],
+  },
+  {
     id: "inventory-v2-cast-lure",
     title: "Inventory V2 cast and lure integration",
     file: "utils/inventory-v2-cast-and-lure-check.js",

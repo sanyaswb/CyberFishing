@@ -69,6 +69,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "inventory-v2-equipment-hydration",
   "inventory-v2-transaction",
   "inventory-v2-migration",
+  "inventory-save-round-trip",
   "inventory-v2-cast-lure",
   "inventory-v2-line-allocation",
   "consumable-event-identity",
