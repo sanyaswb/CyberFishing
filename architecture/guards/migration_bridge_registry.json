@@ -871,6 +871,22 @@
       ]
     },
     {
+      "id": "bridge-373a8dd11f2d",
+      "bridge": "src/app/core/game_clock.js",
+      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/time/game_clock.js",
+      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "GameClock",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-375b256d362a",
       "bridge": "src/core/loadouts/loadout_equipment_transition_planner.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1726,6 +1742,22 @@
         },
         {
           "symbol": "AutoRefillSettings",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7059e3a04dab",
+      "bridge": "src/app/core/game_clock.js",
+      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+      "source": "src/app/application.js",
+      "target": "src/platform/browser/time/game_clock.js",
+      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "GameClock",
           "mechanism": "global-this-property"
         }
       ]
@@ -3058,6 +3090,22 @@
       "globalProviders": [
         {
           "symbol": "EffectiveItemStatsResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c2d15e518617",
+      "bridge": "src/infrastructure/diagnostics/console_logger.js",
+      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/diagnostics/console_logger.js",
+      "reason": "Preserve the exact ConsoleLogger consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ConsoleLogger",
           "mechanism": "global-this-property"
         }
       ]

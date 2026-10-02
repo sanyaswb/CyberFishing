@@ -1336,6 +1336,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "ConsoleLogger",
+      "legacyScriptIndex": 79,
+      "legacySymbol": "ConsoleLogger",
+      "shimFile": "activations/079_consolelogger.js",
+      "sourceProvider": "src/infrastructure/diagnostics/console_logger.js",
+      "targetModule": "src/platform/browser/diagnostics/console_logger.js",
+      "id": "activation-86e74d3fda64",
+      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-8706d223cc0c",
       "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
       "sourceProvider": "src/core/items/progression/item_capacity_resolver.js",
@@ -1742,6 +1754,18 @@
       "shimFile": "activations/209_linesystem.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "GameClock",
+      "legacyScriptIndex": 393,
+      "legacySymbol": "GameClock",
+      "shimFile": "activations/393_gameclock.js",
+      "sourceProvider": "src/app/core/game_clock.js",
+      "targetModule": "src/platform/browser/time/game_clock.js",
+      "id": "activation-ba85fa1e7754",
+      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-bafccd351254",
