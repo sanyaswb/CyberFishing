@@ -36,6 +36,9 @@ const planned = plan.batches.filter(batch => !completed.has(batch.id) && batch.i
     ({ id: item.contract.id, batch: batch.id, legacyScriptIndex: item.contract.legacyScriptIndex })));
 assert.deepEqual(violations(load, contract.activationPositions), [], "a published activation precedes the runtime");
 assert.deepEqual(violations(load, planned), [], "an approved batch activation would precede the runtime");
+// Stage 4 M1 (2026-10-02): the tag precedes every legacy slot, so config activations of slots 1-29 see it.
+assert.deepEqual({ slot: load.slot, precedesWholeSlot: load.precedesWholeSlot }, { slot: 1, precedesWholeSlot: true },
+  "the cumulative runtime tag must precede every legacy slot");
 
 // Negative fixtures over a minimal document: runtime tag, then slots 1..3.
 const tag = file => `<script src="${file}"></script>\n`;
