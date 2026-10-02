@@ -674,6 +674,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "BiteSystem",
+      "legacyScriptIndex": 222,
+      "legacySymbol": "BiteSystem",
+      "shimFile": "activations/222_bitesystem.js",
+      "sourceProvider": "src/systems/bite_system.js",
+      "targetModule": "src/game/application/fishing/bite_service.js",
+      "id": "activation-1812a958c371",
+      "owner": "stage-4.cluster-027-bite-chum",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "LegacyItemStateMigration",
       "legacyScriptIndex": 173,
       "legacySymbol": "LegacyItemStateMigration",
@@ -2390,6 +2402,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "ChumManager",
+      "legacyScriptIndex": 223,
+      "legacySymbol": "ChumManager",
+      "shimFile": "activations/223_chummanager.js",
+      "sourceProvider": "src/systems/chum_system.js",
+      "targetModule": "src/game/application/chum/chum_service.js",
+      "id": "activation-c35333d29c8d",
+      "owner": "stage-4.cluster-027-bite-chum",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-c3a8ca11fb0e",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "sourceProvider": "src/core/inventory/inventory_item_location.js",
@@ -2806,6 +2830,18 @@
       "legacySymbol": "Fish",
       "legacyScriptIndex": 206,
       "shimFile": "activations/206_fish.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "CastManager",
+      "legacyScriptIndex": 222,
+      "legacySymbol": "CastManager",
+      "shimFile": "activations/222_castmanager.js",
+      "sourceProvider": "src/systems/bite_system.js",
+      "targetModule": "src/game/application/fishing/bite_service.js",
+      "id": "activation-f50c7d5a04ed",
+      "owner": "stage-4.cluster-027-bite-chum",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },

@@ -182,7 +182,7 @@ class BaitEffectivenessCheck {
 
   #checkSingleGameplaySource() {
     const itemSource = this.#sourceRuntime.read("src/config/databases/item_db.js");
-    const biteSource = this.#sourceRuntime.read("src/systems/bite_system.js");
+    const biteSource = this.#sourceRuntime.readAuthoredSource("src/systems/bite_system.js");
     Assertion.that(
       !itemSource.includes("attractionPower") && !itemSource.includes("jigPower"),
       "fake global lure power stats are removed",

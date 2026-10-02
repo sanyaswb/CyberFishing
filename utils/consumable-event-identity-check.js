@@ -70,6 +70,7 @@ const files = [
   "src/app/fishing.js",
   "src/app/chum.js",
   "src/systems/chum_system.js",
+  "src/systems/bite_system.js",
 ];
 
 new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(files);
@@ -270,6 +271,32 @@ vm.runInContext(
       rejectedCast.warnings.length === 1,
     "missing captured item must not consume current chum or create a free zone",
   );
+
+  // Cast spam penalty and chum zone bonus curves (Stage 4 cluster 027 hot-loop evidence).
+  const castManager = new CastManager();
+  const multipliers = [];
+  for (let frame = 0; frame < 120; frame++) {
+    if (frame % 20 === 0 && castManager.canCast()) castManager.registerCast(frame * 100);
+    castManager.update(100);
+    multipliers.push(castManager.getBiteChanceMultiplier());
+  }
+  assertIdentity(Math.min(...multipliers) < 1 && multipliers.every((value) => value >= 0 && value <= 1),
+    "cast spam penalty stays a bounded bite multiplier");
+  const zoneConfig = { id: "probe_mix", radius: 100, targetFishes: ["carp"], rampUpTimeMs: 1000, peakDurationMs: 1000,
+    totalBonusTimeMs: 4000, minBonusDurationHours: 0.001, maxBonus: 2, minBonus: 1.2 };
+  // Zones are created by their owner (ChumZone has no global of its own once migrated).
+  const flatProjector = { getPerspective: () => ({ scale: 1, squashY: 0.5 }) };
+  const zoneManager = new ChumManager("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
+    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, flatProjector, { cache: CacheManager, rng: { next: () => 0.5 },
+    now: () => 0 });
+  zoneManager.deployBait(50, 50, "probe_mix");
+  zoneManager.deployBait(400, 50, "probe_mix");
+  const [zone, other] = zoneManager.getZones();
+  const bonuses = [];
+  for (let step = 0; step <= 14; step++) bonuses.push(zone.updateState(step * 600, 1));
+  assertIdentity(bonuses[0] === 1 && bonuses[2] === 2 && bonuses[10] === 1.2 && bonuses[14] === 0 && zone.isExpired &&
+    other.getMultiplierAt(400, 50, "carp", flatProjector) >= 1 && zone.checkOverlap(other, flatProjector) === false,
+    "chum zone bonus ramps, peaks, decays and expires");
   `,
   context,
 );

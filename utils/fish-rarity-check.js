@@ -1109,6 +1109,11 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["BaitEffectivenessResolver"],
   },
   {
+    // Production loads the fish physics profile before the bite system; without it BiteSystem fell back to raw physics.
+    relativePath: "src/entities/fish.js",
+    classNames: ["FishPhysicsProfile"],
+  },
+  {
     relativePath: "src/systems/bite_system.js",
     classNames: ["BiteSystem"],
   },

@@ -1,0 +1,2508 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "027",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/game-cycle-check.js",
+    "utils/consumable-event-identity-check.js",
+    "utils/bait-effectiveness-check.js",
+    "utils/fish-rarity-check.js"
+  ],
+  "classes": {
+    "BaitBoat": {
+      "sourcePath": "src/systems/chum_system.js",
+      "members": [
+        {
+          "name": "#rootInstanceId",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8b7e3fb042e3f8a243c7f95f85ec8eb589f73b581ee977e35bfe5c81282820a6"
+        },
+        {
+          "name": "#sensorRays",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "56af0c74d3e193509826924f91fe99bb584eb0e8e9fca0dde87165fd1aade398"
+        },
+        {
+          "name": "#sensorTimer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "55bbcd7644e84290c7a9f226d0989f57c64b53519985672ffc1cf64ddd9fb137"
+        },
+        {
+          "name": "#sensorInterval",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "be5bd277e077d8ed83ed9416052e49f1afb528ce1230901b77d746fba12e36ba"
+        },
+        {
+          "name": "#cachedSensors",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "954a4b4a89dd037b9e6c7e0763cf63bf8861119a5209b730e5f2463f8880657c"
+        },
+        {
+          "name": "#lastScanData",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1acee4b0bf97e6279cefcc6aab3eeee40e3c5a6e8fd353ee1d0b119e87d9ed2e"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "ee46383f40feafa48b1c7a405a258959fa472fb6ad32c1127e4f5e552b07a383",
+          "parameters": 5,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "sensorRays",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "8ce9d62246ef2f87986a3fb403e4a5710250cd92094d6e1f54d4030939d60f2f",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "rootInstanceId",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "ac8b162e2737bd31791372d710de0047afa1c52f5e4e9b8d636554946c05d96a",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setTarget",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "90c67c8af5db8f77cd9a005d666de91f0c72d5edb541e8649ca288835e3dffe0",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getVisualWaypoints",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "64c83c394d81facc53917fc867c3b6976bc8f5f1b92fba52b19fca8e592cc500",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3fecba738c5715ec54811a12ff58e2ae61ef9313bf3333af132c41e9031197a5",
+          "parameters": 5,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#syncRayPositions",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2712d80375ca709779262540e7d21a7fd17a97f99cdf69e298b22298e2badde7",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateEnergy",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1c23996e8e7512c0169f5eef34ea2b554047d561239b33464512600d1b9b8475",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyDrift",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6e7c029fdbc7146854003798bf5993b36ba4645982306ebfd387ec312ed052f2",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateTargetInfo",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ff62281c1c60e63012253fea8f4a82c1295dfbe5882f66b09f399da05d19c84d",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#scanEnvironment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "927658c6ffbf52c44eaa417dd74154438fec93d3d80ef51edd3da144c3c69a06",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#setAvoidance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5b246e66648070429ea34a58249e2c9895afee01bfe12790c7b385b4e6540d03",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#calculateSteering",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cec461be7b4c6710a11bda7d63f1e7078eafb62c34f64e0c40439f4f3c257817",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#moveAndCollide",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e1b32810a6321a2be9b3d9d39a1bbcf50edcfc8a637bd69054f55469ae5ce806",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#checkArrival",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "eb69598f113fa29914127f67159701656c20ef1fe37f9b2fac090b14432624b8",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#processNextWaypoint",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "123d13df6059a4f2b08219288ee7013aa86417a18d01edb7d88b4ccbfe440fe3",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyPhysics",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4d908730623eef178d0312ae2e93fb86ef7188e252e752ca021ccebbe5587380",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#checkShoreParking",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d6c0d8b2b12387719063a64b426661ab2c7dedd583ad6bc725fec987aa6948a1",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 12,
+        "arrayExpressions": 7,
+        "newExpressions": 4,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyDrift",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#applyPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateSteering",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#calculateTargetInfo",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#checkArrival",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#moveAndCollide",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#moveAndCollide",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#moveAndCollide",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#moveAndCollide",
+          "kind": "method"
+        },
+        {
+          "name": "Infinity",
+          "member": "#processNextWaypoint",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#scanEnvironment",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#sensorRays",
+          "kind": "field"
+        },
+        {
+          "name": "Math",
+          "member": "#syncRayPositions",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#syncRayPositions",
+          "kind": "method"
+        },
+        {
+          "name": "Vector2",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Vector2",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Vector2",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Math",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Vector2",
+          "member": "setTarget",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "update",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/consumable-event-identity-check.js": {
+          "sha256": "68694ed3c202fa129091e54688540b630368f4fdeec49ce4d31eae7b5ec7213e",
+          "calls": {
+            "get sensorRays": 0,
+            "get rootInstanceId": 1,
+            "setTarget": 0,
+            "getVisualWaypoints": 0,
+            "update": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/bait-effectiveness-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/fish-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "BiteSystem": {
+      "sourcePath": "src/systems/bite_system.js",
+      "members": [
+        {
+          "name": "#fishDatabase",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9375edb17e834d1904c6aeee3bd9ccd38f437c75b9aea477c2df18318d821596"
+        },
+        {
+          "name": "#tickRate",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "280352c99e7a84430c4e0591ce2509be6579fd5ca6ec1494783c5a0020af75a2"
+        },
+        {
+          "name": "#timer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "14379901bde20e91a0c366c135f29227af23bd981caf82e5b1759d5d401a6795"
+        },
+        {
+          "name": "#overDepthPenaltyMult",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8e712333a4dbfd44c3f37dcdcf111114acdaf2c94e9110868c692933d57dfc4e"
+        },
+        {
+          "name": "#passivePullBiteChanceMultiplier",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "d726d93dd4c15d5b5cbb092b66057f7bf0e79cfa457effd1f736fd62128a776f"
+        },
+        {
+          "name": "#lineConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "667459ea23d1d8b1794578a6683a84bc4fceb8064f7877cd9697452fbcbe8b1e"
+        },
+        {
+          "name": "#runtimeConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4b03d1b44151f3575321a646742d87b0a3407f6041151648c25a7b7e0cbc9f76"
+        },
+        {
+          "name": "#guaranteedBiteCooldownRange",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bda1414a8481502c8ac890c6c677e9aa17db3ebe0ce16910e19092775c8e7092"
+        },
+        {
+          "name": "#guaranteedBiteCooldownRemaining",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "81c1f07d6739fde047e13c81c7f4c53cf9c16183de154fd694d17bd8c44d6537"
+        },
+        {
+          "name": "#cooldownDebugTimer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "75e608a8f15180306e7b8ecbbe94bb96d4f1315a68ddcce1b324fd4ef96d53ee"
+        },
+        {
+          "name": "#possibleBitesBuffer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1cfa626d998479dcae0e0bab72715d9a83c479b6be44f1fa0665ecd56a24c64e"
+        },
+        {
+          "name": "#possibleBiteChancesBuffer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f5d6aa7edc05cf599e0b9b37de9e545dd880c25119b42668cdd86dbe68341329"
+        },
+        {
+          "name": "#rng",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "63811b04220a2a79828d7dcccec05b4f0c75c7011345fedc871327a7c76091ff"
+        },
+        {
+          "name": "#debugEvents",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "0dad05a62b3829cb21612a695038218c54fb2d79c2982be5fb97ab882c6e058c"
+        },
+        {
+          "name": "#fishRarityResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3b32ed8b6a4a8ae5b38ecdecddc78f010d71a51b2e02a1e5448cc35abaf7f900"
+        },
+        {
+          "name": "#fishAnomalyVariantResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b960123208649798e646a4b3f7d8600e82d5aaa0ec9377116a5b069dc27bc4a8"
+        },
+        {
+          "name": "#fishVisualVariantResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e7e75d583e35cad1b8b628abaf20b51f044006918de0461d2c99764518a4e059"
+        },
+        {
+          "name": "#baitEffectivenessResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1ada7620c51ff3457c536c46d8c61ec315934871a5847ec0620a9c5be15ba475"
+        },
+        {
+          "name": "#tickIndex",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "161bd21748a64456d65cf9ed9e6356fc8ad46a9341b5f9a0d740bf4f2f4e581d"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "dd59b79e05c583e340e02a899f9d10740fa82604b48db962fb0638dc662ec298",
+          "parameters": 8,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 3,
+            "newExpressions": 4,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setFishDatabase",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8ed135b7d0142f71f4c795ccf12e9377f093068a6a40eb255667c4400fe63087",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolvePhysicsConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "addc52f689641fa2b21e7a429ee710ef2f496ecddd3b13e969b642bad3734dc0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "reset",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "52d784688264b32d8ca0c7f26a4ccb7a08babce84daae4d56f18f8071c2a9171",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveFishDatabase",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5a947d43a28c35cbc5b890dd7c2dd8a783111d7202b5b791370985a987616e3d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#lerp",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "46c97a7a8ccb07755892a48d5cdd6b763078d64fd96753d70b42033bb896b009",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clamp01",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6a56d8ba2755a0d8aa8c6c3fb0623455dbaf4a25eb397dc9fcbfaba136e6f619",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getGodModeConfig",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "60d078ddff3222a8d93f462f4d632259f3b63cc3023b6f736bbb4549da710d41",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clampChance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "93d7e026a64415c9fa132ce941da9636a4a88bb926550327ce4ee14a936a442d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyGodModeChanceOverride",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4df22d3281465656594fb14b8a31645543e5b95231b7f2165a2e6b5ff492b08a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyGodModeBiteSequence",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "19d762e38d2cea85a232b250e5d5e18ab127d591b42b5d5a37354821071b4864",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveGodModeAnomalyChanceOverride",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a78cdd1790e08a0494f369316b4685f6b36202fb2e3d2737bffe4f9ce972dc89",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getDepthRatio",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ca3e81706bdfc87d9210f7da35085980ae1f22cec22ced0b07f3c301b02b5fff",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getDepthChanceMultiplier",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "61182537b08ee4a501d971a2a3a27bcff0f5c82a9c7ff9e3d7a6cbe2ba834fad",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasActiveLure",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8d8c09759d5099e022e19c83d21da4803e92094488869a7ec3a9d47f474b5484",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLevelBasePower",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e2e5c8eb5b9ffd9907d67d470c15894a9534863ee83ddad85771cdbf3596a101",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLevelAverageWeightKg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d448ead805b932bd157cb7039b99b8e69ce0197f00e6133c3aa911c7f400bf9a",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#buildFishPhysics",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b703fd8fa141862080947ed0b6e5c1c47565bed5aaf3b966dd312b8360895e30",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#next",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fe16f4054f2c5b7b078cafc0ae696d7d0075d2314c71c3442f00728ddb290b96",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#chance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "756499af9527b4a610ec101bb2c05da2a503d19b172e6c22b1e7c4e81e428f2f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#rollChance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a38a65ad9ef0eff72b9a9d6964e3dc3607eaeb33e653ac7ccc4adba385dc83fd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#formatPercent",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e3c50aa092ce451f4d7b23cb87dca1b6fd173709326f682bb6a6e11463ffb741",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#emitDebugEvent",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0e15b9171459cf0df54bd17d0f5c6b4fb30370990dbac2fb695395830de1d089",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildGodModeDebug",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b91e46c772b1ff0a9f56c828714f5061c98081a9e8d079f760a43bc12477f86d",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#int",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ad4d0af7be299dd2f8fa8940cd0f687f5832f629e3d4273eaada88da2c56bb0d",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#updateGuaranteedBiteCooldown",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "50ebd3e2b30c0c9c62df0cd58ceeb89f07cac92d871f22dd01889e6d493ec5d2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#startGuaranteedBiteCooldown",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b617402315ec2a1ae498f99511aa6d9424b1954e61324eae159c803258e26aa9",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#calculateFishChance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1b99a6647b70b9c51fc07183113b1b2513f40c057c8e77da94a93cc790dc5cf5",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#generateFishInstance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "43a00314b150d805611805420ecb8c8744c8958f5099d9a2c3bf2c1afb156e49",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "evaluateBite",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7aa046c4c67f68840fd0202775b797433e1d17186c3c0af34f1c37e8295690b3",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getLiveChances",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "498eb74dd283c9dea6944db145230e2650570334536b205ec131d8d74ebffaad",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#getBreakdown",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8b264b534db83eecfc39cd1ba668053415d4ea9ef35ffcc4137b8835ca89d8c7",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 24,
+        "arrayExpressions": 10,
+        "newExpressions": 5,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 5
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#applyGodModeBiteSequence",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyGodModeChanceOverride",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#applyGodModeChanceOverride",
+          "kind": "method"
+        },
+        {
+          "name": "FishPhysicsProfile",
+          "member": "#buildFishPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "FishPhysicsProfile",
+          "member": "#buildFishPhysics",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#calculateFishChance",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#clamp01",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#generateFishInstance",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#generateFishInstance",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#generateFishInstance",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#generateFishInstance",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#getBreakdown",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#getDepthChanceMultiplier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#getDepthRatio",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#hasActiveLure",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#int",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#resolveFishDatabase",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#resolveFishDatabase",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelBasePower",
+          "kind": "method"
+        },
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfig",
+          "kind": "method"
+        },
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfig",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#startGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#updateGuaranteedBiteCooldown",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Math",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "FightPhysicsConfigAdapter",
+          "member": "#resolvePhysicsConfig"
+        },
+        {
+          "name": "FishPhysicsProfile",
+          "member": "#buildFishPhysics"
+        }
+      ],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/consumable-event-identity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/bait-effectiveness-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/fish-rarity-check.js": {
+          "sha256": "f46d58177ab9067c21574b80dd22a8a1eaaeada6db0400fce18510eb985fd5c3",
+          "calls": {
+            "setFishDatabase": 0,
+            "reset": 0,
+            "evaluateBite": 4,
+            "getLiveChances": 0
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "CastManager": {
+      "sourcePath": "src/systems/bite_system.js",
+      "members": [
+        {
+          "name": "#penaltyLevel",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7ab7216dfb0602671a92c62be4d208bb6a9088cf4591afab0242c711dbb6b528"
+        },
+        {
+          "name": "#timer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "14379901bde20e91a0c366c135f29227af23bd981caf82e5b1759d5d401a6795"
+        },
+        {
+          "name": "#lastCastTime",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ba9b2514407e77c702584ded053015d32dc283a122d9c4de4cbf2f9b62d360b4"
+        },
+        {
+          "name": "#penaltyStepMs",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "56e2469c035e71df682ed8fdbe3d4463e402fb77396498ffd3178ebebff74d37"
+        },
+        {
+          "name": "#maxPenaltyMs",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fdc20465ba1c67c8ba27f9b20269d1a3544c10b984d3dbcba29cfc1681c6fb5b"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "c198820557253b6b64d1c8999834a5735e8e904f17915e6b4a05b8c1bdfc0282",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2d710143588aa605214226cdaca3fa2c6d94ca6071fb4af5c15f62eac7147ec0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "canCast",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "90e0a198c6f3023650aa965f7f21031283bb448a24185b1cf603367ca3b322aa",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "registerCast",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d201cfa9624c2cffa1383a870f3c38ae57ace70f43a049e4f136dfc32837f952",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getBiteChanceMultiplier",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "14c56502eaeec175010e5f23948df3b2aea64451307e5b033b9abaf0af62f30c",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "getBiteChanceMultiplier",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "registerCast",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "registerCast",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/consumable-event-identity-check.js": {
+          "sha256": "4ead88a6bf1f8ce276dff9d38ffcbaaadf9b2ba00cba5bda8eb24c9c6ee12974",
+          "calls": {
+            "update": 120,
+            "canCast": 6,
+            "registerCast": 6,
+            "getBiteChanceMultiplier": 120
+          },
+          "deltaTime": {}
+        },
+        "utils/bait-effectiveness-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/fish-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "ChumManager": {
+      "sourcePath": "src/systems/chum_system.js",
+      "members": [
+        {
+          "name": "#chumConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "86720865e230ead6433e0a1c0ab027128922cc54b0b1555c8453061b10674294"
+        },
+        {
+          "name": "#zones",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "58dec7e54264f651f088d22298db933471cd9c2f7a8aecc5b303863bbc79034f"
+        },
+        {
+          "name": "#boats",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c84b012778129a4e40be3025fdbcb39b32c63e0037832e7cb838e8529e2a8ce7"
+        },
+        {
+          "name": "#storageKey",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8ce7e1191c670eafee7166f35b8aa950d905f6b0f37dcf1870c7c26b64559880"
+        },
+        {
+          "name": "#locationMemoryKey",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a89b7bd32d9bfa6c17ad43bb4791ba568f64fc58cdbd257cfa0df077e2f27942"
+        },
+        {
+          "name": "#memoryGrid",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c2b2f13e0b80c8763b5c349edf6ef96b72b9db0f9560dbcf8bf2c8ae5b8373e8"
+        },
+        {
+          "name": "#boatEnergy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1b2fd239c4658fb1de0245f041bf44f19d5f772ce9ddcf50ff97551870fd3b08"
+        },
+        {
+          "name": "#projector",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "df1fd3a85a45f8b2171540fdb51e4234bd6e4a24ca3b7656f2e39ea5db80385a"
+        },
+        {
+          "name": "#onConfigUpdateBind",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9b17a716a5dbfbc6e491b3cbece9ac67d849921f7645191c2747f9f787c99af2"
+        },
+        {
+          "name": "#onBoatReturned",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "90a22499d88ae90bded4fea0ea20443650af1b7207f32db9316d1a581263f0ad"
+        },
+        {
+          "name": "#rng",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "63811b04220a2a79828d7dcccec05b4f0c75c7011345fedc871327a7c76091ff"
+        },
+        {
+          "name": "#now",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8d361a887e774c4723f8a836e6e0c14f287239e701757f97462a4d263123d9a1"
+        },
+        {
+          "name": "#cache",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4cd51882d7e02b734731f1936f6fa8334501e552a8d7f28b2a3a19ab2642bf29"
+        },
+        {
+          "name": "#configEvents",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bec0a4c8d267eaec75fb1482ac57e05aafde2e48ba7b4da3b734449c4c564bce"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "dba67c0d1ff24e12b4dd2e7b0f15e077332a98c071f205c642447354efe35190",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "useHandBait",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6687c877e2602ee16011db312b9a2b5d7cb88bbfeda295e97bb31ea40c084d1c",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#onConfigUpdate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8acd94992961e48dd86b9f21c9228b594b171d792ad4664342b2e90afcf75add",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getBoatEnergy",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3a51a3cf96f9711f0165d412a775f7a5f010df2f42aaee8b9080ceb38c5ef0e5",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "hasDriftingBoat",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "68736ac8edb978c8159286b3648620f4358ebfb3ef1dd189daf1845e69414afb",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "spawnIdleBoat",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0743a0f71d4b516bce4f5cb297f11d3c234c728de8b3b43f8f16b34368b3eba1",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "loadFromStorage",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ff805dc1d6081f2060918f11ef1fa72cbebea37da7406721d8f9e9005ec3dd8c",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "saveToStorage",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "aae03cc35a9d7a13f818b54f4e00e2f4a11a5cc6cf8ed5484e327e346ebe6dd3",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "deployBait",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b49d910515a43341da8acd750c0ab4e365b1b90c0145cc4c78001c34a9ad26b0",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#addMemory",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "770d295bd9bb9773eb6a988757281b0961bbfdd23e20663e176c8584292e434c",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "removeBoat",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5b35d2de397799ac9a69033a104a5f5c159b7dd259bf47f7c7e5910f49b5ed0c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1408b31f65a186a367b79769b06a62bdc619239a3a84dd2787646dc21cc519d7",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateBoats",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "49ad14c6bdb98eaa29b9c62a85a35eec38c0e85d6c8394c6932c3c05ae5e7f7a",
+          "parameters": 5,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "isBoatMoving",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b1ab5b02a2d67fd50ef3e79f3bb75c7b412b6144f1f6f13a7acb30bd1aaf30f0",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "dispose",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "22c46e2c9ed0c067d2f16eb85839fdebf642ee7cefee265679f8ea19c0d98a21",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getWaitingBoat",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8f0be20672719c0e447e52dc5e7f162c5a5be7c98c3042d8499ba7e4e6ddec24",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "activateWaitingBoat",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7faaba9a33a0d625dce824ae6054323583d907026b6daf67eb9e4188bec14e04",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getMultiplier",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "23408bed9fb63a32b3b2ee913482cda6fc939e4bb9baf1e890cfd6c8636c40b1",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "getChumDataAt",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "562f5e29fbbfec41cd934fb7e3cf079803c142de497c057d84bd25b946a700e3",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getActiveChumTargets",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "396059d449e363e723e8859e958e122acccf37e432bc2cdb84ee76cf4f200a09",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getZones",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3e620dfed6bab7516d6374ae56657dbbe01a4a6c95b537caeb2eb53eb42259f1",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getBoats",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "801e80c6517e9bc06aa25c35bb49ff51418263824c0be03ca99caa5fe5068b10",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 5,
+        "newExpressions": 3,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 6
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "#addMemory",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#addMemory",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Date",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Math",
+          "member": "deployBait",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "deployBait",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "getChumDataAt",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getMultiplier",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getMultiplier",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [
+        {
+          "name": "Date",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/consumable-event-identity-check.js": {
+          "sha256": "f28e6ca5cd0b90439b4d942dc5787dc47696427c547a350adaf3011a129d96a4",
+          "calls": {
+            "useHandBait": 0,
+            "getBoatEnergy": 0,
+            "hasDriftingBoat": 0,
+            "spawnIdleBoat": 1,
+            "loadFromStorage": 2,
+            "saveToStorage": 2,
+            "deployBait": 2,
+            "removeBoat": 0,
+            "update": 0,
+            "updateBoats": 1,
+            "isBoatMoving": 0,
+            "dispose": 0,
+            "getWaitingBoat": 0,
+            "activateWaitingBoat": 0,
+            "getMultiplier": 0,
+            "getChumDataAt": 0,
+            "getActiveChumTargets": 0,
+            "getZones": 1,
+            "getBoats": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/bait-effectiveness-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/fish-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "ChumZone": {
+      "sourcePath": "src/systems/chum_system.js",
+      "members": [
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "fee3849e01c661784a07fc1d8ff47b7dd2c8231ff653a51933c00e19453a614e",
+          "parameters": 6,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateState",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "472f09cef96aeac84134d7dc61cb73ab2c17e9bb032fd52624da46b3215b88f4",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getMultiplierAt",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "04111eb4d3e4e25088c4d58e0fc3cb1d67db267de3bc0b7c39195ae4aa680064",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "checkOverlap",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "85ae7fc1d0a9add77799580f06c994ae3c07743db1297c6fe9ff05dbdc8148fe",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "checkOverlap",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "checkOverlap",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/consumable-event-identity-check.js": {
+          "sha256": "4789012849891d127670ee9df4e3c261e9d950e3e428f97773b100bab040925c",
+          "calls": {
+            "updateState": 15,
+            "getMultiplierAt": 1,
+            "checkOverlap": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/bait-effectiveness-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/fish-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

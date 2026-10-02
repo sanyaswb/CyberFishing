@@ -67,6 +67,22 @@
       ]
     },
     {
+      "id": "bridge-04ac871515bf",
+      "bridge": "src/systems/chum_system.js",
+      "owner": "stage-4.cluster-027-bite-chum",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/chum/chum_service.js",
+      "reason": "Preserve the exact ChumManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ChumManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-04bc2fe4918e",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -770,22 +786,6 @@
       "globalProviders": [
         {
           "symbol": "StaminaController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2b3433dfa33f",
-      "bridge": "src/entities/fish.js",
-      "source": "src/systems/bite_system.js",
-      "target": "src/game/domain/fish/fish.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishPhysicsProfile",
           "mechanism": "global-this-property"
         }
       ]
@@ -2179,6 +2179,26 @@
       ]
     },
     {
+      "id": "bridge-7ad54eebd99a",
+      "bridge": "src/systems/bite_system.js",
+      "owner": "stage-4.cluster-027-bite-chum",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/fishing/bite_service.js",
+      "reason": "Preserve the exact BiteSystem, CastManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BiteSystem",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "CastManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7c4e1d0210cd",
       "bridge": "src/config/databases/item_db.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -3079,22 +3099,6 @@
       ]
     },
     {
-      "id": "bridge-ae20278a9e2f",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/systems/chum_system.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-ae46e766e312",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/landing_area_render_frame_builder.js",
@@ -3366,22 +3370,6 @@
       "globalProviders": [
         {
           "symbol": "BiteEnvironmentService",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-bd39dcf4c81c",
-      "bridge": "src/config/physics/physics_config_adapter.js",
-      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
-      "source": "src/systems/bite_system.js",
-      "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsConfigAdapter",
           "mechanism": "global-this-property"
         }
       ]

@@ -33109,6 +33109,58 @@
       }
     },
     {
+      "currentPath": "src/game/application/chum/chum_service.js",
+      "currentArea": "game/application/chum",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Date",
+            "Infinity",
+            "Math"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/chum/chum_service.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/application/fishing/bite_environment_service.js",
       "currentArea": "game/application/fishing",
       "observed": {
@@ -33140,6 +33192,59 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/bite_environment_service.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/fishing/bite_service.js",
+      "currentArea": "game/application/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "Number",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/bite_service.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -48358,12 +48463,12 @@
           "items": [
             {
               "symbol": "BiteSystem",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             },
             {
               "symbol": "CastManager",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -48373,16 +48478,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishPhysicsProfile",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -48390,11 +48489,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Math",
-            "Number",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -48404,7 +48499,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/bite_service.js",
@@ -48413,41 +48508,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishPhysicsProfile",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/entities/fish.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/entities/fish.js",
-              "symbols": [
-                "FishPhysicsProfile"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -48519,18 +48590,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BaitBoat",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "ChumManager",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "ChumZone",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -48540,10 +48601,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -48551,10 +48612,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Date",
-            "Infinity",
-            "Math"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -48564,7 +48622,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/chum/chum_service.js",
@@ -48573,26 +48631,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
