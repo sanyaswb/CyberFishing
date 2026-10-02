@@ -663,6 +663,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2SettingsTransactionParticipant",
+      "legacyScriptIndex": 179,
+      "legacySymbol": "InventoryV2SettingsTransactionParticipant",
+      "shimFile": "activations/179_inventoryv2settingstransactionparticipant.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "targetModule": "src/game/application/inventory/inventory_transaction_participants.js",
+      "id": "activation-22a1f6f4a0bb",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-23610c146ce8",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/auto_refill_policy.js",
@@ -671,6 +683,18 @@
       "legacySymbol": "AutoRefillSettings",
       "legacyScriptIndex": 165,
       "shimFile": "activations/165_autorefillsettings.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2RefillMemoryTransactionParticipant",
+      "legacyScriptIndex": 179,
+      "legacySymbol": "InventoryV2RefillMemoryTransactionParticipant",
+      "shimFile": "activations/179_inventoryv2refillmemorytransactionparticipant.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "targetModule": "src/game/application/inventory/inventory_transaction_participants.js",
+      "id": "activation-243fc2640274",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1059,6 +1083,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "InventoryV2ItemHydrator",
+      "legacyScriptIndex": 191,
+      "legacySymbol": "InventoryV2ItemHydrator",
+      "shimFile": "activations/191_inventoryv2itemhydrator.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "targetModule": "src/game/application/inventory/inventory_item_hydrator.js",
+      "id": "activation-5790f13a346f",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-57add99af90d",
       "owner": "stage-3.candidate-002-fishing-944d0790",
       "sourceProvider": "src/core/fishing/reel_auto_recovery_calculator.js",
@@ -1187,6 +1223,18 @@
       "targetModule": "src/platform/browser/config/deep_clone_config.js",
       "id": "activation-65855576983d",
       "owner": "stage-4.cluster-031-platform-config-clone",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2Facade",
+      "legacyScriptIndex": 201,
+      "legacySymbol": "InventoryV2Facade",
+      "shimFile": "activations/201_inventoryv2facade.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_facade.js",
+      "targetModule": "src/game/application/inventory/inventory_facade.js",
+      "id": "activation-67962a63c4a1",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1719,6 +1767,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2TransactionCoordinator",
+      "legacyScriptIndex": 178,
+      "legacySymbol": "InventoryV2TransactionCoordinator",
+      "shimFile": "activations/178_inventoryv2transactioncoordinator.js",
+      "sourceProvider": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "targetModule": "src/game/application/inventory/inventory_transaction_coordinator.js",
+      "id": "activation-a4a07b9a3fd3",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-a658f15200ed",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/auto_refill_policy.js",
@@ -1727,6 +1787,18 @@
       "legacySymbol": "AutoRefillScope",
       "legacyScriptIndex": 165,
       "shimFile": "activations/165_autorefillscope.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2GameplayBridge",
+      "legacyScriptIndex": 200,
+      "legacySymbol": "InventoryV2GameplayBridge",
+      "shimFile": "activations/200_inventoryv2gameplaybridge.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "targetModule": "src/game/application/inventory/inventory_gameplay_facade.js",
+      "id": "activation-a68083ff7755",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1943,6 +2015,18 @@
       "legacySymbol": "LineSystem",
       "legacyScriptIndex": 209,
       "shimFile": "activations/209_linesystem.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "exportName": "LegacyInventoryUnitAllocator",
+      "legacyScriptIndex": 171,
+      "legacySymbol": "LegacyInventoryUnitAllocator",
+      "shimFile": "activations/171_legacyinventoryunitallocator.js",
+      "sourceProvider": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "targetModule": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "id": "activation-b8eb0e77ea6d",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
     },

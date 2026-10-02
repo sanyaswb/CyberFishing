@@ -1207,6 +1207,26 @@
       ]
     },
     {
+      "id": "bridge-4647f3ddeaa2",
+      "bridge": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_transaction_participants.js",
+      "reason": "Preserve the exact InventoryV2RefillMemoryTransactionParticipant, InventoryV2SettingsTransactionParticipant consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2RefillMemoryTransactionParticipant",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "InventoryV2SettingsTransactionParticipant",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-465e746a78c9",
       "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1298,6 +1318,22 @@
       "globalProviders": [
         {
           "symbol": "LineAllocationPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-4d7bca9c9aa3",
+      "bridge": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "reason": "Preserve the exact LegacyInventoryUnitAllocator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LegacyInventoryUnitAllocator",
           "mechanism": "global-this-property"
         }
       ]
@@ -2095,6 +2131,22 @@
       ]
     },
     {
+      "id": "bridge-715b820645dd",
+      "bridge": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_gameplay_facade.js",
+      "reason": "Preserve the exact InventoryV2GameplayBridge consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2GameplayBridge",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-71b223bc178a",
       "bridge": "src/config/inventory/equipment_slot_config.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -2706,22 +2758,6 @@
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-94443eb8e5b1",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -3711,6 +3747,22 @@
       ]
     },
     {
+      "id": "bridge-cf0486903b92",
+      "bridge": "src/application/inventory/inventory_v2_facade.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_facade.js",
+      "reason": "Preserve the exact InventoryV2Facade consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2Facade",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d0947069c1da",
       "bridge": "src/infrastructure/storage/cache_manager.js",
       "owner": "stage-4.cluster-036-platform-cache",
@@ -3882,6 +3934,22 @@
       "globalProviders": [
         {
           "symbol": "IdleRetrievePolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-da925d333d4e",
+      "bridge": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_transaction_coordinator.js",
+      "reason": "Preserve the exact InventoryV2TransactionCoordinator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2TransactionCoordinator",
           "mechanism": "global-this-property"
         }
       ]
@@ -4063,17 +4131,17 @@
       ]
     },
     {
-      "id": "bridge-e30124e33a3f",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/application/inventory/inventory_v2_gameplay_bridge.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
+      "id": "bridge-e26e29aef898",
+      "bridge": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "owner": "stage-4.cluster-020-inventory-storage-application",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_item_hydrator.js",
+      "reason": "Preserve the exact InventoryV2ItemHydrator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
       "removalStage": "stage-5",
       "globalProviders": [
         {
-          "symbol": "InventoryItemLocation",
+          "symbol": "InventoryV2ItemHydrator",
           "mechanism": "global-this-property"
         }
       ]

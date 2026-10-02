@@ -10,7 +10,8 @@ const { StageThreeHotLoopSourceReview } = require("../review_queue/hot_loop_sour
 const PROBE = path.join(__dirname, "class_trace_probe.js");
 const EVIDENCE_DIRECTORY = "architecture/migration/stage_4/evidence";
 const EVIDENCE_KIND = "cyber-fishing-stage-4-tier-a-evidence";
-const KINDS = Object.freeze(["hot-loop", "save-round-trip"]);
+// Tier B (public-API parity) uses the same member review and method traces as tier A.
+const KINDS = Object.freeze(["api-parity", "hot-loop", "save-round-trip"]);
 const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const withoutLocation = (items) => items.map(({ location, ...item }) => item);
 // A scenario that never calls the class has one form, whether or not the class was resolvable in its context (a

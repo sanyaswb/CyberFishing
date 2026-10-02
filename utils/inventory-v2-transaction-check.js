@@ -1,20 +1,12 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
-vm.runInContext(
-  fs.readFileSync(
-    path.join(
-      root,
-      "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
-    ),
-    "utf8",
-  ),
-  context,
-  { filename: "inventory_v2_transaction_coordinator.js" },
-);
+// The coordinator is an ESM module since Stage 4 cluster 020: its classic path is an activation shim.
+new StageThreeCompatibilityTestLoader({ projectRoot: root, context })
+  .load("src/infrastructure/storage/inventory_v2_transaction_coordinator.js");
 
 vm.runInContext(`(() => {
   const assert = (condition, message) => {

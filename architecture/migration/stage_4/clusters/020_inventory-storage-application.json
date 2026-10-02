@@ -44,7 +44,13 @@
       "exports": [
         "InventoryV2ItemHydrator"
       ],
-      "imports": []
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "No self-composition in the current source: the constructor stores the injected itemDefinitionResolver and effectiveStatsResolver (no default instance, no typeof/global fallback); the only allocations are its own Map/Set/result objects. The only production construction is InventoryV2CompositionRoot (application composition), which passes both collaborators. Framework Q4: nothing to remove; eslint-scope free names are language built-ins only (Map, Set, Object, RangeError). Evidence: api-parity member review + method traces (28,347 hydrator calls in inventory-v2-integration, 456 in inventory-save-round-trip)."
+        }
+      ]
     },
     {
       "currentPath": "src/application/inventory/inventory_v2_facade.js",
@@ -65,10 +71,283 @@
           "symbol": "InventoryItemLocation",
           "from": "src/game/domain/inventory/inventory_item_location.js"
         }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One application facade: the single port through which fishing gameplay reads and mutates the inventory (equipped/item queries, consume, line break, rod/chum/boat events, cast/bite/chum readiness) by delegating to injected collaborators (repository, hydrator, equipment state/read model, readiness policy, commands, item views); it owns only the after-mutation listener and the last mutation result, both facts of that port. No forbidden edge (imports only the Domain InventoryItemLocation), no player-facing text, raw config, DEV or browser access, so framework Q9 reclassifies with evidence instead of splitting. Renaming the class (Bridge -> facade) is a Stage 7 API rename; the target file name already says gameplay facade. Evidence: api-parity traces (37 calls in inventory-v2-integration, 5 in inventory-save-round-trip)."
+        }
       ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "020",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "LegacyInventoryUnitAllocator,InventoryV2TransactionCoordinator,InventoryV2RefillMemoryTransactionParticipant,InventoryV2SettingsTransactionParticipant,InventoryV2ItemHydrator,InventoryV2Facade,InventoryV2GameplayBridge",
+        "--scenarios",
+        "utils/inventory-v2-transaction-check.js,utils/inventory-v2-integration-check.js,utils/inventory-save-round-trip-check.js,utils/inventory-v2-migration-check.js"
+      ]
+    },
+    {
+      "name": "inventory-v2-transaction",
+      "script": "utils/inventory-v2-transaction-check.js"
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    },
+    {
+      "name": "inventory-save-round-trip",
+      "script": "utils/inventory-save-round-trip-check.js"
+    },
+    {
+      "name": "inventory-v2-migration",
+      "script": "utils/inventory-v2-migration-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-020-inventory-storage-application",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+        "targetPath": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+        "sourceSha256": "fe8918c9a1f481c3c6158bd1bac8cda38b98fb75e73baf0b9c53ca20ffdb60b9",
+        "targetSha256": "9aa8a1704f175f39ff9fbe5d842713a97dc62009c51025b3d8b09b2e8bbb0957"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+        "targetPath": "src/game/application/inventory/inventory_transaction_coordinator.js",
+        "sourceSha256": "02ae7f1bc753c1089d0987a1023529ab756e16643bc8f708ce57e06936e7649c",
+        "targetSha256": "98f493f08a21445734c0eeaaaeba657639de6726adf49f3cebadef1e7f037c74"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+        "targetPath": "src/game/application/inventory/inventory_transaction_participants.js",
+        "sourceSha256": "86508ed3ade25ace5a21263e973b64511015414ade85b909a0969fab5a6567ba",
+        "targetSha256": "fd54bf4a3f2cea8dea2e4fb92a99526539e085fd7a8a851f7bcc889bd8f5ff5a"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+        "targetPath": "src/game/application/inventory/inventory_item_hydrator.js",
+        "sourceSha256": "3cbc36f484a6c80dd152694be83e15c75d10021e9599aab3c5e79bed1f81b51e",
+        "targetSha256": "9f717f0a0777efe3523d19fd71fdb6d5531b7bc6ca554474a7f3b511360bfee5"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_facade.js",
+        "targetPath": "src/game/application/inventory/inventory_facade.js",
+        "sourceSha256": "9134b59edf0421268c47a97e9469d909490f495fa3cfa66ec36d5469e400a8b8",
+        "targetSha256": "869369179ac255b213ae7d8cce8e6daf376ddec6a104ba8ffc3c053b2227c613"
+      },
+      {
+        "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+        "targetPath": "src/game/application/inventory/inventory_gameplay_facade.js",
+        "sourceSha256": "6a14c23f0e68cd1f29f03fafa768369d11ac74a16a66150b40a6cf4f965c1181",
+        "targetSha256": "c8de57d5093cb6f25afa2d027f4cf446ca54f0bb6f3107fe9da36352fb1df2d7"
+      }
+    ],
+    "activations": [
+      "activation-22a1f6f4a0bb",
+      "activation-243fc2640274",
+      "activation-5790f13a346f",
+      "activation-67962a63c4a1",
+      "activation-a4a07b9a3fd3",
+      "activation-a68083ff7755",
+      "activation-b8eb0e77ea6d"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-4647f3ddeaa2",
+      "bridge-4d7bca9c9aa3",
+      "bridge-715b820645dd",
+      "bridge-cf0486903b92",
+      "bridge-da925d333d4e",
+      "bridge-e26e29aef898"
+    ],
+    "bridgesRetired": [
+      "bridge-94443eb8e5b1",
+      "bridge-e30124e33a3f"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/legacy_inventory_unit_allocator.js->src/game/domain/inventory/inventory_item_location.js",
+      "src/game/application/inventory/inventory_gameplay_facade.js->src/game/domain/inventory/inventory_item_location.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/020_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "a9b3ff5b5dc67a0183aa75a88f0401f36febe579c0ca9de79a4b8c5e50124a40",
+        "after": "d65fb88ac7f31691e77a7f0161dc4f89892b8566fcd2db0815d4e1f71d5a05d3"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "22b7729dbbdd2cb232fa73aff39a9cb096d0fa2740b2e629bdcaa41faccbe7de",
+        "after": "22b7729dbbdd2cb232fa73aff39a9cb096d0fa2740b2e629bdcaa41faccbe7de"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "f46d3e78622727f7bc62294e98e59e690116064785952e1e68050dda46f3004d",
+        "after": "492847ecec8aca51bbecbfe65f066f974b7380e6a79999a72ec5d4e8c941801c"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "ee0138882a388020f4e5fd7ea6ed11ec42fa64cffd977d0126f79335f5746dd2",
+        "after": "7d8a25bdd88bf858b10e98a635a3a6d34205f84d31ccc9f45d163a72f7025796"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "e43042474b43c90a7aa90650b6ec6a1749cfa3e35d787f40110e7a54ac6822b0",
+        "after": "b794ff2b6cc0671b158a6000db40f27ec5729e2a9ff7f5ca6684962c8abab88f"
+      },
+      {
+        "path": "index.html",
+        "before": "5dc06c3aaa597be2df981a3fc167d97399c509f2c9900466244dcca8b50ba41a",
+        "after": "445699e400ec36703f62f6498014e2666b2a40a82481fd4ea9010d88cd5fd87b"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_facade.js",
+        "before": "9134b59edf0421268c47a97e9469d909490f495fa3cfa66ec36d5469e400a8b8",
+        "after": "e31a62cdc7721e2c12fc34e6f77eaf0e577c3822ec0ac55c0d9b472860e7db1f"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+        "before": "6a14c23f0e68cd1f29f03fafa768369d11ac74a16a66150b40a6cf4f965c1181",
+        "after": "ca0c320b179b1d85d921fd82482b70da0068554a4d06f1b3a42484bcc5c71dd9"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_item_hydrator.js",
+        "before": "3cbc36f484a6c80dd152694be83e15c75d10021e9599aab3c5e79bed1f81b51e",
+        "after": "829b34bdf0562cabb05db303fde00418cf97626865dee4dc3b55fae2f1f6fa24"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_transaction_participants.js",
+        "before": "86508ed3ade25ace5a21263e973b64511015414ade85b909a0969fab5a6567ba",
+        "after": "c55e447d1e1b60310a95bf50d74b9657f42aed53d85ce880446adadb848b719a"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_facade.js",
+        "before": null,
+        "after": "869369179ac255b213ae7d8cce8e6daf376ddec6a104ba8ffc3c053b2227c613"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_gameplay_facade.js",
+        "before": null,
+        "after": "c8de57d5093cb6f25afa2d027f4cf446ca54f0bb6f3107fe9da36352fb1df2d7"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_item_hydrator.js",
+        "before": null,
+        "after": "9f717f0a0777efe3523d19fd71fdb6d5531b7bc6ca554474a7f3b511360bfee5"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_transaction_coordinator.js",
+        "before": null,
+        "after": "98f493f08a21445734c0eeaaaeba657639de6726adf49f3cebadef1e7f037c74"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_transaction_participants.js",
+        "before": null,
+        "after": "fd54bf4a3f2cea8dea2e4fb92a99526539e085fd7a8a851f7bcc889bd8f5ff5a"
+      },
+      {
+        "path": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+        "before": null,
+        "after": "9aa8a1704f175f39ff9fbe5d842713a97dc62009c51025b3d8b09b2e8bbb0957"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+        "before": "02ae7f1bc753c1089d0987a1023529ab756e16643bc8f708ce57e06936e7649c",
+        "after": "2dec163c5e9211c820a1f1f07f0cfab4452a8800695e7824a0d8540299daf381"
+      },
+      {
+        "path": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+        "before": "fe8918c9a1f481c3c6158bd1bac8cda38b98fb75e73baf0b9c53ca20ffdb60b9",
+        "after": "7b62b42b811d61fff13ffebdb6dcec56a3c674f44e0f1add77d944f9046c5190"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 645 modules, 904 unified edges, 852 globals, 107 exact known-debt diagnostics, 0 FAIL in 693ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 645/645 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 175 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 175 activations and 278 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 24 applied, 58 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "772c93ff8cc40ad95fd238ac3661541b6cb078fd87228717c6c4d14e36f9bf7f"
+      },
+      {
+        "name": "inventory-v2-transaction",
+        "status": "PASS",
+        "sha256": "f8fe48f0b0f5bc89446b73d7ee5dd9ebdb85f79abfa8bead9e22630eac2b7b1f"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      {
+        "name": "inventory-save-round-trip",
+        "status": "PASS",
+        "sha256": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      },
+      {
+        "name": "inventory-v2-migration",
+        "status": "PASS",
+        "sha256": "658a04f05fc4da551940862c8878ca28af3c310c0a8568ca0a3776643e37075e"
+      }
+    ]
+  }
 }

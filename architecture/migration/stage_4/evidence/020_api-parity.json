@@ -1,0 +1,1600 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "020",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-transaction-check.js",
+    "utils/inventory-v2-integration-check.js",
+    "utils/inventory-save-round-trip-check.js",
+    "utils/inventory-v2-migration-check.js"
+  ],
+  "classes": {
+    "InventoryV2Facade": {
+      "sourcePath": "src/application/inventory/inventory_v2_facade.js",
+      "members": [
+        {
+          "name": "#commands",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "56362950a8e0441695249347bbcc7594656c8e56dee8b51101557885b9cea65b"
+        },
+        {
+          "name": "#viewModels",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "aa751654517a9edde297b2ae8eba0666e98e3f9392e65b7baa1ec66c70efbde5"
+        },
+        {
+          "name": "#gameplayBridge",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a6b038bb39a223b1feb191df5967de4a9c638879866838854f0fca5ab3d76b8b"
+        },
+        {
+          "name": "#listeners",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fcc334a17d9486de9e07d454ae44611cd5a7a6bc3e0c920ddffb3a35f7332283"
+        },
+        {
+          "name": "#migrationWarnings",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "84c3245c487832db00fbb8204b84a38867d837c5e02e1ef63c4786a4229f7731"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "9c6f8731c64ee4f88e94b08e77c48924d594985ccdf5e27f6fd7fa63349939fb",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getViewModel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5494d566770ba016d5cc5ac11025a22ad4400ea09c4cb1573e228b308a9f0b99",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "dispatch",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "80448c5e864849374f04a2f24dc482e12e239c50d78e5ef1680ebc8d2e1c149c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "subscribe",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fa30cfce7317ebeaa9105382654b38e4d9df97ae10bae4ee7b1a806f678a59be",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "notify",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b38854cd710790037f18f4c111b9cd4455afa1b983e4961eb60dd4c22b485f01",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getLegacyBridge",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bce93c611cbb123c4804a1995e2fc875d67e6dae2817554ef37d3e6f2547b092",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleRodRetrieved",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e82603536861f4d31035e24e184902aee82e59efc3969757629e884d4e97ea4f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleHandChumUsed",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d2f020085d015e92377e36ee7ccd3917664316646c70b6702d83cf66b7eb568e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleBoatReturned",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "04cf45ca6e2ec8e89fa17e1f399f661eabe462b9b7a99a7c19dc8f786e89ec12",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getMigrationWarnings",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ed28e3e6836b41c393de3aaede771ab834848e59bd950c23f27f578492441ac2",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setBoatChargeProvider",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0c8f3c493ba3e7d2a8047d35f0e2049d680b58b73102750b3c837562069d506d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 5,
+        "newExpressions": 4,
+        "objectFreezeCalls": 3,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Set",
+          "member": "#listeners",
+          "kind": "field"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "dispatch",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "notify",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "subscribe",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "1522ce2bc0c21a6fde86ab2b22f5282f4f6c49d72abae523093969cffd2d5bf9",
+          "calls": {
+            "getViewModel": 214,
+            "dispatch": 151,
+            "subscribe": 0,
+            "notify": 157,
+            "getLegacyBridge": 0,
+            "handleRodRetrieved": 0,
+            "handleHandChumUsed": 0,
+            "handleBoatReturned": 0,
+            "getMigrationWarnings": 0,
+            "setBoatChargeProvider": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2GameplayBridge": {
+      "sourcePath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#hydrator",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "eb32a631d8c59aa26e5b7513b83f9f2150427fb1f657c0f0dcbfd7b3a027fdeb"
+        },
+        {
+          "name": "#equipmentState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "504fd44c38c1df1092996f1d3e8b8800ac30884f952a0bf23b90240035da4980"
+        },
+        {
+          "name": "#equipmentReadModelFactory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b9d8249f899b43ef661b224c7c74c6848ea5a0f34366777b1cb1736e72ad8274"
+        },
+        {
+          "name": "#readinessPolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b0da26c0aaeea76a8bf68da0cb83ad458fecea7040b952653fa2657c9e83cea0"
+        },
+        {
+          "name": "#commands",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "56362950a8e0441695249347bbcc7594656c8e56dee8b51101557885b9cea65b"
+        },
+        {
+          "name": "#itemViews",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c64ba82648f5a4d31186c13a2ed68f979ec71a05fc56e501e161122ec4afcb58"
+        },
+        {
+          "name": "#afterMutation",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "635ba67ecf074c3812d431a03851f41e917f44eb99c590c9db561c02f0847347"
+        },
+        {
+          "name": "#lastResult",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "abe1135916a75848455907e058da0fcb68c2c1dd1cc30dfcdaeeaa072d4fa190"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "e10b4671e6156101edb095d0bfc16e3bb4bb73fe449f1ff9e5ef4743e54eef12",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setAfterMutation",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a7584a73b788d850c947bf349fae9740a76eef3d42755b8b689523565dbe7a64",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getEquipped",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4b75eacbd457d091349c43a581c0d623472b3df43e9c539ae2eda7e20a409288",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "listItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b80a93dcd7347f5303db6ade46a83a9f2673a0cd0e1adb1d24e53c421a2d8777",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getInventoryItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6bd0082b8d6a30a973d4ecefec16c802588904e88297aaa7c2da718d60073232",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "listAllItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "496f3685c51cccb48cdcbf95fe03d7c436c61ec9043c497b98bf362f828d9829",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cd3ebc03812ffe4349450b175795167d1f576e6dccd5737bfafa7a16d4645677",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "hydrateInstance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "95799e873eaa697e6d44fa04aca115196c670b003800c017a7631943b9842426",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "findFirstItemByType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "dc05428f20102ed2656c4bc46e9cbdcb1529ecdac04421910eaf29403a49585c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "findItemsByType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "938dcba1ff37015aba546b91175298bddf5ce20002e109455356986ee073f498",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "consumeItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "082a0111a1d2c7c603d90f740bd6fa72abe434acb8e13eb846c00ac3c1fab78d",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "consumeEquipped",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c6e2fabe29bfcd2ea38cacfe66cca942a5055e338a33aba4d3adb97e488a0c53",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "breakEquippedLine",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a9c36f048d17ca7b9d3b04adcf08b061ded880bd11c3ca4054eabe83818a71ab",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "rodRetrieved",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5038870318f59e75e779f3f6add64f40e6da69501ab4c18abf0647270c22960e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleRodRetrieved",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0f52c3a658244abc90475e36fc3998f2e04169c7012c62ce3dc1e652d0207296",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handChumUsed",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d799bf609c5f555fb6b171d74fddf69cbf8093b90c35eee4a3c517da692dab5a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleHandChumUsed",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a71879fe8240610bd862a3931ac847d3d1b8d2bc65ced5f868bf87820b1ac61f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "boatReturned",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "13caf45ce3dbfe0d4defbc8a131f97bb53f462fc4f18db3b6de673bf37ba6ce9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "handleBoatReturned",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c4daf1c9ea4e884755a9905fdff2daaa67b1981a5f71bee32d5cd4ed41f1efa3",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "evaluateCastReadiness",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "82237bf2db1217da910109cb6cca25d62775b73eafccd11e6cc8558ae768eb5d",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "evaluateBiteReadiness",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fc2f5231ba0ddff281920282fe55c923a14994863022c8266f6033958caee22e",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "evaluateChumBonus",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "466f34c978cb86c830560394f0453d871d0c5d12cb30c43eb624e0fc19b1429b",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "setBoatChargeProvider",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b9cec0565315733b5841abb6681f3a64766095801513c0580eaffd2a2f903e21",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getLastResult",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3b4b0d767c8ebd108a0815152e42083ca8fff2372c7b0b10129743cdc247b3ee",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#matchesType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ff22ede890e7d09462664e36cc32bd6d823af44f50a408eb4b7c7afc1fa8926e",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#booleanMutation",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8581be514c6914eb950d1046b456b2ab5e1767a2438266ffb74264cf00ae592d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#reportMutation",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b58c0ca723e4fb7a72afe09f0cdf75d99e26677be304ef94a7cbebe04a62c320",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 14,
+        "arrayExpressions": 1,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "InventoryItemLocation",
+          "member": "listItems",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "listItems",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "4178a04928766ef00eba25d759c0fb4f831c17e8907afe515d775566a9481fce",
+          "calls": {
+            "setAfterMutation": 26,
+            "getEquipped": 0,
+            "listItems": 1,
+            "getInventoryItems": 1,
+            "listAllItems": 0,
+            "getItem": 0,
+            "hydrateInstance": 0,
+            "findFirstItemByType": 0,
+            "findItemsByType": 0,
+            "consumeItem": 0,
+            "consumeEquipped": 0,
+            "breakEquippedLine": 0,
+            "rodRetrieved": 1,
+            "handleRodRetrieved": 0,
+            "handChumUsed": 2,
+            "handleHandChumUsed": 0,
+            "boatReturned": 2,
+            "handleBoatReturned": 0,
+            "evaluateCastReadiness": 1,
+            "evaluateBiteReadiness": 1,
+            "evaluateChumBonus": 1,
+            "setBoatChargeProvider": 1,
+            "getLastResult": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "c995abd7f7675428d47cdaced6759b07feb090ac0a48033c7562033d016f0ef7",
+          "calls": {
+            "setAfterMutation": 5,
+            "getEquipped": 0,
+            "listItems": 0,
+            "getInventoryItems": 0,
+            "listAllItems": 0,
+            "getItem": 0,
+            "hydrateInstance": 0,
+            "findFirstItemByType": 0,
+            "findItemsByType": 0,
+            "consumeItem": 0,
+            "consumeEquipped": 0,
+            "breakEquippedLine": 0,
+            "rodRetrieved": 0,
+            "handleRodRetrieved": 0,
+            "handChumUsed": 0,
+            "handleHandChumUsed": 0,
+            "boatReturned": 0,
+            "handleBoatReturned": 0,
+            "evaluateCastReadiness": 0,
+            "evaluateBiteReadiness": 0,
+            "evaluateChumBonus": 0,
+            "setBoatChargeProvider": 0,
+            "getLastResult": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ItemHydrator": {
+      "sourcePath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "members": [
+        {
+          "name": "#definitionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7c09bd1c51e6ca32698e26cc715058f4a38d008f6e3ae2aed957bf4e6e1a629f"
+        },
+        {
+          "name": "#plainDefinitions",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "94dd0a15a62ad8fa9a908134ba6efa1bd2faf1a60810328f49f02a8c900ae5c1"
+        },
+        {
+          "name": "#effectiveStatsResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "606070f40b9df67538f6d37d43b2929a573b44a9bf8d1c9e0435fda9bf3315c4"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "5972e2d28a87b667d5b558313c869c39ad095e242b706a7713cbd24faf6f22b2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getDefinition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d1b73d9429efa88610c99ce3a5c45885ba5a28a84fe6c7f8c2998d738efbdf25",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "hydrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9e9868bcdb68d7a1e26cfcca7a38f19df95d9b53f25c2e678ce8f4d3133cbfd5",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#withoutDefinitionOwnedFields",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "140bc121ac9b7ad6edd8eb29639f5d82e1a732518a5f72b973a1fc6c66b210cc",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeDefinition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5273da78e04c59aebd8e50fff053477ae5491b3d612627038afd15d851e0e068",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 7,
+        "arrayExpressions": 1,
+        "newExpressions": 3,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Map",
+          "member": "#plainDefinitions",
+          "kind": "field"
+        },
+        {
+          "name": "Set",
+          "member": "#withoutDefinitionOwnedFields",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#withoutDefinitionOwnedFields",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#withoutDefinitionOwnedFields",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#withoutDefinitionOwnedFields",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Array",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "RangeError",
+          "member": "hydrate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "4a2fc046410e380505949e27c81845850bf929dfd9fce7192c9cdc5b1c796c97",
+          "calls": {
+            "getDefinition": 18419,
+            "hydrate": 9928
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "60b159156af226c210188da7885170c8825154a52ad0efaf8b70d866da07efef",
+          "calls": {
+            "getDefinition": 456,
+            "hydrate": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2RefillMemoryTransactionParticipant": {
+      "sourcePath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "members": [
+        {
+          "name": "#memory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fb09d1048c8946ef85e7486c1a21b87275df468beb138b86de82fda070fdc37e"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "d51a1d41672a2a5f7f80d2ea425f61c4c0216a1164fe7ae7eb1cf76a83531911",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "snapshot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1d0252be4f8a15a5b1d7c3575211f408a666f5c038b6662fcc45a21f6d82024b",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "restore",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fccd57c5943dbc045fccb04058c7a3e62ff06529861d79fa19664be4bdf938aa",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 2,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Object",
+          "member": "restore",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "restore",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "c9684683e9c478ecf3b33d4718942df0571effe047c78b25f06a01de8ea50107",
+          "calls": {
+            "snapshot": 113,
+            "restore": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2SettingsTransactionParticipant": {
+      "sourcePath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "members": [
+        {
+          "name": "#settings",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "28329d75918cebc7eeda1ca12b7891c45a11043cc5fb4ce437411a3eff3e5c90"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "0c5ac8244b78decab147776bf47693cfb4c5981dbf27b87e8b349d115eada2b0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "snapshot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5c71667bb4cedf54d30041a9615f2e4549371397c9bf38f6f58a905b10816753",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "restore",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fd1b02222e8ada447472dd7557885d6fee4689b61b32930959139e9ce6e65bf8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "93ec126bdaea6a062344856730efe4e1fbb7d29425a3aa5e994d4378dad236d3",
+          "calls": {
+            "snapshot": 113,
+            "restore": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2TransactionCoordinator": {
+      "sourcePath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "members": [
+        {
+          "name": "#participants",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "193c0fee62954fe9c2132ccf5fe7b9f7493a2afcf37864ca23055743e6830646"
+        },
+        {
+          "name": "#afterCommit",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "06b8819960f4a4a7a0df4692607d635b06236503d81e0a3a50ea932ad86da6d5"
+        },
+        {
+          "name": "#depth",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f0d18ee6c60f500893e56f943489b95e8d496913b82bf002fbb0fc71a6a69c16"
+        },
+        {
+          "name": "#outerCheckpoints",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "05b1059facc738606463296d58b0a0bdbf836066d654fd6be4f25ba94609354f"
+        },
+        {
+          "name": "#rollbackOnly",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f23464de9c591439b2242696bb2562c191ddbe101e6ca4b4acb040348fafc102"
+        },
+        {
+          "name": "#rollbackReason",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e4d70fd0a9e314c104693b4968c22adcc0e881ce1505d379a7853b52e2a6d68d"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "42da98addef1f9ff85b96b30039e0b72ff0c586d6e496c463be09eff0505c368",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "runAtomic",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f6b6fb0affd898f23e6811ce772baad71e97e9a85abbf0f3f43e703d0fe30e64",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#beginOuterTransaction",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7afd681ae54c65e6ced53e521605ce3e24855c34528a2b1829dc8d0f02a16b72",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#markRollbackOnly",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "84d15dc292797f7e6c707d7e093cea778e1b887630635642666c2c72e4b86cbc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#restoreOuterCheckpoints",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "99032a2b261582d326a6da1aac8aa5dd280d380c114160c8fe97220ab018a454",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#attachRollbackError",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ca9035ddcb5e4c1d382194f34ae815ed4db81e1c8f616eafc3c63d32c4df1330",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clearOuterTransaction",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8ad088c2b485c6af58bd3f500e9412db10a59627ba2d63d67329865a33c99616",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeParticipant",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "39362a4bd7994d67c78c7ed30f8d1d047b694d91c9e44b9a05e66e60ba79ffe3",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 4,
+        "arrayExpressions": 2,
+        "newExpressions": 3,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Object",
+          "member": "#attachRollbackError",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#normalizeParticipant",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#normalizeParticipant",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "runAtomic",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": "2db2ca0f90c0de76a684b0c71df6a12cbdb67b6677b09de3a4bd02b7a39dd92f",
+          "calls": {
+            "runAtomic": 6
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "fb026d3cfea66c30fede51d07377a9d140198c454877c84d1452316db0319cf2",
+          "calls": {
+            "runAtomic": 111
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "LegacyInventoryUnitAllocator": {
+      "sourcePath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#allocations",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "10b5772cafe124e27b49dbe2f3effc65071271bf56fc6d1b10fb94cec81f2dd1"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "cdabac4be68fa0f5461b7346cc8863f52610f7b00d7446e1abec90ca605e0709",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "allocate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "90fb53b1d36953c3105f6e74675006ecd44f288e9b733121ba53ef823e576f93",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "reuseOrAllocate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c76fe2e0cad4521ade3c025975a384172542668d65a040e89cb860208152d53e",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getAllocated",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fe29608743613e376120e70ea8e94d4788e09dff02efce597b1f365103b1acba",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getAllocations",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6aad02541ed45fe86c353a06332df3318d9278ced932a4c2bf17e9bce8e5dd1a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 3,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Map",
+          "member": "#allocations",
+          "kind": "field"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "allocate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-transaction-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "9daed432f81a29d1a514ca2c84e81da274b5339ea16857799e709a986c84dcc6",
+          "calls": {
+            "allocate": 28,
+            "reuseOrAllocate": 0,
+            "getAllocated": 0,
+            "getAllocations": 28
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": "ebe926969769b3fda93c2e27fe380be212e79ceae5201947421ceacc2367ab3d",
+          "calls": {
+            "allocate": 60,
+            "reuseOrAllocate": 0,
+            "getAllocated": 0,
+            "getAllocations": 52
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}
