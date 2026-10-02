@@ -603,6 +603,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "VictoryActionGestureResolver",
+      "legacyScriptIndex": 39,
+      "legacySymbol": "VictoryActionGestureResolver",
+      "shimFile": "activations/039_victoryactiongestureresolver.js",
+      "sourceProvider": "src/input/victory_action_gesture_resolver.js",
+      "targetModule": "src/game/presentation/input/victory_action_gesture_resolver.js",
+      "id": "activation-0b13360ea815",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "INVENTORY_RULE_MESSAGES",
       "legacyScriptIndex": 30,
       "legacySymbol": "INVENTORY_RULE_MESSAGES",
@@ -673,6 +685,18 @@
       "owner": "stage-4.cluster-012-platform-canvas-assets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "BaitEffectivenessDescriptor",
+      "legacyScriptIndex": 61,
+      "legacySymbol": "BaitEffectivenessDescriptor",
+      "shimFile": "activations/061_baiteffectivenessdescriptor.js",
+      "sourceProvider": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "targetModule": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+      "id": "activation-13fe2e43abc7",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-15138a00826c",
@@ -855,6 +879,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "ItemQualityResolver",
+      "legacyScriptIndex": 82,
+      "legacySymbol": "ItemQualityResolver",
+      "shimFile": "activations/082_itemqualityresolver.js",
+      "sourceProvider": "src/core/items/progression/item_quality_resolver.js",
+      "targetModule": "src/game/presentation/inventory/item_quality_resolver.js",
+      "id": "activation-23b65a9c8874",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2RefillMemoryTransactionParticipant",
       "legacyScriptIndex": 179,
       "legacySymbol": "InventoryV2RefillMemoryTransactionParticipant",
@@ -899,6 +935,18 @@
       "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
       "id": "activation-2a09d1c3f130",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "DegradationColorConfigValidator",
+      "legacyScriptIndex": 36,
+      "legacySymbol": "DegradationColorConfigValidator",
+      "shimFile": "activations/036_degradationcolorconfigvalidator.js",
+      "sourceProvider": "src/config/validation/degradation_color_config_validator.js",
+      "targetModule": "src/game/presentation/visual/degradation_color_config_validator.js",
+      "id": "activation-2aafa772226e",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -1815,6 +1863,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "TerminalLineSlotLabelResolver",
+      "legacyScriptIndex": 159,
+      "legacySymbol": "TerminalLineSlotLabelResolver",
+      "shimFile": "activations/159_terminallineslotlabelresolver.js",
+      "sourceProvider": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+      "targetModule": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+      "id": "activation-892c4e13232f",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "AutoRefillCoordinator",
       "legacyScriptIndex": 186,
       "legacySymbol": "AutoRefillCoordinator",
@@ -1861,6 +1921,18 @@
       "owner": "stage-4.cluster-023-inventory-lines",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ItemConditionDescriptor",
+      "legacyScriptIndex": 54,
+      "legacySymbol": "ItemConditionDescriptor",
+      "shimFile": "activations/054_itemconditiondescriptor.js",
+      "sourceProvider": "src/core/items/condition/item_condition_descriptor.js",
+      "targetModule": "src/game/presentation/inventory/item_condition_descriptor.js",
+      "id": "activation-8d9fe3aaa8b6",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "RARITY_VISUAL_CONFIG",
@@ -2113,6 +2185,18 @@
       "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "BaitEffectivenessCatalogResolver",
+      "legacyScriptIndex": 66,
+      "legacySymbol": "BaitEffectivenessCatalogResolver",
+      "shimFile": "activations/066_baiteffectivenesscatalogresolver.js",
+      "sourceProvider": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "targetModule": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+      "id": "activation-abc846c5801d",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-ac48840f32b4",
@@ -2523,6 +2607,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "FishVisualVariantResolver",
+      "legacyScriptIndex": 44,
+      "legacySymbol": "FishVisualVariantResolver",
+      "shimFile": "activations/044_fishvisualvariantresolver.js",
+      "sourceProvider": "src/core/fish/fish_visual_variant_resolver.js",
+      "targetModule": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+      "id": "activation-e4f54e2cf8c3",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-e85348eb50a6",
       "owner": "stage-3.replan-336.batch-038-assemblies-d8271d28",
       "sourceProvider": "src/core/assemblies/assembly_profile_registry.js",
@@ -2665,6 +2761,18 @@
       "shimFile": "activations/397_chumrules.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ItemFreshnessDescriptor",
+      "legacyScriptIndex": 56,
+      "legacySymbol": "ItemFreshnessDescriptor",
+      "shimFile": "activations/056_itemfreshnessdescriptor.js",
+      "sourceProvider": "src/core/items/freshness/item_freshness_descriptor.js",
+      "targetModule": "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "id": "activation-f7a4fbb10a28",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "InventoryV2LoadoutPort",

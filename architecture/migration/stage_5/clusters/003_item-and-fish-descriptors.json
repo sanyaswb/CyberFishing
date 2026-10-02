@@ -1,0 +1,454 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "003",
+  "slug": "item-and-fish-descriptors",
+  "milestone": "M3",
+  "boundary": "game-presentation",
+  "tier": "B",
+  "tierEvidence": "Tier B api-parity: member review + public method traces of the six classes with methods over nine item/fish/inventory scenarios; BaitEffectivenessDescriptor, ItemConditionDescriptor and ItemFreshnessDescriptor are constructor-only frozen value objects (no public method to trace) and move byte-for-byte under the projector.",
+  "modules": [
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "targetPath": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+      "exports": [
+        "BaitEffectivenessCatalogResolver"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "targetPath": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+      "exports": [
+        "BaitEffectivenessDescriptor"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/core/items/condition/item_condition_descriptor.js",
+      "targetPath": "src/game/presentation/inventory/item_condition_descriptor.js",
+      "exports": [
+        "ItemConditionDescriptor"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+      "targetPath": "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "exports": [
+        "ItemFreshnessDescriptor"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/core/items/progression/item_quality_resolver.js",
+      "targetPath": "src/game/presentation/inventory/item_quality_resolver.js",
+      "exports": [
+        "ItemQualityResolver"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/core/fish/fish_visual_variant_resolver.js",
+      "targetPath": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+      "exports": [
+        "FishVisualVariantResolver"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/input/victory_action_gesture_resolver.js",
+      "targetPath": "src/game/presentation/input/victory_action_gesture_resolver.js",
+      "exports": [
+        "VictoryActionGestureResolver"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+      "targetPath": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+      "exports": [
+        "TerminalLineSlotLabelResolver"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes TerminalLineSlotLabelResolver as a global lexical class constructed by the inventory UI composition with the injected rod capability resolver; the cluster keeps that exact class identity through the activation shim and the ESM target reads no classic, browser, DEV or raw-config global. Its player-facing labels stay in the class (Stage 5 deferred task: presentation catalog injection, recorded in refactor_Task Stage 5)."
+        }
+      ]
+    },
+    {
+      "currentPath": "src/config/validation/degradation_color_config_validator.js",
+      "targetPath": "src/game/presentation/visual/degradation_color_config_validator.js",
+      "exports": [
+        "DegradationColorConfigValidator"
+      ],
+      "imports": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "003",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "BaitEffectivenessCatalogResolver,ItemQualityResolver,FishVisualVariantResolver,VictoryActionGestureResolver,TerminalLineSlotLabelResolver,DegradationColorConfigValidator",
+        "--scenarios",
+        "utils/item-condition-check.js,utils/item-freshness-gameplay-check.js,utils/bait-effectiveness-check.js,utils/fish-rarity-check.js,utils/victory-input-check.js,utils/inventory-v2-equipment-check.js,utils/degradation-color-check.js,utils/item-progression-check.js,utils/item-rarity-check.js"
+      ]
+    },
+    {
+      "name": "item-condition",
+      "script": "utils/item-condition-check.js"
+    },
+    {
+      "name": "item-freshness-gameplay",
+      "script": "utils/item-freshness-gameplay-check.js"
+    },
+    {
+      "name": "bait-effectiveness",
+      "script": "utils/bait-effectiveness-check.js"
+    },
+    {
+      "name": "fish-rarity",
+      "script": "utils/fish-rarity-check.js"
+    },
+    {
+      "name": "victory-input",
+      "script": "utils/victory-input-check.js"
+    },
+    {
+      "name": "inventory-v2-equipment",
+      "script": "utils/inventory-v2-equipment-check.js"
+    },
+    {
+      "name": "degradation-color",
+      "script": "utils/degradation-color-check.js"
+    },
+    {
+      "name": "item-progression",
+      "script": "utils/item-progression-check.js"
+    },
+    {
+      "name": "item-rarity",
+      "script": "utils/item-rarity-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+        "targetPath": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+        "sourceSha256": "084ab7ddd404a37009aed2180a827f9a256aaa85bea259aff58898b236d0b45c",
+        "targetSha256": "4dc0c26d144516d19c49ece47848475fb803e152fbf16075a4b2d7f088a0633f"
+      },
+      {
+        "currentPath": "src/core/items/bait/bait_effectiveness_descriptor.js",
+        "targetPath": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+        "sourceSha256": "c063db500e4889298540f0a32cba8e9da2147b9f0c79930889542fe3c08ace48",
+        "targetSha256": "76ebdf13698c669e65f440eefa14ee2a2804cb3f8190f84492ae60ca169b0979"
+      },
+      {
+        "currentPath": "src/core/items/condition/item_condition_descriptor.js",
+        "targetPath": "src/game/presentation/inventory/item_condition_descriptor.js",
+        "sourceSha256": "b0074635df20327c73f996c1104f843da5a01dfd359c6dd50284668c96eec7b5",
+        "targetSha256": "653604648f57488c78922ca8b57a0019acfadc55bb62c6f0c006d726cbeeb6f8"
+      },
+      {
+        "currentPath": "src/core/items/freshness/item_freshness_descriptor.js",
+        "targetPath": "src/game/presentation/inventory/item_freshness_descriptor.js",
+        "sourceSha256": "dcaf3fb10d557076361b0ddf69c23e82d065272da5448864de28275e74f1abf0",
+        "targetSha256": "3545769e1bb4638b3b5b0d1417d96c5ef158b556771aa0731b121f1974abbdab"
+      },
+      {
+        "currentPath": "src/core/items/progression/item_quality_resolver.js",
+        "targetPath": "src/game/presentation/inventory/item_quality_resolver.js",
+        "sourceSha256": "4b7bbf6358c16b5c0a23216865a803d818e13e2764e82f487a936ef770baf540",
+        "targetSha256": "ba325dc92cbc115ff626ae84abd241c8cb7aec5e11fb05d299c885529613c195"
+      },
+      {
+        "currentPath": "src/core/fish/fish_visual_variant_resolver.js",
+        "targetPath": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+        "sourceSha256": "ac697e42a104941db8bbc6e05bbbedd14d6cbd0397be7363eb3c1584ca4d1a15",
+        "targetSha256": "2c40e69b7ae6334f605aaa7e9ad40178f717b65d073878bec4f011c06eef1b5b"
+      },
+      {
+        "currentPath": "src/input/victory_action_gesture_resolver.js",
+        "targetPath": "src/game/presentation/input/victory_action_gesture_resolver.js",
+        "sourceSha256": "64c68b50a19c041766b622815ce263a5da1b04d32d24c9d94ebf2598b8120900",
+        "targetSha256": "3293e1c738e98d275471c3e7cd30ce694d607039ad5cb8dd5a64c02b41c5f138"
+      },
+      {
+        "currentPath": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+        "targetPath": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+        "sourceSha256": "f1c829badabea38b09acb97c1d477caba54311dfc4fc2a37cbf652c4066ab0c3",
+        "targetSha256": "6c98b2d86b4c9e147e13ef6dd89fc705e463b4e3c8e42bc0b39d3b050b9d8e83"
+      },
+      {
+        "currentPath": "src/config/validation/degradation_color_config_validator.js",
+        "targetPath": "src/game/presentation/visual/degradation_color_config_validator.js",
+        "sourceSha256": "b9001d68e15c82ce9bfb9f60df6e93651ee13f391444a66f0c757786da118242",
+        "targetSha256": "22600153120333fbfd478b2ed9e0aca13a28e1fee12e3f6a91df32586207aad5"
+      }
+    ],
+    "activations": [
+      "activation-0b13360ea815",
+      "activation-13fe2e43abc7",
+      "activation-23b65a9c8874",
+      "activation-2aafa772226e",
+      "activation-892c4e13232f",
+      "activation-8d9fe3aaa8b6",
+      "activation-abc846c5801d",
+      "activation-e4f54e2cf8c3",
+      "activation-f7a4fbb10a28"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-1eb95b08c2ba",
+      "bridge-2a3e32b4001d",
+      "bridge-3c8c08b9ad11",
+      "bridge-3f71b3aa7979",
+      "bridge-46299b2121aa",
+      "bridge-533cd2627ecb",
+      "bridge-b9b3fc4ec0d1",
+      "bridge-dbf761594651",
+      "bridge-e61559f81722"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/003_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "d2a27ed6eb0627e2eb39b5a95393f7fe259fc4c414c01cf8aa5691512e8922c3",
+        "after": "dc10f559a11d4ecd066d2c1c78266539dc3521566415e36e127a1e69a03fbb54"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1",
+        "after": "407c0e50351bb4c29bbc1bdd0cf49fad90b9f868c50af903cd24918ca21e56c1"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "ce22e497ae653387f3e321423a1765555a259302acfcc6083fed41b1db9a4f79",
+        "after": "3303cfb8672b8d0bb5a7716f62f9f888f2fe2c4d4f2fb6a134334dc405c2de97"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "dbe698f1264a79c50e485b142291fa4c51f815b5dbdfd995147d5b8f385d94da",
+        "after": "29987884096f96da05d7ae20a264b113fc06abf6d9fd18d2e38745a66b5cb310"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "bfdcab09b9abd216c635015479659d9e63bf224722c970150ab018b63b0fa189",
+        "after": "1ce171a93f0ca6210be0540c19230bf76e9433855a145d7b0663c79fba66470c"
+      },
+      {
+        "path": "index.html",
+        "before": "dbd07eb20773ccc7baec1da6730985ddf15b2c513b9e60dee9ed2970c90d9d81",
+        "after": "fe30d13d5d801790aa0376cff50d9cffea317c6c09f665e0e47ce444b11abef0"
+      },
+      {
+        "path": "src/config/validation/degradation_color_config_validator.js",
+        "before": "b9001d68e15c82ce9bfb9f60df6e93651ee13f391444a66f0c757786da118242",
+        "after": "c6bd82855bae6fc4e70faef784ac1df05ba1e779be8be6ddc6c76ac4eb0ae457"
+      },
+      {
+        "path": "src/core/fish/fish_visual_variant_resolver.js",
+        "before": "ac697e42a104941db8bbc6e05bbbedd14d6cbd0397be7363eb3c1584ca4d1a15",
+        "after": "9058e4c18fde21333cc7d7f3d002f80f46e9bf9aa97a2d6a2f227ecac471a900"
+      },
+      {
+        "path": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+        "before": "084ab7ddd404a37009aed2180a827f9a256aaa85bea259aff58898b236d0b45c",
+        "after": "e04fe56b0aa1f0babed3520344c2d14eccfd0c55a6441599db115af6452cc5c5"
+      },
+      {
+        "path": "src/core/items/bait/bait_effectiveness_descriptor.js",
+        "before": "c063db500e4889298540f0a32cba8e9da2147b9f0c79930889542fe3c08ace48",
+        "after": "83b6598b08565c1b1fdd1800c3a48c7db9dec46c5c74243e594414e7c0185ac0"
+      },
+      {
+        "path": "src/core/items/condition/item_condition_descriptor.js",
+        "before": "b0074635df20327c73f996c1104f843da5a01dfd359c6dd50284668c96eec7b5",
+        "after": "085fe6a2e34b9db80b78ca56fcce9da7346f080c8b25e8aa49c324cd1188c305"
+      },
+      {
+        "path": "src/core/items/freshness/item_freshness_descriptor.js",
+        "before": "dcaf3fb10d557076361b0ddf69c23e82d065272da5448864de28275e74f1abf0",
+        "after": "cadd00fb28f76e9340afb7e8edab9b7a02c4b26ae40f1d9c78134a1d516cf293"
+      },
+      {
+        "path": "src/core/items/progression/item_quality_resolver.js",
+        "before": "4b7bbf6358c16b5c0a23216865a803d818e13e2764e82f487a936ef770baf540",
+        "after": "6507b0672f79d8f0502f3ede9862222bb3c0e191a706a64d18aa4002e8ff74d8"
+      },
+      {
+        "path": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+        "before": null,
+        "after": "2c40e69b7ae6334f605aaa7e9ad40178f717b65d073878bec4f011c06eef1b5b"
+      },
+      {
+        "path": "src/game/presentation/input/victory_action_gesture_resolver.js",
+        "before": null,
+        "after": "3293e1c738e98d275471c3e7cd30ce694d607039ad5cb8dd5a64c02b41c5f138"
+      },
+      {
+        "path": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+        "before": null,
+        "after": "4dc0c26d144516d19c49ece47848475fb803e152fbf16075a4b2d7f088a0633f"
+      },
+      {
+        "path": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+        "before": null,
+        "after": "76ebdf13698c669e65f440eefa14ee2a2804cb3f8190f84492ae60ca169b0979"
+      },
+      {
+        "path": "src/game/presentation/inventory/item_condition_descriptor.js",
+        "before": null,
+        "after": "653604648f57488c78922ca8b57a0019acfadc55bb62c6f0c006d726cbeeb6f8"
+      },
+      {
+        "path": "src/game/presentation/inventory/item_freshness_descriptor.js",
+        "before": null,
+        "after": "3545769e1bb4638b3b5b0d1417d96c5ef158b556771aa0731b121f1974abbdab"
+      },
+      {
+        "path": "src/game/presentation/inventory/item_quality_resolver.js",
+        "before": null,
+        "after": "ba325dc92cbc115ff626ae84abd241c8cb7aec5e11fb05d299c885529613c195"
+      },
+      {
+        "path": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+        "before": null,
+        "after": "6c98b2d86b4c9e147e13ef6dd89fc705e463b4e3c8e42bc0b39d3b050b9d8e83"
+      },
+      {
+        "path": "src/game/presentation/visual/degradation_color_config_validator.js",
+        "before": null,
+        "after": "22600153120333fbfd478b2ed9e0aca13a28e1fee12e3f6a91df32586207aad5"
+      },
+      {
+        "path": "src/input/victory_action_gesture_resolver.js",
+        "before": "64c68b50a19c041766b622815ce263a5da1b04d32d24c9d94ebf2598b8120900",
+        "after": "7d96c58dec0b7a3b8b24bf4dff756ad4ba1c5808ef77a557365a19441efc7ebd"
+      },
+      {
+        "path": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+        "before": "f1c829badabea38b09acb97c1d477caba54311dfc4fc2a37cbf652c4066ab0c3",
+        "after": "6a444232eeaa22c3fd1f06d9bf95827529015fe45e9ad27b9f97d977fd99b237"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 699 modules, 895 unified edges, 852 globals, 67 exact known-debt diagnostics, 0 FAIL in 737ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 699/699 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 194 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 194 activations and 228 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 40 record(s), 39 applied, 111 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "05b224e3ea4d2beb170691a897d145fb489f1ec979f8b3b6ef7ba0c675215ee0"
+      },
+      {
+        "name": "item-condition",
+        "status": "PASS",
+        "sha256": "de91f315315aeb4d4e4a6c0b7cc0cfc390b374856a31f794b6918bad988e0fa3"
+      },
+      {
+        "name": "item-freshness-gameplay",
+        "status": "PASS",
+        "sha256": "5691f8cf11a97935b94cf19c43185dcd10da83bfc385032e0f558a79a91ed4bb"
+      },
+      {
+        "name": "bait-effectiveness",
+        "status": "PASS",
+        "sha256": "b9aac547fad2bfedff26d7e244754fb539073059383ef1dd109bff388fc73786"
+      },
+      {
+        "name": "fish-rarity",
+        "status": "PASS",
+        "sha256": "98cdb259ed46c862717d62a1de44367ddc6b5c53b6b8db63f68b88a72f8ba2ee"
+      },
+      {
+        "name": "victory-input",
+        "status": "PASS",
+        "sha256": "65ccd7b0ee59df5455fbc20d75ae2e9ee5de98b25774188c9149f00540c9efd5"
+      },
+      {
+        "name": "inventory-v2-equipment",
+        "status": "PASS",
+        "sha256": "232e325ef799d934ffc4e73b2b94a565602f7aed150ad0b5c6794da4487da172"
+      },
+      {
+        "name": "degradation-color",
+        "status": "PASS",
+        "sha256": "8759d6fd576e38dabc6020be9098f79711b40e805d3eb69e8abab02e192dc6a0"
+      },
+      {
+        "name": "item-progression",
+        "status": "PASS",
+        "sha256": "f8b56e02fe5a32f43914a51b12c0b0dd5a116c9262df0b4f0a79d5d623c77f6f"
+      },
+      {
+        "name": "item-rarity",
+        "status": "PASS",
+        "sha256": "ca10584639ee11a66ccf6a0fb8e2eb852afedbb5eb8a87722faf28f069dbd0c6"
+      }
+    ]
+  }
+}

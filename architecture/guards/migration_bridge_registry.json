@@ -419,6 +419,22 @@
       ]
     },
     {
+      "id": "bridge-1eb95b08c2ba",
+      "bridge": "src/ui/inventory/terminal_line_slot_label_resolver.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+      "reason": "Preserve the exact TerminalLineSlotLabelResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "TerminalLineSlotLabelResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1ec73a3b4fea",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -558,6 +574,22 @@
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2a3e32b4001d",
+      "bridge": "src/input/victory_action_gesture_resolver.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/input/victory_action_gesture_resolver.js",
+      "reason": "Preserve the exact VictoryActionGestureResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "VictoryActionGestureResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -775,6 +807,38 @@
       ]
     },
     {
+      "id": "bridge-3c8c08b9ad11",
+      "bridge": "src/core/items/progression/item_quality_resolver.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/item_quality_resolver.js",
+      "reason": "Preserve the exact ItemQualityResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ItemQualityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-3f71b3aa7979",
+      "bridge": "src/core/items/freshness/item_freshness_descriptor.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "reason": "Preserve the exact ItemFreshnessDescriptor consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ItemFreshnessDescriptor",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3fa564e45db2",
       "bridge": "src/core/casting_distance.js",
       "source": "src/app/bootstrap.js",
@@ -931,6 +995,22 @@
       ]
     },
     {
+      "id": "bridge-46299b2121aa",
+      "bridge": "src/core/items/bait/bait_effectiveness_descriptor.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+      "reason": "Preserve the exact BaitEffectivenessDescriptor consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BaitEffectivenessDescriptor",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-4647f3ddeaa2",
       "bridge": "src/application/inventory/inventory_v2_transaction_participants.js",
       "owner": "stage-4.cluster-020-inventory-storage-application",
@@ -1046,6 +1126,22 @@
       "globalProviders": [
         {
           "symbol": "TargetRangeMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-533cd2627ecb",
+      "bridge": "src/core/items/condition/item_condition_descriptor.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/item_condition_descriptor.js",
+      "reason": "Preserve the exact ItemConditionDescriptor consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ItemConditionDescriptor",
           "mechanism": "global-this-property"
         }
       ]
@@ -2651,6 +2747,22 @@
       ]
     },
     {
+      "id": "bridge-b9b3fc4ec0d1",
+      "bridge": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+      "reason": "Preserve the exact BaitEffectivenessCatalogResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BaitEffectivenessCatalogResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-bc38f49d00dc",
       "bridge": "src/core/items/hook/hook_power_policy.js",
       "source": "src/debug/services/debug_formatters.js",
@@ -3147,6 +3259,22 @@
       ]
     },
     {
+      "id": "bridge-dbf761594651",
+      "bridge": "src/config/validation/degradation_color_config_validator.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/visual/degradation_color_config_validator.js",
+      "reason": "Preserve the exact DegradationColorConfigValidator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "DegradationColorConfigValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-dc28b3cb718b",
       "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
@@ -3334,6 +3462,22 @@
       "globalProviders": [
         {
           "symbol": "INVENTORY_V2_SORT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e61559f81722",
+      "bridge": "src/core/fish/fish_visual_variant_resolver.js",
+      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+      "reason": "Preserve the exact FishVisualVariantResolver consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FishVisualVariantResolver",
           "mechanism": "global-this-property"
         }
       ]
