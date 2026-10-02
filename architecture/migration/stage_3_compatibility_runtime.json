@@ -530,6 +530,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "FailedState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "FailedState",
+      "shimFile": "activations/407_failedstate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-07cb04a27bb7",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-07d23f1fe2ec",
       "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
       "sourceProvider": "src/core/equipment/equipment_state.js",
@@ -926,16 +938,16 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "MutableFightFrameContext",
-      "legacyScriptIndex": 399,
-      "legacySymbol": "MutableFightFrameContext",
-      "shimFile": "activations/399_mutablefightframecontext.js",
-      "sourceProvider": "src/app/context.js",
-      "targetModule": "src/game/application/fishing/mutable_fight_frame_context.js",
-      "id": "activation-2fd52fdf50f2",
-      "owner": "stage-4.cluster-026-world-and-casting",
+      "exportName": "WaitingState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "WaitingState",
+      "shimFile": "activations/407_waitingstate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-30ec895c8786",
+      "owner": "stage-4.cluster-028-orchestrators",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-32c2b6cd025d",
@@ -1118,6 +1130,30 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "StateMachine",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "StateMachine",
+      "shimFile": "activations/407_statemachine.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-40136a0f3319",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "ScoutingState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "ScoutingState",
+      "shimFile": "activations/407_scoutingstate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-404976edf0f0",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-42a10e628147",
       "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
       "sourceProvider": "src/core/inventory/inventory_item_stacking_policy.js",
@@ -1298,6 +1334,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "BitingState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "BitingState",
+      "shimFile": "activations/407_bitingstate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-594dff83ec5d",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-596779b33d76",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_completion_policy.js",
@@ -1440,6 +1488,18 @@
       "shimFile": "activations/395_dependencycontractvalidator.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "VictoryState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "VictoryState",
+      "shimFile": "activations/407_victorystate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-6ec04cba7e4a",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-6f9f31ec1100",
@@ -1814,18 +1874,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-873455999edb",
-      "owner": "stage-3.replan-342.batch-046-fishing-9a1447c2",
-      "sourceProvider": "src/core/fishing/retrieve_policy.js",
-      "targetModule": "src/game/domain/fishing/retrieve_policy.js",
-      "exportName": "IdleRetrievePolicyResolver",
-      "legacySymbol": "IdleRetrievePolicyResolver",
-      "legacyScriptIndex": 121,
-      "shimFile": "activations/121_idleretrievepolicyresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
-    },
-    {
       "exportName": "AssemblyInventoryContextFilterStrategy",
       "legacyScriptIndex": 195,
       "legacySymbol": "AssemblyInventoryContextFilterStrategy",
@@ -2124,6 +2172,18 @@
       "shimFile": "activations/204_locationmap.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "StateDepsFactory",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "StateDepsFactory",
+      "shimFile": "activations/407_statedepsfactory.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-a86ee6c367a6",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-a88f2b193e63",
@@ -2544,6 +2604,18 @@
       "shimFile": "activations/163_manualrodchangeplanner.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "PlayingState",
+      "legacyScriptIndex": 407,
+      "legacySymbol": "PlayingState",
+      "shimFile": "activations/407_playingstate.js",
+      "sourceProvider": "src/app/states.js",
+      "targetModule": "src/game/application/state/game_state_machine.js",
+      "id": "activation-dbd1d95354cf",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-dcb3cecb345c",
@@ -3190,6 +3262,23 @@
     },
     {
       "activation": {
+        "exportName": "MutableFightFrameContext",
+        "legacyScriptIndex": 399,
+        "legacySymbol": "MutableFightFrameContext",
+        "shimFile": "activations/399_mutablefightframecontext.js",
+        "sourceProvider": "src/app/context.js",
+        "targetModule": "src/game/application/fishing/mutable_fight_frame_context.js",
+        "id": "activation-2fd52fdf50f2",
+        "owner": "stage-4.cluster-026-world-and-casting",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-028-orchestrators"
+    },
+    {
+      "activation": {
         "exportName": "PHYSICS_CONFIG",
         "legacyScriptIndex": 24,
         "legacySymbol": "PHYSICS_CONFIG",
@@ -3663,6 +3752,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-015-asset-preload"
+    },
+    {
+      "activation": {
+        "id": "activation-873455999edb",
+        "owner": "stage-3.replan-342.batch-046-fishing-9a1447c2",
+        "sourceProvider": "src/core/fishing/retrieve_policy.js",
+        "targetModule": "src/game/domain/fishing/retrieve_policy.js",
+        "exportName": "IdleRetrievePolicyResolver",
+        "legacySymbol": "IdleRetrievePolicyResolver",
+        "legacyScriptIndex": 121,
+        "shimFile": "activations/121_idleretrievepolicyresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-028-orchestrators"
     },
     {
       "activation": {

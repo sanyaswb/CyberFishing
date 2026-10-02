@@ -282,6 +282,73 @@ class ScoutingCastWarningCheck {
   }
 }
 
+// Lifecycle of every game state and the state machine over a permissive dependency stub (trace evidence for Stage 4
+// cluster 028): each call's result or thrown error is part of the recorded trace; the check asserts only the machine.
+class StateLifecycleCheck {
+  run(runtime) {
+    runtime.run(`
+      (() => {
+        const assert = (condition, message) => {
+          if (!condition) throw new Error(message);
+        };
+        const any = new Proxy(function stub() {}, {
+          get: (target, key) => (key === Symbol.toPrimitive ? () => 0 : key === "then" ? undefined : any),
+          apply: () => any,
+          construct: () => any,
+        });
+        const bounds = { left: 0, right: 100, top: 0, bottom: 100 };
+        const attempt = (operation) => {
+          try {
+            operation();
+            return "ok";
+          } catch (error) {
+            return "throws";
+          }
+        };
+        const outcomes = [];
+        const states = { scouting: ScoutingState, waiting: WaitingState, biting: BitingState, playing: PlayingState,
+          failed: FailedState, victory: VictoryState };
+        for (const [name, State] of Object.entries(states)) {
+          const deps = new StateDepsFactory(any).create(name);
+          const state = new State(deps);
+          outcomes.push(name + ":" + [
+            attempt(() => state.enter({ reason: "line", fishData: any })),
+            attempt(() => state.update(16, bounds, any)),
+            attempt(() => state.handleInput({})),
+            attempt(() => state.getRenderState({}, bounds)),
+            attempt(() => state.exit()),
+          ].join(","));
+          attempt(() => state.getSelectedHookDepthMeters());
+        }
+        const changes = [];
+        const created = [];
+        class StubState {
+          constructor(name) { this.name = name; }
+          enter(data) { created.push(this.name + ":" + (data.step || 0)); }
+          exit() {}
+          handleInput() {}
+          update() {}
+          getRenderState() { return this.name; }
+          dispose() {}
+        }
+        const machine = new StateMachine({
+          stateRegistry: (name) => new StubState(name),
+          onStateChanged: (name) => changes.push(name),
+        });
+        machine.setState("scouting");
+        machine.update(16, bounds, {});
+        machine.handleInput({});
+        machine.setState("waiting", { step: 1 });
+        const render = machine.getRenderState({}, bounds);
+        machine.dispose();
+        assert(outcomes.length === 6, "every game state ran its lifecycle");
+        assert(created.join(",") === "scouting:0,waiting:1" && render === undefined && changes.length === 2,
+          "the state machine enters, delegates rendering and reports state changes in order");
+      })();
+    `);
+  }
+}
+
 class CompositionSeamCheck {
   run() {
     const bootstrap = fs.readFileSync(path.join(ROOT, "src/app/bootstrap.js"), "utf8");
@@ -320,11 +387,17 @@ const runtime = new InventoryV2SourceRuntime();
 runtime.load("src/application/inventory/equipment_read_model_factory.js");
 runtime.load("src/app/rules.js");
 runtime.load("src/app/fishing.js");
+runtime.load("src/core/math/vector2.js");
+runtime.load("src/core/fishing/fishing_cast_exposure_resolver.js");
+runtime.load("src/core/fishing/retrieve_policy.js");
+runtime.load("src/core/fishing/landing_policy.js");
+runtime.load("src/app/context.js");
 runtime.load("src/app/states.js");
 
 new LureProjectionAndBiteCheck().run(runtime);
 new DefinitiveCastReadinessCheck().run(runtime);
 new ScoutingCastWarningCheck().run(runtime);
+new StateLifecycleCheck().run(runtime);
 new CompositionSeamCheck().run();
 
 Assertion.equal(runtime.context.BaitFactory.createCount, 0, "blocked casts created an entity");

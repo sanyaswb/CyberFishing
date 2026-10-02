@@ -1,1 +1,1 @@
-globalThis.IdleRetrievePolicyResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/retrieve_policy.js"]["IdleRetrievePolicyResolver"];
+// Retired Stage 3 activation activation-873455999edb: IdleRetrievePolicyResolver is served only through ESM imports of src/game/domain/fishing/retrieve_policy.js.

@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "037",
+  "slug": "fishing-runtime-services",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "Per-frame (A): fishing.js runtime services (FightService per-frame orchestration, session factory, cast, catch resolution). Split from 028 by graph review v5: it imports FightPhysicsSystem (cluster 030), so it runs after 030. Preparation 016 injected its diagnostics.",
+  "modules": [
+    {
+      "currentPath": "src/app/fishing.js",
+      "targetPath": "src/game/application/fishing/fishing_runtime_services.js",
+      "exports": [
+        "CastService",
+        "CatchResolutionService",
+        "FightService",
+        "FightSessionFactory",
+        "FishingController",
+        "FishingForceService"
+      ],
+      "imports": [
+        {
+          "symbol": "BaitFactory",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "CastDistanceCalculator",
+          "from": "src/game/domain/casting/cast_distance_calculator.js"
+        },
+        {
+          "symbol": "DragSystem",
+          "from": "src/game/application/fishing/drag_control_service.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FightPhysicsSystem",
+          "from": "src/game/application/fishing/fight_physics_orchestrator.js"
+        },
+        {
+          "symbol": "Fish",
+          "from": "src/game/domain/fish/fish.js"
+        },
+        {
+          "symbol": "FishCondition",
+          "from": "src/game/domain/fish/fish.js"
+        },
+        {
+          "symbol": "FishForceSystem",
+          "from": "src/game/domain/fishing/fish_force_system.js"
+        },
+        {
+          "symbol": "Hook",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "LandingPolicyResolver",
+          "from": "src/game/domain/fishing/landing_policy.js"
+        },
+        {
+          "symbol": "LineSystem",
+          "from": "src/game/domain/fishing/line_system.js"
+        },
+        {
+          "symbol": "PullInputMapper",
+          "from": "src/game/application/input/pull_input_mapper.js"
+        },
+        {
+          "symbol": "Reel",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "ReelSystem",
+          "from": "src/game/application/fishing/reel_service.js"
+        },
+        {
+          "symbol": "Rod",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "RodLateralControlSystem",
+          "from": "src/game/domain/fishing/rod_lateral_control_system.js"
+        },
+        {
+          "symbol": "RodPullSystem",
+          "from": "src/game/domain/fishing/rod_pull_system.js"
+        },
+        {
+          "symbol": "StaminaController",
+          "from": "src/game/domain/fishing/stamina_system.js"
+        },
+        {
+          "symbol": "TackleStressSystem",
+          "from": "src/game/domain/fishing/tackle_stress_system.js"
+        },
+        {
+          "symbol": "TensionSystem",
+          "from": "src/game/application/fishing/tension_service.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/fishing/fishing_runtime_services.js: reads classic or browser globals: console, window",
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Resolved by preparation 016 (78d0a2b): console output goes through the injected platform ConsoleLogger, the DEBUG_MODULES gate is a bootstrap closure, the scouting body classes live in UIManager; the module names no browser global (eslint-scope free names are language built-ins and imports)."
+        },
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "No DEV module or global: DEV behaviour arrives through the injected DevFlagsProvider (isEnabled: noEquipmentLoss, infiniteResources, noFishStaminaLoss) and the injected runtime config field config.debug.godMode (#isFishStaminaLocked); the src/debug/debug.js dev-leakage and boundary debts were stale after preparation 016 and are gone. Routing the config field through DevFlagsProvider is the Stage 6 task."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "FightSessionFactory composes one fight session per hook-up (rod, reel, line, fish, systems): building those per-fight objects is its responsibility. FightService's defaults (`fightSessionFactory || new FightSessionFactory`, `forceService || new FishingForceService`, `catchResolver || new CatchResolutionService`) name classes declared in this same module (no global read once ESM), and the remaining imports are allowed game-config/domain/application symbols. Production passes the session factory and the catch resolver; checks rely on the same-module defaults (framework Q4: no hidden global composition left)."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "The fishing runtime services of one feature: FishingController (equipment consumption rules), CastService (cast start), FightSessionFactory (per-fight composition), FishingForceService, CatchResolutionService (auto-catch/landing decisions) and FightService (the per-frame fight orchestration over them). After 016 there is no forbidden edge, player-facing text, raw config, DEV module or browser access; hot loop: framework Q7 'cohesive, reclassify with evidence' (game-cycle traces) instead of a per-class split (a Stage 7 structural task)."
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "037",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "X",
+        "--scenarios",
+        "utils/game-cycle-check.js"
+      ]
+    }
+  ],
+  "output": null
+}

@@ -2127,22 +2127,6 @@
       ]
     },
     {
-      "id": "bridge-772e31acd167",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/states.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-779213470262",
       "bridge": "src/core/items/rarity/authored_item_rarity_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -2455,22 +2439,6 @@
       ]
     },
     {
-      "id": "bridge-8baeb2427c94",
-      "bridge": "src/app/cast_power.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/states.js",
-      "target": "src/game/application/casting/cast_power_aim.js",
-      "reason": "Preserve the exact CastPowerAim consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "CastPowerAim",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-8bdcdf5a26c8",
       "bridge": "src/core/line/line_inventory_controller.js",
       "owner": "stage-4.cluster-023-inventory-lines",
@@ -2551,22 +2519,6 @@
       ]
     },
     {
-      "id": "bridge-8f04f959d38c",
-      "bridge": "src/app/context.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/states.js",
-      "target": "src/game/application/fishing/mutable_fight_frame_context.js",
-      "reason": "Preserve the exact MutableFightFrameContext consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "MutableFightFrameContext",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-8f5d2d19ec8e",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -2626,22 +2578,6 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-9420d12f86ac",
-      "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
-      "source": "src/app/states.js",
-      "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FishingCastExposureResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -2790,6 +2726,50 @@
         },
         {
           "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9bc0d72d5f81",
+      "bridge": "src/app/states.js",
+      "owner": "stage-4.cluster-028-orchestrators",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/state/game_state_machine.js",
+      "reason": "Preserve the exact BitingState, FailedState, PlayingState, ScoutingState, StateDepsFactory, StateMachine, VictoryState, WaitingState consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BitingState",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "FailedState",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "PlayingState",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "ScoutingState",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "StateDepsFactory",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "StateMachine",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "VictoryState",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "WaitingState",
           "mechanism": "global-this-property"
         }
       ]
@@ -3747,22 +3727,6 @@
       ]
     },
     {
-      "id": "bridge-d874102f2cc0",
-      "bridge": "src/core/fishing/retrieve_policy.js",
-      "source": "src/app/states.js",
-      "target": "src/game/domain/fishing/retrieve_policy.js",
-      "reason": "Preserve the exact idle retrieve policy resolver consumer until its legacy symbol is removed.",
-      "owner": "stage-3.replan-342.batch-046-fishing-9a1447c2",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "IdleRetrievePolicyResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-d99a24a6bdc4",
       "bridge": "src/app/cast_power.js",
       "owner": "stage-4.cluster-026-world-and-casting",
@@ -4318,22 +4282,6 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ff82838dfd66",
-      "bridge": "src/core/fishing/landing_policy.js",
-      "source": "src/app/states.js",
-      "target": "src/game/domain/fishing/landing_policy.js",
-      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LandingPolicyResolver",
           "mechanism": "global-this-property"
         }
       ]

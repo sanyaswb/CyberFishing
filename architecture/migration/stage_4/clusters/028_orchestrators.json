@@ -6,111 +6,8 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "Per-frame (A) orchestrators: fishing.js (cast/fight services, session factory) and states.js (game state machine). Graph review v4: src/app/application.js (GameApplication + facades) left this cluster for bootstrap-production (Stage 5, with GameCompositionRoot). DEV hooks and browser access are injected by preparations before apply.",
+  "tierEvidence": "Per-frame (A): states.js (game state machine, its states and dependency factory). Graph review v4 moved application.js to Stage 5; v5 moved fishing.js to cluster 037 (it depends on FightPhysicsSystem, cluster 030).",
   "modules": [
-    {
-      "currentPath": "src/app/fishing.js",
-      "targetPath": "src/game/application/fishing/fishing_runtime_services.js",
-      "exports": [
-        "CastService",
-        "CatchResolutionService",
-        "FightService",
-        "FightSessionFactory",
-        "FishingController",
-        "FishingForceService"
-      ],
-      "imports": [
-        {
-          "symbol": "BaitFactory",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "CastDistanceCalculator",
-          "from": "src/game/domain/casting/cast_distance_calculator.js"
-        },
-        {
-          "symbol": "DEBUG_MODULES",
-          "from": "src/bootstrap/development/debug_console_bootstrap.js"
-        },
-        {
-          "symbol": "DragSystem",
-          "from": "src/game/application/fishing/drag_control_service.js"
-        },
-        {
-          "symbol": "FightPhysicsConfigAdapter",
-          "from": "src/game/config/physics/fight_physics_config_adapter.js"
-        },
-        {
-          "symbol": "FightPhysicsSystem",
-          "from": "src/game/application/fishing/fight_physics_orchestrator.js"
-        },
-        {
-          "symbol": "Fish",
-          "from": "src/game/domain/fish/fish.js"
-        },
-        {
-          "symbol": "FishCondition",
-          "from": "src/game/domain/fish/fish.js"
-        },
-        {
-          "symbol": "FishForceSystem",
-          "from": "src/game/domain/fishing/fish_force_system.js"
-        },
-        {
-          "symbol": "Hook",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "LandingPolicyResolver",
-          "from": "src/game/domain/fishing/landing_policy.js"
-        },
-        {
-          "symbol": "LineSystem",
-          "from": "src/game/domain/fishing/line_system.js"
-        },
-        {
-          "symbol": "PullInputMapper",
-          "from": "src/game/application/input/pull_input_mapper.js"
-        },
-        {
-          "symbol": "Reel",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "ReelSystem",
-          "from": "src/game/application/fishing/reel_service.js"
-        },
-        {
-          "symbol": "Rod",
-          "from": "src/game/domain/tackle/tackle.js"
-        },
-        {
-          "symbol": "RodLateralControlSystem",
-          "from": "src/game/domain/fishing/rod_lateral_control_system.js"
-        },
-        {
-          "symbol": "RodPullSystem",
-          "from": "src/game/domain/fishing/rod_pull_system.js"
-        },
-        {
-          "symbol": "StaminaController",
-          "from": "src/game/domain/fishing/stamina_system.js"
-        },
-        {
-          "symbol": "TackleStressSystem",
-          "from": "src/game/domain/fishing/tackle_stress_system.js"
-        },
-        {
-          "symbol": "TensionSystem",
-          "from": "src/game/application/fishing/tension_service.js"
-        },
-        {
-          "symbol": "Vector2",
-          "from": "src/engine/math/vector2.js"
-        }
-      ],
-      "planningPrerequisite": "src/game/application/fishing/fishing_runtime_services.js: reads classic or browser globals: console, window"
-    },
     {
       "currentPath": "src/app/states.js",
       "targetPath": "src/game/application/state/game_state_machine.js",
@@ -151,10 +48,214 @@
           "from": "src/engine/math/vector2.js"
         }
       ],
-      "planningPrerequisite": "src/game/application/state/game_state_machine.js: reads classic or browser globals: console, document, requestAnimationFrame"
+      "planningPrerequisite": "src/game/application/state/game_state_machine.js: reads classic or browser globals: console, document, requestAnimationFrame",
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Resolved by preparation 016 (78d0a2b): console output goes through the injected platform ConsoleLogger, the DEBUG_MODULES gate is a bootstrap closure, the scouting body classes live in UIManager; the module names no browser global (eslint-scope free names are language built-ins and imports)."
+        },
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "No DEV module or global: debug reports are gated by the injected services.debug.isEnabled and emitted to the injected debug event port; casting accuracy previews read the injected config.debug flags (data). Preparation 016 removed the console/DOM debts."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "StateDepsFactory assembles each state's dependency bag from the root object bootstrap passes (its single responsibility); states allocate their own frame context (MutableFightFrameContext, application) once per state instance; no global fallback remains."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One state machine: StateMachine, the dependency factory and the seven game states (scouting, waiting, biting, playing, failed, victory) share one lifecycle and one transition protocol. No forbidden edge/text/config/DEV/browser access after 016: Q7 cohesive with hot-loop evidence."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "028",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "StateMachine,StateDepsFactory,GameState,ScoutingState,WaitingState,BitingState,PlayingState,FailedState,VictoryState",
+        "--scenarios",
+        "utils/inventory-v2-cast-and-lure-check.js,utils/victory-input-check.js,utils/game-cycle-check.js"
+      ]
+    },
+    {
+      "name": "inventory-v2-cast-and-lure",
+      "script": "utils/inventory-v2-cast-and-lure-check.js"
+    },
+    {
+      "name": "victory-input",
+      "script": "utils/victory-input-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-028-orchestrators",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/app/states.js",
+        "targetPath": "src/game/application/state/game_state_machine.js",
+        "sourceSha256": "4b918b6b130647b2378424e4a1b2b9e0cd4f78d004d9cc7ad5d5e4928b4dceed",
+        "targetSha256": "2fc46656ea48418eed8f61e541b2bcb676a2c6928e4b8a21a16d80430df1faac"
+      }
+    ],
+    "activations": [
+      "activation-07cb04a27bb7",
+      "activation-30ec895c8786",
+      "activation-40136a0f3319",
+      "activation-404976edf0f0",
+      "activation-594dff83ec5d",
+      "activation-6ec04cba7e4a",
+      "activation-a86ee6c367a6",
+      "activation-dbd1d95354cf"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-2fd52fdf50f2",
+      "activation-873455999edb"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-9bc0d72d5f81"
+    ],
+    "bridgesRetired": [
+      "bridge-772e31acd167",
+      "bridge-8baeb2427c94",
+      "bridge-8f04f959d38c",
+      "bridge-9420d12f86ac",
+      "bridge-d874102f2cc0",
+      "bridge-ff82838dfd66"
+    ],
+    "importEdges": [
+      "src/game/application/state/game_state_machine.js->src/game/application/casting/cast_power_aim.js",
+      "src/game/application/state/game_state_machine.js->src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "src/game/application/state/game_state_machine.js->src/game/domain/fishing/retrieve_policy.js",
+      "src/game/application/state/game_state_machine.js->src/game/domain/fishing/landing_policy.js",
+      "src/game/application/state/game_state_machine.js->src/game/application/fishing/mutable_fight_frame_context.js",
+      "src/game/application/state/game_state_machine.js->src/engine/math/vector2.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/028_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "388178dd90c9e5b9249e58cdd8eca87ac2d870144486e200fd5cf437bed778ba",
+        "after": "2f45d6f388c2a146d73bf911995cf1fe8c4e7be91883275d9ec1c14ffb76a347"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "c8812b857660d470a9a0f5e4377126fc08cde04401d77aa74dfaf3ca8fe05ef6",
+        "after": "c8812b857660d470a9a0f5e4377126fc08cde04401d77aa74dfaf3ca8fe05ef6"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "8578764e55ae599a7e54e026cf4390ba8bdfec756cbc11a32b579982281ac44f",
+        "after": "4111500903caa484afde44ac592c9faa154e58572db5dc360fee6d3acd4cc9bd"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "20ffb5344322b5ee9ff74c2484e5e9c61e072cf4287dcd92cfcbbd4d9e2d127c",
+        "after": "67c952af84bba56d0d55d358352a773617410a90129209d9627c7d5311b15302"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "5dc4dfa33c704bb61078b02a661268d5b331ca18fec46c00269a438bc75b2320",
+        "after": "ddf9c6621defd576ea9fad799c4f7e75cf37210288ba5447bf2fb502dd33f6fa"
+      },
+      {
+        "path": "index.html",
+        "before": "f2937ac0a298b80098af5662f921e2f1b2dd9d49d6eb7aea475b3824e58d12df",
+        "after": "fbf717b7380756bf34e10fd1997b4a1c66341ecc61d48fa5f071edc07ace2d6c"
+      },
+      {
+        "path": "src/app/context.js",
+        "before": "470c503ae947a9fd4e9f38cd6116d30226625e01b610a38b250806dd7d65e770",
+        "after": "77f898b65bb427c89106c4f2c8ea1e3be49344aee5a98e72af38989692090802"
+      },
+      {
+        "path": "src/app/states.js",
+        "before": "4b918b6b130647b2378424e4a1b2b9e0cd4f78d004d9cc7ad5d5e4928b4dceed",
+        "after": "b858c2f259be7ba9a03ac407cf053dec2249eb7de50b468e6ad3edfabebeee03"
+      },
+      {
+        "path": "src/core/fishing/retrieve_policy.js",
+        "before": "a47aa3ba6ecce64f3c776e4e08962d6e18d6e602959305b412d42a2d3acfa6ff",
+        "after": "d6bf269ecb8981766d9f35ce1fa368fcbb2c139fa3c959f49b455c11bee36b79"
+      },
+      {
+        "path": "src/game/application/state/game_state_machine.js",
+        "before": null,
+        "after": "2fc46656ea48418eed8f61e541b2bcb676a2c6928e4b8a21a16d80430df1faac"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 680 modules, 914 unified edges, 852 globals, 74 exact known-debt diagnostics, 0 FAIL in 708ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 680/680 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 211 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 211 activations and 259 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 37 record(s), 33 applied, 93 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "5431fe21c1fa523cec6b5f03172945469ba3faf44215b38e8236c231b99550d7"
+      },
+      {
+        "name": "inventory-v2-cast-and-lure",
+        "status": "PASS",
+        "sha256": "a17a6d61ca11d0638cdec2731dd2df1decd1c6d7570a9e0e0fbcce887fb3a765"
+      },
+      {
+        "name": "victory-input",
+        "status": "PASS",
+        "sha256": "65ccd7b0ee59df5455fbc20d75ae2e9ee5de98b25774188c9149f00540c9efd5"
+      }
+    ]
+  }
 }

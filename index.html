@@ -156,7 +156,7 @@
     <script src="src/core/fishing/rod_stroke_capacity_resolver.js"></script>
     <script src="src/core/fishing/rod_pull_calculator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/120_landingpolicyresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/121_idleretrievepolicyresolver.js"></script>
+    <script src="src/core/fishing/retrieve_policy.js"></script>
     <script src="src/core/fishing/fish_retrieve_result.js"></script>
     <script src="src/core/fishing/hold_opposition_resolver.js"></script>
     <script src="src/core/fishing/fish_direction_intent_sampler.js"></script>
@@ -486,7 +486,7 @@
     <script src="dist/stage-3-compat-runtime/activations/398_castpoweraim.js"></script>
 
     <!-- APP CONTEXT -->
-    <script src="dist/stage-3-compat-runtime/activations/399_mutablefightframecontext.js"></script>
+    <script src="src/app/context.js"></script>
 
     <!-- APP WORLD -->
     <script src="dist/stage-3-compat-runtime/activations/400_environmentsystem.js"></script>
@@ -502,7 +502,14 @@
 
     <!-- APP STATES -->
     <script src="src/app/fixed_catch_fish_factory.js"></script>
-    <script src="src/app/states.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/407_failedstate.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_waitingstate.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_statemachine.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_scoutingstate.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_bitingstate.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_victorystate.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_statedepsfactory.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/407_playingstate.js"></script>
 
     <!-- APP RENDERING -->
     <script src="src/app/rendering/game_render_intent.js"></script>
