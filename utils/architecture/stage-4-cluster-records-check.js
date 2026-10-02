@@ -428,6 +428,34 @@ assert.equal(reclassify(() => {}), false, "an unchanged Manifest is not a reclas
 assert.equal(reclassify((value) => { value.modules[1].architecture.targetBoundary = "game-application"; }), false);
 assert.equal(reclassify((value) => { value.modules[0].architecture.targetBoundary = "game-application";
   value.modules[0].observed = 2; }), false, "observations must stay equal");
+// Static tracing is opt-in: preserve instance-only evidence and the original static receiver/throws.
+const traceDirectory = fs.mkdtempSync(path.join(fs.realpathSync(require("node:os").tmpdir()), "cyber-static-trace-"));
+try {
+  const output = path.join(traceDirectory, "trace.json");
+  const scenario = 'const vm = require("node:vm"), assert = require("node:assert/strict");' +
+    'const context = vm.createContext({assert}); vm.runInContext(' + JSON.stringify(
+      'class StaticApiProbe { static #value = 7; static assert(value) { if (value < 0) throw new RangeError("negative"); return this.#value + value; } ' +
+      'static get value() { return this.#value; } ping(value) { return value; } } globalThis.StaticApiProbe = StaticApiProbe;') +
+    ', context); vm.runInContext(' + JSON.stringify(
+      'assert.equal(StaticApiProbe.assert(2), 9); assert.throws(() => StaticApiProbe.assert(-1), /negative/); ' +
+      'assert.equal(StaticApiProbe.value, 7); assert.equal(new StaticApiProbe().ping(3), 3);') + ', context);';
+  const trace = (staticMethods, script = scenario) => {
+    const result = require("node:child_process").spawnSync(process.execPath,
+      ["--require", path.join(ROOT, "utils/architecture/stage_four/class_trace_probe.js"), "-e", script], {
+        encoding: "utf8", env: {...process.env, CYBER_CLASS_TRACE_OUTPUT: output,
+          CYBER_CLASS_TRACE_CLASSES: '["StaticApiProbe"]', CYBER_CLASS_TRACE_STATIC_METHODS: staticMethods ? "1" : "0"}});
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(fs.readFileSync(output, "utf8")).StaticApiProbe;
+  };
+  assert.deepEqual(Object.keys(trace(false).methods), ["ping"]);
+  const enabled = trace(true);
+  assert.deepEqual(Object.fromEntries(Object.entries(enabled.methods).map(([name, item]) => [name, item.calls])),
+    {ping:1, "static assert":2, "static get value":1});
+  assert.deepEqual(trace(true), enabled, "static traces must be deterministic");
+  assert.notEqual(trace(true, scenario.replaceAll("negative", "invalid")).sha256, enabled.sha256, "throws affect the fingerprint");
+} finally {
+  fs.rmSync(traceDirectory, {recursive:true, force:true});
+}
 // Tier evidence: free identifiers and typeof lookups may only lose imported symbols.
 const lookup = (name) => ({ name, member: "m" });
 const imports = new Set(["A"]);
@@ -489,5 +517,5 @@ if (fs.existsSync(path.join(ROOT, closureFile))) {
 }
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
+  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
   `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);

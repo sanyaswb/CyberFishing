@@ -49,15 +49,17 @@ const INSTALL = `((host) => {
     if (typeof Class !== "function" || host.wrapped.has(Class.prototype)) continue;
     host.wrapped.add(Class.prototype);
     const record = host.record(name);
-    for (const method of Object.getOwnPropertyNames(Class.prototype)) {
+    const targets = [[Class.prototype, ""]];
+    if (host.staticMethods) targets.push([Class, "static "]);
+    for (const [target, prefix] of targets) for (const method of Object.getOwnPropertyNames(target)) {
       if (method === "constructor") continue;
-      const descriptor = Object.getOwnPropertyDescriptor(Class.prototype, method);
+      const descriptor = Object.getOwnPropertyDescriptor(target, method);
       const accessor = typeof descriptor.get === "function";
       if (typeof descriptor.value !== "function" && !accessor) continue;
       const original = accessor ? descriptor.get : descriptor.value;
-      const traced = accessor ? "get " + method : method;
+      const traced = prefix + (accessor ? "get " + method : method);
       const stats = record.methods[traced] ||= { calls: 0, dtMin: null, dtMax: null };
-      Object.defineProperty(Class.prototype, method, { ...descriptor, [accessor ? "get" : "value"]: function (...args) {
+      Object.defineProperty(target, method, { ...descriptor, [accessor ? "get" : "value"]: function (...args) {
         const input = JSON.stringify(encode(args));
         let output;
         try {
@@ -88,6 +90,7 @@ const records = new Map();
 const wrapped = new WeakSet();
 const host = {
   wrapped,
+  staticMethods: process.env.CYBER_CLASS_TRACE_STATIC_METHODS === "1",
   record(name) {
     if (!records.has(name)) records.set(name, { methods: {}, digest: crypto.createHash("sha256") });
     return records.get(name);

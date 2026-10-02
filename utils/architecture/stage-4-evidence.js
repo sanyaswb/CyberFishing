@@ -1,7 +1,7 @@
 "use strict";
 
 // Stage 4 tier A/B evidence (working rule 4): node utils/architecture/stage-4-evidence.js --cluster NNN
-// --kind hot-loop|save-round-trip|api-parity --classes A,B --scenarios utils/x-check.js,utils/y-check.js [--capture].
+// --kind hot-loop|save-round-trip|api-parity --classes A,B --scenarios utils/x-check.js,utils/y-check.js [--capture] [--static-methods].
 // --capture (before apply) writes architecture/migration/stage_4/evidence/NNN_<kind>.json; without it the command
 // compares the current tree with that baseline. The cluster record names the compare form in `evidenceCommands`.
 const path = require("node:path");
@@ -19,12 +19,12 @@ const id = option("cluster");
 const stage = Number(option("stage") || 4);
 if (!/^\d{3}$/u.test(id || "") || !option("kind") || !option("classes") || !option("scenarios")) {
   console.error("Usage: node utils/architecture/stage-4-evidence.js --cluster NNN --kind hot-loop|save-round-trip|api-parity " +
-    "--classes A,B --scenarios utils/x-check.js[,...] [--capture] [--stage 4|5]");
+    "--classes A,B --scenarios utils/x-check.js[,...] [--capture] [--static-methods] [--stage 4|5]");
   process.exit(2);
 }
 const record = new StageFourWorkspace(ROOT).json(recordFileFor(ROOT, id, stage));
 const evidence = new StageFourTierAEvidence({ root: ROOT, record, kind: option("kind"), classes: list("classes"),
-  scenarios: list("scenarios") });
+  scenarios: list("scenarios"), staticMethods: process.argv.includes("--static-methods") });
 if (process.argv.includes("--capture")) {
   const result = evidence.capture();
   console.log(`Stage 4 tier A evidence captured: ${evidence.file} (${Object.keys(result.classes).length} classes, ` +

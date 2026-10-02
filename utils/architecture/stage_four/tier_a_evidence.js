@@ -29,7 +29,7 @@ const exercised = (scenarios) => Object.fromEntries(Object.entries(scenarios).ma
 // allocations, time/realm/typeof reads and every scenario trace must be identical; free identifiers may only
 // lose the symbols the record imports (classic globals become module bindings).
 class StageFourTierAEvidence {
-  constructor({ root, record, kind, classes, scenarios, sourceReview = new StageThreeHotLoopSourceReview() }) {
+  constructor({ root, record, kind, classes, scenarios, staticMethods = false, sourceReview = new StageThreeHotLoopSourceReview() }) {
     assert(KINDS.includes(kind), `evidence kind must be one of ${KINDS.join(", ")}`);
     assert(classes.length > 0 && scenarios.length > 0, "classes and scenarios are required");
     this.root = path.resolve(root);
@@ -37,6 +37,7 @@ class StageFourTierAEvidence {
     this.kind = kind;
     this.classes = [...classes].sort();
     this.scenarios = [...scenarios];
+    this.staticMethods = staticMethods;
     this.sourceReview = sourceReview;
     this.stage = recordStage(record);
     this.directory = stageDirectories(this.stage).evidence;
@@ -136,7 +137,8 @@ class StageFourTierAEvidence {
     const output = path.join(directory, "trace.json");
     try {
       const result = spawnSync(process.execPath, ["--require", PROBE, scenario], { cwd: this.root, encoding: "utf8",
-        env: { ...process.env, CYBER_CLASS_TRACE_OUTPUT: output, CYBER_CLASS_TRACE_CLASSES: JSON.stringify(this.classes) },
+        env: { ...process.env, CYBER_CLASS_TRACE_OUTPUT: output, CYBER_CLASS_TRACE_CLASSES: JSON.stringify(this.classes),
+          CYBER_CLASS_TRACE_STATIC_METHODS: this.staticMethods ? "1" : "0" },
         maxBuffer: 64 * 1024 * 1024 });
       assert.equal(result.status, 0, `${scenario} failed under the trace probe:\n${result.stderr || result.stdout}`);
       return JSON.parse(fs.readFileSync(output, "utf8"));
