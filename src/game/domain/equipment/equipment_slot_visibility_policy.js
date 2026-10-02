@@ -11,13 +11,9 @@ export class EquipmentSlotVisibilityPolicy {
     capabilityResolver = null,
   } = {}) {
     this.#slotConfig =
-      slotConfig ||
-      (typeof EQUIPMENT_SLOT_CONFIG !== "undefined" ? EQUIPMENT_SLOT_CONFIG : {});
+      slotConfig || EQUIPMENT_SLOT_CONFIG;
     this.#capabilityResolver =
-      capabilityResolver ||
-      (typeof RodCapabilityResolver !== "undefined"
-        ? new RodCapabilityResolver()
-        : null);
+      capabilityResolver || new RodCapabilityResolver();
   }
 
   isVisible(slotId, { rod = null } = {}) {
@@ -38,10 +34,7 @@ export class EquipmentSlotVisibilityPolicy {
 
   resolveVisibleSlotIds({ rod = null, slotIds = null } = {}) {
     const source =
-      slotIds ||
-      (typeof EQUIPMENT_ALL_SLOT_IDS !== "undefined"
-        ? EQUIPMENT_ALL_SLOT_IDS
-        : Object.keys(this.#slotConfig));
+      slotIds || EQUIPMENT_ALL_SLOT_IDS;
     return source.filter((slotId) => this.isVisible(slotId, { rod }));
   }
 }

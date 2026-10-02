@@ -18,10 +18,7 @@ export class FishingReadinessPolicy {
     this.#assemblyReader = assemblyReader;
     this.#messages = messages;
     this.#capabilityResolver =
-      capabilityResolver ||
-      (typeof RodCapabilityResolver !== "undefined"
-        ? new RodCapabilityResolver()
-        : null);
+      capabilityResolver || new RodCapabilityResolver();
   }
 
   validateEquip({ slotId, item, equipmentState } = {}) {
@@ -186,8 +183,6 @@ export class FishingReadinessPolicy {
   }
 
   #slotId(key, fallback) {
-    return typeof EquipmentSlotId !== "undefined"
-      ? EquipmentSlotId[key]
-      : fallback;
+    return EquipmentSlotId[key];
   }
 }

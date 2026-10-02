@@ -8,17 +8,11 @@ export class TerminalLineSlotResolver {
 
   constructor({ capabilityResolver = null } = {}) {
     this.#capabilityResolver =
-      capabilityResolver ||
-      (typeof RodCapabilityResolver !== "undefined"
-        ? new RodCapabilityResolver()
-        : null);
+      capabilityResolver || new RodCapabilityResolver();
   }
 
   resolve(rod) {
-    const slotId =
-      typeof EquipmentSlotId !== "undefined"
-        ? EquipmentSlotId.TERMINAL_LINE
-        : "terminalLine";
+    const slotId = EquipmentSlotId.TERMINAL_LINE;
     if (!rod) {
       return Object.freeze({
         slotId,

@@ -4,11 +4,7 @@ export class PoleFightSectorAngleConstraint {
   #constraint;
 
   constructor({ constraint = null, geometry = null } = {}) {
-    this.#constraint = constraint || (
-      typeof PoleFightSectorConstraint !== "undefined"
-        ? new PoleFightSectorConstraint({ geometry })
-        : null
-    );
+    this.#constraint = constraint || new PoleFightSectorConstraint({ geometry });
   }
 
   resolveMovement({

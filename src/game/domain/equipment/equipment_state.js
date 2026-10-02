@@ -103,14 +103,10 @@ export class EquipmentState {
   }
 
   #defaultMainSlotIds() {
-    return typeof EQUIPMENT_MAIN_SLOT_IDS !== "undefined"
-      ? EQUIPMENT_MAIN_SLOT_IDS
-      : ["rod", "reel", "terminalLine", "tackle", "float"];
+    return EQUIPMENT_MAIN_SLOT_IDS;
   }
 
   #defaultAuxiliarySlotIds() {
-    return typeof EQUIPMENT_AUXILIARY_SLOT_IDS !== "undefined"
-      ? EQUIPMENT_AUXILIARY_SLOT_IDS
-      : ["handChum", "net", "delivery", "gasMask"];
+    return EQUIPMENT_AUXILIARY_SLOT_IDS;
   }
 }

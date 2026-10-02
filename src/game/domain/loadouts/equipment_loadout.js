@@ -23,10 +23,7 @@ export class EquipmentLoadout {
       throw new TypeError("EquipmentLoadout requires a loadoutId");
     }
     this.#mainSlotIds = Object.freeze([
-      ...(mainSlotIds ||
-        (typeof EQUIPMENT_MAIN_SLOT_IDS !== "undefined"
-          ? EQUIPMENT_MAIN_SLOT_IDS
-          : ["rod", "reel", "terminalLine", "tackle", "float"])),
+      ...(mainSlotIds || EQUIPMENT_MAIN_SLOT_IDS),
     ]);
     this.#assertNoAuxiliaryAssignments(rootInstanceIds);
     this.#rootInstanceIds = Object.create(null);
@@ -79,10 +76,7 @@ export class EquipmentLoadout {
   }
 
   #assertNoAuxiliaryAssignments(assignments) {
-    const auxiliaryIds =
-      typeof EQUIPMENT_AUXILIARY_SLOT_IDS !== "undefined"
-        ? EQUIPMENT_AUXILIARY_SLOT_IDS
-        : ["handChum", "net", "delivery", "gasMask"];
+    const auxiliaryIds = EQUIPMENT_AUXILIARY_SLOT_IDS;
     for (const slotId of auxiliaryIds) {
       if (assignments?.[slotId]) {
         throw new RangeError(`A Комплект cannot contain auxiliary slot ${slotId}`);

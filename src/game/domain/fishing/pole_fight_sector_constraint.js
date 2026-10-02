@@ -5,11 +5,7 @@ export class PoleFightSectorConstraint {
   #frame = this.#createFrame();
 
   constructor({ geometry = null } = {}) {
-    this.#geometry = geometry || (
-      typeof PoleFightSectorGeometry !== "undefined"
-        ? new PoleFightSectorGeometry()
-        : null
-    );
+    this.#geometry = geometry || new PoleFightSectorGeometry();
   }
 
   resolveMovement({

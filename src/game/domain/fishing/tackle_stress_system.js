@@ -40,12 +40,7 @@ export class TackleStressSystem {
     this.#accumulator = new TackleStressAccumulator();
     this.#failureSelector = new TackleFailureSelector();
     this.#weakestLimitResolver =
-      weakestLimitResolver ||
-      (
-        typeof WeakestTackleLimitResolver !== "undefined"
-          ? new WeakestTackleLimitResolver()
-          : null
-      );
+      weakestLimitResolver || new WeakestTackleLimitResolver();
     this.updateEquipment({ rod, reel, lineSystem, hook, leader });
   }
 

@@ -37,15 +37,9 @@ export class ManualRodChangePlanner {
   constructor({ capacityPolicy = null, mainSlotIds = null, messages = null } = {}) {
     this.#messages = messages;
     this.#capacityPolicy =
-      capacityPolicy ||
-      (typeof UnlimitedInventoryCapacityPolicy !== "undefined"
-        ? new UnlimitedInventoryCapacityPolicy()
-        : null);
+      capacityPolicy || new UnlimitedInventoryCapacityPolicy();
     this.#mainSlotIds = [
-      ...(mainSlotIds ||
-        (typeof EQUIPMENT_MAIN_SLOT_IDS !== "undefined"
-          ? EQUIPMENT_MAIN_SLOT_IDS
-          : ["rod", "reel", "terminalLine", "tackle", "float"])),
+      ...(mainSlotIds || EQUIPMENT_MAIN_SLOT_IDS),
     ];
   }
 

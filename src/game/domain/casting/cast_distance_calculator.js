@@ -18,12 +18,9 @@ export class CastDistanceCalculator {
     this.#converter = new DistanceUnitConverter(physicsConfig);
     this.#lineConfig =
       this.#physicsConfig?.getLineConfig?.() || physicsConfig.line || {};
-    this.#floatLineBudgetPolicy =
-      typeof FloatTackleLineBudgetPolicy !== "undefined"
-        ? new FloatTackleLineBudgetPolicy(
-            this.#config.casting?.floatDepth || {},
-          )
-        : null;
+    this.#floatLineBudgetPolicy = new FloatTackleLineBudgetPolicy(
+      this.#config.casting?.floatDepth || {},
+    );
   }
 
   get pixelsPerMeter() {

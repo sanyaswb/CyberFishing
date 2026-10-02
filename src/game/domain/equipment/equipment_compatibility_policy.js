@@ -13,9 +13,7 @@ export class EquipmentCompatibilityPolicy {
 
   // Player-facing texts are injected by composition.
   constructor({
-    slotConfig = typeof EQUIPMENT_SLOT_CONFIG !== "undefined"
-      ? EQUIPMENT_SLOT_CONFIG
-      : {},
+    slotConfig = EQUIPMENT_SLOT_CONFIG,
     visibilityPolicy = null,
     terminalLineResolver = null,
     capabilityResolver = null,

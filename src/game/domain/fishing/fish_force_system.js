@@ -18,10 +18,7 @@ export class FishForceSystem {
   #forceCalculator = new SimpleFightForceCalculator();
   #holdOppositionResolver = new HoldOppositionResolver();
   #dragForceCalculator = new DragForceCalculator();
-  #enduranceMovementDebuffCalculator =
-    typeof EnduranceMovementDebuffCalculator !== "undefined"
-      ? new EnduranceMovementDebuffCalculator()
-      : null;
+  #enduranceMovementDebuffCalculator = new EnduranceMovementDebuffCalculator();
   #physicsConfig;
   #debug = {};
 
@@ -58,10 +55,7 @@ export class FishForceSystem {
       Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
     );
     const rawFishPhysics = this.#fish.getPhysicsConfig?.() || {};
-    const fishPhysics =
-      typeof FishPhysicsProfile !== "undefined"
-        ? FishPhysicsProfile.toRuntimeConfig(rawFishPhysics)
-        : rawFishPhysics;
+    const fishPhysics = FishPhysicsProfile.toRuntimeConfig(rawFishPhysics);
 
     const maxStamina = this.#firstFiniteNumber(
       fishCondition?.maxStamina,
