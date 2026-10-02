@@ -1539,6 +1539,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "PullInputMapper",
+      "legacyScriptIndex": 38,
+      "legacySymbol": "PullInputMapper",
+      "shimFile": "activations/038_pullinputmapper.js",
+      "sourceProvider": "src/input/pull_input_mapper.js",
+      "targetModule": "src/game/application/input/pull_input_mapper.js",
+      "id": "activation-95d0cbed2905",
+      "owner": "stage-4.cluster-034-pull-input-mapper",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-974deda48a6f",
       "owner": "stage-3.candidate-012-assemblies-2086347a",
       "sourceProvider": "src/core/assemblies/assembly_attachment_target_resolver.js",

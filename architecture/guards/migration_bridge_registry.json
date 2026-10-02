@@ -1887,6 +1887,22 @@
       ]
     },
     {
+      "id": "bridge-6ee56d2568e7",
+      "bridge": "src/input/pull_input_mapper.js",
+      "owner": "stage-4.cluster-034-pull-input-mapper",
+      "source": "src/app/fishing.js",
+      "target": "src/game/application/input/pull_input_mapper.js",
+      "reason": "Preserve the exact PullInputMapper consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PullInputMapper",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-6fcf1bea53e9",
       "bridge": "src/core/equipment/auto_refill_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
