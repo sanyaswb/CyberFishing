@@ -509,6 +509,41 @@
       "module": "src/game/application/inventory/legacy_inventory_system.js",
       "owner": "stage-4.cluster-029-inventory-system",
       "reason": "Existing declarations initialize once with the same identities; no new external writes or resources. Original global exposure moves into the compatibility shim."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "d476d81542035257824124d451d30345d2b430c05b0472f0e21f535bab2e5123",
+      "module": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Module-level frozen literal catalog (Object.freeze over literals only, no external read): the single cumulative-runtime instance creates the same object once and the activation shim exposes that identity to the classic presentation consumers, so every reader keeps the same frozen object as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "6eb97caeecffd795f7a2f9c77689a68d0b66e7e65769744b39e3082efc8407c8",
+      "module": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Three module-level frozen literal catalogs (Object.freeze over literals only, no external read), created once by the cumulative runtime; their explicit globalThis exposures move into the activation shims, which write the same objects to the same properties."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "31c552ce35817e151fa145d5595840711c68aa1626d30a162ced9000f0c17f23",
+      "module": "src/game/presentation/inventory/inventory_sort_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Module-level frozen literal catalog (Object.freeze over literals only, no external read): the single cumulative-runtime instance creates the same object once and the explicit globalThis exposure moves into the activation shim, which exposes that identity to the classic presentation consumers, so every reader keeps the same frozen object as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "3108cf533352831af16149b303c230c71d33526c06b9c937d656457d5009fdab",
+      "module": "src/game/presentation/rarity/rarity_visual_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Module-level mutable literal table (no code beyond literals, no external read): the single cumulative-runtime instance creates it once; the activation shim exposes that identity to config.js (CONFIG.rarity.visual = RARITY_VISUAL_CONFIG) and the inventory order resolver, so CONFIG composition and in-place DEV edits keep reaching the same object as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "08e05a63015550a45fda9c3c1044650b305faf128186f94563102ad48355a76d",
+      "module": "src/game/presentation/visual/degradation_color_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "A top-level IIFE deep-freezes one literal color table once (Object.values/Object.freeze over its own literal, WeakSet scratch; no external read or write); the activation shim exposes the same frozen object to the classic consumers."
     }
   ],
   "activationPositions": [
@@ -1161,6 +1196,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "DEGRADATION_COLOR_CONFIG",
+      "legacyScriptIndex": 3,
+      "legacySymbol": "DEGRADATION_COLOR_CONFIG",
+      "shimFile": "activations/003_degradation_color_config.js",
+      "sourceProvider": "src/config/visual/degradation_color_config.js",
+      "targetModule": "src/game/presentation/visual/degradation_color_config.js",
+      "id": "activation-5245732607c3",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-527be2eff1e7",
       "owner": "stage-3.replan-336.batch-037-items-5fccd461",
       "sourceProvider": "src/core/items/progression/item_progression_resolver.js",
@@ -1509,6 +1556,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "INVENTORY_V2_SORT_CONFIG",
+      "legacyScriptIndex": 32,
+      "legacySymbol": "INVENTORY_V2_SORT_CONFIG",
+      "shimFile": "activations/032_inventory_v2_sort_config.js",
+      "sourceProvider": "src/config/inventory/inventory_v2_sort_config.js",
+      "targetModule": "src/game/presentation/inventory/inventory_sort_config.js",
+      "id": "activation-76f0a9f9d716",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-7939598a66ae",
       "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
       "sourceProvider": "src/app/rules.js",
@@ -1785,6 +1844,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "RARITY_VISUAL_CONFIG",
+      "legacyScriptIndex": 2,
+      "legacySymbol": "RARITY_VISUAL_CONFIG",
+      "shimFile": "activations/002_rarity_visual_config.js",
+      "sourceProvider": "src/config/rarity/rarity_visual_config.js",
+      "targetModule": "src/game/presentation/rarity/rarity_visual_config.js",
+      "id": "activation-8db5d02d700e",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "InventoryV2RefillTargetWriter",
       "legacyScriptIndex": 187,
       "legacySymbol": "InventoryV2RefillTargetWriter",
@@ -1889,6 +1960,18 @@
       "legacySymbol": "BoatRules",
       "legacyScriptIndex": 397,
       "shimFile": "activations/397_boatrules.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+      "legacyScriptIndex": 31,
+      "legacySymbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
+      "shimFile": "activations/031_inventory_v2_balance_tooltip_config.js",
+      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "id": "activation-a49cb20dea38",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2217,6 +2300,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "EQUIPMENT_SLOT_PRESENTATION",
+      "legacyScriptIndex": 30,
+      "legacySymbol": "EQUIPMENT_SLOT_PRESENTATION",
+      "shimFile": "activations/030_equipment_slot_presentation.js",
+      "sourceProvider": "src/config/inventory/equipment_slot_presentation_config.js",
+      "targetModule": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "id": "activation-cd9ce971f8fe",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-ce7da074f74a",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "dist/legacy-bridges/event_lifecycle.iife.js",
@@ -2226,6 +2321,18 @@
       "legacyScriptIndex": 392,
       "shimFile": "activations/392_eventlifecycle.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+      "legacyScriptIndex": 31,
+      "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
+      "shimFile": "activations/031_inventory_v2_item_parameter_config.js",
+      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "id": "activation-d20afff8190f",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {
@@ -2609,6 +2716,18 @@
       "targetModule": "src/game/application/casting/cast_power_aim.js",
       "id": "activation-fd85ee1fe622",
       "owner": "stage-4.cluster-026-world-and-casting",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "legacyScriptIndex": 31,
+      "legacySymbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+      "shimFile": "activations/031_inventory_v2_item_parameter_aliases.js",
+      "sourceProvider": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "id": "activation-fe1c68242b20",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },

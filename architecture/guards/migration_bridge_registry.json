@@ -1407,6 +1407,22 @@
       ]
     },
     {
+      "id": "bridge-68b5ca7a7c78",
+      "bridge": "src/config/rarity/rarity_visual_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/config/config.js",
+      "target": "src/game/presentation/rarity/rarity_visual_config.js",
+      "reason": "Preserve the exact RARITY_VISUAL_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RARITY_VISUAL_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-694824b16038",
       "bridge": "src/infrastructure/storage/cache_manager.js",
       "owner": "stage-4.cluster-036-platform-cache",
@@ -1706,6 +1722,22 @@
       "globalProviders": [
         {
           "symbol": "AuthoredItemRarityStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-786da44a95fb",
+      "bridge": "src/config/visual/degradation_color_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/config/config.js",
+      "target": "src/game/presentation/visual/degradation_color_config.js",
+      "reason": "Preserve the exact DEGRADATION_COLOR_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "DEGRADATION_COLOR_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2030,6 +2062,22 @@
       "globalProviders": [
         {
           "symbol": "EquipmentAutoRefillTargetProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-90c515e24cea",
+      "bridge": "src/config/inventory/inventory_v2_sort_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "target": "src/game/presentation/inventory/inventory_sort_config.js",
+      "reason": "Preserve the exact INVENTORY_V2_SORT_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_V2_SORT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2455,6 +2503,22 @@
       ]
     },
     {
+      "id": "bridge-ae37ae5eb45f",
+      "bridge": "src/config/inventory/inventory_v2_sort_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/ui/inventory/inventory_v2_view_model.js",
+      "target": "src/game/presentation/inventory/inventory_sort_config.js",
+      "reason": "Preserve the exact INVENTORY_V2_SORT_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_V2_SORT_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ae46e766e312",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/landing_area_render_frame_builder.js",
@@ -2482,6 +2546,22 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b01a9d0d1575",
+      "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/application/inventory/inventory_v2_view_model_factory.js",
+      "target": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "reason": "Preserve the exact EQUIPMENT_SLOT_PRESENTATION consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
           "mechanism": "global-this-property"
         }
       ]
@@ -3051,6 +3131,22 @@
       ]
     },
     {
+      "id": "bridge-dc28b3cb718b",
+      "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "reason": "Preserve the exact EQUIPMENT_SLOT_PRESENTATION consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-dd65f33afb4a",
       "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
       "source": "src/app/bootstrap.js",
@@ -3062,6 +3158,22 @@
       "globalProviders": [
         {
           "symbol": "ReelRetrieveSpeedCalculator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-dda9520707ed",
+      "bridge": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "target": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "reason": "Preserve the exact INVENTORY_V2_BALANCE_TOOLTIP_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3131,6 +3243,22 @@
       ]
     },
     {
+      "id": "bridge-e1b381b04a9a",
+      "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/config/inventory/inventory_rule_messages.js",
+      "target": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "reason": "Preserve the exact EQUIPMENT_SLOT_PRESENTATION consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-e26da7468eb2",
       "bridge": "src/config/databases/item_db.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -3174,6 +3302,22 @@
       "globalProviders": [
         {
           "symbol": "BaitEffectivenessGradePolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e5ceed62d4dd",
+      "bridge": "src/config/inventory/inventory_v2_sort_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/presentation/inventory/inventory_sort_config.js",
+      "reason": "Preserve the exact INVENTORY_V2_SORT_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_V2_SORT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3435,6 +3579,22 @@
       ]
     },
     {
+      "id": "bridge-fa073d21ddd4",
+      "bridge": "src/config/inventory/equipment_slot_presentation_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/core/equipment/equipment_slot_availability_policy.js",
+      "target": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "reason": "Preserve the exact EQUIPMENT_SLOT_PRESENTATION consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "EQUIPMENT_SLOT_PRESENTATION",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-fa6a4f31f3a9",
       "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
       "source": "src/app/rendering/boat_chum_render_frame_builder.js",
@@ -3462,6 +3622,42 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-fd87bfde0f8e",
+      "bridge": "src/config/rarity/rarity_visual_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "target": "src/game/presentation/rarity/rarity_visual_config.js",
+      "reason": "Preserve the exact RARITY_VISUAL_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RARITY_VISUAL_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ffd7a8eb05f0",
+      "bridge": "src/config/inventory/inventory_v2_item_parameter_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+      "target": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "reason": "Preserve the exact INVENTORY_V2_ITEM_PARAMETER_ALIASES, INVENTORY_V2_ITEM_PARAMETER_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "INVENTORY_V2_ITEM_PARAMETER_CONFIG",
           "mechanism": "global-this-property"
         }
       ]

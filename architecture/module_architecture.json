@@ -925,6 +925,7 @@
           "compatibility-bridge"
         ],
         "game-presentation": [
+          "compatibility-bridge",
           "presentation"
         ],
         "platform": [

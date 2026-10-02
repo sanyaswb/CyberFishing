@@ -604,7 +604,8 @@ class MigrationManifestPolicyValidator {
       ],
       "game-application-ports": ["application-port"],
       "game-application": ["application-service", "compatibility-bridge"],
-      "game-presentation": ["presentation"],
+      // Stage 5 reuses the activation shims for its migrated Presentation sources (graph stage_5 v1, 2026-10-03).
+      "game-presentation": ["compatibility-bridge", "presentation"],
       platform: ["compatibility-bridge", "platform-adapter"],
       dev: ["dev-tool"],
       "bootstrap-production": ["bootstrap"],
