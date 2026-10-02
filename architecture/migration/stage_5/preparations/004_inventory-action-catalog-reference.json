@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "004",
+  "slug": "inventory-action-catalog-reference",
+  "baseCommit": "11eb0bb010695a751344baf581c4b8bec816ec4e",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/ui/inventory/inventory_v2_view_model.js",
+      "before": "61f93457204030e75d3a9a26548c5c88560ee9595283ba962feaa09bd8b9679d",
+      "after": "fb374c3d245cacc691755bb43f8558da18dce43a65c9762a4751348004a4a1a1"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "6af88b0191da328e2990bdda82d27576af2b2f33d74bdd6c759c8c2ee39ff201",
+      "after": "10b36d673655cec13d7b0850a1b3fcefefc1b63c6e2f8ec6d658f7b5c7fc4c5b"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "73e3672397ca3e5f96cb5d35dc4557a8e6001b2e663c5fdc7947c7fd4c04ea4e",
+      "after": "8d063fcb7515f5f8b4a0920ace42124c17ef27f64a322e6bc18b21642211a657"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen inventory-capabilities preparation bounded to cluster 007: InventoryV2ActionContract must refer to its own existing immutable action catalog without a compatibility/global lookup. All src/utils writers audited: only the original const Object.freeze declaration and same-name global exposure assign this catalog. No DEV replacement path exists. Preserve names, strings, validation and the shared catalog passed into Application.",
+  "constructionEvidence": [
+    "InventoryV2ActionContract.assert uses the same module-owned InventoryV2ActionType object. The classic exposure and composition actionTypes injection retain that exact identity; no new catalog, global, option, getter or fallback API is added.",
+    "Existing inventory-v2-ui contract assertions now execute through SourceRuntime like the interaction scenario instead of raw vm classic evaluation. The same valid/invalid action and normalization assertions remain; this allows the planned ESM source while retaining the legacy test surface. Removed the unused vm import and raw-source argument."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 61,
+    "knownDebtsAfter": 61,
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/inventory-v2-integration-check.js": {
+        "before": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271",
+        "after": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      "utils/inventory-save-round-trip-check.js": {
+        "before": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327",
+        "after": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      }
+    },
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 208,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true
+    }
+  }
+}

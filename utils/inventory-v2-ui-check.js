@@ -1,7 +1,6 @@
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
@@ -379,9 +378,7 @@ class InventoryV2StaticContractCheck {
       "Inventory EffectiveItemStats debug output must be disabled by default",
     );
     this.#assertApplicationFactoryContract(combined);
-    this.#assertViewModelContract(
-      files.find((file) => file.name === "inventory_v2_view_model.js")?.source || "",
-    );
+    this.#assertViewModelContract();
     this.#assertAllInteractions(files);
     console.log("Inventory V2 UI contract and interaction checks passed.");
   }
@@ -832,12 +829,10 @@ class InventoryV2StaticContractCheck {
     }
   }
 
-  #assertViewModelContract(source) {
+  #assertViewModelContract() {
     const sandbox = { console };
     sandbox.globalThis = sandbox;
-    vm.runInNewContext(source, sandbox, {
-      filename: "inventory_v2_view_model.js",
-    });
+    new SourceRuntime({ globals: sandbox }).load("src/ui/inventory/inventory_v2_view_model.js");
     const Normalizer = sandbox.InventoryV2ViewModelNormalizer;
     const actions = sandbox.InventoryV2ActionType;
     const ActionContract = sandbox.InventoryV2ActionContract;

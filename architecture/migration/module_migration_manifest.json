@@ -52788,12 +52788,6 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -52838,14 +52832,6 @@
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
               "target": "src/config/inventory/inventory_v2_sort_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
               "resolution": "confirmed"
             }
           ],

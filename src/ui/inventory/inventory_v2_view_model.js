@@ -54,7 +54,7 @@ class InventoryV2ActionContract {
     if (!action || typeof action !== "object") {
       throw new TypeError("Inventory V2 action must be an object");
     }
-    const types = globalThis.InventoryV2ActionType || InventoryV2ActionType;
+    const types = InventoryV2ActionType;
     if (!Object.values(types).includes(action.type)) {
       throw new RangeError(`Unknown Inventory V2 action: ${action.type}`);
     }
