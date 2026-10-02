@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "028",
+  "slug": "orchestrators",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "DEV hooks via DevFlagsProvider; browser access via M1 platform ports; application.js reads RodVisualOffsetSystem (presentation).",
+  "modules": [
+    {
+      "currentPath": "src/app/fishing.js",
+      "targetPath": "src/game/application/fishing/fishing_runtime_services.js",
+      "exports": [
+        "CastService",
+        "CatchResolutionService",
+        "FightService",
+        "FightSessionFactory",
+        "FishingController",
+        "FishingForceService"
+      ],
+      "imports": [
+        {
+          "symbol": "BaitFactory",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "CastDistanceCalculator",
+          "from": "src/game/domain/casting/cast_distance_calculator.js"
+        },
+        {
+          "symbol": "DEBUG_MODULES",
+          "from": "src/bootstrap/development/debug_console_bootstrap.js"
+        },
+        {
+          "symbol": "DragSystem",
+          "from": "src/game/application/fishing/drag_control_service.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FightPhysicsSystem",
+          "from": "src/game/application/fishing/fight_physics_orchestrator.js"
+        },
+        {
+          "symbol": "Fish",
+          "from": "src/game/domain/fish/fish.js"
+        },
+        {
+          "symbol": "FishCondition",
+          "from": "src/game/domain/fish/fish.js"
+        },
+        {
+          "symbol": "FishForceSystem",
+          "from": "src/game/domain/fishing/fish_force_system.js"
+        },
+        {
+          "symbol": "Hook",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "LandingPolicyResolver",
+          "from": "src/game/domain/fishing/landing_policy.js"
+        },
+        {
+          "symbol": "LineSystem",
+          "from": "src/game/domain/fishing/line_system.js"
+        },
+        {
+          "symbol": "PullInputMapper",
+          "from": "src/game/application/input/pull_input_mapper.js"
+        },
+        {
+          "symbol": "Reel",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "ReelSystem",
+          "from": "src/game/application/fishing/reel_service.js"
+        },
+        {
+          "symbol": "Rod",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "RodLateralControlSystem",
+          "from": "src/game/domain/fishing/rod_lateral_control_system.js"
+        },
+        {
+          "symbol": "RodPullSystem",
+          "from": "src/game/domain/fishing/rod_pull_system.js"
+        },
+        {
+          "symbol": "StaminaController",
+          "from": "src/game/domain/fishing/stamina_system.js"
+        },
+        {
+          "symbol": "TackleStressSystem",
+          "from": "src/game/domain/fishing/tackle_stress_system.js"
+        },
+        {
+          "symbol": "TensionSystem",
+          "from": "src/game/application/fishing/tension_service.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/fishing/fishing_runtime_services.js: reads classic or browser globals: console, window"
+    },
+    {
+      "currentPath": "src/app/states.js",
+      "targetPath": "src/game/application/state/game_state_machine.js",
+      "exports": [
+        "BitingState",
+        "FailedState",
+        "GameState",
+        "PlayingState",
+        "ScoutingState",
+        "StateDepsFactory",
+        "StateMachine",
+        "VictoryState",
+        "WaitingState"
+      ],
+      "imports": [
+        {
+          "symbol": "CastPowerAim",
+          "from": "src/game/application/casting/cast_power_aim.js"
+        },
+        {
+          "symbol": "FishingCastExposureResolver",
+          "from": "src/game/domain/fishing/fishing_cast_exposure_resolver.js"
+        },
+        {
+          "symbol": "IdleRetrievePolicyResolver",
+          "from": "src/game/domain/fishing/retrieve_policy.js"
+        },
+        {
+          "symbol": "LandingPolicyResolver",
+          "from": "src/game/domain/fishing/landing_policy.js"
+        },
+        {
+          "symbol": "MutableFightFrameContext",
+          "from": "src/game/application/fishing/mutable_fight_frame_context.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/state/game_state_machine.js: reads classic or browser globals: console, document, requestAnimationFrame"
+    },
+    {
+      "currentPath": "src/app/application.js",
+      "targetPath": "src/game/application/runtime/game_application.js",
+      "exports": [
+        "GameApplication",
+        "GameDebugFacade",
+        "GameFishingFacade",
+        "GameViewportFacade"
+      ],
+      "imports": [
+        {
+          "symbol": "BaitFactory",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "ConfigProvider",
+          "from": "src/platform/browser/runtime/legacy_runtime_adapters.js"
+        },
+        {
+          "symbol": "EventLifecycle",
+          "from": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js"
+        },
+        {
+          "symbol": "FISH_DB",
+          "from": "src/game/config/databases/fish_database.js"
+        },
+        {
+          "symbol": "FishingCastExposureResolver",
+          "from": "src/game/domain/fishing/fishing_cast_exposure_resolver.js"
+        },
+        {
+          "symbol": "GameClock",
+          "from": "src/platform/browser/time/game_clock.js"
+        },
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "Net",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "RodVisualOffsetSystem",
+          "from": "src/game/presentation/fishing/rod_visual_offset_system.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/runtime/game_application.js: reads classic or browser globals: console"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

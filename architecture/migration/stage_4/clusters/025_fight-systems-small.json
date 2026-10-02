@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "025",
+  "slug": "fight-systems-small",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "Per-frame (A): hot-loop equivalence. performance (pipeline) → injected clock or platform allowed? Application may not read performance → prerequisite.",
+  "modules": [
+    {
+      "currentPath": "src/systems/drag_system.js",
+      "targetPath": "src/game/application/fishing/drag_control_service.js",
+      "exports": [
+        "DragSystem"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/systems/reel_system.js",
+      "targetPath": "src/game/application/fishing/reel_service.js",
+      "exports": [
+        "ReelSystem"
+      ],
+      "imports": [
+        {
+          "symbol": "ReelAutoRecoveryCalculator",
+          "from": "src/game/domain/fishing/reel_auto_recovery_calculator.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/tension_system.js",
+      "targetPath": "src/game/application/fishing/tension_service.js",
+      "exports": [
+        "TensionSystem"
+      ],
+      "imports": [
+        {
+          "symbol": "LineTensionCalculator",
+          "from": "src/game/domain/fishing/line_tension_calculator.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/fight_physics_pipeline.js",
+      "targetPath": "src/game/application/fishing/fight_physics_pipeline.js",
+      "exports": [
+        "FightPhysicsPipeline",
+        "FightPhysicsPipelineFrame"
+      ],
+      "imports": [],
+      "planningPrerequisite": "src/game/application/fishing/fight_physics_pipeline.js: reads classic or browser globals: performance"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

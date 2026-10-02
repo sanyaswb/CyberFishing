@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "011",
+  "slug": "config-schema-validator",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Reads BASE_CONFIG, CONFIG_OVERRIDE_STORE, PROJECT_VERSION_CONFIG: after 009/010.",
+  "modules": [
+    {
+      "currentPath": "src/config/validation/config_schema_validator.js",
+      "targetPath": "src/game/config/validation/config_schema_validator.js",
+      "exports": [
+        "ConfigSchemaValidator",
+        "ConfigValidationResult"
+      ],
+      "imports": [
+        {
+          "symbol": "BASE_CONFIG",
+          "from": "src/game/config/runtime/game_config.js"
+        },
+        {
+          "symbol": "CONFIG_OVERRIDE_STORE",
+          "from": "src/game/config/runtime/game_config.js"
+        },
+        {
+          "symbol": "FISH_CATEGORIES",
+          "from": "src/game/config/databases/fish/fish_categories.js"
+        },
+        {
+          "symbol": "PHYSICS_UNITS_AND_NAMING",
+          "from": "src/game/config/raw/physics/physics_units_and_naming.js"
+        },
+        {
+          "symbol": "PROJECT_VERSION_CONFIG",
+          "from": "src/game/config/raw/project_version.js"
+        },
+        {
+          "symbol": "RarityConfigValidator",
+          "from": "src/game/config/validation/rarity_config_validator.js"
+        }
+      ],
+      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

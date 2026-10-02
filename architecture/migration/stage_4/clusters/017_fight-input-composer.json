@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "017",
+  "slug": "fight-input-composer",
+  "milestone": "M1",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "Conditional window exposure → shim; per-frame input composition (A: game-cycle trace identity).",
+  "modules": [
+    {
+      "currentPath": "src/core/input/fight_input_action_composer.js",
+      "targetPath": "src/game/application/input/fight_input_action_composer.js",
+      "exports": [
+        "FightInputActionComposer"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/input/pull_input_mapper.js",
+      "targetPath": "src/game/application/input/pull_input_mapper.js",
+      "exports": [
+        "PullInputMapper"
+      ],
+      "imports": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

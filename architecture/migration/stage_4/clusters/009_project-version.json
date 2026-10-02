@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "009",
+  "slug": "project-version",
+  "milestone": "M1",
+  "boundary": "game-config-raw",
+  "tier": "C",
+  "tierEvidence": "The release projection rewrites this classic file and the version badge reads PROJECT_VERSION_CONFIG; window write → shim. Prerequisite: release projection writes the ESM target (or the file stays classic until Stage 5 with a reason).",
+  "modules": [
+    {
+      "currentPath": "src/config/project_version.js",
+      "targetPath": "src/game/config/raw/project_version.js",
+      "exports": [
+        "CURRENT_PROJECT_VERSION",
+        "PROJECT_VERSION_CONFIG"
+      ],
+      "imports": [],
+      "planningPrerequisite": "src/config/project_version.js: top-level IfStatement is not a declaration (move it before migrating)"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

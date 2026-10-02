@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "022",
+  "slug": "inventory-refill",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "Planned from graph review v1; exact ownership, construction, API and performance facts must be verified before apply.",
+  "modules": [
+    {
+      "currentPath": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "targetPath": "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+      "exports": [
+        "EquipmentAutoRefillTargetProvider"
+      ],
+      "imports": [
+        {
+          "symbol": "AutoRefillMemory",
+          "from": "src/game/domain/equipment/auto_refill_policy.js"
+        },
+        {
+          "symbol": "AutoRefillScope",
+          "from": "src/game/domain/equipment/auto_refill_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/auto_refill_coordinator.js",
+      "targetPath": "src/game/application/inventory/auto_refill_coordinator.js",
+      "exports": [
+        "AutoRefillCoordinator",
+        "AutoRefillPort",
+        "ExactInventoryAutoRefillPort"
+      ],
+      "imports": [
+        {
+          "symbol": "ExactAssemblyRefillSignaturePolicy",
+          "from": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js"
+        },
+        {
+          "symbol": "ExactItemSignaturePolicy",
+          "from": "src/game/domain/equipment/exact_item_signature_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_refill_ports.js",
+      "targetPath": "src/game/application/inventory/inventory_refill_adapters.js",
+      "exports": [
+        "InventoryV2RefillInventoryPort",
+        "InventoryV2RefillTargetWriter"
+      ],
+      "imports": [
+        {
+          "symbol": "FreshestRefillCandidatePolicy",
+          "from": "src/game/application/inventory/freshest_refill_candidate_policy.js"
+        },
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "ItemAssemblyPath",
+          "from": "src/game/domain/assemblies/item_assembly_reader.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/freshest_refill_candidate_policy.js",
+      "targetPath": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+      "exports": [
+        "FreshestRefillCandidatePolicy"
+      ],
+      "imports": [
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/apply_bait_exposure_service.js",
+      "targetPath": "src/game/application/inventory/apply_bait_exposure_service.js",
+      "exports": [
+        "ApplyBaitExposureService"
+      ],
+      "imports": [
+        {
+          "symbol": "BaitFreshnessDecayPolicy",
+          "from": "src/game/domain/items/freshness/bait_freshness_decay_policy.js"
+        },
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

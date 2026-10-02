@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "015",
+  "slug": "asset-preload",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "B",
+  "tierEvidence": "Reads RenderAllocationDiagnostics (dev): platform → dev is forbidden → inject from bootstrap first; Stage 2 asset bridges.",
+  "modules": [
+    {
+      "currentPath": "src/assets/asset_preload_coordinator.js",
+      "targetPath": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "exports": [
+        "AssetPreloadCoordinator"
+      ],
+      "imports": [
+        {
+          "symbol": "AssetLoadResult",
+          "from": "src/engine/compat/stage_2/asset_load_result_legacy_bridge.js"
+        },
+        {
+          "symbol": "AssetManifest",
+          "from": "src/engine/compat/stage_2/asset_manifest_legacy_bridge.js"
+        },
+        {
+          "symbol": "ImageAssetProvider",
+          "from": "src/platform/browser/assets/image_asset_provider.js"
+        },
+        {
+          "symbol": "RenderAllocationDiagnostics",
+          "from": "src/dev/diagnostics/render_allocation_diagnostics.js"
+        }
+      ],
+      "allowedGlobals": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

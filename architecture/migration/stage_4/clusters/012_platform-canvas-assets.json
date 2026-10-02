@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "012",
+  "slug": "platform-canvas-assets",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "B",
+  "tierEvidence": "ImageAssetProvider is the single owner of asset cache/loading promises; LocationAssetLoader orchestrates preload and depth sampling through constructor-injected adapters. Canvas primitives and depth readers own no gameplay state. No save writes or per-frame orchestration change. All bodies move byte-for-byte plus import/export tokens; the existing fish-rarity checks exercise the asset provider contract.",
+  "modules": [
+    {
+      "currentPath": "src/render/core/canvas_2d_surface.js",
+      "targetPath": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "exports": [
+        "Canvas2DSurface"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/render/core/canvas_primitives.js",
+      "targetPath": "src/platform/browser/canvas/canvas_primitives.js",
+      "exports": [
+        "CanvasPrimitives"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "targetPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "exports": [
+        "OffscreenCanvasFactory"
+      ],
+      "imports": [
+        {
+          "symbol": "Canvas2DSurface",
+          "from": "src/platform/browser/canvas/canvas_2d_surface.js"
+        }
+      ],
+      "allowedGlobals": [
+        "OffscreenCanvas",
+        "document"
+      ]
+    },
+    {
+      "currentPath": "src/render/core/image_asset_provider.js",
+      "targetPath": "src/platform/browser/assets/image_asset_provider.js",
+      "exports": [
+        "ImageAssetProvider"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "Image"
+      ]
+    },
+    {
+      "currentPath": "src/infrastructure/location/depth_map_reader.js",
+      "targetPath": "src/platform/browser/location/depth_map_reader.js",
+      "exports": [
+        "DepthMapReader"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/infrastructure/location/location_asset_loader.js",
+      "targetPath": "src/platform/browser/location/location_asset_loader.js",
+      "exports": [
+        "LocationAssetLoader"
+      ],
+      "imports": [
+        {
+          "symbol": "DepthMapReader",
+          "from": "src/platform/browser/location/depth_map_reader.js"
+        },
+        {
+          "symbol": "ImageAssetProvider",
+          "from": "src/platform/browser/assets/image_asset_provider.js"
+        }
+      ],
+      "allowedGlobals": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "assets-and-rarity",
+      "script": "utils/fish-rarity-check.js"
+    },
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-012-platform-canvas-assets",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/render/core/canvas_2d_surface.js",
+        "targetPath": "src/platform/browser/canvas/canvas_2d_surface.js",
+        "sourceSha256": "17eaf6c5c3867c1a9ed5f8bc9b233b2bf460c3ce59bc93fcef79a53eb8655dad",
+        "targetSha256": "0b385f7a968e7489ecc5152823aae188489438dfb8b0f91b91dab21dbd8b323c"
+      },
+      {
+        "currentPath": "src/render/core/canvas_primitives.js",
+        "targetPath": "src/platform/browser/canvas/canvas_primitives.js",
+        "sourceSha256": "b9bc31b159b0ae58782ee9fdffba2a67630fa60adda7655a90c833ceb0400701",
+        "targetSha256": "b0bef1ad8ff511a7a71804eca8a4492cacb2c99bb44ca6ae1aeefc281e5f4379"
+      },
+      {
+        "currentPath": "src/infrastructure/location/offscreen_canvas_factory.js",
+        "targetPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+        "sourceSha256": "c025ce4242f89e94577e65b7e327b2b3888793392e709fd16a8a6c61bb22a09e",
+        "targetSha256": "e66fd56f8558b905735779c6bad5f674bbf5739dd934dd75b164c23bc614cf0f"
+      },
+      {
+        "currentPath": "src/render/core/image_asset_provider.js",
+        "targetPath": "src/platform/browser/assets/image_asset_provider.js",
+        "sourceSha256": "302142c38e88782a8dbef01ec61dda7921f9f0f3c0931969f6d3563ed7b466dc",
+        "targetSha256": "88b1d5f1a000181004eb020710b20a457093ca4052378d905a3cb283f9087679"
+      },
+      {
+        "currentPath": "src/infrastructure/location/depth_map_reader.js",
+        "targetPath": "src/platform/browser/location/depth_map_reader.js",
+        "sourceSha256": "6fa8aeeb0c88cadf4eb380c92a4900f3e41cfd9c0e2ad36a32cafab8caff5205",
+        "targetSha256": "150d71225ad6591000844d38ddc649c25db36ca9d46d386d3f752c2e081e9432"
+      },
+      {
+        "currentPath": "src/infrastructure/location/location_asset_loader.js",
+        "targetPath": "src/platform/browser/location/location_asset_loader.js",
+        "sourceSha256": "44a60827c4951f2be63586b00d99156bade14deb6b88b9f74e34c6f148d53559",
+        "targetSha256": "84d064deaf866b1131e9353b594929220876901cac1e047390b793a7644b4e9d"
+      }
+    ],
+    "activations": [
+      "activation-11a17b9ed92f",
+      "activation-127572c796d5",
+      "activation-32fa6a327bca",
+      "activation-8ac996dc5bae",
+      "activation-eec3f9934bf9"
+    ],
+    "inertModules": [
+      "src/platform/browser/location/depth_map_reader.js"
+    ],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "bridgesAdded": [
+      "bridge-1fdf893ad001",
+      "bridge-41b9cf4d5160",
+      "bridge-635531dc786c",
+      "bridge-8d031d5439db",
+      "bridge-b687745f9ff8",
+      "bridge-d796e21a9ff5",
+      "bridge-db5a3d2a84a1"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [
+      "src/platform/browser/canvas/offscreen_canvas_factory.js->src/platform/browser/canvas/canvas_2d_surface.js",
+      "src/platform/browser/location/location_asset_loader.js->src/platform/browser/location/depth_map_reader.js",
+      "src/platform/browser/location/location_asset_loader.js->src/platform/browser/assets/image_asset_provider.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/012_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "39425cf0834a3028c20ef35c5d97eda64fbd56cd52fbbc83bd6a20726bb8677c",
+        "after": "35e5a7ef48df08526300263a684904c23d5cef0369e5925dc7683179bde7d5a2"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "73efa761fe52f50e3ad08a9fa1258fff4b793559363621ee11647626379edeb6",
+        "after": "1b0766764a5d2c1874ac3e100a1d33a52921ac5423b882a9d7b95e85ea2c7537"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "388b71bac1e5d36c1bbe3610e0a8f48a095f63352cbadc1d4475bbe218958a9a",
+        "after": "aa25f5aee9d48750343da1c0b5acd86760758149b094f1ca2dc78d90e5903c0d"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "b9b21491ebda55f4ce7c5db1c108f6e54038a6f78c1321f5deb998dbe8602f69",
+        "after": "a2134d77929031df8ab3d5b6d76e0ce9cfca5ad83348ac3828ae742b6425cec4"
+      },
+      {
+        "path": "index.html",
+        "before": "2c771c03146ed8b807caf83c0596ebbcc5e21d57ebe2ef3a030050afa7a5c828",
+        "after": "1f879aa25af50cf9533595e063a123f2ade1d51eef68fc3bed4371204e9352aa"
+      },
+      {
+        "path": "src/infrastructure/location/depth_map_reader.js",
+        "before": "6fa8aeeb0c88cadf4eb380c92a4900f3e41cfd9c0e2ad36a32cafab8caff5205",
+        "after": "4aeb49fea48515d99d1d7cd364e4d6de28e20330e1194d2fcb2e782a5049a4ac"
+      },
+      {
+        "path": "src/infrastructure/location/location_asset_loader.js",
+        "before": "44a60827c4951f2be63586b00d99156bade14deb6b88b9f74e34c6f148d53559",
+        "after": "1e2a58058c97354b8c40c9960a6980b0f1bc3eeb27ba5e33931735629b4b4506"
+      },
+      {
+        "path": "src/infrastructure/location/offscreen_canvas_factory.js",
+        "before": "c025ce4242f89e94577e65b7e327b2b3888793392e709fd16a8a6c61bb22a09e",
+        "after": "dc6fdf9a3c004faf944a7a3b6fcfb74fd615eeaf28bc4fa298c33a0f926f34e1"
+      },
+      {
+        "path": "src/platform/browser/assets/image_asset_provider.js",
+        "before": null,
+        "after": "88b1d5f1a000181004eb020710b20a457093ca4052378d905a3cb283f9087679"
+      },
+      {
+        "path": "src/platform/browser/canvas/canvas_2d_surface.js",
+        "before": null,
+        "after": "0b385f7a968e7489ecc5152823aae188489438dfb8b0f91b91dab21dbd8b323c"
+      },
+      {
+        "path": "src/platform/browser/canvas/canvas_primitives.js",
+        "before": null,
+        "after": "b0bef1ad8ff511a7a71804eca8a4492cacb2c99bb44ca6ae1aeefc281e5f4379"
+      },
+      {
+        "path": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+        "before": null,
+        "after": "e66fd56f8558b905735779c6bad5f674bbf5739dd934dd75b164c23bc614cf0f"
+      },
+      {
+        "path": "src/platform/browser/location/depth_map_reader.js",
+        "before": null,
+        "after": "150d71225ad6591000844d38ddc649c25db36ca9d46d386d3f752c2e081e9432"
+      },
+      {
+        "path": "src/platform/browser/location/location_asset_loader.js",
+        "before": null,
+        "after": "84d064deaf866b1131e9353b594929220876901cac1e047390b793a7644b4e9d"
+      },
+      {
+        "path": "src/render/core/canvas_2d_surface.js",
+        "before": "17eaf6c5c3867c1a9ed5f8bc9b233b2bf460c3ce59bc93fcef79a53eb8655dad",
+        "after": "de49711cd1608f9ea874abc6102aee6fa0cd6360a574ee68c906c62670cbb40c"
+      },
+      {
+        "path": "src/render/core/canvas_primitives.js",
+        "before": "b9bc31b159b0ae58782ee9fdffba2a67630fa60adda7655a90c833ceb0400701",
+        "after": "ce0be7fafa08d36ce6bdb038330cad9649837ed37169e03c861a38927368c58b"
+      },
+      {
+        "path": "src/render/core/image_asset_provider.js",
+        "before": "302142c38e88782a8dbef01ec61dda7921f9f0f3c0931969f6d3563ed7b466dc",
+        "after": "0eccb132016ac08e46b2edaf7437adc1cceb7ed64aefae49ccec3489ffd2ac5d"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 613 modules, 886 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 732ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 613/613 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 148 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 148 activations and 227 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 30 record(s), 8 applied, 30 ESM target(s) inside their boundaries; 10 projector and 15 retirement fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "assets-and-rarity",
+        "status": "PASS",
+        "sha256": "98cdb259ed46c862717d62a1de44367ddc6b5c53b6b8db63f68b88a72f8ba2ee"
+      },
+      {
+        "name": "platform-runtime",
+        "status": "PASS",
+        "sha256": "ddcf8c2a1f6c7371f031cc639b880125b8b5864f16cb0ddc04fac6aa611b7e29"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 148,
+      "identityMismatches": 0
+    }
+  }
+}

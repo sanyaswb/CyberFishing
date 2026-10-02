@@ -371,6 +371,22 @@
       ]
     },
     {
+      "id": "bridge-1fdf893ad001",
+      "bridge": "src/render/core/image_asset_provider.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/assets/asset_preload_coordinator.js",
+      "target": "src/platform/browser/assets/image_asset_provider.js",
+      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ImageAssetProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-218534519854",
       "bridge": "src/core/fishing/recoverable_line_calculator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -967,6 +983,22 @@
       ]
     },
     {
+      "id": "bridge-41b9cf4d5160",
+      "bridge": "src/render/core/image_asset_provider.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/rendering/outcome_render_frame_builder.js",
+      "target": "src/platform/browser/assets/image_asset_provider.js",
+      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ImageAssetProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-45364c413248",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/application.js",
@@ -1350,6 +1382,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocation",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-635531dc786c",
+      "bridge": "src/render/core/canvas_2d_surface.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "reason": "Preserve the exact Canvas2DSurface consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "Canvas2DSurface",
           "mechanism": "global-this-property"
         }
       ]
@@ -2147,6 +2195,22 @@
       ]
     },
     {
+      "id": "bridge-8d031d5439db",
+      "bridge": "src/render/core/canvas_primitives.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/canvas/canvas_primitives.js",
+      "reason": "Preserve the exact CanvasPrimitives consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CanvasPrimitives",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8d36f9222504",
       "bridge": "src/core/fish/fish_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -2759,6 +2823,22 @@
       ]
     },
     {
+      "id": "bridge-b687745f9ff8",
+      "bridge": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "reason": "Preserve the exact OffscreenCanvasFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "OffscreenCanvasFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b6d2fc558dd5",
       "bridge": "src/config/inventory/item_assembly_profile_config.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -3099,6 +3179,22 @@
       ]
     },
     {
+      "id": "bridge-d796e21a9ff5",
+      "bridge": "src/infrastructure/location/location_asset_loader.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/location/location_asset_loader.js",
+      "reason": "Preserve the exact LocationAssetLoader consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "LocationAssetLoader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d79a992a6af8",
       "bridge": "src/core/items/progression/item_rating_tier_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -3126,6 +3222,22 @@
       "globalProviders": [
         {
           "symbol": "IdleRetrievePolicyResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-db5a3d2a84a1",
+      "bridge": "src/render/core/image_asset_provider.js",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/assets/image_asset_provider.js",
+      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ImageAssetProvider",
           "mechanism": "global-this-property"
         }
       ]

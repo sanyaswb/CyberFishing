@@ -467,6 +467,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     file: "utils/check-cache-regression-check.js",
     suites: ["quick"],
   },
+  {
+    id: "platform-runtime",
+    title: "Platform assets and frame timing",
+    file: "utils/platform-runtime-check.js",
+    suites: ["quick", "gameplay"],
+  },
 ]);
 
 module.exports = { CHECK_DEFINITIONS };

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "030",
+  "slug": "fight-physics-system",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "4.7k lines, last and alone; split only for a real mix (browser, DEV, config); game-cycle traces byte-identical.",
+  "modules": [
+    {
+      "currentPath": "src/systems/fight_physics_system.js",
+      "targetPath": "src/game/application/fishing/fight_physics_orchestrator.js",
+      "exports": [
+        "FightPhysicsSystem"
+      ],
+      "imports": [
+        {
+          "symbol": "FightInputActionComposer",
+          "from": "src/game/application/input/fight_input_action_composer.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FightPhysicsPipeline",
+          "from": "src/game/application/fishing/fight_physics_pipeline.js"
+        },
+        {
+          "symbol": "FISH_FIGHT_EVENT",
+          "from": "src/game/domain/fish/fish.js"
+        },
+        {
+          "symbol": "FishRetrieveSystem",
+          "from": "src/game/domain/fishing/fish_retrieve_system.js"
+        },
+        {
+          "symbol": "LandingLiftReadinessPolicy",
+          "from": "src/game/domain/fishing/landing_lift_readiness_policy.js"
+        },
+        {
+          "symbol": "LandingLiftTensionCalculator",
+          "from": "src/game/domain/fishing/landing_lift_tension_calculator.js"
+        },
+        {
+          "symbol": "LandingPolicyResolver",
+          "from": "src/game/domain/fishing/landing_policy.js"
+        },
+        {
+          "symbol": "LineConstrainedFishMotionResolver",
+          "from": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js"
+        },
+        {
+          "symbol": "LineConstraintStateResolver",
+          "from": "src/game/domain/fishing/line_constraint_state_resolver.js"
+        },
+        {
+          "symbol": "LineRadialMovementSplitter",
+          "from": "src/game/domain/fishing/line_radial_movement_splitter.js"
+        },
+        {
+          "symbol": "LooseLineCalculator",
+          "from": "src/game/domain/fishing/recoverable_line_calculator.js"
+        },
+        {
+          "symbol": "PlayerForceBudgetAllocator",
+          "from": "src/game/domain/fishing/player_force_budget_allocator.js"
+        },
+        {
+          "symbol": "PlayerPressureFatigueCalculator",
+          "from": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js"
+        },
+        {
+          "symbol": "PlayerPressureFatigueSourceResolver",
+          "from": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js"
+        },
+        {
+          "symbol": "PlayerPressureFatigueState",
+          "from": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js"
+        },
+        {
+          "symbol": "PlayerPressureGainResolver",
+          "from": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js"
+        },
+        {
+          "symbol": "PlayerPullMotionSmoother",
+          "from": "src/game/domain/fishing/player_pull_motion_smoother.js"
+        },
+        {
+          "symbol": "PlayerReelFatigueSession",
+          "from": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js"
+        },
+        {
+          "symbol": "PlayerTensionBuildRateResolver",
+          "from": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js"
+        },
+        {
+          "symbol": "PoleFightSectorAngleConstraint",
+          "from": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js"
+        },
+        {
+          "symbol": "PoleFightSectorConstraint",
+          "from": "src/game/domain/fishing/pole_fight_sector_constraint.js"
+        },
+        {
+          "symbol": "RecoverableLineCalculator",
+          "from": "src/game/domain/fishing/recoverable_line_calculator.js"
+        },
+        {
+          "symbol": "ReelHoldRecoverySystem",
+          "from": "src/game/domain/fishing/reel_hold_recovery_system.js"
+        },
+        {
+          "symbol": "ReelRecoveryFishSlowdownPolicy",
+          "from": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js"
+        },
+        {
+          "symbol": "RodControlMovementProjector",
+          "from": "src/game/domain/fishing/rod_control_movement_projector.js"
+        },
+        {
+          "symbol": "RodStrokeDistanceTracker",
+          "from": "src/game/domain/fishing/rod_stroke_distance_tracker.js"
+        },
+        {
+          "symbol": "RodStrokeTracker",
+          "from": "src/game/domain/fishing/rod_stroke_tracker.js"
+        },
+        {
+          "symbol": "StaminaBalanceFrame",
+          "from": "src/game/domain/fishing/stamina/stamina_balance_frame.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/fishing/fight_physics_orchestrator.js: reads classic or browser globals: console"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

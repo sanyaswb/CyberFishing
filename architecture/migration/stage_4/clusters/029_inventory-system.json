@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "029",
+  "slug": "inventory-system",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "2.5k lines; reads presentation and bootstrap classes, CONFIG, DOM events → prerequisites first; own group.",
+  "modules": [
+    {
+      "currentPath": "src/systems/inventory_system.js",
+      "targetPath": "src/game/application/inventory/legacy_inventory_system.js",
+      "exports": [
+        "ConfiguredInventorySeeder",
+        "DisplayStatsResolver",
+        "EquipmentStateMigrationPolicy",
+        "EquipmentValidator",
+        "Inventory",
+        "InventoryEquipment",
+        "InventoryEventBridge",
+        "InventoryItemIdMigrationPolicy",
+        "InventoryManager",
+        "InventoryRuntimeConfigProvider",
+        "InventoryRuntimeDisplayStatsResolver",
+        "ItemDatabase",
+        "LineCompatibilityRules",
+        "LineRuntimeDisplayStatsResolver",
+        "ReelRuntimeDisplayStatsResolver",
+        "RuntimeDisplayStatFormatter",
+        "RuntimeDisplayStatWriter"
+      ],
+      "imports": [
+        {
+          "symbol": "CacheManager",
+          "from": "src/platform/browser/runtime/legacy_core_runtime.js"
+        },
+        {
+          "symbol": "CastDistanceCalculator",
+          "from": "src/game/domain/casting/cast_distance_calculator.js"
+        },
+        {
+          "symbol": "CONFIG",
+          "from": "src/game/config/runtime/game_config.js"
+        },
+        {
+          "symbol": "EffectiveItemRarityResolver",
+          "from": "src/game/domain/items/rarity/effective_item_rarity_resolver.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "InventoryItemFactory",
+          "from": "src/game/application/inventory/inventory_item_factory.js"
+        },
+        {
+          "symbol": "InventoryItemStackingPolicy",
+          "from": "src/game/domain/inventory/inventory_item_stacking_policy.js"
+        },
+        {
+          "symbol": "InventoryItemViewFactory",
+          "from": "src/game/presentation/inventory/inventory_item_view_factory.js"
+        },
+        {
+          "symbol": "InventoryV2ActionType",
+          "from": "src/game/presentation/inventory/inventory_view_model.js"
+        },
+        {
+          "symbol": "InventoryV2CompositionRoot",
+          "from": "src/bootstrap/production/inventory_composition_root.js"
+        },
+        {
+          "symbol": "ItemRarityResolver",
+          "from": "src/game/domain/items/rarity/item_rarity_resolver.js"
+        },
+        {
+          "symbol": "LineAllocationPolicy",
+          "from": "src/game/domain/line/line_allocation_policy.js"
+        },
+        {
+          "symbol": "LineInventoryController",
+          "from": "src/game/application/inventory/line_inventory_controller.js"
+        },
+        {
+          "symbol": "ReelRetrieveSpeedCalculator",
+          "from": "src/game/domain/fishing/reel_retrieve_speed_calculator.js"
+        },
+        {
+          "symbol": "SLOT_CONFIG",
+          "from": "src/game/config/runtime/game_config.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/inventory/legacy_inventory_system.js: reads classic or browser globals: CustomEvent, document, globalThis"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

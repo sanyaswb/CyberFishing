@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "013",
+  "slug": "platform-dom-adapters",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "B",
+  "tierEvidence": "Exposure statements → shim; long-press controller holds timer state (B).",
+  "modules": [
+    {
+      "currentPath": "src/ui/rarity/item_rarity_dom_adapter.js",
+      "targetPath": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "exports": [
+        "ItemRarityDomAdapter"
+      ],
+      "imports": [],
+      "allowedGlobals": [],
+      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+    },
+    {
+      "currentPath": "src/ui/condition/item_condition_dom_adapter.js",
+      "targetPath": "src/platform/browser/dom/item_condition_dom_adapter.js",
+      "exports": [
+        "ItemConditionDomAdapter"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
+      "targetPath": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "exports": [
+        "ItemProgressionDomAdapter"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "document"
+      ],
+      "planningPrerequisite": "src/platform/browser/dom/item_progression_dom_adapter.js: reads classic or browser globals: globalThis"
+    },
+    {
+      "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+      "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "exports": [
+        "HorizontalScrollController"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_dom_factory.js",
+      "targetPath": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "exports": [
+        "InventoryV2DomFactory"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "document"
+      ],
+      "planningPrerequisite": "src/platform/browser/dom/inventory_v2_dom_factory.js: reads classic or browser globals: globalThis"
+    },
+    {
+      "currentPath": "src/ui/inventory/inventory_v2_long_press_controller.js",
+      "targetPath": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "exports": [
+        "InventoryV2LongPressController"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "cancelAnimationFrame",
+        "clearTimeout",
+        "document",
+        "performance",
+        "requestAnimationFrame",
+        "setTimeout"
+      ],
+      "planningPrerequisite": "src/platform/browser/dom/inventory_v2_long_press_controller.js: reads classic or browser globals: globalThis"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

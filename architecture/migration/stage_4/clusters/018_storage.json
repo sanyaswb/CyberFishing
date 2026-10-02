@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "018",
+  "slug": "storage",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "Save format: save round-trip evidence. Reads CacheManager (core.js) and ITEM_PROGRESSION_CONFIG; exposure statements; high-level-self-composition reviews.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "targetPath": "src/platform/browser/storage/inventory_state_store.js",
+      "exports": [
+        "INVENTORY_V2_SCHEMA_VERSION",
+        "InventoryV2StateStore"
+      ],
+      "imports": [
+        {
+          "symbol": "CacheManager",
+          "from": "src/platform/browser/runtime/legacy_core_runtime.js"
+        }
+      ],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "targetPath": "src/platform/browser/storage/inventory_snapshot_factory.js",
+      "exports": [
+        "InventoryV2SnapshotFactory"
+      ],
+      "imports": [
+        {
+          "symbol": "INVENTORY_V2_SCHEMA_VERSION",
+          "from": "src/platform/browser/storage/inventory_state_store.js"
+        }
+      ],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "targetPath": "src/platform/browser/storage/inventory_snapshot_migration.js",
+      "exports": [
+        "InventoryV2SnapshotMigration"
+      ],
+      "imports": [],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "targetPath": "src/platform/browser/storage/inventory_item_snapshot_mapper.js",
+      "exports": [
+        "InventoryItemSnapshotMapper"
+      ],
+      "imports": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
+          "from": "src/game/config/items/item_progression_config.js"
+        },
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
+        }
+      ],
+      "allowedGlobals": [],
+      "planningPrerequisite": "src/platform/browser/storage/inventory_item_snapshot_mapper.js: reads classic or browser globals: globalThis"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "targetPath": "src/platform/browser/storage/legacy_item_state_migration.js",
+      "exports": [
+        "LegacyItemStateMigration"
+      ],
+      "imports": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
+          "from": "src/game/config/items/item_progression_config.js"
+        },
+        {
+          "symbol": "ItemFreshnessStatePolicy",
+          "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
+        }
+      ],
+      "allowedGlobals": [],
+      "planningPrerequisite": "src/platform/browser/storage/legacy_item_state_migration.js: reads classic or browser globals: globalThis"
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "targetPath": "src/platform/browser/storage/inventory_legacy_migration.js",
+      "exports": [
+        "InventoryV2LegacyMigration"
+      ],
+      "imports": [
+        {
+          "symbol": "AssemblyProfileRegistry",
+          "from": "src/game/domain/assemblies/assembly_profile_registry.js"
+        },
+        {
+          "symbol": "AssemblyStateRepository",
+          "from": "src/game/domain/assemblies/assembly_state_repository.js"
+        },
+        {
+          "symbol": "EQUIPMENT_SLOT_CONFIG",
+          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+        },
+        {
+          "symbol": "EquipmentLoadoutRepository",
+          "from": "src/game/domain/loadouts/equipment_loadout_repository.js"
+        },
+        {
+          "symbol": "EquipmentState",
+          "from": "src/game/domain/equipment/equipment_state.js"
+        },
+        {
+          "symbol": "ExactAssemblyRefillSignaturePolicy",
+          "from": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js"
+        },
+        {
+          "symbol": "FlatInventoryItemRepository",
+          "from": "src/game/domain/inventory/flat_inventory_item_repository.js"
+        },
+        {
+          "symbol": "INVENTORY_V2_SCHEMA_VERSION",
+          "from": "src/platform/browser/storage/inventory_state_store.js"
+        },
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "from": "src/game/config/raw/inventory/item_assembly_profiles.js"
+        },
+        {
+          "symbol": "ItemAssemblyReader",
+          "from": "src/game/domain/assemblies/item_assembly_reader.js"
+        },
+        {
+          "symbol": "ItemAssemblyService",
+          "from": "src/game/domain/assemblies/item_assembly_service.js"
+        },
+        {
+          "symbol": "LegacyInventoryUnitAllocator",
+          "from": "src/game/application/inventory/legacy_inventory_unit_allocator.js"
+        },
+        {
+          "symbol": "RodCapabilityResolver",
+          "from": "src/game/domain/equipment/rod_capability_resolver.js"
+        }
+      ],
+      "allowedGlobals": [],
+      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

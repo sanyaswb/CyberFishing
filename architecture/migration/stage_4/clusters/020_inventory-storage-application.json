@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "020",
+  "slug": "inventory-storage-application",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "Exposure statements → shim.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+      "targetPath": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "exports": [
+        "LegacyInventoryUnitAllocator"
+      ],
+      "imports": [
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/infrastructure/storage/inventory_v2_transaction_coordinator.js",
+      "targetPath": "src/game/application/inventory/inventory_transaction_coordinator.js",
+      "exports": [
+        "InventoryV2TransactionCoordinator"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_transaction_participants.js",
+      "targetPath": "src/game/application/inventory/inventory_transaction_participants.js",
+      "exports": [
+        "InventoryV2RefillMemoryTransactionParticipant",
+        "InventoryV2SettingsTransactionParticipant"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_item_hydrator.js",
+      "targetPath": "src/game/application/inventory/inventory_item_hydrator.js",
+      "exports": [
+        "InventoryV2ItemHydrator"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_facade.js",
+      "targetPath": "src/game/application/inventory/inventory_facade.js",
+      "exports": [
+        "InventoryV2Facade"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_gameplay_bridge.js",
+      "targetPath": "src/game/application/inventory/inventory_gameplay_facade.js",
+      "exports": [
+        "InventoryV2GameplayBridge"
+      ],
+      "imports": [
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

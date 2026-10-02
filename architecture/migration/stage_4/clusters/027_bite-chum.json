@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "027",
+  "slug": "bite-chum",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "chum_system reads document and CacheManager; bite_system DEV coupling → injection first.",
+  "modules": [
+    {
+      "currentPath": "src/systems/bite_system.js",
+      "targetPath": "src/game/application/fishing/bite_service.js",
+      "exports": [
+        "BiteSystem",
+        "CastManager"
+      ],
+      "imports": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FishPhysicsProfile",
+          "from": "src/game/domain/fish/fish.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/systems/chum_system.js",
+      "targetPath": "src/game/application/chum/chum_service.js",
+      "exports": [
+        "BaitBoat",
+        "ChumManager",
+        "ChumZone"
+      ],
+      "imports": [
+        {
+          "symbol": "CacheManager",
+          "from": "src/platform/browser/runtime/legacy_core_runtime.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/chum/chum_service.js: reads classic or browser globals: document"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

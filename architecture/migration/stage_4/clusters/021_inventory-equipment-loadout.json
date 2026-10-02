@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "021",
+  "slug": "inventory-equipment-loadout",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "high-level-self-composition / mixed blockers: review per framework.",
+  "modules": [
+    {
+      "currentPath": "src/application/inventory/equipment_transition_executor.js",
+      "targetPath": "src/game/application/inventory/equipment_transition_executor.js",
+      "exports": [
+        "EquipmentTransitionExecutor",
+        "EquipmentTransitionPort"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_transition_port.js",
+      "targetPath": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+      "exports": [
+        "InventoryV2EquipmentTransitionPort"
+      ],
+      "imports": [
+        {
+          "symbol": "EquipmentTransitionPort",
+          "from": "src/game/application/inventory/equipment_transition_executor.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/loadout_application_service.js",
+      "targetPath": "src/game/application/inventory/loadout_application_service.js",
+      "exports": [
+        "LoadoutApplicationPort",
+        "LoadoutApplicationService"
+      ],
+      "imports": [
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+        },
+        {
+          "symbol": "EquipmentLoadout",
+          "from": "src/game/domain/loadouts/equipment_loadout.js"
+        },
+        {
+          "symbol": "LoadoutEquipmentTransitionPlanner",
+          "from": "src/game/domain/loadouts/loadout_equipment_transition_planner.js"
+        },
+        {
+          "symbol": "UnlimitedInventoryCapacityPolicy",
+          "from": "src/game/domain/inventory/inventory_capacity_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_loadout_port.js",
+      "targetPath": "src/game/application/inventory/inventory_loadout_adapter.js",
+      "exports": [
+        "InventoryV2LoadoutPort"
+      ],
+      "imports": [
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "LoadoutApplicationPort",
+          "from": "src/game/application/inventory/loadout_application_service.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/equipment_read_model_factory.js",
+      "targetPath": "src/game/application/inventory/equipment_read_model_factory.js",
+      "exports": [
+        "EquipmentReadModelFactory"
+      ],
+      "imports": [
+        {
+          "symbol": "RodCapabilityResolver",
+          "from": "src/game/domain/equipment/rod_capability_resolver.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/inventory/equipment_read_model_factory.js: reads classic or browser globals: RegExp"
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_context_item_filter.js",
+      "targetPath": "src/game/application/inventory/inventory_context_item_filter.js",
+      "exports": [
+        "AssemblyInventoryContextFilterStrategy",
+        "EquipmentInventoryContextFilterStrategy",
+        "InventoryV2ContextItemFilter"
+      ],
+      "imports": [
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

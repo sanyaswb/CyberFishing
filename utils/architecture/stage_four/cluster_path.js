@@ -345,7 +345,7 @@ class StageFourClusterApply {
     for (const target of plan.targets) {
       const entry = factory.create({ currentPath: target.module.targetPath }, null);
       entry.architecture = { migrationStatus: "verified", roles: [...target.roles],
-        targetBoundary: target.entry.architecture.targetBoundary, targetPath: target.module.targetPath, migrationWave: 1 };
+        targetBoundary: target.entry.architecture.targetBoundary, targetPath: target.module.targetPath, migrationWave: target.entry.architecture.migrationWave };
       entry.analysis.blockers = { status: "verified", items: [] };
       manifest.modules.push(entry);
       manifest.modules.find((item) => item.currentPath === target.module.currentPath).architecture.roles =

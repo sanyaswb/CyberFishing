@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "024",
+  "slug": "inventory-command-service",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "Reads inventory_v2_sort_config / inventory_v2_view_model (game-presentation) and a browser API → injection first.",
+  "modules": [
+    {
+      "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+      "targetPath": "src/game/application/inventory/inventory_command_service.js",
+      "exports": [
+        "InventoryV2ApplicationError",
+        "InventoryV2CommandService"
+      ],
+      "imports": [
+        {
+          "symbol": "AutoRefillTrigger",
+          "from": "src/game/domain/equipment/auto_refill_policy.js"
+        },
+        {
+          "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+        },
+        {
+          "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "from": "src/game/domain/equipment/equipment_slot_catalog.js"
+        },
+        {
+          "symbol": "EquipmentLoadout",
+          "from": "src/game/domain/loadouts/equipment_loadout.js"
+        },
+        {
+          "symbol": "INVENTORY_V2_SORT_CONFIG",
+          "from": "src/game/presentation/inventory/inventory_sort_config.js"
+        },
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "InventoryV2ActionType",
+          "from": "src/game/presentation/inventory/inventory_view_model.js"
+        },
+        {
+          "symbol": "ItemAssemblyStackingPolicy",
+          "from": "src/game/domain/inventory/item_assembly_stacking_policy.js"
+        }
+      ],
+      "planningPrerequisite": "src/game/application/inventory/inventory_command_service.js: reads classic or browser globals: globalThis"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

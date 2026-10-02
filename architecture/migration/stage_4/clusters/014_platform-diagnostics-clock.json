@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "014",
+  "slug": "platform-diagnostics-clock",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "ConsoleLogger forwards diagnostics; GameClock owns frame time, delta clamp and wall-time offset. Constructor/reset/tick implementations move byte-for-byte; deterministic game-cycle checks preserve timing. No gameplay rules or save writes. GameClock is not an orchestration service. Tier A because the clock owns frame timing; platform-runtime proves delta clamp/reset, backward timestamps, stable offsets and no wall-clock/performance reads in tick. Byte-identical bodies preserve allocation sites and call paths.",
+  "modules": [
+    {
+      "currentPath": "src/infrastructure/diagnostics/console_logger.js",
+      "targetPath": "src/platform/browser/diagnostics/console_logger.js",
+      "exports": [
+        "ConsoleLogger"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "console"
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Console forwarding is the platform adapter injected by composition. Its body and existing public API move unchanged; the temporary globals are provided solely by the exact compatibility shim."
+        }
+      ]
+    },
+    {
+      "currentPath": "src/app/core/game_clock.js",
+      "targetPath": "src/platform/browser/time/game_clock.js",
+      "exports": [
+        "GameClock"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "performance"
+      ],
+      "reviewedBlockers": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
+  "output": null
+}

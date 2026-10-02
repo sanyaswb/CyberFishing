@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "023",
+  "slug": "inventory-lines",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "Planned from graph review v1; exact ownership, construction, API and performance facts must be verified before apply.",
+  "modules": [
+    {
+      "currentPath": "src/core/line/line_inventory_controller.js",
+      "targetPath": "src/game/application/inventory/line_inventory_controller.js",
+      "exports": [
+        "LineInventoryController"
+      ],
+      "imports": [
+        {
+          "symbol": "LineAllocationPolicy",
+          "from": "src/game/domain/line/line_allocation_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "targetPath": "src/game/application/inventory/inventory_line_allocation_service.js",
+      "exports": [
+        "InventoryV2LineAllocationService"
+      ],
+      "imports": [
+        {
+          "symbol": "InventoryItemLocation",
+          "from": "src/game/domain/inventory/inventory_item_location.js"
+        },
+        {
+          "symbol": "LineAllocationPolicy",
+          "from": "src/game/domain/line/line_allocation_policy.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "targetPath": "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
+      "exports": [
+        "InventoryV2EquipmentLineReadinessPolicy"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/systems/inventory_item_factory.js",
+      "targetPath": "src/game/application/inventory/inventory_item_factory.js",
+      "exports": [
+        "InventoryItemFactory"
+      ],
+      "imports": [],
+      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

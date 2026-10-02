@@ -484,6 +484,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "CanvasPrimitives",
+      "legacyScriptIndex": 349,
+      "legacySymbol": "CanvasPrimitives",
+      "shimFile": "activations/349_canvasprimitives.js",
+      "sourceProvider": "src/render/core/canvas_primitives.js",
+      "targetModule": "src/platform/browser/canvas/canvas_primitives.js",
+      "id": "activation-11a17b9ed92f",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-1203aa3f3b14",
       "owner": "stage-3.candidate-017-inventory-fd62478b",
       "sourceProvider": "src/core/inventory/inventory_item_location.js",
@@ -492,6 +504,18 @@
       "legacySymbol": "InventoryItemLocationKind",
       "legacyScriptIndex": 144,
       "shimFile": "activations/144_inventoryitemlocationkind.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ImageAssetProvider",
+      "legacyScriptIndex": 350,
+      "legacySymbol": "ImageAssetProvider",
+      "shimFile": "activations/350_imageassetprovider.js",
+      "sourceProvider": "src/render/core/image_asset_provider.js",
+      "targetModule": "src/platform/browser/assets/image_asset_provider.js",
+      "id": "activation-127572c796d5",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -660,6 +684,18 @@
       "legacySymbol": "ItemFreshnessResolver",
       "legacyScriptIndex": 60,
       "shimFile": "activations/060_itemfreshnessresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "Canvas2DSurface",
+      "legacyScriptIndex": 347,
+      "legacySymbol": "Canvas2DSurface",
+      "shimFile": "activations/347_canvas2dsurface.js",
+      "sourceProvider": "src/render/core/canvas_2d_surface.js",
+      "targetModule": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "id": "activation-32fa6a327bca",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1348,6 +1384,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "LocationAssetLoader",
+      "legacyScriptIndex": 356,
+      "legacySymbol": "LocationAssetLoader",
+      "shimFile": "activations/356_locationassetloader.js",
+      "sourceProvider": "src/infrastructure/location/location_asset_loader.js",
+      "targetModule": "src/platform/browser/location/location_asset_loader.js",
+      "id": "activation-8ac996dc5bae",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-8d90074016f4",
       "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
       "sourceProvider": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
@@ -2018,6 +2066,18 @@
       "shimFile": "activations/097_playertensionbuildrateresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "OffscreenCanvasFactory",
+      "legacyScriptIndex": 348,
+      "legacySymbol": "OffscreenCanvasFactory",
+      "shimFile": "activations/348_offscreencanvasfactory.js",
+      "sourceProvider": "src/infrastructure/location/offscreen_canvas_factory.js",
+      "targetModule": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "id": "activation-eec3f9934bf9",
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-f06b98f0ba90",
@@ -3177,6 +3237,11 @@
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "sourceProvider": "src/systems/buff_manager.js",
       "targetModule": "src/game/domain/fishing/buff_manager.js"
+    },
+    {
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "sourceProvider": "src/infrastructure/location/depth_map_reader.js",
+      "targetModule": "src/platform/browser/location/depth_map_reader.js"
     }
   ]
 }

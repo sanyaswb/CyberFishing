@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "019",
+  "slug": "game-loop-adapters-audio",
+  "milestone": "M1",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "adapters.js reads GodMode / debug (dev) and EventBus (Stage 2 bridge): DEV hooks injected first; game loop per frame (A). Audio lives in adapters.js.",
+  "modules": [
+    {
+      "currentPath": "src/app/core/game_loop.js",
+      "targetPath": "src/platform/browser/runtime/game_loop.js",
+      "exports": [
+        "GameLoop"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "CustomEvent",
+        "cancelAnimationFrame",
+        "console",
+        "dispatchEvent",
+        "requestAnimationFrame",
+        "window"
+      ]
+    },
+    {
+      "currentPath": "src/app/adapters.js",
+      "targetPath": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "exports": [
+        "BrowserAudioAdapter",
+        "BrowserBufferedAudioPlayer",
+        "BrowserDebugAdapter",
+        "BrowserEventTargetAdapter",
+        "CanvasMetricsProvider",
+        "ConfigProvider",
+        "DevFlagsProvider"
+      ],
+      "imports": [
+        {
+          "symbol": "DEBUG_MODULES",
+          "from": "src/bootstrap/development/debug_console_bootstrap.js"
+        },
+        {
+          "symbol": "EventBus",
+          "from": "src/engine/compat/stage_2/event_bus_legacy_bridge.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "GodMode",
+          "from": "src/dev/god_mode.js"
+        }
+      ],
+      "allowedGlobals": [
+        "Audio",
+        "AudioContext",
+        "CustomEvent",
+        "fetch",
+        "innerHeight",
+        "innerWidth",
+        "webkitAudioContext",
+        "window"
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

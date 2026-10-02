@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "026",
+  "slug": "world-and-casting",
+  "milestone": "M2",
+  "boundary": "game-application",
+  "tier": "A",
+  "tierEvidence": "app/world reads app/utils.js (classic engine utility): migrate the utility or inject.",
+  "modules": [
+    {
+      "currentPath": "src/world/viewport_projector.js",
+      "targetPath": "src/game/application/viewport/viewport_projector.js",
+      "exports": [
+        "ViewportProjector"
+      ],
+      "imports": [
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/app/world.js",
+      "targetPath": "src/game/application/world/game_world_service.js",
+      "exports": [
+        "EnvironmentSystem",
+        "GameWorld",
+        "LocationManager"
+      ],
+      "imports": [
+        {
+          "symbol": "SeededRng",
+          "from": "src/engine/random/seeded_rng.js"
+        },
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/app/cast_power.js",
+      "targetPath": "src/game/application/casting/cast_power_aim.js",
+      "exports": [
+        "CastPowerAim"
+      ],
+      "imports": [
+        {
+          "symbol": "Vector2",
+          "from": "src/engine/math/vector2.js"
+        }
+      ]
+    },
+    {
+      "currentPath": "src/app/context.js",
+      "targetPath": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "exports": [
+        "MutableFightFrameContext"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/app/inventory.js",
+      "targetPath": "src/game/application/inventory/equipment_service.js",
+      "exports": [
+        "EquipmentService"
+      ],
+      "imports": []
+    },
+    {
+      "currentPath": "src/app/bite.js",
+      "targetPath": "src/game/application/fishing/bite_environment_service.js",
+      "exports": [
+        "BiteEnvironmentService"
+      ],
+      "imports": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}

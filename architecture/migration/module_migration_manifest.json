@@ -42587,13 +42587,7 @@
         "legacyLoadOrder": 355,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "DepthMapReader",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -42603,11 +42597,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Math",
-            "Number",
-            "TypeError"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -42616,7 +42606,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/location/depth_map_reader.js",
@@ -42647,7 +42637,7 @@
           "items": [
             {
               "symbol": "LocationAssetLoader",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -42657,16 +42647,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "DepthMapReader",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -42674,8 +42658,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -42685,7 +42668,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/location/location_asset_loader.js",
@@ -42694,41 +42677,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "DepthMapReader",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/location/depth_map_reader.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/core/image_asset_provider.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/infrastructure/location/depth_map_reader.js",
-              "symbols": [
-                "DepthMapReader"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/core/image_asset_provider.js",
-              "symbols": [
-                "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -42748,7 +42707,7 @@
           "items": [
             {
               "symbol": "OffscreenCanvasFactory",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -42758,10 +42717,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Canvas2DSurface",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -42769,14 +42728,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Error",
-            "Math",
-            "Number"
+            "globalThis"
           ],
-          "browserApis": [
-            "OffscreenCanvas",
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -42784,7 +42738,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
@@ -42793,26 +42747,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Canvas2DSurface",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/core/canvas_2d_surface.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/render/core/canvas_2d_surface.js",
-              "symbols": [
-                "Canvas2DSurface"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43956,6 +43901,325 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/assets/image_asset_provider.js",
+      "currentArea": "platform/browser/assets",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Error",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "Promise",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [
+            "Image"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/assets/image_asset_provider.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "currentArea": "platform/browser/canvas",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Math",
+            "Number",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/canvas/canvas_2d_surface.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/canvas/canvas_primitives.js",
+      "currentArea": "platform/browser/canvas",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/canvas/canvas_primitives.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "currentArea": "platform/browser/canvas",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Error",
+            "Math",
+            "Number"
+          ],
+          "browserApis": [
+            "OffscreenCanvas",
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/location/depth_map_reader.js",
+      "currentArea": "platform/browser/location",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/location/depth_map_reader.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/location/location_asset_loader.js",
+      "currentArea": "platform/browser/location",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/location/location_asset_loader.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/render/casting/cast_scene_renderer.js",
       "currentArea": "render/casting",
       "observed": {
@@ -44051,7 +44315,7 @@
           "items": [
             {
               "symbol": "Canvas2DSurface",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -44059,17 +44323,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Error",
-            "Math",
-            "Number",
-            "TypeError",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -44079,7 +44346,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/canvas/canvas_2d_surface.js",
@@ -44090,7 +44357,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -44110,7 +44385,7 @@
           "items": [
             {
               "symbol": "CanvasPrimitives",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -44118,16 +44393,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Math",
-            "Number",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -44137,7 +44416,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/canvas/canvas_primitives.js",
@@ -44148,7 +44427,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -44168,7 +44455,7 @@
           "items": [
             {
               "symbol": "ImageAssetProvider",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -44176,25 +44463,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Error",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "Promise",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
-          "browserApis": [
-            "Image"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -44202,7 +44486,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/assets/image_asset_provider.js",
@@ -44213,7 +44497,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },

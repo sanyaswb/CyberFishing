@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "010",
+  "slug": "config-root",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Five blockers. Prerequisites: remove the waking fallback globalThis.CONFIG?.physics/.debug in inventory_v2_balance_parameter_resolver.js:21,28; window write → shim; reads RARITY_VISUAL_CONFIG / DEGRADATION_COLOR_CONFIG (game-presentation) → game-config may not depend on presentation: ownership review (framework Q1/Q3); typeof FightPhysicsConfigAdapter guard. RuntimeConfig port (decision 0.2) composed in bootstrap.",
+  "modules": [
+    {
+      "currentPath": "src/config/config.js",
+      "targetPath": "src/game/config/runtime/game_config.js",
+      "exports": [
+        "BASE_CONFIG",
+        "CONFIG",
+        "CONFIG_OVERRIDE_STORE",
+        "CONFIG_RUNTIME_CONTEXT",
+        "INVENTORY_CATEGORIES",
+        "RESOLVED_CONFIG_PROVIDER",
+        "SLOT_CONFIG",
+        "SUBFILTER_MAPPING",
+        "UI_LAYOUT_CONFIG"
+      ],
+      "imports": [
+        {
+          "symbol": "createRuntimeConfigContext",
+          "from": "src/game/config/runtime/immutable_config.js"
+        },
+        {
+          "symbol": "DEGRADATION_COLOR_CONFIG",
+          "from": "src/game/presentation/visual/degradation_color_config.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FISH_DB",
+          "from": "src/game/config/databases/fish_database.js"
+        },
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
+          "from": "src/game/config/items/item_progression_config.js"
+        },
+        {
+          "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
+          "from": "src/game/config/raw/items/item_stat_overrides.js"
+        },
+        {
+          "symbol": "MAP_DB",
+          "from": "src/game/config/raw/locations/location_database.js"
+        },
+        {
+          "symbol": "PHYSICS_CONFIG",
+          "from": "src/game/config/physics/physics_config.js"
+        },
+        {
+          "symbol": "RARITY_VISUAL_CONFIG",
+          "from": "src/game/presentation/rarity/rarity_visual_config.js"
+        }
+      ],
+      "planningPrerequisite": "src/config/config.js: top-level IfStatement is not a declaration (move it before migrating)"
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [],
+  "output": null
+}
