@@ -1,0 +1,455 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-cluster",
+  "id": "005",
+  "slug": "config-derived",
+  "milestone": "M1",
+  "boundary": "game-config",
+  "tier": "C",
+  "tierEvidence": "Configuration composed from the raw tables (fish categories and database, physics config) plus the item progression table and the unread fish profile factory: no state owner, no per-frame logic, no browser or classic global read after the imports.",
+  "modules": [
+    {
+      "currentPath": "src/config/items/item_progression_config.js",
+      "targetPath": "src/game/config/items/item_progression_config.js",
+      "exports": [
+        "ITEM_PROGRESSION_CONFIG"
+      ],
+      "imports": [],
+      "sideEffectReview": "Module-level configuration objects built from literals and imported raw tables (no external read): the single cumulative-runtime instance creates them once and the activation shim exposes that identity to config.js and the storage mappers, so CONFIG composition and in-place DEV edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/fish_categories.js",
+      "targetPath": "src/game/config/databases/fish/fish_categories.js",
+      "exports": [
+        "FISH_CATEGORIES"
+      ],
+      "imports": [
+        {
+          "symbol": "EVENT_FISH",
+          "from": "src/game/config/raw/fish/event_fish.js"
+        },
+        {
+          "symbol": "PEACEFUL_FISH",
+          "from": "src/game/config/raw/fish/peaceful_fish.js"
+        },
+        {
+          "symbol": "PREDATOR_FISH",
+          "from": "src/game/config/raw/fish/predator_fish.js"
+        },
+        {
+          "symbol": "RARE_FISH",
+          "from": "src/game/config/raw/fish/rare_fish.js"
+        }
+      ],
+      "sideEffectReview": "Module-level configuration objects built from literals and imported raw tables (no external read): the single cumulative-runtime instance creates them once and the activation shim exposes that identity to fish_db.js and the schema validator, so CONFIG composition and in-place DEV edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish_db.js",
+      "targetPath": "src/game/config/databases/fish_database.js",
+      "exports": [
+        "FISH_DB"
+      ],
+      "imports": [
+        {
+          "symbol": "FISH_CATEGORIES",
+          "from": "src/game/config/databases/fish/fish_categories.js"
+        }
+      ],
+      "sideEffectReview": "Module-level configuration objects built from literals and imported raw tables (no external read): the single cumulative-runtime instance creates them once and the activation shim exposes that identity to config.js, application.js and the DEV tools, so CONFIG composition and in-place DEV edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/physics/physics_config.js",
+      "targetPath": "src/game/config/physics/physics_config.js",
+      "exports": [
+        "CASTING_POWER_PHYSICS_CONFIG",
+        "FLOAT_MOTION_PHYSICS_CONFIG",
+        "PHYSICS_CONFIG",
+        "SIMULATION_PHYSICS_CONFIG"
+      ],
+      "imports": [
+        {
+          "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/environment_physics.js"
+        },
+        {
+          "symbol": "WATER_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/environment_physics.js"
+        },
+        {
+          "symbol": "FIGHT_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/fight_physics.js"
+        },
+        {
+          "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/retrieve_physics.js"
+        },
+        {
+          "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/retrieve_physics.js"
+        },
+        {
+          "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/retrieve_physics.js"
+        },
+        {
+          "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/retrieve_physics.js"
+        },
+        {
+          "symbol": "TACKLE_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/tackle_physics.js"
+        },
+        {
+          "symbol": "TENSION_PHYSICS_CONFIG",
+          "from": "src/game/config/raw/physics/tension_physics.js"
+        }
+      ],
+      "sideEffectReview": "Module-level configuration objects built from literals and imported raw tables (no external read): the single cumulative-runtime instance creates them once and the activation shim exposes that identity to config.js, so CONFIG composition and in-place DEV edits reach the same objects as before."
+    },
+    {
+      "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "targetPath": "src/game/config/factories/fish_profile_factory.js",
+      "exports": [
+        "cloneFishProfileValue",
+        "createFishFromPreset",
+        "createFishPhysicsProfile",
+        "mergeFishProfileValues"
+      ],
+      "imports": []
+    }
+  ],
+  "reviewedPropertyReaders": [
+    {
+      "file": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "symbol": "ITEM_PROGRESSION_CONFIG",
+      "reason": "The read sits in the else branch of typeof ITEM_PROGRESSION_CONFIG !== \"undefined\" ? ITEM_PROGRESSION_CONFIG : globalThis.ITEM_PROGRESSION_CONFIG; the typeof test is true before (global lexical) and after (activation property), so the same first branch returns the same object; the property read stays unreachable."
+    },
+    {
+      "file": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "symbol": "ITEM_PROGRESSION_CONFIG",
+      "reason": "The read sits in the else branch of typeof ITEM_PROGRESSION_CONFIG !== \"undefined\" ? ITEM_PROGRESSION_CONFIG : globalThis.ITEM_PROGRESSION_CONFIG; the typeof test is true before (global lexical) and after (activation property), so the same first branch returns the same object; the property read stays unreachable."
+    }
+  ],
+  "evidenceCommands": [
+    {
+      "name": "fish-rarity",
+      "script": "utils/fish-rarity-check.js"
+    },
+    {
+      "name": "rarity-production",
+      "script": "utils/rarity-production-check.js"
+    },
+    {
+      "name": "line-allocation",
+      "script": "utils/line-allocation-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-005-config-derived",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/items/item_progression_config.js",
+        "targetPath": "src/game/config/items/item_progression_config.js",
+        "sourceSha256": "b79eb1561beb5e25f294c353f85cb50244798a7a72044e32476e0b6cdbca9cc3",
+        "targetSha256": "b23f00ec27d55087e1c0ac0ec5b4912aec38107b4b1b64b077186c0bf4fc99ec"
+      },
+      {
+        "currentPath": "src/config/databases/fish/fish_categories.js",
+        "targetPath": "src/game/config/databases/fish/fish_categories.js",
+        "sourceSha256": "da5abd6ceb7056f554c628ff14bc7eaa6cee87b02e363b8f0cf5fe127a4730fc",
+        "targetSha256": "94889b8682ff34b228e0ad9e33ef38d85431dc10ce1a9fa5d6f2d4c1aa21693a"
+      },
+      {
+        "currentPath": "src/config/databases/fish_db.js",
+        "targetPath": "src/game/config/databases/fish_database.js",
+        "sourceSha256": "d454a0a320b9ca6e678e2903d5b9d1df1feb34c66e93180466d6f8b3cf13f9c9",
+        "targetSha256": "627c387642df152b5349a99c776a9275de24c6721ca8d720eda4765b3d3b7343"
+      },
+      {
+        "currentPath": "src/config/physics/physics_config.js",
+        "targetPath": "src/game/config/physics/physics_config.js",
+        "sourceSha256": "af63eabd3b31f184449ece73cb6392ff54ba8a738476d095f1ff514ca81d00b1",
+        "targetSha256": "ab06a6150f00367d00c8923e6eca78f7a64ffa1fdadcd3b28236f7ccee3abccc"
+      },
+      {
+        "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+        "targetPath": "src/game/config/factories/fish_profile_factory.js",
+        "sourceSha256": "a89a4310188acc48883ddada5b42059d5e52c06de97e8a6f15ede8d886077949",
+        "targetSha256": "439458278bad59f47ad6abe124b3b947c450c14d797c6df18cba77e1f97a3eef"
+      }
+    ],
+    "activations": [
+      "activation-3391eee213af",
+      "activation-7f406ccd1451",
+      "activation-ae9c520a5aa5",
+      "activation-d3a1db8cae8f"
+    ],
+    "inertModules": [
+      "src/game/config/factories/fish_profile_factory.js"
+    ],
+    "sideEffectReviews": [
+      "src/game/config/items/item_progression_config.js",
+      "src/game/config/databases/fish/fish_categories.js",
+      "src/game/config/databases/fish_database.js",
+      "src/game/config/physics/physics_config.js"
+    ],
+    "activationsRetired": [
+      "activation-219355546149",
+      "activation-25c6afec116d",
+      "activation-3f7facf4eaf0",
+      "activation-4112438fb305",
+      "activation-54c276c98220",
+      "activation-6b2b51c23e90",
+      "activation-6eebf9789eca",
+      "activation-7d46546e0593",
+      "activation-b16470ddb6b9",
+      "activation-c81bb199375e",
+      "activation-ca6d5f4428b4",
+      "activation-cdbd960edb9c",
+      "activation-fbe7832875b6"
+    ],
+    "bridgesAdded": [
+      "bridge-2b6eac19f06a",
+      "bridge-30c9b69ee61a",
+      "bridge-72357c0a4da8",
+      "bridge-849667372e8b",
+      "bridge-9de93c6c17db",
+      "bridge-a5b8a44625d9",
+      "bridge-aa83312e96c6",
+      "bridge-b88e0cc26ece"
+    ],
+    "bridgesRetired": [
+      "bridge-1f80570b7aed",
+      "bridge-3e473acdf294",
+      "bridge-5dfaf9067160",
+      "bridge-668a07650e82",
+      "bridge-6d6d44df7e95",
+      "bridge-70ca0c6d897d",
+      "bridge-a41584b6f170",
+      "bridge-a7ef408222f8",
+      "bridge-abba67f3c1b5"
+    ],
+    "importEdges": [
+      "src/game/config/databases/fish/fish_categories.js->src/game/config/raw/fish/event_fish.js",
+      "src/game/config/databases/fish/fish_categories.js->src/game/config/raw/fish/peaceful_fish.js",
+      "src/game/config/databases/fish/fish_categories.js->src/game/config/raw/fish/predator_fish.js",
+      "src/game/config/databases/fish/fish_categories.js->src/game/config/raw/fish/rare_fish.js",
+      "src/game/config/databases/fish_database.js->src/game/config/databases/fish/fish_categories.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/environment_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/environment_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/fight_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/retrieve_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/retrieve_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/retrieve_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/retrieve_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/tackle_physics.js",
+      "src/game/config/physics/physics_config.js->src/game/config/raw/physics/tension_physics.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/005_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "ad5de8e9bbacc838cf00fe1725ccfbf24be753e79e753a1b4de29bee574d567d",
+        "after": "c5087613af8bd46ca7a1da0451852ce43be29e7e83ef05bcc41a9192eb9e1872"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "9292f66f2641ca80941ebe2da355c0a5896bc05d9da2047a87113922fb644856",
+        "after": "9f8434feee3ea7c0c0778cf87f7f30d689f77deae9825da39b0190804a6ce585"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "4606f081d7de896f5f5f18e05ab700061bc7f5e3b1a172b8a74b001168d697a1",
+        "after": "affdd0b7aa8a78646de87ab09120f7076f161d138c35c73d6675320b0f98c909"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "629eee759ac1a1569c20e181d0f362a0245e2ab9f8d7c2a3a3bfcdfaf5f022c3",
+        "after": "e58c971c465d96eee69da9fcf50e5b8f78051968456520dd23ce177b9c42d7fd"
+      },
+      {
+        "path": "index.html",
+        "before": "647566e22491c54ed5fd028af594371b2fdbc4e00eec62d037c58035d8ea5868",
+        "after": "65bfcad0bca03df8fc64a78067912e93ba9d9a6ab06af17f783c66e5a970a5c4"
+      },
+      {
+        "path": "src/config/databases/fish/fish_categories.js",
+        "before": "da5abd6ceb7056f554c628ff14bc7eaa6cee87b02e363b8f0cf5fe127a4730fc",
+        "after": "21fed60f8fd237e875453172bba83f3613722bfdcfca8b2b97b7275a315c0451"
+      },
+      {
+        "path": "src/config/databases/fish/presets/fish_profile_factory.js",
+        "before": "a89a4310188acc48883ddada5b42059d5e52c06de97e8a6f15ede8d886077949",
+        "after": "678a7f504c124b79c2f7facae5fabfa1cf9904174a594bfca12d9e54263085e1"
+      },
+      {
+        "path": "src/config/databases/fish/species/event_fish.js",
+        "before": "ac513575a0062222c7f096fd5965417e4d988bb39e9a8c82615cc5bb5140d29d",
+        "after": "cc6e8d5c20be81dc732b8e3996994bccb5f17b1c2832cc551c14c1d36d59f54b"
+      },
+      {
+        "path": "src/config/databases/fish/species/peaceful_fish.js",
+        "before": "7d45e83764c8667e7f14e09432dbdfaf11e418dd8558ec6d823fa8b3e8c66e04",
+        "after": "480527ad2d06957d74452df19808b7ecbd8ca7033b19dbfbf451be1c2042a224"
+      },
+      {
+        "path": "src/config/databases/fish/species/predator_fish.js",
+        "before": "16bcd9c890899597d939aa7b88651ee9c9332224733fdc2f15f1669eceea7eca",
+        "after": "c3da328e693d4a55706d10de36f18040e89cca8530ee35a83cf597830ec2d6b5"
+      },
+      {
+        "path": "src/config/databases/fish/species/rare_fish.js",
+        "before": "a6c4d57d9952d7e5019646a09f0b6cc64d7e8aaee5d9f34ee3bec867d00a1ac3",
+        "after": "d0d257cc1e629ba4c50e18a9bf555786a859964072024f3c352e6aead31597f1"
+      },
+      {
+        "path": "src/config/databases/fish_db.js",
+        "before": "d454a0a320b9ca6e678e2903d5b9d1df1feb34c66e93180466d6f8b3cf13f9c9",
+        "after": "95428c9cfe22a50d6a4ad5d303424b6fa3f1e0b922d00de58c096de6ca78da26"
+      },
+      {
+        "path": "src/config/items/item_progression_config.js",
+        "before": "b79eb1561beb5e25f294c353f85cb50244798a7a72044e32476e0b6cdbca9cc3",
+        "after": "4045a8746904c3b0c1d8f668f933536f4a10c972595e970573c74a8c345ff34b"
+      },
+      {
+        "path": "src/config/physics/environment_physics_config.js",
+        "before": "68f2bb51e2c3c8c54a18f0576c1437e2e9757a409c89767642640099b002bf9b",
+        "after": "efa1bbeab1ca646d059334ffff7c56a3adb208135f951437245460d5c5643d79"
+      },
+      {
+        "path": "src/config/physics/fight_physics_config.js",
+        "before": "f15786874eb73a0f219ec13c99784fc58bf4975dbabeafbf9523cb9e8145d703",
+        "after": "2564380e25ed08e4b960050c02eae02f6014781cb6de35141c1d3c05f059140c"
+      },
+      {
+        "path": "src/config/physics/physics_config.js",
+        "before": "af63eabd3b31f184449ece73cb6392ff54ba8a738476d095f1ff514ca81d00b1",
+        "after": "ca9097a269cc1ec91c56d20bd0b8c71724954d7744eb3797abf3fb9ddaefef6a"
+      },
+      {
+        "path": "src/config/physics/retrieve_physics_config.js",
+        "before": "05ce872f0006280311eee001322a98a1f98ed40353c7abff1c8f2022fe097fdd",
+        "after": "43bde6c01a5342a3c9c7b7ddd4739f53d2810c5795a3b7fff2b23da3ebf52efe"
+      },
+      {
+        "path": "src/config/physics/tackle_physics_config.js",
+        "before": "d366f3295d43b79d5ede667ceba4dfd28504e22b5f6080648159e558406dda91",
+        "after": "d6a74376826bba488384f8b5e1d1368baf6c8ec156e3fb44bf4477d6ebb9787d"
+      },
+      {
+        "path": "src/config/physics/tension_physics_config.js",
+        "before": "9efa359cfe25cdfa38a080135939bb4c136052ac1aa70c4a6d873416e4e4bee0",
+        "after": "c327f9badf13a6aab8eff7a98917c836117c720b1ae474ddb41e727755caac8c"
+      },
+      {
+        "path": "src/game/config/databases/fish/fish_categories.js",
+        "before": null,
+        "after": "94889b8682ff34b228e0ad9e33ef38d85431dc10ce1a9fa5d6f2d4c1aa21693a"
+      },
+      {
+        "path": "src/game/config/databases/fish_database.js",
+        "before": null,
+        "after": "627c387642df152b5349a99c776a9275de24c6721ca8d720eda4765b3d3b7343"
+      },
+      {
+        "path": "src/game/config/factories/fish_profile_factory.js",
+        "before": null,
+        "after": "439458278bad59f47ad6abe124b3b947c450c14d797c6df18cba77e1f97a3eef"
+      },
+      {
+        "path": "src/game/config/items/item_progression_config.js",
+        "before": null,
+        "after": "b23f00ec27d55087e1c0ac0ec5b4912aec38107b4b1b64b077186c0bf4fc99ec"
+      },
+      {
+        "path": "src/game/config/physics/physics_config.js",
+        "before": null,
+        "after": "ab06a6150f00367d00c8923e6eca78f7a64ffa1fdadcd3b28236f7ccee3abccc"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 605 modules, 879 unified edges, 852 globals, 145 exact known-debt diagnostics, 0 FAIL in 702ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 605/605 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 141 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 141 activations and 211 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 5 record(s), 5 applied, 22 ESM target(s) inside their boundaries; 10 projector and 8 retirement fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "fish-rarity",
+        "status": "PASS",
+        "sha256": "98cdb259ed46c862717d62a1de44367ddc6b5c53b6b8db63f68b88a72f8ba2ee"
+      },
+      {
+        "name": "rarity-production",
+        "status": "PASS",
+        "sha256": "19aca9ea169e8eed412658acd99c68971afbc36baa3fa3ea1ed9633f083b57a5"
+      },
+      {
+        "name": "line-allocation",
+        "status": "PASS",
+        "sha256": "2041fe934816e9c9a4fb7a9ef8de3624ae2c36626646ba5218f474c4492df6c3"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 141,
+      "identityMismatches": 0,
+      "assertions": [
+        "progression/categories/fish/physics are exact ESM export identities",
+        "CONFIG.physics is the same PHYSICS_CONFIG object",
+        "species globals retired",
+        "unread helpers inert",
+        "canvas present"
+      ]
+    },
+    "full": {
+      "status": "PASS",
+      "executed": 78,
+      "cached": 0,
+      "sourceUnchanged": true
+    }
+  }
+}

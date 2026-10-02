@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const { isDeepStrictEqual } = require("node:util");
 const { CanonicalJson } = require("../guards/core/canonical_json");
+const { CLUSTER_DIRECTORY, RECORD_KIND } = require("../stage_four/cluster_ledger");
 
 const HISTORICAL_PLAN = "architecture/migration/stage_3_approved_batches.json";
 const CONTINUATION_KIND = "cyber-fishing-stage-3-22-approved-prefix";
@@ -189,7 +190,18 @@ class StageThreeApprovedPlanSource {
     let bytes;
     try { bytes = this.read(RUNTIME_CONTRACT); } catch { return new Map(); }
     const retired = JSON.parse(bytes.toString("utf8")).retiredActivations || [];
-    return new Map(retired.map(record => [record.activation.id, record.retiredBy]));
+    return new Map(retired.filter(record => {
+      const cluster = /^stage-4\.cluster-(\d{3})-([a-z0-9-]+)$/u.exec(record.retiredBy);
+      if (!cluster) return true;
+      // Stage 4 retirements belong to its applied ledger; they do not rewrite the frozen Stage 3 plan.
+      const file = `${CLUSTER_DIRECTORY}/${cluster[1]}_${cluster[2]}.json`;
+      const applied = JSON.parse(this.read(file).toString("utf8"));
+      assert(applied.kind === RECORD_KIND && applied.id === cluster[1] && applied.slug === cluster[2] &&
+        applied.output?.status === "applied" && applied.output.owner === record.retiredBy &&
+        applied.output.activationsRetired?.includes(record.activation.id),
+      `activation retirement has no exact applied Stage 4 cluster: ${record.activation.id}`);
+      return false;
+    }).map(record => [record.activation.id, record.retiredBy]));
   }
 
   #validateContinuation(continuation, historical, historicalSha256) {

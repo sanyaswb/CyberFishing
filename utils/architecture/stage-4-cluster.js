@@ -25,6 +25,7 @@ const summary = (plan) => [
   `consumers: ${plan.consumers.map((item) => `${item.consumer} [${item.boundary}] ${item.symbols.join(",")}`).join("; ") || "none"}`,
   `activations: ${plan.activations.map((item) => `${item.shimFile} (${item.removalStage})`).join(", ") || "none"}`,
   `inert: ${plan.inert.map((item) => item.targetModule).join(", ") || "none"}`,
+  `retired activations: ${plan.retiredActivations.map((item) => item.shimFile).join(", ") || "none"}`,
   `bridges: +${plan.bridgesAdded.length} -${plan.bridgesRetired.length}; import edges: ${plan.importEdges.length}; ` +
     `side-effect reviews: ${plan.targets.filter((item) => item.review).length}; runtime slot ${plan.runtimeSlot}`,
   `property readers reviewed: ${plan.propertyReaders.length}`,

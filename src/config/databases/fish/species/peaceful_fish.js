@@ -1,1 +1,1 @@
-globalThis.PEACEFUL_FISH = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/config/raw/fish/peaceful_fish.js"]["PEACEFUL_FISH"];
+// Retired Stage 4 activation activation-25c6afec116d: PEACEFUL_FISH is served only through ESM imports of src/game/config/raw/fish/peaceful_fish.js.

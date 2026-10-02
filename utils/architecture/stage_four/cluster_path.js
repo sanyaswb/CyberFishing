@@ -8,7 +8,8 @@ const path = require("node:path");
 const { CLUSTER_DIRECTORY, RECORD_KIND, StageFourClusterLedger } = require("./cluster_ledger");
 const { StageFourEsmTargetProjector } = require("./esm_target_projector");
 const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
-const { MigratedSourcePlaceholder } = require("../../build/compat_runtime/activation_retirement");
+const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
+  require("../../build/compat_runtime/activation_retirement");
 const { CanonicalActivationIdentity, CumulativeRuntimeContractValidator } =
   require("../../build/compat_runtime/cumulative_runtime_contract");
 const { CumulativeRuntimeLoadSlot } = require("../../build/compat_runtime/cumulative_runtime_load_slot");
@@ -108,9 +109,9 @@ class StageFourClusterPlan {
       const projected = projector.project({ source: workspace.text(module.currentPath), currentPath: module.currentPath,
         targetPath: module.targetPath, boundary: record.boundary, exports: module.exports, imports: module.imports || [],
         allowedGlobals: module.allowedGlobals || [] });
-      // Classic providers: one global-lexical binding per export plus the property of each moved exposure statement.
+      // Classic providers: the declaration's mechanism plus the property of each moved exposure statement.
       assert.deepEqual(entry.observed.providers.items.map((item) => `${item.symbol}:${item.mechanism}`).sort(),
-        [...module.exports.map((symbol) => `${symbol}:global-lexical`),
+        [...projected.providerMechanisms,
           ...projected.exposures.map((item) => `${item.symbol}:${item.mechanism}`)].sort(), `${module.currentPath}: providers differ`);
       const needsReview = projected.evaluation.classification === "needs-review";
       assert.equal(Boolean(module.sideEffectReview), needsReview,
@@ -130,9 +131,7 @@ class StageFourClusterPlan {
       const own = consumers.filter((item) => item.provider === currentPath);
       for (const symbol of target.module.exports) {
         const readers = own.filter((item) => item.symbols.includes(symbol));
-        // An explicitly exposed global property keeps its activation even without a Manifest reader.
-        const exposed = target.exposures.some((item) => item.symbol === symbol);
-        if (readers.length === 0 && !exposed) continue;
+        if (readers.length === 0) continue;
         const identity = { exportName: symbol, legacyScriptIndex: slot, legacySymbol: symbol,
           shimFile: `activations/${String(slot).padStart(3, "0")}_${symbol.toLowerCase()}.js`,
           sourceProvider: currentPath, targetModule: targetPath };
@@ -152,6 +151,15 @@ class StageFourClusterPlan {
       }
     }
     const bridgesRetired = registry.bridges.filter((bridge) => members.has(bridge.source)).map((bridge) => bridge.id).sort();
+    // An earlier activation whose last bridge retires here has no classic reader left: it retires too.
+    const remaining = registry.bridges.filter((bridge) => !bridgesRetired.includes(bridge.id));
+    const retiredActivations = contract.activationPositions.filter((activation) => !remaining.some((bridge) =>
+      bridge.target === activation.targetModule && bridge.globalProviders.some((item) =>
+        item.symbol === activation.legacySymbol && item.mechanism === "global-this-property")))
+      .sort(byId);
+    const retiringSources = new Map([...members, ...retiredActivations.map((item) => [item.sourceProvider, null])]);
+    assert.deepEqual(this.#propertyReaders(retiredActivations.map((item) => item.legacySymbol), retiringSources), [],
+      "a retiring activation still has property readers outside the migrating consumers and shims");
     const load = CumulativeRuntimeLoadSlot.read({ html: workspace.text(PATHS.index),
       aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract),
       runtimePath: contract.output.directory + contract.output.runtimeFile });
@@ -159,11 +167,15 @@ class StageFourClusterPlan {
       (item.legacyScriptIndex === load.slot && !load.precedesWholeSlot));
     assert.deepEqual(early.map((item) => item.id), [],
       `activations before the runtime tag (slot ${load.slot}): ${early.map((item) => item.shimFile).join(", ")}`);
+    // An exposed property without an activation disappears: nothing may read it as a property.
+    const dropped = targets.flatMap((target) => target.exposures.map((item) => item.symbol))
+      .filter((symbol) => !activations.some((item) => item.legacySymbol === symbol));
+    assert.deepEqual(this.#propertyReaders(dropped, members), [], "a dropped exposure still has property readers");
     const propertyReaders = this.#propertyReaders(activations.map((item) => item.legacySymbol), members);
     assert.deepEqual(propertyReaders.map((item) => `${item.file}:${item.symbol}`),
       (record.reviewedPropertyReaders || []).map((item) => `${item.file}:${item.symbol}`).sort(),
       "global property readers that wake up when an activation exposes the symbol must be reviewed");
-    return { owner: this.owner, targets, consumers, activations: activations.sort(byId), inert,
+    return { owner: this.owner, targets, consumers, activations: activations.sort(byId), inert, retiredActivations,
       bridgesAdded: bridgesAdded.sort(byId), bridgesRetired, runtimeSlot: load.slot, propertyReaders,
       importEdges: targets.flatMap((target) => (target.module.imports || []).map((item) =>
         `${target.module.targetPath}->${item.from}`)) };
@@ -240,8 +252,8 @@ class StageFourClusterApply {
     assert.equal(record.output, null, "cluster record is already applied");
     const plan = new StageFourClusterPlan(workspace, record).build();
     const touched = [...new Set([...Object.values(PATHS).filter((file) => file !== PATHS.policy),
-      ...plan.targets.flatMap((target) => [target.module.currentPath,
-      target.module.targetPath])])].sort();
+      ...plan.targets.flatMap((target) => [target.module.currentPath, target.module.targetPath]),
+      ...plan.retiredActivations.map((item) => item.sourceProvider)])].sort();
     const dirty = workspace.git(["status", "--porcelain", "--", ...touched]).trim();
     assert.equal(dirty, "", `touched files must be committed before apply:\n${dirty}`);
     const before = new Map(touched.map((file) => [file, workspace.hash(file)]));
@@ -266,12 +278,23 @@ class StageFourClusterApply {
       index = index.replace(tag, activations.map((item) =>
         `<script src="${contract.output.directory}${item.shimFile}"${matches[0][1] || ""}></script>`).join("\n"));
     }
-    writes.set(PATHS.index, index);
-    const future = { ...contract,
+    const retirement = new ActivationRetirementProjection();
+    const future = retirement.contract({ ...contract,
       activationPositions: [...contract.activationPositions, ...plan.activations].sort(byId),
       inertModules: [...(contract.inertModules || []), ...plan.inert]
         .sort((left, right) => left.targetModule.localeCompare(right.targetModule)),
-      sideEffectReviews: [...contract.sideEffectReviews, ...plan.targets.map((target) => target.review).filter(Boolean)] };
+      sideEffectReviews: [...contract.sideEffectReviews, ...plan.targets.map((target) => target.review).filter(Boolean)] },
+    plan.retiredActivations, plan.owner);
+    // A retired source keeps its legacy position: an inert placeholder, or the shims of its still-active activations.
+    const shared = ActivationRetirementProjection.sharedSources({ activationPositions: contract.activationPositions },
+      plan.retiredActivations);
+    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(plan.retiredActivations)) {
+      writes.set(sourceProvider, shared.has(sourceProvider)
+        ? future.activationPositions.filter((item) => item.sourceProvider === sourceProvider)
+          .map((item) => shim.render(item, contract.transport.symbol)).join("")
+        : new RetiredActivationPlaceholder().renderProvider(activations));
+    }
+    writes.set(PATHS.index, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
     new CumulativeRuntimeContractValidator().validate(future);
     writes.set(PATHS.contract, canonical(future));
     const registry = workspace.json(PATHS.registry);
@@ -287,6 +310,7 @@ class StageFourClusterApply {
         sourceSha256: target.sourceSha256, targetSha256: target.targetSha256 })),
       activations: plan.activations.map((item) => item.id), inertModules: plan.inert.map((item) => item.targetModule),
       sideEffectReviews: plan.targets.filter((target) => target.review).map((target) => target.module.targetPath),
+      activationsRetired: plan.retiredActivations.map((item) => item.id),
       bridgesAdded: plan.bridgesAdded.map((item) => item.id), bridgesRetired: plan.bridgesRetired,
       importEdges: plan.importEdges, gameCycleBefore, files: [] } };
     writes.set(this.recordFile, canonical(applied));

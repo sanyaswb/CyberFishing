@@ -1,1 +1,1 @@
-globalThis.FIGHT_PHYSICS_CONFIG = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/config/raw/physics/fight_physics.js"]["FIGHT_PHYSICS_CONFIG"];
+// Retired Stage 4 activation activation-7d46546e0593: FIGHT_PHYSICS_CONFIG is served only through ESM imports of src/game/config/raw/physics/fight_physics.js.

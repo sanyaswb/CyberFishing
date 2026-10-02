@@ -17,7 +17,9 @@ class RetiredActivationPlaceholder {
     if (activation.id !== CanonicalActivationIdentity.id(activation)) {
       throw new Error(`Retired activation id is not canonical: ${activation.id}`);
     }
-    return `// Retired Stage 3 activation ${activation.id}: ${activation.legacySymbol} is served only ` +
+    // The stage that introduced the activation names it (Stage 3 owners keep their exact historical text).
+    const stage = /^stage-(\d)\./u.exec(activation.owner || "")?.[1] || "3";
+    return `// Retired Stage ${stage} activation ${activation.id}: ${activation.legacySymbol} is served only ` +
       `through ESM imports of ${activation.targetModule}.\n`;
   }
 

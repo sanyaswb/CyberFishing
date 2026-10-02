@@ -339,22 +339,6 @@
       ]
     },
     {
-      "id": "bridge-1f80570b7aed",
-      "bridge": "src/config/physics/tackle_physics_config.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/physics/physics_config.js",
-      "target": "src/game/config/raw/physics/tackle_physics.js",
-      "reason": "Preserve the exact TACKLE_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "TACKLE_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-1fcb4fbde037",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/fishing.js",
@@ -583,6 +567,22 @@
       ]
     },
     {
+      "id": "bridge-2b6eac19f06a",
+      "bridge": "src/config/items/item_progression_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/config.js",
+      "target": "src/game/config/items/item_progression_config.js",
+      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-2d85d5d54f3b",
       "bridge": "src/systems/tackle_stress_system.js",
       "source": "src/app/fishing.js",
@@ -674,6 +674,22 @@
       "globalProviders": [
         {
           "symbol": "ItemConditionResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-30c9b69ee61a",
+      "bridge": "src/config/databases/fish/fish_categories.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/validation/config_schema_validator.js",
+      "target": "src/game/config/databases/fish/fish_categories.js",
+      "reason": "Preserve the exact FISH_CATEGORIES consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FISH_CATEGORIES",
           "mechanism": "global-this-property"
         }
       ]
@@ -882,34 +898,6 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3e473acdf294",
-      "bridge": "src/config/physics/retrieve_physics_config.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/physics/physics_config.js",
-      "target": "src/game/config/raw/physics/retrieve_physics.js",
-      "reason": "Preserve the exact BITE_FALLBACK_PHYSICS_CONFIG, LURE_RETRIEVE_PHYSICS_CONFIG, PASSIVE_RETRIEVE_PHYSICS_CONFIG, POLE_IDLE_RETRIEVE_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1255,22 +1243,6 @@
       ]
     },
     {
-      "id": "bridge-5dfaf9067160",
-      "bridge": "src/config/databases/fish/species/rare_fish.js",
-      "owner": "stage-4.cluster-003-fish-species",
-      "source": "src/config/databases/fish/fish_categories.js",
-      "target": "src/game/config/raw/fish/rare_fish.js",
-      "reason": "Preserve the exact RARE_FISH consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "RARE_FISH",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-5f6c783bbcd7",
       "bridge": "src/core/items/rarity/item_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -1479,22 +1451,6 @@
       ]
     },
     {
-      "id": "bridge-668a07650e82",
-      "bridge": "src/config/databases/fish/species/event_fish.js",
-      "owner": "stage-4.cluster-003-fish-species",
-      "source": "src/config/databases/fish/fish_categories.js",
-      "target": "src/game/config/raw/fish/event_fish.js",
-      "reason": "Preserve the exact EVENT_FISH consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "EVENT_FISH",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-68a669b68de3",
       "bridge": "src/core/fishing/player_force_budget_allocator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1623,22 +1579,6 @@
       ]
     },
     {
-      "id": "bridge-6d6d44df7e95",
-      "bridge": "src/config/databases/fish/species/peaceful_fish.js",
-      "owner": "stage-4.cluster-003-fish-species",
-      "source": "src/config/databases/fish/fish_categories.js",
-      "target": "src/game/config/raw/fish/peaceful_fish.js",
-      "reason": "Preserve the exact PEACEFUL_FISH consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PEACEFUL_FISH",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-6e1834884be2",
       "bridge": "src/config/validation/rarity_config_validator.js",
       "owner": "stage-4.cluster-001-rarity-validators",
@@ -1739,22 +1679,6 @@
       ]
     },
     {
-      "id": "bridge-70ca0c6d897d",
-      "bridge": "src/config/physics/fight_physics_config.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/physics/physics_config.js",
-      "target": "src/game/config/raw/physics/fight_physics.js",
-      "reason": "Preserve the exact FIGHT_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FIGHT_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-71b223bc178a",
       "bridge": "src/config/inventory/equipment_slot_config.js",
       "source": "src/application/inventory/inventory_v2_command_service.js",
@@ -1770,6 +1694,22 @@
         },
         {
           "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-72357c0a4da8",
+      "bridge": "src/config/physics/physics_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/config.js",
+      "target": "src/game/config/physics/physics_config.js",
+      "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1994,6 +1934,22 @@
       "globalProviders": [
         {
           "symbol": "ItemRatingResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-849667372e8b",
+      "bridge": "src/config/items/item_progression_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "target": "src/game/config/items/item_progression_config.js",
+      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2339,6 +2295,22 @@
       ]
     },
     {
+      "id": "bridge-9de93c6c17db",
+      "bridge": "src/config/items/item_progression_config.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "target": "src/game/config/items/item_progression_config.js",
+      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_PROGRESSION_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-9f5854296dfd",
       "bridge": "src/core/fishing/stamina/stamina_balance_frame.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2382,22 +2354,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemLocationKind",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a41584b6f170",
-      "bridge": "src/config/physics/tension_physics_config.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/physics/physics_config.js",
-      "target": "src/game/config/raw/physics/tension_physics.js",
-      "reason": "Preserve the exact TENSION_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "TENSION_PHYSICS_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2451,6 +2407,22 @@
       ]
     },
     {
+      "id": "bridge-a5b8a44625d9",
+      "bridge": "src/config/databases/fish_db.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/app/application.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FISH_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a6ee164c50c8",
       "bridge": "src/core/assemblies/item_assembly_reader.js",
       "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -2494,22 +2466,6 @@
       "globalProviders": [
         {
           "symbol": "AssemblyStateRepository",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a7ef408222f8",
-      "bridge": "src/config/databases/fish/species/predator_fish.js",
-      "owner": "stage-4.cluster-003-fish-species",
-      "source": "src/config/databases/fish/fish_categories.js",
-      "target": "src/game/config/raw/fish/predator_fish.js",
-      "reason": "Preserve the exact PREDATOR_FISH consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PREDATOR_FISH",
           "mechanism": "global-this-property"
         }
       ]
@@ -2579,21 +2535,17 @@
       ]
     },
     {
-      "id": "bridge-abba67f3c1b5",
-      "bridge": "src/config/physics/environment_physics_config.js",
-      "owner": "stage-4.cluster-002-physics-raw-config",
-      "source": "src/config/physics/physics_config.js",
-      "target": "src/game/config/raw/physics/environment_physics.js",
-      "reason": "Preserve the exact ENVIRONMENT_PHYSICS_CONFIG, WATER_PHYSICS_CONFIG consumer until its legacy symbol is removed.",
+      "id": "bridge-aa83312e96c6",
+      "bridge": "src/config/databases/fish_db.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
-          "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "WATER_PHYSICS_CONFIG",
+          "symbol": "FISH_DB",
           "mechanism": "global-this-property"
         }
       ]
@@ -2706,6 +2658,22 @@
       "globalProviders": [
         {
           "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b88e0cc26ece",
+      "bridge": "src/config/databases/fish_db.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/config/config.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "FISH_DB",
           "mechanism": "global-this-property"
         }
       ]

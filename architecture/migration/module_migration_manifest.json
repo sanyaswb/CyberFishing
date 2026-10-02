@@ -11169,7 +11169,7 @@
           "items": [
             {
               "symbol": "FISH_CATEGORIES",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -11179,51 +11179,9 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "EVENT_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "EVENT_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "PEACEFUL_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "PEACEFUL_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "PREDATOR_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "PREDATOR_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "RARE_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "RARE_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
               "executionPhase": "eager"
             }
           ],
@@ -11232,7 +11190,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -11242,7 +11200,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/databases/fish/fish_categories.js",
@@ -11251,103 +11209,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "EVENT_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish/species/event_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EVENT_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/config/databases/fish/species/event_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PEACEFUL_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish/species/peaceful_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PEACEFUL_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/fish/species/peaceful_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PREDATOR_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish/species/predator_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PREDATOR_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/fish/species/predator_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RARE_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish/species/rare_fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RARE_FISH",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/fish/species/rare_fish.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/databases/fish/species/event_fish.js",
-              "symbols": [
-                "EVENT_FISH"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/databases/fish/species/peaceful_fish.js",
-              "symbols": [
-                "PEACEFUL_FISH"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/databases/fish/species/predator_fish.js",
-              "symbols": [
-                "PREDATOR_FISH"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/databases/fish/species/rare_fish.js",
-              "symbols": [
-                "RARE_FISH"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -11364,28 +11236,7 @@
         "legacyLoadOrder": 7,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "cloneFishProfileValue",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "createFishFromPreset",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "createFishPhysicsProfile",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "mergeFishProfileValues",
-              "mechanism": "global-function",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -11395,11 +11246,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "Array",
-            "Object",
-            "undefined"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11408,7 +11255,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/factories/fish_profile_factory.js",
@@ -11483,32 +11330,17 @@
         "legacyLoadOrder": 12,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EVENT_FISH",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11528,15 +11360,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -11553,32 +11377,17 @@
         "legacyLoadOrder": 9,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PEACEFUL_FISH",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11598,15 +11407,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -11623,32 +11424,17 @@
         "legacyLoadOrder": 10,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PREDATOR_FISH",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11668,15 +11454,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -11693,9 +11471,56 @@
         "legacyLoadOrder": 11,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-config-raw",
+        "targetPath": "src/game/config/raw/fish/rare_fish.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/config/databases/fish_db.js",
+      "currentArea": "config/databases",
+      "observed": {
+        "legacyLoadOrder": 14,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "RARE_FISH",
+              "symbol": "FISH_DB",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -11729,9 +11554,9 @@
         "roles": [
           "compatibility-bridge"
         ],
-        "targetBoundary": "game-config-raw",
-        "targetPath": "src/game/config/raw/fish/rare_fish.js",
-        "migrationWave": 1
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/databases/fish_database.js",
+        "migrationWave": 3
       },
       "analysis": {
         "dependencies": {
@@ -11747,99 +11572,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/config/databases/fish_db.js",
-      "currentArea": "config/databases",
-      "observed": {
-        "legacyLoadOrder": 14,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional"
-            },
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Object"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "config-factory"
-        ],
-        "targetBoundary": "game-config",
-        "targetPath": "src/game/config/databases/fish_database.js",
-        "migrationWave": 3
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "conditional",
-              "target": "src/config/databases/fish/fish_categories.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FISH_CATEGORIES",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "eager",
-              "target": "src/config/databases/fish/fish_categories.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/databases/fish/fish_categories.js",
-              "symbols": [
-                "FISH_CATEGORIES"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -12439,7 +12171,7 @@
           "items": [
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -12447,14 +12179,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "WeakSet"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -12464,7 +12202,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/items/item_progression_config.js",
@@ -12475,7 +12213,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -12562,37 +12308,17 @@
         "legacyLoadOrder": 16,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "WATER_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -12612,15 +12338,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -12637,32 +12355,17 @@
         "legacyLoadOrder": 18,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FIGHT_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -12682,15 +12385,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -12711,23 +12406,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CASTING_POWER_PHYSICS_CONFIG",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "FLOAT_MOTION_PHYSICS_CONFIG",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "PHYSICS_CONFIG",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "SIMULATION_PHYSICS_CONFIG",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -12737,56 +12417,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "FIGHT_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "TACKLE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "TENSION_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            },
-            {
-              "symbol": "WATER_PHYSICS_CONFIG",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager"
             }
@@ -12795,7 +12427,9 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [],
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -12804,7 +12438,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "config-factory"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/physics/physics_config.js",
@@ -12813,122 +12447,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "eager",
-              "target": "src/config/physics/retrieve_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ENVIRONMENT_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/environment_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FIGHT_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/fight_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/retrieve_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/retrieve_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/retrieve_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "TACKLE_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/tackle_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "TENSION_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/tension_physics_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "WATER_PHYSICS_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "target": "src/config/physics/environment_physics_config.js",
-              "resolution": "confirmed"
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/physics/environment_physics_config.js",
-              "symbols": [
-                "ENVIRONMENT_PHYSICS_CONFIG",
-                "WATER_PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/fight_physics_config.js",
-              "symbols": [
-                "FIGHT_PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/retrieve_physics_config.js",
-              "symbols": [
-                "BITE_FALLBACK_PHYSICS_CONFIG",
-                "LURE_RETRIEVE_PHYSICS_CONFIG",
-                "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
-                "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/tackle_physics_config.js",
-              "symbols": [
-                "TACKLE_PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/physics/tension_physics_config.js",
-              "symbols": [
-                "TENSION_PHYSICS_CONFIG"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -13126,47 +12655,17 @@
         "legacyLoadOrder": 17,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "BITE_FALLBACK_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "LURE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "PASSIVE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "POLE_IDLE_RETRIEVE_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -13186,15 +12685,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -13211,32 +12702,17 @@
         "legacyLoadOrder": 19,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "TACKLE_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -13256,15 +12732,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -13281,32 +12749,17 @@
         "legacyLoadOrder": 20,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "TENSION_PHYSICS_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -13326,15 +12779,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -34746,6 +34191,252 @@
       }
     },
     {
+      "currentPath": "src/game/config/databases/fish/fish_categories.js",
+      "currentArea": "game/config/databases/fish",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/databases/fish/fish_categories.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/databases/fish_database.js",
+      "currentArea": "game/config/databases",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/databases/fish_database.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/factories/fish_profile_factory.js",
+      "currentArea": "game/config/factories",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Object",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/factories/fish_profile_factory.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/items/item_progression_config.js",
+      "currentArea": "game/config/items",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "WeakSet"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/items/item_progression_config.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/physics/physics_config.js",
+      "currentArea": "game/config/physics",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/physics/physics_config.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/config/raw/fish/event_fish.js",
       "currentArea": "game/config/raw/fish",
       "observed": {
@@ -43080,6 +42771,14 @@
           "confirmed": [
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/items/item_progression_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
@@ -43111,15 +42810,7 @@
               "resolution": "confirmed"
             }
           ],
-          "unresolved": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43976,6 +43667,14 @@
           "confirmed": [
             {
               "symbol": "ITEM_PROGRESSION_CONFIG",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/items/item_progression_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ITEM_PROGRESSION_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
@@ -44007,15 +43706,7 @@
               "resolution": "confirmed"
             }
           ],
-          "unresolved": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

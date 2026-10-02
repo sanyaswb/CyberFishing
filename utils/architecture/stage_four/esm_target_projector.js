@@ -22,10 +22,12 @@ class StageFourEsmTargetProjector {
     const eol = source.includes("\r\n") ? "\r\n" : "\n";
     const tree = espree.parse(source, { ecmaVersion: "latest", sourceType: "script", range: true });
     const insertions = [];
+    const providerMechanisms = [];
     for (const name of exports) {
       const nodes = tree.body.filter((node) => this.#declares(node, name));
       if (nodes.length !== 1) throw new Error(`${currentPath}: export ${name} needs exactly one top-level declaration`);
       insertions.push(nodes[0].range[0]);
+      providerMechanisms.push(`${name}:${nodes[0].type === "FunctionDeclaration" ? "global-function" : "global-lexical"}`);
     }
     // A top-level exposure of an export (`globalThis.X = X;` or `if (typeof window !== "undefined") { window.X = X; }`)
     // moves into the activation shim, which writes the same object to the same global property.
@@ -57,7 +59,7 @@ class StageFourEsmTargetProjector {
     const evaluation = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath, source: targetSource });
     if (evaluation.classification === "unsafe") throw new Error(`${targetPath}: unsafe module evaluation`);
     return Object.freeze({ currentPath, targetPath, targetSource, sourceSha256: sha256(source),
-      targetSha256: sha256(targetSource), analysis, evaluation,
+      targetSha256: sha256(targetSource), analysis, evaluation, providerMechanisms,
       exposures: exposures.map(({ symbol, mechanism, text }) => ({ symbol, mechanism, text })) });
   }
 
