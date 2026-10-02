@@ -89,7 +89,8 @@ class InventoryV2SourceReader {
   }
 
   readCommandService() {
-    return fs.readFileSync(COMMAND_SERVICE_FILE, "utf8");
+    // The authored source (its ESM target since Stage 4 cluster 024).
+    return new SourceRuntime().readAuthoredSource(path.relative(ROOT, COMMAND_SERVICE_FILE).replaceAll("\\", "/"));
   }
 
   readLegacyUi() {

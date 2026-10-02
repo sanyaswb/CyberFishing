@@ -7268,21 +7268,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "InventoryV2ApplicationError",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2ApplicationError",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2CommandService",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryV2CommandService",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -7294,34 +7279,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "AutoRefillTrigger",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EquipmentLoadout",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -7329,17 +7290,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Boolean",
-            "Date",
-            "Error",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "Set",
-            "String",
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -7350,7 +7300,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "application-service"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/inventory_command_service.js",
@@ -7359,80 +7309,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "AutoRefillTrigger",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/auto_refill_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EQUIPMENT_ALL_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EQUIPMENT_MAIN_SLOT_IDS",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EquipmentLoadout",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/loadouts/equipment_loadout.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_ALL_SLOT_IDS",
-                "EQUIPMENT_MAIN_SLOT_IDS"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/auto_refill_policy.js",
-              "symbols": [
-                "AutoRefillTrigger"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/inventory_item_location.js",
-              "symbols": [
-                "InventoryItemLocation"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/loadouts/equipment_loadout.js",
-              "symbols": [
-                "EquipmentLoadout"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -13665,11 +13552,6 @@
             },
             {
               "symbol": "AutoRefillSettings",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "AutoRefillTrigger",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -21149,32 +21031,17 @@
         "legacyLoadOrder": 168,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "EquipmentLoadout",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -21194,15 +21061,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -33634,6 +33493,65 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/inventory_command_service.js",
+      "currentArea": "game/application/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "Date",
+            "Error",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/inventory_command_service.js",
         "migrationWave": 4
       },
       "analysis": {

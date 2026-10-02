@@ -619,6 +619,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2CommandService",
+      "legacyScriptIndex": 199,
+      "legacySymbol": "InventoryV2CommandService",
+      "shimFile": "activations/199_inventoryv2commandservice.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_command_service.js",
+      "targetModule": "src/game/application/inventory/inventory_command_service.js",
+      "id": "activation-155d22fe2ce9",
+      "owner": "stage-4.cluster-024-inventory-command-service",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-176b4b50794d",
       "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
       "sourceProvider": "src/core/equipment/fishing_readiness_policy.js",
@@ -917,18 +929,6 @@
       "shimFile": "activations/096_playerpressuregainresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
-    },
-    {
-      "id": "activation-35621c703348",
-      "owner": "stage-3.candidate-021-equipment-4044fcef",
-      "sourceProvider": "src/core/equipment/auto_refill_policy.js",
-      "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
-      "exportName": "AutoRefillTrigger",
-      "legacySymbol": "AutoRefillTrigger",
-      "legacyScriptIndex": 165,
-      "shimFile": "activations/165_autorefilltrigger.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "id": "activation-3a560121fa29",
@@ -1289,18 +1289,6 @@
       "owner": "stage-4.cluster-023-inventory-lines",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-6088d7e23f95",
-      "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
-      "sourceProvider": "src/core/loadouts/equipment_loadout.js",
-      "targetModule": "src/game/domain/loadouts/equipment_loadout.js",
-      "exportName": "EquipmentLoadout",
-      "legacySymbol": "EquipmentLoadout",
-      "legacyScriptIndex": 168,
-      "shimFile": "activations/168_equipmentloadout.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
     },
     {
       "id": "activation-649929a35f50",
@@ -3073,6 +3061,23 @@
     },
     {
       "activation": {
+        "id": "activation-35621c703348",
+        "owner": "stage-3.candidate-021-equipment-4044fcef",
+        "sourceProvider": "src/core/equipment/auto_refill_policy.js",
+        "targetModule": "src/game/domain/equipment/auto_refill_policy.js",
+        "exportName": "AutoRefillTrigger",
+        "legacySymbol": "AutoRefillTrigger",
+        "legacyScriptIndex": 165,
+        "shimFile": "activations/165_autorefilltrigger.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-024-inventory-command-service"
+    },
+    {
+      "activation": {
         "id": "activation-38802c3efbfc",
         "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
         "sourceProvider": "src/systems/player_force_system.js",
@@ -3274,6 +3279,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89"
+    },
+    {
+      "activation": {
+        "id": "activation-6088d7e23f95",
+        "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
+        "sourceProvider": "src/core/loadouts/equipment_loadout.js",
+        "targetModule": "src/game/domain/loadouts/equipment_loadout.js",
+        "exportName": "EquipmentLoadout",
+        "legacySymbol": "EquipmentLoadout",
+        "legacyScriptIndex": 168,
+        "shimFile": "activations/168_equipmentloadout.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-024-inventory-command-service"
     },
     {
       "activation": {

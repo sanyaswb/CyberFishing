@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "B",
-  "tierEvidence": "Reads inventory_v2_sort_config / inventory_v2_view_model (game-presentation) and a browser API → injection first.",
+  "tierEvidence": "api-parity of InventoryV2CommandService over four inventory scenarios (InventoryV2ApplicationError has no public method beyond its constructor and moves byte-for-byte under the projector); preparation 011 injected the presentation inputs.",
   "modules": [
     {
       "currentPath": "src/application/inventory/inventory_v2_command_service.js",
@@ -33,26 +33,227 @@
           "from": "src/game/domain/loadouts/equipment_loadout.js"
         },
         {
-          "symbol": "INVENTORY_V2_SORT_CONFIG",
-          "from": "src/game/presentation/inventory/inventory_sort_config.js"
-        },
-        {
           "symbol": "InventoryItemLocation",
           "from": "src/game/domain/inventory/inventory_item_location.js"
-        },
-        {
-          "symbol": "InventoryV2ActionType",
-          "from": "src/game/presentation/inventory/inventory_view_model.js"
-        },
-        {
-          "symbol": "ItemAssemblyStackingPolicy",
-          "from": "src/game/domain/inventory/item_assembly_stacking_policy.js"
         }
       ],
-      "planningPrerequisite": "src/game/application/inventory/inventory_command_service.js: reads classic or browser globals: globalThis"
+      "planningPrerequisite": "src/game/application/inventory/inventory_command_service.js: reads classic or browser globals: globalThis",
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Resolved by preparation 011 (bb4fee2): the unreachable globalThis.crypto.randomUUID id branch is gone (InventorySystem always passes instanceIdFactory; check contexts have no crypto); the remaining fallback uses the Date built-in only."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Resolved by preparation 011: the ItemAssemblyStackingPolicy and typeof INVENTORY_V2_SORT_CONFIG defaults are gone (InventoryV2CompositionRoot passes stackingPolicy and sortConfig); every collaborator is injected."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes InventoryV2ApplicationError and InventoryV2CommandService through globalThis assignments; the cluster moves them into activation shims. Since preparation 011 the module reads no presentation or browser global: the UI action vocabulary arrives as the injected actionTypes, Domain symbols are ESM imports."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One application facade for inventory-v2 commands: it applies UI intents (category/subfilter/sort/rarity selection, item/slot activation, assembly and loadout actions, auto-change toggles) to the injected Domain collaborators inside one transaction boundary and keeps the selection state those intents address. After preparation 011 there is no forbidden edge, player-facing text, raw config, DEV or browser access, so framework Q9 reclassifies with api-parity evidence instead of splitting (a split of the 1.3k-line service is a Stage 7 structural task, recorded as deferred)."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "024",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "InventoryV2CommandService",
+        "--scenarios",
+        "utils/inventory-v2-integration-check.js,utils/inventory-v2-ui-check.js,utils/inventory-save-round-trip-check.js,utils/consumable-event-identity-check.js"
+      ]
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    },
+    {
+      "name": "inventory-v2-ui",
+      "script": "utils/inventory-v2-ui-check.js"
+    },
+    {
+      "name": "inventory-save-round-trip",
+      "script": "utils/inventory-save-round-trip-check.js"
+    },
+    {
+      "name": "consumable-event-identity",
+      "script": "utils/consumable-event-identity-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-024-inventory-command-service",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/application/inventory/inventory_v2_command_service.js",
+        "targetPath": "src/game/application/inventory/inventory_command_service.js",
+        "sourceSha256": "05fd4e60f90799e488a8c37a2de3b21cebc3e375f91b54ac41efc2584c9210aa",
+        "targetSha256": "01d5abcc2dc757fc56c5e18b63c2e4a7a0a9ca092286389e5eae4e64ad85cd1d"
+      }
+    ],
+    "activations": [
+      "activation-155d22fe2ce9"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-35621c703348",
+      "activation-6088d7e23f95"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-6a8477eddcf4"
+    ],
+    "bridgesRetired": [
+      "bridge-37d65c5560c2",
+      "bridge-603f6e08a836",
+      "bridge-71b223bc178a",
+      "bridge-85ff03affd96",
+      "bridge-d2178f043482"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/inventory_command_service.js->src/game/domain/equipment/auto_refill_policy.js",
+      "src/game/application/inventory/inventory_command_service.js->src/game/domain/equipment/equipment_slot_catalog.js",
+      "src/game/application/inventory/inventory_command_service.js->src/game/domain/equipment/equipment_slot_catalog.js",
+      "src/game/application/inventory/inventory_command_service.js->src/game/domain/loadouts/equipment_loadout.js",
+      "src/game/application/inventory/inventory_command_service.js->src/game/domain/inventory/inventory_item_location.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/024_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "85c123d64f293344753cb3d72a4787160c6f077780d6ae228e7e80044502cf3d",
+        "after": "c0f8c04a32f1b6929e6b67c1798098e6757d4377f35bd1f1148aae8de33eacb7"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "428094b447add67d6071943e5f8dee677d28a82dbd7839dafe1a7f530704f115",
+        "after": "428094b447add67d6071943e5f8dee677d28a82dbd7839dafe1a7f530704f115"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "81acabfd895113ad986c9259d6dcebc76632c4ccd88640161e6c7d251170da6b",
+        "after": "fc77159c38cd8a1d698ef514c4103931cfb3dd168da66025511bad38d5378794"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "9b417d3d8ce9d74b2504c085eb10575e859f623cfd51fa3df605af5e4172f493",
+        "after": "d21febda8a8ca187744d5451c99e837bc976e2ff51bcb93df32ed7e5ab64cfba"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "4c047ff17eba0606f8c457d5008123c1b97f73a214666a1b3f68fa0e982c4c16",
+        "after": "e7c5600a647e55b6371637ba69b44398c8937bd2ab20c5f42f60f3e45b13cafc"
+      },
+      {
+        "path": "index.html",
+        "before": "d9917546a20e3cfafde2415895250693fbeebd2c181270fb1cadc0abe6a48128",
+        "after": "a66a24397c13ce1835d39f61a518eb571d7788cfeab260aed36b8104eeadd327"
+      },
+      {
+        "path": "src/application/inventory/inventory_v2_command_service.js",
+        "before": "05fd4e60f90799e488a8c37a2de3b21cebc3e375f91b54ac41efc2584c9210aa",
+        "after": "2c1ad5a8e1cba45b82aec6669d0abf6331e30c100194bb3446ebf91b3f613783"
+      },
+      {
+        "path": "src/core/equipment/auto_refill_policy.js",
+        "before": "2419b7d723cd4835c702ed6d35ca8b39f2dac4a668885641da038cfbb487f777",
+        "after": "05d8de9fa595f0cc00d2bad79224bc965c19b478e6da931c819e778c3f6968a3"
+      },
+      {
+        "path": "src/core/loadouts/equipment_loadout.js",
+        "before": "56bbea90530bb2c4656ab28bf86a532176afb9ced4fe0463e747cd1573ce4301",
+        "after": "65221ac0d06f9f66b3c3186cbc66a6b2c19818c80117c503a2db059ebe601c66"
+      },
+      {
+        "path": "src/game/application/inventory/inventory_command_service.js",
+        "before": null,
+        "after": "01d5abcc2dc757fc56c5e18b63c2e4a7a0a9ca092286389e5eae4e64ad85cd1d"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 667 modules, 907 unified edges, 852 globals, 87 exact known-debt diagnostics, 0 FAIL in 734ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 667/667 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 192 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 192 activations and 259 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 29 applied, 80 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "cf832914c7faec2c8e1fc07775167288e0284917a57e4c9305ffc48f41490a68"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      {
+        "name": "inventory-v2-ui",
+        "status": "PASS",
+        "sha256": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      {
+        "name": "inventory-save-round-trip",
+        "status": "PASS",
+        "sha256": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      },
+      {
+        "name": "consumable-event-identity",
+        "status": "PASS",
+        "sha256": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a"
+      }
+    ]
+  }
 }
