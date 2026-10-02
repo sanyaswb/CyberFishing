@@ -108,6 +108,12 @@ class StageFourClusterPlan {
 
   build() {
     const { workspace, record } = this;
+    assert(!record.deferred, `cluster ${record.id} is deferred to ${record.deferred?.stage}`);
+    // Tier evidence is declared before apply: A needs a hot-loop or save round-trip command, B an API parity one.
+    const kinds = new Set((record.evidenceCommands || []).map((item) => item.kind));
+    const required = { A: ["hot-loop", "save-round-trip"], B: ["api-parity"] }[record.tier] || [];
+    assert(required.length === 0 || required.some((kind) => kinds.has(kind)),
+      `tier ${record.tier} needs an evidenceCommands entry of kind ${required.join(" or ")}`);
     const manifest = workspace.json(PATHS.manifest);
     const contract = workspace.json(PATHS.contract);
     const registry = workspace.json(PATHS.registry);

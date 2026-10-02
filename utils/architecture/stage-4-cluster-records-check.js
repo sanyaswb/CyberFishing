@@ -91,6 +91,16 @@ ledger.records.forEach((record, index) => {
   assert(policy.targetBoundaries.some((item) => item.id === record.boundary), `${record.file}: unknown boundary`);
   assert(["A", "B", "C"].includes(record.tier) && record.tierEvidence, `${record.file}: tier and tierEvidence`);
   assert(/^M\d$/u.test(record.milestone), `${record.file}: milestone`);
+  // A deferred record names the later stage that owns its modules now; it can never be applied in Stage 4.
+  if (record.deferred) {
+    assert(record.output === null && /^stage-[5-7]$/u.test(record.deferred.stage) && record.deferred.reason,
+      `${record.file}: deferred record needs output null, a later stage and a reason`);
+    for (const module of record.modules) {
+      assert.notEqual(manifest.get(module.currentPath)?.architecture.targetBoundary, record.boundary,
+        `${module.currentPath}: deferred module is still in ${record.boundary}`);
+    }
+    return;
+  }
   if (record.output === null) return;
   assert.equal(record.output.status, "applied", `${record.file}: output status`);
   for (const id of record.output.resolvedDebts || []) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt => debt.id === id),

@@ -388,6 +388,18 @@ Process (owner decisions 2026-09-29 on the Stage 4 process proposal): risk tiers
 
 Open owner decisions (Stage 4): none yet. Preparation 001 resolves parked 007's host-cloning and composition blockers without a policy exception; preparation 002 removes the waking CONFIG fallback and cached ConfigProvider adapter before CONFIG activation. Resume 007 and migrate the derived clone/data split files; re-review other draft clusters against the fresh Manifest before apply.
 
+**Stage 4 audit + cleanup (2026-10-02, after cluster 036):** inaccuracies found in the executed M1 work: (1) cluster 036 was applied and verified but left uncommitted (closed as 70edbe9); (2) the CLAUDE.md resume point lagged several commits; (3) graph review v1 drifted (031–036 added as splits, tiers of 012/013/014 re-derived at apply, module sets of 010/013/017 changed) without a new review → `graph_review_v2.json` records the executed state and freezes the remaining order; (4) record 009 stayed "input" after preparation 003 moved project_version.js to game-presentation → `deferred: {stage-5, reason}`, enforced by the records check and refused by plan; (5) tier-A clusters 014/016/017/033/034/036 were accepted on identical game-cycle plus functional checks only (byte-identical moves, no code change, so equivalence follows from the projector restore invariant, but no explicit hot-loop evidence) → plan now requires an evidence command of kind hot-loop / save-round-trip (A) or api-parity (B); (6) bridges 192 → 272 and activations 131 → 162 were never justified in a metrics report; (7) Stage-3-only tooling was not archived while utils grew. Cleanup: 17 Stage-3-planning checks archived (architecture/archive/ARCHIVED_CHECKS.md, they pass at tag `stage3-closed`) and 216 utils files no live entry point reaches deleted (30,393 lines; computed as the require/string closure of the catalog, package scripts and Stage 4 CLIs; tier-A trace tools in review_queue kept). Full catalog 63/63.
+
+**Stage 4 working rules (owner request 2026-10-02, check before every step):**
+1. Start state: `git status` clean, HEAD equals the CLAUDE.md resume point; an applied-but-uncommitted cluster is finished (verify → suites → browser → commit) or rolled back byte-exactly before anything else.
+2. One step = one commit: plan → apply → verify → Quick + Architecture → browser 0/0 → one refactor_Task line → commit with concrete facts (modules, activations ±, bridges ±, evidence names, suite counts) → push → replace (not append) the resume point.
+3. The latest graph review is the only source of clusters, tiers and order; any new cluster, tier change or module-set change first writes graph_review_v(N+1).
+4. Tier evidence is declared in the record before plan: A needs kind hot-loop (per-frame) or save-round-trip (save format), B needs api-parity, C needs guards + identical game-cycle; plan refuses otherwise.
+5. A module that leaves its boundary marks its record `deferred` (stage + reason) in the same commit.
+6. Lean budget: new tooling only with two planned uses and a written reason; every milestone reports lines (src/utils/architecture), classic scripts, activations, bridges with the retirement path, and deletes utils files unreachable from live entry points (closure analysis); utils must not grow across a milestone.
+7. No new global, known debt, policy exception or weaker guard; a guard change is narrow and comes with fixtures.
+8. Session hygiene: fresh session every ~2 clusters; the resume point stays ≤ 15 lines.
+
 Manual play list (owner, per milestone): M1 — start the game, cast, hook and land a fish (config + input + loop), open the inventory (rarity colours, progression, long press), reload the page (save restore).
 
 Migrate:

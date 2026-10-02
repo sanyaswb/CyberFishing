@@ -21,5 +21,9 @@
   ],
   "reviewedPropertyReaders": [],
   "evidenceCommands": [],
+  "deferred": {
+    "stage": "stage-5",
+    "reason": "Preparation 003 (a8dcca0) reclassified src/config/project_version.js as game-presentation release metadata (version badge, release projection and version-copy tooling read the classic file byte-for-byte); it migrates with the Stage 5 presentation clusters, not in Stage 4."
+  },
   "output": null
 }

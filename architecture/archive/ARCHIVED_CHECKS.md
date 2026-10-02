@@ -203,3 +203,35 @@ Stage 4 bridge removal or Domain cleanups) left the develop catalog. They pass u
 | stage-3-rod-capability-prebuild | Stage 3.4 rod-capability pre-build contract | quick, architecture, inventory-v2 |
 | stage-3-rod-capability-runtime | Stage 3.4 rod-capability post-build runtime | quick, architecture, inventory-v2 |
 | stage-3-fishing-foundation-runtime | Stage 3.5 fishing-foundation post-build runtime | quick, architecture, gameplay |
+
+## Stage 4 tooling cleanup (2026-10-02)
+
+Owner request 2026-10-02 (keep the project lean, remove code that is no longer used) and the Stage 4 brief
+("move Stage-3-only tooling to the archive like the history archive; utils/ must shrink"): the checks that guard
+only the Stage 3 batch-planning machinery (domain audit pipeline, candidate/approved-prefix planning, reviewed
+shapes, prerequisite transitions, state-identity replacement) left the develop catalog together with every utils
+file no live entry point reaches (216 files, 30,393 lines: stage-3-batch lifecycle, post-freeze review, domain
+audit, per-batch fixture checks, generated probes). Stage 4 uses the cluster path instead. They pass unchanged at
+the annotated tag `stage3-closed`; the live Domain gate stays `domain-boundary`.
+
+17 checks.
+
+| id | title | suites |
+| --- | --- | --- |
+| stage-3-domain-audit-fixtures | Stage 3 domain audit contract fixtures | architecture |
+| stage-3-domain-audit-schema-migration | Stage 3.0.2.1 dependency audit schema migration | architecture |
+| stage-3-domain-audit-corpus | Stage 3.0.1 conservative domain inventory | quick, architecture |
+| stage-3-induced-domain-graph-fixtures | Stage 3.0.2.2 induced domain graph fixtures | architecture |
+| stage-3-induced-domain-graph-corpus | Stage 3.0.2.2 induced domain graph corpus | quick, architecture |
+| stage-3-domain-topology-fixtures | Stage 3.0.2.3 domain SCC and depth fixtures | architecture |
+| stage-3-domain-observation-fixtures | Stage 3.0.2.4 capability, availability and effect fixtures | architecture |
+| stage-3-dependency-audit-persistence-fixtures | Stage 3.0.2.5 dependency audit persistence fixtures | architecture |
+| stage-3-dependency-audit-integration | Stage 3.0.2.6 dependency audit integration | quick, architecture |
+| stage-3-semantic-observation-fixtures | Stage 3.0.3 state, config and performance fixtures | architecture |
+| stage-3-semantic-persistence-fixtures | Stage 3.0.3 semantic persistence fixtures | architecture |
+| stage-3-semantic-audit-integration | Stage 3.0.3 semantic audit integration | quick, architecture |
+| stage-3-candidate-batch-fixtures | Stage 3.0.5 candidate batch policy and contract fixtures | architecture |
+| stage-3-approved-prefix-fixtures | Stage 3.0.6 approved-prefix contract fixtures | architecture |
+| stage-3-batch-reviewed-shapes-fixtures | Stage 3 batch reviewed top-level functions and local compositions accept only exact reviewed facts | quick, architecture |
+| stage-3-prerequisite-transition-fixtures | Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures | quick, architecture |
+| stage-3-state-identity-replacement-fixtures | Stage 3 state-identity transactional swap, rebuilt index and size read fixtures | quick, architecture |
