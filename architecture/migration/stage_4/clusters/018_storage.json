@@ -3,43 +3,38 @@
   "kind": "cyber-fishing-stage-4-cluster",
   "id": "018",
   "slug": "storage",
-  "milestone": "M1",
-  "boundary": "platform",
+  "milestone": "M2",
+  "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "Save format: save round-trip evidence. Reads CacheManager (core.js) and ITEM_PROGRESSION_CONFIG; exposure statements; high-level-self-composition reviews.",
+  "tierEvidence": "Save format: save-round-trip evidence (baseline architecture/migration/stage_4/evidence/018_save-round-trip.json, captured with --capture after the preparation commit, before apply). Graph review v3: game-application, after 020 (LegacyInventoryUnitAllocator). Preparation first (framework Q4/Q9, one record): Manifest reclassification platform -> game-application for the six modules; remove the unused hidden CacheManager default of InventoryV2StateStore (tests via constructor_defaults); review the ITEM_PROGRESSION_CONFIG typeof/globalThis fallbacks of the mapper and LegacyItemStateMigration (no globalThis in application) and the default `new ItemFreshnessStatePolicy()` (allowed application -> domain edge, used by production composition). InventoryV2LegacyMigration also reads ITEM_ASSEMBLY_PROFILE_CONFIG (src/game/config/raw, game-config-raw: not an allowed game-application dependency) to build its AssemblyProfileRegistry; the only production construction site (InventoryV2CompositionRoot) already holds that table and injects it in the preparation (constructor option, tests via constructor_defaults).",
   "modules": [
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
-      "targetPath": "src/platform/browser/storage/inventory_state_store.js",
+      "targetPath": "src/game/application/inventory/persistence/inventory_state_store.js",
       "exports": [
         "INVENTORY_V2_SCHEMA_VERSION",
         "InventoryV2StateStore"
       ],
-      "imports": [
-        {
-          "symbol": "CacheManager",
-          "from": "src/platform/browser/runtime/legacy_core_runtime.js"
-        }
-      ],
+      "imports": [],
       "allowedGlobals": []
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
-      "targetPath": "src/platform/browser/storage/inventory_snapshot_factory.js",
+      "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
       "exports": [
         "InventoryV2SnapshotFactory"
       ],
       "imports": [
         {
           "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-          "from": "src/platform/browser/storage/inventory_state_store.js"
+          "from": "src/game/application/inventory/persistence/inventory_state_store.js"
         }
       ],
       "allowedGlobals": []
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
-      "targetPath": "src/platform/browser/storage/inventory_snapshot_migration.js",
+      "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
       "exports": [
         "InventoryV2SnapshotMigration"
       ],
@@ -48,7 +43,7 @@
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-      "targetPath": "src/platform/browser/storage/inventory_item_snapshot_mapper.js",
+      "targetPath": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
       "exports": [
         "InventoryItemSnapshotMapper"
       ],
@@ -62,12 +57,11 @@
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
         }
       ],
-      "allowedGlobals": [],
-      "planningPrerequisite": "src/platform/browser/storage/inventory_item_snapshot_mapper.js: reads classic or browser globals: globalThis"
+      "allowedGlobals": []
     },
     {
       "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
-      "targetPath": "src/platform/browser/storage/legacy_item_state_migration.js",
+      "targetPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
       "exports": [
         "LegacyItemStateMigration"
       ],
@@ -81,12 +75,11 @@
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
         }
       ],
-      "allowedGlobals": [],
-      "planningPrerequisite": "src/platform/browser/storage/legacy_item_state_migration.js: reads classic or browser globals: globalThis"
+      "allowedGlobals": []
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
-      "targetPath": "src/platform/browser/storage/inventory_legacy_migration.js",
+      "targetPath": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
       "exports": [
         "InventoryV2LegacyMigration"
       ],
@@ -121,15 +114,11 @@
         },
         {
           "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-          "from": "src/platform/browser/storage/inventory_state_store.js"
+          "from": "src/game/application/inventory/persistence/inventory_state_store.js"
         },
         {
           "symbol": "InventoryItemLocation",
           "from": "src/game/domain/inventory/inventory_item_location.js"
-        },
-        {
-          "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
-          "from": "src/game/config/raw/inventory/item_assembly_profiles.js"
         },
         {
           "symbol": "ItemAssemblyReader",
@@ -153,6 +142,34 @@
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
+  "evidenceCommands": [
+    {
+      "name": "save-round-trip",
+      "kind": "save-round-trip",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "018",
+        "--kind",
+        "save-round-trip",
+        "--classes",
+        "InventoryV2StateStore,InventoryV2SnapshotFactory,InventoryV2SnapshotMigration,InventoryItemSnapshotMapper,LegacyItemStateMigration,InventoryV2LegacyMigration",
+        "--scenarios",
+        "utils/inventory-save-round-trip-check.js,utils/inventory-v2-migration-check.js,utils/item-state-hardening-check.js,utils/item-rarity-roundtrip-check.js"
+      ]
+    },
+    {
+      "name": "inventory-save-round-trip",
+      "script": "utils/inventory-save-round-trip-check.js"
+    },
+    {
+      "name": "inventory-v2-integration",
+      "script": "utils/inventory-v2-integration-check.js"
+    },
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    }
+  ],
   "output": null
 }
