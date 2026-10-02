@@ -129,6 +129,7 @@ const projector = new StageFourEsmTargetProjector();
 const fixture = (source, extra = {}) => projector.project({ source, currentPath: "src/a.js",
   targetPath: "src/game/config/a.js", boundary: "game-config", exports: ["A"], ...extra });
 assert.equal(fixture("class A {}\n").targetSource, "export class A {}\n");
+assert.equal(fixture("\uFEFFclass A {}\r\n").targetSource, "\uFEFFexport class A {}\r\n");
 assert.deepEqual(fixture("function A() {}\n").providerMechanisms, ["A:global-function"]);
 assert.deepEqual(fixture("const A = {};\n").providerMechanisms, ["A:global-lexical"]);
 assert.throws(() => fixture("class A { run() { return ITEM_DB; } }\n"), /reads classic or browser globals: ITEM_DB/u);
@@ -214,4 +215,4 @@ assert.throws(() => loadRetirement({...validOutput, status: "planned"}), /no exa
 assert.throws(() => loadRetirement({...validOutput, owner: "other"}), /no exact applied Stage 4 cluster/u);
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 13 projector, 15 retirement and 2 preparation relocation fixtures.`);
+  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures.`);

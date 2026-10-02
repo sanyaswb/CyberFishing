@@ -97,7 +97,7 @@ class StageFourEsmTargetProjector {
 
   #assertRestores({ targetSource, header, source, currentPath }) {
     if (!targetSource.startsWith(header)) throw new Error(`${currentPath}: import header is not a prefix`);
-    const restored = targetSource.slice(header.length).replace(/^export (?=(class|const|let|function) )/gmu, "");
+    const restored = targetSource.slice(header.length).replace(/^(\uFEFF?)export (?=(class|const|let|function) )/gmu, "$1");
     if (restored !== source) throw new Error(`${currentPath}: target differs beyond export tokens and imports`);
   }
 

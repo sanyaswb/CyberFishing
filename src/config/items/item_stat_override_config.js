@@ -1,1 +1,1 @@
-globalThis.ITEM_STAT_OVERRIDE_CONFIG = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/config/raw/items/item_stat_overrides.js"]["ITEM_STAT_OVERRIDE_CONFIG"];
+// Retired Stage 4 activation activation-e3a6c7967a8a: ITEM_STAT_OVERRIDE_CONFIG is served only through ESM imports of src/game/config/raw/items/item_stat_overrides.js.

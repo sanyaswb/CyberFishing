@@ -6,35 +6,19 @@
   "milestone": "M1",
   "boundary": "game-config",
   "tier": "C",
-  "tierEvidence": "Five blockers. Prerequisites: remove the waking fallback globalThis.CONFIG?.physics/.debug in inventory_v2_balance_parameter_resolver.js:21,28; window write → shim; reads RARITY_VISUAL_CONFIG / DEGRADATION_COLOR_CONFIG (game-presentation) → game-config may not depend on presentation: ownership review (framework Q1/Q3); typeof FightPhysicsConfigAdapter guard. RuntimeConfig port (decision 0.2) composed in bootstrap.",
+  "tierEvidence": "Pure authored live CONFIG data and inventory/UI layout catalogs. Preparation 001 separated Bootstrap composition and installs the original presentation catalog references before consumers; preparation 002 removed both waking CONFIG property fallbacks and proves live adapter replacement. Five existing provider names, same authored data objects and derived config identities. No new globals, configuration duplication or save writes; config source composition follows Stage 5.",
   "modules": [
     {
-      "currentPath": "src/config/config.js",
+      "currentPath": "src/config/runtime/config_data.js",
       "targetPath": "src/game/config/runtime/game_config.js",
       "exports": [
-        "BASE_CONFIG",
         "CONFIG",
-        "CONFIG_OVERRIDE_STORE",
-        "CONFIG_RUNTIME_CONTEXT",
         "INVENTORY_CATEGORIES",
-        "RESOLVED_CONFIG_PROVIDER",
         "SLOT_CONFIG",
         "SUBFILTER_MAPPING",
         "UI_LAYOUT_CONFIG"
       ],
       "imports": [
-        {
-          "symbol": "createRuntimeConfigContext",
-          "from": "src/game/config/runtime/immutable_config.js"
-        },
-        {
-          "symbol": "DEGRADATION_COLOR_CONFIG",
-          "from": "src/game/presentation/visual/degradation_color_config.js"
-        },
-        {
-          "symbol": "FightPhysicsConfigAdapter",
-          "from": "src/game/config/physics/fight_physics_config_adapter.js"
-        },
         {
           "symbol": "FISH_DB",
           "from": "src/game/config/databases/fish_database.js"
@@ -54,16 +38,193 @@
         {
           "symbol": "PHYSICS_CONFIG",
           "from": "src/game/config/physics/physics_config.js"
-        },
-        {
-          "symbol": "RARITY_VISUAL_CONFIG",
-          "from": "src/game/presentation/rarity/rarity_visual_config.js"
         }
       ],
-      "planningPrerequisite": "src/config/config.js: top-level IfStatement is not a declaration (move it before migrating)"
+      "sideEffectReview": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "config-runtime",
+      "script": "utils/config-runtime-check.js"
+    },
+    {
+      "name": "inventory-lifecycle",
+      "script": "utils/inventory-lifecycle-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-010-config-root",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/config/runtime/config_data.js",
+        "targetPath": "src/game/config/runtime/game_config.js",
+        "sourceSha256": "76b519ca65db1e70d00a44d6063dc25045eb081f994b9652f55b9ab417d38271",
+        "targetSha256": "73d5b467bcb129d138017f55aa3831a18f255aa878bb773f1baaa8194efa4547"
+      }
+    ],
+    "activations": [
+      "activation-571d84d41820",
+      "activation-9fb7cf95c59c"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/config/runtime/game_config.js"
+    ],
+    "activationsRetired": [
+      "activation-3391eee213af",
+      "activation-e3a6c7967a8a"
+    ],
+    "bridgesAdded": [
+      "bridge-02e7d86b6845",
+      "bridge-03c2663310fa",
+      "bridge-0d5d25b21896",
+      "bridge-1d27448ffde5",
+      "bridge-1ec73a3b4fea",
+      "bridge-1f0aabf6e9c3",
+      "bridge-39896fe57344",
+      "bridge-597a189600f4",
+      "bridge-7001c95123b6",
+      "bridge-71e67ef41642",
+      "bridge-749f8561f15d",
+      "bridge-788cc8ebf801",
+      "bridge-87fd2a995705",
+      "bridge-8f5d2d19ec8e",
+      "bridge-a7c58008c63c",
+      "bridge-afd5b0c5cf53",
+      "bridge-c020b5f6780f",
+      "bridge-c864eb224938",
+      "bridge-d633e493731d",
+      "bridge-efad96783bc1",
+      "bridge-f420adcb68b0"
+    ],
+    "bridgesRetired": [
+      "bridge-147a69db5f15",
+      "bridge-5522a7745929",
+      "bridge-9fcf741b9756",
+      "bridge-d1a3b03f1146",
+      "bridge-f6b103f6d6fa"
+    ],
+    "importEdges": [
+      "src/game/config/runtime/game_config.js->src/game/config/databases/fish_database.js",
+      "src/game/config/runtime/game_config.js->src/game/config/items/item_progression_config.js",
+      "src/game/config/runtime/game_config.js->src/game/config/raw/items/item_stat_overrides.js",
+      "src/game/config/runtime/game_config.js->src/game/config/raw/locations/location_database.js",
+      "src/game/config/runtime/game_config.js->src/game/config/physics/physics_config.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/010_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "68b98644239afd77a689bfa16dcf6adeafdb022055efaa26cb88e5cbc256b512",
+        "after": "74537f66a6a57ce9dd384cccfb9175e8937762ee4a2ff6d2a3972b82136a7a91"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "1b79058f3b48351db6e0aacc64a592aaa07faaa4745efa78410e8b374cbc6643",
+        "after": "bac7844392a357cee6e46145bff1d5b1a1a6c644bfef3e023d44ea45eb4255fc"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "f4f89156fa3261871579197d64ba62400dfb31ce36a5fbf2f4d05e0ef96e95e8",
+        "after": "4c0de8cc01f509161b92c7c8523717abbc7babe5f73e27dcab8be17311bf4acd"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "ca92a5b1d88672a9e426b790fffdfc2b5174b7e60c6031a637a73b7109bbe952",
+        "after": "68c5210cd77da09e4cd888b9b5164af04b131a3c4e7d3c4afd65a052cdc1d723"
+      },
+      {
+        "path": "index.html",
+        "before": "0dee0d85d9df7bbb6e3ccc4fae2d6a0ba9a363790c4677cb959fe1996f4629e8",
+        "after": "a047bd3c38ea20f0607d0aca9a44aab18d4a1a2959f0bec8f693111b58f250b1"
+      },
+      {
+        "path": "src/config/items/item_stat_override_config.js",
+        "before": "2ae75cb69a77cede128287a3e2bb26a8411e1af5e2eb889e945f915610cc7a50",
+        "after": "6fb18b45267daa9d0dd97b30c7c5dfde716829cc98484832c49a630132d4e013"
+      },
+      {
+        "path": "src/config/physics/physics_config.js",
+        "before": "ca9097a269cc1ec91c56d20bd0b8c71724954d7744eb3797abf3fb9ddaefef6a",
+        "after": "5d6fb8486f1092eaa545fb93a4101eb39f6172b894b34cc4564f60d90524a97b"
+      },
+      {
+        "path": "src/config/runtime/config_data.js",
+        "before": "76b519ca65db1e70d00a44d6063dc25045eb081f994b9652f55b9ab417d38271",
+        "after": "4d16760c0f2d45634ce904b75106f4f03e5cdb902a0b1cc8706667f6f6423725"
+      },
+      {
+        "path": "src/game/config/runtime/game_config.js",
+        "before": null,
+        "after": "73d5b467bcb129d138017f55aa3831a18f255aa878bb773f1baaa8194efa4547"
+      }
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 622 modules, 892 unified edges, 852 globals, 137 exact known-debt diagnostics, 0 FAIL in 722ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 622/622 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 155 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 155 activations and 250 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 31 record(s), 12 applied, 37 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "config-runtime",
+        "status": "PASS",
+        "sha256": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      },
+      {
+        "name": "inventory-lifecycle",
+        "status": "PASS",
+        "sha256": "f615aa150d306b84eac12e935dac30680bee5ee535dc8ef167fbd06931948810"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 155,
+      "identityMismatches": 0
+    }
+  }
 }

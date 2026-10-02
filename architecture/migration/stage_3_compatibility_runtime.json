@@ -432,6 +432,13 @@
       "module": "src/game/config/validation/item_progression_config_validator.js",
       "owner": "stage-4.cluster-008-item-progression-validator",
       "reason": "Static validation sets and configuration data are initialized once in the cumulative runtime. No external mutation; the same export identity reaches each existing classic consumer through its activation shim."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "152e791a5cf86c50d3b7ee07e6e9585560f414aa86f42a3e2d2a7a8e100238a6",
+      "module": "src/game/config/runtime/game_config.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "reason": "The same authored data and declarations initialize once. No new external mutation/resource allocation at evaluation; original exported identities are preserved through exact activation shims."
     }
   ],
   "activationPositions": [
@@ -712,18 +719,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "PHYSICS_CONFIG",
-      "legacyScriptIndex": 24,
-      "legacySymbol": "PHYSICS_CONFIG",
-      "shimFile": "activations/024_physics_config.js",
-      "sourceProvider": "src/config/physics/physics_config.js",
-      "targetModule": "src/game/config/physics/physics_config.js",
-      "id": "activation-3391eee213af",
-      "owner": "stage-4.cluster-005-config-derived",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
-    },
-    {
       "id": "activation-3496b09d5f7c",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/exact_item_signature_policy.js",
@@ -950,6 +945,18 @@
       "shimFile": "activations/110_staminabalanceframe.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "CONFIG",
+      "legacyScriptIndex": 28,
+      "legacySymbol": "CONFIG",
+      "shimFile": "activations/028_config.js",
+      "sourceProvider": "src/config/runtime/config_data.js",
+      "targetModule": "src/game/config/runtime/game_config.js",
+      "id": "activation-571d84d41820",
+      "owner": "stage-4.cluster-010-config-root",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-57add99af90d",
@@ -1528,6 +1535,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "SLOT_CONFIG",
+      "legacyScriptIndex": 28,
+      "legacySymbol": "SLOT_CONFIG",
+      "shimFile": "activations/028_slot_config.js",
+      "sourceProvider": "src/config/runtime/config_data.js",
+      "targetModule": "src/game/config/runtime/game_config.js",
+      "id": "activation-9fb7cf95c59c",
+      "owner": "stage-4.cluster-010-config-root",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "id": "activation-a0ef26ab86ac",
       "owner": "stage-3.candidate-016-fishing-f8c953aa",
       "sourceProvider": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
@@ -2032,18 +2051,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "ITEM_STAT_OVERRIDE_CONFIG",
-      "legacyScriptIndex": 5,
-      "legacySymbol": "ITEM_STAT_OVERRIDE_CONFIG",
-      "shimFile": "activations/005_item_stat_override_config.js",
-      "sourceProvider": "src/config/items/item_stat_override_config.js",
-      "targetModule": "src/game/config/raw/items/item_stat_overrides.js",
-      "id": "activation-e3a6c7967a8a",
-      "owner": "stage-4.cluster-004-config-data",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-4"
-    },
-    {
       "exportName": "deepFreezeConfig",
       "legacyScriptIndex": 27,
       "legacySymbol": "deepFreezeConfig",
@@ -2500,6 +2507,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "exportName": "PHYSICS_CONFIG",
+        "legacyScriptIndex": 24,
+        "legacySymbol": "PHYSICS_CONFIG",
+        "shimFile": "activations/024_physics_config.js",
+        "sourceProvider": "src/config/physics/physics_config.js",
+        "targetModule": "src/game/config/physics/physics_config.js",
+        "id": "activation-3391eee213af",
+        "owner": "stage-4.cluster-005-config-derived",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-010-config-root"
     },
     {
       "activation": {
@@ -3197,6 +3221,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "exportName": "ITEM_STAT_OVERRIDE_CONFIG",
+        "legacyScriptIndex": 5,
+        "legacySymbol": "ITEM_STAT_OVERRIDE_CONFIG",
+        "shimFile": "activations/005_item_stat_override_config.js",
+        "sourceProvider": "src/config/items/item_stat_override_config.js",
+        "targetModule": "src/game/config/raw/items/item_stat_overrides.js",
+        "id": "activation-e3a6c7967a8a",
+        "owner": "stage-4.cluster-004-config-data",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-4"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-4.cluster-010-config-root"
     },
     {
       "activation": {

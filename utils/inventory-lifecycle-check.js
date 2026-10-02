@@ -1,8 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const { ActivationShimRenderer } = require("./build/compat_runtime/activation_shim");
+const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
+const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Inventory lifecycle check");
@@ -53,6 +54,7 @@ class InventoryEventProbe {
 }
 
 class InventoryRuntimeLoader {
+  #compatibilityLoader;
   load() {
     const context = vm.createContext({
       CacheManager: MemoryCacheManager,
@@ -64,8 +66,8 @@ class InventoryRuntimeLoader {
       console,
     });
 
-    const runtimeFile = "dist/stage-3-compat-runtime/compat_runtime.iife.js";
-    vm.runInContext(this.#read(runtimeFile), context, { filename: runtimeFile });
+    this.#compatibilityLoader = new StageThreeCompatibilityTestLoader({projectRoot:ROOT,context});
+    this.#compatibilityLoader.loadRuntime();
 
     this.#loadSlotConfig(context);
     this.#loadClass(
@@ -141,34 +143,18 @@ class InventoryRuntimeLoader {
   }
 
   #loadSlotConfig(context) {
-    const source = this.#read("src/config/runtime/config_data.js");
+    const source = new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
     const match = source.match(/const SLOT_CONFIG = [\s\S]*?\n};/);
     Assertion.that(match, "SLOT_CONFIG can be loaded for integration checks");
     vm.runInContext(`${match[0]}\nglobalThis.SLOT_CONFIG = SLOT_CONFIG;`, context);
   }
 
   #loadSlotConfigFile(context, relativePath) {
-    vm.runInContext(
-      fs.readFileSync(path.join(ROOT, relativePath), "utf8"),
-      context,
-      { filename: relativePath },
-    );
+    this.#compatibilityLoader.load(relativePath);
   }
 
   #loadClass(context, relativePath, className) {
-    // A retired activation left an inert placeholder; the test receives the same ESM export,
-    // rendered test-only like its former activation shim.
-    const contract = JSON.parse(this.#read("architecture/migration/stage_3_compatibility_runtime.json"));
-    const retired = (contract.retiredActivations || []).map((record) => record.activation)
-      .filter((activation) => activation.sourceProvider === relativePath);
-    const source = retired.length > 0
-      ? retired.map((activation) => new ActivationShimRenderer().render(activation, contract.transport.symbol)).join("")
-      : this.#read(relativePath);
-    vm.runInContext(
-      `${source}\nglobalThis.${className} = ${className};`,
-      context,
-      { filename: relativePath },
-    );
+    this.#compatibilityLoader.load(relativePath,[className]);
   }
 
   #read(relativePath) {

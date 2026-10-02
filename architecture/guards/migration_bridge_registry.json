@@ -19,6 +19,38 @@
       ]
     },
     {
+      "id": "bridge-02e7d86b6845",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/stamina_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-03c2663310fa",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-04bc2fe4918e",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
       "source": "src/systems/fight_physics_system.js",
@@ -99,6 +131,22 @@
       ]
     },
     {
+      "id": "bridge-0d5d25b21896",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/catch_time_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0f4da996fde3",
       "bridge": "src/core/fishing/landing_policy.js",
       "source": "src/app/fishing.js",
@@ -174,22 +222,6 @@
       "globalProviders": [
         {
           "symbol": "BaitFreshnessModifier",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-147a69db5f15",
-      "bridge": "src/config/databases/map_db.js",
-      "owner": "stage-4.cluster-004-config-data",
-      "source": "src/config/runtime/config_data.js",
-      "target": "src/game/config/raw/locations/location_database.js",
-      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "MAP_DB",
           "mechanism": "global-this-property"
         }
       ]
@@ -339,6 +371,22 @@
       ]
     },
     {
+      "id": "bridge-1d27448ffde5",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1d4e09922abc",
       "bridge": "src/core/inventory/inventory_item_reservation_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -350,6 +398,38 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemReservationPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1ec73a3b4fea",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/exhaustion_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1f0aabf6e9c3",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -923,6 +1003,22 @@
       ]
     },
     {
+      "id": "bridge-39896fe57344",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/services/location_debug_data_provider.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-39e763819786",
       "bridge": "src/core/math/vector2.js",
       "source": "src/systems/fight_physics_system.js",
@@ -1247,22 +1343,6 @@
       ]
     },
     {
-      "id": "bridge-5522a7745929",
-      "bridge": "src/config/physics/physics_config.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/runtime/config_data.js",
-      "target": "src/game/config/physics/physics_config.js",
-      "reason": "Preserve the exact PHYSICS_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PHYSICS_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-583ef0b7fc62",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -1290,6 +1370,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-597a189600f4",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/config/config.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1767,6 +1863,22 @@
       ]
     },
     {
+      "id": "bridge-7001c95123b6",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7059e3a04dab",
       "bridge": "src/app/core/game_clock.js",
       "owner": "stage-4.cluster-014-platform-diagnostics-clock",
@@ -1847,6 +1959,22 @@
       ]
     },
     {
+      "id": "bridge-71e67ef41642",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-728c19ebfd24",
       "bridge": "src/config/databases/map_db.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -1874,6 +2002,22 @@
       "globalProviders": [
         {
           "symbol": "DependencyContractValidator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-749f8561f15d",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -1938,6 +2082,26 @@
       "globalProviders": [
         {
           "symbol": "AuthoredItemRarityStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-788cc8ebf801",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG, SLOT_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "SLOT_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2199,6 +2363,22 @@
       ]
     },
     {
+      "id": "bridge-87fd2a995705",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/core/overlay_controller.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8b07404a539b",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -2290,6 +2470,22 @@
       "globalProviders": [
         {
           "symbol": "EQUIPMENT_ALL_SLOT_IDS",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8f5d2d19ec8e",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/god_mode.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -2571,22 +2767,6 @@
       ]
     },
     {
-      "id": "bridge-9fcf741b9756",
-      "bridge": "src/config/databases/fish_db.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/runtime/config_data.js",
-      "target": "src/game/config/databases/fish_database.js",
-      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FISH_DB",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a2b17a1794bf",
       "bridge": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2731,6 +2911,22 @@
       ]
     },
     {
+      "id": "bridge-a7c58008c63c",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a8155a87814b",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/location_debug_render_frame_builder.js",
@@ -2854,6 +3050,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-afd5b0c5cf53",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3067,6 +3279,22 @@
       ]
     },
     {
+      "id": "bridge-c020b5f6780f",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c0fbf6710409",
       "bridge": "src/entities/fish.js",
       "source": "src/debug/services/active_fish_dev_tools_schema.js",
@@ -3183,6 +3411,22 @@
       ]
     },
     {
+      "id": "bridge-c864eb224938",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-cb9cf133dd58",
       "bridge": "src/config/runtime/resolved_config_provider.js",
       "owner": "stage-4.cluster-007-config-runtime",
@@ -3210,22 +3454,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d1a3b03f1146",
-      "bridge": "src/config/items/item_stat_override_config.js",
-      "owner": "stage-4.cluster-004-config-data",
-      "source": "src/config/runtime/config_data.js",
-      "target": "src/game/config/raw/items/item_stat_overrides.js",
-      "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3274,6 +3502,22 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d633e493731d",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -3655,6 +3899,22 @@
       ]
     },
     {
+      "id": "bridge-efad96783bc1",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/debug.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-f31aca4ae5d6",
       "bridge": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -3687,6 +3947,22 @@
       ]
     },
     {
+      "id": "bridge-f420adcb68b0",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/tension_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-f57fc81d1499",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/world.js",
@@ -3698,22 +3974,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f6b103f6d6fa",
-      "bridge": "src/config/items/item_progression_config.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/config/runtime/config_data.js",
-      "target": "src/game/config/items/item_progression_config.js",
-      "reason": "Preserve the exact ITEM_PROGRESSION_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ITEM_PROGRESSION_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
