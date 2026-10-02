@@ -103,10 +103,13 @@ const fixture = (source, extra = {}) => projector.project({ source, currentPath:
 assert.equal(fixture("class A {}\n").targetSource, "export class A {}\n");
 assert.throws(() => fixture("class A { run() { return ITEM_DB; } }\n"), /reads classic or browser globals: ITEM_DB/u);
 assert.throws(() => fixture("class A { run() { return typeof window; } }\n"), /window/u);
-assert.throws(() => fixture("class A {}\nglobalThis.A = A;\n"), /top-level ExpressionStatement/u);
+assert.throws(() => fixture("class A {}\nglobalThis.B = A;\n"), /top-level ExpressionStatement/u);
+assert.equal(fixture("class A {}\n\nglobalThis.A = A;\n").targetSource, "export class A {}\n");
+assert.deepEqual(fixture("class A {}\nif (typeof window !== \"undefined\") {\n  window.A = A;\n}\n").exposures,
+  [{ symbol: "A", mechanism: "window-property", text: "window-guarded" }]);
 assert.throws(() => fixture("const A = 1, B = 2;\n"), /exactly one top-level declaration/u);
 assert.equal(fixture("class A { b() { return new B(); } }\n", { imports: [{ symbol: "B", from: "src/game/config/b/b.js" }] })
   .targetSource, "import { B } from \"./b/b.js\";\n\nexport class A { b() { return new B(); } }\n");
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 6 projector fixtures.`);
+  `${targets} ESM target(s) inside their boundaries; 8 projector fixtures.`);

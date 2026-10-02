@@ -369,6 +369,34 @@
       "module": "src/game/config/raw/fish/fish_profile_presets.js",
       "owner": "stage-4.cluster-003-fish-species",
       "reason": "Module-level literal tables with no reader in src (export-only inert target, batch 028 precedent; Stage 7 task deletes the unread fish profile helpers); evaluation reads nothing external and writes no global."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "45b0ef486e73eaab3af9acdd0f7e57090014d3a3c748de725f90bfc0c0ddb94f",
+      "module": "src/game/config/raw/items/item_stat_overrides.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "A top-level IIFE builds and deep-freezes the literal override table once (Object.freeze only, no external read); its explicit globalThis exposure moves into the activation shim, which writes the same frozen object to the same property."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "0029db487377402b531109cc99a256e1319df3827f5e4204af4a91eea433848a",
+      "module": "src/game/config/raw/locations/location_database.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Module-level literal tables (no code beyond literals, no external read): the single cumulative-runtime instance creates the same objects once and the activation shim exposes that identity to config.js and the DEV tools, so every reader sees the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "4982a57d88310f82929498d58c982f1aa8fafdc9955d29399052633e34a0aac2",
+      "module": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Module-level literal tables (no code beyond literals, no external read): the single cumulative-runtime instance creates the same objects once and the activation shim exposes that identity to the inventory composition root and the legacy migration, so every reader sees the same objects as before."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "fa9307196b7d51e2995ec1b8e3077a0ae5823cecc14cf2ac5dd9452edeb2d971",
+      "module": "src/game/config/raw/items/item_database.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Module-level literal tables (no code beyond literals, no external read): the single cumulative-runtime instance creates the same objects once and the activation shim exposes that identity to bootstrap, the inventory composition root and the DEV tools, so every reader sees the same objects as before."
     }
   ],
   "activationPositions": [
@@ -769,6 +797,18 @@
       "removalStage": "stage-4"
     },
     {
+      "exportName": "MAP_DB",
+      "legacyScriptIndex": 15,
+      "legacySymbol": "MAP_DB",
+      "shimFile": "activations/015_map_db.js",
+      "sourceProvider": "src/config/databases/map_db.js",
+      "targetModule": "src/game/config/raw/locations/location_database.js",
+      "id": "activation-45b2387269ad",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-46387e5f1ebf",
       "owner": "stage-3.replan-322.batch-028-assemblies-f4be469e",
       "sourceProvider": "src/core/assemblies/item_assembly_service.js",
@@ -1067,6 +1107,18 @@
       "shimFile": "activations/352_assetmanifest.js",
       "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-4"
+    },
+    {
+      "exportName": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+      "legacyScriptIndex": 29,
+      "legacySymbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+      "shimFile": "activations/029_item_assembly_profile_config.js",
+      "sourceProvider": "src/config/inventory/item_assembly_profile_config.js",
+      "targetModule": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "id": "activation-7699b9872a51",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "id": "activation-775fb46bb6ce",
@@ -1391,6 +1443,18 @@
       "shimFile": "activations/165_autorefillmemory.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ITEM_DB",
+      "legacyScriptIndex": 6,
+      "legacySymbol": "ITEM_DB",
+      "shimFile": "activations/006_item_db.js",
+      "sourceProvider": "src/config/databases/item_db.js",
+      "targetModule": "src/game/config/raw/items/item_database.js",
+      "id": "activation-9dc9359360d2",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-a0ef26ab86ac",
@@ -1895,6 +1959,18 @@
       "shimFile": "activations/170_loadoutequipmenttransitionplanner.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ITEM_STAT_OVERRIDE_CONFIG",
+      "legacyScriptIndex": 5,
+      "legacySymbol": "ITEM_STAT_OVERRIDE_CONFIG",
+      "shimFile": "activations/005_item_stat_override_config.js",
+      "sourceProvider": "src/config/items/item_stat_override_config.js",
+      "targetModule": "src/game/config/raw/items/item_stat_overrides.js",
+      "id": "activation-e3a6c7967a8a",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
     },
     {
       "id": "activation-e5ee66b391d6",

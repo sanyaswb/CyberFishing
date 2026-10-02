@@ -211,6 +211,22 @@
       ]
     },
     {
+      "id": "bridge-1991d84c59c5",
+      "bridge": "src/config/databases/item_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "reason": "Preserve the exact ITEM_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-19f525f74d35",
       "bridge": "src/core/fish/fish_anomaly_variant_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -254,6 +270,22 @@
       "globalProviders": [
         {
           "symbol": "FlatInventoryItemRepository",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1beda3fad700",
+      "bridge": "src/config/items/item_stat_override_config.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/config/config.js",
+      "target": "src/game/config/raw/items/item_stat_overrides.js",
+      "reason": "Preserve the exact ITEM_STAT_OVERRIDE_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_STAT_OVERRIDE_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
@@ -594,6 +626,22 @@
       "globalProviders": [
         {
           "symbol": "ItemAssemblyService",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2f4cc1dc93b3",
+      "bridge": "src/config/databases/map_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/config/config.js",
+      "target": "src/game/config/raw/locations/location_database.js",
+      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "MAP_DB",
           "mechanism": "global-this-property"
         }
       ]
@@ -1727,6 +1775,22 @@
       ]
     },
     {
+      "id": "bridge-728c19ebfd24",
+      "bridge": "src/config/databases/map_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/raw/locations/location_database.js",
+      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "MAP_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -1818,6 +1882,22 @@
       "globalProviders": [
         {
           "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7c4e1d0210cd",
+      "bridge": "src/config/databases/item_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "reason": "Preserve the exact ITEM_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_DB",
           "mechanism": "global-this-property"
         }
       ]
@@ -2599,6 +2679,38 @@
       ]
     },
     {
+      "id": "bridge-b6d2fc558dd5",
+      "bridge": "src/config/inventory/item_assembly_profile_config.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "reason": "Preserve the exact ITEM_ASSEMBLY_PROFILE_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b765167c49b0",
+      "bridge": "src/config/inventory/item_assembly_profile_config.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "target": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "reason": "Preserve the exact ITEM_ASSEMBLY_PROFILE_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b894531e5b91",
       "bridge": "src/core/items/rarity/effective_item_rarity_resolver.js",
       "source": "src/systems/inventory_item_view_factory.js",
@@ -3014,6 +3126,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemStackingPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e26da7468eb2",
+      "bridge": "src/config/databases/item_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "reason": "Preserve the exact ITEM_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_DB",
           "mechanism": "global-this-property"
         }
       ]

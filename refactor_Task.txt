@@ -381,6 +381,7 @@ Create a separate `dev.entry.js`. Physically separate the debug overlay, GodMode
 
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 
+- [ ] Move the DEV test build templates `ITEM_DB.builds.debug_float_build` / `debug_feeder_build` into a DEV data overlay (Stage 4 cluster 004 reviewed them as data-only; moving them changes the data shape).
 - [ ] Move the display of `Fish.activeDebuffName` into the DEV overlay (fishing.js debug data feeds it today; owner decision 2026-09-29).
 - [ ] Split the bootstrap DEV coupling: the DEV hooks reach production only through the injected `DevFlagsProvider` (e.g. the GodMode bite-sequence override since 018), composed from `dev.entry.js`; a production build composes it without GodMode.
 - [ ] Retire the classic script positions: the 46 retired-activation placeholders and the inert migrated-source placeholder of `BuffManager` (batch 050, `inertModules` in the runtime contract) keep their legacy slots until the classic script order is retired.

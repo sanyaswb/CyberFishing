@@ -27,23 +27,57 @@ class StageFourEsmTargetProjector {
       if (nodes.length !== 1) throw new Error(`${currentPath}: export ${name} needs exactly one top-level declaration`);
       insertions.push(nodes[0].range[0]);
     }
+    // A top-level exposure of an export (`globalThis.X = X;` or `if (typeof window !== "undefined") { window.X = X; }`)
+    // moves into the activation shim, which writes the same object to the same global property.
+    const exposures = [];
     for (const node of tree.body) {
-      if (!this.#isDeclaration(node)) {
-        throw new Error(`${currentPath}: top-level ${node.type} is not a declaration (move it before migrating)`);
-      }
+      if (this.#isDeclaration(node)) continue;
+      const exposure = this.#exposure(node, exports);
+      if (!exposure) throw new Error(`${currentPath}: top-level ${node.type} is not a declaration (move it before migrating)`);
+      let start = node.range[0];
+      let end = node.range[1];
+      const after = /^\r?\n/u.exec(source.slice(end));
+      if (after) end += after[0].length;
+      const blank = /(\r?\n)\r?\n$/u.exec(source.slice(0, start));
+      if (blank) start -= blank[0].length - blank[1].length;
+      exposures.push({ ...exposure, start, end });
     }
+    const edits = [...insertions.map((offset) => ({ start: offset, end: offset, text: "export " })),
+      ...exposures.map((item) => ({ start: item.start, end: item.end, text: "" }))].sort((left, right) => right.start - left.start);
     let body = source;
-    for (const offset of insertions.sort((left, right) => right - left)) {
-      body = `${body.slice(0, offset)}export ${body.slice(offset)}`;
+    for (const edit of edits) body = `${body.slice(0, edit.start)}${edit.text}${body.slice(edit.end)}`;
+    let classicBody = source;
+    for (const item of [...exposures].sort((left, right) => right.start - left.start)) {
+      classicBody = `${classicBody.slice(0, item.start)}${classicBody.slice(item.end)}`;
     }
     const header = this.#header(targetPath, imports, eol);
     const targetSource = header + body;
-    this.#assertRestores({ targetSource, header, source, currentPath });
+    this.#assertRestores({ targetSource, header, source: classicBody, currentPath });
     const analysis = this.#analyze({ targetSource, targetPath, boundary, exports, imports, allowedGlobals });
     const evaluation = new ModuleEvaluationEffectObserver().observe({ modulePath: targetPath, source: targetSource });
     if (evaluation.classification === "unsafe") throw new Error(`${targetPath}: unsafe module evaluation`);
     return Object.freeze({ currentPath, targetPath, targetSource, sourceSha256: sha256(source),
-      targetSha256: sha256(targetSource), analysis, evaluation });
+      targetSha256: sha256(targetSource), analysis, evaluation,
+      exposures: exposures.map(({ symbol, mechanism, text }) => ({ symbol, mechanism, text })) });
+  }
+
+  #exposure(node, exports) {
+    const assignment = (statement, objects) => {
+      const expression = statement?.type === "ExpressionStatement" ? statement.expression : null;
+      return expression?.type === "AssignmentExpression" && expression.operator === "=" &&
+        expression.left.type === "MemberExpression" && !expression.left.computed &&
+        objects.includes(expression.left.object.name) && expression.right.type === "Identifier" &&
+        expression.left.property.name === expression.right.name && exports.includes(expression.right.name)
+        ? { symbol: expression.right.name, object: expression.left.object.name } : null;
+    };
+    const direct = assignment(node, ["globalThis"]);
+    if (direct) return { symbol: direct.symbol, mechanism: "global-this-property", text: "globalThis" };
+    const test = node.type === "IfStatement" && !node.alternate ? node.test : null;
+    const guarded = test?.type === "BinaryExpression" && test.operator === "!==" && test.left.type === "UnaryExpression" &&
+      test.left.operator === "typeof" && test.left.argument.name === "window" && test.right.value === "undefined" &&
+      node.consequent.type === "BlockStatement" && node.consequent.body.length === 1
+      ? assignment(node.consequent.body[0], ["window"]) : null;
+    return guarded ? { symbol: guarded.symbol, mechanism: "window-property", text: "window-guarded" } : null;
   }
 
   #header(targetPath, imports, eol) {

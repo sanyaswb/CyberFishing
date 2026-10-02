@@ -100,9 +100,6 @@ class StageFourClusterPlan {
       assert.equal(entry.architecture.targetBoundary, record.boundary, `${module.currentPath}: boundary differs`);
       assert.equal(entry.architecture.targetPath, module.targetPath, `${module.currentPath}: targetPath differs`);
       assert(!entries.has(module.targetPath) && !workspace.exists(module.targetPath), `${module.targetPath} exists`);
-      const providers = entry.observed.providers.items;
-      assert.deepEqual(providers.map((item) => `${item.symbol}:${item.mechanism}`).sort(),
-        [...module.exports].sort().map((symbol) => `${symbol}:global-lexical`), `${module.currentPath}: providers differ`);
       // A Manifest blocker is resolved only by a written review in the record (framework Q9: reclassify with evidence).
       assert.deepEqual([...entry.analysis.blockers.items].sort(),
         (module.reviewedBlockers || []).map((item) => item.blocker).sort(), `${module.currentPath}: blockers need reviewedBlockers`);
@@ -111,6 +108,10 @@ class StageFourClusterPlan {
       const projected = projector.project({ source: workspace.text(module.currentPath), currentPath: module.currentPath,
         targetPath: module.targetPath, boundary: record.boundary, exports: module.exports, imports: module.imports || [],
         allowedGlobals: module.allowedGlobals || [] });
+      // Classic providers: one global-lexical binding per export plus the property of each moved exposure statement.
+      assert.deepEqual(entry.observed.providers.items.map((item) => `${item.symbol}:${item.mechanism}`).sort(),
+        [...module.exports.map((symbol) => `${symbol}:global-lexical`),
+          ...projected.exposures.map((item) => `${item.symbol}:${item.mechanism}`)].sort(), `${module.currentPath}: providers differ`);
       const needsReview = projected.evaluation.classification === "needs-review";
       assert.equal(Boolean(module.sideEffectReview), needsReview,
         `${module.targetPath}: sideEffectReview ${needsReview ? "is required" : "must be absent"} ` +
@@ -129,12 +130,14 @@ class StageFourClusterPlan {
       const own = consumers.filter((item) => item.provider === currentPath);
       for (const symbol of target.module.exports) {
         const readers = own.filter((item) => item.symbols.includes(symbol));
-        if (readers.length === 0) continue;
+        // An explicitly exposed global property keeps its activation even without a Manifest reader.
+        const exposed = target.exposures.some((item) => item.symbol === symbol);
+        if (readers.length === 0 && !exposed) continue;
         const identity = { exportName: symbol, legacyScriptIndex: slot, legacySymbol: symbol,
           shimFile: `activations/${String(slot).padStart(3, "0")}_${symbol.toLowerCase()}.js`,
           sourceProvider: currentPath, targetModule: targetPath };
         activations.push({ ...identity, id: CanonicalActivationIdentity.id(identity), owner: this.owner,
-          reason: ACTIVATION_REASON, removalStage: latestStage(readers.map((item) => item.removalStage)) });
+          reason: ACTIVATION_REASON, removalStage: latestStage(["stage-4", ...readers.map((item) => item.removalStage)]) });
       }
       if (!activations.some((item) => item.sourceProvider === currentPath)) {
         inert.push({ owner: this.owner, sourceProvider: currentPath, targetModule: targetPath });
