@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "013",
+  "slug": "environment-rng-default",
+  "baseCommit": "166ff67fe84165955a25261609b135bfedf643cb",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/app/world.js",
+      "before": "512941da561b8e99810e1d3ea534f8b60686b66c1dcaca8e09a70582e992d22d",
+      "after": "f0f31852943a410641fd6e8849d24c9acc638b22e38c415ef9b830c772271d63"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "8501842c95dd24698b97d525d9dd9c1952aaefe0175c3ea96d0c6085d66f95c1",
+      "after": "10a13a12780c618a892a203cbf3400f7c15556ee8f8d59b89d02a369a36dcfd7"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 026 moves src/app/world.js to game-application; its EnvironmentSystem defaulted `rng = new SeededRng()`, the classic engine utility src/app/utils.js (classified engine, not migrated in Stage 4). Framework Q4 (decided case rules.js): the only production construction (GameCompositionRoot in src/app/bootstrap.js) passes its SeededRng instance, so the default is removed (default only, no validation) and the module no longer depends on SeededRng; migrating the utility is not needed for this cluster.",
+  "constructionEvidence": [
+    "grep src utils: `new EnvironmentSystem` occurs once (bootstrap: new EnvironmentSystem(locCfg, initialTime, rng, spawns), rng = the composition's SeededRng); no check constructs EnvironmentSystem directly.",
+    "SeededRng readers after the change: bootstrap only (states.js mentions it in JSDoc); src/app/utils.js stays classic until its engine migration."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 86,
+    "knownDebtsAfter": 86,
+    "suites": {
+      "full": "64/64"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "gameTimeDisplayed": "12:32",
+      "environmentWithInjectedRng": true
+    }
+  }
+}

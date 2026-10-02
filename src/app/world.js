@@ -61,7 +61,7 @@ class EnvironmentSystem {
   constructor(
     config,
     initialTime = 12,
-    rng = new SeededRng(),
+    rng,
     spawnConfig = {},
   ) {
     this.#config = config;

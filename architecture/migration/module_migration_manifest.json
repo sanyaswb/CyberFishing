@@ -6736,12 +6736,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "SeededRng",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "Vector2",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6775,14 +6769,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "SeededRng",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/utils.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "Vector2",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -6792,13 +6778,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/app/utils.js",
-              "symbols": [
-                "SeededRng"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/math/vector2.js",
               "symbols": [
