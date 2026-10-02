@@ -48556,9 +48556,7 @@
             "Infinity",
             "Math"
           ],
-          "browserApis": [
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }

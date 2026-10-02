@@ -110,6 +110,7 @@ class ChumManager {
   #rng;
   #now;
   #cache;
+  #configEvents;
 
   constructor(locationId, chumConfig, projector, services = {}) {
     this.#chumConfig = chumConfig;
@@ -130,7 +131,9 @@ class ChumManager {
     this.loadFromStorage();
 
     this.#onConfigUpdateBind = (e) => this.#onConfigUpdate(e.detail);
-    document.addEventListener("config-updated", this.#onConfigUpdateBind);
+    // DEV config edits arrive as "config-updated" events on the injected event target (the document in production).
+    this.#configEvents = services.configEvents || null;
+    this.#configEvents?.addEventListener("config-updated", this.#onConfigUpdateBind);
   }
 
   useHandBait() {
@@ -336,7 +339,7 @@ class ChumManager {
 
   dispose() {
     if (this.#onConfigUpdateBind) {
-      document.removeEventListener("config-updated", this.#onConfigUpdateBind);
+      this.#configEvents?.removeEventListener("config-updated", this.#onConfigUpdateBind);
       this.#onConfigUpdateBind = null;
     }
   }

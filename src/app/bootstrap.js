@@ -522,6 +522,7 @@ class GameCompositionRoot {
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
         cache: CacheManager,
+        configEvents: document,
         rng,
         now: () => clock.realNow,
         onBoatReturned: (context) =>

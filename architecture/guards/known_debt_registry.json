@@ -895,29 +895,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-0a43afa881e3",
-      "rule": "browser-capability",
-      "source": "src/systems/chum_system.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "0a43afa881e3b4f866ed05dc495c24f718ce3b16d257d09bfae21af0bc8d3f6b",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/chum_system.js",
-        "target": "environment:dom",
-        "identifier": "document"
-      }
-    },
-    {
       "id": "debt-browser-capability-0f75ab0e5fec",
       "rule": "browser-capability",
       "source": "src/config/config.js",
