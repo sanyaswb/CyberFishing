@@ -5,8 +5,9 @@
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
 - **Stage 3 status (2026-10-02):** CLOSED — all 139 Domain modules migrated (batches 001–051), closure gates verified (`architecture/migration/stage_3_closure.json`, check `stage-3-closure`); runtime 150 modules / 131 activations / 192 bridges, every remaining activation and bridge with a removal stage (4/5/6) and the condition "all listed legacy consumers migrated". Pending: the owner's play check of batches 046–051.
-- **Next step:** Stage 4 (Application + Platform) under the owner's Stage 4 process decisions; the deferred Stage 4–7 tasks are listed per stage below.
-- **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
+- **Stage 4 status (2026-10-02, 893301c):** M1 open — 22 clusters applied (50 ESM targets, config done), 009 deferred to Stage 5, 47 classic modules left in 13 pending records; order frozen in `architecture/migration/stage_4/graph_review_v2.json`; working rules in §3 "Stage 4 working rules".
+- **Next step:** tier-A evidence command, cluster 018 storage, cluster 019 game loop/adapters/audio, M1 release 0.25.0; then M2 (clusters 020–030) and the Stage 4 closure.
+- **Informational document:** since v0.24.62 this file (and the local, untracked handoff notes `CODEX.md`, formerly `FORCODEX.md`) are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
 
