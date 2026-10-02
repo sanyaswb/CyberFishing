@@ -20,6 +20,8 @@ const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActiva
 const { CanonicalActivationIdentity } = require("../build/compat_runtime/cumulative_runtime_contract");
 const { PATHS, StageFourClusterPlan, resolveImportSource } = require("./stage_four/cluster_path");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
+const { StageThreePatchReleaseTransition } = require("./domain_batches/stage_three_patch_release_transition");
+const { FILES: RELEASE_FILES, StageFourRelease } = require("./stage_four/release_path");
 
 const ROOT = path.resolve(__dirname, "../..");
 const read = (file) => fs.readFileSync(path.join(ROOT, file), "utf8");
@@ -263,5 +265,66 @@ assert.throws(() => loadRetirement({...validOutput, activationsRetired: []}), /n
 assert.throws(() => loadRetirement({...validOutput, status: "planned"}), /no exact applied Stage 4 cluster/u);
 assert.throws(() => loadRetirement({...validOutput, owner: "other"}), /no exact applied Stage 4 cluster/u);
 
+// Stage 4 releases: one chain from the last Stage 3 release; every version pin equals the latest applied release
+// (the Stage 3 release until the first one) and the CHANGELOG holds its entry. Fixtures: a release delta changes
+// only the version fields, the index query, the version statements and the new entry (plus a declared trim).
+const releases = StageFourRelease.records(ROOT);
+const latestRelease = releases.filter((record) => record.output).at(-1);
+assert.equal(StageFourRelease.currentVersion(read), latestRelease?.toRelease || state.releaseVersion, "version pins");
+for (const record of releases.filter((item) => item.output)) {
+  assert.deepEqual(record.output.files.map((file) => file.path).sort(), Object.values(RELEASE_FILES).sort(), record.file);
+  assert(record.output.files.every((file) => /^[0-9a-f]{64}$/u.test(file.before) && /^[0-9a-f]{64}$/u.test(file.after) &&
+    file.edits.length > 0) && record.output.tag === `v${record.toRelease}`, `${record.file}: output`);
+}
+if (latestRelease) {
+  assert(read("CHANGELOG.md").replace(/\r\n/gu, "\n").includes(StageFourRelease.changelogEntry(latestRelease, "\n")),
+    "CHANGELOG lacks the latest release entry");
+}
+const releaseFixture = { milestone: "M1", fromRelease: "1.0.0", toRelease: "1.1.0", title: "New", codename: "new",
+  updatedAt: "2026-01-02", notes: ["note"], changelog: ["line"], versionDecision: "fixture" };
+const releaseHeader = "# CyberFishing changelog\r\n\r\n";
+const canonicalJson = (value) => `${JSON.stringify(value, null, 2)}\n`;
+const crlf = (...lines) => lines.join("\r\n");
+const releaseTexts = (version, extra = null) => new Map([
+  ["CHANGELOG.md", crlf("# CyberFishing changelog", "", "## v1.0.0 - Old", "", "### Changed", "", "- old", "",
+    "## v0.9.0 - Older", "", "- older", "")],
+  ["index.html", crlf(`<script src="src/config/project_version.js?v=${version}"></script>`, "<p>a</p>", "")],
+  ["package-lock.json", canonicalJson({ version, packages: { "": { version, ...(extra ? { extra } : {}) } } })],
+  ["package.json", canonicalJson({ version, scripts: extra ? { a: extra } : {} })],
+  ["src/config/project_version.js", crlf(`const CURRENT_PROJECT_VERSION = "${version}";`, "const C = Object.freeze({",
+    '  codename: "old",', '  updatedAt: "2026-01-01",', "  notes: Object.freeze([", '    "a",', '    "b",', "  ]),", "});",
+    "")],
+]);
+const releaseDelta = (record, file, before, after) => () => StageFourRelease.validateDelta(record, file, before, after);
+let releaseCases = 0;
+for (const record of [releaseFixture, { ...releaseFixture, changelogTrimFrom: "0.9.0" }]) {
+  const before = releaseTexts("1.0.0");
+  for (const [file, edits] of new StageFourRelease(ROOT).edits(record, before)) {
+    const after = edits.reduce((text, edit) => StageThreePatchReleaseTransition.replace(text, edit.from, edit.to, edit.count),
+      before.get(file));
+    assert.doesNotThrow(releaseDelta(record, file, before.get(file), after), file);
+    releaseCases += 1;
+    if (file === "CHANGELOG.md") assert.equal(after.includes("v0.9.0"), !record.changelogTrimFrom);
+    if (file === "src/config/project_version.js") assert(after.includes('  codename: "new",\r\n') && after.includes('    "note",\r\n'));
+  }
+}
+const [oldTexts, newTexts] = [releaseTexts("1.0.0"), releaseTexts("1.1.0", "b")];
+const rejectsRelease = (file, after, pattern) => {
+  assert.throws(releaseDelta(releaseFixture, file, oldTexts.get(file), after), pattern, file);
+  releaseCases += 1;
+};
+rejectsRelease("package.json", newTexts.get("package.json"), /more than the version/u);
+rejectsRelease("package-lock.json", newTexts.get("package-lock.json"), /more than the version/u);
+rejectsRelease("index.html", newTexts.get("index.html").replace("<p>a", "<p>b"), /version query/u);
+rejectsRelease("CHANGELOG.md", oldTexts.get("CHANGELOG.md").replace(releaseHeader, releaseHeader +
+  StageFourRelease.changelogEntry(releaseFixture, "\r\n")).replace("- old", "- edited"), /Historical changelog/u);
+rejectsRelease("src/config/project_version.js", newTexts.get("src/config/project_version.js").replace("Object.freeze({", "Object.seal({"),
+  /version statements/u);
+rejectsRelease("src/config/project_version.js", oldTexts.get("src/config/project_version.js"), /version/u);
+assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, changelog: ["a", "b", "c", "d"] }), /1-3 lines/u);
+assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, toRelease: "1.0.0" }), /newer/u);
+releaseCases += 2;
+
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures.`);
+  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation and ${releaseCases} release fixtures; ` +
+  `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);
