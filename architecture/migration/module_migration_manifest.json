@@ -48897,9 +48897,7 @@
             "String",
             "undefined"
           ],
-          "browserApis": [
-            "console"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }

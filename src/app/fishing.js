@@ -463,7 +463,7 @@ class FightSessionFactory {
       rng: this.rng,
       devFlags: this.devFlags,
     });
-    const fightPhysicsSystem = new FightPhysicsSystem(this.config, { stepClock: this.stepClock });
+    const fightPhysicsSystem = new FightPhysicsSystem(this.config, { stepClock: this.stepClock, logger: this.logger });
     const fishCondition = new FishCondition(
       fishData.level,
       fishData.weight,

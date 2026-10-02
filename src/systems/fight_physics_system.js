@@ -78,6 +78,7 @@ class FightPhysicsSystem {
       : null;
   #composedInputScratch = {};
   #pipeline;
+  #logger;
   #fishRetrieveSystem;
   #staminaBudgetOverflowWarningActive = false;
   #fishWasInCatchZone = false;
@@ -103,7 +104,9 @@ class FightPhysicsSystem {
   #debug = {};
 
   // stepClock: high-resolution clock for the pipeline's diagnostic step durations (injected by bootstrap).
-  constructor(config, { stepClock = null } = {}) {
+  // logger: the platform diagnostics logger (stamina budget invariant warnings); without it they are skipped.
+  constructor(config, { stepClock = null, logger = null } = {}) {
+    this.#logger = logger;
     this.#pipeline = new FightPhysicsPipeline({ now: stepClock });
     this.#config = config || {};
     this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
@@ -2431,7 +2434,7 @@ class FightPhysicsSystem {
     }
     if (this.#staminaBudgetOverflowWarningActive) return;
     this.#staminaBudgetOverflowWarningActive = true;
-    console.warn(
+    this.#logger?.warn(
       "[STAMINA] Stamina received applied player pressure above available tackle budget. This means physics budget and stamina frame are out of sync.",
       frame,
     );

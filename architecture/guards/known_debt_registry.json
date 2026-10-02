@@ -971,29 +971,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-4d302dc0eda3",
-      "rule": "browser-capability",
-      "source": "src/systems/fight_physics_system.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "4d302dc0eda35496b5bbc93cac5061fcb0fbb6fb4e9a51b6e4d8cbc00bcf7de5",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/fight_physics_system.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-4e22bcc102fd",
       "rule": "browser-capability",
       "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
