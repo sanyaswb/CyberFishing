@@ -2,7 +2,7 @@ class InventoryV2HeaderRenderer {
   #dom;
 
   constructor({ domFactory } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
+    this.#dom = domFactory;
   }
 
   render(

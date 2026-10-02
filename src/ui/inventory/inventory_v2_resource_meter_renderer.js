@@ -2,7 +2,7 @@ class InventoryV2ResourceMeterRenderer {
   #dom;
 
   constructor({ domFactory } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
+    this.#dom = domFactory;
   }
 
   update(host, model) {
