@@ -1,1 +1,1 @@
-globalThis.ReelHoldRecoverySystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/reel_hold_recovery_system.js"]["ReelHoldRecoverySystem"];
+// Retired Stage 3 activation activation-e092bb522808: ReelHoldRecoverySystem is served only through ESM imports of src/game/domain/fishing/reel_hold_recovery_system.js.

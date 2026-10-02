@@ -1,2 +1,2 @@
-globalThis.RecoverableLineCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/recoverable_line_calculator.js"]["RecoverableLineCalculator"];
-globalThis.LooseLineCalculator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/recoverable_line_calculator.js"]["LooseLineCalculator"];
+// Retired Stage 3 activation activation-2534a1bdbe18: RecoverableLineCalculator is served only through ESM imports of src/game/domain/fishing/recoverable_line_calculator.js.
+// Retired Stage 3 activation activation-9a198b228060: LooseLineCalculator is served only through ESM imports of src/game/domain/fishing/recoverable_line_calculator.js.

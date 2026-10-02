@@ -1,1 +1,1 @@
-globalThis.PlayerTensionBuildRateResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js"]["PlayerTensionBuildRateResolver"];
+// Retired Stage 3 activation activation-ee66782e3f9e: PlayerTensionBuildRateResolver is served only through ESM imports of src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js.

@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "4.7k lines, last and alone; split only for a real mix (browser, DEV, config); game-cycle traces byte-identical.",
+  "tierEvidence": "FightPhysicsSystem is the sole orchestrator of its existing per-frame physics pipeline. Preparation 017 removes diagnostics capability; preparation 012 injected the step clock. Injected config and DEV flags stay data inputs; cohesive owned calculators remain unchanged. Preserve all member bodies, allocation sites and deterministic per-frame traces; no split or gameplay changes.",
   "modules": [
     {
       "currentPath": "src/systems/fight_physics_system.js",
@@ -136,10 +136,382 @@
           "from": "src/engine/math/vector2.js"
         }
       ],
-      "planningPrerequisite": "src/game/application/fishing/fight_physics_orchestrator.js: reads classic or browser globals: console"
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "FightPhysicsSystem is the sole orchestrator of its existing per-frame physics pipeline. Preparation 017 removes diagnostics capability; preparation 012 injected the step clock. Injected config and DEV flags stay data inputs; cohesive owned calculators remain unchanged. Preserve all member bodies, allocation sites and deterministic per-frame traces; no split or gameplay changes."
+        },
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "FightPhysicsSystem is the sole orchestrator of its existing per-frame physics pipeline. Preparation 017 removes diagnostics capability; preparation 012 injected the step clock. Injected config and DEV flags stay data inputs; cohesive owned calculators remain unchanged. Preserve all member bodies, allocation sites and deterministic per-frame traces; no split or gameplay changes."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "FightPhysicsSystem is the sole orchestrator of its existing per-frame physics pipeline. Preparation 017 removes diagnostics capability; preparation 012 injected the step clock. Injected config and DEV flags stay data inputs; cohesive owned calculators remain unchanged. Preserve all member bodies, allocation sites and deterministic per-frame traces; no split or gameplay changes."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "FightPhysicsSystem is the sole orchestrator of its existing per-frame physics pipeline. Preparation 017 removes diagnostics capability; preparation 012 injected the step clock. Injected config and DEV flags stay data inputs; cohesive owned calculators remain unchanged. Preserve all member bodies, allocation sites and deterministic per-frame traces; no split or gameplay changes."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
-  "evidenceCommands": [],
-  "output": null
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--cluster",
+        "030",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "FightPhysicsSystem",
+        "--scenarios",
+        "utils/game-cycle-check.js"
+      ]
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-030-fight-physics-system",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/systems/fight_physics_system.js",
+        "targetPath": "src/game/application/fishing/fight_physics_orchestrator.js",
+        "sourceSha256": "5b128777812d060b3e1f4421db23940ca2657910586144cba548737dfe0bc500",
+        "targetSha256": "76af8d48c707d10785d5135532a57ca850329262463c994d1834e8a6f8784a9d"
+      }
+    ],
+    "activations": [
+      "activation-adb365ac06c0"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-0621e81b56b8",
+      "activation-2534a1bdbe18",
+      "activation-34fdfded9090",
+      "activation-3fee104fb111",
+      "activation-4e29d07d13e4",
+      "activation-54c1801cfb5c",
+      "activation-64ebf8ced768",
+      "activation-6f9f31ec1100",
+      "activation-754e57609bef",
+      "activation-775fb46bb6ce",
+      "activation-79ef4d67c996",
+      "activation-7e9f7bbaf846",
+      "activation-868e1186ae29",
+      "activation-8d90074016f4",
+      "activation-8f8220d288e5",
+      "activation-9a198b228060",
+      "activation-a0ef26ab86ac",
+      "activation-a44add7fda39",
+      "activation-a94480a6d930",
+      "activation-aff068f84afe",
+      "activation-be4932b7b0c5",
+      "activation-dcb3cecb345c",
+      "activation-e092bb522808",
+      "activation-e0fd80ed679d",
+      "activation-ee66782e3f9e",
+      "activation-f5eefdd6e6e2"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-a34493ca4351"
+    ],
+    "bridgesRetired": [
+      "bridge-0095bdc3c5cc",
+      "bridge-04bc2fe4918e",
+      "bridge-105a8ef0c687",
+      "bridge-1725d9aee214",
+      "bridge-218534519854",
+      "bridge-263392b1d2a3",
+      "bridge-292102f00c09",
+      "bridge-39e763819786",
+      "bridge-46e283c7d3b4",
+      "bridge-563373e1e10a",
+      "bridge-68a669b68de3",
+      "bridge-6c073ecab1b3",
+      "bridge-70c0e5efc338",
+      "bridge-732c933f8554",
+      "bridge-8b99e1c44103",
+      "bridge-91fb0437d801",
+      "bridge-9987d14a6b96",
+      "bridge-9b112859f6f0",
+      "bridge-9f5854296dfd",
+      "bridge-a2b17a1794bf",
+      "bridge-a59383ea4b2f",
+      "bridge-a825c474372d",
+      "bridge-b6066189c484",
+      "bridge-bc742ffa077f",
+      "bridge-bc7633877a9c",
+      "bridge-c7d38bfb778f",
+      "bridge-dd0df8ff0363",
+      "bridge-ebcf2ae98878",
+      "bridge-ef59a7fecbec"
+    ],
+    "importEdges": [
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/application/input/fight_input_action_composer.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/config/physics/fight_physics_config_adapter.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/application/fishing/fight_physics_pipeline.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fish/fish.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/fish_retrieve_system.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/landing_policy.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/line_constraint_state_resolver.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/line_radial_movement_splitter.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_force_budget_allocator.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pull_motion_smoother.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/recoverable_line_calculator.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/reel_hold_recovery_system.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/rod_control_movement_projector.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/rod_stroke_tracker.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "src/game/application/fishing/fight_physics_orchestrator.js->src/engine/math/vector2.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/030_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "2f45d6f388c2a146d73bf911995cf1fe8c4e7be91883275d9ec1c14ffb76a347",
+        "after": "e649dac4e7b0954c94fc02c2e7aafe435600edafaa62f0071c2c9e03d59a01c5"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "8e1d7d8e0c7f0e6dd5f006ec92a5640e9f81e32016c96b47030eeb58caeaafe1",
+        "after": "8e1d7d8e0c7f0e6dd5f006ec92a5640e9f81e32016c96b47030eeb58caeaafe1"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "4111500903caa484afde44ac592c9faa154e58572db5dc360fee6d3acd4cc9bd",
+        "after": "eaaf2efc86ecb3bbac3957c387a408afee43b2bf76bdc03ebb8bc145491cb32a"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "8d34796765ec2f4f2987eefafa9c7cbb439039f8af8197b14372e116cee2cef9",
+        "after": "77e5b5d68a1578d5fbc1d55a0e8264da262f8d15d71de75652e1bb00322e990d"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "ddf9c6621defd576ea9fad799c4f7e75cf37210288ba5447bf2fb502dd33f6fa",
+        "after": "beb8b1ddc730080e34713b0eab265e237edab5056f7ec245a9e133d94c20d596"
+      },
+      {
+        "path": "index.html",
+        "before": "fbf717b7380756bf34e10fd1997b4a1c66341ecc61d48fa5f071edc07ace2d6c",
+        "after": "c6389b5fab72ea971594da8d1843970b72ecda51feb7db07e1da8c3f49d68a79"
+      },
+      {
+        "path": "src/core/fishing/landing_lift_readiness_policy.js",
+        "before": "fdbfb15386630498bd350b98dc156f5ae5b7984b8beda1fb6ec112a8d92b9095",
+        "after": "0ef99bfe988effddbc05155e7a47ac518793679e0d265d39180165f7bc50ee0a"
+      },
+      {
+        "path": "src/core/fishing/landing_lift_tension_calculator.js",
+        "before": "bb2b7df44ea2d8ca32ba51236000ddc042b1cded9953266ec36ea0fdb3aee170",
+        "after": "ccd233f90f61583de632af2ded5204a86ca6437e57593c43b03f311850b8f92b"
+      },
+      {
+        "path": "src/core/fishing/line_constrained_fish_motion_resolver.js",
+        "before": "deaf6dd9647e2777935475330ac178069ea1508ab7e9f578c34191eb37520aa0",
+        "after": "77279f7d50d024582a8efae581ebd0185f525ec6ee048fae53984d76fb75b565"
+      },
+      {
+        "path": "src/core/fishing/line_constraint_state_resolver.js",
+        "before": "8796bcbaa445dd5ac05a758b5bdd00f7c32cee9493b26c120ffb055140f38dfc",
+        "after": "349a793b636c9b93343d0fe58d6d543cab312aa0cb5e618ca3db7a824828b9dd"
+      },
+      {
+        "path": "src/core/fishing/line_radial_movement_splitter.js",
+        "before": "1692d1bd9409d60f68773288fdf6119957a1c2667db43f1d51095d6e22f9ed26",
+        "after": "30504a484c37c5b660aa666cd224178794873d053af38b23578edf14255f7cb1"
+      },
+      {
+        "path": "src/core/fishing/player_force_budget_allocator.js",
+        "before": "3805e3f91c7702510b11a24da9fb56bf0cd1c2b83bca4f429092a94753060869",
+        "after": "e4dc019157e8da34d4903a035d4081873d3d12bc7b179162df785ff12e1b1f4b"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+        "before": "80752d519b6436325743c12aec6b430c8c16be69eca7767e346eb200d964e660",
+        "after": "927da78fe8a984fa30b2dc956f1a7c0dede473b5895d76013c55e225cc61ec47"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+        "before": "0205881f39dc059fda105cd07bddd5ecc3f19232bf4f0495dd0522f8949b25c5",
+        "after": "a6f6d00440ef89593b61824034409230aebd2bf4eb9025e29791ef6b3450da60"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
+        "before": "0f6843fed396b54d6aaa586c769cc2e6e4fdff467776434634f71bb598020f57",
+        "after": "4d2654c4f28f614e5073c245f52ff0b0180fa30be90fdbc9b7fd2c345c5b305a"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
+        "before": "6e6aaba0b5336e753d1eaff5cb997b83783e0ee9d1c0f875008d6fa50db9c63c",
+        "after": "2ad08d6f1b62f75cab9873996aad83d188c32eafcfc20ef37e872d9d10b41022"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
+        "before": "5f138072ca755ca62c445d6e1398819c60a035dd99a92123756b70f2457d665c",
+        "after": "df90af8dfbe2cbb952d82f85e65cb10d360fd8747e896b6b2a3d89e32548657c"
+      },
+      {
+        "path": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
+        "before": "9ccc6a49e3654d90986e534d9b29fe207bc0076273eb88db591663320f24dd41",
+        "after": "f41e86bb27bd90fd698d41dcd4b333d6eeb1201ec37acdc81a0aa2f16ee455c8"
+      },
+      {
+        "path": "src/core/fishing/pole_fight_sector_angle_constraint.js",
+        "before": "dd9b860f1f174588060223d370ddd53208b8411b098c92603ed4ea90269bd1e8",
+        "after": "c042cf7d0bda170b750c46aad77a9ac1b0cad4f48e2c0db615c209d63a254966"
+      },
+      {
+        "path": "src/core/fishing/pole_fight_sector_constraint.js",
+        "before": "8dccc3c13f80aea983b4338fa99ffa6fcbb8bc7c9bc26760b6741c4db38cca9c",
+        "after": "22991e6499615745359808f9287b429c59012b16f04d7e118d3729c38296b795"
+      },
+      {
+        "path": "src/core/fishing/recoverable_line_calculator.js",
+        "before": "d5862345cb1d964dc7555a6ad6bd022f67c93316528c29616e7852284aef8a03",
+        "after": "1d0a7e913786bf3407cd276c5683dce3f131002cf05a30c00c6f43afea0a4c14"
+      },
+      {
+        "path": "src/core/fishing/reel_hold_recovery_system.js",
+        "before": "76a119b7dd49301969d2eeb3dc6e5e29c2ccca3eb5ccb15b10bfd25630657380",
+        "after": "50d74297a6cc5d7a9e1ca8c2a1609faa52ea477e61a35100c7df70d5f80aab28"
+      },
+      {
+        "path": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
+        "before": "4012110c79d2398cac28c94a11d14a33095140048bf06978ccb0b98473144eeb",
+        "after": "d421898d337d585bb63dad1467602738445269784141050ccb00054cdbe84099"
+      },
+      {
+        "path": "src/core/fishing/rod_control_movement_projector.js",
+        "before": "99e04f0a8fd51cf254ffb2b63d26f78dd51b028d00371fe20aac0eb25eca132b",
+        "after": "47defedcf56c6b59ab64a4b926dcf1bc8a564f0245e1ea5d34ae120294152ed7"
+      },
+      {
+        "path": "src/core/fishing/rod_stroke_distance_tracker.js",
+        "before": "401876d27d46be7d6bde1f1f9968ef1e7d76bea8ae801fab8933af744d02a15e",
+        "after": "a9b9711e19ace681ca72d3d491997bb57770502e333cdf96c1af6a9f460932c9"
+      },
+      {
+        "path": "src/core/fishing/rod_stroke_tracker.js",
+        "before": "89b75153c54ddcf2d7524f657def542c54d07e59de0be80d24d4ce1f87d00cd4",
+        "after": "a7d83aaff4ab3acd0ca61acd2ac618dc14c0e4816370b950a4b9849f9190375f"
+      },
+      {
+        "path": "src/core/fishing/stamina/stamina_balance_frame.js",
+        "before": "396b74d4f869d7113bc219dcb3bc01511f0f7e60b50180501d86af8558c70b46",
+        "after": "a8f506f24c3553304ab56209c4de111d680ef2b7af3ab3329c65967cebf0fc9f"
+      },
+      {
+        "path": "src/entities/fish.js",
+        "before": "8489b368783192017998a839f9adb0232a7db76e3bf64268b7c281afcd47891d",
+        "after": "6a80f118abed4137282848df4d8848eed58fceca2b27c1394d95e2a937fdd589"
+      },
+      {
+        "path": "src/game/application/fishing/fight_physics_orchestrator.js",
+        "before": null,
+        "after": "76af8d48c707d10785d5135532a57ca850329262463c994d1834e8a6f8784a9d"
+      },
+      {
+        "path": "src/systems/fight_physics_pipeline.js",
+        "before": "59284c74168507d685ed6797dba2fd82f19fc5c16932baaba72343fe76d6899c",
+        "after": "617416d0932e5289659406d678fd388db3aea5326e4ea8362a4bc72039047970"
+      },
+      {
+        "path": "src/systems/fight_physics_system.js",
+        "before": "5b128777812d060b3e1f4421db23940ca2657910586144cba548737dfe0bc500",
+        "after": "1d209eaa8fd2e9ff9e0be659a38d9fbdb82d85bd95d98f81b26728609e10b1b3"
+      },
+      {
+        "path": "src/systems/fish_retrieve_system.js",
+        "before": "f73c9919415df92c4c2a0945e4903e2c9616845030b1999efdc17be35b62776e",
+        "after": "133033af8c9fdbff4439e58ddb6401ecad014b38c43328f71473dc20666c75ad"
+      },
+      {
+        "path": "src/systems/player_pull_motion_smoother.js",
+        "before": "810adf0a57630f6ce918617def471fbc42e92572064c96f590e908fdf2ea051a",
+        "after": "83a656cd881c0b326f030ee3e36bef32a0473c98ea1f976f517ad7fdfe06272f"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 681 modules, 891 unified edges, 852 globals, 73 exact known-debt diagnostics, 0 FAIL in 758ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 681/681 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 186 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 186 activations and 231 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 37 record(s), 34 applied, 94 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "68e45c1d6342946e12f8ecaf9e79ee489552089248dc850a93371334c2b94a4c"
+      }
+    ],
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "identitiesChecked": 186,
+      "identityMismatches": 0
+    }
+  }
 }

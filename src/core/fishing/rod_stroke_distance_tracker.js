@@ -1,1 +1,1 @@
-globalThis.RodStrokeDistanceTracker = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_stroke_distance_tracker.js"]["RodStrokeDistanceTracker"];
+// Retired Stage 3 activation activation-868e1186ae29: RodStrokeDistanceTracker is served only through ESM imports of src/game/domain/fishing/rod_stroke_distance_tracker.js.

@@ -14848,32 +14848,17 @@
         "legacyLoadOrder": 141,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LandingLiftReadinessPolicy",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -14893,15 +14878,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -14918,32 +14895,17 @@
         "legacyLoadOrder": 140,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LandingLiftTensionCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -14963,15 +14925,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15060,32 +15014,17 @@
         "legacyLoadOrder": 131,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LineConstrainedFishMotionResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15105,15 +15044,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15130,32 +15061,17 @@
         "legacyLoadOrder": 130,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LineConstraintStateResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15175,15 +15091,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15200,32 +15108,17 @@
         "legacyLoadOrder": 132,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LineRadialMovementSplitter",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15245,15 +15138,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15317,32 +15202,17 @@
         "legacyLoadOrder": 95,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerForceBudgetAllocator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15362,15 +15232,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15387,32 +15249,17 @@
         "legacyLoadOrder": 101,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerPressureFatigueCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15432,15 +15279,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15457,32 +15296,17 @@
         "legacyLoadOrder": 99,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerPressureFatigueSourceResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15502,15 +15326,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15527,32 +15343,17 @@
         "legacyLoadOrder": 100,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerPressureFatigueState",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15572,15 +15373,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15597,32 +15390,17 @@
         "legacyLoadOrder": 96,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerPressureGainResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15642,15 +15420,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15667,32 +15437,17 @@
         "legacyLoadOrder": 98,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerReelFatigueSession",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15712,15 +15467,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15737,32 +15484,17 @@
         "legacyLoadOrder": 97,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerTensionBuildRateResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15782,15 +15514,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15807,32 +15531,17 @@
         "legacyLoadOrder": 136,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PoleFightSectorAngleConstraint",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15852,15 +15561,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -15877,32 +15578,17 @@
         "legacyLoadOrder": 135,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PoleFightSectorConstraint",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -15922,15 +15608,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16017,37 +15695,17 @@
         "legacyLoadOrder": 117,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "LooseLineCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "RecoverableLineCalculator",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16067,15 +15725,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16186,32 +15836,17 @@
         "legacyLoadOrder": 115,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ReelHoldRecoverySystem",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16231,15 +15866,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16256,32 +15883,17 @@
         "legacyLoadOrder": 116,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ReelRecoveryFishSlowdownPolicy",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16301,15 +15913,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16492,32 +16096,17 @@
         "legacyLoadOrder": 133,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RodControlMovementProjector",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16537,15 +16126,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16750,32 +16331,17 @@
         "legacyLoadOrder": 94,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RodStrokeDistanceTracker",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16795,15 +16361,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -16867,32 +16425,17 @@
         "legacyLoadOrder": 93,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RodStrokeTracker",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -16912,15 +16455,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -17078,32 +16613,17 @@
         "legacyLoadOrder": 110,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "StaminaBalanceFrame",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -17123,15 +16643,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -32717,11 +32229,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "FISH_FIGHT_EVENT",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
               "symbol": "Fish",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -33125,6 +32632,60 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/drag_control_service.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/fishing/fight_physics_orchestrator.js",
+      "currentArea": "game/application/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Infinity",
+            "Math",
+            "Number",
+            "Object",
+            "String",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/fight_physics_orchestrator.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -48619,9 +48180,59 @@
         "legacyLoadOrder": 220,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/fight_physics_pipeline.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "dev-production-coupling"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/systems/fight_physics_system.js",
+      "currentArea": "systems",
+      "observed": {
+        "legacyLoadOrder": 221,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "FightPhysicsPipeline",
+              "symbol": "FightPhysicsSystem",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -48656,7 +48267,7 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
-        "targetPath": "src/game/application/fishing/fight_physics_pipeline.js",
+        "targetPath": "src/game/application/fishing/fight_physics_orchestrator.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -48673,696 +48284,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": [
-            "browser-api-coupling",
-            "dev-production-coupling"
-          ]
-        }
-      }
-    },
-    {
-      "currentPath": "src/systems/fight_physics_system.js",
-      "currentArea": "systems",
-      "observed": {
-        "legacyLoadOrder": 221,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FightPhysicsSystem",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "FISH_FIGHT_EVENT",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightInputActionComposer",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FightPhysicsPipeline",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishRetrieveSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LandingLiftReadinessPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LandingLiftTensionCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LandingPolicyResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineConstrainedFishMotionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineConstraintStateResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineRadialMovementSplitter",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LooseLineCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerForceBudgetAllocator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerPressureFatigueCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerPressureFatigueSourceResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerPressureFatigueState",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerPressureGainResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerPullMotionSmoother",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerReelFatigueSession",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PlayerTensionBuildRateResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PoleFightSectorAngleConstraint",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PoleFightSectorConstraint",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RecoverableLineCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ReelHoldRecoverySystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ReelRecoveryFishSlowdownPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodControlMovementProjector",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodStrokeDistanceTracker",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodStrokeTracker",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "StaminaBalanceFrame",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Infinity",
-            "Math",
-            "Number",
-            "Object",
-            "String",
-            "undefined"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "application-service"
-        ],
-        "targetBoundary": "game-application",
-        "targetPath": "src/game/application/fishing/fight_physics_orchestrator.js",
-        "migrationWave": 4
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "FISH_FIGHT_EVENT",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/entities/fish.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightInputActionComposer",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/input/fight_input_action_composer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightPhysicsConfigAdapter",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/physics/physics_config_adapter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FightPhysicsPipeline",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/fight_physics_pipeline.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishRetrieveSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/fish_retrieve_system.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LandingLiftReadinessPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/landing_lift_readiness_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LandingLiftTensionCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/landing_lift_tension_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LandingPolicyResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/landing_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineConstrainedFishMotionResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/line_constrained_fish_motion_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineConstraintStateResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/line_constraint_state_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineRadialMovementSplitter",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/line_radial_movement_splitter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LooseLineCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/recoverable_line_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerForceBudgetAllocator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_force_budget_allocator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerPressureFatigueCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerPressureFatigueSourceResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerPressureFatigueState",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerPressureGainResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerPullMotionSmoother",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/player_pull_motion_smoother.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerReelFatigueSession",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PlayerTensionBuildRateResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PoleFightSectorAngleConstraint",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/pole_fight_sector_angle_constraint.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PoleFightSectorConstraint",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/pole_fight_sector_constraint.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RecoverableLineCalculator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/recoverable_line_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ReelHoldRecoverySystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/reel_hold_recovery_system.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ReelRecoveryFishSlowdownPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodControlMovementProjector",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/rod_control_movement_projector.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodStrokeDistanceTracker",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/rod_stroke_distance_tracker.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodStrokeTracker",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/rod_stroke_tracker.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "StaminaBalanceFrame",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/stamina/stamina_balance_frame.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/physics/physics_config_adapter.js",
-              "symbols": [
-                "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/landing_lift_readiness_policy.js",
-              "symbols": [
-                "LandingLiftReadinessPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/landing_lift_tension_calculator.js",
-              "symbols": [
-                "LandingLiftTensionCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/landing_policy.js",
-              "symbols": [
-                "LandingPolicyResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/line_constrained_fish_motion_resolver.js",
-              "symbols": [
-                "LineConstrainedFishMotionResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/line_constraint_state_resolver.js",
-              "symbols": [
-                "LineConstraintStateResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/line_radial_movement_splitter.js",
-              "symbols": [
-                "LineRadialMovementSplitter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_force_budget_allocator.js",
-              "symbols": [
-                "PlayerForceBudgetAllocator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js",
-              "symbols": [
-                "PlayerPressureFatigueCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
-              "symbols": [
-                "PlayerPressureFatigueSourceResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_pressure_fatigue_state.js",
-              "symbols": [
-                "PlayerPressureFatigueState"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_pressure_gain_resolver.js",
-              "symbols": [
-                "PlayerPressureGainResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_reel_fatigue_session.js",
-              "symbols": [
-                "PlayerReelFatigueSession"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/player_pressure/player_tension_build_rate_resolver.js",
-              "symbols": [
-                "PlayerTensionBuildRateResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/pole_fight_sector_angle_constraint.js",
-              "symbols": [
-                "PoleFightSectorAngleConstraint"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/pole_fight_sector_constraint.js",
-              "symbols": [
-                "PoleFightSectorConstraint"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/recoverable_line_calculator.js",
-              "symbols": [
-                "LooseLineCalculator",
-                "RecoverableLineCalculator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/reel_hold_recovery_system.js",
-              "symbols": [
-                "ReelHoldRecoverySystem"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
-              "symbols": [
-                "ReelRecoveryFishSlowdownPolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/rod_control_movement_projector.js",
-              "symbols": [
-                "RodControlMovementProjector"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/rod_stroke_distance_tracker.js",
-              "symbols": [
-                "RodStrokeDistanceTracker"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/rod_stroke_tracker.js",
-              "symbols": [
-                "RodStrokeTracker"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/stamina/stamina_balance_frame.js",
-              "symbols": [
-                "StaminaBalanceFrame"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/input/fight_input_action_composer.js",
-              "symbols": [
-                "FightInputActionComposer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/entities/fish.js",
-              "symbols": [
-                "FISH_FIGHT_EVENT"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/fight_physics_pipeline.js",
-              "symbols": [
-                "FightPhysicsPipeline"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/fish_retrieve_system.js",
-              "symbols": [
-                "FishRetrieveSystem"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/player_pull_motion_smoother.js",
-              "symbols": [
-                "PlayerPullMotionSmoother"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -49456,32 +48377,17 @@
         "legacyLoadOrder": 216,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FishRetrieveSystem",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -49501,15 +48407,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -50294,32 +49192,17 @@
         "legacyLoadOrder": 212,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "PlayerPullMotionSmoother",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -50339,15 +49222,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
