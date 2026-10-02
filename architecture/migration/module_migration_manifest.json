@@ -9632,12 +9632,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LineAllocationPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -9681,14 +9675,6 @@
               "executionPhase": "deferred",
               "target": "src/core/inventory/inventory_item_location.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "LineAllocationPolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/line/line_allocation_policy.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -9696,13 +9682,6 @@
               "target": "src/core/inventory/inventory_item_location.js",
               "symbols": [
                 "InventoryItemLocation"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/line/line_allocation_policy.js",
-              "symbols": [
-                "LineAllocationPolicy"
               ],
               "resolution": "confirmed"
             }

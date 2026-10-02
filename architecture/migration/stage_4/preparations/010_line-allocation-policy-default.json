@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "010",
+  "slug": "line-allocation-policy-default",
+  "baseCommit": "58eafe963f2ba8f8093f2eeee754d8edb622bd71",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "before": "38d52b4ee01d5ebb2de2741398c6e06e2236d11daed03c5b58a0530255b2e196",
+      "after": "3c4a4d08dfc3e19a272a4e2c63d7b5a2d7ae9a2f7986997f40201e042ce01c89"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "c74be302af6a298488f4269f1f6c76508e915e85e277dbf478702e5d0ec8c0a8",
+      "after": "d643710432dd4890da9883dc50083656d1734c1dfd6895f646913a1110bfd6ce"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 023 (inventory line services): InventoryV2LineAllocationService defaulted its LineAllocationPolicy through a typeof-guarded global fallback (`linePolicy || (typeof LineAllocationPolicy ... new LineAllocationPolicy(lineConfig) : null)`). Framework Q4 (decided case rules.js): the only production construction (InventoryV2CompositionRoot) passes linePolicy (composed with the player-facing INVENTORY_RULE_MESSAGES), and both check constructions pass it too, so the default is removed (default only: a missing policy still throws the existing TypeError). LineInventoryController's internal `new LineAllocationPolicy(lineConfig, { messages })` is not a global fallback but the controller's own policy built from its config (allowed application -> domain import); injecting it instead is an API change for InventorySystem (cluster 029) and is not done here.",
+  "constructionEvidence": [
+    "grep src utils: `new InventoryV2LineAllocationService` occurs in InventoryV2CompositionRoot.compose (passes linePolicy: new LineAllocationPolicy(lineConfig, { messages: INVENTORY_RULE_MESSAGES })) and twice in inventory-v2-line-allocation-check (both pass linePolicy the same way).",
+    "The now-unused `lineConfig` option stays in the signature (removing a parameter is an API change; Stage 7 cleanup)."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 90,
+    "knownDebtsAfter": 90,
+    "focused": [
+      "inventory-v2-line-allocation",
+      "line-allocation",
+      "inventory-v2-integration",
+      "inventory-v2-equipment",
+      "inventory-lifecycle"
+    ],
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "inventory": "14/14"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "serviceWithoutPolicy": "TypeError: InventoryV2LineAllocationService requires LineAllocationPolicy (unchanged message)",
+      "itemCards": 22,
+      "inventorySaveBytes": 4889
+    }
+  }
+}

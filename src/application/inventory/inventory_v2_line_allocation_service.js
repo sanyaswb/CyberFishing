@@ -28,11 +28,7 @@ class InventoryV2LineAllocationService {
     }
     this.#repository = repository;
     this.#itemReader = itemReader;
-    this.#policy =
-      linePolicy ||
-      (typeof LineAllocationPolicy !== "undefined"
-        ? new LineAllocationPolicy(lineConfig)
-        : null);
+    this.#policy = linePolicy;
     if (!this.#policy?.resolve) {
       throw new TypeError(
         "InventoryV2LineAllocationService requires LineAllocationPolicy",
