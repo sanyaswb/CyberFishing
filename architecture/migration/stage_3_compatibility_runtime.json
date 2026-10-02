@@ -488,6 +488,13 @@
       "module": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
       "owner": "stage-4.cluster-018-storage",
       "reason": "The private static fields #legacyItemIdMap (Object.freeze over a literal id map) and #removedLegacyItemIds (a Set over one literal id) are evaluated once at class definition; they read no external state, write no global and are never mutated (save-format id tables, byte-identical)."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "faf8224625ac2b6a664d3439adab20d59d220dc7b655af64ac8cd54bfe8dbac7",
+      "module": "src/game/application/inventory/inventory_item_factory.js",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "reason": "The private static field #derivedProgressionKeys is a Set over inert string literals, built once at class definition and never mutated; it reads no external state and writes no global (save-format key list)."
     }
   ],
   "activationPositions": [
@@ -876,6 +883,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryItemFactory",
+      "legacyScriptIndex": 224,
+      "legacySymbol": "InventoryItemFactory",
+      "shimFile": "activations/224_inventoryitemfactory.js",
+      "sourceProvider": "src/systems/inventory_item_factory.js",
+      "targetModule": "src/game/application/inventory/inventory_item_factory.js",
+      "id": "activation-33240d352a6f",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
       "exportName": "InventoryV2RefillInventoryPort",
       "legacyScriptIndex": 187,
       "legacySymbol": "InventoryV2RefillInventoryPort",
@@ -1260,6 +1279,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2LineAllocationService",
+      "legacyScriptIndex": 197,
+      "legacySymbol": "InventoryV2LineAllocationService",
+      "shimFile": "activations/197_inventoryv2lineallocationservice.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "targetModule": "src/game/application/inventory/inventory_line_allocation_service.js",
+      "id": "activation-5daa76313810",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-6088d7e23f95",
       "owner": "stage-3.replan-342.batch-045-equipment-loadouts-f4fab38e",
       "sourceProvider": "src/core/loadouts/equipment_loadout.js",
@@ -1448,6 +1479,18 @@
       "legacySymbol": "LineConstraintStateResolver",
       "legacyScriptIndex": 130,
       "shimFile": "activations/130_lineconstraintstateresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-4"
+    },
+    {
+      "exportName": "LineInventoryController",
+      "legacyScriptIndex": 143,
+      "legacySymbol": "LineInventoryController",
+      "shimFile": "activations/143_lineinventorycontroller.js",
+      "sourceProvider": "src/core/line/line_inventory_controller.js",
+      "targetModule": "src/game/application/inventory/line_inventory_controller.js",
+      "id": "activation-78df49758c5f",
+      "owner": "stage-4.cluster-023-inventory-lines",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-4"
     },
@@ -1760,6 +1803,18 @@
       "targetModule": "src/platform/browser/location/location_asset_loader.js",
       "id": "activation-8ac996dc5bae",
       "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2EquipmentLineReadinessPolicy",
+      "legacyScriptIndex": 198,
+      "legacySymbol": "InventoryV2EquipmentLineReadinessPolicy",
+      "shimFile": "activations/198_inventoryv2equipmentlinereadinesspolicy.js",
+      "sourceProvider": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "targetModule": "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
+      "id": "activation-8d0d25f72cd2",
+      "owner": "stage-4.cluster-023-inventory-lines",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },

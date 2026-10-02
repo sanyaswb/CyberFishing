@@ -83,6 +83,22 @@
       ]
     },
     {
+      "id": "bridge-063dff0a0ad4",
+      "bridge": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
+      "reason": "Preserve the exact InventoryV2EquipmentLineReadinessPolicy consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2EquipmentLineReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-06a78b1b4e3b",
       "bridge": "src/core/items/bait/bait_effectiveness_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -190,22 +206,6 @@
       "globalProviders": [
         {
           "symbol": "LandingPolicyResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-105324aeeccc",
-      "bridge": "src/core/line/line_allocation_policy.js",
-      "source": "src/core/line/line_inventory_controller.js",
-      "target": "src/game/domain/line/line_allocation_policy.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LineAllocationPolicy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1375,22 +1375,6 @@
       ]
     },
     {
-      "id": "bridge-526e8682588c",
-      "bridge": "src/core/line/line_allocation_policy.js",
-      "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
-      "target": "src/game/domain/line/line_allocation_policy.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LineAllocationPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-53cb7e880017",
       "bridge": "src/application/inventory/apply_bait_exposure_service.js",
       "owner": "stage-4.cluster-022-inventory-refill",
@@ -1722,22 +1706,6 @@
       "globalProviders": [
         {
           "symbol": "EquipmentState",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-65b88accc9a1",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/application/inventory/inventory_v2_line_allocation_service.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -2471,6 +2439,22 @@
       ]
     },
     {
+      "id": "bridge-896a612b2024",
+      "bridge": "src/systems/inventory_item_factory.js",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/application/inventory/inventory_item_factory.js",
+      "reason": "Preserve the exact InventoryItemFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "InventoryItemFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8b99e1c44103",
       "bridge": "src/core/fishing/rod_stroke_distance_tracker.js",
       "source": "src/systems/fight_physics_system.js",
@@ -2482,6 +2466,22 @@
       "globalProviders": [
         {
           "symbol": "RodStrokeDistanceTracker",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8bdcdf5a26c8",
+      "bridge": "src/core/line/line_inventory_controller.js",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "source": "src/systems/inventory_system.js",
+      "target": "src/game/application/inventory/line_inventory_controller.js",
+      "reason": "Preserve the exact LineInventoryController consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "LineInventoryController",
           "mechanism": "global-this-property"
         }
       ]
@@ -3130,6 +3130,22 @@
         },
         {
           "symbol": "ExactInventoryAutoRefillPort",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b40537ee7e52",
+      "bridge": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "owner": "stage-4.cluster-023-inventory-lines",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/game/application/inventory/inventory_line_allocation_service.js",
+      "reason": "Preserve the exact InventoryV2LineAllocationService consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2LineAllocationService",
           "mechanism": "global-this-property"
         }
       ]

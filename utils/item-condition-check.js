@@ -242,7 +242,7 @@ class ItemConditionCheck {
       "utf8",
     );
     const inventoryFactory = fs.readFileSync(
-      path.join(ROOT, "src/systems/inventory_item_factory.js"),
+      path.join(ROOT, "src/game/application/inventory/inventory_item_factory.js"),
       "utf8",
     );
     const ui = fs.readFileSync(path.join(ROOT, "src/ui/ui.js"), "utf8");

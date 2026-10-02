@@ -1,0 +1,1346 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "023",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-line-allocation-check.js",
+    "utils/line-allocation-check.js",
+    "utils/inventory-v2-integration-check.js",
+    "utils/item-progression-check.js",
+    "utils/item-rarity-check.js"
+  ],
+  "classes": {
+    "InventoryItemFactory": {
+      "sourcePath": "src/systems/inventory_item_factory.js",
+      "members": [
+        {
+          "name": "#derivedProgressionKeys",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "71274d2dd46ffc1057b5bd972eccf8a76becf42de5c2df89f71b8b1021ba01c2"
+        },
+        {
+          "name": "#itemDatabase",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bf2549a39e945e94594e16319ff133e5525ca0da514f01c66f52839be7a753e5"
+        },
+        {
+          "name": "#itemRarityResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "20f7f8cf31760d7cad0eb976ebfaf9510810c79afaf8b62d4927f1462952b874"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "4031baf95ed3dabc35027c34bd005d7751165d575798b5e1193f013f6948b509",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4593bbd8db7b4323afe4214a8066ef510a450080514458ac8aaa911ecbbc9b26",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "createMany",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9d671a5e6df060175ba9161d1f03928514d7386dac67c523d53f2e31285eba75",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#withoutDerivedProgression",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1846d89abb707b5cb4a623e592726d3db10c0ce9f45c222b2c9be6bb778ee4a2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 2,
+        "arrayExpressions": 3,
+        "newExpressions": 5,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Set",
+          "member": "#derivedProgressionKeys",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "#withoutDerivedProgression",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "RangeError",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "createMany",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": "283ae397c3fafe9ebf412b45f2858a35def3357969f896b0fa2c8de32abe9d3f",
+          "calls": {
+            "create": 1,
+            "createMany": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-check.js": {
+          "sha256": "813fecf5b5d1e75607c99c84c0cef83f6ef00da3030e5fd266fb46f634179de7",
+          "calls": {
+            "create": 3,
+            "createMany": 0
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2EquipmentLineReadinessPolicy": {
+      "sourcePath": "src/application/inventory/inventory_v2_equipment_line_readiness_policy.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#assemblyReader",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3a1cd8bf5402ff86852e9c453c8501ff0ba67feca233653112ed7474ea5ceba8"
+        },
+        {
+          "name": "#itemReader",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "38350a7615df7203e3bd21673096f497f95c5e7ca1e40f01fe6d221e27f01158"
+        },
+        {
+          "name": "#lineAllocationService",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7eca316f4be6f4c21e84a93915ce382a470ba43104a7369e7a299b2d3b1dc62b"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "3a41c8b420083c12377058d963ed405c643f9ebd6ef9874dbe606cf38635f389",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "validate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "65529ae73e75519d9e749b87198efee3361a13fb5b0873cea231f6e35b26943f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hydrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1a3bca194a667a8388f5c7e1dbdde8a5447122c615e67d5d5d8e754e46f27e74",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#valid",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6f53224efa2355a5bee2a8b0ba8412ac275336ad471278045e95adfb9e45e832",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 0,
+        "newExpressions": 3,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Object",
+          "member": "#valid",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Object",
+          "member": "validate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "b9c5b1db22a9163ed4d3973d4e5747cc868aae1627b3b0942902e604391000b4",
+          "calls": {
+            "validate": 58
+          },
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2LineAllocationService": {
+      "sourcePath": "src/application/inventory/inventory_v2_line_allocation_service.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#itemReader",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "38350a7615df7203e3bd21673096f497f95c5e7ca1e40f01fe6d221e27f01158"
+        },
+        {
+          "name": "#policy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "75877d6f628ebcefb838959f7433331c990347779bd0d44e29536e7c98f95819"
+        },
+        {
+          "name": "#instanceIdFactory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c1c0732cad9590ecb29c06b70d8ff460df089709163a64b5975cce6b2262cf3f"
+        },
+        {
+          "name": "#isReserved",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ad02771b1a03a1211f2bf7670d93a5d72b81112dda639a027149cf5b4ee6e3aa"
+        },
+        {
+          "name": "#sequence",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b07dd98290ea86dc53e405ecf5f8a59e3698e8c95c0a600f2ab82e43be59943e"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "43fd3aa96016a2f5d0828ec9bfc221a60eaf3c16a2e511e7b947f3f5ca32654f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "prepare",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3d62a1f6b61a88e9166957ed9714b6823528a02e0b33713bc3de40357c0bedc3",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "prepareForReel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f704093759404a2422183bb4a4de1d54f2ca7807d6c4e9f5892632295728fd1a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#prepareWithResolver",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "943cbbcb5daae07582a935240b767e40d370f4d5fe14233edfb7e4c5691fbedd",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 11,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 4,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "validateExisting",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "76be58a616354924d44ec70161ee332005f3d00629d7016cda4c5f7894cf1450",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 7,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "release",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "146c73773cb105b1698a5967a67b4c9c95236280acd9ec3c841daf2ad5240729",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 9,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 5,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "break",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "84a5ddfc7cd96daede765d15cfbceabdba09ea1a3074d3735818fa8f781dd166",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 3,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "87787ef46bdfec44e51730bb95a2f141d3431342196d29a1f44c1d1a0d0163bd",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#canMergeInto",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b4760cbdd7af32ebb3702ce02c5fb224371de76e8e25a60a608ed78fb079d0c0",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasSameLineSignature",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c9ea9ae8faf8ea8fe319af3a654f08ce3d9f7707367dfb20fd13d02a8372eeb3",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hydrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4e528b8474d06a196ce37727d52072a00917f48aa94f57f65574801fdc75e885",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#type",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f212ddf772f7e9dc04e8c5e8aa05a0e890d365e7d1864e9f34c4b121936a159c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#nextInstanceId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5f92dbe8c30c84348433852fc0860d8ff08039ed9deca39735e3b195538a7922",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#failure",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "92cb92ff026035982b7a4f532216043f1db7b139c14d0dd25afb1845b15af218",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 1,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#stableSerialize",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "18ba3a464eb06d212c01b73532b3d7790108b88e11660e90d5eb90c98be6f499",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0227b340b158b3cb1a4e5ebb7c9374e98b0c1b845550d00f782f073ec4ece8c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 42,
+        "arrayExpressions": 2,
+        "newExpressions": 4,
+        "objectFreezeCalls": 15,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "InventoryItemLocation",
+          "member": "#canMergeInto",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#failure",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#nextInstanceId",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#nextInstanceId",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#prepareWithResolver",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "break",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "prepareForReel",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "release",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "validateExisting",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "validateExisting",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-line-allocation-check.js": {
+          "sha256": "3dc9ca0fabf87d8750253962c3fceeb2b8eb13808e7d2677e65d5fed69eab939",
+          "calls": {
+            "prepare": 3,
+            "prepareForReel": 0,
+            "validateExisting": 0,
+            "release": 1,
+            "break": 2,
+            "getLengthMeters": 7
+          },
+          "deltaTime": {}
+        },
+        "utils/line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": "d5f6093babb2fe1f6eec3dc933e1bda7be7427b4f43847b7ce5e812bc3bcb39b",
+          "calls": {
+            "prepare": 2,
+            "prepareForReel": 5,
+            "validateExisting": 13,
+            "release": 5,
+            "break": 0,
+            "getLengthMeters": 21
+          },
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "LineInventoryController": {
+      "sourcePath": "src/core/line/line_inventory_controller.js",
+      "members": [
+        {
+          "name": "#inventory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "da65920a9c9ca3c33fc1f3ab173d5211b407681520811c3c3de2243f497730ab"
+        },
+        {
+          "name": "#db",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "d0aa912e9f88055e4b1606fa3e6326f5e1958752df19f5eaf2f68221eddbbae7"
+        },
+        {
+          "name": "#makeId",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "832b553896fcef68f45a278b113b0be67bce0e0ac9778d3c14e11eb711ca25eb"
+        },
+        {
+          "name": "#policy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "75877d6f628ebcefb838959f7433331c990347779bd0d44e29536e7c98f95819"
+        },
+        {
+          "name": "#isEquipped",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7e4967805586ef5d4f4313be6e9371582a19dafd9763b94063f293c6f24d2c67"
+        },
+        {
+          "name": "#effectiveStatsResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "606070f40b9df67538f6d37d43b2929a573b44a9bf8d1c9e0435fda9bf3315c4"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "cb0173c64cdad21f443504c48e37a8648d171e5cbaaff59a79605a5716db8aa0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "validateLine",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "df5d80200f767249a73666d6e080d390b723bfc9c4325084d62cc129cdd65818",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "validateLeader",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3208e090939a1c31534bc36b9ab7dbe6528bf31a2fb25106aeccdfa6d81afb4b",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "rodRequiresReel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b617010fdb7ed207dc91ae1ddb805884fabe6c68c0193e0646e1309303e71458",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getMinimumLineLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "eeb35ef8c7699c4a2238ca12d642948416089b293d2f795064267057af1e5cf0",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getMaximumLineLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0d8071ec3174f208d5835e1f7493e39c31b26cf4bb569d00a144235da0157ed7",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "prepareLineForEquip",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b0a8e7f8d6343704dae9218e678ca8aaa448cec26a569735a1bc5c06de867b34",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "mergeDetachedLineSegment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "395880574d0d35e3eb31cc642df82b8e1750536f3b61da50e3f4a1e7f26d5745",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "mergeLineLengthIntoAvailableStack",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f6dcca533aaf96be7fb571d41b137e90d47a00f19fe5ef287eed04adeed98247",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "getInventoryLineLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "027cd99b951daf41cf14f7daaf0facca9a702c757216dafe455f2e8203b9a782",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#allocateSegment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e20690c311025c4a26df6a5f8044cdebfb3c86685f63a9e9a36175c4a95fe503",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#setLineLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0472276e362449449613743435c79011fbf972d635edfd3ba55a6662b308c296",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findLineLengthMergeTarget",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b9a55dfc0abbba1b377eef909342c4670f23a6572feb5b8858934647a630fe69",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#canMergeLineItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "582a8689054ff9da549b23964ea2aa957e2a0f0878acdbd2182d4ee8289efd70",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasSameBuildContext",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b5ca6242808fd1bbd125576f068667e24efe00adcf858958c4e5e8d126399c17",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hydrateLineItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "489b55d6aa8d3637855d81bc42fcd5f506199a1d94706c2412ffae93e4b70ca7",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasSameLineMergeSignature",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "45486eb19953500339001112a2eec4c0a0ab576264357fa9009a3b43da2e275d",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 14,
+        "arrayExpressions": 2,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "#allocateSegment",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#allocateSegment",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#allocateSegment",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#allocateSegment",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#hasSameLineMergeSignature",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#setLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#setLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "LineAllocationPolicy",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "getInventoryLineLengthMeters",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-line-allocation-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/line-allocation-check.js": {
+          "sha256": "3dbece1ad3c60f47b768538b8d93805ff0ac6a313ffdc8b45663750cab7b0bd6",
+          "calls": {
+            "validateLine": 1,
+            "validateLeader": 0,
+            "rodRequiresReel": 0,
+            "getMinimumLineLengthMeters": 0,
+            "getMaximumLineLengthMeters": 0,
+            "prepareLineForEquip": 1,
+            "mergeDetachedLineSegment": 0,
+            "mergeLineLengthIntoAvailableStack": 0,
+            "getInventoryLineLengthMeters": 0
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-integration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-progression-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}
