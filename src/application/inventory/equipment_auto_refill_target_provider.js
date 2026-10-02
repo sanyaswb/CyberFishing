@@ -6,7 +6,7 @@ class EquipmentAutoRefillTargetProvider {
   constructor({ equipmentState, assemblyReader, memory = null } = {}) {
     this.#equipmentState = equipmentState;
     this.#assemblyReader = assemblyReader;
-    this.#memory = memory || (typeof AutoRefillMemory !== "undefined" ? new AutoRefillMemory() : null);
+    this.#memory = memory;
   }
 
   listTargets(scope, context = {}) {

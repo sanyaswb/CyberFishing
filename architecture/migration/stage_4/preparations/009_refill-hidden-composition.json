@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-preparation",
+  "id": "009",
+  "slug": "refill-hidden-composition",
+  "baseCommit": "64f0b64b698b0b3ddbba3aab48657c6f9aae18c8",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/application/inventory/equipment_auto_refill_target_provider.js",
+      "before": "db576017bf2876ecab1d21a6b85b07186e79c11ae5a2fcde36721a95b2540ba5",
+      "after": "80fb4d6cdee581185073d8615416b5667af881d1751e9f79eba5f420e519bbe5"
+    },
+    {
+      "path": "src/application/inventory/auto_refill_coordinator.js",
+      "before": "8be80960bec7f1b8fe63e69e8377b0b5dce4c30cf904028d7c96d66a58f5b662",
+      "after": "87112edc06631d38c1970094bb4bb750fa378d8335dd8c269c7dcb5646216522"
+    },
+    {
+      "path": "src/application/inventory/inventory_v2_refill_ports.js",
+      "before": "f5a6f1c8221006aebbade10b4aadedeaf2018f7529553dca6f70dc3997a057bb",
+      "after": "0ce179ae1299903697cabaf99408e3917ab72f2cc7cb2dae0486f0c7ce4e3103"
+    },
+    {
+      "path": "utils/consumable-event-identity-check.js",
+      "before": "6997b158a5c9cad9dd1de25e250f5c3831257870e67ba15c10ad8e064633dee0",
+      "after": "c9770c1a688b364474633873e54194863e118a31593a6462d8f54a0d7be78606"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "514579c52c610c874151a42b52dd97e4e22aee7528eab5f7fd5439b3c5407e81",
+      "after": "fe1d6ac6e5c7bb6527c2a94d9801ab59fdf639ce0c518182f1df50eb28a88790"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Cluster 022 (auto-refill application services) carries high-level-self-composition blockers. Framework Q4 (decided case rules.js): the only production construction (InventoryV2CompositionRoot) passes the collaborators, so these defaults are removed (default only, no new validation): EquipmentAutoRefillTargetProvider memory (typeof AutoRefillMemory fallback), ExactInventoryAutoRefillPort signaturePolicy (typeof ExactAssemblyRefillSignaturePolicy / ExactItemSignaturePolicy chain), InventoryV2RefillInventoryPort candidatePolicy (= new FreshestRefillCandidatePolicy()). The stateless Domain policy defaults that production does not pass stay: FreshestRefillCandidatePolicy and ApplyBaitExposureService freshnessStatePolicy (ItemFreshnessStatePolicy) and ApplyBaitExposureService decayPolicy (BaitFreshnessDecayPolicy).",
+  "constructionEvidence": [
+    "grep src utils: each class is constructed once in production, in InventoryV2CompositionRoot.compose: EquipmentAutoRefillTargetProvider({ equipmentState, assemblyReader, memory: refillMemory }), ExactInventoryAutoRefillPort({ inventoryPort, targetWriter, signaturePolicy }) with signaturePolicy = new RefillCompatibleSignaturePolicy(), InventoryV2RefillInventoryPort({ ..., candidatePolicy: new FreshestRefillCandidatePolicy() }).",
+    "Checks: consumable-event-identity built the target provider without memory in a context where AutoRefillMemory is defined (its classic shim is loaded), so it now passes memory: new AutoRefillMemory(); inventory-v2-equipment already passes signaturePolicy and memory; no check constructs InventoryV2RefillInventoryPort directly."
+  ],
+  "verification": {
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 90,
+    "knownDebtsAfter": 90,
+    "focused": [
+      "consumable-event-identity",
+      "inventory-v2-equipment",
+      "inventory-v2-integration",
+      "inventory-v2-ui",
+      "inventory-lifecycle",
+      "bait-effectiveness",
+      "item-freshness-gameplay"
+    ],
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "inventory": "14/14"
+    },
+    "browser": {
+      "performedBy": "claude-automated-substitute",
+      "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+      "errors": 0,
+      "warnings": 0,
+      "itemCards": 22,
+      "inventorySaveBytes": 4889
+    }
+  }
+}

@@ -145,6 +145,7 @@ vm.runInContext(
         return assemblyStates[rootInstanceId]?.refillSignatures?.[path] || null;
       },
     },
+    memory: new AutoRefillMemory(),
   });
   const tripTargets = targetProvider.listTargets(AutoRefillScope.BOAT_CHUM, {
     rootInstanceId: boatReturnEvents[0].rootInstanceId,

@@ -6961,20 +6961,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ExactItemSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -7001,40 +6988,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ExactItemSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/exact_item_signature_policy.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "symbols": [
-                "ExactAssemblyRefillSignaturePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/exact_item_signature_policy.js",
-              "symbols": [
-                "ExactItemSignaturePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -7067,12 +7022,6 @@
         "consumers": {
           "status": "verified",
           "items": [
-            {
-              "symbol": "AutoRefillMemory",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
             {
               "symbol": "AutoRefillScope",
               "mechanism": "identifier",
@@ -7110,14 +7059,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "AutoRefillMemory",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/auto_refill_policy.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "AutoRefillScope",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -7130,7 +7071,6 @@
             {
               "target": "src/core/equipment/auto_refill_policy.js",
               "symbols": [
-                "AutoRefillMemory",
                 "AutoRefillScope"
               ],
               "resolution": "confirmed"
@@ -9946,12 +9886,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "FreshestRefillCandidatePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "InventoryItemLocation",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -9991,14 +9925,6 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "FreshestRefillCandidatePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/application/inventory/freshest_refill_candidate_policy.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryItemLocation",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -10016,13 +9942,6 @@
             }
           ],
           "items": [
-            {
-              "target": "src/application/inventory/freshest_refill_candidate_policy.js",
-              "symbols": [
-                "FreshestRefillCandidatePolicy"
-              ],
-              "resolution": "confirmed"
-            },
             {
               "target": "src/core/assemblies/item_assembly_reader.js",
               "symbols": [

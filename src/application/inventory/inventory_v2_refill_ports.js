@@ -10,7 +10,7 @@ class InventoryV2RefillInventoryPort {
     signaturePolicy,
     stackingPolicy,
     reservationPolicy = null,
-    candidatePolicy = new FreshestRefillCandidatePolicy(),
+    candidatePolicy,
   } = {}) {
     if (!reservationPolicy?.isReserved) {
       throw new TypeError(

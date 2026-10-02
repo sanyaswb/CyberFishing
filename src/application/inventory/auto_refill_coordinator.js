@@ -19,13 +19,7 @@ class ExactInventoryAutoRefillPort extends AutoRefillPort {
     }
     this.#inventoryPort = inventoryPort;
     this.#targetWriter = targetWriter;
-    this.#signaturePolicy =
-      signaturePolicy ||
-      (typeof ExactAssemblyRefillSignaturePolicy !== "undefined"
-        ? new ExactAssemblyRefillSignaturePolicy()
-        : typeof ExactItemSignaturePolicy !== "undefined"
-        ? new ExactItemSignaturePolicy()
-        : null);
+    this.#signaturePolicy = signaturePolicy;
   }
 
   refillExact(target, signature) {
