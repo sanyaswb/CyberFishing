@@ -1147,6 +1147,22 @@
       ]
     },
     {
+      "id": "bridge-458830160792",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-465e746a78c9",
       "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1759,6 +1775,22 @@
       ]
     },
     {
+      "id": "bridge-694824b16038",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/application/inventory/inventory_v2_composition_root.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-69e08a840e34",
       "bridge": "src/core/items/progression/item_progression_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -1898,6 +1930,22 @@
       "globalProviders": [
         {
           "symbol": "PullInputMapper",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6f2effa3edcf",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-4",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
           "mechanism": "global-this-property"
         }
       ]
@@ -3619,6 +3667,22 @@
       ]
     },
     {
+      "id": "bridge-d0947069c1da",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-d1231113ad43",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/cast_power.js",
@@ -4059,6 +4123,22 @@
       ]
     },
     {
+      "id": "bridge-ebe106483863",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ec0c2115d440",
       "bridge": "src/core/assemblies/assembly_profile_registry.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -4070,6 +4150,22 @@
       "globalProviders": [
         {
           "symbol": "AssemblyProfileRegistry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ed0bb2e35bf4",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
           "mechanism": "global-this-property"
         }
       ]

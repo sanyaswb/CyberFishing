@@ -9,7 +9,34 @@
   "tierEvidence": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work.",
   "modules": [
     {
-      "currentPath": "src/infrastructure/storage/cache_manager.js"
+      "currentPath": "src/infrastructure/storage/cache_manager.js",
+      "targetPath": "src/platform/browser/storage/cache_manager.js",
+      "exports": [
+        "CacheManager"
+      ],
+      "imports": [],
+      "allowedGlobals": [
+        "console",
+        "localStorage"
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work."
+        },
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Static host storage adapter owns the existing save boundary. Shared Platform check proves original fishing_game_ prefix and JSON bytes, detached read/round trip, malformed read fallback/warning, remove and clearAll foreign-key preservation. Preparation 005 injects the same cache into Application and UI callers; no new writable state or save format/cadence. No frame work."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
@@ -19,5 +46,128 @@
       "script": "utils/platform-runtime-check.js"
     }
   ],
-  "output": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-036-platform-cache",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/infrastructure/storage/cache_manager.js",
+        "targetPath": "src/platform/browser/storage/cache_manager.js",
+        "sourceSha256": "e9b25c3779b48514734e8a7b68c29059956aedf768cba3db1d004506b9b4246d",
+        "targetSha256": "698a15570a24752bcf7c6b47fe9e52a962f2194b6ed32fa08757904740648ba0"
+      }
+    ],
+    "activations": [
+      "activation-a9bd2f5c7469"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-458830160792",
+      "bridge-694824b16038",
+      "bridge-6f2effa3edcf",
+      "bridge-d0947069c1da",
+      "bridge-ebe106483863",
+      "bridge-ed0bb2e35bf4"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/036_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "e9d4b5b691ac52415318a9390f86feaaaaed5719aa025b9f1373ef1cdfb49b6e",
+        "after": "e99aebfbc9045ed55580341e33b62cf32bd0e7804d0063a13dd1f80f580956f4"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "a2b6158c33ca12f3179f0f1708aa88981906ec843dc710d729b43c4c4cad1ac4",
+        "after": "a2b6158c33ca12f3179f0f1708aa88981906ec843dc710d729b43c4c4cad1ac4"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "790ce711ca27036df09ebafaf44432ce3cccaa64edc2e0185eb6ffc9505b9222",
+        "after": "03629df7fef78017f7bc24eb02cafa04f40a9b86ad134a8accba8bba9928c9dc"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "40303bf2162d5f957e508fb48d29b4a1877d0ecf0b12cb6ab4a48cde450dce62",
+        "after": "1c85857aa12a869ff7fc56d7d2e27e7e3a4abd409b89ba31011828faeafe5d14"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "5e2d4b075632122d43be684784aa594936a4b63911d80f1c442760450456f3c2",
+        "after": "132242c2d9acc5e2a983d85309d1e6f65a5f380103a958556a8a6c02e54f8133"
+      },
+      {
+        "path": "index.html",
+        "before": "fd6d8891ade6260c7ecd39e4baaacded144012bd81feb3dddbfccad5673d05f7",
+        "after": "39f85726b9ebc3d911ed14aefcfd2c5dbde2cadffb900e53e228aa71319d6eb7"
+      },
+      {
+        "path": "src/infrastructure/storage/cache_manager.js",
+        "before": "e9b25c3779b48514734e8a7b68c29059956aedf768cba3db1d004506b9b4246d",
+        "after": "521636ddf3d834fbde6c393507544b2c5fe7b2df605ac716d857b75c05e2bfcc"
+      },
+      {
+        "path": "src/platform/browser/storage/cache_manager.js",
+        "before": null,
+        "after": "698a15570a24752bcf7c6b47fe9e52a962f2194b6ed32fa08757904740648ba0"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 637 modules, 897 unified edges, 852 globals, 112 exact known-debt diagnostics, 0 FAIL in 748ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 637/637 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.24.89, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 162 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 162 activations and 272 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 22 applied, 50 ESM target(s) inside their boundaries; 14 projector, 15 retirement and 2 preparation relocation fixtures."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "platform-runtime",
+        "status": "PASS",
+        "sha256": "1dee3d9944592fc693a009cb9777f901d1d0e0198bc2e05971b3347c48cab716"
+      }
+    ]
+  }
 }

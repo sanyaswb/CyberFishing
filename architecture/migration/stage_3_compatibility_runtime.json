@@ -1743,6 +1743,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "CacheManager",
+      "legacyScriptIndex": 41,
+      "legacySymbol": "CacheManager",
+      "shimFile": "activations/041_cachemanager.js",
+      "sourceProvider": "src/infrastructure/storage/cache_manager.js",
+      "targetModule": "src/platform/browser/storage/cache_manager.js",
+      "id": "activation-a9bd2f5c7469",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-aad64fe0f08c",
       "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
       "sourceProvider": "src/core/line/line_allocation_policy.js",
