@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.25.1 - Stage 4 M2 Application Modules
+
+### Changed
+
+- Stage 4 M2: completed application state, fishing and inventory ESM migration with injected platform capabilities, identical hot-loop evidence and unchanged saves; removed unused historical check reconstruction.
+
 ## v0.25.0 - Stage 4 M1 Config And Platform Modules
 
 ### Changed

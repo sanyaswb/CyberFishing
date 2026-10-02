@@ -572,3 +572,5 @@ expand a baseline solely to make a check pass
 Do not bypass these cases with a workaround; review the dependency design.
 
 Stage 4 M2 tooling closure (2026-10-02): removed unused HistoryBase workspace reconstruction and its runner/seal policy, plus two unreachable historical helpers (3 archived files, 357 lines; archive tag stage4-m2-tools-archive). No live check removed; cache scope/tooling invalidation regression PASS; acceptance Full 64/64 executed, 0 cached, unchanged source. utils 70,277 lines < M2 baseline 70,358. Corrected cluster 030 browser performer label to actual Codex without changing its evidence.
+
+Stage 4 M2 released (2026-10-02): v0.25.1, release 002_m2-application. 36 clusters / 96 ESM targets, no pending cluster; 009 formally deferred. Runtime 177 active / 124 retired / 7 inert, 206 bridges, 67 debts, 852 globals, 301 classic src tags. Acceptance Full 64/64 at tooling closure; exact release metadata delta validated and cluster records PASS. Owner manual play remains pending; automated substitute is authorized.

@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-const CURRENT_PROJECT_VERSION = "0.25.0";
+const CURRENT_PROJECT_VERSION = "0.25.1";
 
 const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,11 @@ const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stage-4-m1-config-platform",
+  codename: "stage-4-m2-application",
   updatedAt: "2026-10-02",
   notes: Object.freeze([
-    "Move the configuration and the browser platform layer to layered ESM modules",
-    "Keep gameplay, timing and saved inventories unchanged",
-    "Twenty-three clusters migrated; the classic script list shrank from 325 to 296 tags",
+    "Complete application orchestration and inventory ESM migration",
+    "Preserve gameplay, hot-loop traces, inventory saves and runtime identities",
   ]),
 });
 
