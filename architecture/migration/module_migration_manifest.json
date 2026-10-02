@@ -1051,6 +1051,18 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "InventoryEventBridge",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryItemViewFactory",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "InventoryManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1063,6 +1075,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "InventoryV2ActionType",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "InventoryV2BalanceParameterResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1070,6 +1088,12 @@
             },
             {
               "symbol": "InventoryV2Bootstrap",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2CompositionRoot",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -1381,6 +1405,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "SLOT_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "ScoutingState",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1515,7 +1545,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "classified",
+        "migrationStatus": "migrating",
         "roles": [
           "bootstrap"
         ],
@@ -2280,6 +2310,22 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "InventoryEventBridge",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/systems/inventory_system.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryItemViewFactory",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/systems/inventory_item_view_factory.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "InventoryManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2296,6 +2342,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "InventoryV2ActionType",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "InventoryV2BalanceParameterResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2309,6 +2363,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_bootstrap.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2CompositionRoot",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/application/inventory/inventory_v2_composition_root.js",
               "resolution": "confirmed"
             },
             {
@@ -2720,6 +2782,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "SLOT_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "ScoutingState",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -3078,6 +3148,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/application/inventory/inventory_v2_composition_root.js",
+              "symbols": [
+                "InventoryV2CompositionRoot"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/assets/asset_preload_coordinator.js",
               "symbols": [
                 "AssetPreloadCoordinator"
@@ -3115,7 +3192,8 @@
             {
               "target": "src/config/runtime/config_data.js",
               "symbols": [
-                "CONFIG"
+                "CONFIG",
+                "SLOT_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -3723,8 +3801,16 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/systems/inventory_item_view_factory.js",
+              "symbols": [
+                "InventoryItemViewFactory"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/systems/inventory_system.js",
               "symbols": [
+                "InventoryEventBridge",
                 "InventoryManager",
                 "InventoryRuntimeConfigProvider",
                 "ItemDatabase",
@@ -3750,6 +3836,13 @@
               "target": "src/ui/inventory/inventory_v2_bootstrap.js",
               "symbols": [
                 "InventoryV2Bootstrap"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "symbols": [
+                "InventoryV2ActionType"
               ],
               "resolution": "confirmed"
             },
@@ -44772,6 +44865,57 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/inventory/random_inventory_id.js",
+      "currentArea": "platform/browser/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [
+            "crypto"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/inventory/random_inventory_id.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/platform/browser/location/depth_map_reader.js",
       "currentArea": "platform/browser/location",
       "observed": {
@@ -48196,12 +48340,6 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CastDistanceCalculator",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -48238,30 +48376,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "InventoryItemViewFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2CompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2CompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "ItemRarityResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -48284,18 +48398,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -48313,15 +48415,10 @@
             "Set",
             "String",
             "TypeError",
-            "globalThis",
             "parseInt",
             "undefined"
           ],
-          "browserApis": [
-            "CustomEvent",
-            "crypto",
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -48339,14 +48436,6 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_data.js",
-              "resolution": "confirmed"
-            },
             {
               "symbol": "CastDistanceCalculator",
               "mechanism": "identifier",
@@ -48396,38 +48485,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "InventoryItemViewFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/systems/inventory_item_view_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2CompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/application/inventory/inventory_v2_composition_root.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2CompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/application/inventory/inventory_v2_composition_root.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "ItemRarityResolver",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -48458,44 +48515,13 @@
               "executionPhase": "deferred",
               "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
               "resolution": "confirmed"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_data.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_data.js",
-              "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/application/inventory/inventory_v2_composition_root.js",
-              "symbols": [
-                "InventoryV2CompositionRoot"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/config/physics/physics_config_adapter.js",
               "symbols": [
                 "FightPhysicsConfigAdapter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/runtime/config_data.js",
-              "symbols": [
-                "CONFIG",
-                "SLOT_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -48552,20 +48578,6 @@
               "target": "src/systems/inventory_item_factory.js",
               "symbols": [
                 "InventoryItemFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/inventory_item_view_factory.js",
-              "symbols": [
-                "InventoryItemViewFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "symbols": [
-                "InventoryV2ActionType"
               ],
               "resolution": "confirmed"
             }

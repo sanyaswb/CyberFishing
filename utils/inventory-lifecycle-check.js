@@ -168,10 +168,12 @@ class InventoryFixtureFactory {
   #ruleMessages;
   #effectiveStatsResolver;
   #itemStatOverridePolicy;
+  #slotConfig;
 
   // Composes the item stat collaborators the way GameCompositionRoot does.
   constructor(runtime) {
     this.#InventoryManager = runtime.InventoryManager;
+    this.#slotConfig = runtime.SLOT_CONFIG;
     this.#LineCompatibilityRules = runtime.LineCompatibilityRules;
     this.#ruleMessages = runtime.INVENTORY_RULE_MESSAGES;
     this.#itemStatOverridePolicy = new runtime.ItemStatOverridePolicy({ config: runtime.ITEM_STAT_OVERRIDE_CONFIG });
@@ -263,6 +265,7 @@ class InventoryFixtureFactory {
       this.#effectiveStatsResolver,
       this.#itemStatOverridePolicy,
       MemoryCacheManager,
+      { slotConfig: this.#slotConfig },
     );
     return { manager, events };
   }

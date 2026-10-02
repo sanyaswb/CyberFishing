@@ -71,6 +71,15 @@ assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[assetAc
 assert.equal(assetPlanner.plan(assetGraphFixture).issues.length,1);
 assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[{...assetActivation,id:"wrong"}]}).issues.length,1);
 const preparations = StageFourClusterLedger.preparations(ROOT);
+// Exact preparation imports: reject an unrecorded source, implicit paths, duplicates or missing review.
+const preparationImport = {files:[{path:"src/app/bootstrap.js"}],importEdges:[{
+  source:"src/app/bootstrap.js",target:"src/platform/browser/inventory/random_inventory_id.js",reason:"UUID port"}]};
+assert.doesNotThrow(()=>StageFourClusterLedger.validatePreparationImports(preparationImport));
+for(const change of [{source:"src/app/unrecorded.js"},{target:"../escape.js"},{reason:""}])
+  assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
+    importEdges:[{...preparationImport.importEdges[0],...change}]}),/preparation import/u);
+assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
+  importEdges:[preparationImport.importEdges[0],preparationImport.importEdges[0]]}),/duplicate/u);
 const preparationRetired = new Set(preparations.flatMap(record => (record.replacedBridges || []).map(pair => pair.before.id)));
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
 const retiredActivations = new Set((contract.retiredActivations || []).map((item) => item.activation.id));

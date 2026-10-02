@@ -51,6 +51,8 @@ const approvedEsmEdges = [...new Set([
     .map((item) => `${item.bridge}->${item.target}`),
   ...reviewedImportEdges,
   ...StageFourClusterLedger.read(PROJECT_ROOT).reviewedImportEdges(),
+  ...StageFourClusterLedger.preparations(PROJECT_ROOT).flatMap(record =>
+    (record.importEdges || []).map(edge => `${edge.source}->${edge.target}`)),
 ])].sort();
 if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {
   throw new Error(`Live ESM edges must equal exact approved bridge edges: expected ${approvedEsmEdges.join(", ") || "none"}; received ${actualEsmEdges.join(", ") || "none"}`);

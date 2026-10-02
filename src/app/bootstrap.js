@@ -445,13 +445,15 @@ class GameCompositionRoot {
       { messages: INVENTORY_RULE_MESSAGES },
     );
     const runtimeConfigProvider = new InventoryRuntimeConfigProvider(
-      this.#config,
+      this.#runtimeConfig,
       physicsConfig,
     );
+    const { createRandomInventoryId } = await import("../platform/browser/inventory/random_inventory_id.js");
+    const { BrowserEventTargetAdapter } = await import("../platform/browser/runtime/legacy_runtime_adapters.js");
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
-      undefined,
+      new InventoryEventBridge(new BrowserEventTargetAdapter(document)),
       castDistanceCalculator,
       lineRules,
       runtimeConfigProvider,
@@ -465,6 +467,14 @@ class GameCompositionRoot {
       effectiveItemStatsResolver,
       itemStatOverridePolicy,
       CacheManager,
+      {
+        slotConfig: SLOT_CONFIG,
+        createItemViewFactory: (options) => new InventoryItemViewFactory(options),
+        composeInventoryV2: (options) => InventoryV2CompositionRoot.compose(options),
+        actions: InventoryV2ActionType,
+        makeRandomId: createRandomInventoryId,
+        now: () => Date.now(),
+      },
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };

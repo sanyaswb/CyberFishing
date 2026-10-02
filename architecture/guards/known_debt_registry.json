@@ -44,29 +44,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-0443385cf1e2",
-      "rule": "boundary-dependency",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/application/inventory/inventory_v2_composition_root.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "0443385cf1e2f4ead19d77616c3c0a4568108684533f0e58dab7db92cf0f1af2",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/inventory_system.js",
-        "target": "src/application/inventory/inventory_v2_composition_root.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-0d301fbbd279",
       "rule": "boundary-dependency",
       "source": "src/debug/modules/reel_hold_gate_live_probe.js",
@@ -379,29 +356,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-778efb808c0f",
-      "rule": "boundary-dependency",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/ui/inventory/inventory_v2_view_model.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "778efb808c0fe0faf562c499c9213b9113f56c6ae8dbf8f2fa6b0010404fd2c3",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/inventory_system.js",
-        "target": "src/ui/inventory/inventory_v2_view_model.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-883690d84be3",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
@@ -477,29 +431,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/bootstrap.js",
         "target": "src/config/databases/item_db.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-8d30bbdf320f",
-      "rule": "boundary-dependency",
-      "source": "src/systems/inventory_system.js",
-      "target": "src/systems/inventory_item_view_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8d30bbdf320fa495e8cbbe64bb7a85e4ce362bccd858f8da04f39c1ff4948bf7",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/systems/inventory_system.js",
-        "target": "src/systems/inventory_item_view_factory.js"
       }
     },
     {
@@ -762,30 +693,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-06f70b1680c3",
-      "rule": "browser-capability",
-      "source": "src/systems/inventory_system.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "06f70b1680c3dede8e53e76ce0f102840945c4893ee5e419f205f3e78ce18a10",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/inventory_system.js",
-        "target": "environment:dom",
-        "identifier": "document"
-      }
-    },
-    {
       "id": "debt-browser-capability-07aca4fda103",
       "rule": "browser-capability",
       "source": "src/app/bootstrap.js",
@@ -896,30 +803,6 @@
         "source": "src/debug/overlay/overlay_bootstrap.js",
         "target": "environment:browser-events",
         "identifier": "addEventListener"
-      }
-    },
-    {
-      "id": "debt-browser-capability-2d65e06ba655",
-      "rule": "browser-capability",
-      "source": "src/systems/inventory_system.js",
-      "target": "environment:browser-events",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "2d65e06ba6557671945d9a60c8f06fdc01080717f75c02ab4f1a1a72f3d1f164",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/inventory_system.js",
-        "target": "environment:browser-events",
-        "identifier": "CustomEvent"
       }
     },
     {
@@ -1331,30 +1214,6 @@
         "source": "src/debug/overlay/overlay_bootstrap.js",
         "target": "environment:browser-runtime",
         "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-d19780e817d0",
-      "rule": "browser-capability",
-      "source": "src/systems/inventory_system.js",
-      "target": "environment:cryptography",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "d19780e817d0cc94dce60340b67d2a9becfecd17dab5886328ad427783ec24c3",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/systems/inventory_system.js",
-        "target": "environment:cryptography",
-        "identifier": "crypto"
       }
     },
     {

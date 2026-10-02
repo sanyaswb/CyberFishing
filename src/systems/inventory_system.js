@@ -250,7 +250,7 @@ class InventoryRuntimeConfigProvider {
   #physicsConfig;
 
   constructor(
-    config = typeof CONFIG !== "undefined" ? CONFIG : null,
+    config = null,
     physicsConfig = null,
   ) {
     this.#config = config || null;
@@ -571,7 +571,7 @@ class InventoryEventBridge {
   #target;
   #listeners = new Map();
 
-  constructor(target = typeof document !== "undefined" ? document : null) {
+  constructor(target = null) {
     this.#target = target;
   }
 
@@ -593,7 +593,7 @@ class InventoryEventBridge {
       }
     }
 
-    this.#target?.dispatchEvent(new CustomEvent(type, { detail }));
+    this.#target?.emit(type, detail);
   }
 
   clear() {
@@ -986,6 +986,11 @@ class InventoryManager {
   #effectiveRarityResolver;
   #itemFreshnessResolver;
   #cache;
+  #slotConfig;
+  #composeInventoryV2;
+  #actions;
+  #makeRandomId;
+  #now;
 
   constructor(
     itemDB,
@@ -1004,8 +1009,15 @@ class InventoryManager {
     effectiveStatsResolver,
     itemStatOverridePolicy,
     cache,
+    { slotConfig, createItemViewFactory = null, composeInventoryV2 = null,
+      actions = null, makeRandomId = null, now = Date.now } = {},
   ) {
     this.#cache = cache;
+    this.#slotConfig = slotConfig;
+    this.#composeInventoryV2 = composeInventoryV2;
+    this.#actions = actions;
+    this.#makeRandomId = makeRandomId;
+    this.#now = now;
     const cachedInventory = InventoryItemIdMigrationPolicy.migrateItems(
       this.#cache.get("player_inventory") || playerConfig.inventory || [],
     );
@@ -1032,7 +1044,7 @@ class InventoryManager {
     this.#stackingPolicy =
       stackingPolicy || new InventoryItemStackingPolicy();
     this.#inventory = new Inventory(cachedInventory, this.#itemFactory);
-    this.#equipment = new InventoryEquipment(SLOT_CONFIG, cachedEquipment);
+    this.#equipment = new InventoryEquipment(this.#slotConfig, cachedEquipment);
     this.#events = events || new InventoryEventBridge();
     this.#castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator();
@@ -1043,8 +1055,8 @@ class InventoryManager {
       new InventoryRuntimeDisplayStatsResolver();
     this.#itemViewFactory = itemViewFactory || (
       itemProgressionResolver &&
-      typeof InventoryItemViewFactory !== "undefined"
-        ? new InventoryItemViewFactory({
+      createItemViewFactory
+        ? createItemViewFactory({
             itemDatabase: this.#db,
             progressionResolver: itemProgressionResolver,
             conditionResolver: itemConditionResolver,
@@ -1076,8 +1088,8 @@ class InventoryManager {
   }
 
   #initializeInventoryV2(legacyEquipment, playerConfig) {
-    if (typeof InventoryV2CompositionRoot === "undefined") return;
-    this.#inventoryV2 = InventoryV2CompositionRoot.compose({
+    if (!this.#composeInventoryV2) return;
+    this.#inventoryV2 = this.#composeInventoryV2({
       cache: this.#cache,
       legacyItems: this.#inventory.getAll(),
       legacyEquipment,
@@ -1089,7 +1101,7 @@ class InventoryManager {
           typeof context === "string" ? context : context?.prefix || "item";
         return this.#makeId(prefix);
       },
-      now: () => Date.now(),
+      now: () => this.#now(),
       loadValueProvider: () => this.getMaxTackleLoadKg(),
       lineConfig: this.#lineRules.config,
       itemFreshnessResolver: this.#itemFreshnessResolver,
@@ -1116,19 +1128,17 @@ class InventoryManager {
   }
 
   #makeId(prefix) {
-    const cryptoObj = globalThis.crypto;
-    if (cryptoObj?.randomUUID) {
-      return `${prefix}_${cryptoObj.randomUUID()}`;
-    }
+    const randomId = this.#makeRandomId?.(prefix);
+    if (randomId != null) return randomId;
 
     InventoryManager.#fallbackId++;
-    return `${prefix}_${Date.now()}_${InventoryManager.#fallbackId}`;
+    return `${prefix}_${this.#now()}_${InventoryManager.#fallbackId}`;
   }
 
   saveBuild(buildName) {
     if (this.#inventoryV2Facade) {
       const result = this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.LOADOUT_SAVE,
+        type: this.#actions.LOADOUT_SAVE,
         name: String(buildName || ""),
       });
       return {
@@ -1233,7 +1243,7 @@ class InventoryManager {
   disassembleBuild(buildId) {
     if (this.#inventoryV2Facade) {
       return this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.INVENTORY_ITEM_LONG_PRESS,
+        type: this.#actions.INVENTORY_ITEM_LONG_PRESS,
         instanceId: buildId,
       });
     }
@@ -1259,11 +1269,11 @@ class InventoryManager {
   equipBuild(buildId) {
     if (this.#inventoryV2Facade) {
       return this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        type: this.#actions.INVENTORY_ITEM_ACTIVATE,
         instanceId: buildId,
       });
     }
-    this.#unequipSlotsWithLifecycle(Object.keys(SLOT_CONFIG), {
+    this.#unequipSlotsWithLifecycle(Object.keys(this.#slotConfig), {
       save: false,
       notify: false,
     });
@@ -1314,10 +1324,10 @@ class InventoryManager {
 
   #getBuildEquipPriority(itemData) {
     if (!itemData) return 100;
-    if (SLOT_CONFIG.rod.acceptTypes.includes(itemData.itemType)) return 0;
-    if (SLOT_CONFIG.reel.acceptTypes.includes(itemData.itemType)) return 10;
-    if (SLOT_CONFIG.line.acceptTypes.includes(itemData.itemType)) return 20;
-    if (SLOT_CONFIG.leader.acceptTypes.includes(itemData.itemType)) return 30;
+    if (this.#slotConfig.rod.acceptTypes.includes(itemData.itemType)) return 0;
+    if (this.#slotConfig.reel.acceptTypes.includes(itemData.itemType)) return 10;
+    if (this.#slotConfig.line.acceptTypes.includes(itemData.itemType)) return 20;
+    if (this.#slotConfig.leader.acceptTypes.includes(itemData.itemType)) return 30;
     return 50;
   }
 
@@ -1338,12 +1348,12 @@ class InventoryManager {
       };
     }
     const safeWhileLocked = new Set([
-      InventoryV2ActionType.OPEN,
-      InventoryV2ActionType.CLOSE,
-      InventoryV2ActionType.CATEGORY_SELECT,
-      InventoryV2ActionType.ASSEMBLY_BACK,
-      InventoryV2ActionType.AUTO_BAIT_CHANGE,
-      InventoryV2ActionType.AUTO_CHUM_CHANGE,
+      this.#actions.OPEN,
+      this.#actions.CLOSE,
+      this.#actions.CATEGORY_SELECT,
+      this.#actions.ASSEMBLY_BACK,
+      this.#actions.AUTO_BAIT_CHANGE,
+      this.#actions.AUTO_CHUM_CHANGE,
     ]);
     if (this.#isLocked && !safeWhileLocked.has(action.type)) {
       return {
@@ -1485,7 +1495,7 @@ class InventoryManager {
   autoEquipItem(instanceId) {
     if (this.#inventoryV2Facade) {
       const result = this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        type: this.#actions.INVENTORY_ITEM_ACTIVATE,
         instanceId,
       });
       return {
@@ -1522,7 +1532,7 @@ class InventoryManager {
 
   #findTargetSlotPath(itemData) {
     let baseSlot = null;
-    for (const [slot, config] of Object.entries(SLOT_CONFIG)) {
+    for (const [slot, config] of Object.entries(this.#slotConfig)) {
       if (config.acceptTypes && config.acceptTypes.includes(itemData.itemType)) {
         baseSlot = slot;
         break;
@@ -1722,7 +1732,7 @@ class InventoryManager {
   equipItem(slotPath, instanceId) {
     if (this.#inventoryV2Facade) {
       return this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+        type: this.#actions.INVENTORY_ITEM_ACTIVATE,
         instanceId,
       }).success === true;
     }
@@ -1823,7 +1833,7 @@ class InventoryManager {
       const slotId = slotMap[slotPath];
       if (!slotId) return false;
       return this.dispatchInventoryV2Action({
-        type: InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS,
+        type: this.#actions.EQUIPMENT_SLOT_LONG_PRESS,
         slotId,
         instanceId:
           this.#inventoryV2.equipmentState.getRootInstanceId(slotId) || "missing",
@@ -1846,7 +1856,7 @@ class InventoryManager {
     const raw = this.#equipment.getRawState();
     const slotPaths = [];
 
-    for (const [slotName, settings] of Object.entries(SLOT_CONFIG)) {
+    for (const [slotName, settings] of Object.entries(this.#slotConfig)) {
       if (settings.type === "array") {
         const instanceIds = raw[slotName] || [];
         for (let i = 0; i < instanceIds.length; i++) {
@@ -1959,7 +1969,7 @@ class InventoryManager {
     if (!validation.isValid) return validation;
 
     const baseSlot = (slotPath || "").split("_")[0];
-    const slotConfig = typeof SLOT_CONFIG !== "undefined" ? SLOT_CONFIG[baseSlot] : null;
+    const slotConfig = this.#slotConfig !== undefined ? this.#slotConfig[baseSlot] : null;
     if (
       slotConfig?.acceptTypes &&
       itemData?.itemType &&

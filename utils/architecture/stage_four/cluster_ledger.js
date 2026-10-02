@@ -48,6 +48,7 @@ class StageFourClusterLedger {
       assert.equal(record.kind, "cyber-fishing-stage-4-preparation");
       assert(record.reason && /^[0-9a-f]{40}$/u.test(record.baseCommit));
       assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
+      StageFourClusterLedger.validatePreparationImports(record);
       for (const pair of record.replacedBridges || []) StageFourClusterLedger.validateBridgeRelocation(pair);
       return record;
     });
@@ -59,6 +60,20 @@ class StageFourClusterLedger {
     assert.notEqual(after.source, before.source, "relocation must move the consumer");
     assert.deepEqual({ ...after, id: before.id, source: before.source }, before,
       "relocation may change only consumer path and canonical id");
+  }
+
+  // Native imports introduced during preparation are approved by exact endpoints, like cluster
+  // imports. Two uses: bootstrap's event adapter and UUID capability before inventory migration.
+  static validatePreparationImports(record) {
+    const files = new Set((record.files || []).map(item => item.path));
+    for (const edge of record.importEdges || []) {
+      assert(edge.reason, "preparation import needs a written reason");
+      assert(files.has(edge.source), "preparation import source must be a recorded edit");
+      assert(/^src\/.+\.js$/u.test(edge.source) && /^src\/.+\.js$/u.test(edge.target),
+        "preparation import endpoints must be explicit source modules");
+    }
+    assert.equal(new Set((record.importEdges || []).map(edge => `${edge.source}->${edge.target}`)).size,
+      (record.importEdges || []).length, "duplicate preparation import");
   }
 
   get records() {
