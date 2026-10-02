@@ -235,3 +235,15 @@ the annotated tag `stage3-closed`; the live Domain gate stays `domain-boundary`.
 | stage-3-batch-reviewed-shapes-fixtures | Stage 3 batch reviewed top-level functions and local compositions accept only exact reviewed facts | quick, architecture |
 | stage-3-prerequisite-transition-fixtures | Stage 3 prerequisite Manifest-update and global-provider-addition negative fixtures | quick, architecture |
 | stage-3-state-identity-replacement-fixtures | Stage 3 state-identity transactional swap, rebuilt index and size read fixtures | quick, architecture |
+
+## M1 utils closure (2026-10-02, before release 0.25.0)
+
+Working rule 6 (utils must not grow across a milestone; baseline 72,035 tracked utils .js/.json lines at 893301c):
+the archived check `stage-1-closure` (table above) failed on develop since Stage 4.1 (its validator pins the Stage 3
+package contract label) and only the package script `architecture:closure` still named it. Its source and the files
+only it reached left develop: `utils/architecture/stage-1-closure-check.js`, `closure/stage_one_closure_validator.js`
+and `domain_batches/stage_three_batch_008_{behavior_cases,candidate_build,cutover,source_build}.js` (6 files, 2,369
+lines; require/string closure of the catalog, package scripts and Stage 4 CLIs). They run unchanged at
+`stage3-evidence-archive` / `stage3-closed`. The package script stays (package.json is pinned except its version);
+removing it is deferred together with the `struct` script decision. The release delta of the Stage 4 release command
+keeps the Stage 1 package pin's intent: a release may change only the version fields.
