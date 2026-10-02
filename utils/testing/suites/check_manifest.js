@@ -228,22 +228,10 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["architecture"],
   },
   {
-    id: "stage-3-compatibility-runtime-integration",
-    title: "Stage 3.0.4 cumulative compatibility runtime integration",
-    file: "utils/architecture/stage-3-compatibility-runtime-integration-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
     id: "stage-3-candidate-batch-fixtures",
     title: "Stage 3.0.5 candidate batch policy and contract fixtures",
     file: "utils/architecture/stage-3-candidate-batch-fixture-check.js",
     suites: ["architecture"],
-  },
-  {
-    id: "stage-3-candidate-batch-integration",
-    title: "Stage 3.0.5 candidate batch corpus and coverage",
-    file: "utils/architecture/stage-3-candidate-batch-integration-check.js",
-    suites: ["quick", "architecture"],
   },
   {
     id: "stage-3-approved-prefix-fixtures",
@@ -251,19 +239,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     file: "utils/architecture/stage-3-approved-prefix-fixture-check.js",
     suites: ["architecture"],
   },
-  {
-    id: "stage-3-approved-prefix-integration",
-    title: "Stage 3.0.6 approved-prefix freeze integration",
-    file: "utils/architecture/stage-3-approved-prefix-integration-check.js",
-    suites: ["quick", "architecture"],
-  },
-    {
-      id: "stage-3-batch-051-architecture",
-      title: "Stage 3.52.0–3.52.7 fish force system domain migration with composition identities, six retired activations, a per-frame representation-only target and rollback gates",
-      file: "utils/architecture/stage-3-batch-check-runner.js",
-      args: ["--batch", "051", "--mode", "architecture"],
-      suites: ["quick", "architecture"],
-    },
     {
       id: "stage-3-batch-reviewed-shapes-fixtures",
       title: "Stage 3 batch reviewed top-level functions and local compositions accept only exact reviewed facts",
@@ -301,21 +276,9 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["quick", "architecture"],
     },
     {
-      id: "stage-3-50-graph-review",
-      title: "Stage 3.50.0 repeated graph review byte-identical replay",
-      file: "utils/architecture/stage-3-50-graph-review.js",
-      suites: ["architecture"],
-    },
-    {
-      id: "stage-3-50-review-queue-freeze",
-      title: "Stage 3.50.1 review-queue hot-loop evidence and freeze extension byte-identical replay",
-      file: "utils/architecture/stage-3-50-review-queue-freeze.js",
-      suites: ["architecture"],
-    },
-    {
-      id: "stage-3-closure",
-      title: "Stage 3 closure gates: Domain migrated, Domain/Engine dependencies only, no browser/DEV/transport globals, removal paths",
-      file: "utils/architecture/stage-3-closure-check.js",
+      id: "domain-boundary",
+      title: "Live Domain boundary: Domain/Engine imports only, no browser/DEV/config/transport globals, one implementation, bridge removal paths",
+      file: "utils/architecture/domain-boundary-check.js",
       suites: ["quick", "architecture"],
     },
     {
@@ -324,54 +287,6 @@ const CHECK_DEFINITIONS = Object.freeze([
       file: "utils/architecture/stage-3-state-identity-replacement-fixtures-check.js",
       suites: ["quick", "architecture"],
     },
-  {
-    id: "stage-3-inventory-equip-target-batch",
-    title: "Stage 3.1 inventory equip-target domain batch",
-    file: "utils/architecture/stage-3-inventory-equip-target-batch-check.js",
-    suites: ["quick", "architecture", "inventory"],
-  },
-  {
-    id: "stage-3-reel-auto-recovery-prebuild",
-    title: "Stage 3.2 reel auto-recovery pre-build contract",
-    file: "utils/architecture/stage-3-reel-auto-recovery-prebuild-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "stage-3-reel-auto-recovery-runtime",
-    title: "Stage 3.2 reel auto-recovery post-build runtime",
-    file: "utils/architecture/stage-3-reel-auto-recovery-runtime-check.js",
-    suites: ["quick", "architecture", "gameplay"],
-  },
-  {
-    id: "stage-3-line-tension-prebuild",
-    title: "Stage 3.3 line-tension pre-build contract",
-    file: "utils/architecture/stage-3-line-tension-prebuild-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "stage-3-line-tension-runtime",
-    title: "Stage 3.3 line-tension post-build runtime",
-    file: "utils/architecture/stage-3-line-tension-runtime-check.js",
-    suites: ["quick", "architecture", "gameplay"],
-  },
-  {
-    id: "stage-3-rod-capability-prebuild",
-    title: "Stage 3.4 rod-capability pre-build contract",
-    file: "utils/architecture/stage-3-rod-capability-prebuild-check.js",
-    suites: ["quick", "architecture", "inventory-v2"],
-  },
-  {
-    id: "stage-3-rod-capability-runtime",
-    title: "Stage 3.4 rod-capability post-build runtime",
-    file: "utils/architecture/stage-3-rod-capability-runtime-check.js",
-    suites: ["quick", "architecture", "inventory-v2"],
-  },
-  {
-    id: "stage-3-fishing-foundation-runtime",
-    title: "Stage 3.5 fishing-foundation post-build runtime",
-    file: "utils/architecture/stage-3-fishing-foundation-runtime-check.js",
-    suites: ["quick", "architecture", "gameplay"],
-  },
   {
     id: "line-allocation",
     title: "Line allocation domain",
@@ -532,7 +447,7 @@ const CHECK_DEFINITIONS = Object.freeze([
     id: "game-cycle",
     title: "Full game cycle",
     file: "utils/game-cycle-check.js",
-    suites: ["gameplay"],
+    suites: ["quick", "gameplay"],
   },
   {
     id: "devtools-links",

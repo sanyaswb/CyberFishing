@@ -25,11 +25,6 @@ const SNAPSHOT_CONTRACTS = Object.freeze([
 // every check except the seven that rebuild dist (live or in the history base) and the cache
 // regression check (it runs nested check runners).
 const WRITERS = Object.freeze([
-  "stage-3-compatibility-runtime-integration",
-  "stage-3-fishing-foundation-runtime",
-  "stage-3-line-tension-runtime",
-  "stage-3-reel-auto-recovery-runtime",
-  "stage-3-rod-capability-runtime",
 ]);
 const READ_ONLY_CHECKS = Object.freeze([
   "syntax",
@@ -71,10 +66,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-semantic-audit-integration",
   "stage-3-compatibility-runtime-fixtures",
   "stage-3-candidate-batch-fixtures",
-  "stage-3-candidate-batch-integration",
   "stage-3-approved-prefix-fixtures",
-  "stage-3-approved-prefix-integration",
-  "stage-3-batch-051-architecture",
   "stage-3-batch-reviewed-shapes-fixtures",
   "stage-3-prerequisite-transition-fixtures",
   "legacy-slot-split",
@@ -82,11 +74,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-activation-retirement-fixtures",
   "stage-3-changelog-trim-fixtures",
   "stage-3-state-identity-replacement-fixtures",
-  "stage-3-closure",
-  "stage-3-inventory-equip-target-batch",
-  "stage-3-reel-auto-recovery-prebuild",
-  "stage-3-line-tension-prebuild",
-  "stage-3-rod-capability-prebuild",
+  "domain-boundary",
   "line-allocation",
   "float-depth",
   "inventory-lifecycle",

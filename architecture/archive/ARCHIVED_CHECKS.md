@@ -175,3 +175,31 @@ migration evidence moved out of `develop`. The checks still run unchanged at the
 | stage-3-batch-008-release-acceptance | Stage 3.8.9 exact release closure and browser proof | history |
 | stage-3-batch-008-release-fixtures | Stage 3.8.9 release transition and strict browser proof fixtures | history |
 | stage-3-batch-009-release-acceptance | Stage 3.9.9 exact release transition, browser proof and completed prefix | history |
+
+## Stage 3 history freeze at closure (2026-10-02)
+
+Owner decision 2026-09-29 (Stage 4 process, D6) applied after the Stage 3 closure: the checks that replay or pin
+specific Stage 3 batches against the live runtime contract, bridge registry and index (they cannot survive the
+Stage 4 bridge removal or Domain cleanups) left the develop catalog. They pass unchanged at the annotated tag
+`stage3-closed` (final acceptance Full 91/91 at f9a41ee). The live Domain boundary gates continue as the check
+`domain-boundary` (no pinned counts); the pinned closure facts stay in `architecture/migration/stage_3_closure.json`.
+
+15 checks.
+
+| id | title | suites |
+| --- | --- | --- |
+| stage-3-batch-051-architecture | Stage 3.52.0–3.52.7 fish force system domain migration with composition identities, six retired activations, a per-frame representation-only target and rollback gates | quick, architecture |
+| stage-3-50-graph-review | Stage 3.50.0 repeated graph review byte-identical replay | architecture |
+| stage-3-50-review-queue-freeze | Stage 3.50.1 review-queue hot-loop evidence and freeze extension byte-identical replay | architecture |
+| stage-3-closure | Stage 3 closure gates: Domain migrated, Domain/Engine dependencies only, no browser/DEV/transport globals, removal paths | quick, architecture |
+| stage-3-compatibility-runtime-integration | Stage 3.0.4 cumulative compatibility runtime integration | quick, architecture |
+| stage-3-candidate-batch-integration | Stage 3.0.5 candidate batch corpus and coverage | quick, architecture |
+| stage-3-approved-prefix-integration | Stage 3.0.6 approved-prefix freeze integration | quick, architecture |
+| stage-3-inventory-equip-target-batch | Stage 3.1 inventory equip-target domain batch | quick, architecture, inventory |
+| stage-3-reel-auto-recovery-prebuild | Stage 3.2 reel auto-recovery pre-build contract | quick, architecture |
+| stage-3-reel-auto-recovery-runtime | Stage 3.2 reel auto-recovery post-build runtime | quick, architecture, gameplay |
+| stage-3-line-tension-prebuild | Stage 3.3 line-tension pre-build contract | quick, architecture |
+| stage-3-line-tension-runtime | Stage 3.3 line-tension post-build runtime | quick, architecture, gameplay |
+| stage-3-rod-capability-prebuild | Stage 3.4 rod-capability pre-build contract | quick, architecture, inventory-v2 |
+| stage-3-rod-capability-runtime | Stage 3.4 rod-capability post-build runtime | quick, architecture, inventory-v2 |
+| stage-3-fishing-foundation-runtime | Stage 3.5 fishing-foundation post-build runtime | quick, architecture, gameplay |
