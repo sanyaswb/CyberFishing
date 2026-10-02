@@ -14,8 +14,6 @@ const PROJECT_ROOT = path.resolve(__dirname, "../../..");
 const TOOLING = Object.freeze([
   "utils/run-checks.js", "utils/testing/core/check_catalog.js", "utils/testing/core/check_runner.js",
   "utils/testing/core/check_seal.js", "utils/testing/core/check_input_tracer.js", "utils/testing/core/check_report.js",
-  "utils/testing/core/history_base.js", "utils/architecture/stage_three_batches/lifecycle/historical_workspace.js",
-  "utils/architecture/stage_three_prerequisites/core/prerequisite_ledger.js",
 ]);
 // Traced reads under these trees are code or installed dependencies: they are covered and each one
 // is fingerprinted individually (module loads, helper files, dependency content).

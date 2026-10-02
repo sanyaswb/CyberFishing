@@ -1,4 +1,4 @@
-# Check pipeline: cache v2, history base and parallel execution
+# Check pipeline: cache v2 and parallel execution
 
 ```text
 node utils/run-checks.js [--suite NAME | --check ID] [--jobs N] [--no-seal | --reseal] [--report ABS]
@@ -12,7 +12,7 @@ order, the files a check reads (with the bytes it consumed), directory listings 
 recursive listings cover the whole subtree), recursive copy sources, `stat`/`lstat` results with their
 full metadata, existence probes, `access` modes and outcomes, `realpath`/`readlink` results, every
 write, and `git` commands with arguments, working directory, exit status and output. Installed
-dependencies are recorded file by file (also through the history base's `node_modules` link).
+dependencies are recorded file by file.
 Anything the cache cannot reproduce is recorded as unsupported: unknown `fs` operations, shell
 commands (except the reviewed `net use` probe of vite, re-evaluated like git), other programs,
 workers, and contents outside the project and the temporary directory. Node child processes always
@@ -41,7 +41,7 @@ only when:
 
 The seal records the check definition (id, file, args, suites, policies, execution scope), Node,
 platform, architecture, `package.json`, the lockfile, the reviewed environment values, the hashes of
-the runner, seal, tracer, report and history reconstruction tooling, the input snapshot, every
+the runner, seal, tracer and report tooling, the input snapshot, every
 observation and the git outputs. A later run reuses it (`[cached]`) only while all of them are
 unchanged; version 1, corrupt or incomplete seals are misses. A failed execution removes the seal.
 Changed stat metadata may cause a conservative re-execution even when the bytes are identical.
@@ -66,14 +66,12 @@ One fully executed acceptance run is required at each stable checkpoint. Metadat
 steps do not need another one when their exact allowed delta is verified and runtime, dependencies,
 check implementations and scenarios are unchanged.
 
-## History base
+## Archived history checks
 
-History-only checks (suites exactly `["history"]`) of batches up to 025 replay a frozen past. They
-run in the exact reconstruction of release 0.24.63 (`core/history_base.js`) with the current `utils`
-mirrored in, not in the live tree. The reconstruction peels every newer batch through the recorded
-before-images of its history chain, so any drift fails the reconstruction itself. It is prepared
-before any check runs and mirrored incrementally (unchanged files keep their metadata), so their
-seals change only when the tooling or dependencies they load change, not when a new batch lands.
+Historical replay checks run at the annotated archive tags documented in
+`architecture/archive/ARCHIVED_CHECKS.md`. The live catalog has no history-only checks and
+executes against the current workspace. The obsolete history reconstruction is removed;
+cache scope identities still invalidate seals from any older execution scope.
 
 ## Parallel execution
 
@@ -88,7 +86,5 @@ which is reported separately and never seals.
 
 - While editing: the focused checks of the changed component (`--check ID`).
 - A finished sub-step: `npm run check:quick` plus the relevant architecture checks.
-- History replays reuse their proven PASS while the reconstructed state, tooling and every
-  observed input are unchanged; a shared tooling change re-executes the replays that load it.
 - A stable checkpoint or release gate: one `--acceptance --report ABS` run; reports always state the
   executed and cached counts.

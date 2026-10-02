@@ -247,3 +247,14 @@ lines; require/string closure of the catalog, package scripts and Stage 4 CLIs).
 `stage3-evidence-archive` / `stage3-closed`. The package script stays (package.json is pinned except its version);
 removing it is deferred together with the `struct` script decision. The release delta of the Stage 4 release command
 keeps the Stage 1 package pin's intent: a release may change only the version fields.
+
+## M2 utils closure (2026-10-02)
+
+Archived at `stage4-m2-tools-archive` before removal: the unused history reconstruction
+`utils/testing/core/history_base.js`, `utils/architecture/post_freeze/post_freeze_review_profile.js`
+and `utils/architecture/review_queue/review_queue_paths.js` (3 files, 357 lines). A conservative
+literal require/path closure of all 64 live checks, package commands and Stage 4 CLIs proves
+these files unreachable after removing history reconstruction from the runner and its seal policy.
+The remaining historical helpers are retained where live fixtures and planners still consume them.
+No live check was removed. Cache regression still proves obsolete scopes and tooling drift invalidate
+seals; current checks execute directly in the workspace.

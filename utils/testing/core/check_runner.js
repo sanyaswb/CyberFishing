@@ -3,7 +3,6 @@ const fs = require("node:fs");
 const os = require("node:os");
 const { spawn } = require("node:child_process");
 const { CheckCachePolicy, CheckObservationValues, CheckSeal, CheckSealStore, TRACER } = require("./check_seal");
-const { HistoryBase, BASE } = require("./history_base");
 
 class CheckProcessExecutor {
   constructor({ projectRoot, nodePath = process.execPath } = {}) {
@@ -35,8 +34,7 @@ class CheckProcessExecutor {
 // Executes checks under the input tracer and decides cache reuse (seal schema 2).
 // mode "use": an eligible seal that still holds is reused; "reseal": every check executes and is
 // sealed again when eligible; "none": every check executes and no seal is used or created.
-// A failed execution always removes the check's seal. History-only checks of batches up to the
-// history base run in the reconstructed base release.
+// A failed execution always removes the check's seal. Archived history checks run at their tags.
 class SealingCheckExecutor {
   constructor({ projectRoot, executor = new CheckProcessExecutor({ projectRoot }), mode = "use",
     store = new CheckSealStore(projectRoot) } = {}) {
@@ -46,20 +44,11 @@ class SealingCheckExecutor {
     this.mode = mode;
     this.store = store;
     this.values = new Map();
-    this.base = null;
   }
 
-  // The history base is reconstructed before any check runs, so no check can modify its sources
-  // while it is being built.
-  async prepare(checks) {
-    if (checks.some((check) => HistoryBase.covers(check))) this.base = await new HistoryBase(this.projectRoot).prepare();
-  }
+  async prepare() {}
 
-  location(check) {
-    if (!HistoryBase.covers(check)) return { root: this.projectRoot, scope: "live" };
-    if (!this.base) throw new Error("The history base was not prepared");
-    return { root: this.base, scope: `history-base-${BASE.release}` };
-  }
+  location() { return { root: this.projectRoot, scope: "live" }; }
 
   valuesFor(root) {
     if (!this.values.has(root)) this.values.set(root, new CheckObservationValues(root));

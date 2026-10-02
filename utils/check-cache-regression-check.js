@@ -366,9 +366,8 @@ scenario("11. conflicting checks are serialized and a failed parallel run stays 
   assert.equal(failed, true);
 });
 
-scenario("12. history reconstruction scope and tooling changes invalidate historical entries", async project => {
-  for (const file of ["utils/testing/core/history_base.js", "utils/architecture/stage_three_batches/lifecycle/historical_workspace.js",
-    "utils/testing/core/check_input_tracer.js", "utils/testing/core/check_seal.js", "utils/testing/core/check_runner.js"]) {
+scenario("12. archived scope and live tooling changes invalidate cached entries", async project => {
+  for (const file of ["utils/testing/core/check_input_tracer.js", "utils/testing/core/check_seal.js", "utils/testing/core/check_runner.js"]) {
     assert(TOOLING.includes(file), `${file} is part of the tooling identity`);
   }
   project.write("data/a.txt", "a");
@@ -379,7 +378,7 @@ scenario("12. history reconstruction scope and tooling changes invalidate histor
   assert.match((await project.one(check)).output, /check definition or scope changed/u);
   const current = project.store.load(check);
   project.store.save(check, { ...current, environment: { ...current.environment,
-    tooling: { ...current.environment.tooling, "utils/testing/core/history_base.js": "0".repeat(64) } } });
+    tooling: { ...current.environment.tooling, "utils/testing/core/check_runner.js": "0".repeat(64) } } });
   assert.match((await project.one(check)).output, /environment changed: tooling/u);
   // The reconstructed data tree is a reviewed input: any change to it invalidates the replay.
   project.write("data/reconstructed.json", "{}");

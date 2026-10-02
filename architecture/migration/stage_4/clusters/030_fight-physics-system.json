@@ -506,12 +506,13 @@
       }
     ],
     "browser": {
-      "performedBy": "claude-automated-substitute",
+      "performedBy": "codex-automated-substitute",
       "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
       "errors": 0,
       "warnings": 0,
       "identitiesChecked": 186,
-      "identityMismatches": 0
+      "identityMismatches": 0,
+      "auditCorrection": "Actual performer was Codex; correction of the helper label only, evidence and results unchanged."
     }
   }
 }

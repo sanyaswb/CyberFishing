@@ -1,24 +1,12 @@
 "use strict";
 
-const { DATA } = require("../core/history_base");
 
 // Reviewed cache and isolation contracts, applied to the manifest definitions by the runner.
 // A check absent from these lists keeps the defaults: cache policy "never" (always executes) and
 // "exclusive" isolation (runs alone). Entries are added only after the check's traced dependency
 // record was reviewed; the runner re-verifies both contracts on every execution.
 
-// History replays of batches up to the history base read the reconstructed release (its data trees)
-// plus code and installed dependencies, which the tracer fingerprints file by file.
-const HISTORY_BASE_REPLAY = Object.freeze({ policy: "snapshot", inputPaths: Object.freeze([...DATA]),
-  environmentKeys: Object.freeze([]) });
-
-const SNAPSHOT_CONTRACTS = Object.freeze([
-  // Every history replay of the base except the one that rebuilds dist inside the base (its writes make
-  // it non-cacheable). Reviewed from the traced survey of 2026-09-28; the two 007 observation replays
-  // build their historical runtime in a temporary workspace since 2026-09-29 (traced and sealed).
-  Object.freeze({ contract: "history-base-replay", cache: HISTORY_BASE_REPLAY, ids: Object.freeze([
-  ]) }),
-]);
+const SNAPSHOT_CONTRACTS = Object.freeze([]);
 
 // Checks reviewed to make no persistent project writes and to start no process the tracer cannot
 // follow; they may run in parallel with each other. Reviewed from the traced survey of 2026-09-28:
@@ -113,4 +101,4 @@ function applyCheckPolicies(definitions) {
   }));
 }
 
-module.exports = { applyCheckPolicies, HISTORY_BASE_REPLAY, READ_ONLY_CHECKS, SNAPSHOT_CONTRACTS, WRITERS };
+module.exports = { applyCheckPolicies, READ_ONLY_CHECKS, SNAPSHOT_CONTRACTS, WRITERS };
