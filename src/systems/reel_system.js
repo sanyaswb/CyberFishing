@@ -1,1 +1,1 @@
-globalThis.ReelSystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/fishing/reel_service.js"]["ReelSystem"];
+// Retired Stage 4 activation activation-f1491864f7de: ReelSystem is served only through ESM imports of src/game/application/fishing/reel_service.js.

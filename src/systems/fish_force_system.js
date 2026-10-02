@@ -1,1 +1,1 @@
-globalThis.FishForceSystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/fish_force_system.js"]["FishForceSystem"];
+// Retired Stage 3 activation activation-3c43fc3b9397: FishForceSystem is served only through ESM imports of src/game/domain/fishing/fish_force_system.js.

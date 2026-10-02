@@ -179,38 +179,6 @@
       ]
     },
     {
-      "id": "bridge-0dfeb893a1a3",
-      "bridge": "src/systems/reel_system.js",
-      "owner": "stage-4.cluster-025-fight-systems-small",
-      "source": "src/app/fishing.js",
-      "target": "src/game/application/fishing/reel_service.js",
-      "reason": "Preserve the exact ReelSystem consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "ReelSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-0f4da996fde3",
-      "bridge": "src/core/fishing/landing_policy.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/landing_policy.js",
-      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LandingPolicyResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-11bab2b81092",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -483,22 +451,6 @@
       ]
     },
     {
-      "id": "bridge-1fcb4fbde037",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/fishing.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-20e653528ef1",
       "bridge": "src/config/runtime/immutable_config.js",
       "owner": "stage-4.cluster-007-config-runtime",
@@ -611,38 +563,6 @@
       ]
     },
     {
-      "id": "bridge-2652b9d0957e",
-      "bridge": "src/config/physics/physics_config_adapter.js",
-      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
-      "source": "src/app/fishing.js",
-      "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsConfigAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-26bcfa4b6eb4",
-      "bridge": "src/systems/rod_pull_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/rod_pull_system.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "RodPullSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-2943aa6fa8b8",
       "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
       "source": "src/app/application.js",
@@ -654,38 +574,6 @@
       "globalProviders": [
         {
           "symbol": "FishingCastExposureResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2aa2248bbfc4",
-      "bridge": "src/systems/stamina_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/stamina_system.js",
-      "reason": "Preserve the exact inventory capacity and stamina consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-340.batch-039-fishing-inventory-f92b17ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "StaminaController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2d85d5d54f3b",
-      "bridge": "src/systems/tackle_stress_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/tackle_stress_system.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "TackleStressSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -1195,22 +1083,6 @@
       ]
     },
     {
-      "id": "bridge-4f2541c77311",
-      "bridge": "src/core/casting_distance.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/casting/cast_distance_calculator.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CastDistanceCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-5021e2c92869",
       "bridge": "src/core/items/progression/target_range_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -1451,17 +1323,33 @@
       ]
     },
     {
-      "id": "bridge-63b8bc2e19a7",
-      "bridge": "src/systems/drag_system.js",
-      "owner": "stage-4.cluster-025-fight-systems-small",
-      "source": "src/app/fishing.js",
-      "target": "src/game/application/fishing/drag_control_service.js",
-      "reason": "Preserve the exact DragSystem consumer until its legacy symbol is removed.",
+      "id": "bridge-63bf51205c32",
+      "bridge": "src/app/fishing.js",
+      "owner": "stage-4.cluster-037-fishing-runtime-services",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/application/fishing/fishing_runtime_services.js",
+      "reason": "Preserve the exact CastService, CatchResolutionService, FightService, FightSessionFactory, FishingController consumer until its legacy symbol is removed.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-4",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
-          "symbol": "DragSystem",
+          "symbol": "CastService",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "CatchResolutionService",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "FightService",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "FightSessionFactory",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "FishingController",
           "mechanism": "global-this-property"
         }
       ]
@@ -1687,22 +1575,6 @@
       ]
     },
     {
-      "id": "bridge-6ee56d2568e7",
-      "bridge": "src/input/pull_input_mapper.js",
-      "owner": "stage-4.cluster-034-pull-input-mapper",
-      "source": "src/app/fishing.js",
-      "target": "src/game/application/input/pull_input_mapper.js",
-      "reason": "Preserve the exact PullInputMapper consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "PullInputMapper",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-6fcf1bea53e9",
       "bridge": "src/core/equipment/auto_refill_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1754,34 +1626,6 @@
       "globalProviders": [
         {
           "symbol": "GameClock",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-70b087c839cc",
-      "bridge": "src/entities/tackle.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/tackle/tackle.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitFactory",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "Hook",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "Reel",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "Rod",
           "mechanism": "global-this-property"
         }
       ]
@@ -1998,22 +1842,6 @@
       "globalProviders": [
         {
           "symbol": "EquipmentSlotVisibilityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-809ee5af4f2e",
-      "bridge": "src/systems/line_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/line_system.js",
-      "reason": "Preserve the exact equipment rule, loadout planner and line system consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-047-equipment-fishing-loadouts-c5fdf727",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "LineSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -2515,38 +2343,6 @@
       ]
     },
     {
-      "id": "bridge-a0c3a8d37e08",
-      "bridge": "src/systems/tension_system.js",
-      "owner": "stage-4.cluster-025-fight-systems-small",
-      "source": "src/app/fishing.js",
-      "target": "src/game/application/fishing/tension_service.js",
-      "reason": "Preserve the exact TensionSystem consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "TensionSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a34493ca4351",
-      "bridge": "src/systems/fight_physics_system.js",
-      "owner": "stage-4.cluster-030-fight-physics-system",
-      "source": "src/app/fishing.js",
-      "target": "src/game/application/fishing/fight_physics_orchestrator.js",
-      "reason": "Preserve the exact FightPhysicsSystem consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a3d545c52d12",
       "bridge": "src/core/inventory/inventory_item_location.js",
       "source": "src/core/equipment/equipment_slot_availability_policy.js",
@@ -2771,22 +2567,6 @@
       ]
     },
     {
-      "id": "bridge-b2d34369a857",
-      "bridge": "src/systems/rod_lateral_control_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/rod_lateral_control_system.js",
-      "reason": "Preserve the exact hot-loop fishing consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "RodLateralControlSystem",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-b3d3acbcb451",
       "bridge": "src/application/inventory/auto_refill_coordinator.js",
       "owner": "stage-4.cluster-022-inventory-refill",
@@ -2866,22 +2646,6 @@
       "globalProviders": [
         {
           "symbol": "EffectiveItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b8c4f17ca300",
-      "bridge": "src/systems/fish_force_system.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fishing/fish_force_system.js",
-      "reason": "Preserve the exact fish force system consumer until its legacy symbol is removed.",
-      "owner": "stage-3.replan-350.batch-051-fishing-95a74a4a",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-4",
-      "globalProviders": [
-        {
-          "symbol": "FishForceSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -3090,26 +2854,6 @@
       "globalProviders": [
         {
           "symbol": "EquipmentReadModelFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c83c8f55a424",
-      "bridge": "src/entities/fish.js",
-      "source": "src/app/fishing.js",
-      "target": "src/game/domain/fish/fish.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "Fish",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "FishCondition",
           "mechanism": "global-this-property"
         }
       ]

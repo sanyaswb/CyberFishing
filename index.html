@@ -65,7 +65,7 @@
     <script src="src/config/validation/degradation_color_config_validator.js"></script>
     <script src="src/config/validation/config_schema_validator.js"></script>
 
-    <script src="dist/stage-3-compat-runtime/activations/038_pullinputmapper.js"></script>
+    <script src="src/input/pull_input_mapper.js"></script>
     <script src="src/input/victory_action_gesture_resolver.js"></script>
 
     <script src="dist/stage-3-compat-runtime/activations/040_fightinputactioncomposer.js"></script>
@@ -255,31 +255,26 @@
     <script src="dist/stage-3-compat-runtime/activations/204_locationmap.js" data-legacy-slot="204"></script>
     <script src="dist/stage-3-compat-runtime/activations/204_viewportprojector.js" data-legacy-slot="204"></script>
 
-    <script src="dist/stage-3-compat-runtime/activations/205_reel.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/205_baitfactory.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/205_net.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/205_hook.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/205_rod.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/206_fishcondition.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/206_fishphysicsprofile.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/206_fish.js"></script>
 
-    <script src="dist/stage-3-compat-runtime/activations/207_staminacontroller.js" data-legacy-slot="207"></script>
+    <script src="src/systems/stamina_system.js" data-legacy-slot="207"></script>
     <script src="src/systems/buff_manager.js" data-legacy-slot="207"></script>
-    <script src="dist/stage-3-compat-runtime/activations/208_dragsystem.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/209_linesystem.js"></script>
+    <script src="src/systems/drag_system.js"></script>
+    <script src="src/systems/line_system.js"></script>
     <script src="src/systems/player_force_system.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/211_fishforcesystem.js"></script>
+    <script src="src/systems/fish_force_system.js"></script>
     <script src="src/systems/player_pull_motion_smoother.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/213_rodpullsystem.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/214_rodlateralcontrolsystem.js"></script>
+    <script src="src/systems/rod_pull_system.js"></script>
+    <script src="src/systems/rod_lateral_control_system.js"></script>
     <script src="src/systems/rod_visual_offset_system.js"></script>
     <script src="src/systems/fish_retrieve_system.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/217_reelsystem.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/218_tensionsystem.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/219_tacklestresssystem.js"></script>
+    <script src="src/systems/reel_system.js"></script>
+    <script src="src/systems/tension_system.js"></script>
+    <script src="src/systems/tackle_stress_system.js"></script>
     <script src="src/systems/fight_physics_pipeline.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/221_fightphysicssystem.js"></script>
+    <script src="src/systems/fight_physics_system.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/222_bitesystem.js"></script>
 <script src="dist/stage-3-compat-runtime/activations/222_castmanager.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/223_chummanager.js"></script>
@@ -493,7 +488,11 @@
 
     <!-- APP DOMAIN SERVICES -->
     <script src="dist/stage-3-compat-runtime/activations/401_equipmentservice.js"></script>
-    <script src="src/app/fishing.js?v=0.24.30"></script>
+    <script src="dist/stage-3-compat-runtime/activations/402_fightsessionfactory.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/402_castservice.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/402_catchresolutionservice.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/402_fishingcontroller.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/402_fightservice.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/403_biteenvironmentservice.js"></script>
     <script src="src/app/chum.js"></script>
     <script src="src/app/debug.js?v=0.24.30"></script>

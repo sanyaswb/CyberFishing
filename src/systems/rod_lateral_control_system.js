@@ -1,1 +1,1 @@
-globalThis.RodLateralControlSystem = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/rod_lateral_control_system.js"]["RodLateralControlSystem"];
+// Retired Stage 3 activation activation-c23a9b7efff6: RodLateralControlSystem is served only through ESM imports of src/game/domain/fishing/rod_lateral_control_system.js.
