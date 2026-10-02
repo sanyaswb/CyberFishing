@@ -6,7 +6,7 @@
   "milestone": "M2",
   "boundary": "game-application",
   "tier": "A",
-  "tierEvidence": "Save format: save-round-trip evidence (baseline architecture/migration/stage_4/evidence/018_save-round-trip.json, captured with --capture after the preparation commit, before apply). Graph review v3: game-application, after 020 (LegacyInventoryUnitAllocator). Preparation first (framework Q4/Q9, one record): Manifest reclassification platform -> game-application for the six modules; remove the unused hidden CacheManager default of InventoryV2StateStore (tests via constructor_defaults); review the ITEM_PROGRESSION_CONFIG typeof/globalThis fallbacks of the mapper and LegacyItemStateMigration (no globalThis in application) and the default `new ItemFreshnessStatePolicy()` (allowed application -> domain edge, used by production composition). InventoryV2LegacyMigration also reads ITEM_ASSEMBLY_PROFILE_CONFIG (src/game/config/raw, game-config-raw: not an allowed game-application dependency) to build its AssemblyProfileRegistry; the only production construction site (InventoryV2CompositionRoot) already holds that table and injects it in the preparation (constructor option, tests via constructor_defaults).",
+  "tierEvidence": "Save format: save-round-trip evidence architecture/migration/stage_4/evidence/018_save-round-trip.json captured on preparation 007 (75dae70) before apply. Graph review v3: game-application, after 020. Preparation 007 removed the hidden CacheManager default, the globalThis.ITEM_PROGRESSION_CONFIG fallbacks and injected ITEM_ASSEMBLY_PROFILE_CONFIG. The Manifest reclassification platform -> game-application lands in this cluster commit together with the retirement of the cluster 036 CacheManager bridge of InventoryV2StateStore (a preparation has no bridge-retirement field).",
   "modules": [
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
@@ -39,7 +39,13 @@
         "InventoryV2SnapshotMigration"
       ],
       "imports": [],
-      "allowedGlobals": []
+      "allowedGlobals": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "No self-composition: the constructor stores the injected definition resolver, item-state migration and snapshot mapper (no defaults, no global fallback); every construction is InventoryV2CompositionRoot (three call sites, all passing the collaborators) or a check. Q4: nothing to remove. Evidence: save-round-trip traces."
+        }
+      ]
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
@@ -57,7 +63,18 @@
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
         }
       ],
-      "allowedGlobals": []
+      "allowedGlobals": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "InventoryItemSnapshotMapper keeps the default `freshnessStatePolicy = new ItemFreshnessStatePolicy()`: a stateless Domain policy (allowed application -> domain import), and the only production construction (InventoryV2CompositionRoot) relies on it, so framework Q4 forbids removing it. The ITEM_PROGRESSION_CONFIG fallback that reached the global object was removed by preparation 007 (75dae70)."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes InventoryItemSnapshotMapper through `globalThis.InventoryItemSnapshotMapper = InventoryItemSnapshotMapper`; the cluster moves that exposure into the activation shim (unmigrated consumers keep the exact global until Stage 5/6). Since preparation 007 the module reads no classic global other than ITEM_PROGRESSION_CONFIG, which the target imports from game-config (allowed game-application dependency); eslint-scope free names of the target are language built-ins."
+        }
+      ],
+      "sideEffectReview": "The private static field #optionalFactKeys is Object.freeze over an inert string-literal array, evaluated once at class definition; it reads no external state and writes no global (the saved optional fact keys are save format and stay byte-identical)."
     },
     {
       "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
@@ -75,7 +92,18 @@
           "from": "src/game/domain/items/freshness/item_freshness_state_policy.js"
         }
       ],
-      "allowedGlobals": []
+      "allowedGlobals": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "LegacyItemStateMigration keeps the default `freshnessStatePolicy = new ItemFreshnessStatePolicy()`: a stateless Domain policy (allowed application -> domain import), and the only production construction (InventoryV2CompositionRoot) relies on it, so framework Q4 forbids removing it. The ITEM_PROGRESSION_CONFIG fallback that reached the global object was removed by preparation 007 (75dae70)."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes LegacyItemStateMigration through `globalThis.LegacyItemStateMigration = LegacyItemStateMigration`; the cluster moves that exposure into the activation shim (unmigrated consumers keep the exact global until Stage 5/6). Since preparation 007 the module reads no classic global other than ITEM_PROGRESSION_CONFIG, which the target imports from game-config (allowed game-application dependency); eslint-scope free names of the target are language built-ins."
+        }
+      ],
+      "sideEffectReview": "The private static fields #legacyMutableStatKeys and #instanceFactKeys are Object.freeze over inert string-literal arrays, evaluated once at class definition; they read no external state and write no global (the key lists are save format and stay byte-identical)."
     },
     {
       "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
@@ -138,7 +166,21 @@
         }
       ],
       "allowedGlobals": [],
-      "sideEffectReview": "The same declarations initialize once in the cumulative runtime. No new external mutation or resource allocation occurs at evaluation; identity is preserved by the activation shim."
+      "sideEffectReview": "The private static fields #legacyItemIdMap (Object.freeze over a literal id map) and #removedLegacyItemIds (a Set over one literal id) are evaluated once at class definition; they read no external state, write no global and are never mutated (save-format id tables, byte-identical).",
+      "reviewedBlockers": [
+        {
+          "blocker": "high-level-self-composition",
+          "reason": "migrate() builds a private scratch workspace of Domain repositories/services (FlatInventoryItemRepository, AssemblyStateRepository, AssemblyProfileRegistry, ItemAssemblyReader/Service, LegacyInventoryUnitAllocator, EquipmentLoadoutRepository, stateless resolvers) to translate one legacy save and returns plain snapshot data; none of them escapes or composes the running game, all are allowed application -> domain/application imports. The one forbidden input (raw ITEM_ASSEMBLY_PROFILE_CONFIG) is injected since preparation 007. Q4: no hidden default left; the instance id factory and clock are already injected."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "The classic file publishes InventoryV2LegacyMigration through `globalThis.InventoryV2LegacyMigration = InventoryV2LegacyMigration`; the cluster moves that exposure into the activation shim (unmigrated consumers keep the exact global until Stage 5/6). Since preparation 007 the module reads no classic global other than ITEM_PROGRESSION_CONFIG, which the target imports from game-config (allowed game-application dependency); eslint-scope free names of the target are language built-ins."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One responsibility: the one-shot translation of the legacy (pre-v2) inventory save into the schema-4 snapshot (items, units, assemblies, equipment, loadouts, refill signatures are parts of that one save format). No forbidden edge, player-facing text, raw config, DEV or browser access after preparation 007, not a hot loop: framework Q9 reclassifies with evidence (save-round-trip traces over four scenarios) instead of splitting; a split would change no boundary and risks the save format."
+        }
+      ]
     }
   ],
   "reviewedPropertyReaders": [],
@@ -171,5 +213,302 @@
       "script": "utils/platform-runtime-check.js"
     }
   ],
-  "output": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-4.cluster-018-storage",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/infrastructure/storage/inventory_v2_state_store.js",
+        "targetPath": "src/game/application/inventory/persistence/inventory_state_store.js",
+        "sourceSha256": "4904339cca6f59452d9db4247ffbded84c076db99e58ca69879985c4a0e34308",
+        "targetSha256": "083c195452f3726cfd772313db9af478c47d57d53c4beb97d7a535830b0421d1"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+        "sourceSha256": "e1c0a72b419e7534e457cb9bf4251b363f96659ecee7ae0678c13f1bd5176254",
+        "targetSha256": "cd5b818b8669f6d135f654f6bc3e61df73e9ebfaba0ecf2a5fa34d25f40cef87"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+        "sourceSha256": "e796b7c2775f51258a97ba27412c968861f53b749a395f5bb7b1eaa8b0850fb2",
+        "targetSha256": "7342d3b8149180cca9523885e8be8d83daa9cf93703e8c6675aadec914d2d95e"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "targetPath": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+        "sourceSha256": "a10dbbd192a879f281ff354a413bf1d525a9ee91077ad705ceca70add1e87149",
+        "targetSha256": "3bb733f78388209f5e2eb64a066d4bbcc3f6ff3bb2651d93a44303f3f78d32a5"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+        "targetPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+        "sourceSha256": "891faeea4f6d9d214e98c71520628843fbce028e808c9971c2fa1065bc9bc6e7",
+        "targetSha256": "fcca4262c5924df6e38e5c7cedab768425dd56500b2b10305943848832e53907"
+      },
+      {
+        "currentPath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "targetPath": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+        "sourceSha256": "c1939d57b5510812f3a4c707d244480dcec25f9d0fe19df831bde3e1860ad03b",
+        "targetSha256": "cca9635e55c7bac6a0eebeb7a93c20b64719ed4ff0ee14dc10ae1ccd914f97e8"
+      }
+    ],
+    "activations": [
+      "activation-18d9b73ab9ca",
+      "activation-1ea621ce11ba",
+      "activation-3bb94ff3be12",
+      "activation-3e961a336956",
+      "activation-8085745ed50c",
+      "activation-ace6eef4ac9b",
+      "activation-ebd0cccdc5aa"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js"
+    ],
+    "activationsRetired": [
+      "activation-ae9c520a5aa5",
+      "activation-b8eb0e77ea6d"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-09e247f43f1c",
+      "bridge-1bb21771dce7",
+      "bridge-3a3b0da4114a",
+      "bridge-44af98f2048e",
+      "bridge-70de3f22dfcd",
+      "bridge-d14e3135091c"
+    ],
+    "bridgesRetired": [
+      "bridge-1b3a4b1b0495",
+      "bridge-2e917650176f",
+      "bridge-4d7bca9c9aa3",
+      "bridge-52a796afbccb",
+      "bridge-636ce7883f6f",
+      "bridge-65a33fea8e4f",
+      "bridge-6c8d26fe475b",
+      "bridge-6e95376ecf9f",
+      "bridge-6f2effa3edcf",
+      "bridge-75d36599542b",
+      "bridge-849667372e8b",
+      "bridge-9ce49a18f3b2",
+      "bridge-9de93c6c17db",
+      "bridge-a6ee164c50c8",
+      "bridge-a7b5464bce7f",
+      "bridge-b765167c49b0",
+      "bridge-d2cb57446440",
+      "bridge-e6bc462714e6"
+    ],
+    "importEdges": [
+      "src/game/application/inventory/persistence/inventory_snapshot_factory.js->src/game/application/inventory/persistence/inventory_state_store.js",
+      "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js->src/game/config/items/item_progression_config.js",
+      "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js->src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/application/inventory/persistence/legacy_item_state_migration.js->src/game/config/items/item_progression_config.js",
+      "src/game/application/inventory/persistence/legacy_item_state_migration.js->src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/assemblies/assembly_profile_registry.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/assemblies/assembly_state_repository.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/equipment/equipment_slot_catalog.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/loadouts/equipment_loadout_repository.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/equipment/equipment_state.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/inventory/flat_inventory_item_repository.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/application/inventory/persistence/inventory_state_store.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/inventory/inventory_item_location.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/assemblies/item_assembly_reader.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/assemblies/item_assembly_service.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "src/game/application/inventory/persistence/inventory_legacy_migration.js->src/game/domain/equipment/rod_capability_resolver.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-4-clusters/018_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "d65fb88ac7f31691e77a7f0161dc4f89892b8566fcd2db0815d4e1f71d5a05d3",
+        "after": "a4d125b536a5204e2dc0543f26da3e647a3507ba832d8639fedcc4e530934441"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "22b7729dbbdd2cb232fa73aff39a9cb096d0fa2740b2e629bdcaa41faccbe7de",
+        "after": "45cd0fe41acd63400e1c433a264a3cd1c8a7427ff896df81b6fe51b870c79f04"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "492847ecec8aca51bbecbfe65f066f974b7380e6a79999a72ec5d4e8c941801c",
+        "after": "2ea0617975f346b8fd5d9d56622d916719603592aea5ccc149ca8ee8c260956e"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "e5f3643d3cb886a0b8b9402aedae74bdc47742b569c8d5dbf9e3e812865605dd",
+        "after": "73617166bed600d5a8f42bdb0c58b21ade30cf4d5ade8634cd57af306fda0a3a"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "b794ff2b6cc0671b158a6000db40f27ec5729e2a9ff7f5ca6684962c8abab88f",
+        "after": "9d13909e78eb46da9d40779e5f860ebb3f3f495cee57ab7dc2665afcff2fb23a"
+      },
+      {
+        "path": "index.html",
+        "before": "445699e400ec36703f62f6498014e2666b2a40a82481fd4ea9010d88cd5fd87b",
+        "after": "69990e340e1bcd0f3a8f75e8fdb3510a728ac5fd73043474bb569d6161da7ada"
+      },
+      {
+        "path": "src/config/items/item_progression_config.js",
+        "before": "4045a8746904c3b0c1d8f668f933536f4a10c972595e970573c74a8c345ff34b",
+        "after": "0f1dcdfe1c98a3aa93869fbc19883b9ec3a51fefe5e24e86edc7c9139cc6fd6f"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+        "before": null,
+        "after": "3bb733f78388209f5e2eb64a066d4bbcc3f6ff3bb2651d93a44303f3f78d32a5"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+        "before": null,
+        "after": "cca9635e55c7bac6a0eebeb7a93c20b64719ed4ff0ee14dc10ae1ccd914f97e8"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+        "before": null,
+        "after": "cd5b818b8669f6d135f654f6bc3e61df73e9ebfaba0ecf2a5fa34d25f40cef87"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+        "before": null,
+        "after": "7342d3b8149180cca9523885e8be8d83daa9cf93703e8c6675aadec914d2d95e"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/inventory_state_store.js",
+        "before": null,
+        "after": "083c195452f3726cfd772313db9af478c47d57d53c4beb97d7a535830b0421d1"
+      },
+      {
+        "path": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+        "before": null,
+        "after": "fcca4262c5924df6e38e5c7cedab768425dd56500b2b10305943848832e53907"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+        "before": "a10dbbd192a879f281ff354a413bf1d525a9ee91077ad705ceca70add1e87149",
+        "after": "1dd52646cc51bfe9a180994214c7e9e9461219fefe9d9d07d880fc5d2fbef5b8"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+        "before": "c1939d57b5510812f3a4c707d244480dcec25f9d0fe19df831bde3e1860ad03b",
+        "after": "4005e60ea9e5a8e6746880c3f59dcaffdac840366a588b7b4313dd46a5fba84a"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+        "before": "e1c0a72b419e7534e457cb9bf4251b363f96659ecee7ae0678c13f1bd5176254",
+        "after": "7f8557723b4d800879cf061928593301ae7d29a9668a4828d14b8a4fad71f131"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+        "before": "e796b7c2775f51258a97ba27412c968861f53b749a395f5bb7b1eaa8b0850fb2",
+        "after": "c682af6b9f63885d34e914a02f637affe9731e393d976652933628f6ae92526a"
+      },
+      {
+        "path": "src/infrastructure/storage/inventory_v2_state_store.js",
+        "before": "4904339cca6f59452d9db4247ffbded84c076db99e58ca69879985c4a0e34308",
+        "after": "24e5ad624dc2c060e936d75e0b38d486da52f1833fd803f7f5285e8ea345d6c7"
+      },
+      {
+        "path": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
+        "before": "7b62b42b811d61fff13ffebdb6dcec56a3c674f44e0f1add77d944f9046c5190",
+        "after": "d31c66f4563ce4734b6e3e02767ea68f7e32cb84887b644e2a2ff03e81845889"
+      },
+      {
+        "path": "src/infrastructure/storage/legacy_item_state_migration.js",
+        "before": "891faeea4f6d9d214e98c71520628843fbce028e808c9971c2fa1065bc9bc6e7",
+        "after": "83707f1e7ffb3cbaf4309445ba99d2990f53365d042fdc0d24af4f9b0e4a1776"
+      }
+    ],
+    "resolvedDebts": [
+      "debt-boundary-dependency-01a239995bd8",
+      "debt-boundary-dependency-076f2b62b494",
+      "debt-boundary-dependency-124601829bd7",
+      "debt-boundary-dependency-1380a9b268a0",
+      "debt-boundary-dependency-21c6903d968c",
+      "debt-boundary-dependency-285a94a87388",
+      "debt-boundary-dependency-3ca724ed7f69",
+      "debt-boundary-dependency-4aa0ebcba268",
+      "debt-boundary-dependency-5e823037a023",
+      "debt-boundary-dependency-6fc25694ccc4",
+      "debt-boundary-dependency-716dd5489ade",
+      "debt-boundary-dependency-a5a6157fb167",
+      "debt-boundary-dependency-a617cb4cf7d7",
+      "debt-boundary-dependency-ac52242b9da0",
+      "debt-boundary-dependency-ed9dc2f79396",
+      "debt-boundary-dependency-f0ac69189d39",
+      "debt-boundary-dependency-ff8d48560856"
+    ]
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 651 modules, 906 unified edges, 852 globals, 90 exact known-debt diagnostics, 0 FAIL in 756ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 651/651 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.0, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 180 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 180 activations and 266 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 36 record(s), 25 applied, 64 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and 19 release fixtures; 1 release record(s), version 0.25.0."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "save-round-trip",
+        "status": "PASS",
+        "sha256": "0aa05728536c80500e04906449f14ea29bbdd5d869d01cd55523ff2e23d44ac8"
+      },
+      {
+        "name": "inventory-save-round-trip",
+        "status": "PASS",
+        "sha256": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      },
+      {
+        "name": "inventory-v2-integration",
+        "status": "PASS",
+        "sha256": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      {
+        "name": "platform-runtime",
+        "status": "PASS",
+        "sha256": "c5ed09d1f164d1df6d922ca0fa84ae67cb1b8a9f549608cbb44e86a9da2aaae9"
+      }
+    ]
+  }
 }

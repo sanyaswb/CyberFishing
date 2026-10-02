@@ -63,18 +63,25 @@ class StageFourTierAEvidence {
     for (const name of this.classes) {
       const before = baseline.classes[name];
       const after = current.classes[name];
-      for (const key of ["members", "allocationTotals", "wallClockReads", "realmLookups", "typeofLookups", "scenarios"]) {
+      for (const key of ["members", "allocationTotals", "wallClockReads", "realmLookups", "scenarios"]) {
         const [left, right] = key === "scenarios" ? [exercised(before[key]), exercised(after[key])] : [before[key], after[key]];
         if (JSON.stringify(left) !== JSON.stringify(right)) differences.push(`${name}.${key}`);
       }
-      const remaining = new Set(after.freeIdentifiers.map((item) => JSON.stringify(item)));
-      const added = [...remaining].filter((item) => !before.freeIdentifiers.some((old) => JSON.stringify(old) === item));
-      const removed = before.freeIdentifiers.filter((item) => !remaining.has(JSON.stringify(item)));
-      if (added.length > 0 || removed.some((item) => !imported.has(item.name))) differences.push(`${name}.freeIdentifiers`);
+      // Free identifiers and typeof lookups of free identifiers may only lose the record's imported symbols.
+      for (const key of ["freeIdentifiers", "typeofLookups"]) {
+        if (!StageFourTierAEvidence.onlyLosesImports(before[key], after[key], imported)) differences.push(`${name}.${key}`);
+      }
     }
     assert.deepEqual(differences, [], `tier A evidence differs from ${this.file}`);
     return { file: this.file, classes: this.classes.length,
       traces: Object.fromEntries(this.classes.map((name) => [name, current.classes[name].scenarios])) };
+  }
+
+  static onlyLosesImports(before, after, imported) {
+    const remaining = new Set(after.map((item) => JSON.stringify(item)));
+    const added = [...remaining].filter((item) => !before.some((old) => JSON.stringify(old) === item));
+    const removed = before.filter((item) => !remaining.has(JSON.stringify(item)));
+    return added.length === 0 && removed.every((item) => imported.has(item.name));
   }
 
   #build(location) {

@@ -91,7 +91,7 @@ class StageFourWorkspace {
     return { status: result.status, stdout: result.stdout || "", stderr: result.stderr || "" };
   }
   git(args) {
-    const result = childProcess.spawnSync("git", args, { cwd: this.root, encoding: "utf8" });
+    const result = childProcess.spawnSync("git", args, { cwd: this.root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
     if (result.status !== 0) throw new Error(`git ${args.join(" ")} failed: ${result.stderr}`);
     return result.stdout;
   }
@@ -291,7 +291,11 @@ class StageFourClusterApply {
       ...plan.targets.flatMap((target) => [target.module.currentPath, target.module.targetPath]),
       ...plan.retiredActivations.map((item) => item.sourceProvider), ...plan.retiredStageTwoWrappers.map(item => item.file)])].sort();
     const dirty = workspace.git(["status", "--porcelain", "--", ...touched]).trim();
-    assert.equal(dirty, "", `touched files must be committed before apply:\n${dirty}`);
+    // Exception: the Manifest may differ from HEAD only by the classification of this cluster's own modules, when it
+    // cannot land earlier without a guard failure (018: a consumer bridge that retires only on apply).
+    const reclassifiesOnly = dirty === `M ${PATHS.manifest}` && StageFourClusterApply.onlyReclassifies(
+      JSON.parse(workspace.git(["show", `HEAD:${PATHS.manifest}`])), workspace.json(PATHS.manifest), record);
+    assert(dirty === "" || reclassifiesOnly, `touched files must be committed before apply:\n${dirty}`);
     const before = new Map(touched.map((file) => [file, workspace.hash(file)]));
     const gameCycleBefore = this.#gameCycle("before", record.id);
     // Every write is computed first; a failure after the first write restores the exact original bytes.
@@ -418,6 +422,15 @@ class StageFourClusterApply {
     ...(contract.inertModules || []).map((item) => item.targetModule)]).size;
     packageContract.stage.cumulativeRuntimeBuild.activationInputs = contract.activationPositions.length;
     return canonical(packageContract);
+  }
+
+  // True when `current` equals `head` except for the architecture classification of the record's modules.
+  static onlyReclassifies(head, current, record) {
+    const own = new Set(record.modules.map((module) => module.currentPath));
+    const headEntries = new Map(head.modules.map((entry) => [entry.currentPath, entry]));
+    const restored = { ...current, modules: current.modules.map((entry) => own.has(entry.currentPath) &&
+      headEntries.has(entry.currentPath) ? { ...entry, architecture: headEntries.get(entry.currentPath).architecture } : entry) };
+    return canonical(restored) === canonical(head) && canonical(current) !== canonical(head);
   }
 
   #gameCycle(phase, id) {

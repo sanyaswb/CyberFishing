@@ -1,0 +1,2517 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-tier-a-evidence",
+  "cluster": "018",
+  "evidenceKind": "save-round-trip",
+  "scenarios": [
+    "utils/inventory-save-round-trip-check.js",
+    "utils/inventory-v2-migration-check.js",
+    "utils/item-state-hardening-check.js",
+    "utils/item-rarity-roundtrip-check.js"
+  ],
+  "classes": {
+    "InventoryItemSnapshotMapper": {
+      "sourcePath": "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
+      "members": [
+        {
+          "name": "#optionalFactKeys",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "924d6c20bd3e8c80c0c45ee8ff954a64c2604a6bdf31db70c24dee5bbc709635"
+        },
+        {
+          "name": "#definitionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7c09bd1c51e6ca32698e26cc715058f4a38d008f6e3ae2aed957bf4e6e1a629f"
+        },
+        {
+          "name": "#overridePolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "57ba8c74190340418ba98d4a903b02f01ae31823dcf02837e2cf5ac48a5e6c75"
+        },
+        {
+          "name": "#freshnessStatePolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "cb0d9a372a0303547da44f4abd23f574553c3394e91c4f5d536f99b559079b06"
+        },
+        {
+          "name": "#freshnessCapabilityProvider",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "cb847aba5647eb2236e026264400f26c99d73fb0f804513dbc728788156c074f"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "6260656d13d973c84db4fdd78178719dbc62792c32e9d8e6568a387b13ede954",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "toSnapshot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7dc4d105fb9e7e7441cb0edefc329942b498a30a4ee0c8046bc41834da6a9190",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "toSnapshots",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0d536220c73ebb3226558e359635313c157020b519c9f217ee9cc771b45c25bf",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#assertIdentity",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c7aa215b7eb504ec5443ff678785cf61d85014216cc13b01635edad779e63011",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#quantity",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a3f429a6873413d7087300ad6a5e247ec31dd688b05c2b4798f449ebe51ea920",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#location",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d1b0bb8a3c4c04265066d8888eb9be954cedb043b62918674ff4ed9486a16dd4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#definition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "697eca8ce1c3f4e30ef6dd0e3ee6d25f9f216ad4c5b9f67ec10e6105e9636b65",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#matchesAuthoredRarity",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "66960150dea77493fd545be7c3f0a8ee49ffaee38a5b5acbd39bf3d43c6ec0ba",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c63d876647c82d1c604c18e963f90f8f570d41e1103062fe315998be00a0239d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 5,
+        "arrayExpressions": 3,
+        "newExpressions": 11,
+        "objectFreezeCalls": 1,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#assertIdentity",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#assertIdentity",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#assertIdentity",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#assertIdentity",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#location",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#location",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#matchesAuthoredRarity",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#optionalFactKeys",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#quantity",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#quantity",
+          "kind": "method"
+        },
+        {
+          "name": "RangeError",
+          "member": "#quantity",
+          "kind": "method"
+        },
+        {
+          "name": "ItemFreshnessStatePolicy",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "undefined",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "RangeError",
+          "member": "toSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "toSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "toSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "toSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "toSnapshot",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "toSnapshots",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "toSnapshots",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "constructor"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "9a4232007eca40f60c5da9eae67b33bd7ad00d1944b699e0877ce6daee339ef2",
+          "calls": {
+            "toSnapshot": 165,
+            "toSnapshots": 8
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": "dbc825150a467426003235be1a02149a008aa01fc38d59654e3c273eabda41a1",
+          "calls": {
+            "toSnapshot": 68,
+            "toSnapshots": 16
+          },
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": "519a8068d9ad5cd72e908c45ee8e0c510053f8747b75010b2d0837f46d823896",
+          "calls": {
+            "toSnapshot": 4,
+            "toSnapshots": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": "9ded0d15fd01439de8c3e2fa69b5012107f7a7c3616011c956461e0a440d50eb",
+          "calls": {
+            "toSnapshot": 5,
+            "toSnapshots": 0
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2LegacyMigration": {
+      "sourcePath": "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+      "members": [
+        {
+          "name": "#legacyItemIdMap",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "74ff296234861a38e61eccc0351f59481c37faa4e149d980a2f76a3cdb0064ec"
+        },
+        {
+          "name": "#removedLegacyItemIds",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "20fcd86c603446ccbad58e4e95ebbc049a44ad78768e119cc25d0c3cb013fc18"
+        },
+        {
+          "name": "#itemDefinitionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ff1486d957e748d6483e98d9a48eefc62e47e69d55a6d504bd50777c666de7cd"
+        },
+        {
+          "name": "#instanceIdFactory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c1c0732cad9590ecb29c06b70d8ff460df089709163a64b5975cce6b2262cf3f"
+        },
+        {
+          "name": "#legacyItemsById",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "12110843bb32c75213b699e681752818b2658255d995ade0848f5a68e3bc90d3"
+        },
+        {
+          "name": "#itemStateMigration",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "67e2c6651a34f79f983f7bade7bda4c857362e33cf721bc421657d7e87c33366"
+        },
+        {
+          "name": "#effectiveStatsResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "606070f40b9df67538f6d37d43b2929a573b44a9bf8d1c9e0435fda9bf3315c4"
+        },
+        {
+          "name": "#itemSnapshotMapper",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "89fc0ebbde7726aa8203421d4c0c99ca7eb6819cf5a8005d3d5b4eb34eef443c"
+        },
+        {
+          "name": "#now",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8d361a887e774c4723f8a836e6e0c14f287239e701757f97462a4d263123d9a1"
+        },
+        {
+          "name": "#assemblyProfileConfig",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fb12f8432b561907ae877787f35b7f59773a8185529b8166bc1d31d5551f28d7"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "60aadadd79a500751052b98ca5b13e4e332cf342073694582fa28967742299df",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "migrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c3ad1816ad26c4b6bb3b3329f13f892108c2e4afc683022f37b417c2e299014a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 14,
+            "arrayExpressions": 4,
+            "newExpressions": 10,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeLegacyItems",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "644f10b02c1cd1539b20916401950192ce48c5d483def352ebc0e2869f92034d",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeLegacyEquipment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c4f2374ae7faf3b569ba6ad6c943bebf7ef1189f9f65fab261e1e861962ce652",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasSameLegacyLineSignature",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "99ee1aa90197a30538ade8323c19ef107e5d61a83503a00b1b5364e7db03e5da",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#typeFromLegacyItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e0add85f0d9a0e44bcedd85704a8d3dcd784e8be46e4c6f658ea96eda49cb408",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#collectBuildMetadata",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2a9cdef81279b70326e72a6f580eb0311e54a72a536bd6c39912a1ca581a158b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#toRepositoryItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3f183dcfb336a012752d2edd5b98a34efff24dbd49ad9c72e1eb742bfee58e93",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#migrateBuild",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "878ed6ba594db7890d9a462f192636eb20caf595dbf5f3ed2254291c6a3c4c83",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#migrateEquipment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "136b65271ec33180b1d49ee945cdc7f2eec6513e9e2629916ec346bb36ebd7f8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 6,
+            "arrayExpressions": 3,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#migrateTackleChildren",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5cc5fbc2f35f24d889fe4c39aae61723b61a2eaac10367836e980c5ce9bc822a",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 8,
+            "arrayExpressions": 7,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#ensurePreparedAssembly",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1c66d1f38104453b84cba1c5be0d09b53bc1daae2dcbb4677433b5d24c78186a",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#attachIfPossible",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee6e8ad66e95ca8e4d57ee8222ebbf096b209b55e374452b406d9b4f484f1e49",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#pickTackleLegacyId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fff5de386ab1cbef5efc6aec557e5360891fad322c6c0cdcd7f0031430418de8",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#selectActiveTackle",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9effa0c90463209b4bd7b5b0c9044622a19a4b95b7abff3d1dbe5f2ee48e2cbb",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 3,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#pickLegacyId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bb8b73d288e53c7e283c43310ba5863a26f0de95aad16f1a7ac4f8d52fa25717",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#idsByTypes",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1f173de64fc02700e8767747896979df9a9e391bdd6e965c5a88cdf9646933d1",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#allocateFromCandidates",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "033e36c3e22d73bb3da4dcc207ace84aab4c36f6208461c836e8925f32cda5c3",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#allocate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "06b5587f599c877b0067d9ff0a0852ca36b08584b75d9b2024b33445ca097d52",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveActiveRoot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e41d45ed547bc79927b79b1ac38b09d51284aa4f1e79337383962ecf4dd4d67a",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveActiveComponent",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fce130456e971af36119e0df9a4c5b320f2005644f8127ada12e11e4e35bc9b8",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isAcceptedInEquipmentSlot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b450982e8ecba6827c6917722eba6782dc3ab9f4a3a83dbe1ffa33f6f31aa8c9",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#itemTypeByLegacyId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9ed4004489b271bf1e1d44008c53b36bd2c75b6196224b8564f50254dbdccdc2",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#releaseUnitForActiveRoot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5c2ad7a0bab5b02e595a797e73dd861132d82fc4dd8e4d7491738ce0f9b741a5",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#releaseUnitForActiveAttachment",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee61dcb78ef9b9a2dfec8713d8c6ef0b8b4c5305e879d8d858fc146705fefe12",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#removeRootFromLoadout",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7878608dce3997f552805e7f211b272fd5c521dce19462633f6e385df93719a1",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#occurrenceIndex",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "83d4bb42e574e205b477be86de52437871a6f4240f29510a89574aa4a8a0020d",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#firstLegacyArrayItemByType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3efc8f2d9466cd2348f74485327a98caf93fd14610021b788bd58c72a6b4943c",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#typeByLegacyId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b39f98d1ca92bd3c1f934128f29645ba319dea3d144f2d15bff2f2c63624d0d5",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#view",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "743ee08b3b7feaf3e3b0b942cf38045b7603825bcdf2d0e46511d3b6444eab18",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#viewFromRaw",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bb0630ce3948838a611623c217b115a8251c8a9d3527e028714a77261f27b4e9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#type",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "64dc36e02bee6cf99578a2ae78071e1ad5d81b55d1e6f6670edd34b456c3014c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#definition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "48e36712c3a0350369507a7466fe2ee5951af5e1273baa8717ffbf7b4589036b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isBuildBox",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "abd1cb16e8918863aa53c656a48ace9c37449b3218d7297785a84ac6d0037c84",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#legacyType",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c6f935da9d1cfa4dcc2855a00dbd22e78004b1ae770fa496ee4879e6e7efdb6e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#stableSerialize",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5ddfe4b9d0bc6c49e4e32f8bb116bd3d5128ed9a2310cdcabb3bcaf6f4b4b64f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#conservationLedger",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "51ee602fda83f954a9f022f62d263556ee0edce7b1ebdc23148d4d57fadff1ca",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#lineLengthMeters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2b494814e643181f53ffc6b42825a8249763dedf90e5e287fe3faeb03e5668bf",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#validateConservation",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5ac5fdfb6bea6d92811521ab5dba10c83d8d88d4b4ce0e173634c56f20ec29d6",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#validate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c885f8d212b33d5534b8182e20a5220ab71bf898cb5db3bd01ade47b1deeefab",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 10,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 62,
+        "arrayExpressions": 41,
+        "newExpressions": 35,
+        "objectFreezeCalls": 3,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Set",
+          "member": "#allocateFromCandidates",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#attachIfPossible",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#attachIfPossible",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#collectBuildMetadata",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#conservationLedger",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#conservationLedger",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#conservationLedger",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#conservationLedger",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#ensurePreparedAssembly",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#ensurePreparedAssembly",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#ensurePreparedAssembly",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#hasSameLegacyLineSignature",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#hasSameLegacyLineSignature",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#hasSameLegacyLineSignature",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "#isAcceptedInEquipmentSlot",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#legacyItemIdMap",
+          "kind": "field"
+        },
+        {
+          "name": "Map",
+          "member": "#legacyItemsById",
+          "kind": "field"
+        },
+        {
+          "name": "Number",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#lineLengthMeters",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "RodCapabilityResolver",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#migrateBuild",
+          "kind": "method"
+        },
+        {
+          "name": "RodCapabilityResolver",
+          "member": "#migrateEquipment",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentState",
+          "member": "#migrateEquipment",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#migrateTackleChildren",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#migrateTackleChildren",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#migrateTackleChildren",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#migrateTackleChildren",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#normalizeLegacyItems",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#occurrenceIndex",
+          "kind": "method"
+        },
+        {
+          "name": "RodCapabilityResolver",
+          "member": "#pickTackleLegacyId",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveAttachment",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveAttachment",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveAttachment",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveAttachment",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveAttachment",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#releaseUnitForActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#removeRootFromLoadout",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#removeRootFromLoadout",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#removeRootFromLoadout",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#removedLegacyItemIds",
+          "kind": "field"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#resolveActiveRoot",
+          "kind": "method"
+        },
+        {
+          "name": "RodCapabilityResolver",
+          "member": "#selectActiveTackle",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#selectActiveTackle",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#stableSerialize",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#toRepositoryItem",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "EQUIPMENT_SLOT_CONFIG",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "RodCapabilityResolver",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "InventoryItemLocation",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validate",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#validateConservation",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#validateConservation",
+          "kind": "method"
+        },
+        {
+          "name": "Error",
+          "member": "#validateConservation",
+          "kind": "method"
+        },
+        {
+          "name": "ExactAssemblyRefillSignaturePolicy",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "INVENTORY_V2_SCHEMA_VERSION",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Map",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "FlatInventoryItemRepository",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "AssemblyStateRepository",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "AssemblyProfileRegistry",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "ItemAssemblyReader",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "ItemAssemblyService",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "LegacyInventoryUnitAllocator",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "EquipmentLoadoutRepository",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "migrate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "657d1c0d754f043038abe02dfb06b844466c74c0ecf7efdb021591281424b42a",
+          "calls": {
+            "migrate": 2
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": "9b219ff18fa198fb1ca1b8c2bcafed3b8ac27e69817f9e486702a1c996c04a6e",
+          "calls": {
+            "migrate": 16
+          },
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2SnapshotFactory": {
+      "sourcePath": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "members": [
+        {
+          "name": "#repository",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7aa92b7f933d063ff22e8e01ca8dae8fbf7656436e4471b3339797ede11e465f"
+        },
+        {
+          "name": "#assemblyStates",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a0fa797f79cf80b254789efa5ed888dda3813003769c08d159dddb43fe55b21b"
+        },
+        {
+          "name": "#equipmentState",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "504fd44c38c1df1092996f1d3e8b8800ac30884f952a0bf23b90240035da4980"
+        },
+        {
+          "name": "#loadouts",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1509bbb3fe5d559a3b636fc1c0dab75bfaef4378afe67a0d5ad30bf42ebe064f"
+        },
+        {
+          "name": "#settings",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "28329d75918cebc7eeda1ca12b7891c45a11043cc5fb4ce437411a3eff3e5c90"
+        },
+        {
+          "name": "#refillMemory",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "501c2396c8017f9309400759d64aea65d2770fb4e725f0732526f8bfcaff9a0b"
+        },
+        {
+          "name": "#itemSnapshotMapper",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "89fc0ebbde7726aa8203421d4c0c99ca7eb6819cf5a8005d3d5b4eb34eef443c"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "18adbabe93e0fcf7c0ed4a548ad608fbf12f890b807c0d639440c46a4b622eed",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "8ea184cac4d08e4bab9240bd98d60cc65f3d33474e80f1bcd9616468926b6519",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 4,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "INVENTORY_V2_SCHEMA_VERSION",
+          "member": "create",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "1e9e928ffbe9593d3254b8aaa7e8f2de2ac9c5d33593de021d79082dc449e501",
+          "calls": {
+            "create": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": "2f28f83245de0abf6ffa60df047a87cf6aaf46141096602b4ef6f356d3025049",
+          "calls": {
+            "create": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2SnapshotMigration": {
+      "sourcePath": "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
+      "members": [
+        {
+          "name": "#definitionResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7c09bd1c51e6ca32698e26cc715058f4a38d008f6e3ae2aed957bf4e6e1a629f"
+        },
+        {
+          "name": "#itemStateMigration",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "67e2c6651a34f79f983f7bade7bda4c857362e33cf721bc421657d7e87c33366"
+        },
+        {
+          "name": "#itemSnapshotMapper",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "89fc0ebbde7726aa8203421d4c0c99ca7eb6819cf5a8005d3d5b4eb34eef443c"
+        },
+        {
+          "name": "#targetSchemaVersion",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "72d1c238dc26ae96e990050a395d19f9ae66c270e981fbea23f52224c10d5883"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "16809a932a513b94de7754f61d1e4412188808e49b1c72015c9a249e03ed359e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "migrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "711fdebcc391771e501352f1fcdbdeed40d6955765468dcfa3c7c437be67beff",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 5,
+            "arrayExpressions": 5,
+            "newExpressions": 0,
+            "objectFreezeCalls": 2,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#hasLegacyFields",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4d650d2ac4f0922b04702eb9c562c52a1adf3821dffb23f9bfc4e9713439a2e7",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#definition",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e853a6df0d9365db9eaf140ad572cf2df3fadde818a1c75d699e5c88fb9e0e89",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#cloneArray",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "79a58a9e54e9d6491d168c8565a75b13b1ce2ce1b00c56f7bd1929ed927b94ea",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#cloneObject",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "40744309281fd0068c9b851e078eff762a104b385ab1febed563ceb62d90dde8",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0227b340b158b3cb1a4e5ebb7c9374e98b0c1b845550d00f782f073ec4ece8c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 7,
+        "arrayExpressions": 7,
+        "newExpressions": 1,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#cloneArray",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#cloneObject",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#hasLegacyFields",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Number",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "migrate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "20faf8dac1285200014fa85ce4c46c082ddf484ea7a5c61f361fb5b150e2f3f1",
+          "calls": {
+            "migrate": 3
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": "3f821f1080b2b4438eaa5fe91bf3195ab6da362c9cfbefd3d0b0972e4516b9e8",
+          "calls": {
+            "migrate": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": "442565f5d1531fbcbcaba1ea1d7d73520f6b8059b1a8a5e2b7a0b1d0de0393a3",
+          "calls": {
+            "migrate": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2StateStore": {
+      "sourcePath": "src/infrastructure/storage/inventory_v2_state_store.js",
+      "members": [
+        {
+          "name": "#cache",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4cd51882d7e02b734731f1936f6fa8334501e552a8d7f28b2a3a19ab2642bf29"
+        },
+        {
+          "name": "#key",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "5e2bbde07fbb22410fd92f0801fe7c914c17db4df0d149051e44835de9884607"
+        },
+        {
+          "name": "#itemSnapshotMapper",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "89fc0ebbde7726aa8203421d4c0c99ca7eb6819cf5a8005d3d5b4eb34eef443c"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "2c9f664232708fce83b0fb5339247fe33c2892b86f51d3aa6b6058558b5591e9",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "load",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5470a9e00b4f5bc3617a4e81bed87b7b2319f3582474907e505ae3bceb96ddbc",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "loadPrevious",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "802cc3a3197b7b5e7093a79acf0d81d57607bd2ca12dc642b42a526abb7f717e",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "save",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1f912211da734bf27dcd3b60da6285aee7935c114174310eecdfb781eedda682",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalize",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "616426b4ed2143d852ab8d61dc1e703cb1fd7190ee4fc296b43d9d5ead9edfab",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#array",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "6823ed745627f1c92523ad458dffaaf486486baeeac727d27af20e06d1bba664",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#object",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "32d42e75f28da733b12b065c6e4c9c20f02df856cbd9ba3431acc4f3f619dd86",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0227b340b158b3cb1a4e5ebb7c9374e98b0c1b845550d00f782f073ec4ece8c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 4,
+        "arrayExpressions": 2,
+        "newExpressions": 4,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#array",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "JSON",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "#normalize",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#object",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Set",
+          "member": "loadPrevious",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "loadPrevious",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "loadPrevious",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "0fc900351debb2121bc73aa24c8d87f876e6fd677ad23e1c94cbb1dd2d1ebd14",
+          "calls": {
+            "load": 8,
+            "loadPrevious": 5,
+            "save": 5
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": "354975761af536874b44d65d9be2b29d3d18bce5ecdd8ec627c6d44b2d72d1ea",
+          "calls": {
+            "load": 0,
+            "loadPrevious": 0,
+            "save": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    },
+    "LegacyItemStateMigration": {
+      "sourcePath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "members": [
+        {
+          "name": "#legacyMutableStatKeys",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "7ddf09e55de3bd6b32c0b6838b3da452ca93a48688841328501424b5fb32e58c"
+        },
+        {
+          "name": "#instanceFactKeys",
+          "kind": "field",
+          "static": true,
+          "bodySha256": "b79303c8566221d4cac0c1a64bcd34cd2cd7c2b882ce92c66400de1ca65759b2"
+        },
+        {
+          "name": "#overridePolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "57ba8c74190340418ba98d4a903b02f01ae31823dcf02837e2cf5ac48a5e6c75"
+        },
+        {
+          "name": "#freshnessStatePolicy",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "cb0d9a372a0303547da44f4abd23f574553c3394e91c4f5d536f99b559079b06"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "713f6eb7c8ab7af5d1ab2a082038d8a5f89b7b9f2d8ceb929f832e187241e7a5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "migrate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "13e4f84f2e6e3c20d73fadba0df1c7304704100ecd5b941f6ef776b0a5d774aa",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#migrateFreshnessState",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5128594abd90b54cedd0a0f1e871182d05af5c66fefe4664a8b9680c0146aa1c",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#legacyMutableCandidates",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1622472c4d8712f1ab165820ddf0d7c2a7e940b465bcba25486fe9652d73c6ed",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#reportClassificationMismatch",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f6a90caca5e7bf91e3c2ca8d0f73b116218fc479814aeb21009be31334c8984b",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#reportDiscardedAuthoredStats",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "19b6e12be7f7bba9b2f6625b8427d5a3dd6fee5606a19615cb8cffc9fd69ed16",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 2,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#clone",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c63d876647c82d1c604c18e963f90f8f570d41e1103062fe315998be00a0239d",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 10,
+        "arrayExpressions": 6,
+        "newExpressions": 3,
+        "objectFreezeCalls": 2,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#clone",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#instanceFactKeys",
+          "kind": "field"
+        },
+        {
+          "name": "Object",
+          "member": "#legacyMutableCandidates",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#legacyMutableCandidates",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#legacyMutableCandidates",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#legacyMutableStatKeys",
+          "kind": "field"
+        },
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "#migrateFreshnessState",
+          "kind": "method"
+        },
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "#migrateFreshnessState",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#migrateFreshnessState",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#reportDiscardedAuthoredStats",
+          "kind": "method"
+        },
+        {
+          "name": "Set",
+          "member": "#reportDiscardedAuthoredStats",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#reportDiscardedAuthoredStats",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#reportDiscardedAuthoredStats",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#reportDiscardedAuthoredStats",
+          "kind": "method"
+        },
+        {
+          "name": "ItemFreshnessStatePolicy",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "undefined",
+          "member": "migrate",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "migrate",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [
+        {
+          "name": "ITEM_PROGRESSION_CONFIG",
+          "member": "#migrateFreshnessState"
+        }
+      ],
+      "scenarios": {
+        "utils/inventory-save-round-trip-check.js": {
+          "sha256": "35d4fc098ffacf8222acc85ee0fda3ed236700b37f9d98bebf98a433a2b0070f",
+          "calls": {
+            "migrate": 128
+          },
+          "deltaTime": {}
+        },
+        "utils/inventory-v2-migration-check.js": {
+          "sha256": "08ff1b67c800b7c9d13117ba418500d1b3e0eb61406b0a64e9c6106d10f273dd",
+          "calls": {
+            "migrate": 268
+          },
+          "deltaTime": {}
+        },
+        "utils/item-state-hardening-check.js": {
+          "sha256": "25cf387f0fbea05ac98c76004fc20715f7560a0d09728d5dfc0be642b5f0bbb9",
+          "calls": {
+            "migrate": 1
+          },
+          "deltaTime": {}
+        },
+        "utils/item-rarity-roundtrip-check.js": {
+          "sha256": null,
+          "calls": {},
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

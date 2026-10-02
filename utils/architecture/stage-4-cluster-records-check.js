@@ -18,7 +18,8 @@ const { ActivationShimRenderer } = require("../build/compat_runtime/activation_s
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
   require("../build/compat_runtime/activation_retirement");
 const { CanonicalActivationIdentity } = require("../build/compat_runtime/cumulative_runtime_contract");
-const { PATHS, StageFourClusterPlan, resolveImportSource } = require("./stage_four/cluster_path");
+const { PATHS, StageFourClusterApply, StageFourClusterPlan, resolveImportSource } = require("./stage_four/cluster_path");
+const { StageFourTierAEvidence } = require("./stage_four/tier_a_evidence");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageThreePatchReleaseTransition } = require("./domain_batches/stage_three_patch_release_transition");
 const { FILES: RELEASE_FILES, StageFourRelease } = require("./stage_four/release_path");
@@ -74,7 +75,9 @@ const preparationRetired = new Set(preparations.flatMap(record => (record.replac
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
 const retiredActivations = new Set((contract.retiredActivations || []).map((item) => item.activation.id));
 const inert = new Set((contract.inertModules || []).map((item) => item.targetModule));
-const laterRetiredBridges = (index) => new Set([...preparationRetired, ...ledger.records.slice(index + 1)
+// Apply order follows the graph review, not the record id (018 applies after 020): a bridge may be retired by any
+// other applied record, never by its own.
+const laterRetiredBridges = (index) => new Set([...preparationRetired, ...ledger.records.filter((_, other) => other !== index)
   .flatMap((record) => record.output?.bridgesRetired || [])]);
 for (const preparation of preparations) {
   for (const id of preparation.resolvedDebts) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt=>debt.id===id),
@@ -327,6 +330,26 @@ assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, changelo
 assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, toRelease: "1.0.0" }), /newer/u);
 releaseCases += 2;
 
+// Apply accepts an uncommitted Manifest only when it differs from HEAD by the record modules' classification.
+const reclassHead = { schemaVersion: 1, modules: [{ currentPath: "src/a.js", architecture: { targetBoundary: "platform" },
+  observed: 1 }, { currentPath: "src/b.js", architecture: { targetBoundary: "platform" } }] };
+const reclassify = (mutate) => {
+  const value = JSON.parse(JSON.stringify(reclassHead));
+  mutate(value);
+  return StageFourClusterApply.onlyReclassifies(reclassHead, value, { modules: [{ currentPath: "src/a.js" }] });
+};
+assert.equal(reclassify((value) => { value.modules[0].architecture.targetBoundary = "game-application"; }), true);
+assert.equal(reclassify(() => {}), false, "an unchanged Manifest is not a reclassification");
+assert.equal(reclassify((value) => { value.modules[1].architecture.targetBoundary = "game-application"; }), false);
+assert.equal(reclassify((value) => { value.modules[0].architecture.targetBoundary = "game-application";
+  value.modules[0].observed = 2; }), false, "observations must stay equal");
+// Tier evidence: free identifiers and typeof lookups may only lose imported symbols.
+const lookup = (name) => ({ name, member: "m" });
+const imports = new Set(["A"]);
+assert.equal(StageFourTierAEvidence.onlyLosesImports([lookup("A"), lookup("B")], [lookup("B")], imports), true);
+assert.equal(StageFourTierAEvidence.onlyLosesImports([lookup("B")], [], imports), false, "lost a non-imported lookup");
+assert.equal(StageFourTierAEvidence.onlyLosesImports([], [lookup("A")], imports), false, "gained a lookup");
+
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation and ${releaseCases} release fixtures; ` +
+  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence and ${releaseCases} release fixtures; ` +
   `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);

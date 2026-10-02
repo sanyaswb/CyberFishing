@@ -12053,32 +12053,17 @@
         "legacyLoadOrder": 4,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -12098,15 +12083,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -34210,6 +34187,327 @@
       }
     },
     {
+      "currentPath": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "Number",
+            "Object",
+            "RangeError",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Boolean",
+            "Error",
+            "JSON",
+            "Map",
+            "Math",
+            "Number",
+            "Object",
+            "Set",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "JSON",
+            "Number",
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/persistence/inventory_state_store.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "JSON",
+            "Number",
+            "Set",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_state_store.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "currentArea": "game/application/inventory/persistence",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Object",
+            "Set",
+            "TypeError",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/config/databases/fish/fish_categories.js",
       "currentArea": "game/config/databases/fish",
       "observed": {
@@ -43252,11 +43550,6 @@
           "items": [
             {
               "symbol": "InventoryItemSnapshotMapper",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryItemSnapshotMapper",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -43267,16 +43560,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemFreshnessStatePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -43284,14 +43571,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Boolean",
-            "Number",
-            "Object",
-            "RangeError",
-            "TypeError",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -43301,50 +43581,26 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/inventory_item_snapshot_mapper.js",
-        "migrationWave": 5
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/items/item_progression_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemFreshnessStatePolicy",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/freshness/item_freshness_state_policy.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/items/item_progression_config.js",
-              "symbols": [
-                "ITEM_PROGRESSION_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/freshness/item_freshness_state_policy.js",
-              "symbols": [
-                "ItemFreshnessStatePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43367,11 +43623,6 @@
           "items": [
             {
               "symbol": "InventoryV2LegacyMigration",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2LegacyMigration",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -43382,82 +43633,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "AssemblyProfileRegistry",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "AssemblyStateRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EquipmentLoadoutRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EquipmentState",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FlatInventoryItemRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemAssemblyReader",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemAssemblyService",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LegacyInventoryUnitAllocator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -43465,17 +43644,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Boolean",
-            "Error",
-            "JSON",
-            "Map",
-            "Math",
-            "Number",
-            "Object",
-            "Set",
-            "globalThis",
-            "undefined"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -43485,215 +43654,26 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/inventory_legacy_migration.js",
-        "migrationWave": 5
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "AssemblyProfileRegistry",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/assembly_profile_registry.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "AssemblyStateRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/assembly_state_repository.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EQUIPMENT_SLOT_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EquipmentLoadoutRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/loadouts/equipment_loadout_repository.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EquipmentState",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/equipment_state.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ExactAssemblyRefillSignaturePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FlatInventoryItemRepository",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/flat_inventory_item_repository.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/inventory_v2_state_store.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemAssemblyReader",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/item_assembly_reader.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemAssemblyService",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/assemblies/item_assembly_service.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LegacyInventoryUnitAllocator",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodCapabilityResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/inventory/equipment_slot_config.js",
-              "symbols": [
-                "EQUIPMENT_SLOT_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/assembly_profile_registry.js",
-              "symbols": [
-                "AssemblyProfileRegistry"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/assembly_state_repository.js",
-              "symbols": [
-                "AssemblyStateRepository"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-              "symbols": [
-                "ExactAssemblyRefillSignaturePolicy"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/item_assembly_reader.js",
-              "symbols": [
-                "ItemAssemblyReader"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/assemblies/item_assembly_service.js",
-              "symbols": [
-                "ItemAssemblyService"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/equipment_state.js",
-              "symbols": [
-                "EquipmentState"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/equipment/rod_capability_resolver.js",
-              "symbols": [
-                "RodCapabilityResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/flat_inventory_item_repository.js",
-              "symbols": [
-                "FlatInventoryItemRepository"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/inventory_item_location.js",
-              "symbols": [
-                "InventoryItemLocation"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/loadouts/equipment_loadout_repository.js",
-              "symbols": [
-                "EquipmentLoadoutRepository"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/storage/inventory_v2_state_store.js",
-              "symbols": [
-                "INVENTORY_V2_SCHEMA_VERSION"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
-              "symbols": [
-                "LegacyInventoryUnitAllocator"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43717,11 +43697,6 @@
           "items": [
             {
               "symbol": "InventoryV2SnapshotFactory",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2SnapshotFactory",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -43732,10 +43707,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -43743,7 +43718,6 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -43754,35 +43728,26 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/inventory_snapshot_factory.js",
-        "migrationWave": 5
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/storage/inventory_v2_state_store.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/infrastructure/storage/inventory_v2_state_store.js",
-              "symbols": [
-                "INVENTORY_V2_SCHEMA_VERSION"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -43802,11 +43767,6 @@
           "items": [
             {
               "symbol": "InventoryV2SnapshotMigration",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2SnapshotMigration",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -43815,17 +43775,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "JSON",
-            "Number",
-            "Object",
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -43836,18 +43798,26 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/inventory_snapshot_migration.js",
-        "migrationWave": 5
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -43869,17 +43839,7 @@
           "items": [
             {
               "symbol": "INVENTORY_V2_SCHEMA_VERSION",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "INVENTORY_V2_SCHEMA_VERSION",
               "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "InventoryV2StateStore",
-              "mechanism": "global-lexical",
               "availability": "program-init"
             },
             {
@@ -43892,17 +43852,19 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "JSON",
-            "Number",
-            "Set",
-            "TypeError",
             "globalThis"
           ],
           "browserApis": [],
@@ -43913,18 +43875,26 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/inventory_state_store.js",
-        "migrationWave": 5
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/persistence/inventory_state_store.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -44011,9 +43981,56 @@
         "legacyLoadOrder": 171,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
+      "currentArea": "infrastructure/storage",
+      "observed": {
+        "legacyLoadOrder": 173,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "LegacyInventoryUnitAllocator",
+              "symbol": "LegacyItemStateMigration",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -44048,7 +44065,7 @@
           "compatibility-bridge"
         ],
         "targetBoundary": "game-application",
-        "targetPath": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+        "targetPath": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
         "migrationWave": 4
       },
       "analysis": {
@@ -44065,116 +44082,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/infrastructure/storage/legacy_item_state_migration.js",
-      "currentArea": "infrastructure/storage",
-      "observed": {
-        "legacyLoadOrder": 173,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "LegacyItemStateMigration",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "LegacyItemStateMigration",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ItemFreshnessStatePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Array",
-            "Object",
-            "Set",
-            "TypeError",
-            "globalThis",
-            "undefined"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "platform-adapter"
-        ],
-        "targetBoundary": "platform",
-        "targetPath": "src/platform/browser/storage/legacy_item_state_migration.js",
-        "migrationWave": 5
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ITEM_PROGRESSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/items/item_progression_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ItemFreshnessStatePolicy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/items/freshness/item_freshness_state_policy.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/config/items/item_progression_config.js",
-              "symbols": [
-                "ITEM_PROGRESSION_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/items/freshness/item_freshness_state_policy.js",
-              "symbols": [
-                "ItemFreshnessStatePolicy"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
