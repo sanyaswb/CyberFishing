@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-4-owner-decision",
+  "decisionId": "stage-4.phase-0.2-config-source",
+  "recordedAt": "2026-10-02",
+  "decidedBy": "user",
+  "baseCommit": "02769d2",
+  "spec": ".claude/specs/stage4-phase0-spec.md §3 0.2",
+  "decisions": [
+    {
+      "question": "Single live configuration source for Application/Platform",
+      "choice": "A",
+      "statement": "One RuntimeConfig port created once in bootstrap: a live facade over CONFIG; every getter, fightPhysicsConfig included, reads per call (no cache). Application/Platform receive only the port or narrow slices through constructors; direct CONFIG access stays only in bootstrap/config and DEV.",
+      "consequence": "A DEV replacement of CONFIG.fightPhysicsConfig reaches every consumer (DEV-only behaviour; nothing player-visible). Resolves the ConfigProvider adapter cache debt (src/app/adapters.js ConfigProvider constructor).",
+      "rejected": "B: pass the raw live CONFIG to every consumer (as prerequisite 020)."
+    },
+    {
+      "question": "Does the port read BASE_CONFIG + CONFIG_OVERRIDE_STORE already in M1?",
+      "choice": "no",
+      "statement": "The port reads the live CONFIG; BASE_CONFIG / CONFIG_OVERRIDE_STORE (src/config/runtime/*) stay a DEV mechanism until Stage 6, where unifying base + overrides behind the port is a deferred task."
+    },
+    {
+      "question": "Release version line for Stage 4",
+      "choice": "0.25.x",
+      "statement": "Stage 4 releases start at 0.25.0; one release per milestone (M1, M2, ...)."
+    }
+  ]
+}

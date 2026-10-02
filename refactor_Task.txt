@@ -329,6 +329,8 @@ Stage 3 is complete only when all approved Domain clusters have migrated, state 
 
 Process (owner decisions 2026-09-29 on the Stage 4 process proposal): risk tiers A/B/C derived automatically from facts (hot-loop traces, save-format use); a cohesive cluster per commit with at most one owner of mutable state; a release and the owner's play check per milestone (game-cycle and a browser load on every commit); lighter records with rollback through `git revert` after the history freeze; tooling frozen (a new tool or field only with a written reason and at least two planned uses); the 30 config modules belong to Stage 4, milestone M1, tier C; no hard milestone dates until M1 is done. At Stage 3 closure: one final acceptance Full, then the history replays (and the `stage-3-prerequisite-NNN` replays, moved out of Quick and Architecture) run only at stage closures or on demand.
 
+**Phase 0 decision 0.2 — single live config source (owner 2026-10-02, record `architecture/migration/stage_4_owner_decision_config_source.json`):** option A. One `RuntimeConfig` port is created once in bootstrap as a live facade over `CONFIG`; every getter, `fightPhysicsConfig` included, reads per call (no cache). Application/Platform receive only the port or narrow slices through constructors; direct `CONFIG` access stays only in bootstrap/config and DEV. Consequence: a DEV replacement of the fight-physics adapter reaches every consumer (DEV-only behaviour, nothing player-visible); this resolves the `ConfigProvider` adapter cache. The port reads the live `CONFIG`; `BASE_CONFIG` / `CONFIG_OVERRIDE_STORE` stay a DEV mechanism until Stage 6 (rejected: B, raw live `CONFIG` for every consumer). Stage 4 releases use the 0.25.x line (one release per milestone).
+
 Migrate:
 
 ```text
@@ -372,6 +374,7 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 - [ ] Move the display of `Fish.activeDebuffName` into the DEV overlay (fishing.js debug data feeds it today; owner decision 2026-09-29).
 - [ ] Split the bootstrap DEV coupling: the DEV hooks reach production only through the injected `DevFlagsProvider` (e.g. the GodMode bite-sequence override since 018), composed from `dev.entry.js`; a production build composes it without GodMode.
 - [ ] Retire the classic script positions: the 46 retired-activation placeholders and the inert migrated-source placeholder of `BuffManager` (batch 050, `inertModules` in the runtime contract) keep their legacy slots until the classic script order is retired.
+- [ ] Source the `RuntimeConfig` port from `BASE_CONFIG` + `CONFIG_OVERRIDE_STORE` (`src/config/runtime/*`) instead of the live mutable `CONFIG`, with DEV writing only to the override store (owner decision 2026-10-02, Phase 0.2: not in M1).
 
 # 6. Stage 7 — Structural Hardening
 
