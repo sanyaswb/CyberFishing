@@ -313,6 +313,12 @@ const CHECK_DEFINITIONS = Object.freeze([
       suites: ["architecture"],
     },
     {
+      id: "stage-3-closure",
+      title: "Stage 3 closure gates: Domain migrated, Domain/Engine dependencies only, no browser/DEV/transport globals, removal paths",
+      file: "utils/architecture/stage-3-closure-check.js",
+      suites: ["quick", "architecture"],
+    },
+    {
       id: "stage-3-state-identity-replacement-fixtures",
       title: "Stage 3 state-identity transactional swap, rebuilt index and size read fixtures",
       file: "utils/architecture/stage-3-state-identity-replacement-fixtures-check.js",

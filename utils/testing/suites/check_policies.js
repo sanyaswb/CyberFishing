@@ -82,6 +82,7 @@ const READ_ONLY_CHECKS = Object.freeze([
   "stage-3-activation-retirement-fixtures",
   "stage-3-changelog-trim-fixtures",
   "stage-3-state-identity-replacement-fixtures",
+  "stage-3-closure",
   "stage-3-inventory-equip-target-batch",
   "stage-3-reel-auto-recovery-prebuild",
   "stage-3-line-tension-prebuild",

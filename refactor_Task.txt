@@ -1,10 +1,11 @@
 # CyberFishing — Current Plan for the Remaining Modular Refactor
 
 - **Stage 1 closure version:** `v0.24.31`
-- **Current release version:** `v0.24.77`
+- **Current release version:** `v0.24.89`
 - **Work type:** architecture / infrastructure refactoring
 - **Gameplay changes:** prohibited
-- **Next step:** run frozen batch 040 through the shared batch tooling, then continue 041–046 one graph-changing batch at a time; record the hot-loop and collection-identity evidence before freezing review-queue batches 047–050, then run the Stage 3 closure gates; see “Next steps” below
+- **Stage 3 status (2026-10-02):** CLOSED — all 139 Domain modules migrated (batches 001–051), closure gates verified (`architecture/migration/stage_3_closure.json`, check `stage-3-closure`); runtime 150 modules / 131 activations / 192 bridges, every remaining activation and bridge with a removal stage (4/5/6) and the condition "all listed legacy consumers migrated". Pending: the owner's play check of batches 046–051.
+- **Next step:** Stage 4 (Application + Platform) under the owner's Stage 4 process decisions; the deferred Stage 4–7 tasks are listed per stage below.
 - **Informational document:** since v0.24.62 this file and `FORCODEX.md` are informational only; no check reads their live bytes (owner decision 2026-09-26, frozen bytes in `architecture/migration/stage_3_informational_documents_freeze.json`)
 
 This document records the completed Stage 3 prefix and the work that remains.
@@ -344,7 +345,9 @@ DOM/Canvas adapters
 
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 
-- [ ] Inject a clock / instance-id factory into `FlatInventoryItemRepository` (its fallback instance id reads `Date.now`; 012, owner decision 2026-09-28).
+- [ ] Inject a clock / instance-id factory into `FlatInventoryItemRepository` (its fallback instance id reads `Date.now`; 012, owner decision 2026-09-28). Clock part DONE by prerequisite 033 (injected `now`); remaining: the fallback id itself when no factory is injected (production always injects one).
+- [ ] Inject a clock into `EquipmentLoadout`: its default `createdAt` reads `new Date()` (the only Domain clock reader at the Stage 3 closure, recorded in `architecture/migration/stage_3_closure.json`).
+- [ ] Remove the dead `typeof X !== "undefined"` availability guards in Domain modules: after the ESM migration every guarded name is an imported or local binding (22 guards in 13 modules, listed in the Stage 3 closure evidence); removing them changes no behaviour (Stage 7 cleanup, no API change).
 - [ ] Remove the visual fields (ratingColor, ratingGradient, powerColor, powerGradient) from saved inventory items, with an explicit save migration (Stage 4/5); `InventoryItemStackingPolicy` ignores them until then (012).
 - [ ] Repository portability (owner decision 2026-09-29: work stays on the Windows machine until then): the evidence hashes exact working-tree bytes (mixed CRLF/LF) while git stores LF-normalized blobs, so a fresh clone fails the ledger drift checks; commit `.gitattributes` with `* -text` plus a renormalization that stores today's bytes, verify with a fresh clone (`core.autocrlf=false`) and Quick; mark the Windows-only `D:/escape.js` fixture cases. Needed before CI or a second machine.
 - [ ] `ConfigProvider` caches the fight-physics adapter, so DEV adapter overrides do not reach services composed through it (pre-existing; 015/020 read the live `CONFIG` instead). Decide one live config source when the application services migrate.
@@ -358,7 +361,7 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 - [ ] The presentation catalogs `EQUIPMENT_SLOT_PRESENTATION` and `INVENTORY_RULE_MESSAGES` (incl. the `rodKinds` section from 023, kept as its own section so it can be separated), `TerminalLineSlotLabelResolver` and the platform `ConsoleLogger` become ESM imports of their composition consumers; their recorded global providers are removed under the removal conditions in records 007, 008 and 021.
 - [ ] Rename the Domain slot catalog `EQUIPMENT_SLOT_CONFIG` to an equipment slot catalog module at its ESM migration (007).
 - [ ] Split `ViewportProjector` (026): its config-derived `getPerspective` is a world fact read by the chum rules (domain), the rest is camera state (presentation); separate them when the projector migrates (an API change for chum_system and the render builders).
-- [ ] Collapse the duplicated global `resolveFightPhysicsConfig` (landing and retrieve policies, kept byte-identical in 015) into one module export.
+- [x] Collapse the duplicated global `resolveFightPhysicsConfig` (landing and retrieve policies, kept byte-identical in 015) into one module export — done by prerequisite 030; retrieve policy imports it since batch 046.
 
 # 5. Stage 6 — Development / Production Split
 
@@ -368,6 +371,7 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 
 - [ ] Move the display of `Fish.activeDebuffName` into the DEV overlay (fishing.js debug data feeds it today; owner decision 2026-09-29).
 - [ ] Split the bootstrap DEV coupling: the DEV hooks reach production only through the injected `DevFlagsProvider` (e.g. the GodMode bite-sequence override since 018), composed from `dev.entry.js`; a production build composes it without GodMode.
+- [ ] Retire the classic script positions: the 46 retired-activation placeholders and the inert migrated-source placeholder of `BuffManager` (batch 050, `inertModules` in the runtime contract) keep their legacy slots until the classic script order is retired.
 
 # 6. Stage 7 — Structural Hardening
 
