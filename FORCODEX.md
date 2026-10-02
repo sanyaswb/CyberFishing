@@ -1,7 +1,7 @@
 & 'C:\Program Files\Git\cmd\git.exe' status --short
 Використовувати повний шлях до git.exe. Постійне рішення: додати C:\Program Files\Git\cmd у системний або user PATH і перезапустити Codex/термінал.
 
-# CyberFishing — handoff notes for Codex (state 2026-09-30)
+# CyberFishing — handoff notes for Codex (state 2026-10-02)
 
 Informational document: no check reads this file or refactor_Task.txt (owner decision 2026-09-26).
 Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
@@ -14,10 +14,10 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Close the game tab/DevTools and stop npm run dev before rebuilds (dist/stage-3-compat-runtime EPERM lock).
 - Do not create project files while Full or history runs (corpus checks); stage in a temp directory.
 - Browser smoke evidence must name the actual performer; batch 039 was performed by the owner with explicit console counts.
-- Push only on the owner's explicit go; tags v0.24.46+ are local-only by convention.
+- The Stage 4 autonomous brief authorizes develop pushes per cluster and release-tag pushes per milestone/closure; releases use 0.25.x.
 
 ## Checks
-- npm run check:quick (~3 min), npm run check:architecture (~4 min), npm run check -- --suite history.
+- Current slim catalog: Quick 29 (~26 s), Architecture 49 (~7 s), Full 78 (~26 s). Historical replays stay on migration-archive / stage3-evidence-archive.
 - Cache v2 (utils/testing/CHECKS.md): policy "never" by default, reviewed "snapshot" for history replays; read-only checks run in parallel.
 - Acceptance: node utils/run-checks.js --acceptance --report <abs> (every check executed, ~63 min); batch release gate: --release-gate --report <abs> (history replays may be cached, ~49 min); stage-3-batch.js automated-acceptance takes --check-report.
 
@@ -27,7 +27,13 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Last steps: prerequisite 033 (clock injection, Net converter fallback), Stage 3.50.0 repeated graph review, Stage 3.50.1 freeze extension (class-scoped hot-loop evidence), batches 049–051.
 - Next: Stage 4 (Application + Platform) per refactor_Task.txt; the owner's play check of batches 046–051 is pending.
 
-## Current state (2026-09-30)
+## Stage 4 checkpoint (2026-10-02)
+- Seven applied clusters (001–006, 008), 24 Stage 4 ESM targets; 007 is parked/unapplied because game-config cannot name structuredClone under the unchanged policy. Inject cloning from platform/bootstrap first and prove every construction site plus structured-clone/JSON fallback parity.
+- 005 b1530a3: five derived-config modules; retire 13 activations with their last 9 bridges. 006 82fa087: fight-physics adapter. 008 8ce3d8e: progression validator. All pushed; game-cycle byte-identical; browser 0 errors/0 warnings, 143 export identities match runtime after 008.
+- Tooling completes exact Stage 4 retirement-ledger ownership proof and sequential partial/full retirement. Fresh Full 78/78 (all executed, source unchanged); one common record check (10 projector / 15 retirement fixtures). Runtime 174 modules / 143 activations / 220 bridges. Version remains 0.24.89; Stage 4 and M1 are open.
+- Continue 007 prerequisite, then 009 project-version release projection, 010 config root + RuntimeConfig port and 011 schema validator, followed by platform 012–019. Brief allows parking one cluster while independent work continues. Read CLAUDE.md and .claude/specs/stage4-cluster-path-design.md first.
+
+## Historical state (2026-09-30)
 - Released v0.24.77 (batch 039): batches 001–039 complete, 106 migrated Domain modules; runtime 116 modules / 105 activations / 168 bridges; activeBatchId = null. Batch 039 release gate 240/240 PASS (175 executed / 65 reviewed history seals), owner smoke PASS with 0 errors / 0 warnings, release closure verified. Stage 3.40.0 frozen batches 040–046 remain, followed by evidence and a new freeze for review-queue batches 047–050.
 - Shared Stage 3 batch tooling (utils/architecture/stage_three_batches, README there): one dispatcher "node utils/architecture/stage-3-batch.js --batch NNN --step <step>"; a batch = definitions/NNN/profile.js + behavior_cases.js.
 - Check cache v2 committed (dd71d5e, tooling checkpoint, no version change): fresh acceptance Full 214/214 executed; v1 sealed counts of earlier checkpoints are superseded by it.
@@ -46,7 +52,7 @@ Full plan: refactor_Task.txt. Changelog: CHANGELOG.md.
 - Browser acceptance: owner-authorized automated substitute since 2026-09-27 (game-cycle check without seals + built-in browser screenshots + instrumented console counts; authorization quoted verbatim in evidence).
 
 ## Next tasks
-1. Execute frozen batch 040 (rules, distance conversion, three item-progression rules and line allocation) through the shared batch lifecycle; re-review the graph after the batch before continuing.
-2. Continue frozen batches 041–046 one at a time with focused tests, Architecture, Quick, release gate and owner smoke where required.
-3. Record hot-loop-equivalence and collection-identity evidence, then re-review/freeze candidates 047–050; repeat until Stage 3 closure, then Stage 4.
-4. Follow up separately on the per-check timeout proposal and compatibility transport removal-stage alignment.
+1. Resolve the recorded 007 clone-injection prerequisite without adding globals, forbidden edges or policy exceptions; resume plan/apply/verify.
+2. Continue config 009–011, then independent platform clusters 012–019; milestone M1 release 0.25.0 only after all required work and acceptance pass.
+3. Archive Stage-3-only tooling after inspecting its live consumers; preserve the runtime/guard building blocks and the ~2,000-line Stage 4 tooling budget.
+4. Complete M2, deferred Stage 4 tasks and closure evidence before the closure release and stage4-closed tag.

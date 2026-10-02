@@ -292,7 +292,8 @@ class StageFourClusterApply {
       writes.set(sourceProvider, shared.has(sourceProvider)
         ? future.activationPositions.filter((item) => item.sourceProvider === sourceProvider)
           .map((item) => shim.render(item, contract.transport.symbol)).join("")
-        : new RetiredActivationPlaceholder().renderProvider(activations));
+        : new RetiredActivationPlaceholder().renderProvider(future.retiredActivations
+          .filter(item => item.activation.sourceProvider === sourceProvider).map(item => item.activation)));
     }
     writes.set(PATHS.index, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
     new CumulativeRuntimeContractValidator().validate(future);

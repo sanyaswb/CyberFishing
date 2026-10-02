@@ -91,10 +91,14 @@ class ActivationRetirementProjection {
     // source stays active: then only the retired shim line and tag are removed.
     const shared = ActivationRetirementProjection.sharedSources(runtime, retiredActivations);
     if (retiring.size === 0) return runtime;
+    const completedProviders = new Set(retiredActivations.filter(activation => !shared.has(activation.sourceProvider))
+      .map(activation => activation.sourceProvider));
     return {
       ...runtime,
       activationPositions: runtime.activationPositions.filter((activation) => !retiring.has(activation.id)),
-      retiredActivations: [...(runtime.retiredActivations || []), ...retiredActivations.map((activation) => ({
+      retiredActivations: [...(runtime.retiredActivations || []).map(record =>
+        completedProviders.has(record.activation.sourceProvider) ? { ...record, placeholder: PLACEHOLDER_KIND } : record),
+      ...retiredActivations.map((activation) => ({
         activation: { ...activation },
         placeholder: shared.has(activation.sourceProvider) ? SHARED_SOURCE_KIND : PLACEHOLDER_KIND,
         reason: RETIREMENT_REASON,

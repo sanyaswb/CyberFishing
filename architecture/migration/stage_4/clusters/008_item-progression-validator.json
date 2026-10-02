@@ -160,6 +160,12 @@
       "warnings": 0,
       "identitiesChecked": 143,
       "identityMismatches": 0
+    },
+    "full": {
+      "status": "PASS",
+      "executed": 78,
+      "cached": 0,
+      "sourceUnchanged": true
     }
   }
 }

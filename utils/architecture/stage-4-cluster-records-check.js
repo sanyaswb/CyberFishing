@@ -138,8 +138,8 @@ const activation = (symbol) => {
 const b1 = activation("B1"), b2 = activation("B2");
 const bridge = (source, symbol) => ({ id: `${source}:${symbol}`, source, target: b1.targetModule,
   globalProviders: [{ symbol, mechanism: "global-this-property" }] });
-const retirementPlan = (held) => {
-  const entry = { currentPath: "src/a.js", architecture: { roles: ["config"], targetBoundary: "game-config",
+const retirementPlan = (held, propertyReader = false) => {
+  const entry = { currentPath: "src/a.js", architecture: { roles: ["config-factory"], targetBoundary: "game-config",
     targetPath: "src/game/config/a.js" }, observed: { legacyLoadOrder: 2,
     providers: { items: [{ symbol: "A", mechanism: "global-lexical" }] } },
     analysis: { blockers: { items: [] }, dependencies: { unresolved: [], ambiguous: [],
@@ -152,7 +152,8 @@ const retirementPlan = (held) => {
     text: (file) => file === PATHS.index
       ? '<script src="dist/fixture/runtime.js"></script>\n<script src="dist/fixture/activations/001_b1.js"></script>\n' +
         '<script src="dist/fixture/activations/001_b2.js"></script>\n<script src="src/a.js"></script>\n'
-      : "class A { read() { return B1; } }\n" };
+      : propertyReader && file === "src/config/project_version.js" ? "globalThis.B1;\n"
+        : "class A { read() { return B1; } }\n" };
   return new StageFourClusterPlan(workspace, { id: "003", slug: "fixture", boundary: "game-config", modules: [{
     currentPath: entry.currentPath, targetPath: entry.architecture.targetPath, exports: ["A"],
     imports: [{ symbol: "B1", from: b1.targetModule }] }] }).build();
@@ -160,11 +161,16 @@ const retirementPlan = (held) => {
 assert.deepEqual(retirementPlan([bridge("src/other.js", "B1"), bridge("src/other.js", "B2")]).retiredActivations, []);
 const partial = retirementPlan([bridge("src/other.js", "B2")]);
 assert.deepEqual(partial.retiredActivations, [b1]);
+assert.throws(() => retirementPlan([bridge("src/other.js", "B2")], true), /still has property readers/u);
 assert.deepEqual(retirementPlan([]).retiredActivations.map((item) => item.id).sort(), [b1.id, b2.id].sort());
 const projected = new ActivationRetirementProjection().contract({ activationPositions: [b1, b2] },
   partial.retiredActivations, partial.owner);
 assert.deepEqual(projected.activationPositions, [b2]);
 assert.equal(projected.retiredActivations[0].placeholder, "shared-source-line-removed");
+const completed = new ActivationRetirementProjection().contract(projected, [b2], "stage-4.cluster-004-fixture");
+assert(completed.retiredActivations.every(item => item.placeholder === "inert-classic-position"));
+assert.equal(new RetiredActivationPlaceholder().renderProvider(completed.retiredActivations.map(item => item.activation))
+  .split("\n").length - 1, 2);
 const placeholder = new RetiredActivationPlaceholder();
 assert(placeholder.render(b1).startsWith("// Retired Stage 4 activation "));
 assert(placeholder.render({ ...b1, owner: "stage-3.002.fixture" }).startsWith("// Retired Stage 3 activation "));
@@ -185,4 +191,4 @@ assert.throws(() => loadRetirement({...validOutput, status: "planned"}), /no exa
 assert.throws(() => loadRetirement({...validOutput, owner: "other"}), /no exact applied Stage 4 cluster/u);
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 10 projector and 12 retirement fixtures.`);
+  `${targets} ESM target(s) inside their boundaries; 10 projector and 15 retirement fixtures.`);
