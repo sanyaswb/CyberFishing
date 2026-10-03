@@ -1108,6 +1108,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2UI",
+      "legacyScriptIndex": 256,
+      "legacySymbol": "InventoryV2UI",
+      "shimFile": "activations/256_inventoryv2ui.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_ui.js",
+      "targetModule": "src/game/presentation/inventory/inventory_ui.js",
+      "id": "activation-2eece033a1a2",
+      "owner": "stage-5.cluster-012-inventory-ui-lifecycle",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "id": "activation-2fc19b0cf09b",
       "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
       "sourceProvider": "src/core/fishing/landing_policy.js",

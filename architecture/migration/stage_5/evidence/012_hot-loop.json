@@ -1,0 +1,627 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "012",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/inventory-v2-ui-check.js"
+  ],
+  "classes": {
+    "InventoryV2UI": {
+      "sourcePath": "src/ui/inventory/inventory_v2_ui.js",
+      "members": [
+        {
+          "name": "#facade",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ddfb9df3a2f5733a2b0eced9b1bbc190c5626139e2e7607992698bb7497e160a"
+        },
+        {
+          "name": "#actionContract",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e4584e23ea5d80ea170653733c452f00611f60f4f8947a02de48fac15ec59075"
+        },
+        {
+          "name": "#actionTypes",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "be3820cf305feb432407b8cd8c7819f47a8c504f116cf0e3344066e66c83c42a"
+        },
+        {
+          "name": "#actionDispatcher",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "74e9ac5ed39c847b2ab9120445b74dcc4cc8bb31e083340a30fa2939c60cf0fc"
+        },
+        {
+          "name": "#onWarning",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ea01db545ef88c9888836b46d73923ebe7f022c2cd56a34c690ec5d14351fa7c"
+        },
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "#normalizer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "eb70fc9e37e2379699843ff589222d18ac23fc69be4005c9c931f1723617685f"
+        },
+        {
+          "name": "#longPressController",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1c128ae589eccff15f77b8619fb29c113519c13674555a6948dbb06f443d4673"
+        },
+        {
+          "name": "#itemRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "07470f3f8d69042e93f941cf18c8c64dfa0c276eb99180c5c35144442d742d75"
+        },
+        {
+          "name": "#headerRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c1b4f17ae90014ae5cf7c6a9e68cf3c49b82c73f99c41fc357022784d4d9d21d"
+        },
+        {
+          "name": "#loadoutRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b0e451a19beea20221743aa805b31634ac6bd512d95436872e107de1ab0b0ca9"
+        },
+        {
+          "name": "#assemblyRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "ebb3d48767c83da7e1d24717d9f7abd0540aed16bc80e02538b74dc629c107d5"
+        },
+        {
+          "name": "#savedLoadoutRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "a74d25db80751d89851bd5586d3d46178ecfb0ce7c06929b117e000af6fa6fae"
+        },
+        {
+          "name": "#inventoryRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "442d481eb0d72c18887870f59c8ca8dea6e06adc946c46d717f29e340bc0cf4b"
+        },
+        {
+          "name": "#tooltipPresenter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4364f1e3e967a671c9d6002f2ae2b8d1b9f29c012d28bc2e844b9819e79dca96"
+        },
+        {
+          "name": "#mountNode",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b2543630fb78c947baa6b4b7230e4a0bb973c17a84aa762ec7a0f1278692702d"
+        },
+        {
+          "name": "#backpackButtonNode",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "460d6d9052866d277ab26aa6ad5453b94f7a1443222c441a5a3a6e739f959ed2"
+        },
+        {
+          "name": "#rootNode",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "348467157603aef3316ea3d0cae75dda70786f12ccdb660b9254c96b8bb19bbe"
+        },
+        {
+          "name": "#headerHost",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "93b1d95b4747282e5aa4c8b0634f0371ee1dab7537a94334437404308662c5f0"
+        },
+        {
+          "name": "#warningNode",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "92d68e7849969c8c2e6af2d0193d6f0d4d22e8cb637963ccebfb15d3865666bb"
+        },
+        {
+          "name": "#leftHost",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "fbcc01d5c6503064aceea073555a335729701e38177f46346776fe4c7f04ddbb"
+        },
+        {
+          "name": "#rightHost",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7609c82354e30edb93a2a5019dc20139dad2fec57eb0077299c9cf411199a94a"
+        },
+        {
+          "name": "#unsubscribe",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "300ea93df208fb9d50ba6b62691b2162c15acdd7f8b2865d2d0179b4d26a2387"
+        },
+        {
+          "name": "#warningTimer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "cc158c0d27d98ca2e6620941f4799d2a7d1a7f1dadfc67f17c083a76f753913e"
+        },
+        {
+          "name": "#warningTimers",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bbe94cef7bdb87005247098dd1ebb61cc924547a5005b05e7c63fbed6dde08b1"
+        },
+        {
+          "name": "#isOpen",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "399078e1ea4a0beb26b7f014c08e9689558a5f8a35ec4cfeabf7438df842b8b9"
+        },
+        {
+          "name": "#isMounted",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4db1174aaaeff5151e2a45ac5cb679edaddfcd3143686928930d5a6ba3dbd97f"
+        },
+        {
+          "name": "#lastViewModel",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1ec656e71107793f5dc077d21cde7e5cf159c6d5c077ca6777128baa281d644a"
+        },
+        {
+          "name": "#dynamicRefreshElapsedMs",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "2fd187b6833f384936db6b03f6d9bcf2f572f377c2e83e90a5f431151b890bad"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "1e0294126d32577b981e1d3d687c5e9e2c0126b56e0bb78b111fcb0673ce633b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "isOpen",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "39e5f4029265e24e939ffc18c4f1615665b43202f3b30aaa7bcccba0216ee2d0",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "rootNode",
+          "kind": "get",
+          "static": false,
+          "bodySha256": "9801b3315274ed76452e1acf2d25bab7ac10ebd3da2f93263030ce224a5ab6cf",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "mount",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "588bc5ef86f77178e4645ba5101ea479e2874dcc4b768be4ba207bba24e7fa33",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "open",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b990c2c2b54bf19cdbf60998c4f4580ed02d0fa7ea16509e28cb72c65b709291",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "close",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "cad262c8b58b261de939fbd2e889b055945a69865e392d29b63a229487b2d09d",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "toggle",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "0f361a763c319b88c8b057ef289b04da350ad528f2741ee3a7855299e99b3ec2",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "refresh",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "13390dd4e2619f463206ce1c7a63c55687b8fa5eecff3c694c8f54dd459fb34d",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateDynamicProgression",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "734392163b602c3579bb82ae54c9a098584ecc291f943147401ab2163b4129bc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4340fce1ffd86c489244642bdbd8d0597361bd97cf475bc1041dcd16fdfce922",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#updateDynamicVisuals",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "e15e46d15087aaf550e40df21317c38bf60486ba4c13f3cefeca1d23eb895c74",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#createDynamicItemIndex",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "99ef0f3a09940d350d458f19778e9a46f0eb94b1139e0a5a70b58a72e81feb6b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#nodesByClass",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3428035ee8e36f09297bc78c4deb2ecb3d35efe3be339542efddaa454eb90dd8",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 4,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#firstNodeByClass",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "504820e043b4a83e91847ec74e89f943c1efd5a8410701a2f9b09fdcd8529c50",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "showWarning",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3dfc1b12cc335dee426416d190afb92d4fa2ddb4b90d73defc8180a8cba68126",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "dispose",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4e7a495cf12108bb20080eca7e0a1dde18fc92592468c6d165d6c55f84d833f5",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#buildShell",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "b366e909c07da04f7bef76f08a2b2ecbb5abe4dc80d53471cdf2f785d6d97a69",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderHeader",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5f62b3d0564a3ddfb119b9ea698536ec0ed1452bee340fbfa97f30800a606774",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 3,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderLeftPanel",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "81b66a641f0240d030c5f19a0cb91198e0e7b19816fa93052a348d006508ee98",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 10,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderInventory",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "ee2ac06fdad66de718aa6ca9d7a3655b08a2f5a797ed397777397c3225bf9919",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 13,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#dispatch",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7ecb5854844ced8ad9d3a8dcff32fb53651f4dd6a09d4e7c1139a485a159bb94",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#handleActionResult",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a6ab2a6e611549fd2f3acf46864bc11e09db28c079229cb27de6c64715e1a878",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#handleFacadeNotification",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "468393eac5b230e7475a90f620d476268c59a96575814ff95b2cf99bcefae8ea",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 32,
+        "arrayExpressions": 4,
+        "newExpressions": 2,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Map",
+          "member": "#createDynamicItemIndex",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#handleFacadeNotification",
+          "kind": "method"
+        },
+        {
+          "name": "Object",
+          "member": "#handleFacadeNotification",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#nodesByClass",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#nodesByClass",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#updateDynamicVisuals",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateDynamicVisuals",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#updateDynamicVisuals",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#updateDynamicVisuals",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "Math",
+          "member": "updateDynamicProgression",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "updateDynamicProgression",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "576b19a23f8ecd45f8d1e5f6ca646b7a03a60d5ab6262123ecb853ff68c6189b",
+          "calls": {
+            "get isOpen": 1,
+            "get rootNode": 56,
+            "mount": 1,
+            "open": 2,
+            "close": 2,
+            "toggle": 0,
+            "refresh": 3,
+            "updateDynamicProgression": 10,
+            "render": 10,
+            "showWarning": 4,
+            "dispose": 1
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}
