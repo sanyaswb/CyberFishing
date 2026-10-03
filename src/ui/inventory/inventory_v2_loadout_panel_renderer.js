@@ -1,12 +1,12 @@
 class InventoryV2LoadoutPanelRenderer {
   #dom;
   #itemRenderer;
+  #getEquippedLongPressDurationMs;
 
-  constructor({ domFactory, itemRenderer } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#itemRenderer =
-      itemRenderer ||
-      new globalThis.InventoryV2ItemCardRenderer({ domFactory: this.#dom });
+  constructor({ domFactory, itemRenderer, getEquippedLongPressDurationMs } = {}) {
+    this.#dom = domFactory;
+    this.#itemRenderer = itemRenderer;
+    this.#getEquippedLongPressDurationMs = getEquippedLongPressDurationMs;
   }
 
   render(
@@ -98,7 +98,7 @@ class InventoryV2LoadoutPanelRenderer {
         ? () => onSlotLongPress?.(slot)
         : null,
       longPressDurationMs:
-        globalThis.InventoryV2LongPressController.EQUIPPED_DURATION_MS,
+        this.#getEquippedLongPressDurationMs(),
       onUnavailable: (warning) => onWarning?.(warning),
     });
   }

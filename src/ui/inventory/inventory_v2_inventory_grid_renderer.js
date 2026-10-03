@@ -9,13 +9,12 @@ class InventoryV2InventoryGridRenderer {
     domFactory,
     itemRenderer,
     horizontalScrollController = null,
+    createHorizontalScrollController,
   } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#itemRenderer =
-      itemRenderer ||
-      new globalThis.InventoryV2ItemCardRenderer({ domFactory: this.#dom });
+    this.#dom = domFactory;
+    this.#itemRenderer = itemRenderer;
     this.#horizontalScrollController =
-      horizontalScrollController || new globalThis.HorizontalScrollController();
+      horizontalScrollController || createHorizontalScrollController();
   }
 
   render(

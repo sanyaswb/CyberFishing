@@ -3,10 +3,8 @@ class InventoryV2SavedLoadoutPreviewRenderer {
   #itemRenderer;
 
   constructor({ domFactory, itemRenderer } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#itemRenderer =
-      itemRenderer ||
-      new globalThis.InventoryV2ItemCardRenderer({ domFactory: this.#dom });
+    this.#dom = domFactory;
+    this.#itemRenderer = itemRenderer;
   }
 
   render(

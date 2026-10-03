@@ -4,26 +4,6 @@
   "generatedFrom": "Stage 1.7 reviewed guard debt snapshot",
   "debts": [
     {
-      "id": "debt-boundary-dependency-01dae1fd3eb3",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "01dae1fd3eb35a411a43dccd692d7b87742ea4cafefadbcc40c34fd1ae3476dc",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_long_press_controller.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-0d301fbbd279",
       "rule": "boundary-dependency",
       "source": "src/debug/modules/reel_hold_gate_live_probe.js",
@@ -112,26 +92,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-329f1b963e36",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-      "target": "src/ui/interaction/horizontal_scroll_controller.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "329f1b963e360359b97833cb92d92e504e1f659bb78da575c3259decf0176c7a",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-        "target": "src/ui/interaction/horizontal_scroll_controller.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-36674c179818",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
@@ -149,28 +109,6 @@
         "rule": "boundary-dependency",
         "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
         "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-36da6179d62e",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_ui.js",
-      "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "36da6179d62e8a44947ea434417c46bdbce9ff0c5330770725816fd3bdd6fc96",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_ui.js",
-        "target": "src/ui/inventory/inventory_v2_long_press_controller.js"
       }
     },
     {
@@ -471,28 +409,6 @@
       "identity": {
         "rule": "boundary-dependency",
         "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-c30ceb4282b9",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_ui.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "c30ceb4282b9dc0898fe54c786b54c77b2102b02728340826f797eeadf77dfbe",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_ui.js",
         "target": "src/ui/inventory/inventory_v2_dom_factory.js"
       }
     },

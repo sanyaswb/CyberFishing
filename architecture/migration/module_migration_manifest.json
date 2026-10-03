@@ -50913,32 +50913,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2AssemblyParameterSectionResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -50965,70 +50940,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2AssemblyParameterSectionResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
-              "symbols": [
-                "InventoryV2AssemblyParameterSectionResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "symbols": [
-                "InventoryV2ItemCardRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-              "symbols": [
-                "InventoryV2ItemParametersRenderer"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -51285,7 +51198,133 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "HorizontalScrollController",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ActionContract",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ActionType",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2AssemblyEditorRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2AssemblyParameterSectionResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2AttachmentBadgeRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2BalanceParameterResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2DomFactory",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2FacadeContract",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2HeaderRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2InventoryGridRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ItemCardRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ItemParametersRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ItemParametersResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2LoadoutPanelRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2LongPressController",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ResourceMeterRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ResourceMeterResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2TooltipPresenter",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "InventoryV2UI",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "InventoryV2ViewModelNormalizer",
               "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -51317,19 +51356,316 @@
           "status": "verified",
           "confirmed": [
             {
+              "symbol": "HorizontalScrollController",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/interaction/horizontal_scroll_controller.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ActionContract",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ActionType",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2AssemblyEditorRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2AssemblyParameterSectionResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2AttachmentBadgeRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2BalanceParameterResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2DomFactory",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2FacadeContract",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2HeaderRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_header_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2InventoryGridRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ItemCardRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ItemParametersRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ItemParametersResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2LoadoutPanelRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2LongPressController",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ResourceMeterRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ResourceMeterResolver",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2TooltipPresenter",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "InventoryV2UI",
               "mechanism": "global-this-property",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_ui.js",
               "resolution": "confirmed"
+            },
+            {
+              "symbol": "InventoryV2ViewModelNormalizer",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "resolution": "confirmed"
             }
           ],
           "items": [
             {
+              "target": "src/ui/interaction/horizontal_scroll_controller.js",
+              "symbols": [
+                "HorizontalScrollController"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+              "symbols": [
+                "InventoryV2AssemblyEditorRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+              "symbols": [
+                "InventoryV2AssemblyParameterSectionResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+              "symbols": [
+                "InventoryV2AttachmentBadgeRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+              "symbols": [
+                "InventoryV2BalanceParameterResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
+              "symbols": [
+                "InventoryV2DomFactory"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_header_renderer.js",
+              "symbols": [
+                "InventoryV2HeaderRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+              "symbols": [
+                "InventoryV2InventoryGridRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+              "symbols": [
+                "InventoryV2ItemCardRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+              "symbols": [
+                "InventoryV2ItemParametersRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+              "symbols": [
+                "InventoryV2ItemParametersResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+              "symbols": [
+                "InventoryV2LoadoutPanelRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
+              "symbols": [
+                "InventoryV2LongPressController"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+              "symbols": [
+                "InventoryV2ResourceMeterRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+              "symbols": [
+                "InventoryV2ResourceMeterResolver"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+              "symbols": [
+                "InventoryV2SavedLoadoutPreviewRenderer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+              "symbols": [
+                "InventoryV2TooltipPresenter"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/ui/inventory/inventory_v2_ui.js",
               "symbols": [
                 "InventoryV2UI"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_view_model.js",
+              "symbols": [
+                "InventoryV2ActionContract",
+                "InventoryV2ActionType",
+                "InventoryV2FacadeContract",
+                "InventoryV2ViewModelNormalizer"
               ],
               "resolution": "confirmed"
             }
@@ -51512,26 +51848,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "HorizontalScrollController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -51558,55 +51875,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "HorizontalScrollController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/interaction/horizontal_scroll_controller.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/interaction/horizontal_scroll_controller.js",
-              "symbols": [
-                "HorizontalScrollController"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "symbols": [
-                "InventoryV2ItemCardRenderer"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -51862,26 +52132,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -51908,55 +52159,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "symbols": [
-                "InventoryV2ItemCardRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-              "symbols": [
-                "InventoryV2LongPressController"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -52208,20 +52412,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -52248,40 +52439,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "symbols": [
-                "InventoryV2ItemCardRenderer"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -52416,122 +52575,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2ActionContract",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2AssemblyEditorRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2FacadeContract",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2HeaderRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2InventoryGridRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2LoadoutPanelRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2TooltipPresenter",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ViewModelNormalizer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -52567,277 +52611,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2ActionContract",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2AssemblyEditorRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2FacadeContract",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2HeaderRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_header_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2InventoryGridRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2LoadoutPanelRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2TooltipPresenter",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ViewModelNormalizer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-              "symbols": [
-                "InventoryV2AssemblyEditorRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
-              "symbols": [
-                "InventoryV2AttachmentBadgeRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-              "symbols": [
-                "InventoryV2BalanceParameterResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_header_renderer.js",
-              "symbols": [
-                "InventoryV2HeaderRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-              "symbols": [
-                "InventoryV2InventoryGridRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-              "symbols": [
-                "InventoryV2ItemCardRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-              "symbols": [
-                "InventoryV2ItemParametersRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "symbols": [
-                "InventoryV2ItemParametersResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-              "symbols": [
-                "InventoryV2LoadoutPanelRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
-              "symbols": [
-                "InventoryV2LongPressController"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "symbols": [
-                "InventoryV2ResourceMeterRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-              "symbols": [
-                "InventoryV2ResourceMeterResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-              "symbols": [
-                "InventoryV2SavedLoadoutPreviewRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-              "symbols": [
-                "InventoryV2TooltipPresenter"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_view_model.js",
-              "symbols": [
-                "InventoryV2ActionContract",
-                "InventoryV2ActionType",
-                "InventoryV2FacadeContract",
-                "InventoryV2ViewModelNormalizer"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

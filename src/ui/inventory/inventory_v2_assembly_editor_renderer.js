@@ -9,17 +9,14 @@ class InventoryV2AssemblyEditorRenderer {
     itemRenderer,
     parametersRenderer = null,
     parameterSectionResolver = null,
+    createParameterSectionResolver,
   } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#itemRenderer =
-      itemRenderer ||
-      new globalThis.InventoryV2ItemCardRenderer({ domFactory: this.#dom });
-    this.#parametersRenderer =
-      parametersRenderer ||
-      new globalThis.InventoryV2ItemParametersRenderer({ domFactory: this.#dom });
+    this.#dom = domFactory;
+    this.#itemRenderer = itemRenderer;
+    this.#parametersRenderer = parametersRenderer;
     this.#parameterSectionResolver =
       parameterSectionResolver ||
-      new globalThis.InventoryV2AssemblyParameterSectionResolver();
+      createParameterSectionResolver();
   }
 
   render(

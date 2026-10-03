@@ -1,5 +1,7 @@
 class InventoryV2UI {
   #facade;
+  #actionContract;
+  #actionTypes;
   #actionDispatcher;
   #onWarning;
   #dom;
@@ -28,6 +30,10 @@ class InventoryV2UI {
 
   constructor({
     facade,
+    facadeContract,
+    actionContract,
+    actionTypes,
+    createPresentation,
     onAction = null,
     onWarning = null,
     mountNode = globalThis.document?.body,
@@ -49,7 +55,7 @@ class InventoryV2UI {
     resourceMeterRenderer = null,
     degradationColorResolver = null,
   } = {}) {
-    globalThis.InventoryV2FacadeContract.assert(facade, {
+    facadeContract.assert(facade, {
       actionDispatcher: onAction,
     });
     if (!mountNode?.appendChild) {
@@ -57,91 +63,43 @@ class InventoryV2UI {
     }
 
     this.#facade = facade;
+    this.#actionContract = actionContract;
+    this.#actionTypes = actionTypes;
     this.#actionDispatcher =
       typeof onAction === "function"
         ? onAction
         : (action) => this.#facade.dispatch(action);
     this.#onWarning = onWarning;
     this.#mountNode = mountNode;
-    this.#dom = new globalThis.InventoryV2DomFactory(documentRef);
-    this.#normalizer =
-      normalizer || new globalThis.InventoryV2ViewModelNormalizer();
-    this.#longPressController =
-      longPressController || new globalThis.InventoryV2LongPressController({
-        degradationColorResolver,
-      });
-    this.#tooltipPresenter =
-      tooltipPresenter ||
-      new globalThis.InventoryV2TooltipPresenter({
-        documentRef,
-        rarityDomAdapter,
-        balanceParameterResolver:
-          balanceParameterResolver ||
-          new globalThis.InventoryV2BalanceParameterResolver({
-            rarityVisualResolver,
-          }),
-      });
-
-    const attachmentRenderer =
-      new globalThis.InventoryV2AttachmentBadgeRenderer({
-        domFactory: this.#dom,
-      });
-    const resolvedResourceMeterResolver =
-      resourceMeterResolver || new globalThis.InventoryV2ResourceMeterResolver();
-    const resolvedResourceMeterRenderer =
-      resourceMeterRenderer ||
-      new globalThis.InventoryV2ResourceMeterRenderer({ domFactory: this.#dom });
-    const itemParametersResolver =
-      new globalThis.InventoryV2ItemParametersResolver({
-        resourceMeterResolver: resolvedResourceMeterResolver,
-        progressionDomAdapter,
-        rarityVisualResolver,
-      });
-    const itemParametersRenderer =
-      new globalThis.InventoryV2ItemParametersRenderer({
-        domFactory: this.#dom,
-        resolver: itemParametersResolver,
-        resourceMeterRenderer: resolvedResourceMeterRenderer,
-      });
-    this.#itemRenderer = new globalThis.InventoryV2ItemCardRenderer({
-      domFactory: this.#dom,
-      attachmentRenderer,
-      longPressController: this.#longPressController,
+    const presentation = createPresentation({
+      documentRef,
       rarityDomAdapter,
+      rarityVisualResolver,
       progressionDomAdapter,
       conditionDomAdapter,
-      tooltipPresenter: this.#tooltipPresenter,
-      resourceMeterResolver: resolvedResourceMeterResolver,
-      resourceMeterRenderer: resolvedResourceMeterRenderer,
+      normalizer,
+      longPressController,
+      headerRenderer,
+      loadoutRenderer,
+      assemblyRenderer,
+      savedLoadoutRenderer,
+      inventoryRenderer,
+      tooltipPresenter,
+      balanceParameterResolver,
+      resourceMeterResolver,
+      resourceMeterRenderer,
+      degradationColorResolver,
     });
-    this.#headerRenderer =
-      headerRenderer ||
-      new globalThis.InventoryV2HeaderRenderer({ domFactory: this.#dom });
-    this.#loadoutRenderer =
-      loadoutRenderer ||
-      new globalThis.InventoryV2LoadoutPanelRenderer({
-        domFactory: this.#dom,
-        itemRenderer: this.#itemRenderer,
-      });
-    this.#assemblyRenderer =
-      assemblyRenderer ||
-      new globalThis.InventoryV2AssemblyEditorRenderer({
-        domFactory: this.#dom,
-        itemRenderer: this.#itemRenderer,
-        parametersRenderer: itemParametersRenderer,
-      });
-    this.#savedLoadoutRenderer =
-      savedLoadoutRenderer ||
-      new globalThis.InventoryV2SavedLoadoutPreviewRenderer({
-        domFactory: this.#dom,
-        itemRenderer: this.#itemRenderer,
-      });
-    this.#inventoryRenderer =
-      inventoryRenderer ||
-      new globalThis.InventoryV2InventoryGridRenderer({
-        domFactory: this.#dom,
-        itemRenderer: this.#itemRenderer,
-      });
+    this.#dom = presentation.dom;
+    this.#normalizer = presentation.resolvedNormalizer;
+    this.#longPressController = presentation.resolvedLongPressController;
+    this.#tooltipPresenter = presentation.resolvedTooltipPresenter;
+    this.#itemRenderer = presentation.resolvedItemRenderer;
+    this.#headerRenderer = presentation.resolvedHeaderRenderer;
+    this.#loadoutRenderer = presentation.resolvedLoadoutRenderer;
+    this.#assemblyRenderer = presentation.resolvedAssemblyRenderer;
+    this.#savedLoadoutRenderer = presentation.resolvedSavedLoadoutRenderer;
+    this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#buildShell();
   }
 
@@ -172,7 +130,7 @@ class InventoryV2UI {
     this.#isOpen = true;
     this.#rootNode.classList.add("is-open");
     this.#rootNode.removeAttribute("aria-hidden");
-    this.#dispatch({ type: globalThis.InventoryV2ActionType.OPEN });
+    this.#dispatch({ type: this.#actionTypes.OPEN });
     this.refresh();
   }
 
@@ -184,7 +142,7 @@ class InventoryV2UI {
     this.#longPressController.clear();
     this.#tooltipPresenter.hide();
     this.#dynamicRefreshElapsedMs = 0;
-    this.#dispatch({ type: globalThis.InventoryV2ActionType.CLOSE });
+    this.#dispatch({ type: this.#actionTypes.CLOSE });
   }
 
   toggle() {
@@ -374,12 +332,12 @@ class InventoryV2UI {
         onClose: () => this.close(),
         onAutoBaitChange: (enabled) =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.AUTO_BAIT_CHANGE,
+            type: this.#actionTypes.AUTO_BAIT_CHANGE,
             enabled,
           }),
         onAutoChumChange: (enabled) =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.AUTO_CHUM_CHANGE,
+            type: this.#actionTypes.AUTO_CHUM_CHANGE,
             enabled,
           }),
       },
@@ -393,7 +351,7 @@ class InventoryV2UI {
       const editor = this.#assemblyRenderer.render(panel.assembly, {
         onSocketActivate: (socket) =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.ASSEMBLY_SOCKET_ACTIVATE,
+            type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE,
             rootInstanceId,
             socketId: socket.socketId,
             slotId: socket.slotId,
@@ -402,22 +360,22 @@ class InventoryV2UI {
           }),
         onEquip: () =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.ASSEMBLY_EQUIP,
+            type: this.#actionTypes.ASSEMBLY_EQUIP,
             rootInstanceId,
           }),
         onUnequip: () =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.ASSEMBLY_UNEQUIP,
+            type: this.#actionTypes.ASSEMBLY_UNEQUIP,
             rootInstanceId,
           }),
         onDisassemble: () =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.ASSEMBLY_DISASSEMBLE,
+            type: this.#actionTypes.ASSEMBLY_DISASSEMBLE,
             rootInstanceId,
           }),
         onBack: () =>
           this.#dispatch({
-            type: globalThis.InventoryV2ActionType.ASSEMBLY_BACK,
+            type: this.#actionTypes.ASSEMBLY_BACK,
             rootInstanceId,
           }),
         onWarning: (message) => this.showWarning(message),
@@ -429,20 +387,20 @@ class InventoryV2UI {
     const loadout = this.#loadoutRenderer.render(panel.loadout, {
       onSlotActivate: (slot) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE,
+          type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE,
           slotId: slot.slotId,
           instanceId: slot.item?.instanceId || null,
         }),
       onSlotLongPress: (slot) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS,
+          type: this.#actionTypes.EQUIPMENT_SLOT_LONG_PRESS,
           slotId: slot.slotId,
           instanceId: slot.item?.instanceId || null,
         }),
       onWarning: (message) => this.showWarning(message),
       onSaveLoadout: (name) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.LOADOUT_SAVE,
+          type: this.#actionTypes.LOADOUT_SAVE,
           name,
         }),
     });
@@ -458,23 +416,23 @@ class InventoryV2UI {
           onSlotEquip: (slot) =>
             this.#dispatch({
               type:
-                globalThis.InventoryV2ActionType.LOADOUT_PREVIEW_SLOT_EQUIP,
+                this.#actionTypes.LOADOUT_PREVIEW_SLOT_EQUIP,
               loadoutId,
               slotId: slot.slotId,
             }),
           onEquipAll: () =>
             this.#dispatch({
-              type: globalThis.InventoryV2ActionType.LOADOUT_EQUIP_ALL,
+              type: this.#actionTypes.LOADOUT_EQUIP_ALL,
               loadoutId,
             }),
           onDisassemble: () =>
             this.#dispatch({
-              type: globalThis.InventoryV2ActionType.LOADOUT_DISASSEMBLE,
+              type: this.#actionTypes.LOADOUT_DISASSEMBLE,
               loadoutId,
             }),
           onBack: () =>
             this.#dispatch({
-              type: globalThis.InventoryV2ActionType.LOADOUT_PREVIEW_BACK,
+              type: this.#actionTypes.LOADOUT_PREVIEW_BACK,
               loadoutId,
             }),
           onWarning: (message) => this.showWarning(message),
@@ -486,39 +444,39 @@ class InventoryV2UI {
     const grid = this.#inventoryRenderer.render(inventory, {
       onCategorySelect: (categoryId) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.CATEGORY_SELECT,
+          type: this.#actionTypes.CATEGORY_SELECT,
           categoryId,
         }),
       onSubfilterToggle: (filterId, enabled) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.SUBFILTER_TOGGLE,
+          type: this.#actionTypes.SUBFILTER_TOGGLE,
           filterId,
           enabled,
         }),
       onSortCriterionSelect: (criterionId) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.SORT_CRITERION_SELECT,
+          type: this.#actionTypes.SORT_CRITERION_SELECT,
           criterionId,
         }),
       onSortDirectionSelect: (directionId) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.SORT_DIRECTION_SELECT,
+          type: this.#actionTypes.SORT_DIRECTION_SELECT,
           directionId,
         }),
       onRarityFilterToggle: (rarityId, enabled) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+          type: this.#actionTypes.RARITY_FILTER_TOGGLE,
           rarityId,
           enabled,
         }),
       onItemActivate: (item) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+          type: this.#actionTypes.INVENTORY_ITEM_ACTIVATE,
           instanceId: item.instanceId,
         }),
       onItemLongPress: (item) =>
         this.#dispatch({
-          type: globalThis.InventoryV2ActionType.INVENTORY_ITEM_LONG_PRESS,
+          type: this.#actionTypes.INVENTORY_ITEM_LONG_PRESS,
           instanceId: item.instanceId,
         }),
     });
@@ -528,7 +486,7 @@ class InventoryV2UI {
   #dispatch(action) {
     let result;
     try {
-      globalThis.InventoryV2ActionContract.assert(action);
+      this.#actionContract.assert(action);
       result = this.#actionDispatcher(action);
     } catch (error) {
       this.showWarning(error?.message || "Не вдалося виконати дію");
