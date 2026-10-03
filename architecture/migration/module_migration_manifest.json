@@ -47417,6 +47417,55 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/time/browser_timeout_scheduler.js",
+      "currentArea": "platform/browser/time",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "globalThis"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "esm",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/time/browser_timeout_scheduler.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/platform/browser/time/game_clock.js",
       "currentArea": "platform/browser/time",
       "observed": {
@@ -52854,11 +52903,7 @@
             "TypeError",
             "globalThis"
           ],
-          "browserApis": [
-            "clearTimeout",
-            "document",
-            "setTimeout"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }

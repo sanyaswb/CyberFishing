@@ -2,6 +2,7 @@ const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browser_timeout_scheduler.js");
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -963,6 +964,7 @@ class InventoryV2StaticContractCheck {
       facade,
       documentRef: document,
       mountNode: document.body,
+      warningTimers: new BrowserTimeoutScheduler(sandbox),
     });
     ui.open();
     assert.strictEqual(dispatched[0].type, sandbox.InventoryV2ActionType.OPEN);

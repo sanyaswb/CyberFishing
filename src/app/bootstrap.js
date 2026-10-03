@@ -453,6 +453,7 @@ class GameCompositionRoot {
     );
     const { createRandomInventoryId } = await import("../platform/browser/inventory/random_inventory_id.js");
     const { BrowserEventTargetAdapter } = await import("../platform/browser/runtime/legacy_runtime_adapters.js");
+    const { BrowserTimeoutScheduler } = await import("../platform/browser/time/browser_timeout_scheduler.js");
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
@@ -576,6 +577,9 @@ class GameCompositionRoot {
     }
     systems.inventoryUI = InventoryV2Bootstrap.create({
       facade: inventoryV2Facade,
+      documentRef: document,
+      mountNode: document?.body,
+      warningTimers: new BrowserTimeoutScheduler(),
       onAction: (action) => inventory.dispatchInventoryV2Action(action),
       rarityDomAdapter: itemRarityDomAdapter,
       rarityVisualResolver,

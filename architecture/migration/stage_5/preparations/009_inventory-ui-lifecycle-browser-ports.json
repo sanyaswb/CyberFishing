@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "009",
+  "slug": "inventory-ui-lifecycle-browser-ports",
+  "baseCommit": "8252af7e7d12fe55b4685a2cea956f699cc34662",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-browser-capability-1f75edeb4efa",
+    "debt-browser-capability-80c03bf03373",
+    "debt-browser-capability-fab19b05765b"
+  ],
+  "importEdges": [
+    {
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/time/browser_timeout_scheduler.js",
+      "reason": "Existing asynchronous root native-import path supplies one stateless Platform timeout port; no global activation or compatibility lookup."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/ui/inventory/inventory_v2_ui.js",
+      "before": "deb96f2e7367dfbbd982616da8e180caa9788fed6c694c353cc96bbb01d43d3a",
+      "after": "6141688fc230a6618a7f01241d0798b09350a10676098ce0d3f75228dd98d2ce"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "9c462ea6ecadb7a94c52715e4efb27bb28ecb178d27ccfed344821789236356a",
+      "after": "09beb5ebadb42ef750dd8244cd780741707ec5c7ebf47be66b806179955f3a9e"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "ad28c1bb5bc2a77446b50c8fcd98a4795e8f89852b95f0e1afc8b83febe74cf2",
+      "after": "430e7f50f9e6e921acac51f6a882d185fee065ed141b96cb72cb62d690273420"
+    },
+    {
+      "path": "utils/platform-runtime-check.js",
+      "before": "9bf6a3f27f3e53a8f20676ff825aae9e7bf6cd7a618805003d52ab9ca25cbc89",
+      "after": "cf47848c012fee674908fb3d2f8ea334b17015ee7279bb9b7652158ccceefbdf"
+    },
+    {
+      "path": "src/platform/browser/time/browser_timeout_scheduler.js",
+      "before": null,
+      "after": "c4bb65f140a3464292f509f1c0b6a2dd8b214114dabd3ae1904158180cbad530"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "95eccfbb7cc3c67f432e5830507d3b730cc7f519f4b2594cc65e40d3202453da",
+      "after": "b6856d57a5296febfe9cbb04e0c3aca6c8794eceaa1f51a462f330018e327996"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "31d6bed72666a263c9401890fa0dd5104c05ba0286895c04c481bd6abceb136d",
+      "after": "293c69d1cb7784ca394a916b5ba06c4681167f7878dce35ca8ca6c9ac93253c7"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen cluster 012 preparation: UI receives document/mount and a timeout scheduling port from existing root composition. BrowserTimeoutScheduler is a narrow stateless Platform adapter; it retains the original global host and forwards the same callback/delay/handle with original receiver, per-call function replacement and errors. UI alone owns warning handle, timer cancellation and lifecycle. Existing root native-import mechanism adds one startup-only import before UI readiness; no hot-loop imports/allocations, new globals, guard exceptions or gameplay/save state.",
+  "constructionEvidence": [
+    "Root and the existing UI interaction scenario are the only constructors through InventoryV2Bootstrap.create; both now supply all browser capabilities. Original document/mount defaults resolve to the same browser document at UI construction.",
+    "BrowserTimeoutScheduler stores only its injected host reference, not timer state. Direct method forwarding preserves native callback identity, delay, returned handle, receiver, live method replacement and thrown object. Existing Platform check verifies these with a fake host; UI test retains all warning/reset/disposal assertions with the same FakeTimers.",
+    "No UI browser global remains except the old same-name class exposure. Root is already migrating and uses native ESM UUID/event capabilities; added exact importEdge uses the existing reviewed preparation field.",
+    "One cold timeout adapter per UI; all warning scheduling/cancellation sites and callback bodies stay unchanged apart from the injected receiver. A module load at startup is awaited before ready/game loop."
+  ],
+  "verification": {
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/inventory-v2-integration-check.js": {
+        "before": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271",
+        "after": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      "utils/inventory-save-round-trip-check.js": {
+        "before": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327",
+        "after": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      },
+      "utils/platform-runtime-check.js": {
+        "before": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25",
+        "after": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25"
+      }
+    },
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 46,
+    "knownDebtsAfter": 43,
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 222,
+      "configAndVersionIdentities": 8,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true,
+      "reloadSaveBytesIdentical": true,
+      "nativeTimeout": {
+        "fired": 1,
+        "cancelled": 0,
+        "nativeHandle": true
+      }
+    }
+  }
+}

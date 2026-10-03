@@ -440,29 +440,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-1f75edeb4efa",
-      "rule": "browser-capability",
-      "source": "src/ui/inventory/inventory_v2_ui.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "1f75edeb4efa5ba59bf2542dafdf7ef24ac7fb422713750c7a2800e3069bc2f3",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/ui/inventory/inventory_v2_ui.js",
-        "target": "environment:dom",
-        "identifier": "document"
-      }
-    },
-    {
       "id": "debt-browser-capability-217b67b54a15",
       "rule": "browser-capability",
       "source": "src/debug/overlay/overlay_bootstrap.js",
@@ -598,29 +575,6 @@
         "source": "src/ui/ui.js",
         "target": "environment:diagnostics",
         "identifier": "console"
-      }
-    },
-    {
-      "id": "debt-browser-capability-80c03bf03373",
-      "rule": "browser-capability",
-      "source": "src/ui/inventory/inventory_v2_ui.js",
-      "target": "environment:timing",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "80c03bf033731fe2fb9deaf13637d22b74d84c781a0600ff74c12afb1db2ea50",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/ui/inventory/inventory_v2_ui.js",
-        "target": "environment:timing",
-        "identifier": "setTimeout"
       }
     },
     {
@@ -937,29 +891,6 @@
         "source": "src/config/project_version.js",
         "target": "environment:browser-runtime",
         "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-fab19b05765b",
-      "rule": "browser-capability",
-      "source": "src/ui/inventory/inventory_v2_ui.js",
-      "target": "environment:timing",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "fab19b05765b27f5fb3ab0e16e682c7303c7b4aa08d2f6467b754eecd022bba3",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/ui/inventory/inventory_v2_ui.js",
-        "target": "environment:timing",
-        "identifier": "clearTimeout"
       }
     },
     {

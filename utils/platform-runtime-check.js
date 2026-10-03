@@ -3,6 +3,29 @@
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
+
+function checkTimeoutScheduler() {
+  const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browser_timeout_scheduler.js");
+  const callback = () => {};
+  const handle = {};
+  const calls = [];
+  const host = {
+    setTimeout(fn, delay) { assert.strictEqual(this, host); calls.push([fn, delay]); return handle; },
+    clearTimeout(value) { assert.strictEqual(this, host); calls.push(value); return "cancelled"; },
+  };
+  const scheduler = new BrowserTimeoutScheduler(host);
+  assert.strictEqual(scheduler.setTimeout(callback, 2500), handle);
+  assert.strictEqual(calls[0][0], callback, "the original callback is scheduled without wrapping");
+  assert.equal(calls[0][1], 2500);
+  assert.equal(scheduler.clearTimeout(handle), "cancelled");
+  assert.strictEqual(calls[1], handle);
+  const error = new Error("scheduler failure");
+  host.setTimeout = function () { assert.strictEqual(this, host); throw error; };
+  assert.throws(() => scheduler.setTimeout(callback, 1), thrown => thrown === error, "live host replacement and original errors");
+  host.clearTimeout = function (value) { assert.strictEqual(this, host); return value; };
+  assert.strictEqual(scheduler.clearTimeout(handle), handle, "cancellation reads the live host method");
+}
+
 // Presentation frame consumers share style caches and reused line/layout frames; invalidation reads live config.
 function checkVisualFrames() {
   const runtime=new SourceRuntime();
@@ -351,6 +374,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkTimeoutScheduler();
   checkVisualFrames();
   checkLongPressFrames(true);
   checkLongPressFrames(false);

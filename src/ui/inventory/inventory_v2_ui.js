@@ -23,6 +23,7 @@ class InventoryV2UI {
   #rightHost;
   #unsubscribe = null;
   #warningTimer = null;
+  #warningTimers;
   #isOpen = false;
   #isMounted = false;
   #lastViewModel = null;
@@ -34,10 +35,11 @@ class InventoryV2UI {
     actionContract,
     actionTypes,
     createPresentation,
+    warningTimers,
     onAction = null,
     onWarning = null,
-    mountNode = globalThis.document?.body,
-    documentRef = globalThis.document,
+    mountNode,
+    documentRef,
     rarityDomAdapter = null,
     rarityVisualResolver = null,
     progressionDomAdapter = null,
@@ -71,6 +73,7 @@ class InventoryV2UI {
         : (action) => this.#facade.dispatch(action);
     this.#onWarning = onWarning;
     this.#mountNode = mountNode;
+    this.#warningTimers = warningTimers;
     const presentation = createPresentation({
       documentRef,
       rarityDomAdapter,
@@ -264,8 +267,8 @@ class InventoryV2UI {
     this.#warningNode.textContent = text;
     this.#warningNode.classList.add("is-visible");
     this.#warningNode.setAttribute("role", "alert");
-    if (this.#warningTimer !== null) globalThis.clearTimeout(this.#warningTimer);
-    this.#warningTimer = globalThis.setTimeout(() => {
+    if (this.#warningTimer !== null) this.#warningTimers.clearTimeout(this.#warningTimer);
+    this.#warningTimer = this.#warningTimers.setTimeout(() => {
       this.#warningNode.classList.remove("is-visible");
       this.#warningTimer = null;
     }, 5000);
@@ -276,7 +279,7 @@ class InventoryV2UI {
     this.#unsubscribe?.();
     this.#unsubscribe = null;
     if (this.#warningTimer !== null) {
-      globalThis.clearTimeout(this.#warningTimer);
+      this.#warningTimers.clearTimeout(this.#warningTimer);
       this.#warningTimer = null;
     }
     this.#longPressController.dispose();
