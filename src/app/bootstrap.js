@@ -527,11 +527,11 @@ class GameCompositionRoot {
       }),
       ui: new UIManager(
         this.#config,
-        new DevTools(this.#config, hookedFishProfileSynchronizer, {
+        this.#createUiLifecycle(new DevTools(this.#config, hookedFishProfileSynchronizer, {
           configRuntime: CONFIG_RUNTIME_CONTEXT,
           itemProgressionDebugProvider,
           itemProgressionResolver,
-        }),
+        })),
         { cache: CacheManager },
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
@@ -1050,4 +1050,8 @@ class GameCompositionRoot {
       contracts.requireMethods(builders[name], name, ["buildInto"]);
     }
   }
+  #createUiLifecycle(devTools) {
+    return { dispose: () => devTools?.dispose?.() };
+  }
+
 }

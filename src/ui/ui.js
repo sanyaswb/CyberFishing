@@ -308,15 +308,15 @@ class UIManager {
   onNetClick;
   #continueBtn;
   onContinueClick;
-  #devTools;
+  #lifecycle;
   #onFullscreenChange = () => {
     if (!this.#fullscreenBtn) return;
     this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
   };
 
-  constructor(config, devTools, { cache } = {}) {
+  constructor(config, lifecycle, { cache } = {}) {
     this.#cache = cache;
-    if (!devTools || typeof devTools.dispose !== "function") {
+    if (!lifecycle || typeof lifecycle.dispose !== "function") {
       throw new TypeError("UIManager requires devTools");
     }
     this.#config = config;
@@ -324,7 +324,7 @@ class UIManager {
     this.#initNetBtn();
     this.#initContinueBtn();
 
-    this.#devTools = devTools;
+    this.#lifecycle = lifecycle;
   }
 
   hideNetButton() {
@@ -544,8 +544,8 @@ class UIManager {
       "fullscreenchange",
       this.#onFullscreenChange,
     );
-    this.#devTools?.dispose?.();
-    this.#devTools = null;
+    this.#lifecycle?.dispose?.();
+    this.#lifecycle = null;
     this.#fullscreenBtn?.remove();
     this.#netBtn?.remove();
     this.#continueBtn?.remove();

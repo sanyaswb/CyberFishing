@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "010",
+  "slug": "legacy-ui-lifecycle-contract",
+  "baseCommit": "7e0201fb43d0c958a1b27050fbc93ccec41dfbb9",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/ui/ui.js",
+      "before": "8b71ed11c478fecdcd588d38cac5591269b5b567874ae49faa11cab9fcc8d48d",
+      "after": "3cd65b6063a55c582c632f5a9a08126c1ec7b6ceffd704589aa423fb1057be36"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "09beb5ebadb42ef750dd8244cd780741707ec5c7ebf47be66b806179955f3a9e",
+      "after": "924f25f7cd85e19cb0efa29e7dad204e348041e6ab51e063003106375d640d90"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "b57c8feaf6403dd714104ee702ba95271b2c420f5d6fe05f9522f880ac0f8ec3",
+      "after": "b57c8feaf6403dd714104ee702ba95271b2c420f5d6fe05f9522f880ac0f8ec3"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen cluster 013 preparation: UIManager depends only on an injected dispose lifecycle contract. Existing Root wraps the original DevTools instance at its exact argument evaluation position; no production UI imports or retains a concrete DEV instance. Constructor positional contract and TypeError text remain compatible; original optional live dispose lookup/receiver and disposal ordering preserved. One cold object/callback per UI only, no hot-loop allocation or gameplay/save change. Concrete DEV creation remains in the existing root pending the separate Stage 5/6 development-composition cutover.",
+  "constructionEvidence": [
+    "The sole production UIManager construction remains at the same object literal position. DevTools constructor arguments, execution order and instance count unchanged; its own construction is not moved during this preparation.",
+    "UI receives the narrow dispose contract and releases it at the original field-clear site. Root callback resolves the original DEV dispose method live and preserves optional method behavior/receiver/errors. Existing direct callers passing an object with dispose remain compatible.",
+    "One-off exact old/current UIManager VM comparison covers 120 net/continue/outcome/scouting frames in five cases: valid contract, null/bad contract, deleted method and throwing live method. DOM/listener/frame/disposal logs identical; 4dd0a57fa3330a9c33c76a59a58011e2b007ed93924c7d15f2c3c2f9e23bab24"
+  ],
+  "verification": {
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/item-condition-check.js": {
+        "before": "de91f315315aeb4d4e4a6c0b7cc0cfc390b374856a31f794b6918bad988e0fa3",
+        "after": "de91f315315aeb4d4e4a6c0b7cc0cfc390b374856a31f794b6918bad988e0fa3"
+      },
+      "utils/consumable-event-identity-check.js": {
+        "before": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a",
+        "after": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a"
+      },
+      "utils/platform-runtime-check.js": {
+        "before": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25",
+        "after": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25"
+      },
+      "utils/game-cycle-check.js": {
+        "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+        "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f"
+      }
+    },
+    "parity": {
+      "modes": [
+        "default",
+        "null",
+        "bad",
+        "deleted",
+        "throws"
+      ],
+      "frames": 120,
+      "identical": true,
+      "digest": "4dd0a57fa3330a9c33c76a59a58011e2b007ed93924c7d15f2c3c2f9e23bab24"
+    },
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 43,
+    "knownDebtsAfter": 43,
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 223,
+      "configAndVersionIdentities": 8,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true,
+      "reloadSaveBytesIdentical": true
+    }
+  }
+}
