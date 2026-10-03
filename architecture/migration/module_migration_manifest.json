@@ -1922,7 +1922,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/depth_selector.js",
               "resolution": "confirmed"
             },
             {
@@ -2234,7 +2234,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/hold_charges.js",
               "resolution": "confirmed"
             },
             {
@@ -2842,7 +2842,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/time_display.js",
               "resolution": "confirmed"
             },
             {
@@ -3847,6 +3847,27 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/ui/legacy/depth_selector.js",
+              "symbols": [
+                "DepthSelectorUI"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/hold_charges.js",
+              "symbols": [
+                "HoldChargesUI"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/time_display.js",
+              "symbols": [
+                "TimeDisplayUI"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/ui/progression/item_progression_dom_adapter.js",
               "symbols": [
                 "ItemProgressionDomAdapter"
@@ -3905,9 +3926,6 @@
             {
               "target": "src/ui/ui.js",
               "symbols": [
-                "DepthSelectorUI",
-                "HoldChargesUI",
-                "TimeDisplayUI",
                 "UIManager"
               ],
               "resolution": "confirmed"
@@ -53156,6 +53174,190 @@
       }
     },
     {
+      "currentPath": "src/ui/legacy/depth_selector.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "DepthSelectorUI",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "isNaN",
+            "parseFloat"
+          ],
+          "browserApis": [
+            "document",
+            "requestAnimationFrame"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/depth_selector.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/hold_charges.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "HoldChargesUI",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/hold_charges.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/time_display.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "TimeDisplayUI",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/time_display.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
       "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
       "currentArea": "ui/progression",
       "observed": {
@@ -53733,22 +53935,7 @@
               "availability": "program-init"
             },
             {
-              "symbol": "DepthSelectorUI",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "HoldChargesUI",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryUI",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "TimeDisplayUI",
               "mechanism": "global-lexical",
               "availability": "program-init"
             },
@@ -53808,8 +53995,6 @@
             "Set",
             "String",
             "TypeError",
-            "isNaN",
-            "parseFloat",
             "parseInt",
             "undefined"
           ],

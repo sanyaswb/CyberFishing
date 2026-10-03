@@ -4983,6 +4983,24 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/ui/legacy/depth_selector.js",
+      "symbol": "DepthSelectorUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/hold_charges.js",
+      "symbol": "HoldChargesUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/time_display.js",
+      "symbol": "TimeDisplayUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/ui/progression/item_progression_dom_adapter.js",
       "symbol": "ItemProgressionDomAdapter",
       "mechanism": "global-lexical",
@@ -5038,25 +5056,7 @@
     },
     {
       "currentPath": "src/ui/ui.js",
-      "symbol": "DepthSelectorUI",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "HoldChargesUI",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
       "symbol": "InventoryUI",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "TimeDisplayUI",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },

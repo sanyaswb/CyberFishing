@@ -78,6 +78,16 @@
       "transition": "architecture/migration/stage_3_prerequisites/016_stamina-buff-split-and-review.json"
     },
     {
+      "slot": 228,
+      "members": [
+        "src/ui/ui.js",
+        "src/ui/legacy/depth_selector.js",
+        "src/ui/legacy/time_display.js",
+        "src/ui/legacy/hold_charges.js"
+      ],
+      "transition": "architecture/migration/stage_5/preparations/011_legacy-ui-independent-widgets.json"
+    },
+    {
       "slot": 390,
       "members": [
         "src/core/math/normalize_distance.js",
