@@ -1387,6 +1387,22 @@
       ]
     },
     {
+      "id": "bridge-5c2520fc14bc",
+      "bridge": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "owner": "stage-5.cluster-011-inventory-tooltip",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_tooltip_presenter.js",
+      "reason": "Preserve the exact InventoryV2TooltipPresenter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2TooltipPresenter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-5c772f8178f1",
       "bridge": "src/ui/condition/item_condition_dom_adapter.js",
       "owner": "stage-4.cluster-013-platform-dom-adapters",
@@ -3942,22 +3958,6 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fe1d90fb91d4",
-      "bridge": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
-      "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-      "target": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
-      "reason": "Preserve the exact InventoryV2BalanceParameterResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2BalanceParameterResolver",
           "mechanism": "global-this-property"
         }
       ]

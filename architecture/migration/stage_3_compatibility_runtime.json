@@ -3172,6 +3172,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2TooltipPresenter",
+      "legacyScriptIndex": 244,
+      "legacySymbol": "InventoryV2TooltipPresenter",
+      "shimFile": "activations/244_inventoryv2tooltippresenter.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "targetModule": "src/game/presentation/inventory/inventory_tooltip_presenter.js",
+      "id": "activation-f8fcc8fa4bf8",
+      "owner": "stage-5.cluster-011-inventory-tooltip",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "ItemProgressionVisualResolver",
       "legacyScriptIndex": 237,
       "legacySymbol": "ItemProgressionVisualResolver",
