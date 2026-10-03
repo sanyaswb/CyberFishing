@@ -1,0 +1,733 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "009",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/inventory-v2-ui-check.js"
+  ],
+  "classes": {
+    "InventoryV2ItemCardRenderer": {
+      "sourcePath": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "members": [
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "#attachmentRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "df2b3df01a4286ebe416eaecddb3586c072e313e8519dc01483cc490ac386900"
+        },
+        {
+          "name": "#longPressController",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "1c128ae589eccff15f77b8619fb29c113519c13674555a6948dbb06f443d4673"
+        },
+        {
+          "name": "#rarityDomAdapter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e23d24a63f8adb53ce7c3da75b167b232b663a135d841e43e18f14fd88dd9fbd"
+        },
+        {
+          "name": "#progressionDomAdapter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "bb2ae712187b0cb2a1509ea0c01e6c05cceaccb25fb4f71e0aa355ae4bda22b3"
+        },
+        {
+          "name": "#conditionDomAdapter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "2a34c72470f2142472611429acbeb08edbf99d97d9d1e6fcf2a4868f97c00112"
+        },
+        {
+          "name": "#tooltipPresenter",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "4364f1e3e967a671c9d6002f2ae2b8d1b9f29c012d28bc2e844b9819e79dca96"
+        },
+        {
+          "name": "#resourceMeterResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "09a82931330e879377be6c977b0eb27bd21f5d7956baf3bde7e208879fed43a3"
+        },
+        {
+          "name": "#resourceMeterRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "31eb8c28fe6f090b357ad3777b2bea19c6d2bff82df85185ad4961ff5df403ae"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "b3d7090acf45bd68cdf1b65f4d20af48f40b0f49a806694fb6ac8547a29c1119",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateDynamicVisuals",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f046b876b758745244e048fcc18bccbdab09c3717846ce423cdae66a72f6a66f",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "renderSlot",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f1e64b1c352ab194a985a048ce9f67a073338be8e9cd6fb62585506c697c7df8",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 4,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "renderInventoryItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2d82283f8a02088677fbc87b4b6949b282df4355522146eed9215f9facc8f0be",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "renderItem",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "31358c148be859315c2eaa43367a90a1245da22b6be36f6bbf63605368f7d01f",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderMainVisual",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "351da7940d65c8c7532c10627c3e1290b61b8e1dee9b945003018864f0343e42",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderMetadata",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "736cdbbf4247a4ffb6b923a3968a87cc3135e1b516ce9c81d5a1eb40a0db17d4",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#showsIncompleteIndicator",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "1a1506ce9bc89a40a34f5190a9d1c36497d8e43ee61f1a3a516d8f957dd0ae3b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#applyVisualAdapters",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a6692ecc61b2b63b52715d9539f91400b0280d368ffc5f34baa049658c9f1c7c",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#bindInteraction",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a4b930574f340c3e978d958eaaaf409ce10fdc11fbd6a1b8294e1bd324897ffd",
+          "parameters": 4,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#isSafeCssColor",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "f8b696e169c3d6871179631d60eb97f8ad2a6bf4f4df7a091cd0b1695c33e094",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 12,
+        "arrayExpressions": 1,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Number",
+          "member": "#renderMetadata",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderMetadata",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "renderInventoryItem",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "renderItem",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "renderItem",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "renderSlot",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "3f4c72ed729e7ce2ca5b5f4d9fa4ba18ece0b20417ce6c12c2eca2219f32b221",
+          "calls": {
+            "updateDynamicVisuals": 25,
+            "renderSlot": 55,
+            "renderInventoryItem": 19,
+            "renderItem": 49
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "InventoryV2ItemParametersRenderer": {
+      "sourcePath": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "members": [
+        {
+          "name": "#dom",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "f2aded0cad2fe4fa0a88d59d902588ce6dcf2ffeb73c4ffcdd32863c1621b998"
+        },
+        {
+          "name": "#resolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "8aca5a31cddfeec9158e0e97c883a899648dd725dd45cb1588cff36235ebdbd8"
+        },
+        {
+          "name": "#resourceMeterRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "31eb8c28fe6f090b357ad3777b2bea19c6d2bff82df85185ad4961ff5df403ae"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "3a17cc25e904534413f13f2705becc3c3bcc27ed69836dfe15e838e11ba3a883",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "173bdb16eec241c70fceaa523cecf7498ed5860dde730173b8b1dc34fed528ae",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 2,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "renderSections",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c2e6809c7642f7216cb0dc237667f792bb6d38265880ad4ef03f4d77bfe06256",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 3,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "update",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fca72a391425ae28758a635eae8846303a514c6237d1ebc4e58090cfbabafbed",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "updateSections",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7f2728491a16b5d445386db6d2d8299835719163e5eedad2351308688bbfa8aa",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderSection",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "925e9fa515bccd1dc4dc42ac64f791b8364c5d9c96c164ddade977b8e0d935e3",
+          "parameters": 3,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderSectionHeader",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "94d09d2d9966bd4ad3bb24aa1a59127765b08da1f24f90a9952b71470cdd783a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#populate",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "45bf7dc3866cb6e6350653dfcde1b720242eb0a0eeab9861a5b022ead40296a0",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderRow",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d1bfb24b88b08da6458ac1831e511e8cfe942b730b8158a9f67ba58ccdd4e789",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#renderEffectiveness",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "c00b51b98daa66971afae534a0c7ef14fc5bf2bc35232accc6e668af25e723dc",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 2,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "#effectivenessText",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2fb56f22f475467e97bef82421bb86618fec9095a55ac4677f85e26ec01f2134",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 2
+          }
+        },
+        {
+          "name": "#formatMultiplier",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "33c0e4f7bfd8c1e7c924c8e33408f75e4654b7d234d90fd4eeed8f4f6756f544",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findSection",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "fc97fd73ea6d8886446cfed455ce22694889a385e919ac4b6d12e5ecc8d7a928",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 4,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findParameterList",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "4495e2325ab22a48c5b9afc1388b0414d1b9ec0b032abbf614af2975b50b2c18",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 1,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 5,
+        "arrayExpressions": 14,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 4
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#effectivenessText",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#findParameterList",
+          "kind": "method"
+        },
+        {
+          "name": "Array",
+          "member": "#findSection",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#findSection",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#findSection",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatMultiplier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#formatMultiplier",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderEffectiveness",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderRow",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#renderSection",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "#renderSectionHeader",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#renderSectionHeader",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#renderSectionHeader",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#renderSectionHeader",
+          "kind": "method"
+        },
+        {
+          "name": "Boolean",
+          "member": "#renderSectionHeader",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "renderSections",
+          "kind": "method"
+        },
+        {
+          "name": "String",
+          "member": "update",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/inventory-v2-ui-check.js": {
+          "sha256": "8b3eae0bce77374a9e440eab851082b6856a2aad0596dd1379d07f011880d9a1",
+          "calls": {
+            "render": 1,
+            "renderSections": 7,
+            "update": 0,
+            "updateSections": 0
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

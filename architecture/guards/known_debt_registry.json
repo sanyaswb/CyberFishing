@@ -277,26 +277,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-6996d6bb8558",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "6996d6bb855832a6a9235a41613244c68ab5cb867aca9689baa3d050c656e6b2",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-883690d84be3",
       "rule": "boundary-dependency",
       "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
@@ -430,26 +410,6 @@
         "rule": "boundary-dependency",
         "source": "src/application/inventory/inventory_v2_composition_root.js",
         "target": "src/config/databases/item_db.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-984ab301df5d",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "984ab301df5d18c95f1f34e91d391e4fb7b1683e3b260f04c736bf58d3fc8c5b",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
       }
     },
     {

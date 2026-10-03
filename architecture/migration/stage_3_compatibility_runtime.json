@@ -1348,6 +1348,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "InventoryV2ItemCardRenderer",
+      "legacyScriptIndex": 250,
+      "legacySymbol": "InventoryV2ItemCardRenderer",
+      "shimFile": "activations/250_inventoryv2itemcardrenderer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_card_renderer.js",
+      "id": "activation-4b6fd0c168bd",
+      "owner": "stage-5.cluster-009-inventory-item-renderers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "InventoryV2ItemOrderResolver",
       "legacyScriptIndex": 194,
       "legacySymbol": "InventoryV2ItemOrderResolver",
@@ -2245,6 +2257,18 @@
       "id": "activation-9fb7cf95c59c",
       "owner": "stage-4.cluster-010-config-root",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "InventoryV2ItemParametersRenderer",
+      "legacyScriptIndex": 249,
+      "legacySymbol": "InventoryV2ItemParametersRenderer",
+      "shimFile": "activations/249_inventoryv2itemparametersrenderer.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "targetModule": "src/game/presentation/inventory/inventory_item_parameters_renderer.js",
+      "id": "activation-a17c5a07c5f3",
+      "owner": "stage-5.cluster-009-inventory-item-renderers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
     {
