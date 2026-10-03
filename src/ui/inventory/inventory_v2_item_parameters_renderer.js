@@ -8,12 +8,9 @@ class InventoryV2ItemParametersRenderer {
     resolver = null,
     resourceMeterRenderer = null,
   } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#resolver =
-      resolver || new globalThis.InventoryV2ItemParametersResolver();
-    this.#resourceMeterRenderer =
-      resourceMeterRenderer ||
-      new globalThis.InventoryV2ResourceMeterRenderer({ domFactory: this.#dom });
+    this.#dom = domFactory;
+    this.#resolver = resolver;
+    this.#resourceMeterRenderer = resourceMeterRenderer;
   }
 
   render(item) {

@@ -1488,8 +1488,12 @@ class InventoryV2StaticContractCheck {
         }
       },
     };
+    const isolatedDom = new sandbox.InventoryV2DomFactory(document);
     const isolatedItemRenderer = new sandbox.InventoryV2ItemCardRenderer({
-      domFactory: new sandbox.InventoryV2DomFactory(document),
+      domFactory: isolatedDom,
+      attachmentRenderer: new sandbox.InventoryV2AttachmentBadgeRenderer({domFactory:isolatedDom}),
+      resourceMeterResolver: new sandbox.InventoryV2ResourceMeterResolver(),
+      resourceMeterRenderer: new sandbox.InventoryV2ResourceMeterRenderer({domFactory:isolatedDom}),
       progressionDomAdapter,
     });
     const extensibleMeterResolver = new sandbox.InventoryV2ResourceMeterResolver({
@@ -1615,8 +1619,11 @@ class InventoryV2StaticContractCheck {
       "effectiveness",
       "Contextual bait effectiveness must be an opt-in UI descriptor",
     );
+    const contextualDom = new sandbox.InventoryV2DomFactory(document);
     const contextualPanel = new sandbox.InventoryV2ItemParametersRenderer({
-      domFactory: new sandbox.InventoryV2DomFactory(document),
+      domFactory: contextualDom,
+      resolver: new sandbox.InventoryV2ItemParametersResolver(),
+      resourceMeterRenderer: new sandbox.InventoryV2ResourceMeterRenderer({domFactory:contextualDom}),
     }).render(contextualItem);
     const contextualValues = this.#findAllByClass(
       contextualPanel,
@@ -2079,8 +2086,13 @@ class InventoryV2StaticContractCheck {
       "hook-0",
       "Three statistically identical hooks must share one component section",
     );
+    const groupedDom = new sandbox.InventoryV2DomFactory(document);
     const groupedHookPanel =
-      new sandbox.InventoryV2ItemParametersRenderer().renderSections(
+      new sandbox.InventoryV2ItemParametersRenderer({
+        domFactory: groupedDom,
+        resolver: new sandbox.InventoryV2ItemParametersResolver(),
+        resourceMeterRenderer: new sandbox.InventoryV2ResourceMeterRenderer({domFactory:groupedDom}),
+      }).renderSections(
         groupedHookSections,
       );
     assert.strictEqual(

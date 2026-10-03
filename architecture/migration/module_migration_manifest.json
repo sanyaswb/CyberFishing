@@ -51539,32 +51539,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -51591,70 +51566,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
-              "symbols": [
-                "InventoryV2AttachmentBadgeRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "symbols": [
-                "InventoryV2ResourceMeterRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-              "symbols": [
-                "InventoryV2ResourceMeterResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -51691,26 +51604,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -51741,55 +51635,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-              "symbols": [
-                "InventoryV2ItemParametersResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-              "symbols": [
-                "InventoryV2ResourceMeterRenderer"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

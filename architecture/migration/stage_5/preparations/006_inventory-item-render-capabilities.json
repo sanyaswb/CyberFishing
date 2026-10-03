@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "006",
+  "slug": "inventory-item-render-capabilities",
+  "baseCommit": "853a4104cd2df43cec41c35e2ab105ad22353e79",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+      "before": "ac81078ca997ebe719a73b84d3fc111d30e386d1bb59e92fe87661759c121a1b",
+      "after": "c8555e8437b9e5fce9892409d31ee772b6087fed208c7c32f51d2ee327bffd9e"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+      "before": "6a54c74a4c21eacc40fa49ba861538b644c9f7500fbd79746e69b5f075221c4d",
+      "after": "bfd41ed829610a134d4e7134069209975c85d9903e812a3ae8b6cf7592959921"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "10b36d673655cec13d7b0850a1b3fcefefc1b63c6e2f8ec6d658f7b5c7fc4c5b",
+      "after": "ad28c1bb5bc2a77446b50c8fcd98a4795e8f89852b95f0e1afc8b83febe74cf2"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "2f71a6e1a85073ead735bb79f3c82b8df1f4cd04f86a806fd4f1bab4b9fafe3f",
+      "after": "e57a55499e7acd4e6157096d31a7f551873d10bf8e330de354f52d55bf199cc5"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen cluster 009 preparation: remove unused DOM and renderer/resolver fallback construction from ItemCardRenderer and ItemParametersRenderer. InventoryV2UI is the sole live production constructor and supplies every dependency. Panel fallback constructors are unused when UI supplies itemRenderer/parametersRenderer; remove those separately in cluster 010 preparation. Preserve injected render collaborators, all visual/interaction methods and ownership; no Platform import or new global.",
+  "constructionEvidence": [
+    "UI supplies original shared DOM, badge renderer, meter resolver/meter renderer, parameter resolver and long-press/tooltip/visual adapters. Every src/utils constructor reference audited.",
+    "Three isolated existing UI test cases now explicitly compose the same previous defaults using their shared fake DOM and exact class instances, in the same collaborator order; all original assertions retained. No test-only production factory or new constructor proxy added.",
+    "Production construction order/options/instance identity remain unchanged; only unused fallback allocation expressions disappear."
+  ],
+  "verification": {
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/inventory-v2-integration-check.js": {
+        "before": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271",
+        "after": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      "utils/inventory-save-round-trip-check.js": {
+        "before": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327",
+        "after": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      }
+    },
+    "guards": "PASS",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 58,
+    "knownDebtsAfter": 58,
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 215,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true
+    }
+  }
+}

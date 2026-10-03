@@ -20,24 +20,15 @@ class InventoryV2ItemCardRenderer {
     resourceMeterResolver = null,
     resourceMeterRenderer = null,
   } = {}) {
-    this.#dom = domFactory || new globalThis.InventoryV2DomFactory();
-    this.#attachmentRenderer =
-      attachmentRenderer ||
-      new globalThis.InventoryV2AttachmentBadgeRenderer({
-        domFactory: this.#dom,
-      });
+    this.#dom = domFactory;
+    this.#attachmentRenderer = attachmentRenderer;
     this.#longPressController = longPressController || null;
     this.#rarityDomAdapter = rarityDomAdapter;
     this.#progressionDomAdapter = progressionDomAdapter;
     this.#conditionDomAdapter = conditionDomAdapter;
     this.#tooltipPresenter = tooltipPresenter;
-    this.#resourceMeterResolver =
-      resourceMeterResolver || new globalThis.InventoryV2ResourceMeterResolver();
-    this.#resourceMeterRenderer =
-      resourceMeterRenderer ||
-      new globalThis.InventoryV2ResourceMeterRenderer({
-        domFactory: this.#dom,
-      });
+    this.#resourceMeterResolver = resourceMeterResolver;
+    this.#resourceMeterRenderer = resourceMeterRenderer;
   }
 
   updateDynamicVisuals(card, item = null) {
