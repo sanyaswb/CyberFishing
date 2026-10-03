@@ -532,50 +532,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-4e22bcc102fd",
-      "rule": "browser-capability",
-      "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-      "target": "environment:browser-runtime",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "4e22bcc102fd3f00be407a4d93b0afc81382bcf270cf6cb76e9b37fd56ef93f9",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-        "target": "environment:browser-runtime",
-        "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-512256974d2b",
-      "rule": "browser-capability",
-      "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-      "target": "environment:dom",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "512256974d2b6e25bff2ecc114a0c3bd525cf9dd8ae10b59bedda1997ff55324",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-        "target": "environment:dom",
-        "identifier": "document"
-      }
-    },
-    {
       "id": "debt-browser-capability-529383e9f019",
       "rule": "browser-capability",
       "source": "src/ui/version_badge.js",

@@ -46731,7 +46731,8 @@
             "undefined"
           ],
           "browserApis": [
-            "document"
+            "document",
+            "window"
           ],
           "dynamicConstructs": [],
           "issues": []
@@ -52709,14 +52710,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -52731,10 +52725,7 @@
             "TypeError",
             "globalThis"
           ],
-          "browserApis": [
-            "document",
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -52751,25 +52742,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-              "symbols": [
-                "InventoryV2BalanceParameterResolver"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

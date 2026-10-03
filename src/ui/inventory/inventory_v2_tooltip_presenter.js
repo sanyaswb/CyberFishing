@@ -1,5 +1,6 @@
 class InventoryV2TooltipPresenter {
   #document;
+  #getView;
   #tooltipNode;
   #rarityDomAdapter;
   #balanceParameterResolver;
@@ -13,7 +14,8 @@ class InventoryV2TooltipPresenter {
   #visibleInstanceId = null;
 
   constructor({
-    documentRef = globalThis.document,
+    documentRef,
+    getView,
     rarityDomAdapter = null,
     balanceParameterResolver = null,
   } = {}) {
@@ -21,10 +23,9 @@ class InventoryV2TooltipPresenter {
       throw new TypeError("InventoryV2TooltipPresenter requires a document");
     }
     this.#document = documentRef;
+    this.#getView = getView;
     this.#rarityDomAdapter = rarityDomAdapter;
-    this.#balanceParameterResolver =
-      balanceParameterResolver ||
-      new globalThis.InventoryV2BalanceParameterResolver();
+    this.#balanceParameterResolver = balanceParameterResolver;
     this.#tooltipNode = this.#document.createElement("div");
     this.#tooltipNode.className =
       "inv-tooltip inventory-v2-tooltip inventory-v2-balance-tooltip";
@@ -200,7 +201,7 @@ class InventoryV2TooltipPresenter {
 
   #position(anchor) {
     const rect = anchor.getBoundingClientRect?.() || { right: 0, top: 0 };
-    const view = this.#document.defaultView || globalThis.window || {};
+    const view = this.#getView() || {};
     const scrollX = Number(view.scrollX || 0);
     const scrollY = Number(view.scrollY || 0);
     const viewportWidth = Number(view.innerWidth || 0);
@@ -223,7 +224,7 @@ class InventoryV2TooltipPresenter {
   }
 
   #supportsHover() {
-    const view = this.#document.defaultView || globalThis.window;
+    const view = this.#getView();
     return typeof view?.matchMedia !== "function" ||
       view.matchMedia("(hover: hover)").matches;
   }

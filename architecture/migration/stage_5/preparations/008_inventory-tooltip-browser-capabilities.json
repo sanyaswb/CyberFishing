@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "008",
+  "slug": "inventory-tooltip-browser-capabilities",
+  "baseCommit": "0eb620c6938fbe49202bfdae2da604ca131f79a1",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-browser-capability-4e22bcc102fd",
+    "debt-browser-capability-512256974d2b"
+  ],
+  "files": [
+    {
+      "path": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+      "before": "d2ab593106e51050b9b671f819c2eff7f1e084fa355575917ac4d86ca8b934c3",
+      "after": "5ad8afc2f8510c3a5a0b681e47ea1dcce0590a2babe8800835cbb93401f94b2c"
+    },
+    {
+      "path": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "before": "c5a3472f7d9c8a9ca5a6b9026c59e9ac47a1fee6998ffa2db63422d2e748395a",
+      "after": "2995220eaf55c8733eef2d97ed3790d38f1d2e5cd5cdacc5ffab95307aea742e"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "7b9d496cd05b146ada8d863f03cbf7f62bf52e2fbe765e43a1758d036c041be4",
+      "after": "a565f3d293b4cc94edb3d149974accf3e4334880beb3e5f3be6cebe782b526f2"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "4ac69eb889709baf14c79eaefc6c14d7d5d38c8139007f2908fa58e93fbbbe33",
+      "after": "31d6bed72666a263c9401890fa0dd5104c05ba0286895c04c481bd6abceb136d"
+    },
+    {
+      "path": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "before": "7771b62f78e993d23c9640fb8dad752f4d5987390a5eda76c1423fd69e409cda",
+      "after": "f4930f042671b3f1b2157a2d62ee1247bebb54b8f5190a4f9cc295a9376babc8"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "reason": "Frozen cluster 011 preparation: tooltip receives the existing document/balance resolver and a live view provider. All constructor sites audited; Bootstrap is the sole production/test constructor and already supplies document/balance. The existing Platform DOM factory owns its document and now exposes view, resolving the original document.defaultView then window fallback per call. Bootstrap passes that existing instance capability. No copied viewport state, new global, boundary exception or extra Platform abstraction.",
+  "constructionEvidence": [
+    "Remove unused document/balance constructor fallbacks and browser view lookup from Tooltip; all content, anchor, viewport formulas, hover/wheel, listeners and dispose behavior retained.",
+    "InventoryV2DomFactory already exposes its authoritative document; a view getter keeps the associated browser-view resolution in that same Platform surface. It reads defaultView/window live, without cached state, allocations or DOM queries. Existing named export/global identity unchanged.",
+    "Bootstrap passes getView: () => dom.view; one cold callback per default tooltip, no browser global in Bootstrap/Presentation and no per-render object/query allocation.",
+    "Two original tooltip browser-capability debts become stale and are removed with exact diagnostic evidence. Existing unused balance bridge remains until cluster 011 retires the migrated source. Stage 4 records/closure stay untouched."
+  ],
+  "verification": {
+    "focused": {
+      "utils/inventory-v2-ui-check.js": {
+        "before": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a",
+        "after": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      "utils/inventory-v2-integration-check.js": {
+        "before": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271",
+        "after": "47362794ea99710cb483172b0b6a1ab9101a78ffc6e2fa0899352eef5f856271"
+      },
+      "utils/inventory-save-round-trip-check.js": {
+        "before": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327",
+        "after": "f8290e8f983cd7769d9368f859bc0afa5c936996e6cdb486a36ec971fe36c327"
+      }
+    },
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 48,
+    "knownDebtsAfter": 46,
+    "viewParity": {
+      "method": "One-off exact-before/current tooltip VM comparison using the actual Platform DOM factory view getter. Exercise viewport clamping/resize, primary view removal, live window replacement, false/missing hover query, wheel precedence, no view, disposal and invalid document before provider calls; no live gate added.",
+      "sha256": "71d46d7763f360860d2c6261ac07be512546d40b2ca9c9b5b9c3cb11debaee5c",
+      "documentViewReadCountsIdentical": true,
+      "results": {
+        "styles": [
+          {
+            "display": "block",
+            "left": "530px",
+            "top": "438px"
+          },
+          {
+            "display": "block",
+            "left": "530px",
+            "top": "538px"
+          },
+          {
+            "display": "block",
+            "left": "513px",
+            "top": "215px"
+          },
+          {
+            "display": "block",
+            "left": "515px",
+            "top": "167px"
+          },
+          {
+            "display": "block",
+            "left": "770px",
+            "top": "560px"
+          }
+        ],
+        "viewReads": 8,
+        "hoverCalls": [
+          "(hover: hover)",
+          "(hover: hover)"
+        ],
+        "scroll": 80,
+        "prevented": 1,
+        "stopped": 1,
+        "remainingNodes": 0,
+        "error": "InventoryV2TooltipPresenter requires a document"
+      }
+    },
+    "guards": "PASS",
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64",
+      "executed": 64,
+      "cached": 0
+    },
+    "browser": {
+      "performedBy": "codex-automated-substitute",
+      "checkedExports": 221,
+      "activeLoops": 1,
+      "errors": 0,
+      "warnings": 0,
+      "inventoryOpen": true,
+      "inventoryButtonTextsAndSaveBytesIdentical": true
+    }
+  }
+}

@@ -11,6 +11,7 @@ class InventoryV2Bootstrap {
     if (autoOpen) ui.open();
     return ui;
   }
+
   // Create the existing UI tree only after UI validates its facade/mount; keep collaborator order and overrides.
   static #createPresentation({
     documentRef,
@@ -43,6 +44,7 @@ class InventoryV2Bootstrap {
       tooltipPresenter ||
       new globalThis.InventoryV2TooltipPresenter({
         documentRef,
+        getView: () => dom.view,
         rarityDomAdapter,
         balanceParameterResolver:
           balanceParameterResolver ||
@@ -114,9 +116,19 @@ class InventoryV2Bootstrap {
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new globalThis.HorizontalScrollController(),
       });
-    return { dom, resolvedNormalizer, resolvedLongPressController, resolvedTooltipPresenter, resolvedItemRenderer, resolvedHeaderRenderer, resolvedLoadoutRenderer, resolvedAssemblyRenderer, resolvedSavedLoadoutRenderer, resolvedInventoryRenderer };
+    return {
+      dom,
+      resolvedNormalizer,
+      resolvedLongPressController,
+      resolvedTooltipPresenter,
+      resolvedItemRenderer,
+      resolvedHeaderRenderer,
+      resolvedLoadoutRenderer,
+      resolvedAssemblyRenderer,
+      resolvedSavedLoadoutRenderer,
+      resolvedInventoryRenderer,
+    };
   }
-
 }
 
 globalThis.InventoryV2Bootstrap = InventoryV2Bootstrap;

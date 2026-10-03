@@ -12,6 +12,10 @@ export class InventoryV2DomFactory {
     return this.#document;
   }
 
+  get view() {
+    return this.#document.defaultView || globalThis.window;
+  }
+
   element(tagName, className = "", text = null) {
     const element = this.#document.createElement(tagName);
     if (className) element.className = className;
