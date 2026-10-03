@@ -163,22 +163,6 @@
       ]
     },
     {
-      "id": "bridge-0d9fd2b91b42",
-      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2DomFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-0ef2bdf5d9fb",
       "bridge": "src/ui/styles/hud_style_resolver.js",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
@@ -190,6 +174,22 @@
       "globalProviders": [
         {
           "symbol": "HudStyleResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-11510e8445bc",
+      "bridge": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+      "owner": "stage-5.cluster-010-inventory-panel-renderers",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_grid_renderer.js",
+      "reason": "Preserve the exact InventoryV2InventoryGridRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2InventoryGridRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -635,6 +635,22 @@
       ]
     },
     {
+      "id": "bridge-30087c1683de",
+      "bridge": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+      "owner": "stage-5.cluster-010-inventory-panel-renderers",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
+      "reason": "Preserve the exact InventoryV2AssemblyEditorRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2AssemblyEditorRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-30af1aabaaa6",
       "bridge": "src/core/items/condition/item_condition_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -742,22 +758,6 @@
       "globalProviders": [
         {
           "symbol": "EquipmentCompatibilityPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-342acc2f1ac4",
-      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -1483,6 +1483,22 @@
       ]
     },
     {
+      "id": "bridge-61d359963a2b",
+      "bridge": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+      "owner": "stage-5.cluster-010-inventory-panel-renderers",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js",
+      "reason": "Preserve the exact InventoryV2SavedLoadoutPreviewRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-635531dc786c",
       "bridge": "src/render/core/canvas_2d_surface.js",
       "owner": "stage-4.cluster-012-platform-canvas-assets",
@@ -1983,22 +1999,6 @@
       ]
     },
     {
-      "id": "bridge-747d496f62bc",
-      "bridge": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-      "target": "src/game/presentation/inventory/inventory_item_card_renderer.js",
-      "reason": "Preserve the exact InventoryV2ItemCardRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ItemCardRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-749f8561f15d",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -2095,22 +2095,6 @@
       ]
     },
     {
-      "id": "bridge-793734e2e806",
-      "bridge": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-      "target": "src/game/presentation/inventory/inventory_item_parameters_renderer.js",
-      "reason": "Preserve the exact InventoryV2ItemParametersRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ItemParametersRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7ad54eebd99a",
       "bridge": "src/systems/bite_system.js",
       "owner": "stage-4.cluster-027-bite-chum",
@@ -2174,22 +2158,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-81a2781b9e7b",
-      "bridge": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-      "target": "src/game/presentation/inventory/inventory_item_card_renderer.js",
-      "reason": "Preserve the exact InventoryV2ItemCardRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ItemCardRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2643,22 +2611,6 @@
       ]
     },
     {
-      "id": "bridge-a0b5346d06c6",
-      "bridge": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-      "target": "src/game/presentation/inventory/inventory_item_card_renderer.js",
-      "reason": "Preserve the exact InventoryV2ItemCardRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ItemCardRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a2d4cf4c4b59",
       "bridge": "src/ui/inventory/inventory_v2_view_model.js",
       "owner": "stage-5.cluster-007-inventory-view-contracts",
@@ -2670,22 +2622,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2ActionType",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a56e744e9aab",
-      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -2818,6 +2754,22 @@
       "globalProviders": [
         {
           "symbol": "FISH_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-aa963ce92dcf",
+      "bridge": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+      "owner": "stage-5.cluster-010-inventory-panel-renderers",
+      "source": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "target": "src/game/presentation/inventory/inventory_loadout_panel_renderer.js",
+      "reason": "Preserve the exact InventoryV2LoadoutPanelRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "InventoryV2LoadoutPanelRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -3334,22 +3286,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryItemSnapshotMapper",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d1dfc3beaa6f",
-      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "reason": "Preserve the exact InventoryV2DomFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2DomFactory",
           "mechanism": "global-this-property"
         }
       ]
@@ -3926,22 +3862,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f5377c785812",
-      "bridge": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-      "target": "src/game/presentation/inventory/inventory_item_card_renderer.js",
-      "reason": "Preserve the exact InventoryV2ItemCardRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ItemCardRenderer",
           "mechanism": "global-this-property"
         }
       ]

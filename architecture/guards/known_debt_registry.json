@@ -92,26 +92,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-36674c179818",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "36674c179818d16183824ebcb1ec8670f1e1f3d17c360bc021a1ce6d1837e66b",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-37a9f9bb3070",
       "rule": "boundary-dependency",
       "source": "src/app/script.js",
@@ -215,26 +195,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-883690d84be3",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "883690d84be3bde6986de6f678f8074fe0e9c55828f55d7fdfe23ce18128c24c",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-8afc4b9d51af",
       "rule": "boundary-dependency",
       "source": "src/app/debug.js",
@@ -312,26 +272,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-8ec60d40f201",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8ec60d40f201654af0cda7cc40934ca5b435786ad4af173b71cd3a2c1c420287",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-906fb73e0e1e",
       "rule": "boundary-dependency",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -390,26 +330,6 @@
         "rule": "boundary-dependency",
         "source": "src/app/script.js",
         "target": "src/app/core/game_loop.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-bf263f94cff6",
-      "rule": "boundary-dependency",
-      "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-      "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "bf263f94cff6958e9acb3decb2b35a2c061192927694353c98cefca5018d57a4",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-        "target": "src/ui/inventory/inventory_v2_dom_factory.js"
       }
     },
     {
