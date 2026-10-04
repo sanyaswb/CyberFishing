@@ -4722,7 +4722,7 @@
           "items": [
             {
               "symbol": "BoatChumRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -4732,16 +4732,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -4749,8 +4743,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -4760,7 +4753,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
@@ -4769,41 +4762,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "symbols": [
-                "RenderMath"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -4825,7 +4794,7 @@
           "items": [
             {
               "symbol": "CastingRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -4835,16 +4804,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -4852,12 +4815,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Infinity",
-            "Math",
-            "Number",
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -4867,7 +4825,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/casting_render_frame_builder.js",
@@ -4876,41 +4834,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "symbols": [
-                "RenderMath"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -4932,7 +4866,7 @@
           "items": [
             {
               "symbol": "FightAreaRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -4942,10 +4876,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -4953,9 +4887,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -4965,7 +4897,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
@@ -4974,26 +4906,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -5015,7 +4938,7 @@
           "items": [
             {
               "symbol": "FightHudFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5025,10 +4948,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -5036,9 +4959,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5048,7 +4969,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/hud/fight_hud_frame_builder.js",
@@ -5057,26 +4978,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "RenderMath",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-              "symbols": [
-                "RenderMath"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -5099,7 +5011,7 @@
           "items": [
             {
               "symbol": "FishingEquipmentRenderModelBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5107,15 +5019,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5125,7 +5042,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
@@ -5136,7 +5053,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -5156,7 +5081,7 @@
           "items": [
             {
               "symbol": "FishingRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5166,10 +5091,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -5177,9 +5102,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5189,7 +5112,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/fishing_render_frame_builder.js",
@@ -5198,26 +5121,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -5323,7 +5237,7 @@
           "items": [
             {
               "symbol": "GameRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5331,14 +5245,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5348,7 +5268,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/game_render_frame_builder.js",
@@ -5359,7 +5279,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -5449,7 +5377,7 @@
           "items": [
             {
               "symbol": "LandingAreaRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5459,10 +5387,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -5470,8 +5398,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5481,7 +5408,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
@@ -5490,26 +5417,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -5612,7 +5530,7 @@
           "items": [
             {
               "symbol": "OutcomeRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5620,17 +5538,20 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Number",
-            "Object",
-            "String",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5640,7 +5561,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/screens/outcome_render_frame_builder.js",
@@ -5651,7 +5572,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -5673,7 +5602,7 @@
           "items": [
             {
               "symbol": "WorldRenderFrameBuilder",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -5683,10 +5612,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -5694,9 +5623,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -5706,7 +5633,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "compatibility-bridge"
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/world_render_frame_builder.js",
@@ -5715,26 +5642,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -31180,13 +31098,7 @@
         "legacyLoadOrder": 360,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RenderMath",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -31196,9 +31108,7 @@
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -42988,6 +42898,57 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+      "currentArea": "game/presentation/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/fishing/fishing_scene_renderer.js",
       "currentArea": "game/presentation/fishing",
       "observed": {
@@ -43216,6 +43177,57 @@
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/fishing/rod_visual_offset_system.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/hud/fight_hud_frame_builder.js",
+      "currentArea": "game/presentation/hud",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/hud/fight_hud_frame_builder.js",
         "migrationWave": 6
       },
       "analysis": {
@@ -45300,6 +45312,110 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/rendering/casting_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Infinity",
+            "Math",
+            "Number",
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/casting_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/rendering/casting_render_pass.js",
       "currentArea": "game/presentation/rendering",
       "observed": {
@@ -45349,6 +45465,108 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/rendering/fishing_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/fishing_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/rendering/fishing_render_pass.js",
       "currentArea": "game/presentation/rendering",
       "observed": {
@@ -45380,6 +45598,56 @@
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/rendering/fishing_render_pass.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/rendering/game_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/game_render_frame_builder.js",
         "migrationWave": 6
       },
       "analysis": {
@@ -45545,6 +45813,56 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/rendering/outcome_render_pass.js",
       "currentArea": "game/presentation/rendering",
       "observed": {
@@ -45646,6 +45964,57 @@
       }
     },
     {
+      "currentPath": "src/game/presentation/rendering/world_render_frame_builder.js",
+      "currentArea": "game/presentation/rendering",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/rendering/world_render_frame_builder.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/game/presentation/rendering/world_render_pass.js",
       "currentArea": "game/presentation/rendering",
       "observed": {
@@ -45724,6 +46093,59 @@
         ],
         "targetBoundary": "game-presentation",
         "targetPath": "src/game/presentation/screens/game_over_renderer.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/presentation/screens/outcome_render_frame_builder.js",
+      "currentArea": "game/presentation/screens",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Number",
+            "Object",
+            "String",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/screens/outcome_render_frame_builder.js",
         "migrationWave": 6
       },
       "analysis": {

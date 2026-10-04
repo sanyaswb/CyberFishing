@@ -783,6 +783,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "FightHudFrameBuilder",
+      "legacyScriptIndex": 415,
+      "legacySymbol": "FightHudFrameBuilder",
+      "shimFile": "activations/415_fighthudframebuilder.js",
+      "sourceProvider": "src/app/rendering/fight_hud_frame_builder.js",
+      "targetModule": "src/game/presentation/hud/fight_hud_frame_builder.js",
+      "id": "activation-103c398b1e7f",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "FightPhysicsConfigAdapter",
       "legacyScriptIndex": 23,
       "legacySymbol": "FightPhysicsConfigAdapter",
@@ -1527,6 +1539,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "FightAreaRenderFrameBuilder",
+      "legacyScriptIndex": 414,
+      "legacySymbol": "FightAreaRenderFrameBuilder",
+      "shimFile": "activations/414_fightarearenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/fight_area_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
+      "id": "activation-47fdd7842970",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-490b698c2a9d",
       "owner": "stage-3.replan-322.batch-024-inventory-21307d68",
       "sourceProvider": "src/core/inventory/inventory_item_reservation_policy.js",
@@ -1607,6 +1631,18 @@
       "targetModule": "src/game/presentation/hud/hud_bar_renderer.js",
       "id": "activation-4f6eaff0c05b",
       "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "FishingEquipmentRenderModelBuilder",
+      "legacyScriptIndex": 416,
+      "legacySymbol": "FishingEquipmentRenderModelBuilder",
+      "shimFile": "activations/416_fishingequipmentrendermodelbuilder.js",
+      "sourceProvider": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "targetModule": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+      "id": "activation-4fe38f3b85f5",
+      "owner": "stage-5.cluster-020-render-frame-builders",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -1863,6 +1899,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "LandingAreaRenderFrameBuilder",
+      "legacyScriptIndex": 413,
+      "legacySymbol": "LandingAreaRenderFrameBuilder",
+      "shimFile": "activations/413_landingarearenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/landing_area_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
+      "id": "activation-600fbd4664ab",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2ActionType",
       "legacyScriptIndex": 239,
       "legacySymbol": "InventoryV2ActionType",
@@ -2079,18 +2127,6 @@
       "removalStage": "stage-6"
     },
     {
-      "id": "activation-75b968069153",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "dist/legacy-bridges/render_math.iife.js",
-      "targetModule": "src/engine/rendering/render_math.js",
-      "exportName": "RenderMath",
-      "legacySymbol": "RenderMath",
-      "legacyScriptIndex": 360,
-      "shimFile": "activations/360_rendermath.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "ITEM_ASSEMBLY_PROFILE_CONFIG",
       "legacyScriptIndex": 29,
       "legacySymbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
@@ -2137,6 +2173,18 @@
       "owner": "stage-4.cluster-032-platform-horizontal-scroll",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "WorldRenderFrameBuilder",
+      "legacyScriptIndex": 411,
+      "legacySymbol": "WorldRenderFrameBuilder",
+      "shimFile": "activations/411_worldrenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/world_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/world_render_frame_builder.js",
+      "id": "activation-79b3c19a26ad",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "FreshestRefillCandidatePolicy",
@@ -2595,6 +2643,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "OutcomeRenderFrameBuilder",
+      "legacyScriptIndex": 418,
+      "legacySymbol": "OutcomeRenderFrameBuilder",
+      "shimFile": "activations/418_outcomerenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/outcome_render_frame_builder.js",
+      "targetModule": "src/game/presentation/screens/outcome_render_frame_builder.js",
+      "id": "activation-9f7fd843e052",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "SLOT_CONFIG",
       "legacyScriptIndex": 28,
       "legacySymbol": "SLOT_CONFIG",
@@ -2783,6 +2843,18 @@
       "targetModule": "src/platform/browser/storage/cache_manager.js",
       "id": "activation-a9bd2f5c7469",
       "owner": "stage-4.cluster-036-platform-cache",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "GameRenderFrameBuilder",
+      "legacyScriptIndex": 419,
+      "legacySymbol": "GameRenderFrameBuilder",
+      "shimFile": "activations/419_gamerenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/game_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/game_render_frame_builder.js",
+      "id": "activation-a9d0283efe77",
+      "owner": "stage-5.cluster-020-render-frame-builders",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -3097,6 +3169,18 @@
       "shimFile": "activations/169_equipmentloadoutrepository.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "BoatChumRenderFrameBuilder",
+      "legacyScriptIndex": 409,
+      "legacySymbol": "BoatChumRenderFrameBuilder",
+      "shimFile": "activations/409_boatchumrenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
+      "id": "activation-cc5220c7d07c",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "EQUIPMENT_SLOT_PRESENTATION",
@@ -3471,6 +3555,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "FishingRenderFrameBuilder",
+      "legacyScriptIndex": 417,
+      "legacySymbol": "FishingRenderFrameBuilder",
+      "shimFile": "activations/417_fishingrenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/fishing_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/fishing_render_frame_builder.js",
+      "id": "activation-f5bcf27570c0",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-f7878fbddced",
       "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
       "sourceProvider": "src/app/rules.js",
@@ -3613,6 +3709,18 @@
       "owner": "stage-4.cluster-026-world-and-casting",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "CastingRenderFrameBuilder",
+      "legacyScriptIndex": 412,
+      "legacySymbol": "CastingRenderFrameBuilder",
+      "shimFile": "activations/412_castingrenderframebuilder.js",
+      "sourceProvider": "src/app/rendering/casting_render_frame_builder.js",
+      "targetModule": "src/game/presentation/rendering/casting_render_frame_builder.js",
+      "id": "activation-feac5c29558f",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-feaf02eaca22",
@@ -4574,6 +4682,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-030-fight-physics-system"
+    },
+    {
+      "activation": {
+        "id": "activation-75b968069153",
+        "owner": "stage-3.candidate-001-inventory-85f44b2e",
+        "sourceProvider": "dist/legacy-bridges/render_math.iife.js",
+        "targetModule": "src/engine/rendering/render_math.js",
+        "exportName": "RenderMath",
+        "legacySymbol": "RenderMath",
+        "legacyScriptIndex": 360,
+        "shimFile": "activations/360_rendermath.js",
+        "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-020-render-frame-builders"
     },
     {
       "activation": {

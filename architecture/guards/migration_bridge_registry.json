@@ -51,6 +51,22 @@
       ]
     },
     {
+      "id": "bridge-037e5fd99a80",
+      "bridge": "src/app/rendering/outcome_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/outcome_render_frame_builder.js",
+      "reason": "Preserve the exact OutcomeRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "OutcomeRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-03c2663310fa",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -551,6 +567,22 @@
       ]
     },
     {
+      "id": "bridge-25847890dd52",
+      "bridge": "src/app/rendering/boat_chum_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
+      "reason": "Preserve the exact BoatChumRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BoatChumRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-27dcbb9728a5",
       "bridge": "src/ui/legacy/chum_controls.js",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
@@ -971,22 +1003,6 @@
       ]
     },
     {
-      "id": "bridge-41b9cf4d5160",
-      "bridge": "src/render/core/image_asset_provider.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/rendering/outcome_render_frame_builder.js",
-      "target": "src/platform/browser/assets/image_asset_provider.js",
-      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ImageAssetProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-41df300f3d51",
       "bridge": "src/ui/version/game_version_badge.js",
       "owner": "stage-5.cluster-016-version-badge-composition",
@@ -1186,22 +1202,6 @@
         },
         {
           "symbol": "InventoryV2ViewModelNormalizer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-47ede6d2e84c",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/boat_chum_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1479,22 +1479,6 @@
       ]
     },
     {
-      "id": "bridge-5d3728373ab6",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/app/rendering/fight_hud_frame_builder.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-5d652a225320",
       "bridge": "src/entities/tackle.js",
       "source": "src/app/bootstrap.js",
@@ -1538,6 +1522,22 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6026ec63dbf8",
+      "bridge": "src/app/rendering/fight_area_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
+      "reason": "Preserve the exact FightAreaRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightAreaRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -1634,22 +1634,6 @@
         },
         {
           "symbol": "FishingController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-63f240e0a04b",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/world_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1955,17 +1939,17 @@
       ]
     },
     {
-      "id": "bridge-6bd38de51ce1",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/fishing_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
+      "id": "bridge-6d95a9eeba14",
+      "bridge": "src/app/rendering/fishing_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/fishing_render_frame_builder.js",
+      "reason": "Preserve the exact FishingRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
-          "symbol": "Vector2",
+          "symbol": "FishingRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -2271,6 +2255,22 @@
       ]
     },
     {
+      "id": "bridge-7d997c3c333d",
+      "bridge": "src/app/rendering/landing_area_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
+      "reason": "Preserve the exact LandingAreaRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "LandingAreaRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7ebef0835a61",
       "bridge": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
       "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
@@ -2298,22 +2298,6 @@
       "globalProviders": [
         {
           "symbol": "UIUtils",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-815c81d10665",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/fight_area_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -2447,6 +2431,22 @@
       ]
     },
     {
+      "id": "bridge-891cf39cd66b",
+      "bridge": "src/app/rendering/game_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/game_render_frame_builder.js",
+      "reason": "Preserve the exact GameRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8be13ca4ec8e",
       "bridge": "src/assets/asset_preload_coordinator.js",
       "owner": "stage-4.cluster-015-asset-preload",
@@ -2575,6 +2575,22 @@
       ]
     },
     {
+      "id": "bridge-913c40586487",
+      "bridge": "src/app/rendering/world_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/world_render_frame_builder.js",
+      "reason": "Preserve the exact WorldRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "WorldRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-92d5d09f925f",
       "bridge": "src/systems/inventory_system.js",
       "owner": "stage-4.cluster-029-inventory-system",
@@ -2602,6 +2618,22 @@
         },
         {
           "symbol": "LineCompatibilityRules",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-946c40ff46ee",
+      "bridge": "src/app/rendering/fishing_equipment_render_model_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+      "reason": "Preserve the exact FishingEquipmentRenderModelBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FishingEquipmentRenderModelBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -2698,6 +2730,22 @@
       "globalProviders": [
         {
           "symbol": "EventLifecycle",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9ada151d70e8",
+      "bridge": "src/app/rendering/fight_hud_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/fight_hud_frame_builder.js",
+      "reason": "Preserve the exact FightHudFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightHudFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -3006,22 +3054,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2AssemblyParameterSectionResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ae46e766e312",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/landing_area_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -3463,6 +3495,22 @@
       ]
     },
     {
+      "id": "bridge-c85d7f62582c",
+      "bridge": "src/app/rendering/casting_render_frame_builder.js",
+      "owner": "stage-5.cluster-020-render-frame-builders",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/casting_render_frame_builder.js",
+      "reason": "Preserve the exact CastingRenderFrameBuilder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CastingRenderFrameBuilder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c864eb224938",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -3826,22 +3874,6 @@
       "globalProviders": [
         {
           "symbol": "ReelRetrieveSpeedCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ddab9cbee9ba",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/rendering/casting_render_frame_builder.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -4263,22 +4295,6 @@
       ]
     },
     {
-      "id": "bridge-f719db073789",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/app/rendering/casting_render_frame_builder.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-f880b0a474c6",
       "bridge": "src/core/inventory/equip_target_selection_policy.js",
       "source": "src/ui/ui.js",
@@ -4306,22 +4322,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2ActionType",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fa6a4f31f3a9",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/app/rendering/boat_chum_render_frame_builder.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
           "mechanism": "global-this-property"
         }
       ]

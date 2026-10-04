@@ -153,25 +153,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-649ca88d90a4",
-      "rule": "boundary-dependency",
-      "source": "src/app/rendering/outcome_render_frame_builder.js",
-      "target": "src/render/core/image_asset_provider.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "browser-api-coupling"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 6,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "649ca88d90a4c4d69b4193007ceae6de98a9733ccbf66475d8b8be2f009ad4e9",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/rendering/outcome_render_frame_builder.js",
-        "target": "src/render/core/image_asset_provider.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-8afc4b9d51af",
       "rule": "boundary-dependency",
       "source": "src/app/debug.js",
