@@ -6,7 +6,7 @@ const espree = require("espree");
 const eslintScope = require("eslint-scope");
 const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/cumulative_side_effect_gate");
 
-const LANGUAGE_BUILTINS = Object.freeze(["Array", "Boolean", "Date", "Error", "Infinity", "JSON", "Map", "Math",
+const LANGUAGE_BUILTINS = Object.freeze(["Array", "Boolean", "Date", "Error", "Float32Array", "Infinity", "JSON", "Map", "Math",
   "NaN", "Number", "Object", "Promise", "RangeError", "Reflect", "Set", "String", "Symbol", "TypeError", "WeakMap",
   "WeakSet", "isFinite", "isNaN", "parseFloat", "parseInt", "undefined"]);
 // Identifiers no non-platform target may name (browser, DEV, raw config, transport); member names are allowed.

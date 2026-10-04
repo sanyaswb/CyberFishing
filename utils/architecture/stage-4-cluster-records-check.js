@@ -223,6 +223,8 @@ assert.equal(fixture("class A {}\n").targetSource, "export class A {}\n");
 assert.equal(fixture("\uFEFFclass A {}\r\n").targetSource, "\uFEFFexport class A {}\r\n");
 assert.deepEqual(fixture("function A() {}\n").providerMechanisms, ["A:global-function"]);
 assert.deepEqual(fixture("const A = {};\n").providerMechanisms, ["A:global-lexical"]);
+assert.equal(fixture("class A { points = new Float32Array(10); }\n").analysis.freeGlobals[0], "Float32Array");
+assert.throws(() => fixture("class A { points = new Float32Array(10); run() { return document; } }\n"), /reads classic or browser globals: document/u);
 assert.throws(() => fixture("class A { run() { return ITEM_DB; } }\n"), /reads classic or browser globals: ITEM_DB/u);
 assert.equal(fixture("const CONFIG = {};\n", {exports:["CONFIG"]}).targetSource,"export const CONFIG = {};\n");
 assert.throws(()=>fixture("const CONFIG = {};\n", {exports:["CONFIG"],boundary:"game-application"}),/names CONFIG/u);
@@ -540,5 +542,5 @@ if (fs.existsSync(path.join(ROOT, closureFile))) {
 }
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
+  `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
   `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);
