@@ -5620,14 +5620,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -5656,25 +5649,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "ImageAssetProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/core/image_asset_provider.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/render/core/image_asset_provider.js",
-              "symbols": [
-                "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []

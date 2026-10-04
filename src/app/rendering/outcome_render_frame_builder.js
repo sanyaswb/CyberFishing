@@ -3,6 +3,7 @@ class OutcomeRenderFrameBuilder {
   #clock;
   #styleResolver;
   #layoutResolver;
+  #assetIdForSource;
   #unknownRarity = Object.freeze({
     isResolved: false,
     halfSteps: 0,
@@ -28,6 +29,7 @@ class OutcomeRenderFrameBuilder {
     clock,
     styleResolver,
     layoutResolver,
+    assetIdForSource = null,
   }) {
     if (!styleResolver || typeof styleResolver.resolveVictory !== "function") {
       throw new TypeError(
@@ -43,6 +45,7 @@ class OutcomeRenderFrameBuilder {
     this.#clock = clock;
     this.#styleResolver = styleResolver;
     this.#layoutResolver = layoutResolver;
+    this.#assetIdForSource = assetIdForSource || OutcomeRenderFrameBuilder.#defaultAssetIdForSource;
   }
 
   buildInto({ target, intent }) {
@@ -137,8 +140,14 @@ class OutcomeRenderFrameBuilder {
     layoutContext.config = config;
     layoutContext.statCount = stats.count;
     target.layout = this.#layoutResolver.resolve(layoutContext);
-    target.spriteId = ImageAssetProvider.assetIdForSource(imagePath, "fish");
+    target.spriteId = this.#assetIdForSource(imagePath, "fish");
     target.spritePath = imagePath;
+  }
+
+  // Preserve the existing two-argument ID contract for callers without a platform capability.
+  static #defaultAssetIdForSource(src, namespace = "asset") {
+    const normalized = String(src || "").trim();
+    return normalized ? `${namespace}:${normalized}` : "";
   }
 
   #resolveRarity(source, fish) {

@@ -937,6 +937,7 @@ class GameCompositionRoot {
       clock,
       styleResolver: runtime.rendering.outcomeStyleResolver,
       layoutResolver: runtime.rendering.victoryLayoutResolver,
+      assetIdForSource: (source, namespace) => ImageAssetProvider.assetIdForSource(source, namespace),
     });
     runtime.inventory.setLineCapacityStateProvider?.(
       () => fightService.getLineCapacityState(),

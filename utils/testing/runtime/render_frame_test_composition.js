@@ -62,6 +62,9 @@ function checkRenderFrameComposition() {
   aiming=true;state='playing';debug.playerPressureFatigueState='idle';clock.now+=16;const frame=coordinator.render(0.016);assert.equal(frame.casting.powerAim.mode,'chum');assert.equal(frame.hud.playerPressureFatigue.state.stateName,'recovered');
   coordinator.invalidateStyles();assert.equal(invalidations,1);
   for(const reason of ['line','rod','reel','leader','hook','net_escape']){frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'failed',reason}});assert(frame.outcome.gameOver.title);}
+  const defaultOutcome=new c.OutcomeRenderFrameBuilder({canvasMetrics:metrics,clock,styleResolver:{resolveVictory:()=>victoryConfig},layoutResolver:{resolve:()=>layout}});
+  for(const imagePath of [' spaced.png ','   ',42]){frame.reset();defaultOutcome.buildInto({target:frame.outcome,intent:{visible:true,mode:'victory',fish:{imagePath}}});assert.equal(frame.outcome.victory.spriteId,c.ImageAssetProvider.assetIdForSource(imagePath,'fish'),'old constructor default preserves source ID values');}
+  const originalId=c.ImageAssetProvider.assetIdForSource;c.ImageAssetProvider.assetIdForSource=(source,namespace)=>originalId(source,namespace)+':live';frame.reset();outcomeBuilder.buildInto({target:frame.outcome,intent:{visible:true,mode:'victory',fish:{imagePath:'fish.png'}}});assert.equal(frame.outcome.victory.spriteId,'fish:fish.png:live','injected production callback preserves live Platform method lookup');c.ImageAssetProvider.assetIdForSource=originalId;
   assert.throws(()=>new c.GameRenderCoordinator({}),/requires stateMachine/);
 }
 

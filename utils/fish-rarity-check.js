@@ -986,6 +986,7 @@ class FishRarityCheck {
       clock: { realNow: 100 },
       styleResolver: { resolveVictory: () => ({}) },
       layoutResolver: { resolve: () => ({}) },
+      assetIdForSource: (source, namespace) => runtime.ImageAssetProvider.assetIdForSource(source, namespace),
     });
     const frame = new this.GameRenderFrame();
     const resolved = this.resolver.resolve({
