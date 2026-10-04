@@ -9,6 +9,11 @@
       godModeSource: () => (typeof GodMode !== "undefined" ? GodMode : null),
       debugModulesSource: () => typeof window !== "undefined" ? window.DEBUG_MODULES : null,
     }),
+    createLocationDebugMapBuilder: (options) => new LocationDebugMapBuilder(options),
+    createItemProgressionDebugSnapshotProvider: (options) => new ItemProgressionDebugSnapshotProvider(options),
+    createFixedCatchFishFactory: (options) => new FixedCatchFishFactory(options),
+    createHookedFishProfileSynchronizer: (options) => new HookedFishProfileSynchronizer(options),
+    createDebugService: (config) => new DebugService(config),
     createWorldDebugRenderer: (options) => new WorldDebugRenderer(options),
     createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {
       configRuntime: CONFIG_RUNTIME_CONTEXT,

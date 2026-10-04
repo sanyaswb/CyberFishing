@@ -1,6 +1,11 @@
 class GameCompositionRoot {
   #config;
   #runtimeConfig;
+  #createLocationDebugMapBuilder;
+  #createItemProgressionDebugSnapshotProvider;
+  #createFixedCatchFishFactory;
+  #createHookedFishProfileSynchronizer;
+  #createDebugService;
   #documentTarget;
   #windowTarget;
   #createDevFlags;
@@ -10,6 +15,11 @@ class GameCompositionRoot {
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   constructor(config, {
+    createLocationDebugMapBuilder,
+    createItemProgressionDebugSnapshotProvider,
+    createFixedCatchFishFactory,
+    createHookedFishProfileSynchronizer,
+    createDebugService,
     documentTarget,
     windowTarget,
     createDevFlags,
@@ -19,6 +29,11 @@ class GameCompositionRoot {
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
   } = {}) {
+    this.#createLocationDebugMapBuilder = createLocationDebugMapBuilder;
+    this.#createItemProgressionDebugSnapshotProvider = createItemProgressionDebugSnapshotProvider;
+    this.#createFixedCatchFishFactory = createFixedCatchFishFactory;
+    this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
+    this.#createDebugService = createDebugService;
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
     this.#createDevFlags = createDevFlags;
@@ -119,7 +134,7 @@ class GameCompositionRoot {
     contracts.requireMethods(locationAssetLoader, "locationAssetLoader", [
       "load",
     ]);
-    const locationDebugMapBuilder = new LocationDebugMapBuilder({
+    const locationDebugMapBuilder = this.#createLocationDebugMapBuilder({
       canvasFactory,
     });
     const hudStyleResolver = new HudStyleResolver({
@@ -197,7 +212,7 @@ class GameCompositionRoot {
       visualResolver: itemProgressionVisualResolver,
     });
     const itemProgressionDebugProvider =
-      new ItemProgressionDebugSnapshotProvider({
+      this.#createItemProgressionDebugSnapshotProvider({
         itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
         progressionResolver: itemProgressionResolver,
         effectiveStatsResolver: effectiveItemStatsResolver,
@@ -284,13 +299,13 @@ class GameCompositionRoot {
       "baitEffectivenessCatalogResolver",
       ["resolve"],
     );
-    const fixedCatchFishFactory = new FixedCatchFishFactory({
+    const fixedCatchFishFactory = this.#createFixedCatchFishFactory({
       fishRarityResolver,
       fishAnomalyVariantResolver,
       fishVisualVariantResolver,
     });
     const hookedFishProfileSynchronizer =
-      new HookedFishProfileSynchronizer({
+      this.#createHookedFishProfileSynchronizer({
         fishRarityResolver,
         fishVisualVariantResolver,
       });
@@ -760,7 +775,7 @@ class GameCompositionRoot {
       }),
     });
 
-    const debugService = new DebugService(config);
+    const debugService = this.#createDebugService(config);
 
     const biteEnvironmentService = new BiteEnvironmentService({
       world: runtime.world,

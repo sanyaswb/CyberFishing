@@ -470,12 +470,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "DebugService",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "DegradationColorConfigValidator",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -650,12 +644,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "FixedCatchFishFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "FloatRenderer",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -717,12 +705,6 @@
             },
             {
               "symbol": "HoldChargesUI",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "HookedFishProfileSynchronizer",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -890,12 +872,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "ItemProgressionDebugSnapshotProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "ItemProgressionDomAdapter",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -981,12 +957,6 @@
             },
             {
               "symbol": "LocationAssetLoader",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "LocationDebugMapBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -1253,8 +1223,8 @@
         "roles": [
           "bootstrap"
         ],
-        "targetBoundary": "bootstrap-development",
-        "targetPath": "src/bootstrap/development/game_composition_root.js",
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game_composition_root.js",
         "migrationWave": 7
       },
       "analysis": {
@@ -1550,14 +1520,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "DebugService",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/debug.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "DegradationColorConfigValidator",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -1790,14 +1752,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "FixedCatchFishFactory",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/fixed_catch_fish_factory.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "FloatRenderer",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1883,14 +1837,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/legacy/hold_charges.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "HookedFishProfileSynchronizer",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/services/hooked_fish_profile_synchronizer.js",
               "resolution": "confirmed"
             },
             {
@@ -2110,14 +2056,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ItemProgressionDebugSnapshotProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/services/item_progression_debug_snapshot_provider.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "ItemProgressionDomAdapter",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2235,14 +2173,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/infrastructure/location/location_asset_loader.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "LocationDebugMapBuilder",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/world/location_debug_map_builder.js",
               "resolution": "confirmed"
             },
             {
@@ -2612,13 +2542,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/app/debug.js",
-              "symbols": [
-                "DebugService"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/app/fishing.js",
               "symbols": [
                 "CastService",
@@ -2626,13 +2549,6 @@
                 "FightService",
                 "FightSessionFactory",
                 "FishingController"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/app/fixed_catch_fish_factory.js",
-              "symbols": [
-                "FixedCatchFishFactory"
               ],
               "resolution": "confirmed"
             },
@@ -3072,20 +2988,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/debug/services/hooked_fish_profile_synchronizer.js",
-              "symbols": [
-                "HookedFishProfileSynchronizer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/services/item_progression_debug_snapshot_provider.js",
-              "symbols": [
-                "ItemProgressionDebugSnapshotProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
               "symbols": [
                 "DependencyContractValidator"
@@ -3341,13 +3243,6 @@
               "target": "src/render/world/boat_chum_renderer.js",
               "symbols": [
                 "BoatChumRenderer"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/world/location_debug_map_builder.js",
-              "symbols": [
-                "LocationDebugMapBuilder"
               ],
               "resolution": "confirmed"
             },
@@ -5305,6 +5200,12 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "DebugService",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "DevFlagsProvider",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -5324,6 +5225,12 @@
             },
             {
               "symbol": "EventLifecycle",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "FixedCatchFishFactory",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -5353,7 +5260,25 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "HookedFishProfileSynchronizer",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "InputManager",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "ItemProgressionDebugSnapshotProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "LocationDebugMapBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -5460,6 +5385,14 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "DebugService",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/debug.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "DevFlagsProvider",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -5489,6 +5422,14 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "FixedCatchFishFactory",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/fixed_catch_fish_factory.js",
               "resolution": "confirmed"
             },
             {
@@ -5524,11 +5465,35 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "HookedFishProfileSynchronizer",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/services/hooked_fish_profile_synchronizer.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "InputManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/core.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ItemProgressionDebugSnapshotProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/services/item_progression_debug_snapshot_provider.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "LocationDebugMapBuilder",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/render/world/location_debug_map_builder.js",
               "resolution": "confirmed"
             },
             {
@@ -5584,6 +5549,20 @@
               "target": "src/app/core/game_loop.js",
               "symbols": [
                 "GameLoop"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/app/debug.js",
+              "symbols": [
+                "DebugService"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/app/fixed_catch_fish_factory.js",
+              "symbols": [
+                "FixedCatchFishFactory"
               ],
               "resolution": "confirmed"
             },
@@ -5644,6 +5623,20 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/debug/services/hooked_fish_profile_synchronizer.js",
+              "symbols": [
+                "HookedFishProfileSynchronizer"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/services/item_progression_debug_snapshot_provider.js",
+              "symbols": [
+                "ItemProgressionDebugSnapshotProvider"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/debug/services/memory_leak_watchdog.js",
               "symbols": [
                 "MemoryLeakWatchdog"
@@ -5668,6 +5661,13 @@
               "target": "src/render/core/render_allocation_diagnostics.js",
               "symbols": [
                 "RenderAllocationDiagnostics"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/render/world/location_debug_map_builder.js",
+              "symbols": [
+                "LocationDebugMapBuilder"
               ],
               "resolution": "confirmed"
             },

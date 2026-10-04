@@ -99,7 +99,8 @@ function checkDevelopmentInputs() {
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: { enabled: true }, RenderAllocationDiagnostics: diagnostics,
-    CONFIG_RUNTIME_CONTEXT: configRuntime } });
+    CONFIG_RUNTIME_CONTEXT: configRuntime, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
+    FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer } });
   runtime.load("src/app/adapters.js", { expose: ["CanvasMetricsProvider"] });
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
@@ -124,6 +125,11 @@ function checkDevelopmentInputs() {
   const rendererOptions = { surface: {} }, synchronizer = {}, progression = {};
   assert.equal(ports.createWorldDebugRenderer(rendererOptions).options, rendererOptions);
   assert.equal(ports.createLocationDebugRenderFrameBuilder(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createLocationDebugMapBuilder(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createItemProgressionDebugSnapshotProvider(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createFixedCatchFishFactory(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createHookedFishProfileSynchronizer(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createDebugService(config).options, config);
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);
