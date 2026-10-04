@@ -338,6 +338,7 @@ class GameApplication {
   #debugEvents;
   #windowTarget;
   #documentTarget;
+  #logger;
   #clock = new GameClock();
   #castExposureResolver = new FishingCastExposureResolver();
   #listeners = new EventLifecycle();
@@ -430,8 +431,10 @@ class GameApplication {
     documentTarget,
     runtime = null,
     clock = null,
+    logger,
   }) {
     if (clock) this.#clock = clock;
+    this.#logger = logger;
     this.#canvasMetrics = canvasMetrics;
     this.#config = new ConfigProvider(config);
     // The live runtime config the tackle entities read (DEV adapter overrides stay live).
@@ -758,7 +761,7 @@ class GameApplication {
       }
       if (this.#isLocationsConfigUpdate(e)) {
         this.#reloadLocationConfig().catch((error) => {
-          console.error("[Location] Failed to reload location config", error);
+          this.#logger.error("[Location] Failed to reload location config", error);
         });
       }
       this.#renderCoordinator.invalidateStyles();
@@ -802,7 +805,7 @@ class GameApplication {
 
   #handleMapDatabaseUpdate() {
     this.#reloadLocationConfig().catch((error) => {
-      console.error("[Location] Failed to reload map config", error);
+      this.#logger.error("[Location] Failed to reload map config", error);
     });
   }
 

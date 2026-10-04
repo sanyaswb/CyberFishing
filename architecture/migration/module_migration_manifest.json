@@ -207,9 +207,7 @@
             "Object",
             "TypeError"
           ],
-          "browserApis": [
-            "console"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }

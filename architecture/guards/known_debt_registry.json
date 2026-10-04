@@ -450,29 +450,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-868a339953e9",
-      "rule": "browser-capability",
-      "source": "src/app/application.js",
-      "target": "environment:diagnostics",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "high-level-self-composition",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 4,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "868a339953e99de97f3fcbe2873ddd5b112204ab186d6c9cc3e2126fd9349961",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/application.js",
-        "target": "environment:diagnostics",
-        "identifier": "console"
-      }
-    },
-    {
       "id": "debt-browser-capability-89eb9992e2b1",
       "rule": "browser-capability",
       "source": "src/debug/debug.js",

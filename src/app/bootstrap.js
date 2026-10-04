@@ -59,6 +59,7 @@ class GameCompositionRoot {
       documentTarget: document,
       runtime,
       clock,
+      logger: new ConsoleLogger(),
     });
   }
 

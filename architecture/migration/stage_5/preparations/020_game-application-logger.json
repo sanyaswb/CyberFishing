@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "020",
+  "slug": "game-application-logger",
+  "baseCommit": "f5845a8a3a9508c74cf3392fd2201bfbdb89e65d",
+  "reason": "Isolate the two asynchronous location/map error console calls before frozen Bootstrap cluster 025. The only production GameApplication constructor is GameCompositionRoot.build; inject the existing Platform ConsoleLogger there and in the new real frame/lifecycle scenario. No new global, bridge, class, validation, fallback, forbidden dependency, gameplay state or hot-loop allocation. Exact messages, error arguments, method receiver and asynchronous catch timing preserved; ConsoleLogger reads the live console per call.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-browser-capability-868a339953e9"
+  ],
+  "files": [
+    {
+      "path": "src/app/application.js",
+      "before": "e5f22a52e753a8b795aaedcda815ca9553d6d6494e1ec7d5eb2e389157dd2edc",
+      "after": "0db35ea242057d2960e1bd59d082ffb004ff5d1d22bb86a00434d8256e50615f"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "75d97ef43662dd199d12710919692b58b83e40c8c8655e420d198154f9b2218c",
+      "after": "e960b56c9bb4eb97eb946cadfdfdc0e1154e497fb4ae7c55b96d584a6fbca56d"
+    },
+    {
+      "path": "utils/testing/runtime/game_application_test_composition.js",
+      "before": "a6a69e13a250090a7a96da59a3ed058e8f3f25a65b0a7d623eb6f5ae63e3b5b3",
+      "after": "de3db158f4bade5dddcfee92cde9f269c03fcfdd1836f6a3f418971ee9f6e190"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "de3d084b2803480e3c53a902dfca5411a61a6c9e78cb831c293a23a1b8567084",
+      "after": "3febb7f72efcfce7fb959e9eea4334c9d35a835ea5645a533b3bd4b80416f087"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "96ca9bbdaa90aa4c6747546753bac3d683e0fe8e8d08290ffe585f9ee855fb98",
+      "after": "d611b5a6c47c2271de6e114de3179d8c55c744884e6186e75f5f627cc85f5cee"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "rg src/utils finds exactly Root.build and the explicit GameApplication scenario. Both now pass ConsoleLogger; no unaccounted construction site. Logger is allocated once at cold composition, no update/draw changes.",
+    "The scenario exercises the original four real Bootstrap classes for 120 frames, stable scratch/context/view identities and order, input/chum blocking, live config, cast/retrieval equipment identity, delayed victory success/failure, both location/map error catches and exact disposal/listener counts."
+  ],
+  "verification": {
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 35,
+    "knownDebtsAfter": 34,
+    "focused": {
+      "utils/inventory-lifecycle-check.js": {
+        "status": "PASS"
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 175,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}
