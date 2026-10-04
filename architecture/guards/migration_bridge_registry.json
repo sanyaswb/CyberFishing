@@ -515,26 +515,6 @@
       ]
     },
     {
-      "id": "bridge-20e653528ef1",
-      "bridge": "src/config/runtime/immutable_config.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/config.js",
-      "target": "src/game/config/runtime/immutable_config.js",
-      "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "deepFreezeConfig",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "setRuntimeConfigPath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-219aa1d24209",
       "bridge": "src/entities/tackle.js",
       "source": "src/app/application.js",
@@ -875,6 +855,22 @@
       ]
     },
     {
+      "id": "bridge-37b3c77d4735",
+      "bridge": "src/config/runtime/resolved_config_provider.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/runtime/config_context_composition.js",
+      "target": "src/game/config/runtime/resolved_config_provider.js",
+      "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ResolvedConfigProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-394299e6e95b",
       "bridge": "src/ui/styles/fight_area_style_resolver.js",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
@@ -986,22 +982,6 @@
       "globalProviders": [
         {
           "symbol": "CastDistanceCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-41a8900e7a86",
-      "bridge": "src/config/runtime/config_override_store.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/config.js",
-      "target": "src/game/config/runtime/config_override_store.js",
-      "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ConfigOverrideStore",
           "mechanism": "global-this-property"
         }
       ]
@@ -2047,6 +2027,22 @@
       ]
     },
     {
+      "id": "bridge-731c6855160e",
+      "bridge": "src/config/runtime/config_override_store.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/runtime/config_context_composition.js",
+      "target": "src/game/config/runtime/config_override_store.js",
+      "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ConfigOverrideStore",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -2350,22 +2346,6 @@
       "globalProviders": [
         {
           "symbol": "ItemProgressionConfigValidator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8772d5d2473d",
-      "bridge": "src/infrastructure/config/deep_clone_config.js",
-      "owner": "stage-4.cluster-031-platform-config-clone",
-      "source": "src/config/config.js",
-      "target": "src/platform/browser/config/deep_clone_config.js",
-      "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "deepCloneConfig",
           "mechanism": "global-this-property"
         }
       ]
@@ -3211,6 +3191,22 @@
       ]
     },
     {
+      "id": "bridge-c044a5d16c7a",
+      "bridge": "src/infrastructure/config/deep_clone_config.js",
+      "owner": "stage-4.cluster-031-platform-config-clone",
+      "source": "src/config/runtime/config_context_composition.js",
+      "target": "src/platform/browser/config/deep_clone_config.js",
+      "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "deepCloneConfig",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-c0fbf6710409",
       "bridge": "src/entities/fish.js",
       "source": "src/debug/services/active_fish_dev_tools_schema.js",
@@ -3355,22 +3351,6 @@
       ]
     },
     {
-      "id": "bridge-cb9cf133dd58",
-      "bridge": "src/config/runtime/resolved_config_provider.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/config.js",
-      "target": "src/game/config/runtime/resolved_config_provider.js",
-      "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ResolvedConfigProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-cf0486903b92",
       "bridge": "src/application/inventory/inventory_v2_facade.js",
       "owner": "stage-4.cluster-020-inventory-storage-application",
@@ -3510,6 +3490,26 @@
       "globalProviders": [
         {
           "symbol": "LocationAssetLoader",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d79a5af918c5",
+      "bridge": "src/config/runtime/immutable_config.js",
+      "owner": "stage-4.cluster-007-config-runtime",
+      "source": "src/config/runtime/config_context_composition.js",
+      "target": "src/game/config/runtime/immutable_config.js",
+      "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "deepFreezeConfig",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "setRuntimeConfigPath",
           "mechanism": "global-this-property"
         }
       ]

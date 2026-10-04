@@ -13,6 +13,7 @@ function check(structured) {
     ["src/config/runtime/config_override_store.js",["ConfigOverrideStore"]],
     ["src/config/runtime/resolved_config_provider.js",["ResolvedConfigProvider"]],
     ["src/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
+    ["src/config/runtime/config_context_composition.js",["createRuntimeConfigContext"]],
     ["src/config/config.js",["createRuntimeConfigContext","CONFIG_RUNTIME_CONTEXT","BASE_CONFIG","CONFIG_OVERRIDE_STORE","RESOLVED_CONFIG_PROVIDER"]],
     ["src/app/bootstrap.js",["GameCompositionRoot"]],
     ["src/app/adapters.js",["ConfigProvider"]],

@@ -14,9 +14,10 @@
       "slot": 28,
       "members": [
         "src/config/runtime/config_data.js",
+        "src/config/runtime/config_context_composition.js",
         "src/config/config.js"
       ],
-      "transition": "architecture/migration/stage_4/preparations/001_config-composition.json"
+      "transition": "architecture/migration/stage_5/preparations/013_config-context-declaration.json"
     },
     {
       "slot": 30,

@@ -813,12 +813,6 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/config/config.js",
-      "symbol": "createRuntimeConfigContext",
-      "mechanism": "global-function",
-      "availability": "program-init"
-    },
-    {
       "currentPath": "src/config/databases/fish/fish_categories.js",
       "symbol": "FISH_CATEGORIES",
       "mechanism": "global-lexical",
@@ -1158,6 +1152,12 @@
       "currentPath": "src/config/rarity/rarity_visual_config.js",
       "symbol": "RARITY_VISUAL_CONFIG",
       "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/runtime/config_context_composition.js",
+      "symbol": "createRuntimeConfigContext",
+      "mechanism": "global-function",
       "availability": "program-init"
     },
     {

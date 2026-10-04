@@ -40,6 +40,7 @@ const LEGACY_FILES = [
   "src/infrastructure/config/deep_clone_config.js",
   "src/config/runtime/immutable_config.js",
   "src/config/runtime/config_data.js",
+  "src/config/runtime/config_context_composition.js",
   "src/config/config.js",
   "src/core/math/normalize_distance.js",
   "src/app/utils.js",

@@ -9662,11 +9662,6 @@
               "symbol": "RESOLVED_CONFIG_PROVIDER",
               "mechanism": "global-lexical",
               "availability": "program-init"
-            },
-            {
-              "symbol": "createRuntimeConfigContext",
-              "mechanism": "global-function",
-              "availability": "program-init"
             }
           ],
           "issues": []
@@ -9685,12 +9680,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "eager"
-            },
-            {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             },
             {
               "symbol": "DEGRADATION_COLOR_CONFIG",
@@ -9717,28 +9706,10 @@
               "executionPhase": "eager"
             },
             {
-              "symbol": "ResolvedConfigProvider",
+              "symbol": "createRuntimeConfigContext",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "deepCloneConfig",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "deepFreezeConfig",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "setRuntimeConfigPath",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -9746,10 +9717,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Object",
-            "String",
-            "undefined"
+            "Object"
           ],
           "browserApis": [
             "window"
@@ -9788,14 +9756,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ConfigOverrideStore",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_override_store.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "DEGRADATION_COLOR_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -9828,35 +9788,11 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ResolvedConfigProvider",
+              "symbol": "createRuntimeConfigContext",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/resolved_config_provider.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "deepCloneConfig",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/infrastructure/config/deep_clone_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "deepFreezeConfig",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/immutable_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "setRuntimeConfigPath",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/immutable_config.js",
+              "executionPhase": "eager",
+              "target": "src/config/runtime/config_context_composition.js",
               "resolution": "confirmed"
             }
           ],
@@ -9876,6 +9812,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/config/runtime/config_context_composition.js",
+              "symbols": [
+                "createRuntimeConfigContext"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/config/runtime/config_data.js",
               "symbols": [
                 "CONFIG"
@@ -9883,38 +9826,9 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/config/runtime/config_override_store.js",
-              "symbols": [
-                "ConfigOverrideStore"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/runtime/immutable_config.js",
-              "symbols": [
-                "deepFreezeConfig",
-                "setRuntimeConfigPath"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/runtime/resolved_config_provider.js",
-              "symbols": [
-                "ResolvedConfigProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/config/visual/degradation_color_config.js",
               "symbols": [
                 "DEGRADATION_COLOR_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/infrastructure/config/deep_clone_config.js",
-              "symbols": [
-                "deepCloneConfig"
               ],
               "resolution": "confirmed"
             }
@@ -11564,6 +11478,168 @@
         "blockers": {
           "status": "verified",
           "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/config/runtime/config_context_composition.js",
+      "currentArea": "config/runtime",
+      "observed": {
+        "legacyLoadOrder": 28,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "createRuntimeConfigContext",
+              "mechanism": "global-function",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "ConfigOverrideStore",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "ResolvedConfigProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "deepCloneConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "deepFreezeConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "setRuntimeConfigPath",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Object",
+            "String",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/config_context.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "ConfigOverrideStore",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/config_override_store.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "ResolvedConfigProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/resolved_config_provider.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "deepCloneConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/infrastructure/config/deep_clone_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "deepFreezeConfig",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/immutable_config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "setRuntimeConfigPath",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/immutable_config.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/config/runtime/config_override_store.js",
+              "symbols": [
+                "ConfigOverrideStore"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/immutable_config.js",
+              "symbols": [
+                "deepFreezeConfig",
+                "setRuntimeConfigPath"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/resolved_config_provider.js",
+              "symbols": [
+                "ResolvedConfigProvider"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/infrastructure/config/deep_clone_config.js",
+              "symbols": [
+                "deepCloneConfig"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
         }
       }
     },

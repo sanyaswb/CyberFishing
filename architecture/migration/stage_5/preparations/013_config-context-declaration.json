@@ -1,0 +1,296 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "013",
+  "slug": "config-context-declaration",
+  "baseCommit": "228f12f537a120802f384aa87f67b6b55edfd399",
+  "reason": "Split the existing createRuntimeConfigContext declaration byte-for-byte from its eager activation. Original config.js still attaches catalogs/physics, creates the sole context/base/store/provider and exposes its conditional alias at the original slot 28; no earlier initialization or new config owner. Native cutover 028 must migrate that explicit activation phase. Function public API and save/config semantics stay identical.",
+  "reclassified": [],
+  "movedProviders": [
+    {
+      "currentPath": "src/config/runtime/config_context_composition.js",
+      "symbol": "createRuntimeConfigContext",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    }
+  ],
+  "replacedBridges": [
+    {
+      "before": {
+        "id": "bridge-20e653528ef1",
+        "bridge": "src/config/runtime/immutable_config.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/config.js",
+        "target": "src/game/config/runtime/immutable_config.js",
+        "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "deepFreezeConfig",
+            "mechanism": "global-this-property"
+          },
+          {
+            "symbol": "setRuntimeConfigPath",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-d79a5af918c5",
+        "bridge": "src/config/runtime/immutable_config.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/runtime/config_context_composition.js",
+        "target": "src/game/config/runtime/immutable_config.js",
+        "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "deepFreezeConfig",
+            "mechanism": "global-this-property"
+          },
+          {
+            "symbol": "setRuntimeConfigPath",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-41a8900e7a86",
+        "bridge": "src/config/runtime/config_override_store.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/config.js",
+        "target": "src/game/config/runtime/config_override_store.js",
+        "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ConfigOverrideStore",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-731c6855160e",
+        "bridge": "src/config/runtime/config_override_store.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/runtime/config_context_composition.js",
+        "target": "src/game/config/runtime/config_override_store.js",
+        "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ConfigOverrideStore",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-8772d5d2473d",
+        "bridge": "src/infrastructure/config/deep_clone_config.js",
+        "owner": "stage-4.cluster-031-platform-config-clone",
+        "source": "src/config/config.js",
+        "target": "src/platform/browser/config/deep_clone_config.js",
+        "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "deepCloneConfig",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-c044a5d16c7a",
+        "bridge": "src/infrastructure/config/deep_clone_config.js",
+        "owner": "stage-4.cluster-031-platform-config-clone",
+        "source": "src/config/runtime/config_context_composition.js",
+        "target": "src/platform/browser/config/deep_clone_config.js",
+        "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "deepCloneConfig",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    },
+    {
+      "before": {
+        "id": "bridge-cb9cf133dd58",
+        "bridge": "src/config/runtime/resolved_config_provider.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/config.js",
+        "target": "src/game/config/runtime/resolved_config_provider.js",
+        "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ResolvedConfigProvider",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-37b3c77d4735",
+        "bridge": "src/config/runtime/resolved_config_provider.js",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "source": "src/config/runtime/config_context_composition.js",
+        "target": "src/game/config/runtime/resolved_config_provider.js",
+        "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-4",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "ResolvedConfigProvider",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    }
+  ],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/config/config.js",
+      "before": "a07a507933a4a78b7432a416eee6668acc0e847e336a5f299dfa4141bcdff81f",
+      "after": "4bdff83e863810ed0f8eb2fbf3985d9b0b2e985650ef6ca767f87aae83ba5e44"
+    },
+    {
+      "path": "src/config/runtime/config_context_composition.js",
+      "before": null,
+      "after": "c4e9e7cd46aa45ce4fc39dbfc04e8a98fdbc3453086fec7ce177b163652439ee"
+    },
+    {
+      "path": "index.html",
+      "before": "9195ae2c0c0750ad9ddadacb59e15742e591973b3b6083f827c35b0ffa4dc17b",
+      "after": "49c29c9238a277fdbfb327224ee7f59fd81fef2792e503b6adea2c2e2b4cb134"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "44b42b8632ff6efdeef6ed1b1213efeaa1ffdd45ea8ee258594f6e39ff87c636",
+      "after": "871b4d04bb0e481524b5480afd8a74afaff2bd56ba49cf77d009b3e98ebb5c73"
+    },
+    {
+      "path": "utils/game-cycle-check.js",
+      "before": "06b972cb6843294c441a6d9c68b0a4e63cf5dd9cad445c9a64b047a540208b7e",
+      "after": "58bc69e8d7f72522befeb525f0f5967d9991e9c1eb48e2944376f6069d438ba5"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "f91344f3c77789fc18f08947697feb72cea13b4fd2ef662354784ad1b10071bc",
+      "after": "a4370eb8fdb6e5c82983f82876ace370e870d9822e7896c79a9bac5840fdfb94"
+    },
+    {
+      "path": "architecture/migration/legacy_slot_splits.json",
+      "before": "09d1c604f51aff43a3b5a2badee3246eb7b69fa7e568722e2c7a1751eafa800c",
+      "after": "468e3b112ad58fe0287255e461a9902d3926000b0197ff0b8fd0af0e48e3fb63"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "before": "b021e2164043e4722e7d8449f420dbc616cdba1e0da3b1d71f25f34592c3490f",
+      "after": "2d3e295bc0867c297408231548590f26ead7a670172be63c0abf44d5f1123e0b"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "before": "bb2b9540b13453130f00bebd80e3c3c8940d3729f2502ff7b804fc3dc896f737",
+      "after": "40fecd53dd53934d3f46190512c4d572aa6a7ff7e41413cac0ee35888c1d1440"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "focused": {
+      "utils/config-runtime-check.js": {
+        "before": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697",
+        "after": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      },
+      "utils/game-cycle-check.js": {
+        "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+        "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f"
+      }
+    },
+    "byteConcatenationIdentical": true,
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 38,
+    "knownDebtsAfter": 38,
+    "suites": {
+      "quick": {
+        "totals": {
+          "selected": 24,
+          "executed": 24,
+          "cached": 0,
+          "passed": 24,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "228f12f537a120802f384aa87f67b6b55edfd399",
+          "files": 1687,
+          "before": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "after": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "unchanged": true
+        }
+      },
+      "architecture": {
+        "totals": {
+          "selected": 32,
+          "executed": 32,
+          "cached": 0,
+          "passed": 32,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "228f12f537a120802f384aa87f67b6b55edfd399",
+          "files": 1687,
+          "before": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "after": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "unchanged": true
+        }
+      },
+      "full": {
+        "totals": {
+          "selected": 64,
+          "executed": 64,
+          "cached": 0,
+          "passed": 64,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "228f12f537a120802f384aa87f67b6b55edfd399",
+          "files": 1687,
+          "before": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "after": "722eb1f6f56459ebffc00b7aa651b0c1625fc7b1c447f361040e284270dc3db0",
+          "unchanged": true
+        }
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "exportsChecked": 231,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "inventoryAndSavesIdentical": true,
+      "reloadSavesIdentical": true,
+      "errors": 0,
+      "warnings": 0
+    }
+  }
+}
