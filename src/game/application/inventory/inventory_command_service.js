@@ -38,6 +38,7 @@ export class InventoryV2CommandService {
   #baitExposureService;
   #sortConfig;
   #actionTypes;
+  #now;
   #fallbackSequence = 0;
   #uiState = {
     isOpen: false,
@@ -80,6 +81,7 @@ export class InventoryV2CommandService {
     instanceIdFactory = null,
     sortConfig,
     actionTypes,
+    now = null,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -106,6 +108,7 @@ export class InventoryV2CommandService {
     this.#instanceIdFactory = instanceIdFactory;
     this.#sortConfig = sortConfig;
     this.#actionTypes = actionTypes;
+    this.#now = now;
     this.#uiState.sortCriterionIds = [
       ...(sortConfig?.defaults?.criterionIds || []),
     ];
@@ -936,7 +939,8 @@ export class InventoryV2CommandService {
           name: loadout.name,
           rootInstanceIds: roots,
           createdAt: loadout.createdAt,
-          updatedAt: new Date().toISOString(),
+          updatedAt: (this.#now ? new Date(this.#now()) : new Date()).toISOString(),
+          now: this.#now,
         }),
       );
     }

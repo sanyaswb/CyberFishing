@@ -49,6 +49,7 @@ export class LoadoutApplicationService {
   #transitionPlanner;
   #mainSlotIds;
   #equipmentActivationValidator;
+  #now;
 
   constructor({
     port,
@@ -56,6 +57,7 @@ export class LoadoutApplicationService {
     transitionPlanner = null,
     mainSlotIds = null,
     equipmentActivationValidator = null,
+    now = null,
   } = {}) {
     if (!port || typeof port.runAtomic !== "function") {
       throw new TypeError("LoadoutApplicationService requires LoadoutApplicationPort");
@@ -70,6 +72,7 @@ export class LoadoutApplicationService {
     ];
     this.#transitionPlanner = transitionPlanner;
     this.#equipmentActivationValidator = equipmentActivationValidator;
+    this.#now = now;
   }
 
   createFromEquipment({ loadoutId, name, equipmentState, capacityContext = {} } = {}) {
@@ -99,7 +102,7 @@ export class LoadoutApplicationService {
       return Object.freeze({ success: false, warning: capacity.warning || null });
     }
 
-    const loadout = new EquipmentLoadout({ loadoutId, name, rootInstanceIds });
+    const loadout = new EquipmentLoadout({ loadoutId, name, rootInstanceIds, now: this.#now });
     try {
       this.#port.runAtomic(() => {
         for (const slotId of this.#mainSlotIds) {

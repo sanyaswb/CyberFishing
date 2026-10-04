@@ -67,6 +67,7 @@ class InventoryV2CompositionRoot {
     const equipmentState = new EquipmentState(snapshot.equipment);
     const loadouts = new EquipmentLoadoutRepository({
       loadouts: snapshot.loadouts,
+      now,
     });
     const reservationPolicy = new InventoryItemReservationPolicy({
       equipmentState,
@@ -234,6 +235,7 @@ class InventoryV2CompositionRoot {
       capacityPolicy,
       transitionPlanner: loadoutTransitionPlanner,
       equipmentActivationValidator: equipmentLineReadinessPolicy,
+      now,
     });
 
     const autoRefillPolicy = new AutoRefillPolicy({ settings });
@@ -329,6 +331,7 @@ class InventoryV2CompositionRoot {
       instanceIdFactory,
       sortConfig: INVENTORY_V2_SORT_CONFIG,
       actionTypes: InventoryV2ActionType,
+      now,
       baitExposureService: itemFreshnessResolver
         ? new ApplyBaitExposureService({
             repository,

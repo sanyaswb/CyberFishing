@@ -18,6 +18,7 @@ export class EquipmentLoadout {
     createdAt = null,
     updatedAt = null,
     mainSlotIds = null,
+    now = null,
   } = {}) {
     if (typeof loadoutId !== "string" || loadoutId.length === 0) {
       throw new TypeError("EquipmentLoadout requires a loadoutId");
@@ -39,7 +40,7 @@ export class EquipmentLoadout {
     this.type = "equipment_loadout";
     this.displayType = LOADOUT_DISPLAY_NAME;
     this.inventoryCellCost = 1;
-    this.createdAt = createdAt || new Date().toISOString();
+    this.createdAt = createdAt || (now ? new Date(now()) : new Date()).toISOString();
     this.updatedAt = updatedAt || this.createdAt;
   }
 

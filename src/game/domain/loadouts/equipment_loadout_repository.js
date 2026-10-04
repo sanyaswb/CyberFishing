@@ -2,8 +2,10 @@ import { EquipmentLoadout } from "./equipment_loadout.js";
 
 export class EquipmentLoadoutRepository {
   #loadouts = new Map();
+  #now;
 
-  constructor({ loadouts = [] } = {}) {
+  constructor({ loadouts = [], now = null } = {}) {
+    this.#now = now;
     for (const snapshot of loadouts || []) this.add(snapshot);
   }
 
@@ -25,7 +27,7 @@ export class EquipmentLoadoutRepository {
     const entity =
       loadout instanceof EquipmentLoadout
         ? loadout
-        : new EquipmentLoadout(loadout);
+        : new EquipmentLoadout({ ...loadout, now: this.#now });
     if (this.has(entity.loadoutId)) {
       throw new RangeError(`Duplicate equipment loadout: ${entity.loadoutId}`);
     }
@@ -60,7 +62,7 @@ export class EquipmentLoadoutRepository {
   restoreSnapshot(snapshot) {
     const replacement = new Map();
     for (const entry of snapshot || []) {
-      const loadout = new EquipmentLoadout(entry);
+      const loadout = new EquipmentLoadout({ ...entry, now: this.#now });
       if (replacement.has(loadout.loadoutId)) {
         throw new RangeError(`Duplicate equipment loadout: ${loadout.loadoutId}`);
       }

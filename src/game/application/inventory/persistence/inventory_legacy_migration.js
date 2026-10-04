@@ -89,7 +89,7 @@ export class InventoryV2LegacyMigration {
       reader: assemblyReader,
     });
     const allocator = new LegacyInventoryUnitAllocator({ repository });
-    const loadouts = new EquipmentLoadoutRepository();
+    const loadouts = new EquipmentLoadoutRepository({ now: this.#now });
     const context = {
       repository,
       assemblyStates,

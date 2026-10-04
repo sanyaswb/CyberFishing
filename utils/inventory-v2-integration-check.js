@@ -277,6 +277,7 @@ vm.runInContext(
     loadouts = [],
     settings = {},
     itemViewFactory = null,
+    now = null,
   }) => {
     let persisted = null;
     let sequence = 0;
@@ -307,6 +308,7 @@ vm.runInContext(
       },
       itemDefinitionResolver: (itemId) => definitions[itemId] || null,
       itemViewFactory,
+      now,
       instanceIdFactory: (source = {}) => {
         const prefix = typeof source === "string"
           ? source
@@ -2428,6 +2430,46 @@ vm.runInContext(
     corruptLoadoutWarning.includes("must have quantity 1"),
     "a damaged snapshot with a multi-unit loadout root is rejected explicitly",
   );
+
+  // Injected loadout clock is read only where the original fallback timestamp was created.
+  let clockReads = 0;
+  let loadoutTime = Date.UTC(2026, 9, 4, 12, 0, 0);
+  const loadoutNow = () => { clockReads++; return loadoutTime; };
+  const savedCreatedAt = "2021-01-02T03:04:05.000Z";
+  const clockRepository = new EquipmentLoadoutRepository({
+    now: loadoutNow,
+    loadouts: [{ loadoutId: "stored-clock", createdAt: savedCreatedAt }],
+  });
+  assertIntegration(clockReads === 0 && clockRepository.require("stored-clock").createdAt === savedCreatedAt,
+    "restore preserves a stored timestamp without reading the clock");
+  const freshClockLoadout = clockRepository.add({ loadoutId: "fresh-clock" });
+  assertIntegration(clockReads === 1 && freshClockLoadout.createdAt === new Date(loadoutTime).toISOString() &&
+    freshClockLoadout.updatedAt === freshClockLoadout.createdAt, "new loadout reads the injected clock once");
+  const clockSnapshot = clockRepository.createSnapshot();
+  clockRepository.restoreSnapshot(clockSnapshot);
+  assertIntegration(clockReads === 1 && JSON.stringify(clockRepository.createSnapshot()) === JSON.stringify(clockSnapshot),
+    "transaction restore preserves timestamp bytes without another clock read");
+  clockRepository.restoreSnapshot([{ loadoutId: "missing-clock", createdAt: "", updatedAt: "stored-update" }]);
+  assertIntegration(clockReads === 2 && clockRepository.require("missing-clock").updatedAt === "stored-update",
+    "missing/falsy createdAt uses the clock while truthy updatedAt stays unchanged");
+  const clockFlow = makeComposition({
+    items: [raw("clock-rod", "rodPole"), raw("clock-hook", "hook")],
+    equipment: { ...emptyEquipment(), rod: "clock-rod", tackle: "clock-hook" },
+    now: loadoutNow,
+  });
+  const clockSaved = dispatch(clockFlow, InventoryV2ActionType.LOADOUT_SAVE, { name: "Clock kit" });
+  const createdClockKit = clockFlow.loadouts.require(clockSaved.loadoutId);
+  assertIntegration(createdClockKit.createdAt === new Date(loadoutTime).toISOString(),
+    "composition passes the same clock through createFromEquipment");
+  loadoutTime += 1000;
+  const consumedClockHook = clockFlow.commands.consumeItem("clock-hook", 1);
+  const reconstructedClockKit = clockFlow.loadouts.require(clockSaved.loadoutId);
+  assertIntegration(consumedClockHook.success && reconstructedClockKit.createdAt === createdClockKit.createdAt &&
+    reconstructedClockKit.updatedAt === new Date(loadoutTime).toISOString(),
+    "command reconstruction preserves createdAt and updates the original ISO field using the injected clock");
+  const restoredClockFlow = makeComposition({ items: [], loadouts: [reconstructedClockKit.snapshot()], now: loadoutNow });
+  assertIntegration(restoredClockFlow.loadouts.require(clockSaved.loadoutId).createdAt === createdClockKit.createdAt,
+    "snapshot composition carries clock without rewriting stored dates");
 
   console.log("Inventory-v2 integration checks passed.");
   `,
