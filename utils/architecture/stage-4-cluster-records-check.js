@@ -207,6 +207,14 @@ ledger.records.forEach((record, index) => {
   }
 });
 
+for (const entry of manifest.values()) {
+  if (["bootstrap-production", "entrypoint-game"].includes(entry.architecture.targetBoundary) &&
+      entry.architecture.roles.includes("compatibility-bridge")) {
+    assert(ledger.applied.some(record => record.modules.some(module => module.currentPath === entry.currentPath)),
+      `${entry.currentPath}: Bootstrap transport requires an applied exact cluster record`);
+  }
+}
+
 // Negative fixtures: the projector accepts only export tokens plus the import header.
 const projector = new StageFourEsmTargetProjector();
 const fixture = (source, extra = {}) => projector.project({ source, currentPath: "src/a.js",

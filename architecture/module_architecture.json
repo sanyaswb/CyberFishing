@@ -936,12 +936,14 @@
           "dev-tool"
         ],
         "bootstrap-production": [
+          "compatibility-bridge",
           "bootstrap"
         ],
         "bootstrap-development": [
           "bootstrap"
         ],
         "entrypoint-game": [
+          "compatibility-bridge",
           "entrypoint"
         ],
         "entrypoint-dev": [
