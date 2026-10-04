@@ -1,1 +1,1 @@
-globalThis.UnlimitedInventoryCapacityPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/inventory/inventory_capacity_policy.js"]["UnlimitedInventoryCapacityPolicy"];
+// Retired Stage 3 activation activation-fae9ef46057a: UnlimitedInventoryCapacityPolicy is served only through ESM imports of src/game/domain/inventory/inventory_capacity_policy.js.

@@ -1,1 +1,1 @@
-globalThis.ManualRodChangePlanner = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/equipment_transition_planner.js"]["ManualRodChangePlanner"];
+// Retired Stage 3 activation activation-dbb6e36a8919: ManualRodChangePlanner is served only through ESM imports of src/game/domain/equipment/equipment_transition_planner.js.

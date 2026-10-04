@@ -51,13 +51,12 @@
 <script src="dist/stage-3-compat-runtime/activations/028_slot_config.js" data-legacy-slot="28"></script>
     <script src="dist/stage-3-compat-runtime/activations/028_createruntimeconfigcontext.js" data-legacy-slot="28"></script>
     <script src="src/config/config.js" data-legacy-slot="28"></script>
-    <script src="dist/stage-3-compat-runtime/activations/029_item_assembly_profile_config.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/030_equipment_slot_config.js" data-legacy-slot="30"></script>
-<script src="dist/stage-3-compat-runtime/activations/030_equipment_all_slot_ids.js" data-legacy-slot="30"></script>
-    <script src="dist/stage-3-compat-runtime/activations/030_equipment_slot_presentation.js" data-legacy-slot="30"></script>
+    <script src="src/config/inventory/item_assembly_profile_config.js"></script>
+<script src="src/config/inventory/equipment_slot_config.js" data-legacy-slot="30"></script>
+    <script src="src/config/inventory/equipment_slot_presentation_config.js" data-legacy-slot="30"></script>
     <script src="dist/stage-3-compat-runtime/activations/030_inventory_rule_messages.js" data-legacy-slot="30"></script>
     <script src="src/config/inventory/inventory_v2_item_parameter_config.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/032_inventory_v2_sort_config.js"></script>
+    <script src="src/config/inventory/inventory_v2_sort_config.js"></script>
     <script src="src/config/validation/item_rarity_config_validator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/034_rarityconfigvalidator.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/035_itemprogressionconfigvalidator.js"></script>
@@ -175,80 +174,72 @@
     <script src="src/core/fishing/simple_fight_force_calculator.js"></script>
     <script src="src/core/fishing/landing_lift_tension_calculator.js"></script>
     <script src="src/core/fishing/landing_lift_readiness_policy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/142_lineallocationpolicy.js"></script>
+    <script src="src/core/line/line_allocation_policy.js"></script>
     <script src="src/core/line/line_inventory_controller.js"></script>
 
     <!-- Inventory v2 domain -->
 <script src="dist/stage-3-compat-runtime/activations/144_inventoryitemlocation.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/145_inventoryitemreservationpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/146_flatinventoryitemrepository.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/147_itemassemblystackingpolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/148_unlimitedassemblycapacitypolicy.js"></script>
+    <script src="src/core/inventory/inventory_item_reservation_policy.js"></script>
+    <script src="src/core/inventory/flat_inventory_item_repository.js"></script>
+    <script src="src/core/inventory/item_assembly_stacking_policy.js"></script>
+    <script src="src/core/inventory/unlimited_assembly_capacity_policy.js"></script>
     <script src="src/core/assemblies/assembly_state.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/150_assemblystaterepository.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/151_assemblyprofileregistry.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/152_itemassemblyreader.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/153_assemblyattachmenttargetresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/154_assemblycompletionpolicy.js"></script>
+    <script src="src/core/assemblies/assembly_state_repository.js"></script>
+    <script src="src/core/assemblies/assembly_profile_registry.js"></script>
+    <script src="src/core/assemblies/item_assembly_reader.js"></script>
+    <script src="src/core/assemblies/assembly_attachment_target_resolver.js"></script>
+    <script src="src/core/assemblies/assembly_completion_policy.js"></script>
     <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/156_itemassemblyservice.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/157_rodcapabilityresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/158_equipmentslotvisibilitypolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/159_terminallineslotresolver.js" data-legacy-slot="159"></script>
-    <script src="dist/stage-3-compat-runtime/activations/159_terminallineslotlabelresolver.js" data-legacy-slot="159"></script>
-    <script src="dist/stage-3-compat-runtime/activations/160_equipmentstate.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/161_equipmentslotavailabilitypolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/162_unlimitedinventorycapacitypolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/163_manualrodchangeplanner.js"></script>
+    <script src="src/core/assemblies/item_assembly_service.js"></script>
+    <script src="src/core/equipment/rod_capability_resolver.js"></script>
+    <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
+    <script src="src/core/equipment/terminal_line_slot_resolver.js" data-legacy-slot="159"></script>
+    <script src="src/ui/inventory/terminal_line_slot_label_resolver.js" data-legacy-slot="159"></script>
+    <script src="src/core/equipment/equipment_state.js"></script>
+    <script src="src/core/equipment/equipment_slot_availability_policy.js"></script>
+    <script src="src/core/equipment/inventory_capacity_policy.js"></script>
+    <script src="src/core/equipment/equipment_transition_planner.js"></script>
     <script src="src/core/equipment/exact_item_signature_policy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/165_autorefillsettings.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/165_autorefillpolicy.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/165_autorefillmemory.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/166_fishingreadinesspolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/167_equipmentcompatibilitypolicy.js"></script>
+    <script src="src/core/equipment/auto_refill_policy.js"></script>
+    <script src="src/core/equipment/fishing_readiness_policy.js"></script>
+    <script src="src/core/equipment/equipment_compatibility_policy.js"></script>
     <script src="src/core/loadouts/equipment_loadout.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/169_equipmentloadoutrepository.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/170_loadoutequipmenttransitionplanner.js"></script>
+    <script src="src/core/loadouts/equipment_loadout_repository.js"></script>
+    <script src="src/core/loadouts/loadout_equipment_transition_planner.js"></script>
 
     <!-- Inventory v2 persistence and application services -->
     <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/172_inventoryitemsnapshotmapper.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/173_legacyitemstatemigration.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/174_inventoryv2snapshotmigration.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/175_inventoryv2statestore.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/175_inventory_v2_schema_version.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/176_inventoryv2legacymigration.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/177_inventoryv2snapshotfactory.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/178_inventoryv2transactioncoordinator.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/179_inventoryv2settingstransactionparticipant.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/179_inventoryv2refillmemorytransactionparticipant.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/180_equipmenttransitionexecutor.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/181_inventoryv2equipmenttransitionport.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/182_loadoutapplicationservice.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/183_inventoryv2loadoutport.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/184_equipmentreadmodelfactory.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/185_equipmentautorefilltargetprovider.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/186_autorefillcoordinator.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/186_exactinventoryautorefillport.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/187_inventoryv2refillinventoryport.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/187_inventoryv2refilltargetwriter.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/188_refillcompatiblesignaturepolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/189_freshestrefillcandidatepolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/190_applybaitexposureservice.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/191_inventoryv2itemhydrator.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/192_inventoryv2itemviewfactory.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/193_inventoryv2subfilterresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/194_inventoryv2itemorderresolver.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/195_inventoryv2contextitemfilter.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/195_equipmentinventorycontextfilterstrategy.js"></script>
-<script src="dist/stage-3-compat-runtime/activations/195_assemblyinventorycontextfilterstrategy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/196_inventoryv2viewmodelfactory.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/197_inventoryv2lineallocationservice.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/198_inventoryv2equipmentlinereadinesspolicy.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/199_inventoryv2commandservice.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/200_inventoryv2gameplaybridge.js"></script>
-    <script src="dist/stage-3-compat-runtime/activations/201_inventoryv2facade.js"></script>
-    <script src="src/application/inventory/inventory_v2_composition_root.js?v=0.24.30"></script>
+    <script src="src/infrastructure/storage/inventory_item_snapshot_mapper.js"></script>
+    <script src="src/infrastructure/storage/legacy_item_state_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_state_store.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_legacy_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_factory.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_transaction_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_transaction_participants.js"></script>
+    <script src="src/application/inventory/equipment_transition_executor.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_transition_port.js"></script>
+    <script src="src/application/inventory/loadout_application_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_loadout_port.js"></script>
+    <script src="src/application/inventory/equipment_read_model_factory.js"></script>
+    <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
+    <script src="src/application/inventory/auto_refill_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_refill_ports.js"></script>
+    <script src="src/application/inventory/refill_compatible_signature_policy.js"></script>
+    <script src="src/application/inventory/freshest_refill_candidate_policy.js"></script>
+    <script src="src/application/inventory/apply_bait_exposure_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_hydrator.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_view_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_subfilter_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_order_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_context_item_filter.js"></script>
+    <script src="src/application/inventory/inventory_v2_view_model_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_line_allocation_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_line_readiness_policy.js"></script>
+    <script src="src/application/inventory/inventory_v2_command_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_gameplay_bridge.js"></script>
+    <script src="src/application/inventory/inventory_v2_facade.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/202_inventoryv2compositionroot.js"></script>
     <script src="src/services/weakest_tackle_limit_resolver.js"></script>
     <script src="dist/stage-3-compat-runtime/activations/204_locationmap.js" data-legacy-slot="204"></script>
     <script src="dist/stage-3-compat-runtime/activations/204_viewportprojector.js" data-legacy-slot="204"></script>

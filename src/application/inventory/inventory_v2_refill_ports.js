@@ -1,2 +1,2 @@
-globalThis.InventoryV2RefillInventoryPort = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/inventory_refill_adapters.js"]["InventoryV2RefillInventoryPort"];
-globalThis.InventoryV2RefillTargetWriter = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/inventory_refill_adapters.js"]["InventoryV2RefillTargetWriter"];
+// Retired Stage 4 activation activation-349ad41b8132: InventoryV2RefillInventoryPort is served only through ESM imports of src/game/application/inventory/inventory_refill_adapters.js.
+// Retired Stage 4 activation activation-8f29d2fdaec7: InventoryV2RefillTargetWriter is served only through ESM imports of src/game/application/inventory/inventory_refill_adapters.js.

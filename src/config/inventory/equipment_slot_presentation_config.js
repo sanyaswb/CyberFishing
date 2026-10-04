@@ -1,1 +1,1 @@
-globalThis.EQUIPMENT_SLOT_PRESENTATION = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/equipment_slot_presentation.js"]["EQUIPMENT_SLOT_PRESENTATION"];
+// Retired Stage 5 activation activation-cd9ce971f8fe: EQUIPMENT_SLOT_PRESENTATION is served only through ESM imports of src/game/presentation/inventory/equipment_slot_presentation.js.

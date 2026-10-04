@@ -1,1 +1,1 @@
-globalThis.ItemAssemblyService = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/assemblies/item_assembly_service.js"]["ItemAssemblyService"];
+// Retired Stage 3 activation activation-46387e5f1ebf: ItemAssemblyService is served only through ESM imports of src/game/domain/assemblies/item_assembly_service.js.

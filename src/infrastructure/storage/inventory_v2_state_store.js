@@ -1,2 +1,2 @@
-globalThis.InventoryV2StateStore = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/persistence/inventory_state_store.js"]["InventoryV2StateStore"];
-globalThis.INVENTORY_V2_SCHEMA_VERSION = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/persistence/inventory_state_store.js"]["INVENTORY_V2_SCHEMA_VERSION"];
+// Retired Stage 4 activation activation-3e961a336956: InventoryV2StateStore is served only through ESM imports of src/game/application/inventory/persistence/inventory_state_store.js.
+// Retired Stage 4 activation activation-ebd0cccdc5aa: INVENTORY_V2_SCHEMA_VERSION is served only through ESM imports of src/game/application/inventory/persistence/inventory_state_store.js.

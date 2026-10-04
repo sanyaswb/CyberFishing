@@ -1,1 +1,1 @@
-globalThis.TerminalLineSlotLabelResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/terminal_line_slot_label_resolver.js"]["TerminalLineSlotLabelResolver"];
+// Retired Stage 5 activation activation-892c4e13232f: TerminalLineSlotLabelResolver is served only through ESM imports of src/game/presentation/inventory/terminal_line_slot_label_resolver.js.

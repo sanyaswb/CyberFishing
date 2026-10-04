@@ -1,1 +1,1 @@
-globalThis.RodCapabilityResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/equipment/rod_capability_resolver.js"]["RodCapabilityResolver"];
+// Retired Stage 3 activation activation-59bd96059da6: RodCapabilityResolver is served only through ESM imports of src/game/domain/equipment/rod_capability_resolver.js.

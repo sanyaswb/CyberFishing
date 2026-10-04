@@ -1,1 +1,1 @@
-globalThis.ApplyBaitExposureService = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/apply_bait_exposure_service.js"]["ApplyBaitExposureService"];
+// Retired Stage 4 activation activation-b758bb45c273: ApplyBaitExposureService is served only through ESM imports of src/game/application/inventory/apply_bait_exposure_service.js.

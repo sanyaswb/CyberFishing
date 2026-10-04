@@ -1,1 +1,1 @@
-globalThis.InventoryV2SubfilterResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_subfilter_resolver.js"]["InventoryV2SubfilterResolver"];
+// Retired Stage 5 activation activation-b90a23caedc1: InventoryV2SubfilterResolver is served only through ESM imports of src/game/presentation/inventory/inventory_subfilter_resolver.js.

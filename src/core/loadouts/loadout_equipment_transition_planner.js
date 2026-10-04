@@ -1,1 +1,1 @@
-globalThis.LoadoutEquipmentTransitionPlanner = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/loadouts/loadout_equipment_transition_planner.js"]["LoadoutEquipmentTransitionPlanner"];
+// Retired Stage 3 activation activation-e2c3aa9d15c2: LoadoutEquipmentTransitionPlanner is served only through ESM imports of src/game/domain/loadouts/loadout_equipment_transition_planner.js.

@@ -134,25 +134,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-527e23ea8a0a",
-      "rule": "boundary-dependency",
-      "source": "src/application/inventory/inventory_v2_composition_root.js",
-      "target": "src/config/inventory/item_assembly_profile_config.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "527e23ea8a0a4732e9f5d0c349b1a1478ae4cf0a58093195c2767169d04f8b1f",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/application/inventory/inventory_v2_composition_root.js",
-        "target": "src/config/inventory/item_assembly_profile_config.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-8afc4b9d51af",
       "rule": "boundary-dependency",
       "source": "src/app/debug.js",
@@ -227,25 +208,6 @@
         "rule": "boundary-dependency",
         "source": "src/debug/dev_tools.js",
         "target": "src/debug/debug.js"
-      }
-    },
-    {
-      "id": "debt-boundary-dependency-906fb73e0e1e",
-      "rule": "boundary-dependency",
-      "source": "src/application/inventory/inventory_v2_composition_root.js",
-      "target": "src/config/databases/item_db.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "legacy-global-contract"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "906fb73e0e1e99c36db8964b7641d784af3abd509527d158564b6101afb8bdd2",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/application/inventory/inventory_v2_composition_root.js",
-        "target": "src/config/databases/item_db.js"
       }
     },
     {

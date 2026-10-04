@@ -1,1 +1,1 @@
-globalThis.InventoryV2GameplayBridge = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/inventory_gameplay_facade.js"]["InventoryV2GameplayBridge"];
+// Retired Stage 4 activation activation-a68083ff7755: InventoryV2GameplayBridge is served only through ESM imports of src/game/application/inventory/inventory_gameplay_facade.js.

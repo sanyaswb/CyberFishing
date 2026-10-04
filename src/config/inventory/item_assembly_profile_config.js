@@ -1,1 +1,1 @@
-globalThis.ITEM_ASSEMBLY_PROFILE_CONFIG = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/config/raw/inventory/item_assembly_profiles.js"]["ITEM_ASSEMBLY_PROFILE_CONFIG"];
+// Retired Stage 4 activation activation-7699b9872a51: ITEM_ASSEMBLY_PROFILE_CONFIG is served only through ESM imports of src/game/config/raw/inventory/item_assembly_profiles.js.

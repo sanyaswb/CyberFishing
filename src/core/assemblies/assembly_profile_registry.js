@@ -1,1 +1,1 @@
-globalThis.AssemblyProfileRegistry = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/assemblies/assembly_profile_registry.js"]["AssemblyProfileRegistry"];
+// Retired Stage 3 activation activation-e85348eb50a6: AssemblyProfileRegistry is served only through ESM imports of src/game/domain/assemblies/assembly_profile_registry.js.
