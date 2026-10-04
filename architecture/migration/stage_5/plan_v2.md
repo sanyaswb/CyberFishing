@@ -33,8 +33,11 @@ historical initial plan; its starting counts and pending preparations are supers
    `src/entrypoints/game.entry.js` importing only production Bootstrap. Audit current
    config/interface/version/badge activation phases and surviving classic DEV consumers
    before choosing the smallest compliant cutover. The concrete bounded DEV-only
-   loader design is in `native_startup_cutover_proposal.md`; owner topology choice
-   is pending. Exercise one native module graph:
+   loader design is in `native_startup_cutover_proposal.md`; compare it with
+   `native_startup_solution_review.md`. The review recommends a complete default
+   native production page and retained separate legacy DEV until Stage 6, requiring
+   an explicit v8 scope decision. Current v7 topology choice is pending; no condition
+   has been changed or approved. Exercise one native module graph:
    no duplicate writable CONFIG/catalog/context or class identities from native + IIFE.
    Cluster 028's original `src/app/script.js` is explicitly deferred to Stage 6; this
    does not defer Stage 5's native startup obligation. Record any new reviewed design
