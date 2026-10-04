@@ -12,6 +12,8 @@ const context = vm.createContext({
     set() {},
   },
   document: {
+    createElement() { return { style: {}, addEventListener() {}, remove() {} }; },
+    body: { appendChild() {} },
     addEventListener() {},
     removeEventListener() {},
   },
@@ -22,44 +24,6 @@ const context = vm.createContext({
     }
   },
 });
-
-vm.runInContext(
-  `
-  class CastPowerAim {
-    constructor() {
-      this.released = false;
-    }
-
-    reset() {
-      this.released = false;
-    }
-
-    update() {
-      if (this.released) return null;
-      this.released = true;
-      return { power: 1, screenX: 10, screenY: 20 };
-    }
-
-    resolveTarget() {
-      return { success: true, travelDelayMs: 25, x: 30, y: 40 };
-    }
-
-    getVisualState() {
-      return null;
-    }
-
-    getAccuracyPreview() {
-      return null;
-    }
-  }
-
-  class ChumUI {
-    setState() {}
-    dispose() {}
-  }
-  `,
-  context,
-);
 
 // Migrated classic paths are activation shims (or retired ones): the loader runs the runtime first and renders
 // retired activations test-only, so the check keeps naming the same classes.
@@ -193,17 +157,22 @@ vm.runInContext(
         },
         getBoats: () => [],
       },
-      projector: {},
+      projector: {
+        screenToVirtual(x, y, out = {}) { out.x = x; out.y = y; return out; },
+        virtualToScreen(x, y, out = {}) { out.x = x; out.y = y; return out; },
+        getScale: () => 1,
+        getPerspective: () => ({ scale: 1, squashY: 1 }),
+      },
       inventoryUI: { showWarning: (message) => warnings.push(message) },
       fishing,
       location: { chumCastDistance: 100 },
       clock,
-      config: { casting: { enabled: true, cancelPowerThreshold: 0 } },
-      rng: {},
+      config: { casting: { enabled: true, cancelPowerThreshold: 0, handChumAccuracyPx: 0, travelDelayMinMs: 25, travelDelayMaxMs: 25 } },
+      rng: { next: () => 0.5 },
       getViewportSize: () => ({ width: 100, height: 100 }),
       panViewport() {},
       depthUI: { hide() {} },
-      getDynamicBounds: () => ({ bottom: 100 }),
+      getDynamicBounds: () => ({ top: 0, bottom: 100 }),
       getRodVirtualPos: () => ({ x: 0, y: 0 }),
       checkWater: () => true,
       markInvalidCast() {},
@@ -213,7 +182,8 @@ vm.runInContext(
 
     controller.toggleAim();
     clock.now = 1_300;
-    controller.handleAiming({ clickPos: null }, { bottom: 100 }, 1);
+    controller.handleAiming({ pointerDown: true, pointerStart: { x: 50, y: 0 }, pointerCurrent: { x: 50, y: 100 }, clickPos: null }, { top: 0, bottom: 100 }, 1);
+    controller.handleAiming({ pointerReleased: true, pointerRelease: { x: 50, y: 100 }, clickPos: null }, { top: 0, bottom: 100 }, 1);
 
     // Equipment changes while the throw animation is in flight.
     equippedHandChum = {
@@ -222,7 +192,7 @@ vm.runInContext(
     };
     controller.refreshActiveHandChum();
     clock.now = 1_400;
-    controller.handleAiming({ clickPos: null }, { bottom: 100 }, 30);
+    controller.handleAiming({ clickPos: null }, { top: 0, bottom: 100 }, 30);
 
     return { consumedIds, refillEvents, deployedIds, warnings };
   };
