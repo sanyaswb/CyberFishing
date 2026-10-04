@@ -1,0 +1,682 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "026",
+  "slug": "production-composition-root",
+  "milestone": "M3",
+  "boundary": "bootstrap-production",
+  "tier": "A",
+  "tierEvidence": "One production composition root assembles existing concrete production collaborators. All actual DEV constructors, diagnostics and browser targets are injected after preparations 021–024; configuration is the same explicit live object. ITEM_DB uses the strictly verified same-object GameConfig facade, without raw-config imports or cloning. Four native inventory imports remain exact serial cold awaits through injected loaders. Preserve complete method bodies, option objects, construction order, callback receivers, live adapter identity and allocation sites. Root owns only composition and the readonly live RuntimeConfig facade, not gameplay state. Existing 025 GameApplication 120-frame evidence and full save scenarios remain unchanged.",
+  "modules": [
+    {
+      "currentPath": "src/app/bootstrap.js",
+      "targetPath": "src/bootstrap/production/game_composition_root.js",
+      "exports": [
+        "GameCompositionRoot"
+      ],
+      "imports": [
+        {
+          "symbol": "AlwaysKnownBaitEffectivenessPolicy",
+          "from": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js"
+        },
+        {
+          "symbol": "AssetPreloadCoordinator",
+          "from": "src/platform/browser/assets/asset_preload_coordinator.js"
+        },
+        {
+          "symbol": "AuthoredItemRarityStrategy",
+          "from": "src/game/domain/items/rarity/authored_item_rarity_strategy.js"
+        },
+        {
+          "symbol": "BaitEffectivenessCatalogResolver",
+          "from": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js"
+        },
+        {
+          "symbol": "BaitEffectivenessDescriptor",
+          "from": "src/game/presentation/inventory/bait_effectiveness_descriptor.js"
+        },
+        {
+          "symbol": "BaitEffectivenessGradePolicy",
+          "from": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js"
+        },
+        {
+          "symbol": "BaitEffectivenessResolver",
+          "from": "src/game/domain/items/bait/bait_effectiveness_resolver.js"
+        },
+        {
+          "symbol": "BaitFreshnessModifier",
+          "from": "src/game/domain/items/freshness/bait_freshness_modifier.js"
+        },
+        {
+          "symbol": "BaitRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "BiteEnvironmentService",
+          "from": "src/game/application/fishing/bite_environment_service.js"
+        },
+        {
+          "symbol": "BiteRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "BiteSystem",
+          "from": "src/game/application/fishing/bite_service.js"
+        },
+        {
+          "symbol": "BitingState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "BoatChumRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/boat_chum_render_frame_builder.js"
+        },
+        {
+          "symbol": "BoatChumRenderer",
+          "from": "src/game/presentation/world/boat_chum_renderer.js"
+        },
+        {
+          "symbol": "BoatRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "BrowserAudioAdapter",
+          "from": "src/platform/browser/runtime/legacy_runtime_adapters.js"
+        },
+        {
+          "symbol": "BrowserDebugAdapter",
+          "from": "src/platform/browser/runtime/legacy_runtime_adapters.js"
+        },
+        {
+          "symbol": "CacheManager",
+          "from": "src/platform/browser/storage/cache_manager.js"
+        },
+        {
+          "symbol": "Canvas2DSurface",
+          "from": "src/platform/browser/canvas/canvas_2d_surface.js"
+        },
+        {
+          "symbol": "CanvasMetricsProvider",
+          "from": "src/platform/browser/runtime/legacy_runtime_adapters.js"
+        },
+        {
+          "symbol": "CanvasPrimitives",
+          "from": "src/platform/browser/canvas/canvas_primitives.js"
+        },
+        {
+          "symbol": "CastDistanceCalculator",
+          "from": "src/game/domain/casting/cast_distance_calculator.js"
+        },
+        {
+          "symbol": "CastManager",
+          "from": "src/game/application/fishing/bite_service.js"
+        },
+        {
+          "symbol": "CastRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "CastSceneRenderer",
+          "from": "src/game/presentation/casting/cast_scene_renderer.js"
+        },
+        {
+          "symbol": "CastService",
+          "from": "src/game/application/fishing/fishing_runtime_services.js"
+        },
+        {
+          "symbol": "CastingRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/casting_render_frame_builder.js"
+        },
+        {
+          "symbol": "CastingRenderPass",
+          "from": "src/game/presentation/rendering/casting_render_pass.js"
+        },
+        {
+          "symbol": "CatchResolutionService",
+          "from": "src/game/application/fishing/fishing_runtime_services.js"
+        },
+        {
+          "symbol": "ChumController",
+          "from": "src/bootstrap/production/chum_feature_bootstrap.js"
+        },
+        {
+          "symbol": "ChumManager",
+          "from": "src/game/application/chum/chum_service.js"
+        },
+        {
+          "symbol": "ChumRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "CompositeMetricStrategy",
+          "from": "src/game/domain/items/progression/composite_metric_strategy.js"
+        },
+        {
+          "symbol": "ConsoleLogger",
+          "from": "src/platform/browser/diagnostics/console_logger.js"
+        },
+        {
+          "symbol": "DegradationColorConfigValidator",
+          "from": "src/game/presentation/visual/degradation_color_config_validator.js"
+        },
+        {
+          "symbol": "DegradationColorResolver",
+          "from": "src/game/presentation/styles/degradation_color_resolver.js"
+        },
+        {
+          "symbol": "DependencyContractValidator",
+          "from": "src/engine/di/dependency_contract_validator.js"
+        },
+        {
+          "symbol": "DepthSelectorUI",
+          "from": "src/platform/browser/ui/depth_selector.js"
+        },
+        {
+          "symbol": "DerivedStatMetricStrategy",
+          "from": "src/game/domain/items/progression/derived_stat_metric_strategy.js"
+        },
+        {
+          "symbol": "EffectiveItemStatsResolver",
+          "from": "src/game/domain/items/effective_item_stats_resolver.js"
+        },
+        {
+          "symbol": "EnvironmentSystem",
+          "from": "src/game/application/world/game_world_service.js"
+        },
+        {
+          "symbol": "EquipmentRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "EquipmentService",
+          "from": "src/game/application/inventory/equipment_service.js"
+        },
+        {
+          "symbol": "FailedState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "FightAreaRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/fight_area_render_frame_builder.js"
+        },
+        {
+          "symbol": "FightAreaRenderer",
+          "from": "src/game/presentation/fishing/fight_area_renderer.js"
+        },
+        {
+          "symbol": "FightAreaStyleResolver",
+          "from": "src/game/presentation/styles/fight_area_style_resolver.js"
+        },
+        {
+          "symbol": "FightHudFrameBuilder",
+          "from": "src/game/presentation/hud/fight_hud_frame_builder.js"
+        },
+        {
+          "symbol": "FightHudRenderer",
+          "from": "src/game/presentation/hud/fight_hud_renderer.js"
+        },
+        {
+          "symbol": "FightInputActionComposer",
+          "from": "src/game/application/input/fight_input_action_composer.js"
+        },
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "from": "src/game/config/physics/fight_physics_config_adapter.js"
+        },
+        {
+          "symbol": "FightService",
+          "from": "src/game/application/fishing/fishing_runtime_services.js"
+        },
+        {
+          "symbol": "FightSessionFactory",
+          "from": "src/game/application/fishing/fishing_runtime_services.js"
+        },
+        {
+          "symbol": "FightStatusBarsRenderer",
+          "from": "src/game/presentation/hud/fight_status_bars_renderer.js"
+        },
+        {
+          "symbol": "FishAnomalyVariantResolver",
+          "from": "src/game/domain/fish/fish_anomaly_variant_resolver.js"
+        },
+        {
+          "symbol": "FishRarityResolver",
+          "from": "src/game/domain/fish/fish_rarity_resolver.js"
+        },
+        {
+          "symbol": "FishVisualVariantResolver",
+          "from": "src/game/presentation/fish/fish_visual_variant_resolver.js"
+        },
+        {
+          "symbol": "FishingController",
+          "from": "src/game/application/fishing/fishing_runtime_services.js"
+        },
+        {
+          "symbol": "FishingEquipmentRenderModelBuilder",
+          "from": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js"
+        },
+        {
+          "symbol": "FishingRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/fishing_render_frame_builder.js"
+        },
+        {
+          "symbol": "FishingRenderPass",
+          "from": "src/game/presentation/rendering/fishing_render_pass.js"
+        },
+        {
+          "symbol": "FishingSceneRenderer",
+          "from": "src/game/presentation/fishing/fishing_scene_renderer.js"
+        },
+        {
+          "symbol": "FloatRenderer",
+          "from": "src/game/presentation/fishing/float_renderer.js"
+        },
+        {
+          "symbol": "GameApplication",
+          "from": "src/bootstrap/production/game_application.js"
+        },
+        {
+          "symbol": "GameClock",
+          "from": "src/platform/browser/time/game_clock.js"
+        },
+        {
+          "symbol": "GameLoop",
+          "from": "src/platform/browser/runtime/game_loop.js"
+        },
+        {
+          "symbol": "GameOverRenderer",
+          "from": "src/game/presentation/screens/game_over_renderer.js"
+        },
+        {
+          "symbol": "GameRenderCoordinator",
+          "from": "src/game/presentation/rendering/game_render_coordinator.js"
+        },
+        {
+          "symbol": "GameRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/game_render_frame_builder.js"
+        },
+        {
+          "symbol": "GameRenderPipeline",
+          "from": "src/game/presentation/rendering/game_render_pipeline.js"
+        },
+        {
+          "symbol": "GameWorld",
+          "from": "src/game/application/world/game_world_service.js"
+        },
+        {
+          "symbol": "HoldChargesRenderer",
+          "from": "src/game/presentation/hud/hold_charges_renderer.js"
+        },
+        {
+          "symbol": "HoldChargesUI",
+          "from": "src/platform/browser/ui/hold_charges.js"
+        },
+        {
+          "symbol": "HudBarRenderer",
+          "from": "src/game/presentation/hud/hud_bar_renderer.js"
+        },
+        {
+          "symbol": "HudRenderPass",
+          "from": "src/game/presentation/rendering/hud_render_pass.js"
+        },
+        {
+          "symbol": "HudStyleResolver",
+          "from": "src/game/presentation/styles/hud_style_resolver.js"
+        },
+        {
+          "symbol": "INVENTORY_RULE_MESSAGES",
+          "from": "src/game/presentation/inventory/inventory_rule_messages.js"
+        },
+        {
+          "symbol": "ITEM_DB",
+          "from": "src/game/config/databases/item_catalog.js"
+        },
+        {
+          "symbol": "ImageAssetProvider",
+          "from": "src/platform/browser/assets/image_asset_provider.js"
+        },
+        {
+          "symbol": "InputManager",
+          "from": "src/platform/browser/input/input_manager.js"
+        },
+        {
+          "symbol": "InventoryEventBridge",
+          "from": "src/game/application/inventory/legacy_inventory_system.js"
+        },
+        {
+          "symbol": "InventoryItemViewFactory",
+          "from": "src/game/presentation/inventory/inventory_item_view_factory.js"
+        },
+        {
+          "symbol": "InventoryManager",
+          "from": "src/game/application/inventory/legacy_inventory_system.js"
+        },
+        {
+          "symbol": "InventoryRuntimeConfigProvider",
+          "from": "src/game/application/inventory/legacy_inventory_system.js"
+        },
+        {
+          "symbol": "InventoryV2ActionType",
+          "from": "src/game/presentation/inventory/inventory_view_model.js"
+        },
+        {
+          "symbol": "InventoryV2BalanceParameterResolver",
+          "from": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js"
+        },
+        {
+          "symbol": "InventoryV2Bootstrap",
+          "from": "src/bootstrap/production/inventory_ui_bootstrap.js"
+        },
+        {
+          "symbol": "InventoryV2CompositionRoot",
+          "from": "src/bootstrap/production/inventory_composition_root.js"
+        },
+        {
+          "symbol": "ItemCapacityResolver",
+          "from": "src/game/domain/items/progression/item_capacity_resolver.js"
+        },
+        {
+          "symbol": "ItemCatalogBaselineRegistry",
+          "from": "src/game/domain/items/progression/item_catalog_baseline_registry.js"
+        },
+        {
+          "symbol": "ItemConditionDescriptor",
+          "from": "src/game/presentation/inventory/item_condition_descriptor.js"
+        },
+        {
+          "symbol": "ItemConditionDomAdapter",
+          "from": "src/platform/browser/dom/item_condition_dom_adapter.js"
+        },
+        {
+          "symbol": "ItemConditionResolver",
+          "from": "src/game/domain/items/condition/item_condition_resolver.js"
+        },
+        {
+          "symbol": "ItemDatabase",
+          "from": "src/game/application/inventory/legacy_inventory_system.js"
+        },
+        {
+          "symbol": "ItemFreshnessDescriptor",
+          "from": "src/game/presentation/inventory/item_freshness_descriptor.js"
+        },
+        {
+          "symbol": "ItemFreshnessResolver",
+          "from": "src/game/domain/items/freshness/item_freshness_resolver.js"
+        },
+        {
+          "symbol": "ItemMetricStrategyRegistry",
+          "from": "src/game/domain/items/progression/item_metric_strategy_registry.js"
+        },
+        {
+          "symbol": "ItemProgressionConfigValidator",
+          "from": "src/game/config/validation/item_progression_config_validator.js"
+        },
+        {
+          "symbol": "ItemProgressionDomAdapter",
+          "from": "src/platform/browser/dom/item_progression_dom_adapter.js"
+        },
+        {
+          "symbol": "ItemProgressionResolver",
+          "from": "src/game/domain/items/progression/item_progression_resolver.js"
+        },
+        {
+          "symbol": "ItemProgressionVisualResolver",
+          "from": "src/game/presentation/inventory/item_progression_visual_resolver.js"
+        },
+        {
+          "symbol": "ItemQualityResolver",
+          "from": "src/game/presentation/inventory/item_quality_resolver.js"
+        },
+        {
+          "symbol": "ItemRarityDomAdapter",
+          "from": "src/platform/browser/dom/item_rarity_dom_adapter.js"
+        },
+        {
+          "symbol": "ItemRarityResolver",
+          "from": "src/game/domain/items/rarity/item_rarity_resolver.js"
+        },
+        {
+          "symbol": "ItemRarityStrategyRegistry",
+          "from": "src/game/domain/items/rarity/item_rarity_strategy_registry.js"
+        },
+        {
+          "symbol": "ItemRatingResolver",
+          "from": "src/game/domain/items/progression/item_rating_resolver.js"
+        },
+        {
+          "symbol": "ItemRatingTierResolver",
+          "from": "src/game/domain/items/progression/item_rating_tier_resolver.js"
+        },
+        {
+          "symbol": "ItemStatOverridePolicy",
+          "from": "src/game/domain/items/item_stat_override_policy.js"
+        },
+        {
+          "symbol": "LandingAreaRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/landing_area_render_frame_builder.js"
+        },
+        {
+          "symbol": "LandingPolicyResolver",
+          "from": "src/game/domain/fishing/landing_policy.js"
+        },
+        {
+          "symbol": "LineCompatibilityRules",
+          "from": "src/game/application/inventory/legacy_inventory_system.js"
+        },
+        {
+          "symbol": "LineVisualStateController",
+          "from": "src/game/presentation/fishing/line_visual_state_controller.js"
+        },
+        {
+          "symbol": "LocationAssetLoader",
+          "from": "src/platform/browser/location/location_asset_loader.js"
+        },
+        {
+          "symbol": "LocationManager",
+          "from": "src/game/application/world/game_world_service.js"
+        },
+        {
+          "symbol": "LocationMap",
+          "from": "src/game/domain/locations/location_world.js"
+        },
+        {
+          "symbol": "Net",
+          "from": "src/game/domain/tackle/tackle.js"
+        },
+        {
+          "symbol": "NumericStatMetricStrategy",
+          "from": "src/game/domain/items/progression/numeric_stat_metric_strategy.js"
+        },
+        {
+          "symbol": "OffscreenCanvasFactory",
+          "from": "src/platform/browser/canvas/offscreen_canvas_factory.js"
+        },
+        {
+          "symbol": "OutcomeRenderFrameBuilder",
+          "from": "src/game/presentation/screens/outcome_render_frame_builder.js"
+        },
+        {
+          "symbol": "OutcomeRenderPass",
+          "from": "src/game/presentation/rendering/outcome_render_pass.js"
+        },
+        {
+          "symbol": "OutcomeStyleResolver",
+          "from": "src/game/presentation/styles/outcome_style_resolver.js"
+        },
+        {
+          "symbol": "PlayerCastRules",
+          "from": "src/game/domain/rules/gameplay_rules.js"
+        },
+        {
+          "symbol": "PlayerPressureFatigueIndicatorRenderer",
+          "from": "src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js"
+        },
+        {
+          "symbol": "PlayingState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "PoleFightSectorGeometry",
+          "from": "src/game/domain/fishing/pole_fight_sector_geometry.js"
+        },
+        {
+          "symbol": "RarityAnimationResolver",
+          "from": "src/game/presentation/screens/rarity_animation_resolver.js"
+        },
+        {
+          "symbol": "RarityConfigValidator",
+          "from": "src/game/config/validation/rarity_config_validator.js"
+        },
+        {
+          "symbol": "RarityVisualResolver",
+          "from": "src/game/presentation/styles/rarity_visual_resolver.js"
+        },
+        {
+          "symbol": "ReelRetrieveSpeedCalculator",
+          "from": "src/game/domain/fishing/reel_retrieve_speed_calculator.js"
+        },
+        {
+          "symbol": "RenderComponent",
+          "from": "src/engine/rendering/render_component.js"
+        },
+        {
+          "symbol": "RenderFrameBuffer",
+          "from": "src/game/presentation/rendering/render_frame_buffer.js"
+        },
+        {
+          "symbol": "RenderOrder",
+          "from": "src/game/presentation/rendering/game_render_order.js"
+        },
+        {
+          "symbol": "RodLineRenderer",
+          "from": "src/game/presentation/fishing/rod_line_renderer.js"
+        },
+        {
+          "symbol": "SLOT_CONFIG",
+          "from": "src/game/config/runtime/game_config.js"
+        },
+        {
+          "symbol": "ScoutingState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "SeededRng",
+          "from": null
+        },
+        {
+          "symbol": "StarRatingRenderer",
+          "from": "src/game/presentation/screens/star_rating_renderer.js"
+        },
+        {
+          "symbol": "StateDepsFactory",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "StateMachine",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "TargetRangeMetricStrategy",
+          "from": "src/game/domain/items/progression/target_range_metric_strategy.js"
+        },
+        {
+          "symbol": "TimeDisplayUI",
+          "from": "src/platform/browser/ui/time_display.js"
+        },
+        {
+          "symbol": "UIManager",
+          "from": "src/platform/browser/ui/game_controls.js"
+        },
+        {
+          "symbol": "VictoryActionGestureResolver",
+          "from": "src/game/presentation/input/victory_action_gesture_resolver.js"
+        },
+        {
+          "symbol": "VictoryLayoutResolver",
+          "from": "src/game/presentation/screens/victory_layout_resolver.js"
+        },
+        {
+          "symbol": "VictoryRenderer",
+          "from": "src/game/presentation/screens/victory_renderer.js"
+        },
+        {
+          "symbol": "VictoryState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "VictoryThemeResolver",
+          "from": "src/game/presentation/screens/victory_theme_resolver.js"
+        },
+        {
+          "symbol": "ViewportProjector",
+          "from": "src/game/application/viewport/viewport_projector.js"
+        },
+        {
+          "symbol": "WaitingState",
+          "from": "src/game/application/state/game_state_machine.js"
+        },
+        {
+          "symbol": "WorldRenderFrameBuilder",
+          "from": "src/game/presentation/rendering/world_render_frame_builder.js"
+        },
+        {
+          "symbol": "WorldRenderPass",
+          "from": "src/game/presentation/rendering/world_render_pass.js"
+        },
+        {
+          "symbol": "WorldSceneRenderer",
+          "from": "src/game/presentation/world/world_scene_renderer.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "One production composition root assembles existing concrete production collaborators. All actual DEV constructors, diagnostics and browser targets are injected after preparations 021–024; configuration is the same explicit live object. ITEM_DB uses the strictly verified same-object GameConfig facade, without raw-config imports or cloning. Four native inventory imports remain exact serial cold awaits through injected loaders. Preserve complete method bodies, option objects, construction order, callback receivers, live adapter identity and allocation sites. Root owns only composition and the readonly live RuntimeConfig facade, not gameplay state. Existing 025 GameApplication 120-frame evidence and full save scenarios remain unchanged."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "One production composition root assembles existing concrete production collaborators. All actual DEV constructors, diagnostics and browser targets are injected after preparations 021–024; configuration is the same explicit live object. ITEM_DB uses the strictly verified same-object GameConfig facade, without raw-config imports or cloning. Four native inventory imports remain exact serial cold awaits through injected loaders. Preserve complete method bodies, option objects, construction order, callback receivers, live adapter identity and allocation sites. Root owns only composition and the readonly live RuntimeConfig facade, not gameplay state. Existing 025 GameApplication 120-frame evidence and full save scenarios remain unchanged."
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "026",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "GameCompositionRoot",
+        "--scenarios",
+        "utils/config-runtime-check.js,utils/inventory-lifecycle-check.js"
+      ]
+    },
+    {
+      "name": "save-round-trip",
+      "kind": "save-round-trip",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "026",
+        "--kind",
+        "save-round-trip",
+        "--classes",
+        "GameCompositionRoot",
+        "--scenarios",
+        "utils/config-runtime-check.js,utils/inventory-save-round-trip-check.js"
+      ]
+    }
+  ],
+  "output": null,
+  "verification": null
+}

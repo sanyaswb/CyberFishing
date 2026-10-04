@@ -25,7 +25,8 @@
   },
   "approvedInfrastructureModules": [
     "src/engine/math/normalize_distance.js",
-    "src/engine/math/vector2.js"
+    "src/engine/math/vector2.js",
+    "src/game/config/databases/item_catalog.js"
   ],
   "approvedVirtualModules": [
     "\u0000@oxc-project+runtime@0.146.0/helpers/esm/assertClassBrand.js",

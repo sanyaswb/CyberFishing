@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "027",
+  "slug": "game-bootstrap-facade",
+  "milestone": "M3",
+  "boundary": "bootstrap-production",
+  "tier": "B",
+  "tierEvidence": "026 planning verified all actual imports and found one still-classic prerequisite: SeededRng in src/app/utils.js. Its only production constructor is Root; environment/state receive the same instance, and game-cycle exercises deterministic 120-frame ownership. Add 029 as an Engine leaf prerequisite before 026, preserving all frozen 001–028 membership and completed evidence. The pure seeded arithmetic/state mechanism retains all bytes, constants and seed normalization, including its historical fixed fallback salt; it contains no gameplay rules or browser/DEV dependency. Game now has only injected build readiness and lifecycle forwarding after preparation 022, so its existing 027 module is factually production Bootstrap. 028 still requires native production entry/canonical browser cutover; original Development Bootstrap is explicitly Stage 6. No gameplay or API change.",
+  "modules": [
+    {
+      "currentPath": "src/app/game.js",
+      "targetPath": "src/bootstrap/production/game.js",
+      "exports": [
+        "Game"
+      ],
+      "imports": [],
+      "reviewedBlockers": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "027",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "Game",
+        "--scenarios",
+        "utils/inventory-lifecycle-check.js"
+      ]
+    }
+  ],
+  "output": null,
+  "verification": null
+}

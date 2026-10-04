@@ -4013,8 +4013,8 @@
         "roles": [
           "bootstrap"
         ],
-        "targetBoundary": "bootstrap-development",
-        "targetPath": "src/bootstrap/development/game.js",
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game.js",
         "migrationWave": 7
       },
       "analysis": {
