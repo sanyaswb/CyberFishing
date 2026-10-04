@@ -142,15 +142,20 @@ assert(
 
 vm.runInContext(
   `
-  globalThis.snapshotUpgrade = new InventoryV2SnapshotMigration({
+  const upgradeVisualSnapshot = (schemaVersion) => new InventoryV2SnapshotMigration({
     itemStateMigration: itemStatCollaborators.itemStateMigration,
     itemSnapshotMapper: itemStatCollaborators.itemSnapshotMapper,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
     targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
   }).migrate({
-    schemaVersion: 2,
+    schemaVersion,
     items: [{
       instanceId: "schema2-rod",
+      ratingColor: "legacy-rating-color",
+      ratingGradient: "legacy-rating-gradient",
+      powerColor: "legacy-power-color",
+      powerGradient: "legacy-power-gradient",
+      qualityGrade: 3,
       itemId: "spinRod",
       type: "spinning",
       engineStats: { level: 4, maxLoadKg: 1.25 },
@@ -163,9 +168,21 @@ vm.runInContext(
     loadouts: [],
     settings: {},
   });
+  globalThis.visualSnapshotNormalizations = [2, 3, 4].map(upgradeVisualSnapshot);
+  globalThis.snapshotUpgrade = visualSnapshotNormalizations[0];
   `,
   context,
 );
+for (const result of context.visualSnapshotNormalizations) {
+  const item = result.snapshot.items[0];
+  assert(result.snapshot.schemaVersion === 4, "visual normalization preserves schema 4");
+  assert(item.instanceId === "schema2-rod", "visual normalization preserves instance identity");
+  assert(item.qualityGrade === 3, "source quality survives visual normalization");
+  assert(item.quantity === 1, "visual normalization preserves quantity");
+  for (const key of ["ratingColor", "ratingGradient", "powerColor", "powerGradient"]) {
+    assert(!Object.hasOwn(item, key), `${key} is derived, in current and previous schemas`);
+  }
+}
 const upgradedItem = context.snapshotUpgrade.snapshot.items[0];
 assert(context.snapshotUpgrade.snapshot.schemaVersion === 4, "schema 2 upgrades to schema 4");
 assert(

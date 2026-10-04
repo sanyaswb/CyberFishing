@@ -43,6 +43,21 @@ The Game activation/bridge is held by classic Development Bootstrap until Stage 
 Next: native production startup and canonical browser cutover design/implementation.
 The original checkpoint below is retained as provenance; do not recapture/reapply 027.
 
+## Saved visual-field audit checkpoint
+
+Audit on runtime base `6429876b7bb1c208eb6e3fa80daa8ab0502330e5`: all four historical
+top-level rating/power color/gradient fields are excluded by the current raw factory,
+V2 mapper, legacy/current/previous-schema normalization and stacking/signature
+writers. No additional save-schema transition is needed; no production or save
+timing change was made. Existing item-progression and migration scenarios now cover
+those fields and source-fact preservation under schemas 2/3/4. See
+`saved_visual_fields_audit.md`. Quick 24/24, Architecture 32/32, uncached Full 64/64,
+zero failures/cache/isolation violations and unchanged source. Full report:
+`../../archive/stage5_visual_field_audit_acceptance.json`, 2026-10-04
+19:27:38–19:28:17 UTC; source HEAD 6429876 plus pending test additions/audit/proposal,
+before informational checkpoint/evidence edits. Native topology remains a pending
+owner choice in `native_startup_cutover_proposal.md`; no cutover applied.
+
 ## Original verified checkpoint
 
 | Fact | Current state |
@@ -192,19 +207,21 @@ globals in Domain/Application. Each mutable fact must keep one authoritative own
 UI/debug/render remain readers. Retire exact bridges only after every classic holder
 is gone, including DEV. Keep legitimate survivors with explicit Stage 6/7 conditions.
 
-Finish the saved visual-field audit: current item factory/V2 snapshot mapper already
-exclude derived color/gradient fields. Inspect all old/current/previous-schema writers,
-readers, stacking/refill/signatures and migrations before deciding whether any separate
-save transition is necessary. No silent save-field/schema change in an ESM cluster.
+Saved visual-field audit completed: current item factory/V2 snapshot mapper and all
+verified old/current/previous-schema writers, readers, stacking/refill/signatures and
+migrations already exclude the four historical top-level derived fields. No separate
+save transition is necessary; see `saved_visual_fields_audit.md`. No silent
+save-field/schema change may be bundled into an ESM cluster.
 
 After native startup, evaluate dependency-cruiser or eslint-plugin-boundaries as agreed.
 Retain existing guards unless replacement proves equivalent or stricter enforcement.
 No baseline/debt/whitelist expansion to make tests pass and no removal of live checks.
 
-The current utils budget is not satisfied: 478 JS/JSON files, 71,279 newline-counted
-lines including the new fixture, versus the Stage 4 M2 ceiling of 70,358 (+921).
-Measured with the release metrics method (`git ls-files`, JS/JSON, newline count),
-including the currently new fixture that becomes tracked in this checkpoint. Recheck
+The current utils budget is not satisfied: 478 JS/JSON files, 71,303 newline-counted
+lines including the added visual-field scenarios, versus the Stage 4 M2 ceiling of
+70,358 (+945).
+Measured with the release metrics method (`git ls-files`, JS/JSON, newline count).
+The lifecycle fixture is already tracked; these new scenarios add 24 lines. Recheck
 after each milestone. Offset growth through proven unreachable tooling or justified
 consolidation; preserve the 64 live checks and immutable evidence. Do not restore
 archived Stage 3 replay/planning checks. Stage 5 closure must meet the agreed budget.

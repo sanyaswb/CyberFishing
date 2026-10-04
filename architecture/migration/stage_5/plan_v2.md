@@ -16,6 +16,11 @@ historical initial plan; its starting counts and pending preparations are supers
   Inventory UI Bootstrap, GameApplication/facades and production GameCompositionRoot.
 - [x] Game readiness/start/stop/dispose scenario added to the existing inventory lifecycle
   check; Quick 24/24, Architecture 32/32 and uncached Full 64/64 passed.
+- [x] Saved visual-field audit: all current/previous/legacy item writers and readers,
+  normalization, stacking and exact signatures verified; no save-schema transition
+  needed. Existing regression scenarios cover all four fields under schemas 2/3/4.
+  Quick 24/24, Architecture 32/32 and uncached Full 64/64 passed; see
+  `saved_visual_fields_audit.md` and the archived acceptance report.
 
 ## Next session, in order
 
@@ -27,7 +32,9 @@ historical initial plan; its starting counts and pending preparations are supers
 2. **Review and implement native production startup/canonical browser cutover.** Deliver
    `src/entrypoints/game.entry.js` importing only production Bootstrap. Audit current
    config/interface/version/badge activation phases and surviving classic DEV consumers
-   before choosing the smallest compliant cutover. Exercise one native module graph:
+   before choosing the smallest compliant cutover. The concrete bounded DEV-only
+   loader design is in `native_startup_cutover_proposal.md`; owner topology choice
+   is pending. Exercise one native module graph:
    no duplicate writable CONFIG/catalog/context or class identities from native + IIFE.
    Cluster 028's original `src/app/script.js` is explicitly deferred to Stage 6; this
    does not defer Stage 5's native startup obligation. Record any new reviewed design
@@ -35,8 +42,8 @@ historical initial plan; its starting counts and pending preparations are supers
 3. **Verify the overall architecture goal.** Check dependency direction, mutable ownership,
    production independence from DEV/transport, injected live config and one game loop.
    Reconcile exact bridge/activation holders and assign all legitimate survivors to
-   Stage 6/7. Finish the saved visual-field writer/reader audit without changing save
-   schema. Evaluate standard boundary tooling only after native game startup works.
+   Stage 6/7. The saved visual-field audit is complete with the existing schema 4.
+   Evaluate standard boundary tooling only after native game startup works.
 4. **Prepare Stage 5 closure.** Complete focused/evidence/Quick/Architecture/uncached Full
    and browser acceptance; reconcile plans, reviewed scope, metrics, release projection
    and pending owner play. Meet the utils non-growth budget without weakening checks.

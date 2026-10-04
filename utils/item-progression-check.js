@@ -666,10 +666,17 @@ class ItemProgressionCheck {
       progression: { stale: true },
       progressionLevel: 88,
       powerLevel: 99,
+      ratingColor: "legacy-rating-color",
+      ratingGradient: "legacy-rating-gradient",
+      powerColor: "legacy-power-color",
+      powerGradient: "legacy-power-gradient",
       capacityPercent: 12,
       condition: { stale: true },
     });
     Assertion.that(!("progression" in raw), "derived progression is stripped from save data");
+    for (const key of ["ratingColor", "ratingGradient", "powerColor", "powerGradient"]) {
+      Assertion.that(!(key in raw), `${key} is excluded from raw inventory saves`);
+    }
     Assertion.that(
       !("progressionLevel" in raw),
       "derived progression level is stripped from save data",
