@@ -4,6 +4,58 @@ const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
 
+
+// Exercise original browser widgets over repeated frames and real interaction/disposal paths.
+function checkBrowserWidgets() {
+  const ids=new Map(),frames=[],timers=new Map(),saved=new Map();let nextTimer=0,clicks=0,disposed=0,queries=0;
+  const makeNode=()=>({style:{},children:[],listeners:new Map(),attrs:{},value:'1',min:'0.1',max:'20',clientHeight:120,
+    classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},toggle(v,on){if(on)this.add(v);else this.remove(v);}},
+    set innerHTML(value){this.html=value;for(const match of value.matchAll(/id="([^"]+)"/g))if(!ids.has(match[1]))ids.set(match[1],makeNode());},
+    get innerHTML(){return this.html;},addEventListener(type,fn,opts){const list=this.listeners.get(type)||[];list.push({fn,opts});this.listeners.set(type,list);},
+    removeEventListener(type,fn){this.listeners.set(type,(this.listeners.get(type)||[]).filter(x=>x.fn!==fn));},
+    emit(type,event={}){for(const {fn}of this.listeners.get(type)||[])fn({button:0,pointerType:'mouse',pointerId:1,clientX:25,clientY:25,stopPropagation(){},preventDefault(){},target:this,...event});},
+    appendChild(node){this.children.push(node);return node;},remove(){this.removed=true;},setAttribute(k,v){this.attrs[k]=v;},
+    setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect(){return {left:20,top:20,right:60,bottom:60,width:40,height:40};}});
+  const document=makeNode();document.body=makeNode();document.head=makeNode();document.createElement=makeNode;
+  document.getElementById=id=>{queries++;assert(ids.has(id),id);return ids.get(id);};
+  document.documentElement={requestFullscreen(){document.fullscreenElement={};return Promise.resolve();}};
+  document.exitFullscreen=()=>{document.fullscreenElement=null;};
+  const runtime=new SourceRuntime({globals:{document,window:{innerWidth:300,innerHeight:200},console:{log(){},warn(){}},
+    requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
+  const definitions=[['engine_interface','UI_EXCEPTIONS','initEngineInterface'],['ui_event_shield','UIUtils'],['draggable_button','UIDraggableButton'],
+    ['game_controls','UIManager'],['chum_controls','ChumUI'],['depth_selector','DepthSelectorUI'],['time_display','TimeDisplayUI'],['hold_charges','HoldChargesUI']];
+  for(const [file,...expose]of definitions)runtime.load('src/ui/legacy/'+file+'.js',{expose});
+  const c=runtime.context;c.initEngineInterface();assert.equal(document.head.children.length,1);
+  let blocked=false;document.emit('contextmenu',{target:{tagName:'DIV',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(blocked);
+  blocked=false;document.emit('contextmenu',{target:{tagName:'INPUT',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(!blocked);
+  const button=makeNode(),cache={get:key=>saved.get(key),set:(key,value)=>saved.set(key,value)};
+  c.UIUtils.makeSolid(null);const drag=new c.UIDraggableButton(button,()=>clicks++,{ui:{draggableButtons:true,dragHoldTimeMs:10}},{id:'probe',cache});
+  assert.equal(button.listeners.get('pointerdown')[0].opts.capture,false,'shield remains bubbling');
+  drag.onPointerDown({button:1,pointerType:'mouse',stopPropagation(){}});assert.equal(timers.size,0);
+  const point={button:0,pointerType:'mouse',pointerId:1,clientX:25,clientY:25,stopPropagation(){}};
+  drag.onPointerDown(point);drag.onPointerUp(point);assert.equal(clicks,1);assert.equal(timers.size,0);
+  drag.onPointerDown(point);for(const fn of timers.values())fn();timers.clear();
+  for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
+  assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
+  const controls=new c.UIManager({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache});
+  const depth=new c.DepthSelectorUI(),time=new c.TimeDisplayUI(),hold=new c.HoldChargesUI(),chum=new c.ChumUI(()=>clicks++);
+  depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
+  for(let frame=0;frame<120;frame++) {
+    controls.updateNetButtonState(frame>=30,frame>=60);controls.updateContinueButtonState(frame>=90);controls.setOutcomeOverlayActive(frame>=100);
+    depth.updateMax(frame<60?20:2);depth.updateCastDistance({availableMeters:frame,maximumMeters:20,visible:frame!==119});
+    time.update(frame<30?4:frame<60?6:frame<90?12:19);
+    hold.update({hasHold:true,max:frame<60?3:4,current:1,isActive:frame%2===0,restoring:[0.5],restoreMaxTime:1});
+    if(frame===1)circle=hold.circles[0];if(frame>1&&frame<60)assert.equal(hold.circles[0],circle,'stable capacity reuses DOM circles');
+    const state=['disabled','empty','moving','ready','idle','aiming'][frame%6];chum.setState(state,frame%2?'boat':'hand',4);chum.button.emit('click');
+    while(frames.length)frames.shift()();
+  }
+  assert.equal(queries,initialQueries,'updates use cached DOM references');assert.equal(depth.lastChange,2);assert.equal(time.emojiSpan.innerText,'🌇');
+  assert.equal(clicks,61,'only enabled chum states dispatch clicks');assert.equal(hold.circles.length,4);
+  controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);while(frames.length)frames.shift()();
+  controls.hideNetButton();depth.hide();hold.update(null);assert.equal(hold.container.style.display,'none');
+  controls.dispose();controls.dispose();depth.dispose();time.dispose();hold.dispose();chum.dispose();assert.equal(disposed,1);assert.equal(timers.size,0);
+}
+
 function checkTimeoutScheduler() {
   const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browser_timeout_scheduler.js");
   const callback = () => {};
@@ -374,6 +426,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkBrowserWidgets();
   checkTimeoutScheduler();
   checkVisualFrames();
   checkLongPressFrames(true);

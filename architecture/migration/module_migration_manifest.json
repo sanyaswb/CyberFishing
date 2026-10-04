@@ -2850,7 +2850,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/game_controls.js",
               "resolution": "confirmed"
             },
             {
@@ -3854,6 +3854,13 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/ui/legacy/game_controls.js",
+              "symbols": [
+                "UIManager"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/ui/legacy/hold_charges.js",
               "symbols": [
                 "HoldChargesUI"
@@ -3920,13 +3927,6 @@
               "target": "src/ui/styles/rarity_visual_resolver.js",
               "symbols": [
                 "RarityVisualResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/ui.js",
-              "symbols": [
-                "UIManager"
               ],
               "resolution": "confirmed"
             },
@@ -4101,7 +4101,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/chum_controls.js",
               "resolution": "confirmed"
             }
           ],
@@ -4114,7 +4114,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/chum_controls.js",
               "symbols": [
                 "ChumUI"
               ],
@@ -21500,7 +21500,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/draggable_button.js",
               "resolution": "confirmed"
             },
             {
@@ -21508,7 +21508,7 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/ui_event_shield.js",
               "resolution": "confirmed"
             }
           ],
@@ -21607,9 +21607,15 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/draggable_button.js",
               "symbols": [
-                "UIDraggableButton",
+                "UIDraggableButton"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
                 "UIUtils"
               ],
               "resolution": "confirmed"
@@ -24148,7 +24154,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/draggable_button.js",
               "resolution": "confirmed"
             },
             {
@@ -24156,7 +24162,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/ui_event_shield.js",
               "resolution": "confirmed"
             }
           ],
@@ -24197,9 +24203,15 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/draggable_button.js",
               "symbols": [
-                "UIDraggableButton",
+                "UIDraggableButton"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
                 "UIUtils"
               ],
               "resolution": "confirmed"
@@ -24618,7 +24630,7 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/ui_event_shield.js",
               "resolution": "confirmed"
             }
           ],
@@ -24638,7 +24650,7 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/ui/ui.js",
+              "target": "src/ui/legacy/ui_event_shield.js",
               "symbols": [
                 "UIUtils"
               ],
@@ -53174,6 +53186,91 @@
       }
     },
     {
+      "currentPath": "src/ui/legacy/chum_controls.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "ChumUI",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [
+            "console",
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/chum_controls.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
+                "UIUtils"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
       "currentPath": "src/ui/legacy/depth_selector.js",
       "currentArea": "ui/legacy",
       "observed": {
@@ -53224,6 +53321,340 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/draggable_button.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIDraggableButton",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "undefined"
+          ],
+          "browserApis": [
+            "clearTimeout",
+            "innerHeight",
+            "innerWidth",
+            "setTimeout",
+            "window"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/draggable_button.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
+                "UIUtils"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/engine_interface.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UI_EXCEPTIONS",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            },
+            {
+              "symbol": "initEngineInterface",
+              "mechanism": "global-function",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/engine_interface.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/engine_interface_activation.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "initEngineInterface",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/engine_interface_activation.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "initEngineInterface",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "target": "src/ui/legacy/engine_interface.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/ui/legacy/engine_interface.js",
+              "symbols": [
+                "initEngineInterface"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/game_controls.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIManager",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIDraggableButton",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [
+            "console",
+            "document",
+            "requestAnimationFrame"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/game_controls.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "UIDraggableButton",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/legacy/draggable_button.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/ui/legacy/draggable_button.js",
+              "symbols": [
+                "UIDraggableButton"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
+                "UIUtils"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -53337,6 +53768,62 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/time_display.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "browser-api-coupling",
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/legacy/ui_event_shield.js",
+      "currentArea": "ui/legacy",
+      "observed": {
+        "legacyLoadOrder": 228,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "UIUtils",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/ui_event_shield.js",
         "migrationWave": 5
       },
       "analysis": {
@@ -53930,38 +54417,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "ChumUI",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "InventoryUI",
               "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "UIDraggableButton",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "UIManager",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "UIUtils",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "UI_EXCEPTIONS",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "initEngineInterface",
-              "mechanism": "global-function",
               "availability": "program-init"
             }
           ],
@@ -53981,6 +54438,12 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
+            },
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -53994,18 +54457,13 @@
             "Object",
             "Set",
             "String",
-            "TypeError",
             "parseInt",
             "undefined"
           ],
           "browserApis": [
             "clearTimeout",
-            "console",
             "document",
-            "innerHeight",
-            "innerWidth",
             "matchMedia",
-            "requestAnimationFrame",
             "setTimeout",
             "window"
           ],
@@ -54016,11 +54474,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "presentation"
+          "bootstrap"
         ],
-        "targetBoundary": "game-presentation",
-        "targetPath": "src/game/presentation/ui/legacy_ui.js",
-        "migrationWave": 6
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/legacy_inventory_ui.js",
+        "migrationWave": 7
       },
       "analysis": {
         "dependencies": {
@@ -54041,6 +54499,14 @@
               "executionPhase": "deferred",
               "target": "src/core/inventory/equip_target_selection_policy.js",
               "resolution": "confirmed"
+            },
+            {
+              "symbol": "UIUtils",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "resolution": "confirmed"
             }
           ],
           "items": [
@@ -54055,6 +54521,13 @@
               "target": "src/ui/interaction/horizontal_scroll_controller.js",
               "symbols": [
                 "HorizontalScrollController"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/legacy/ui_event_shield.js",
+              "symbols": [
+                "UIUtils"
               ],
               "resolution": "confirmed"
             }

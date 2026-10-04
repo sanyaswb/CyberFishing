@@ -4983,8 +4983,38 @@
       "availability": "program-init"
     },
     {
+      "currentPath": "src/ui/legacy/chum_controls.js",
+      "symbol": "ChumUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
       "currentPath": "src/ui/legacy/depth_selector.js",
       "symbol": "DepthSelectorUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/draggable_button.js",
+      "symbol": "UIDraggableButton",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/engine_interface.js",
+      "symbol": "UI_EXCEPTIONS",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/engine_interface.js",
+      "symbol": "initEngineInterface",
+      "mechanism": "global-function",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/game_controls.js",
+      "symbol": "UIManager",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },
@@ -4997,6 +5027,12 @@
     {
       "currentPath": "src/ui/legacy/time_display.js",
       "symbol": "TimeDisplayUI",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/ui/legacy/ui_event_shield.js",
+      "symbol": "UIUtils",
       "mechanism": "global-lexical",
       "availability": "program-init"
     },
@@ -5050,44 +5086,8 @@
     },
     {
       "currentPath": "src/ui/ui.js",
-      "symbol": "ChumUI",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
       "symbol": "InventoryUI",
       "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "UIDraggableButton",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "UIManager",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "UIUtils",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "UI_EXCEPTIONS",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/ui/ui.js",
-      "symbol": "initEngineInterface",
-      "mechanism": "global-function",
       "availability": "program-init"
     },
     {
