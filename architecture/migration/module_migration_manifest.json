@@ -47044,6 +47044,7 @@
           "status": "verified",
           "builtins": [
             "Boolean",
+            "ReferenceError",
             "String",
             "TypeError",
             "globalThis",
@@ -55037,8 +55038,8 @@
       }
     },
     {
-      "currentPath": "src/ui/version_badge.js",
-      "currentArea": "ui",
+      "currentPath": "src/ui/version/game_version_badge.js",
+      "currentArea": "ui/version",
       "observed": {
         "legacyLoadOrder": 229,
         "providers": {
@@ -55056,6 +55057,12 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "InventoryV2DomFactory",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "PROJECT_VERSION_CONFIG",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -55069,6 +55076,94 @@
           "builtins": [
             "Boolean"
           ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game_version_badge.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "InventoryV2DomFactory",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "PROJECT_VERSION_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/config/project_version_catalog.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/config/project_version_catalog.js",
+              "symbols": [
+                "PROJECT_VERSION_CONFIG"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
+              "symbols": [
+                "InventoryV2DomFactory"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "legacy-global-contract"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/ui/version_badge.js",
+      "currentArea": "ui",
+      "observed": {
+        "legacyLoadOrder": 229,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "GameVersionBadge",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
           "browserApis": [
             "document"
           ],
@@ -55090,19 +55185,19 @@
           "status": "verified",
           "confirmed": [
             {
-              "symbol": "PROJECT_VERSION_CONFIG",
+              "symbol": "GameVersionBadge",
               "mechanism": "identifier",
-              "accessRequirement": "guarded",
+              "accessRequirement": "required",
               "executionPhase": "deferred",
-              "target": "src/config/project_version_catalog.js",
+              "target": "src/ui/version/game_version_badge.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/project_version_catalog.js",
+              "target": "src/ui/version/game_version_badge.js",
               "symbols": [
-                "PROJECT_VERSION_CONFIG"
+                "GameVersionBadge"
               ],
               "resolution": "confirmed"
             }

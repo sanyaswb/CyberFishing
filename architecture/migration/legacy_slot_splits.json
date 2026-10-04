@@ -103,6 +103,14 @@
       "transition": "architecture/migration/stage_5/preparations/012_legacy-ui-browser-declarations.json"
     },
     {
+      "slot": 229,
+      "members": [
+        "src/ui/version/game_version_badge.js",
+        "src/ui/version_badge.js"
+      ],
+      "transition": "architecture/migration/stage_5/preparations/015_version-badge-browser-lookup.json"
+    },
+    {
       "slot": 390,
       "members": [
         "src/core/math/normalize_distance.js",

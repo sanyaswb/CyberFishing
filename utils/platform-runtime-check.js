@@ -5,6 +5,35 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 
 
 
+
+// Version API and original eager mounting phase, including live document replacement and errors.
+function checkVersionBadge() {
+  const fs=require('node:fs');
+  const declaration=fs.existsSync('src/ui/version/game_version_badge.js')?'src/ui/version/game_version_badge.js':'src/ui/version_badge.js';
+  for(const readyState of ['loading','complete']) {
+    const listeners=[],queries=[],node={dataset:{},textContent:'',title:''};
+    const document={readyState,createElement(){throw Error('badge must not create DOM nodes');},
+      getElementById(id){queries.push(id);return id==='missing'?null:node;},addEventListener(type,callback,options){listeners.push({type,callback,options});}};
+    const runtime=new SourceRuntime({globals:{document}});
+    runtime.load('src/config/project_version_catalog.js',{expose:['PROJECT_VERSION_CONFIG']});
+    runtime.load('src/ui/inventory/inventory_v2_dom_factory.js',{expose:['InventoryV2DomFactory']});
+    runtime.load(declaration,{expose:['GameVersionBadge']});
+    if(declaration!=='src/ui/version_badge.js')runtime.load('src/ui/version_badge.js');
+    if(readyState==='loading'){assert.equal(queries.length,0);assert.equal(listeners.length,1);assert.equal(listeners[0].type,'DOMContentLoaded');assert.equal(listeners[0].options.once,true);listeners[0].callback();}
+    assert.equal(queries.length,1);assert.equal(node.textContent,'v0.25.2 prototype');assert.equal(node.dataset.version,'0.25.2');
+    const Badge=runtime.context.GameVersionBadge, mounted=Badge.mountById('custom');assert.equal(mounted.element,node);assert.equal(queries.at(-1),'custom');
+    assert.equal(Badge.mountById('missing').element,null);
+    const noElement=new Badge();noElement.render();assert.equal(noElement.element,null);
+    const noConfig=new Badge({element:node,versionConfig:null});noConfig.render();assert.equal(node.dataset.version,'0.25.2');
+    const fallback=new Badge({element:node,versionConfig:{}});fallback.render();assert.equal(node.textContent,'vunknown');assert.equal(node.title,'CyberFishing');assert.equal(node.dataset.version,'unknown');
+    const custom=new Badge({element:node,versionConfig:{version:'1.2.3',label:'Custom',channel:'test',name:'Example',codename:'case',updatedAt:'2020'}});custom.render();assert.equal(node.textContent,'Custom test');assert.equal(node.title,'Example · case · 2020');
+    const replacement={dataset:{}};runtime.context.document={getElementById(id){assert.equal(this,runtime.context.document);assert.equal(id,'replacement');return replacement;}};
+    assert.equal(Badge.mountById('replacement').element,replacement,'static mounting resolves the live document');
+    delete runtime.context.document;assert.throws(()=>Badge.mountById(),error=>error.name==='ReferenceError'&&error.message==='document is not defined');
+    runtime.context.document=undefined;assert.throws(()=>Badge.mountById(),error=>error.name==='TypeError');
+  }
+}
+
 // Exercise original browser widgets over repeated frames and real interaction/disposal paths.
 function checkBrowserWidgets() {
   const ids=new Map(),frames=[],timers=new Map(),saved=new Map();let nextTimer=0,clicks=0,disposed=0,queries=0;
@@ -426,6 +455,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkVersionBadge();
   checkBrowserWidgets();
   checkTimeoutScheduler();
   checkVisualFrames();

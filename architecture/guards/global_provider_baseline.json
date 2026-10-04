@@ -5091,7 +5091,7 @@
       "availability": "program-init"
     },
     {
-      "currentPath": "src/ui/version_badge.js",
+      "currentPath": "src/ui/version/game_version_badge.js",
       "symbol": "GameVersionBadge",
       "mechanism": "global-lexical",
       "availability": "program-init"

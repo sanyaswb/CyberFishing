@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "015",
+  "slug": "version-badge-browser-lookup",
+  "baseCommit": "670a4f45d7089bad2d65e5d2765de5b39f3fa6b6",
+  "reason": "Existing badge class remains Bootstrap composition with the same constructor, render and mountById API. Platform DOM factory supplies the original live document lookup through one new static method; no allocation, cached document, new global or gameplay owner. Missing-global and undefined-document errors preserve their original type/message. Original eager IIFE and DOMContentLoaded once listener stay at their original slot until native cutover 028.",
+  "reclassified": [],
+  "movedProviders": [
+    {
+      "currentPath": "src/ui/version/game_version_badge.js",
+      "symbol": "GameVersionBadge",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    }
+  ],
+  "replacedBridges": [
+    {
+      "before": {
+        "id": "bridge-b7e6f51ee0c6",
+        "bridge": "src/config/project_version_catalog.js",
+        "owner": "stage-5.cluster-015-presentation-version-catalog",
+        "source": "src/ui/version_badge.js",
+        "target": "src/game/presentation/version/project_version.js",
+        "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-5",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "PROJECT_VERSION_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      },
+      "after": {
+        "id": "bridge-eb02269abfe7",
+        "bridge": "src/config/project_version_catalog.js",
+        "owner": "stage-5.cluster-015-presentation-version-catalog",
+        "source": "src/ui/version/game_version_badge.js",
+        "target": "src/game/presentation/version/project_version.js",
+        "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
+        "introducedStage": "stage-5",
+        "removalStage": "stage-5",
+        "globalProviders": [
+          {
+            "symbol": "PROJECT_VERSION_CONFIG",
+            "mechanism": "global-this-property"
+          }
+        ]
+      }
+    }
+  ],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/ui/version_badge.js",
+      "before": "2dd9c77e713036f0dd482a0ebed634ac656a100e3a1e38d0d19b7499022a33a0",
+      "after": "d9c93e6e694b86171df7dee583ebc479b8f75366dd6e5f9f54f0a7d8173fccad"
+    },
+    {
+      "path": "src/ui/version/game_version_badge.js",
+      "before": null,
+      "after": "2958889102d0b8ac08a1a2d63bc02964a5e0f0e3a84e0f307e30b9e7a1ec0066"
+    },
+    {
+      "path": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "before": "f4930f042671b3f1b2157a2d62ee1247bebb54b8f5190a4f9cc295a9376babc8",
+      "after": "54e6b7ad8c79db4b2793320d34371ef6a27169aba6ab02240fbe0311b0694603"
+    },
+    {
+      "path": "index.html",
+      "before": "1c045c5fbd2c4c8afca8282811e989900eed490cd18c1614a6025db868602735",
+      "after": "7b8f855b0a982a01142da03e70fd62100ce8e90df381a31a6475c2cbd43706ac"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "fdb6d333686d0fe0974faab84e2753ecd690a18fc910d9cf909f2010cb4ed10a",
+      "after": "e0dc43a450d1b6b9b1c8162dad0ff2ea24614c137dc6cc5eb072a97140482263"
+    },
+    {
+      "path": "architecture/migration/legacy_slot_splits.json",
+      "before": "2b05d2693249a74631b9d4151b72ecf7c045bbbf552c7b566d3698f88894cff5",
+      "after": "8e45349737d865642458b32e69524c93d4da78c16a25047e65c622f138eebc13"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "before": "2eaf1591e7a63f652975620cf1b26af06bbc6a68ea693e95941f521e79a3859c",
+      "after": "583aa7a79d3b61133f236afd57f9dd0e2b03e2b5a23fd954794f8af5c7da114d"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "before": "9354938018b43e121ac9be8b681140f122f2eaae8af00a9d450e23baec45b396",
+      "after": "200a6cb44471bdd6310618e29f19cfc8701148c0360d5d2ba5a2b31b2e856b89"
+    },
+    {
+      "path": "utils/platform-runtime-check.js",
+      "before": "5c67c9b761d045a5d51b9489f3aca631be0656d15b7c3fd7449b265eb9543018",
+      "after": "1393a70a97b870ebec36ef0eee8bbae85df31cb0340aee115a7a87d4c14cbb95"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "All existing DOM factory members are byte-identical; only the static browser lookup is added. Badge class differs only by replacing its direct lookup with the Platform call. All original construction/render allocation sites unchanged.",
+    "Original eager mount IIFE bytes preserved at logical slot 229. Existing Platform scenario passed on the original class before preparation and covers loading/complete DOM states, once registration, defaults, custom/fallback text, missing nodes, live document replacement and original error kinds/messages.",
+    "{\"bridge\":\"src/ui/inventory/inventory_v2_dom_factory.js\",\"owner\":\"stage-5.preparation-015-version-badge-browser-lookup\",\"source\":\"src/ui/version/game_version_badge.js\",\"target\":\"src/platform/browser/dom/inventory_v2_dom_factory.js\",\"reason\":\"Temporary existing DOM-factory export transport for Bootstrap lookup; remove when prepared badge declaration migrates in cluster 016. No new global; exact canonical consumer and existing InventoryV2DomFactory surface.\",\"introducedStage\":\"stage-5\",\"removalStage\":\"stage-5\",\"globalProviders\":[{\"symbol\":\"InventoryV2DomFactory\",\"mechanism\":\"global-this-property\"}],\"id\":\"bridge-ba5c19c17a73\"}"
+  ],
+  "verification": {
+    "focused": {
+      "utils/platform-runtime-check.js": {
+        "before": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25",
+        "after": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25"
+      },
+      "utils/config-runtime-check.js": {
+        "before": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697",
+        "after": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      },
+      "utils/architecture/package-contract-check.js": {
+        "before": "71eabb44f7ef0900b1fc1750c171c6d0a095eef1c370abb146bbf3c281be689d",
+        "after": "71eabb44f7ef0900b1fc1750c171c6d0a095eef1c370abb146bbf3c281be689d"
+      },
+      "utils/game-cycle-check.js": {
+        "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+        "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f"
+      }
+    },
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 38,
+    "knownDebtsAfter": 38,
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 228,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}

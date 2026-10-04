@@ -8,6 +8,12 @@ export class InventoryV2DomFactory {
     this.#document = documentRef;
   }
 
+  // Browser lookup for cold Bootstrap mounting; preserve live document, receiver and missing-global errors.
+  static getElementById(id) {
+    if (!("document" in globalThis)) throw new globalThis.ReferenceError("document is not defined");
+    return globalThis.document.getElementById(id);
+  }
+
   get document() {
     return this.#document;
   }
