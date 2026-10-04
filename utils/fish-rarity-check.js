@@ -1175,4 +1175,5 @@ new FishRarityCheck(
   bindConstructorDefaults(runtime.BaitEffectivenessResolver,
     { descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values) }),
 ).run();
+require('./testing/runtime/render_frame_test_composition').checkRenderFrameComposition();
 console.log("Fish rarity checks passed.");
