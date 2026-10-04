@@ -1,6 +1,6 @@
 # Stage 5 remaining execution plan v2
 
-Date: 2026-10-04. Implementation paused at the owner's request for a new session.
+Date: 2026-10-04. Implementation resumed with cluster 027 in the new session.
 This is the current task queue, not a new scope/cluster review or a Stage 5 closure.
 The authoritative reviewed membership/order remains `graph_review_v7.json`.
 Read `stage5_continuation_spec.md` for the English execution specification, verified
@@ -9,7 +9,7 @@ historical initial plan; its starting counts and pending preparations are supers
 
 ## Completed
 
-- [x] Clusters 001–026 and Engine prerequisite 029: 27 applied clusters, 100 ESM targets.
+- [x] Clusters 001–027 and Engine prerequisite 029: 28 applied clusters, 101 ESM targets.
 - [x] Preparations 001–025, including loadout clock propagation (017), external DEV
   factories, injected Root config, portable inventory imports and browser lifecycle.
 - [x] Presentation/render/UI/config-context/version declarations, Inventory composition,
@@ -19,10 +19,11 @@ historical initial plan; its starting counts and pending preparations are supers
 
 ## Next session, in order
 
-1. **Migrate Game, cluster 027.** Capture API parity once before apply; use the existing
-   stage-qualified plan/apply/verify tooling and the new real-class lifecycle scenario.
-   Preserve readiness identity, receiver, returns, error identity and early-stop/dispose
-   no-op behavior. Run required gates/browser smoke; commit and push this step separately.
+1. **Completed: Game, cluster 027.** One immutable API capture, plan/apply/verify and
+   real-class lifecycle scenario passed with identical members/traces and game-cycle.
+   Quick 24/24, Architecture 32/32, uncached Full 64/64; browser: 27 export identities,
+   nine config facts, one loop, zero warnings/errors, 52 button texts and three save
+   strings identical after reload. Separate migration checkpoint; owner play pending.
 2. **Review and implement native production startup/canonical browser cutover.** Deliver
    `src/entrypoints/game.entry.js` importing only production Bootstrap. Audit current
    config/interface/version/badge activation phases and surviving classic DEV consumers
@@ -50,6 +51,6 @@ historical initial plan; its starting counts and pending preparations are supers
 Stage 5 remains incomplete. Production still starts through classic Development
 Bootstrap and the compatibility IIFE. No native cutover, Stage 5 release/closure/tag,
 post-Stage-5 dead-code cleanup or owner manual play is claimed by this checkpoint.
-Version remains 0.25.2; migration label is 5.27. Runtime: 26 active activations,
-380 retired activations, 7 inert modules, 51 bridges, 852 historical global baseline
+Version remains 0.25.2; migration label is 5.28. Runtime: 27 active activations,
+380 retired activations, 7 inert modules, 52 bridges, 852 historical global baseline
 entries and 24 known debts. These are migration facts, not proof of native browser boot.

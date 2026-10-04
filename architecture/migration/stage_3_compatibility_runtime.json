@@ -676,6 +676,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "Game",
+      "legacyScriptIndex": 423,
+      "legacySymbol": "Game",
+      "shimFile": "activations/423_game.js",
+      "sourceProvider": "src/app/game.js",
+      "targetModule": "src/bootstrap/production/game.js",
+      "id": "activation-1123a4abf89d",
+      "owner": "stage-5.cluster-027-game-bootstrap-facade",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-28138de81e82",
       "owner": "stage-3.22.prerequisite.vector2-extraction",
       "sourceProvider": "src/core/math/vector2.js",

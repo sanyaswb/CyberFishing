@@ -35,6 +35,22 @@
       ]
     },
     {
+      "id": "bridge-08de0d147791",
+      "bridge": "src/app/game.js",
+      "owner": "stage-5.cluster-027-game-bootstrap-facade",
+      "source": "src/app/script.js",
+      "target": "src/bootstrap/production/game.js",
+      "reason": "Preserve the exact Game consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "Game",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0c3a82cc9ba1",
       "bridge": "src/ui/legacy/draggable_button.js",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",

@@ -25,7 +25,25 @@ The checkpoint commit containing this specification additionally preserves the t
 Game lifecycle fixture, current plans and archived acceptance report; it does not
 apply cluster 027 or change production source. Obtain its actual hash from Git.
 
-## Verified checkpoint
+## Current continuation checkpoint: 027 complete
+
+The new session applied Game 027 through the existing stage-qualified mechanism.
+Its immutable API parity capture and real-Game lifecycle fixture passed; class member
+bytes and traced calls, readiness/receiver/return/error identities, early no-op behavior
+and the semantic game-cycle digest are unchanged. Quick 24/24, Architecture 32/32 and
+uncached Full 64/64 passed with zero failures/cache/isolation violations and unchanged
+source. Report: `../../archive/stage5_027_game_acceptance.json` (source HEAD 4793948
+plus the pending 027 migration; before informational checkpoint/evidence edits).
+Browser: Codex automated substitute, 27 export identities, nine config facts, one loop,
+zero warnings/errors, 52 inventory button texts and three save strings identical after
+reload. Tab/server stopped and temporary smoke fixture removed; owner play pending.
+Current totals: 28 applied clusters / 101 ESM targets, label 5.28, 27 active / 380
+retired / 7 inert, 52 bridges, 852 historical globals, 24 debts; release 0.25.2.
+The Game activation/bridge is held by classic Development Bootstrap until Stage 6.
+Next: native production startup and canonical browser cutover design/implementation.
+The original checkpoint below is retained as provenance; do not recapture/reapply 027.
+
+## Original verified checkpoint
 
 | Fact | Current state |
 | --- | --- |
@@ -95,7 +113,7 @@ long press, input transitions, pause/resume and reload. Existing authorization:
 написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі
 сценарії які критично важливі”. Record Codex as performer; never claim the owner played.
 
-## First concrete step: cluster 027
+## Completed first step: cluster 027 (original recipe retained)
 
 Preserve `src/app/game.js` exactly plus the reviewed export/provider relocation to
 `src/bootstrap/production/game.js`. It owns readiness and forwards to the injected
