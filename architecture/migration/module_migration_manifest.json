@@ -46794,6 +46794,111 @@
       }
     },
     {
+      "currentPath": "src/platform/browser/dom/draggable_button.js",
+      "currentArea": "platform/browser/dom",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "undefined"
+          ],
+          "browserApis": [
+            "clearTimeout",
+            "innerHeight",
+            "innerWidth",
+            "setTimeout",
+            "window"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/draggable_button.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/dom/engine_interface.js",
+      "currentArea": "platform/browser/dom",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/engine_interface.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
       "currentArea": "platform/browser/dom",
       "observed": {
@@ -47106,6 +47211,53 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/dom/ui_event_shield.js",
+      "currentArea": "platform/browser/dom",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/dom/ui_event_shield.js",
         "migrationWave": 5
       },
       "analysis": {
@@ -47585,6 +47737,269 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/time/game_clock.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/ui/chum_controls.js",
+      "currentArea": "platform/browser/ui",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object"
+          ],
+          "browserApis": [
+            "console",
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/chum_controls.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/ui/depth_selector.js",
+      "currentArea": "platform/browser/ui",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "isNaN",
+            "parseFloat"
+          ],
+          "browserApis": [
+            "document",
+            "requestAnimationFrame"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/depth_selector.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/ui/game_controls.js",
+      "currentArea": "platform/browser/ui",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [
+            "console",
+            "document",
+            "requestAnimationFrame"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/game_controls.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/ui/hold_charges.js",
+      "currentArea": "platform/browser/ui",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/hold_charges.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/ui/time_display.js",
+      "currentArea": "platform/browser/ui",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math"
+          ],
+          "browserApis": [
+            "document"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/ui/time_display.js",
         "migrationWave": 5
       },
       "analysis": {
@@ -53195,7 +53610,7 @@
           "items": [
             {
               "symbol": "ChumUI",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53205,10 +53620,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -53216,12 +53631,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object"
+            "globalThis"
           ],
-          "browserApis": [
-            "console",
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53229,7 +53641,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/chum_controls.js",
@@ -53238,26 +53650,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "resolution": "confirmed"
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "symbols": [
-                "UIUtils"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -53280,7 +53683,7 @@
           "items": [
             {
               "symbol": "DepthSelectorUI",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53288,21 +53691,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "Number",
-            "isNaN",
-            "parseFloat"
+            "globalThis"
           ],
-          "browserApis": [
-            "document",
-            "requestAnimationFrame"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53310,7 +53714,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/depth_selector.js",
@@ -53321,7 +53725,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -53344,7 +53756,7 @@
           "items": [
             {
               "symbol": "UIDraggableButton",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53354,10 +53766,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -53365,16 +53777,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math",
-            "undefined"
+            "globalThis"
           ],
-          "browserApis": [
-            "clearTimeout",
-            "innerHeight",
-            "innerWidth",
-            "setTimeout",
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53382,7 +53787,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/draggable_button.js",
@@ -53391,26 +53796,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "symbols": [
-                "UIUtils"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -53432,13 +53828,8 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "UI_EXCEPTIONS",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "initEngineInterface",
-              "mechanism": "global-function",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53446,15 +53837,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [],
-          "browserApis": [
-            "document"
+          "builtins": [
+            "globalThis"
           ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53462,7 +53860,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/engine_interface.js",
@@ -53473,7 +53871,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -53570,7 +53976,7 @@
           "items": [
             {
               "symbol": "UIManager",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53580,16 +53986,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "UIDraggableButton",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -53597,14 +53997,9 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
-          "browserApis": [
-            "console",
-            "document",
-            "requestAnimationFrame"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53612,7 +54007,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/game_controls.js",
@@ -53621,41 +54016,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "UIDraggableButton",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/legacy/draggable_button.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "UIUtils",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/ui/legacy/draggable_button.js",
-              "symbols": [
-                "UIDraggableButton"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/legacy/ui_event_shield.js",
-              "symbols": [
-                "UIUtils"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -53678,7 +54049,7 @@
           "items": [
             {
               "symbol": "HoldChargesUI",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53686,17 +54057,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math"
+            "globalThis"
           ],
-          "browserApis": [
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53704,7 +54080,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/hold_charges.js",
@@ -53715,7 +54091,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -53738,7 +54122,7 @@
           "items": [
             {
               "symbol": "TimeDisplayUI",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53746,17 +54130,22 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
           "builtins": [
-            "Math"
+            "globalThis"
           ],
-          "browserApis": [
-            "document"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -53764,7 +54153,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/ui/time_display.js",
@@ -53775,7 +54164,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },
@@ -53798,7 +54195,7 @@
           "items": [
             {
               "symbol": "UIUtils",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -53806,12 +54203,21 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [],
+          "items": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager"
+            }
+          ],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [],
+          "builtins": [
+            "globalThis"
+          ],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -53820,7 +54226,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "platform-adapter"
+          "compatibility-bridge"
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/dom/ui_event_shield.js",
@@ -53831,7 +54237,15 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [],
+          "unresolved": [
+            {
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
+              "accessRequirement": "required",
+              "executionPhase": "eager",
+              "resolution": "unresolved"
+            }
+          ],
           "ambiguous": [],
           "issues": []
         },

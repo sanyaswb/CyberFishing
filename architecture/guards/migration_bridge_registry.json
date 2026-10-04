@@ -131,6 +131,22 @@
       ]
     },
     {
+      "id": "bridge-0c3a82cc9ba1",
+      "bridge": "src/ui/legacy/draggable_button.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/dom/draggable_button.js",
+      "reason": "Preserve the exact UIDraggableButton consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIDraggableButton",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-0c69ccfa652e",
       "bridge": "src/config/validation/rarity_config_validator.js",
       "owner": "stage-4.cluster-001-rarity-validators",
@@ -571,6 +587,22 @@
       ]
     },
     {
+      "id": "bridge-27dcbb9728a5",
+      "bridge": "src/ui/legacy/chum_controls.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/app/chum.js",
+      "target": "src/platform/browser/ui/chum_controls.js",
+      "reason": "Preserve the exact ChumUI consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "ChumUI",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-2943aa6fa8b8",
       "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
       "source": "src/app/application.js",
@@ -598,6 +630,22 @@
       "globalProviders": [
         {
           "symbol": "VictoryActionGestureResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2b4626587b51",
+      "bridge": "src/ui/legacy/hold_charges.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/ui/hold_charges.js",
+      "reason": "Preserve the exact HoldChargesUI consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HoldChargesUI",
           "mechanism": "global-this-property"
         }
       ]
@@ -1190,6 +1238,22 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-492c2cd11c13",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
           "mechanism": "global-this-property"
         }
       ]
@@ -2163,6 +2227,22 @@
       ]
     },
     {
+      "id": "bridge-7f84dcf883ff",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-815c81d10665",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/fight_area_render_frame_builder.js",
@@ -2334,6 +2414,22 @@
       "globalProviders": [
         {
           "symbol": "AssetPreloadCoordinator",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8cc4c456e4c0",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/ui/ui.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
           "mechanism": "global-this-property"
         }
       ]
@@ -2754,6 +2850,38 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityStrategyRegistry",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a939370a6299",
+      "bridge": "src/ui/legacy/draggable_button.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/dom/draggable_button.js",
+      "reason": "Preserve the exact UIDraggableButton consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIDraggableButton",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a945f83dbe68",
+      "bridge": "src/ui/legacy/engine_interface.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/ui/legacy/engine_interface_activation.js",
+      "target": "src/platform/browser/dom/engine_interface.js",
+      "reason": "Preserve the exact initEngineInterface consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "initEngineInterface",
           "mechanism": "global-this-property"
         }
       ]
@@ -3483,6 +3611,22 @@
       ]
     },
     {
+      "id": "bridge-dbbf53bdc804",
+      "bridge": "src/ui/legacy/depth_selector.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/ui/depth_selector.js",
+      "reason": "Preserve the exact DepthSelectorUI consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "DepthSelectorUI",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-dbceecaa5bdc",
       "bridge": "src/core/items/progression/composite_metric_strategy.js",
       "source": "src/app/bootstrap.js",
@@ -3686,6 +3830,54 @@
       "globalProviders": [
         {
           "symbol": "FishVisualVariantResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e6bb104ddf7d",
+      "bridge": "src/ui/legacy/time_display.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/ui/time_display.js",
+      "reason": "Preserve the exact TimeDisplayUI consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "TimeDisplayUI",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e839bbdb22cc",
+      "bridge": "src/ui/legacy/game_controls.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/app/bootstrap.js",
+      "target": "src/platform/browser/ui/game_controls.js",
+      "reason": "Preserve the exact UIManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e85aa82cc3b1",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
           "mechanism": "global-this-property"
         }
       ]

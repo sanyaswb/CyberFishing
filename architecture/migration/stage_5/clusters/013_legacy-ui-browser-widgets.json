@@ -1,0 +1,548 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "013",
+  "slug": "legacy-ui-browser-widgets",
+  "milestone": "M3",
+  "boundary": "platform",
+  "tier": "A",
+  "tierEvidence": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover.",
+  "modules": [
+    {
+      "currentPath": "src/ui/legacy/engine_interface.js",
+      "targetPath": "src/platform/browser/dom/engine_interface.js",
+      "exports": [
+        "UI_EXCEPTIONS",
+        "initEngineInterface"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "document"
+      ],
+      "sideEffectReview": "Existing UI_EXCEPTIONS object and three literal arrays retain one identity and original mutability. No external read/write during declaration evaluation; original initEngineInterface call remains in its classic activation file at logical slot 228. Context-menu handler reads these arrays live."
+    },
+    {
+      "currentPath": "src/ui/legacy/ui_event_shield.js",
+      "targetPath": "src/platform/browser/dom/ui_event_shield.js",
+      "exports": [
+        "UIUtils"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": []
+    },
+    {
+      "currentPath": "src/ui/legacy/draggable_button.js",
+      "targetPath": "src/platform/browser/dom/draggable_button.js",
+      "exports": [
+        "UIDraggableButton"
+      ],
+      "imports": [
+        {
+          "from": "src/platform/browser/dom/ui_event_shield.js",
+          "symbol": "UIUtils"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "clearTimeout",
+        "innerHeight",
+        "innerWidth",
+        "setTimeout",
+        "window"
+      ]
+    },
+    {
+      "currentPath": "src/ui/legacy/game_controls.js",
+      "targetPath": "src/platform/browser/ui/game_controls.js",
+      "exports": [
+        "UIManager"
+      ],
+      "imports": [
+        {
+          "from": "src/platform/browser/dom/draggable_button.js",
+          "symbol": "UIDraggableButton"
+        },
+        {
+          "from": "src/platform/browser/dom/ui_event_shield.js",
+          "symbol": "UIUtils"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "console",
+        "document",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "currentPath": "src/ui/legacy/chum_controls.js",
+      "targetPath": "src/platform/browser/ui/chum_controls.js",
+      "exports": [
+        "ChumUI"
+      ],
+      "imports": [
+        {
+          "from": "src/platform/browser/dom/ui_event_shield.js",
+          "symbol": "UIUtils"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "console",
+        "document"
+      ]
+    },
+    {
+      "currentPath": "src/ui/legacy/depth_selector.js",
+      "targetPath": "src/platform/browser/ui/depth_selector.js",
+      "exports": [
+        "DepthSelectorUI"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "document",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "currentPath": "src/ui/legacy/time_display.js",
+      "targetPath": "src/platform/browser/ui/time_display.js",
+      "exports": [
+        "TimeDisplayUI"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "document"
+      ]
+    },
+    {
+      "currentPath": "src/ui/legacy/hold_charges.js",
+      "targetPath": "src/platform/browser/ui/hold_charges.js",
+      "exports": [
+        "HoldChargesUI"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "browser-api-coupling",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        },
+        {
+          "blocker": "legacy-global-contract",
+          "reason": "Preparations 010–012 preserve exact browser widget bodies, original callback/handle/DOM ownership and interface activation timing. Existing Platform scenario exercises all seven widget classes over 120 frames with cached queries, drag clamping, lifecycle and repeated state dispatch. Original interface bare activation stays at logical slot 228 until reviewed native cutover."
+        }
+      ],
+      "allowedGlobals": [
+        "document"
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "013",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "UIUtils,UIDraggableButton,UIManager,ChumUI,DepthSelectorUI,TimeDisplayUI,HoldChargesUI",
+        "--scenarios",
+        "utils/platform-runtime-check.js",
+        "--static-methods"
+      ]
+    },
+    {
+      "name": "platform-runtime",
+      "script": "utils/platform-runtime-check.js"
+    },
+    {
+      "name": "inventory-v2-ui",
+      "script": "utils/inventory-v2-ui-check.js"
+    },
+    {
+      "name": "consumable-event-identity",
+      "script": "utils/consumable-event-identity-check.js"
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/ui/legacy/engine_interface.js",
+        "targetPath": "src/platform/browser/dom/engine_interface.js",
+        "sourceSha256": "13d5eb7b057a6de0fbe9283614adcb3e79d23a7b7d81369a48f2ee3e2b1272e0",
+        "targetSha256": "07949012e4e2e5c163d9cddfa357b5ba3510f80e03e8b3066f591acc06b94cd1"
+      },
+      {
+        "currentPath": "src/ui/legacy/ui_event_shield.js",
+        "targetPath": "src/platform/browser/dom/ui_event_shield.js",
+        "sourceSha256": "7d36726a2c03350bcc79f35e26c8a50820b11fd1ca7c350bd23b732b9b4ce285",
+        "targetSha256": "674540fd8a69abbe9572486d7287f349f44859f3b1cf310f736c3666b386128e"
+      },
+      {
+        "currentPath": "src/ui/legacy/draggable_button.js",
+        "targetPath": "src/platform/browser/dom/draggable_button.js",
+        "sourceSha256": "c7c3ca6f338ab5d737dd8150273819f1b02c3520f81cd66060dce8444b4c8e59",
+        "targetSha256": "7b68b5b08c05b4bdfe1c3f7df5a6e8cef9d434378cf04e9b1834afeb40840448"
+      },
+      {
+        "currentPath": "src/ui/legacy/game_controls.js",
+        "targetPath": "src/platform/browser/ui/game_controls.js",
+        "sourceSha256": "97e11ca83cc53b11e5bc593aeddca43d7cfc96eadf9c44e0a0a31d4ccd102fe1",
+        "targetSha256": "05b0887ef4c3921c4dd0f579ae9445bffc449955beb63e1b9be7f4562fba4541"
+      },
+      {
+        "currentPath": "src/ui/legacy/chum_controls.js",
+        "targetPath": "src/platform/browser/ui/chum_controls.js",
+        "sourceSha256": "e178f7a332fbaad4801c900e4627972a5067f4a54b2e71a4f932a5627359a2de",
+        "targetSha256": "f4b2e34fc9742b47f533bd3818a326271efe78f7a0526bcf1dff93fd8ed8d848"
+      },
+      {
+        "currentPath": "src/ui/legacy/depth_selector.js",
+        "targetPath": "src/platform/browser/ui/depth_selector.js",
+        "sourceSha256": "bef66eee15e90427b0f6c690a0f6952dcb77a68bc94b06bc0c79cec2e3ab361a",
+        "targetSha256": "1493607c758af574ddde999ed4dc528f711f82712331eeedc1c96fb3284a55ea"
+      },
+      {
+        "currentPath": "src/ui/legacy/time_display.js",
+        "targetPath": "src/platform/browser/ui/time_display.js",
+        "sourceSha256": "eabc4650c59a112c37a20b774059924974a8c56829afb2b1ca58971dd59f141d",
+        "targetSha256": "867ddc8a7540f7a6abb7853980a25375f2b21f4edf6f01e3d43bdbc74150382b"
+      },
+      {
+        "currentPath": "src/ui/legacy/hold_charges.js",
+        "targetPath": "src/platform/browser/ui/hold_charges.js",
+        "sourceSha256": "fb54ad952679b135b07b233865c8504b93cc1c9ac8f30be24aef1ff144b7554d",
+        "targetSha256": "efd738f7b2e5963716d64418422ff4571e4b78ead405021a9c6c6a62e4d50ccd"
+      }
+    ],
+    "activations": [
+      "activation-069ceb6464c6",
+      "activation-1d811087afde",
+      "activation-2e9c05cee13f",
+      "activation-4b947b0e3c59",
+      "activation-67ec8a3b51a7",
+      "activation-872a93240920",
+      "activation-aa0d4d8b47e0",
+      "activation-c3af50745e36"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/platform/browser/dom/engine_interface.js"
+    ],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-0c3a82cc9ba1",
+      "bridge-27dcbb9728a5",
+      "bridge-2b4626587b51",
+      "bridge-492c2cd11c13",
+      "bridge-7f84dcf883ff",
+      "bridge-8cc4c456e4c0",
+      "bridge-a939370a6299",
+      "bridge-a945f83dbe68",
+      "bridge-dbbf53bdc804",
+      "bridge-e6bb104ddf7d",
+      "bridge-e839bbdb22cc",
+      "bridge-e85aa82cc3b1"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [
+      "src/platform/browser/dom/draggable_button.js->src/platform/browser/dom/ui_event_shield.js",
+      "src/platform/browser/ui/game_controls.js->src/platform/browser/dom/draggable_button.js",
+      "src/platform/browser/ui/game_controls.js->src/platform/browser/dom/ui_event_shield.js",
+      "src/platform/browser/ui/chum_controls.js->src/platform/browser/dom/ui_event_shield.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/013_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "a1c7ab863eb474c0ef0bcd23d7fbff8427c23ec9e6c575e6dc167902c37d2403",
+        "after": "8a74606b3e3da4081045908aa2bc66c03ffc794a0e7154e34a7be4ef51d76fde"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "7ab6c3e6493b9d141b45040eda1324ed82c2ce9e0c5693049b2cbed158ce31e6",
+        "after": "7ab6c3e6493b9d141b45040eda1324ed82c2ce9e0c5693049b2cbed158ce31e6"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "399cecfb53fd071a77adde5b656dcae4ff1b304df17a37b63248a71ba44417cb",
+        "after": "bb2b9540b13453130f00bebd80e3c3c8940d3729f2502ff7b804fc3dc896f737"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "7876a7dbab024667033a6fe5d0748521c7ecc5d3dd40c8b8af74a7b27cd24bfc",
+        "after": "f91344f3c77789fc18f08947697feb72cea13b4fd2ef662354784ad1b10071bc"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "bb36792128f6797d0cf41d7d155484eb15481d60990a2e89baffcb9196bd9146",
+        "after": "d9e3722780317ffc721709a4ce10911ee3079dc70b959c87b6ea99f4db3444c3"
+      },
+      {
+        "path": "index.html",
+        "before": "1f5c8547f11fe255911318a28c31461b4a73f57a9b1947dcaf08a2dd529ad7e2",
+        "after": "9195ae2c0c0750ad9ddadacb59e15742e591973b3b6083f827c35b0ffa4dc17b"
+      },
+      {
+        "path": "src/platform/browser/dom/draggable_button.js",
+        "before": null,
+        "after": "7b68b5b08c05b4bdfe1c3f7df5a6e8cef9d434378cf04e9b1834afeb40840448"
+      },
+      {
+        "path": "src/platform/browser/dom/engine_interface.js",
+        "before": null,
+        "after": "07949012e4e2e5c163d9cddfa357b5ba3510f80e03e8b3066f591acc06b94cd1"
+      },
+      {
+        "path": "src/platform/browser/dom/ui_event_shield.js",
+        "before": null,
+        "after": "674540fd8a69abbe9572486d7287f349f44859f3b1cf310f736c3666b386128e"
+      },
+      {
+        "path": "src/platform/browser/ui/chum_controls.js",
+        "before": null,
+        "after": "f4b2e34fc9742b47f533bd3818a326271efe78f7a0526bcf1dff93fd8ed8d848"
+      },
+      {
+        "path": "src/platform/browser/ui/depth_selector.js",
+        "before": null,
+        "after": "1493607c758af574ddde999ed4dc528f711f82712331eeedc1c96fb3284a55ea"
+      },
+      {
+        "path": "src/platform/browser/ui/game_controls.js",
+        "before": null,
+        "after": "05b0887ef4c3921c4dd0f579ae9445bffc449955beb63e1b9be7f4562fba4541"
+      },
+      {
+        "path": "src/platform/browser/ui/hold_charges.js",
+        "before": null,
+        "after": "efd738f7b2e5963716d64418422ff4571e4b78ead405021a9c6c6a62e4d50ccd"
+      },
+      {
+        "path": "src/platform/browser/ui/time_display.js",
+        "before": null,
+        "after": "867ddc8a7540f7a6abb7853980a25375f2b21f4edf6f01e3d43bdbc74150382b"
+      },
+      {
+        "path": "src/ui/legacy/chum_controls.js",
+        "before": "e178f7a332fbaad4801c900e4627972a5067f4a54b2e71a4f932a5627359a2de",
+        "after": "d3cd0b16ee8a67cde152428ae468e78bef759001be9de4a4c72be815ba028f25"
+      },
+      {
+        "path": "src/ui/legacy/depth_selector.js",
+        "before": "bef66eee15e90427b0f6c690a0f6952dcb77a68bc94b06bc0c79cec2e3ab361a",
+        "after": "f8cffe143e50252a56529adb69c7d1fd370624ca1ca81bad292989cb67bd6e90"
+      },
+      {
+        "path": "src/ui/legacy/draggable_button.js",
+        "before": "c7c3ca6f338ab5d737dd8150273819f1b02c3520f81cd66060dce8444b4c8e59",
+        "after": "02217ab7e640c5e07d8cf797794a6085aaf4728c58b1d5404fd7f22b0d362cda"
+      },
+      {
+        "path": "src/ui/legacy/engine_interface.js",
+        "before": "13d5eb7b057a6de0fbe9283614adcb3e79d23a7b7d81369a48f2ee3e2b1272e0",
+        "after": "e4bd6cfdf43574357ec68ff758a3355c7968791f891737073d30dc54fad351a6"
+      },
+      {
+        "path": "src/ui/legacy/game_controls.js",
+        "before": "97e11ca83cc53b11e5bc593aeddca43d7cfc96eadf9c44e0a0a31d4ccd102fe1",
+        "after": "152c71140ebb644c4712f971997fd8c42dc4ce75e3ca76cecce6face6fbe4388"
+      },
+      {
+        "path": "src/ui/legacy/hold_charges.js",
+        "before": "fb54ad952679b135b07b233865c8504b93cc1c9ac8f30be24aef1ff144b7554d",
+        "after": "e1c8efc012fb81a64468dbb0d5e61a339034fa372d37aa16baa91aadb7c96be1"
+      },
+      {
+        "path": "src/ui/legacy/time_display.js",
+        "before": "eabc4650c59a112c37a20b774059924974a8c56829afb2b1ca58971dd59f141d",
+        "after": "0d0eaea37883fb96342c41b811b18f8be8070b4490376bc83e5301eb5fbebb48"
+      },
+      {
+        "path": "src/ui/legacy/ui_event_shield.js",
+        "before": "7d36726a2c03350bcc79f35e26c8a50820b11fd1ca7c350bd23b732b9b4ce285",
+        "after": "45652439cf1042555d9b07431f24c8f9bc5a1048465ff845cc3822ec42385d05"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 750 modules, 917 unified edges, 852 globals, 38 exact known-debt diagnostics, 0 FAIL in 755ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 750/750 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 231 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 231 activations and 251 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 50 record(s), 49 applied, 152 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and 19 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "6810d30b6f91f33cb7cf6b2d28d6d61437a76cb29a5648fe015507e69f643593"
+      },
+      {
+        "name": "platform-runtime",
+        "status": "PASS",
+        "sha256": "8e6b154c4d432240e3f4e520da718e7d559e674b2b70933d6b38d1df5eec4e25"
+      },
+      {
+        "name": "inventory-v2-ui",
+        "status": "PASS",
+        "sha256": "a5c942ce5ed7c3252fd290d6c5edd6fe7fa6e7f68eff4ddaff6b1bc05736ea0a"
+      },
+      {
+        "name": "consumable-event-identity",
+        "status": "PASS",
+        "sha256": "37a38c6de6a6418f6415810f7eb97e1c0705ebafeab87c9a3fa0a4579fec382a"
+      }
+    ],
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "exportsChecked": 231,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "inventoryButtonsIdentical": true,
+      "savesIdentical": true,
+      "reloadSavesIdentical": true,
+      "errors": 0,
+      "warnings": 0
+    }
+  }
+}

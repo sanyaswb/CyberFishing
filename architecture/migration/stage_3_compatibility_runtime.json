@@ -600,6 +600,13 @@
       "module": "src/game/presentation/inventory/inventory_view_model.js",
       "owner": "stage-5.cluster-007-inventory-view-contracts",
       "reason": "Only the original Object.freeze action catalog and static slot-order arrays execute during evaluation. These create immutable local values once without I/O, browser/DEV, scheduling or external mutation. Retain the catalog identity injected into Application."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "bc76c42541aebdd79ad2fcdf677770f2589d6adfb374128955524f666a91f200",
+      "module": "src/platform/browser/dom/engine_interface.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Existing UI_EXCEPTIONS object and three literal arrays retain one identity and original mutability. No external read/write during declaration evaluation; original initEngineInterface call remains in its classic activation file at logical slot 228. Context-menu handler reads these arrays live."
     }
   ],
   "activationPositions": [
@@ -638,6 +645,18 @@
       "owner": "stage-5.cluster-004-visual-style-resolvers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
+    },
+    {
+      "exportName": "initEngineInterface",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "initEngineInterface",
+      "shimFile": "activations/228_initengineinterface.js",
+      "sourceProvider": "src/ui/legacy/engine_interface.js",
+      "targetModule": "src/platform/browser/dom/engine_interface.js",
+      "id": "activation-069ceb6464c6",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
     },
     {
       "exportName": "FailedState",
@@ -880,6 +899,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "DepthSelectorUI",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "DepthSelectorUI",
+      "shimFile": "activations/228_depthselectorui.js",
+      "sourceProvider": "src/ui/legacy/depth_selector.js",
+      "targetModule": "src/platform/browser/ui/depth_selector.js",
+      "id": "activation-1d811087afde",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-1daa30ad1fef",
       "owner": "stage-3.replan-322.batch-026-inventory-ad73f2fb",
       "sourceProvider": "src/core/inventory/item_assembly_stacking_policy.js",
@@ -1092,6 +1123,18 @@
       "targetModule": "src/platform/browser/runtime/game_loop.js",
       "id": "activation-2db0890135e3",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "UIUtils",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "UIUtils",
+      "shimFile": "activations/228_uiutils.js",
+      "sourceProvider": "src/ui/legacy/ui_event_shield.js",
+      "targetModule": "src/platform/browser/dom/ui_event_shield.js",
+      "id": "activation-2e9c05cee13f",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -1394,6 +1437,18 @@
       "owner": "stage-5.cluster-009-inventory-item-renderers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "TimeDisplayUI",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "TimeDisplayUI",
+      "shimFile": "activations/228_timedisplayui.js",
+      "sourceProvider": "src/ui/legacy/time_display.js",
+      "targetModule": "src/platform/browser/ui/time_display.js",
+      "id": "activation-4b947b0e3c59",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "InventoryV2ItemOrderResolver",
@@ -1704,6 +1759,18 @@
       "targetModule": "src/game/application/inventory/inventory_facade.js",
       "id": "activation-67962a63c4a1",
       "owner": "stage-4.cluster-020-inventory-storage-application",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ChumUI",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "ChumUI",
+      "shimFile": "activations/228_chumui.js",
+      "sourceProvider": "src/ui/legacy/chum_controls.js",
+      "targetModule": "src/platform/browser/ui/chum_controls.js",
+      "id": "activation-67ec8a3b51a7",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2078,6 +2145,18 @@
       "shimFile": "activations/083_itemcapacityresolver.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "UIDraggableButton",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "UIDraggableButton",
+      "shimFile": "activations/228_uidraggablebutton.js",
+      "sourceProvider": "src/ui/legacy/draggable_button.js",
+      "targetModule": "src/platform/browser/dom/draggable_button.js",
+      "id": "activation-872a93240920",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "AssemblyInventoryContextFilterStrategy",
@@ -2464,6 +2543,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "HoldChargesUI",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "HoldChargesUI",
+      "shimFile": "activations/228_holdchargesui.js",
+      "sourceProvider": "src/ui/legacy/hold_charges.js",
+      "targetModule": "src/platform/browser/ui/hold_charges.js",
+      "id": "activation-aa0d4d8b47e0",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-aad64fe0f08c",
       "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
       "sourceProvider": "src/core/line/line_allocation_policy.js",
@@ -2726,6 +2817,18 @@
       "shimFile": "activations/144_inventoryitemlocation.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "UIManager",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "UIManager",
+      "shimFile": "activations/228_uimanager.js",
+      "sourceProvider": "src/ui/legacy/game_controls.js",
+      "targetModule": "src/platform/browser/ui/game_controls.js",
+      "id": "activation-c3af50745e36",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-cc1097105d17",
