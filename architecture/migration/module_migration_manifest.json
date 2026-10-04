@@ -51027,133 +51027,133 @@
           "items": [
             {
               "symbol": "HorizontalScrollController",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ActionContract",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2AssemblyEditorRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2AssemblyParameterSectionResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2FacadeContract",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2HeaderRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2InventoryGridRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2LoadoutPanelRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2TooltipPresenter",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2UI",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
               "symbol": "InventoryV2ViewModelNormalizer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             }
@@ -51185,7 +51185,7 @@
           "confirmed": [
             {
               "symbol": "HorizontalScrollController",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/interaction/horizontal_scroll_controller.js",
@@ -51193,7 +51193,7 @@
             },
             {
               "symbol": "InventoryV2ActionContract",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_view_model.js",
@@ -51201,7 +51201,7 @@
             },
             {
               "symbol": "InventoryV2ActionType",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_view_model.js",
@@ -51209,7 +51209,7 @@
             },
             {
               "symbol": "InventoryV2AssemblyEditorRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
@@ -51217,7 +51217,7 @@
             },
             {
               "symbol": "InventoryV2AssemblyParameterSectionResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
@@ -51225,7 +51225,7 @@
             },
             {
               "symbol": "InventoryV2AttachmentBadgeRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
@@ -51233,7 +51233,7 @@
             },
             {
               "symbol": "InventoryV2BalanceParameterResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
@@ -51241,7 +51241,7 @@
             },
             {
               "symbol": "InventoryV2DomFactory",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_dom_factory.js",
@@ -51249,7 +51249,7 @@
             },
             {
               "symbol": "InventoryV2FacadeContract",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_view_model.js",
@@ -51257,7 +51257,7 @@
             },
             {
               "symbol": "InventoryV2HeaderRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_header_renderer.js",
@@ -51265,7 +51265,7 @@
             },
             {
               "symbol": "InventoryV2InventoryGridRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
@@ -51273,7 +51273,7 @@
             },
             {
               "symbol": "InventoryV2ItemCardRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_item_card_renderer.js",
@@ -51281,7 +51281,7 @@
             },
             {
               "symbol": "InventoryV2ItemParametersRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
@@ -51289,7 +51289,7 @@
             },
             {
               "symbol": "InventoryV2ItemParametersResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
@@ -51297,7 +51297,7 @@
             },
             {
               "symbol": "InventoryV2LoadoutPanelRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
@@ -51305,7 +51305,7 @@
             },
             {
               "symbol": "InventoryV2LongPressController",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_long_press_controller.js",
@@ -51313,7 +51313,7 @@
             },
             {
               "symbol": "InventoryV2ResourceMeterRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
@@ -51321,7 +51321,7 @@
             },
             {
               "symbol": "InventoryV2ResourceMeterResolver",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
@@ -51329,7 +51329,7 @@
             },
             {
               "symbol": "InventoryV2SavedLoadoutPreviewRenderer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
@@ -51337,7 +51337,7 @@
             },
             {
               "symbol": "InventoryV2TooltipPresenter",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
@@ -51345,7 +51345,7 @@
             },
             {
               "symbol": "InventoryV2UI",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_ui.js",
@@ -51353,7 +51353,7 @@
             },
             {
               "symbol": "InventoryV2ViewModelNormalizer",
-              "mechanism": "global-this-property",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/ui/inventory/inventory_v2_view_model.js",

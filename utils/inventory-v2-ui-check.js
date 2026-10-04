@@ -922,21 +922,19 @@ class InventoryV2StaticContractCheck {
   #assertAllInteractions(files) {
     const timers = new FakeTimers();
     const document = new FakeDocument();
-    const sandbox = {
+    let sandbox = {
       console,
       document,
       setTimeout: (callback, delay) => timers.setTimeout(callback, delay),
       clearTimeout: (id) => timers.clearTimeout(id),
     };
-    sandbox.globalThis = sandbox;
     const runtime = new SourceRuntime({globals:sandbox});
     const context = runtime.context;
-    runtime.load("src/config/inventory/inventory_v2_item_parameter_config.js");
+    sandbox = context;
+    runtime.load("src/config/inventory/inventory_v2_item_parameter_config.js", { expose: ["INVENTORY_V2_ITEM_PARAMETER_CONFIG", "INVENTORY_V2_ITEM_PARAMETER_ALIASES", "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG", "INVENTORY_V2_RARITY_NAMES"] });
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
-    for (const name of ["INVENTORY_V2_ITEM_PARAMETER_CONFIG", "INVENTORY_V2_ITEM_PARAMETER_ALIASES",
-      "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG", "INVENTORY_V2_RARITY_NAMES"]) context[name] = sandbox[name];
     const identities=runtime.run('(() => { let checked=0; for (const exports of Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules)) for (const [name,value] of Object.entries(exports)) if (Object.hasOwn(globalThis,name)) { if (globalThis[name] !== value) throw new Error("UI export identity changed: "+name); checked++; } return checked; })()');
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
     sandbox.InventoryV2ItemParametersResolver = bindConstructorDefaults(sandbox.InventoryV2ItemParametersResolver,
