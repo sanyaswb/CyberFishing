@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "017",
+  "slug": "render-frame-storage",
+  "milestone": "M3",
+  "boundary": "game-presentation",
+  "tier": "A",
+  "tierEvidence": "Preparation 001 injects the optional render allocation diagnostics port without DEV imports or globals. Actual repeated storage scenario covers 120 frames with authoritative frame/list/intent identities, one growth per list, reset visibility, positional/options API, ordering catalogs, validation and negative deltaTime. Member bodies/allocation sites and ordered public traces remain exact.",
+  "modules": [
+    {
+      "currentPath": "src/render/core/render_frame_buffer.js",
+      "targetPath": "src/game/presentation/rendering/render_frame_buffer.js",
+      "exports": [
+        "ReusableRenderList",
+        "GameRenderFrame",
+        "RenderFrameBuffer"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "Preparation 001 injects the optional render allocation diagnostics port without DEV imports or globals. Actual repeated storage scenario covers 120 frames with authoritative frame/list/intent identities, one growth per list, reset visibility, positional/options API, ordering catalogs, validation and negative deltaTime. Member bodies/allocation sites and ordered public traces remain exact."
+        },
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Preparation 001 injects the optional render allocation diagnostics port without DEV imports or globals. Actual repeated storage scenario covers 120 frames with authoritative frame/list/intent identities, one growth per list, reset visibility, positional/options API, ordering catalogs, validation and negative deltaTime. Member bodies/allocation sites and ordered public traces remain exact."
+        }
+      ]
+    },
+    {
+      "currentPath": "src/render/core/render_order.js",
+      "targetPath": "src/game/presentation/rendering/game_render_order.js",
+      "exports": [
+        "RENDER_ORDER",
+        "RENDER_SEQUENCE",
+        "RenderOrder"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "Preparation 001 injects the optional render allocation diagnostics port without DEV imports or globals. Actual repeated storage scenario covers 120 frames with authoritative frame/list/intent identities, one growth per list, reset visibility, positional/options API, ordering catalogs, validation and negative deltaTime. Member bodies/allocation sites and ordered public traces remain exact."
+        }
+      ],
+      "sideEffectReview": "Two original Object.freeze literal catalogs created once, no browser/DEV or external side effect. Same catalog objects, sequence and values retained."
+    },
+    {
+      "currentPath": "src/app/rendering/game_render_intent.js",
+      "targetPath": "src/game/presentation/rendering/game_render_intent.js",
+      "exports": [
+        "GameRenderIntent"
+      ],
+      "imports": [],
+      "reviewedBlockers": []
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "017",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "ReusableRenderList,GameRenderFrame,RenderFrameBuffer,RenderOrder,GameRenderIntent",
+        "--scenarios",
+        "utils/platform-runtime-check.js",
+        "--static-methods"
+      ]
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-017-render-frame-storage",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/render/core/render_frame_buffer.js",
+        "targetPath": "src/game/presentation/rendering/render_frame_buffer.js",
+        "sourceSha256": "62391b6ef8ed0ac9b2af3cb3d6f70234a4d9be0e9e73a80b8ea0bc1a63d08e25",
+        "targetSha256": "f5d55c812f2c0388732ce87daae6e7cde0610ac5f59fe32caacea1ef9dd30a43"
+      },
+      {
+        "currentPath": "src/render/core/render_order.js",
+        "targetPath": "src/game/presentation/rendering/game_render_order.js",
+        "sourceSha256": "81855fc560d908ef79fe24d9cad1fa430f59dbf9712986b61e6ed56ea9acdf11",
+        "targetSha256": "7301d322d66057f12463303f80f47d596eb404966339ee23d3591ad20b1a740e"
+      },
+      {
+        "currentPath": "src/app/rendering/game_render_intent.js",
+        "targetPath": "src/game/presentation/rendering/game_render_intent.js",
+        "sourceSha256": "d1bdc2563f10eb26c7ee3b4fdaca87cec1cb784de2abb54322b9b82720fe4a59",
+        "targetSha256": "d1d3349a3fa6918685ba12b323c7337079c8dff0dc86a3052cec1749353a2350"
+      }
+    ],
+    "activations": [
+      "activation-54299db34248",
+      "activation-59e7d2ca16c7",
+      "activation-808537f09ea2"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [
+      "src/game/presentation/rendering/game_render_order.js"
+    ],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-513d14d7f445",
+      "bridge-95b2c79faa95",
+      "bridge-b4426d497785",
+      "bridge-b90a88790dea"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/017_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "a5581d03cb0571ab9deaa9f4c87dca8734e348631c1a7fe89c972acfe1f0a05b",
+        "after": "c24f6280101013a5a928f36cb2841a0a43bd4476871593fd9bdeae6d32d17cc0"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "7ab6c3e6493b9d141b45040eda1324ed82c2ce9e0c5693049b2cbed158ce31e6",
+        "after": "7ab6c3e6493b9d141b45040eda1324ed82c2ce9e0c5693049b2cbed158ce31e6"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "427c380cc6b9c275e84f28fc9506055b3faa44dfab91108364f2d5875b95a9ba",
+        "after": "ef577205f008782738467aae3c006b672883d7bafd1ee7b74ca04f52317baf1a"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "c9cbf808baf22804a02ff35c1312c47870c0fc52ae9926e1f16fdacdcb4b34e2",
+        "after": "50deec97d2605c50f33a379db42092c74bf820281c1a9eb8e842057ab4745caf"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "c064c82ba1488e43ddc00354e6c62dbcde4bce0d1cb37129233e4dbf6bea2d47",
+        "after": "bee171488ec5227547c9cba9322b8cf2276d10c83e006bb275fe738ae6be50a4"
+      },
+      {
+        "path": "index.html",
+        "before": "3d4db8ead40c0cbd4e69e080b166d44d2233391628e99e4164cbf6cc812989a7",
+        "after": "0e0f07edd97cd0901d25d9cb2a975a1f0e2e63c265fbcb61707bd449d407cb16"
+      },
+      {
+        "path": "src/app/rendering/game_render_intent.js",
+        "before": "d1bdc2563f10eb26c7ee3b4fdaca87cec1cb784de2abb54322b9b82720fe4a59",
+        "after": "97bda94befb57c31f9f0a38ef8c8e78690517eeccfbe94512b3f3ab08874c6de"
+      },
+      {
+        "path": "src/game/presentation/rendering/game_render_intent.js",
+        "before": null,
+        "after": "d1d3349a3fa6918685ba12b323c7337079c8dff0dc86a3052cec1749353a2350"
+      },
+      {
+        "path": "src/game/presentation/rendering/game_render_order.js",
+        "before": null,
+        "after": "7301d322d66057f12463303f80f47d596eb404966339ee23d3591ad20b1a740e"
+      },
+      {
+        "path": "src/game/presentation/rendering/render_frame_buffer.js",
+        "before": null,
+        "after": "f5d55c812f2c0388732ce87daae6e7cde0610ac5f59fe32caacea1ef9dd30a43"
+      },
+      {
+        "path": "src/render/core/render_frame_buffer.js",
+        "before": "62391b6ef8ed0ac9b2af3cb3d6f70234a4d9be0e9e73a80b8ea0bc1a63d08e25",
+        "after": "60fe7509ee7e6fa9322a9a5745c3154e56a9fd8e602f1ca9171e3e8dbd3cc08a"
+      },
+      {
+        "path": "src/render/core/render_order.js",
+        "before": "81855fc560d908ef79fe24d9cad1fa430f59dbf9712986b61e6ed56ea9acdf11",
+        "after": "aa8fbe93e03f0f48df13ea7ccebd44f7386cbb29e79061bc7e6cd92de7213845"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 759 modules, 923 unified edges, 852 globals, 38 exact known-debt diagnostics, 0 FAIL in 777ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 759/759 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 232 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 232 activations and 254 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 54 record(s), 53 applied, 158 ESM target(s) inside their boundaries; 14 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and 23 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "3f800ba27e6aa93b61b0956d197b026340ff7239037a49e16a33c1964addc74a"
+      }
+    ],
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 232,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}

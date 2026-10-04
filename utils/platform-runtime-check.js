@@ -10,7 +10,8 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 function checkRenderStorage() {
   const runtime=new SourceRuntime();
   runtime.load('src/render/core/render_frame_buffer.js',{expose:['ReusableRenderList','GameRenderFrame','RenderFrameBuffer']});
-  runtime.load('src/render/core/render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE']});
+  runtime.load('src/render/core/render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE','NO_RENDER_EXPORT']});
+  assert.equal(runtime.context.NO_RENDER_EXPORT,undefined,'unknown explicit names do not create exports');
   runtime.load('src/app/rendering/game_render_intent.js',{expose:['GameRenderIntent']});
   const c=runtime.context, growth=[],diagnostics={recordFrameCreated(){growth.push('frame');},recordBufferGrowth(id){growth.push(id);}};
   const buffer=new c.RenderFrameBuffer({diagnostics}),frame=buffer.current,intent=new c.GameRenderIntent();

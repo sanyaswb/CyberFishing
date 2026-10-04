@@ -1287,6 +1287,22 @@
       ]
     },
     {
+      "id": "bridge-513d14d7f445",
+      "bridge": "src/render/core/render_order.js",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/game_render_order.js",
+      "reason": "Preserve the exact RenderOrder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RenderOrder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-533cd2627ecb",
       "bridge": "src/core/items/condition/item_condition_descriptor.js",
       "owner": "stage-5.cluster-003-item-and-fish-descriptors",
@@ -2559,6 +2575,22 @@
       ]
     },
     {
+      "id": "bridge-95b2c79faa95",
+      "bridge": "src/app/rendering/game_render_intent.js",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "source": "src/app/rendering/game_render_coordinator.js",
+      "target": "src/game/presentation/rendering/game_render_intent.js",
+      "reason": "Preserve the exact GameRenderIntent consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "GameRenderIntent",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-95d3da316a17",
       "bridge": "src/core/assemblies/assembly_completion_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -2999,6 +3031,22 @@
       ]
     },
     {
+      "id": "bridge-b4426d497785",
+      "bridge": "src/render/core/render_order.js",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "source": "src/render/pipeline/game_render_pipeline.js",
+      "target": "src/game/presentation/rendering/game_render_order.js",
+      "reason": "Preserve the exact RenderOrder consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "RenderOrder",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b687745f9ff8",
       "bridge": "src/infrastructure/location/offscreen_canvas_factory.js",
       "owner": "stage-4.cluster-012-platform-canvas-assets",
@@ -3026,6 +3074,22 @@
       "globalProviders": [
         {
           "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b90a88790dea",
+      "bridge": "src/render/core/render_frame_buffer.js",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/render_frame_buffer.js",
+      "reason": "Preserve the exact RenderFrameBuffer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RenderFrameBuffer",
           "mechanism": "global-this-property"
         }
       ]

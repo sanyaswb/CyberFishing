@@ -614,6 +614,13 @@
       "module": "src/game/presentation/version/project_version.js",
       "owner": "stage-5.cluster-015-presentation-version-catalog",
       "reason": "Existing Object.freeze literal version config and frozen notes, built once. Version string, label and frozen identity unchanged. Browser alias is still exposed from original classic activation at logical slot 1, after the catalog activation."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "6566d6f370129547aa2a4b6d4e66ced9fb08aa4abd4b0fc60773c6796f1d9bad",
+      "module": "src/game/presentation/rendering/game_render_order.js",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "reason": "Two original Object.freeze literal catalogs created once, no browser/DEV or external side effect. Same catalog objects, sequence and values retained."
     }
   ],
   "activationPositions": [
@@ -1542,6 +1549,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "RenderFrameBuffer",
+      "legacyScriptIndex": 357,
+      "legacySymbol": "RenderFrameBuffer",
+      "shimFile": "activations/357_renderframebuffer.js",
+      "sourceProvider": "src/render/core/render_frame_buffer.js",
+      "targetModule": "src/game/presentation/rendering/render_frame_buffer.js",
+      "id": "activation-54299db34248",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-544317b07a23",
       "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
       "sourceProvider": "src/core/casting_distance.js",
@@ -1646,6 +1665,18 @@
       "legacySymbol": "RodCapabilityResolver",
       "legacyScriptIndex": 157,
       "shimFile": "activations/157_rodcapabilityresolver.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "GameRenderIntent",
+      "legacyScriptIndex": 408,
+      "legacySymbol": "GameRenderIntent",
+      "shimFile": "activations/408_gamerenderintent.js",
+      "sourceProvider": "src/app/rendering/game_render_intent.js",
+      "targetModule": "src/game/presentation/rendering/game_render_intent.js",
+      "id": "activation-59e7d2ca16c7",
+      "owner": "stage-5.cluster-017-render-frame-storage",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2020,6 +2051,18 @@
       "shimFile": "activations/075_derivedstatmetricstrategy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "RenderOrder",
+      "legacyScriptIndex": 359,
+      "legacySymbol": "RenderOrder",
+      "shimFile": "activations/359_renderorder.js",
+      "sourceProvider": "src/render/core/render_order.js",
+      "targetModule": "src/game/presentation/rendering/game_render_order.js",
+      "id": "activation-808537f09ea2",
+      "owner": "stage-5.cluster-017-render-frame-storage",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "InventoryV2SnapshotFactory",
