@@ -1,1 +1,1 @@
-globalThis.ItemRarityResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/rarity/item_rarity_resolver.js"]["ItemRarityResolver"];
+// Retired Stage 3 activation activation-feaf02eaca22: ItemRarityResolver is served only through ESM imports of src/game/domain/items/rarity/item_rarity_resolver.js.

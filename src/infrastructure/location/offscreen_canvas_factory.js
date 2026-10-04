@@ -1,1 +1,1 @@
-globalThis.OffscreenCanvasFactory = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/canvas/offscreen_canvas_factory.js"]["OffscreenCanvasFactory"];
+// Retired Stage 4 activation activation-eec3f9934bf9: OffscreenCanvasFactory is served only through ESM imports of src/platform/browser/canvas/offscreen_canvas_factory.js.

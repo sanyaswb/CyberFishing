@@ -1,1 +1,1 @@
-globalThis.INVENTORY_RULE_MESSAGES = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_rule_messages.js"]["INVENTORY_RULE_MESSAGES"];
+// Retired Stage 5 activation activation-0e69ed74cc78: INVENTORY_RULE_MESSAGES is served only through ESM imports of src/game/presentation/inventory/inventory_rule_messages.js.

@@ -1,1 +1,1 @@
-globalThis.BaitEffectivenessDescriptor = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/bait_effectiveness_descriptor.js"]["BaitEffectivenessDescriptor"];
+// Retired Stage 5 activation activation-13fe2e43abc7: BaitEffectivenessDescriptor is served only through ESM imports of src/game/presentation/inventory/bait_effectiveness_descriptor.js.

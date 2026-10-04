@@ -1,1 +1,1 @@
-globalThis.RenderOrder = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/rendering/game_render_order.js"]["RenderOrder"];
+// Retired Stage 5 activation activation-808537f09ea2: RenderOrder is served only through ESM imports of src/game/presentation/rendering/game_render_order.js.

@@ -1,1 +1,1 @@
-globalThis.AlwaysKnownBaitEffectivenessPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js"]["AlwaysKnownBaitEffectivenessPolicy"];
+// Retired Stage 3 activation activation-fa2fa2abbda3: AlwaysKnownBaitEffectivenessPolicy is served only through ESM imports of src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js.

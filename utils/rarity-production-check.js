@@ -1,6 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
 const {
   StageThreeRuntimeScriptAliasResolver,
 } = require("./architecture/migration/stage_three_runtime_script_alias_resolver");
@@ -10,12 +11,18 @@ const VALIDATOR_SCRIPT = "src/config/validation/rarity_config_validator.js";
 
 class ProductionRarityConfigLoader {
   load() {
-    const scripts = this.#readConfigScriptPaths();
+    const contract = JSON.parse(fs.readFileSync(path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
+    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(contract);
+    const scripts = this.#readConfigScriptPaths(aliases);
     const context = vm.createContext({ console, structuredClone });
+    const loader = new StageThreeCompatibilityTestLoader({ projectRoot: ROOT, context });
     for (const browserPath of scripts) {
       const relativePath = this.#toFilePath(browserPath);
-      const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-      vm.runInContext(source, context, { filename: relativePath });
+      if (relativePath === contract.output.directory + contract.output.runtimeFile) loader.loadRuntime();
+      else {
+        const provider = aliases.get(relativePath) ?? relativePath;
+        loader.load(provider, provider === VALIDATOR_SCRIPT ? ["RarityConfigValidator"] : []);
+      }
     }
     vm.runInContext(
       [
@@ -36,11 +43,9 @@ class ProductionRarityConfigLoader {
     };
   }
 
-  #readConfigScriptPaths() {
+  #readConfigScriptPaths(aliases) {
     const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
-    // A migrated validator loads through its activation shim, which resolves to the classic provider.
-    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(JSON.parse(fs.readFileSync(
-      path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8")));
+    // Preserve the exact index prefix; active or retired aliases resolve to the same authored provider.
     const scripts = [];
     const pattern = /<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/gu;
     let match = pattern.exec(html);

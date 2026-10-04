@@ -1,1 +1,1 @@
-globalThis.InventoryV2CompositionRoot = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/bootstrap/production/inventory_composition_root.js"]["InventoryV2CompositionRoot"];
+// Retired Stage 5 activation activation-5927bafd6d24: InventoryV2CompositionRoot is served only through ESM imports of src/bootstrap/production/inventory_composition_root.js.

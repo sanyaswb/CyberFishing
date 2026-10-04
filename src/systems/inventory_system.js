@@ -1,5 +1,5 @@
-globalThis.LineCompatibilityRules = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/legacy_inventory_system.js"]["LineCompatibilityRules"];
-globalThis.InventoryManager = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/legacy_inventory_system.js"]["InventoryManager"];
-globalThis.InventoryRuntimeConfigProvider = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/legacy_inventory_system.js"]["InventoryRuntimeConfigProvider"];
-globalThis.InventoryEventBridge = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/legacy_inventory_system.js"]["InventoryEventBridge"];
-globalThis.ItemDatabase = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/inventory/legacy_inventory_system.js"]["ItemDatabase"];
+// Retired Stage 4 activation activation-535e8074f2ef: LineCompatibilityRules is served only through ESM imports of src/game/application/inventory/legacy_inventory_system.js.
+// Retired Stage 4 activation activation-53dab68b8e3a: InventoryManager is served only through ESM imports of src/game/application/inventory/legacy_inventory_system.js.
+// Retired Stage 4 activation activation-5547ff258fca: InventoryRuntimeConfigProvider is served only through ESM imports of src/game/application/inventory/legacy_inventory_system.js.
+// Retired Stage 4 activation activation-61e22b795651: InventoryEventBridge is served only through ESM imports of src/game/application/inventory/legacy_inventory_system.js.
+// Retired Stage 4 activation activation-e477081b2044: ItemDatabase is served only through ESM imports of src/game/application/inventory/legacy_inventory_system.js.

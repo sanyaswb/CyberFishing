@@ -1,1 +1,1 @@
-globalThis.EffectiveItemStatsResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/effective_item_stats_resolver.js"]["EffectiveItemStatsResolver"];
+// Retired Stage 3 activation activation-d4bfb713b7de: EffectiveItemStatsResolver is served only through ESM imports of src/game/domain/items/effective_item_stats_resolver.js.

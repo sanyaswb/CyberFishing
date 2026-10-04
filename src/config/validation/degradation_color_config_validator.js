@@ -1,1 +1,1 @@
-globalThis.DegradationColorConfigValidator = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/visual/degradation_color_config_validator.js"]["DegradationColorConfigValidator"];
+// Retired Stage 5 activation activation-2aafa772226e: DegradationColorConfigValidator is served only through ESM imports of src/game/presentation/visual/degradation_color_config_validator.js.

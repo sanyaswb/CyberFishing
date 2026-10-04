@@ -1,1 +1,1 @@
-globalThis.Canvas2DSurface = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/canvas/canvas_2d_surface.js"]["Canvas2DSurface"];
+// Retired Stage 4 activation activation-32fa6a327bca: Canvas2DSurface is served only through ESM imports of src/platform/browser/canvas/canvas_2d_surface.js.

@@ -80,26 +80,6 @@
       }
     },
     {
-      "id": "debt-boundary-dependency-8befc9f421c4",
-      "rule": "boundary-dependency",
-      "source": "src/app/bootstrap.js",
-      "target": "src/config/databases/item_db.js",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy boundary-dependency debt.",
-      "blockers": [
-        "dev-production-coupling",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "8befc9f421c448721594ca8dfd5aaa973cac02de959101f3b5da617d06aa53fb",
-      "identity": {
-        "rule": "boundary-dependency",
-        "source": "src/app/bootstrap.js",
-        "target": "src/config/databases/item_db.js"
-      }
-    },
-    {
       "id": "debt-boundary-dependency-8ea4a21033c1",
       "rule": "boundary-dependency",
       "source": "src/debug/dev_tools.js",

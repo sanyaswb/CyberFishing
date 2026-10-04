@@ -1,1 +1,1 @@
-globalThis.ItemCatalogBaselineRegistry = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/progression/item_catalog_baseline_registry.js"]["ItemCatalogBaselineRegistry"];
+// Retired Stage 3 activation activation-ecd31221cae2: ItemCatalogBaselineRegistry is served only through ESM imports of src/game/domain/items/progression/item_catalog_baseline_registry.js.

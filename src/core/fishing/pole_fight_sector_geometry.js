@@ -1,1 +1,1 @@
-globalThis.PoleFightSectorGeometry = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/fishing/pole_fight_sector_geometry.js"]["PoleFightSectorGeometry"];
+// Retired Stage 3 activation activation-ffea5244c4bf: PoleFightSectorGeometry is served only through ESM imports of src/game/domain/fishing/pole_fight_sector_geometry.js.

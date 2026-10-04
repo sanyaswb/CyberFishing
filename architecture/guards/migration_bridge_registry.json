@@ -3,54 +3,6 @@
   "kind": "cyber-fishing-migration-bridges",
   "bridges": [
     {
-      "id": "bridge-005893f35e40",
-      "bridge": "src/core/core.js",
-      "owner": "stage-4.cluster-016-core-input-cache",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/input/input_manager.js",
-      "reason": "Preserve the exact InputManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InputManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-01724120a7b3",
-      "bridge": "src/render/screens/game_over_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/game_over_renderer.js",
-      "reason": "Preserve the exact GameOverRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameOverRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-02d6395e7c10",
-      "bridge": "src/app/utils.js",
-      "owner": "stage-5.cluster-029-seeded-random-prerequisite",
-      "source": "src/app/bootstrap.js",
-      "target": "src/engine/random/seeded_rng.js",
-      "reason": "Preserve the exact SeededRng consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "SeededRng",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-02e7d86b6845",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -62,22 +14,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-037e5fd99a80",
-      "bridge": "src/app/rendering/outcome_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/outcome_render_frame_builder.js",
-      "reason": "Preserve the exact OutcomeRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "OutcomeRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -99,70 +35,6 @@
       ]
     },
     {
-      "id": "bridge-03e715a37e74",
-      "bridge": "src/app/application.js",
-      "owner": "stage-5.cluster-025-game-application-composition",
-      "source": "src/app/bootstrap.js",
-      "target": "src/bootstrap/production/game_application.js",
-      "reason": "Preserve the exact GameApplication consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameApplication",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-04ac871515bf",
-      "bridge": "src/systems/chum_system.js",
-      "owner": "stage-4.cluster-027-bite-chum",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/chum/chum_service.js",
-      "reason": "Preserve the exact ChumManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ChumManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-06a78b1b4e3b",
-      "bridge": "src/core/items/bait/bait_effectiveness_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
-      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-099ee6b83cde",
-      "bridge": "src/ui/progression/item_progression_visual_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/item_progression_visual_resolver.js",
-      "reason": "Preserve the exact ItemProgressionVisualResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ItemProgressionVisualResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-0c3a82cc9ba1",
       "bridge": "src/ui/legacy/draggable_button.js",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
@@ -174,22 +46,6 @@
       "globalProviders": [
         {
           "symbol": "UIDraggableButton",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-0c69ccfa652e",
-      "bridge": "src/config/validation/rarity_config_validator.js",
-      "owner": "stage-4.cluster-001-rarity-validators",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/config/validation/rarity_config_validator.js",
-      "reason": "Preserve the exact RarityConfigValidator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RarityConfigValidator",
           "mechanism": "global-this-property"
         }
       ]
@@ -211,22 +67,6 @@
       ]
     },
     {
-      "id": "bridge-0ef2bdf5d9fb",
-      "bridge": "src/ui/styles/hud_style_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/styles/hud_style_resolver.js",
-      "reason": "Preserve the exact HudStyleResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HudStyleResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-11bab2b81092",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -238,70 +78,6 @@
       "globalProviders": [
         {
           "symbol": "FightPhysicsConfigAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-145734990113",
-      "bridge": "src/core/items/freshness/bait_freshness_modifier.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/freshness/bait_freshness_modifier.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitFreshnessModifier",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-15347aabf196",
-      "bridge": "src/ui/styles/outcome_style_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/styles/outcome_style_resolver.js",
-      "reason": "Preserve the exact OutcomeStyleResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "OutcomeStyleResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-172576dcae79",
-      "bridge": "src/ui/progression/item_progression_dom_adapter.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/dom/item_progression_dom_adapter.js",
-      "reason": "Preserve the exact ItemProgressionDomAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemProgressionDomAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-19f525f74d35",
-      "bridge": "src/core/fish/fish_anomaly_variant_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
-      "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
-      "owner": "stage-3.candidate-009-fish-444e8034",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "FishAnomalyVariantResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -339,6 +115,22 @@
       ]
     },
     {
+      "id": "bridge-1efdb8174ba9",
+      "bridge": "src/app/bootstrap.js",
+      "owner": "stage-5.cluster-026-production-composition-root",
+      "source": "src/app/script.js",
+      "target": "src/bootstrap/production/game_composition_root.js",
+      "reason": "Preserve the exact GameCompositionRoot consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameCompositionRoot",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-1f0aabf6e9c3",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -350,166 +142,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-23ff0af82ed3",
-      "bridge": "src/render/pipeline/hud_render_pass.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/hud_render_pass.js",
-      "reason": "Preserve the exact HudRenderPass consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HudRenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-25847890dd52",
-      "bridge": "src/app/rendering/boat_chum_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
-      "reason": "Preserve the exact BoatChumRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BoatChumRenderFrameBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2a3e32b4001d",
-      "bridge": "src/input/victory_action_gesture_resolver.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/input/victory_action_gesture_resolver.js",
-      "reason": "Preserve the exact VictoryActionGestureResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "VictoryActionGestureResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2b4626587b51",
-      "bridge": "src/ui/legacy/hold_charges.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/ui/hold_charges.js",
-      "reason": "Preserve the exact HoldChargesUI consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HoldChargesUI",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2cc9ae6d5e4f",
-      "bridge": "src/render/hud/hud_bar_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/hud_bar_renderer.js",
-      "reason": "Preserve the exact HudBarRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HudBarRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2fe0c0ead484",
-      "bridge": "src/world/world.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/locations/location_world.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LocationMap",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-30af1aabaaa6",
-      "bridge": "src/core/items/condition/item_condition_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/condition/item_condition_resolver.js",
-      "reason": "Preserve the exact item condition resolver consumer until its legacy symbol is removed.",
-      "owner": "stage-3.replan-336.batch-035-items-48cb5bbc",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemConditionResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3532db04f7d4",
-      "bridge": "src/core/items/progression/item_capacity_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_capacity_resolver.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemCapacityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-373a8dd11f2d",
-      "bridge": "src/app/core/game_clock.js",
-      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/time/game_clock.js",
-      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "GameClock",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-394299e6e95b",
-      "bridge": "src/ui/styles/fight_area_style_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/styles/fight_area_style_resolver.js",
-      "reason": "Preserve the exact FightAreaStyleResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightAreaStyleResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -547,70 +179,6 @@
       ]
     },
     {
-      "id": "bridge-3c8c08b9ad11",
-      "bridge": "src/core/items/progression/item_quality_resolver.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/item_quality_resolver.js",
-      "reason": "Preserve the exact ItemQualityResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ItemQualityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3f71b3aa7979",
-      "bridge": "src/core/items/freshness/item_freshness_descriptor.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/item_freshness_descriptor.js",
-      "reason": "Preserve the exact ItemFreshnessDescriptor consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ItemFreshnessDescriptor",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-3fa564e45db2",
-      "bridge": "src/core/casting_distance.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/casting/cast_distance_calculator.js",
-      "reason": "Preserve the exact casting, fight-force, rod-pull, stacking and tackle-stress consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-043-casting-fishing-inventory-604ba059",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CastDistanceCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-41b3d187b767",
-      "bridge": "src/world/viewport_projector.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/viewport/viewport_projector.js",
-      "reason": "Preserve the exact ViewportProjector consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ViewportProjector",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-41df300f3d51",
       "bridge": "src/ui/version/game_version_badge.js",
       "owner": "stage-5.cluster-016-version-badge-composition",
@@ -627,30 +195,6 @@
       ]
     },
     {
-      "id": "bridge-428b2b351677",
-      "bridge": "src/app/adapters.js",
-      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
-      "reason": "Preserve the exact BrowserAudioAdapter, BrowserDebugAdapter, CanvasMetricsProvider, DevFlagsProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BrowserAudioAdapter",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "BrowserDebugAdapter",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "CanvasMetricsProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-458830160792",
       "bridge": "src/infrastructure/storage/cache_manager.js",
       "owner": "stage-4.cluster-036-platform-cache",
@@ -662,54 +206,6 @@
       "globalProviders": [
         {
           "symbol": "CacheManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-461d6cf38f15",
-      "bridge": "src/render/screens/victory_theme_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/victory_theme_resolver.js",
-      "reason": "Preserve the exact VictoryThemeResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "VictoryThemeResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-46299b2121aa",
-      "bridge": "src/core/items/bait/bait_effectiveness_descriptor.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
-      "reason": "Preserve the exact BaitEffectivenessDescriptor consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessDescriptor",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-465e746a78c9",
-      "bridge": "src/core/items/progression/derived_stat_metric_strategy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
-      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "DerivedStatMetricStrategy",
           "mechanism": "global-this-property"
         }
       ]
@@ -747,86 +243,6 @@
       ]
     },
     {
-      "id": "bridge-5021e2c92869",
-      "bridge": "src/core/items/progression/target_range_metric_strategy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/target_range_metric_strategy.js",
-      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "TargetRangeMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-513d14d7f445",
-      "bridge": "src/render/core/render_order.js",
-      "owner": "stage-5.cluster-017-render-frame-storage",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/game_render_order.js",
-      "reason": "Preserve the exact RenderOrder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "RenderOrder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-533cd2627ecb",
-      "bridge": "src/core/items/condition/item_condition_descriptor.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/item_condition_descriptor.js",
-      "reason": "Preserve the exact ItemConditionDescriptor consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ItemConditionDescriptor",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-56e55289e29d",
-      "bridge": "src/render/pipeline/fishing_render_pass.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/fishing_render_pass.js",
-      "reason": "Preserve the exact FishingRenderPass consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishingRenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-58165fffa69d",
-      "bridge": "src/ui/styles/rarity_visual_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/styles/rarity_visual_resolver.js",
-      "reason": "Preserve the exact RarityVisualResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "RarityVisualResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-583ef0b7fc62",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -859,38 +275,6 @@
       ]
     },
     {
-      "id": "bridge-5c772f8178f1",
-      "bridge": "src/ui/condition/item_condition_dom_adapter.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/dom/item_condition_dom_adapter.js",
-      "reason": "Preserve the exact ItemConditionDomAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemConditionDomAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-5d652a225320",
-      "bridge": "src/entities/tackle.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/tackle/tackle.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Net",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-5e28756461b3",
       "bridge": "src/app/adapters.js",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
@@ -906,54 +290,6 @@
         },
         {
           "symbol": "DevFlagsProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-5f59762b301d",
-      "bridge": "src/render/pipeline/casting_render_pass.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/casting_render_pass.js",
-      "reason": "Preserve the exact CastingRenderPass consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "CastingRenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-5f6c783bbcd7",
-      "bridge": "src/core/items/rarity/item_rarity_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/rarity/item_rarity_resolver.js",
-      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6026ec63dbf8",
-      "bridge": "src/app/rendering/fight_area_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
-      "reason": "Preserve the exact FightAreaRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightAreaRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -975,102 +311,6 @@
       ]
     },
     {
-      "id": "bridge-635531dc786c",
-      "bridge": "src/render/core/canvas_2d_surface.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/canvas/canvas_2d_surface.js",
-      "reason": "Preserve the exact Canvas2DSurface consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Canvas2DSurface",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-63bf51205c32",
-      "bridge": "src/app/fishing.js",
-      "owner": "stage-4.cluster-037-fishing-runtime-services",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/fishing/fishing_runtime_services.js",
-      "reason": "Preserve the exact CastService, CatchResolutionService, FightService, FightSessionFactory, FishingController consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "CastService",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "CatchResolutionService",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "FightService",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "FightSessionFactory",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "FishingController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6440a19d970c",
-      "bridge": "src/core/items/freshness/item_freshness_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/freshness/item_freshness_resolver.js",
-      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemFreshnessResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6486d3fc3720",
-      "bridge": "src/render/screens/victory_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/victory_renderer.js",
-      "reason": "Preserve the exact VictoryRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "VictoryRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-654bc3fd2448",
-      "bridge": "src/render/fishing/fishing_scene_renderer.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/fishing_scene_renderer.js",
-      "reason": "Preserve the exact FishingSceneRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishingSceneRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-68b5ca7a7c78",
       "bridge": "src/config/rarity/rarity_visual_config.js",
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
@@ -1082,70 +322,6 @@
       "globalProviders": [
         {
           "symbol": "RARITY_VISUAL_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-69e08a840e34",
-      "bridge": "src/core/items/progression/item_progression_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_progression_resolver.js",
-      "reason": "Preserve the exact item resolver consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-336.batch-037-items-5fccd461",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemProgressionResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6ac5e587de02",
-      "bridge": "src/render/pipeline/world_render_pass.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/world_render_pass.js",
-      "reason": "Preserve the exact WorldRenderPass consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "WorldRenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6bb6d3e8bf48",
-      "bridge": "src/render/hud/fight_status_bars_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/fight_status_bars_renderer.js",
-      "reason": "Preserve the exact FightStatusBarsRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightStatusBarsRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6d95a9eeba14",
-      "bridge": "src/app/rendering/fishing_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/fishing_render_frame_builder.js",
-      "reason": "Preserve the exact FishingRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishingRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -1199,38 +375,6 @@
       ]
     },
     {
-      "id": "bridge-731268dfa3b5",
-      "bridge": "src/render/pipeline/outcome_render_pass.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/outcome_render_pass.js",
-      "reason": "Preserve the exact OutcomeRenderPass consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "OutcomeRenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-7376f5e6b272",
-      "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/engine/di/dependency_contract_validator.js",
-      "reason": "Keep the reviewed classic GameCompositionRoot consumer synchronous until its Stage 5 bootstrap migration.",
-      "owner": "stage-2.2-engine-dependency-contract",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "DependencyContractValidator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-749f8561f15d",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -1242,54 +386,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-74c3524f1202",
-      "bridge": "src/render/fishing/line_visual_state_controller.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/line_visual_state_controller.js",
-      "reason": "Preserve the exact LineVisualStateController consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "LineVisualStateController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-74ff3d1ea14b",
-      "bridge": "src/core/items/item_stat_override_policy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/item_stat_override_policy.js",
-      "reason": "Preserve the exact item stat consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemStatOverridePolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-779213470262",
-      "bridge": "src/core/items/rarity/authored_item_rarity_strategy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
-      "reason": "Preserve the exact item metric, quality modifier and authored rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "AuthoredItemRarityStrategy",
           "mechanism": "global-this-property"
         }
       ]
@@ -1311,42 +407,6 @@
       ]
     },
     {
-      "id": "bridge-78f5a832e4fe",
-      "bridge": "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
-      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
-      "reason": "Preserve the exact InventoryV2BalanceParameterResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2BalanceParameterResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-7ad54eebd99a",
-      "bridge": "src/systems/bite_system.js",
-      "owner": "stage-4.cluster-027-bite-chum",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/fishing/bite_service.js",
-      "reason": "Preserve the exact BiteSystem, CastManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BiteSystem",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "CastManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7c4e1d0210cd",
       "bridge": "src/config/databases/item_db.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -1358,22 +418,6 @@
       "globalProviders": [
         {
           "symbol": "ITEM_DB",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-7d997c3c333d",
-      "bridge": "src/app/rendering/landing_area_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
-      "reason": "Preserve the exact LandingAreaRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "LandingAreaRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -1395,86 +439,6 @@
       ]
     },
     {
-      "id": "bridge-81d027dbcdd3",
-      "bridge": "src/config/physics/physics_config_adapter.js",
-      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "FightPhysicsConfigAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-82a56896293e",
-      "bridge": "src/core/items/progression/item_rating_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_rating_resolver.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRatingResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8422f9724300",
-      "bridge": "src/ui/styles/degradation_color_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/styles/degradation_color_resolver.js",
-      "reason": "Preserve the exact DegradationColorResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "DegradationColorResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8618fd1f8932",
-      "bridge": "src/config/validation/item_progression_config_validator.js",
-      "owner": "stage-4.cluster-008-item-progression-validator",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/config/validation/item_progression_config_validator.js",
-      "reason": "Preserve the exact ItemProgressionConfigValidator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemProgressionConfigValidator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-87740b3c6660",
-      "bridge": "src/core/fishing/pole_fight_sector_geometry.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/fishing/pole_fight_sector_geometry.js",
-      "reason": "Preserve the exact synchronous Fishing Domain Primitives II consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-006-fishing-e48e70d8",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "PoleFightSectorGeometry",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-87fd2a995705",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -1486,38 +450,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-891cf39cd66b",
-      "bridge": "src/app/rendering/game_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/game_render_frame_builder.js",
-      "reason": "Preserve the exact GameRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameRenderFrameBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8be13ca4ec8e",
-      "bridge": "src/assets/asset_preload_coordinator.js",
-      "owner": "stage-4.cluster-015-asset-preload",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/assets/asset_preload_coordinator.js",
-      "reason": "Preserve the exact AssetPreloadCoordinator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "AssetPreloadCoordinator",
           "mechanism": "global-this-property"
         }
       ]
@@ -1539,54 +471,6 @@
       ]
     },
     {
-      "id": "bridge-8d031d5439db",
-      "bridge": "src/render/core/canvas_primitives.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/canvas/canvas_primitives.js",
-      "reason": "Preserve the exact CanvasPrimitives consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CanvasPrimitives",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8d1ee89839db",
-      "bridge": "src/render/world/boat_chum_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/world/boat_chum_renderer.js",
-      "reason": "Preserve the exact BoatChumRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BoatChumRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8d36f9222504",
-      "bridge": "src/core/fish/fish_rarity_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/fish/fish_rarity_resolver.js",
-      "reason": "Preserve the exact bootstrap consumers of Fish Rarity and Anomaly resolvers until bootstrap migration removes their legacy symbols.",
-      "owner": "stage-3.candidate-009-fish-444e8034",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "FishRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-8f5d2d19ec8e",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -1598,86 +482,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-913c40586487",
-      "bridge": "src/app/rendering/world_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/world_render_frame_builder.js",
-      "reason": "Preserve the exact WorldRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "WorldRenderFrameBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-92d5d09f925f",
-      "bridge": "src/systems/inventory_system.js",
-      "owner": "stage-4.cluster-029-inventory-system",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/inventory/legacy_inventory_system.js",
-      "reason": "Preserve the exact InventoryEventBridge, InventoryManager, InventoryRuntimeConfigProvider, ItemDatabase, LineCompatibilityRules consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryEventBridge",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "InventoryManager",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "InventoryRuntimeConfigProvider",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "ItemDatabase",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "LineCompatibilityRules",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-946c40ff46ee",
-      "bridge": "src/app/rendering/fishing_equipment_render_model_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
-      "reason": "Preserve the exact FishingEquipmentRenderModelBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishingEquipmentRenderModelBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-96ab3a09861c",
-      "bridge": "src/render/world/world_scene_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/world/world_scene_renderer.js",
-      "reason": "Preserve the exact WorldSceneRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "WorldSceneRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -1715,130 +519,6 @@
       ]
     },
     {
-      "id": "bridge-9ada151d70e8",
-      "bridge": "src/app/rendering/fight_hud_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/fight_hud_frame_builder.js",
-      "reason": "Preserve the exact FightHudFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightHudFrameBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-9bc0d72d5f81",
-      "bridge": "src/app/states.js",
-      "owner": "stage-4.cluster-028-orchestrators",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/state/game_state_machine.js",
-      "reason": "Preserve the exact BitingState, FailedState, PlayingState, ScoutingState, StateDepsFactory, StateMachine, VictoryState, WaitingState consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BitingState",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "FailedState",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "PlayingState",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "ScoutingState",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "StateDepsFactory",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "StateMachine",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "VictoryState",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "WaitingState",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-9c79441f163f",
-      "bridge": "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "AlwaysKnownBaitEffectivenessPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a7c58008c63c",
-      "bridge": "src/config/runtime/config_data.js",
-      "owner": "stage-4.cluster-010-config-root",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/config/runtime/game_config.js",
-      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "SLOT_CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a7f5fbf01c6a",
-      "bridge": "src/app/inventory.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/inventory/equipment_service.js",
-      "reason": "Preserve the exact EquipmentService consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "EquipmentService",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a807c8a1e192",
-      "bridge": "src/app/core/game_loop.js",
-      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/runtime/game_loop.js",
-      "reason": "Preserve the exact GameLoop consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameLoop",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-a8155a87814b",
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/location_debug_render_frame_builder.js",
@@ -1850,38 +530,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a8d5f292a71f",
-      "bridge": "src/render/fishing/fight_area_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/fight_area_renderer.js",
-      "reason": "Preserve the exact FightAreaRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightAreaRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a9380f14d75c",
-      "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-011-items-11818ee5",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityStrategyRegistry",
           "mechanism": "global-this-property"
         }
       ]
@@ -1951,166 +599,6 @@
       ]
     },
     {
-      "id": "bridge-afe03cb40934",
-      "bridge": "src/systems/inventory_item_view_factory.js",
-      "owner": "stage-5.cluster-006-inventory-read-models",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/inventory_item_view_factory.js",
-      "reason": "Preserve the exact InventoryItemViewFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemViewFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b5021bf062d9",
-      "bridge": "src/render/fishing/float_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/float_renderer.js",
-      "reason": "Preserve the exact FloatRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FloatRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b5abf3c83fab",
-      "bridge": "src/application/inventory/inventory_v2_composition_root.js",
-      "owner": "stage-5.cluster-023-inventory-composition",
-      "source": "src/app/bootstrap.js",
-      "target": "src/bootstrap/production/inventory_composition_root.js",
-      "reason": "Preserve the exact InventoryV2CompositionRoot consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2CompositionRoot",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b687745f9ff8",
-      "bridge": "src/infrastructure/location/offscreen_canvas_factory.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/canvas/offscreen_canvas_factory.js",
-      "reason": "Preserve the exact OffscreenCanvasFactory consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "OffscreenCanvasFactory",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b6a0cb3dc366",
-      "bridge": "src/render/hud/hold_charges_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/hold_charges_renderer.js",
-      "reason": "Preserve the exact HoldChargesRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HoldChargesRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b90a88790dea",
-      "bridge": "src/render/core/render_frame_buffer.js",
-      "owner": "stage-5.cluster-017-render-frame-storage",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/render_frame_buffer.js",
-      "reason": "Preserve the exact RenderFrameBuffer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "RenderFrameBuffer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b95500999b06",
-      "bridge": "src/app/chum.js",
-      "owner": "stage-5.cluster-022-chum-feature-composition",
-      "source": "src/app/bootstrap.js",
-      "target": "src/bootstrap/production/chum_feature_bootstrap.js",
-      "reason": "Preserve the exact ChumController consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "ChumController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-b9b3fc4ec0d1",
-      "bridge": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
-      "reason": "Preserve the exact BaitEffectivenessCatalogResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessCatalogResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ba5fe0aa9f4e",
-      "bridge": "src/render/screens/victory_layout_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/victory_layout_resolver.js",
-      "reason": "Preserve the exact VictoryLayoutResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "VictoryLayoutResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-bc10ce5b4857",
-      "bridge": "src/app/rendering/game_render_coordinator.js",
-      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/game_render_coordinator.js",
-      "reason": "Preserve the exact GameRenderCoordinator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameRenderCoordinator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-bc38f49d00dc",
       "bridge": "src/core/items/hook/hook_power_policy.js",
       "source": "src/debug/services/debug_formatters.js",
@@ -2159,38 +647,6 @@
       ]
     },
     {
-      "id": "bridge-bc90e3c9229a",
-      "bridge": "src/ui/rarity/item_rarity_dom_adapter.js",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/dom/item_rarity_dom_adapter.js",
-      "reason": "Preserve the exact ItemRarityDomAdapter consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRarityDomAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-bccdb01913d8",
-      "bridge": "src/app/bite.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/fishing/bite_environment_service.js",
-      "reason": "Preserve the exact BiteEnvironmentService consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "BiteEnvironmentService",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-c020b5f6780f",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -2223,54 +679,6 @@
       ]
     },
     {
-      "id": "bridge-c148fec7119f",
-      "bridge": "src/core/items/progression/item_catalog_baseline_registry.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
-      "reason": "Preserve the exact item catalog baseline registry consumer until its legacy symbol is removed.",
-      "owner": "stage-3.replan-342.batch-044-items-4a1f3966",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemCatalogBaselineRegistry",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c17208d5e755",
-      "bridge": "src/core/items/effective_item_stats_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/effective_item_stats_resolver.js",
-      "reason": "Preserve the exact item stat consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-336.batch-036-items-e1a5aaa4",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EffectiveItemStatsResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c2d15e518617",
-      "bridge": "src/infrastructure/diagnostics/console_logger.js",
-      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/diagnostics/console_logger.js",
-      "reason": "Preserve the exact ConsoleLogger consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ConsoleLogger",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-c33bba4a0ce7",
       "bridge": "src/config/runtime/config_context_composition.js",
       "owner": "stage-5.cluster-014-config-context-composition",
@@ -2282,22 +690,6 @@
       "globalProviders": [
         {
           "symbol": "createRuntimeConfigContext",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-c85d7f62582c",
-      "bridge": "src/app/rendering/casting_render_frame_builder.js",
-      "owner": "stage-5.cluster-020-render-frame-builders",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/casting_render_frame_builder.js",
-      "reason": "Preserve the exact CastingRenderFrameBuilder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "CastingRenderFrameBuilder",
           "mechanism": "global-this-property"
         }
       ]
@@ -2319,22 +711,6 @@
       ]
     },
     {
-      "id": "bridge-cf40bf1c24e3",
-      "bridge": "src/render/hud/fight_hud_renderer.js",
-      "owner": "stage-5.cluster-019-scene-composites-and-passes",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/fight_hud_renderer.js",
-      "reason": "Preserve the exact FightHudRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightHudRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-d0947069c1da",
       "bridge": "src/infrastructure/storage/cache_manager.js",
       "owner": "stage-4.cluster-036-platform-cache",
@@ -2346,22 +722,6 @@
       "globalProviders": [
         {
           "symbol": "CacheManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d26db2b6bd9e",
-      "bridge": "src/core/input/fight_input_action_composer.js",
-      "owner": "stage-4.cluster-017-fight-input-composer",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/input/fight_input_action_composer.js",
-      "reason": "Preserve the exact FightInputActionComposer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FightInputActionComposer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2383,278 +743,6 @@
       ]
     },
     {
-      "id": "bridge-d796e21a9ff5",
-      "bridge": "src/infrastructure/location/location_asset_loader.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/location/location_asset_loader.js",
-      "reason": "Preserve the exact LocationAssetLoader consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LocationAssetLoader",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d79a992a6af8",
-      "bridge": "src/core/items/progression/item_rating_tier_resolver.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_rating_tier_resolver.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-018-items-8ea4be10",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemRatingTierResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d967695547ee",
-      "bridge": "src/render/screens/rarity_animation_resolver.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/rarity_animation_resolver.js",
-      "reason": "Preserve the exact RarityAnimationResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "RarityAnimationResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-db5a3d2a84a1",
-      "bridge": "src/render/core/image_asset_provider.js",
-      "owner": "stage-4.cluster-012-platform-canvas-assets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/assets/image_asset_provider.js",
-      "reason": "Preserve the exact ImageAssetProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ImageAssetProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-dbbf53bdc804",
-      "bridge": "src/ui/legacy/depth_selector.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/ui/depth_selector.js",
-      "reason": "Preserve the exact DepthSelectorUI consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "DepthSelectorUI",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-dbceecaa5bdc",
-      "bridge": "src/core/items/progression/composite_metric_strategy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/composite_metric_strategy.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CompositeMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-dbea74d1a177",
-      "bridge": "src/render/fishing/rod_line_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fishing/rod_line_renderer.js",
-      "reason": "Preserve the exact RodLineRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "RodLineRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-dbf761594651",
-      "bridge": "src/config/validation/degradation_color_config_validator.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/visual/degradation_color_config_validator.js",
-      "reason": "Preserve the exact DegradationColorConfigValidator consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "DegradationColorConfigValidator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-dd65f33afb4a",
-      "bridge": "src/core/fishing/reel_retrieve_speed_calculator.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
-      "reason": "Preserve the exact synchronous Fishing State and Motion Primitives consumer set until its approved migration stage removes the legacy symbols.",
-      "owner": "stage-3.candidate-007-fishing-bb8b3939",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ReelRetrieveSpeedCalculator",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-de699c628b92",
-      "bridge": "src/core/fishing/landing_policy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/fishing/landing_policy.js",
-      "reason": "Preserve the exact landing resolver consumers and the retrieve-policy helper reader until their legacy symbols are removed.",
-      "owner": "stage-3.replan-342.batch-041-fishing-71e662d7",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "LandingPolicyResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e19ae4529758",
-      "bridge": "src/config/inventory/inventory_rule_messages.js",
-      "owner": "stage-5.cluster-002-inventory-rule-messages",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/inventory_rule_messages.js",
-      "reason": "Preserve the exact INVENTORY_RULE_MESSAGES consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "INVENTORY_RULE_MESSAGES",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e1f8c76866aa",
-      "bridge": "src/ui/inventory/inventory_v2_bootstrap.js",
-      "owner": "stage-5.cluster-024-inventory-ui-composition",
-      "source": "src/app/bootstrap.js",
-      "target": "src/bootstrap/production/inventory_ui_bootstrap.js",
-      "reason": "Preserve the exact InventoryV2Bootstrap consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2Bootstrap",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e26da7468eb2",
-      "bridge": "src/config/databases/item_db.js",
-      "owner": "stage-4.cluster-004-config-data",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/config/raw/items/item_database.js",
-      "reason": "Preserve the exact ITEM_DB consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ITEM_DB",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e5c478e6e2ec",
-      "bridge": "src/core/items/bait/bait_effectiveness_grade_policy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
-      "reason": "Preserve the exact Items domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-019-items-b0af5033",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitEffectivenessGradePolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e61559f81722",
-      "bridge": "src/core/fish/fish_visual_variant_resolver.js",
-      "owner": "stage-5.cluster-003-item-and-fish-descriptors",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/fish/fish_visual_variant_resolver.js",
-      "reason": "Preserve the exact FishVisualVariantResolver consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "FishVisualVariantResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e6bb104ddf7d",
-      "bridge": "src/ui/legacy/time_display.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/ui/time_display.js",
-      "reason": "Preserve the exact TimeDisplayUI consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "TimeDisplayUI",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e839bbdb22cc",
-      "bridge": "src/ui/legacy/game_controls.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/ui/game_controls.js",
-      "reason": "Preserve the exact UIManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "UIManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-e85aa82cc3b1",
       "bridge": "src/ui/legacy/ui_event_shield.js",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
@@ -2666,102 +754,6 @@
       "globalProviders": [
         {
           "symbol": "UIUtils",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-e888c42008d2",
-      "bridge": "src/app/world.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/application/world/game_world_service.js",
-      "reason": "Preserve the exact EnvironmentSystem, GameWorld, LocationManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "EnvironmentSystem",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "GameWorld",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "LocationManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ea578f08c07c",
-      "bridge": "src/app/rules.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/rules/gameplay_rules.js",
-      "reason": "Preserve the exact rules, distance, item-progression and line consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "BiteRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "BoatRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "CastRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "ChumRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "EquipmentRules",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "PlayerCastRules",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ebe106483863",
-      "bridge": "src/infrastructure/storage/cache_manager.js",
-      "owner": "stage-4.cluster-036-platform-cache",
-      "source": "src/app/bootstrap.js",
-      "target": "src/platform/browser/storage/cache_manager.js",
-      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "CacheManager",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ecf19cad0684",
-      "bridge": "src/render/screens/star_rating_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/screens/star_rating_renderer.js",
-      "reason": "Preserve the exact StarRatingRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "StarRatingRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2783,54 +775,6 @@
       ]
     },
     {
-      "id": "bridge-ed528b9594f7",
-      "bridge": "src/core/items/progression/numeric_stat_metric_strategy.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
-      "reason": "Preserve the exact item metric strategy consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-023-items-c91fce82",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "NumericStatMetricStrategy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ed9a7b5a4edc",
-      "bridge": "src/core/items/progression/item_metric_strategy_registry.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/domain/items/progression/item_metric_strategy_registry.js",
-      "reason": "Preserve the exact item metric, quality modifier and authored rarity consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-322.batch-027-items-e8f84667",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ItemMetricStrategyRegistry",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-ef7dbdc9d951",
-      "bridge": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js",
-      "reason": "Preserve the exact PlayerPressureFatigueIndicatorRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "PlayerPressureFatigueIndicatorRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-efad96783bc1",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -2842,22 +786,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f31aca4ae5d6",
-      "bridge": "src/engine/compat/stage_2/render_component_legacy_bridge.js",
-      "source": "src/app/bootstrap.js",
-      "target": "src/engine/rendering/render_component.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderComponent",
           "mechanism": "global-this-property"
         }
       ]
@@ -2879,22 +807,6 @@
       ]
     },
     {
-      "id": "bridge-f62a52db36c4",
-      "bridge": "src/render/pipeline/game_render_pipeline.js",
-      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/rendering/game_render_pipeline.js",
-      "reason": "Preserve the exact GameRenderPipeline consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "GameRenderPipeline",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-f880b0a474c6",
       "bridge": "src/core/inventory/equip_target_selection_policy.js",
       "source": "src/ui/ui.js",
@@ -2906,38 +818,6 @@
       "globalProviders": [
         {
           "symbol": "InventoryEquipTargetSelectionPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f9a552ef2af7",
-      "bridge": "src/ui/inventory/inventory_v2_view_model.js",
-      "owner": "stage-5.cluster-007-inventory-view-contracts",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/inventory/inventory_view_model.js",
-      "reason": "Preserve the exact InventoryV2ActionType consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2ActionType",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fc910758ded3",
-      "bridge": "src/render/casting/cast_scene_renderer.js",
-      "owner": "stage-5.cluster-018-canvas-render-leaves",
-      "source": "src/app/bootstrap.js",
-      "target": "src/game/presentation/casting/cast_scene_renderer.js",
-      "reason": "Preserve the exact CastSceneRenderer consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "CastSceneRenderer",
           "mechanism": "global-this-property"
         }
       ]

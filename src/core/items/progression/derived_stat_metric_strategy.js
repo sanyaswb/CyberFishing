@@ -1,1 +1,1 @@
-globalThis.DerivedStatMetricStrategy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/progression/derived_stat_metric_strategy.js"]["DerivedStatMetricStrategy"];
+// Retired Stage 3 activation activation-80378caca1ef: DerivedStatMetricStrategy is served only through ESM imports of src/game/domain/items/progression/derived_stat_metric_strategy.js.

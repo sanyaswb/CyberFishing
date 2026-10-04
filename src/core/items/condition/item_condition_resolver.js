@@ -1,1 +1,1 @@
-globalThis.ItemConditionResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/items/condition/item_condition_resolver.js"]["ItemConditionResolver"];
+// Retired Stage 3 activation activation-7d1f057c4c36: ItemConditionResolver is served only through ESM imports of src/game/domain/items/condition/item_condition_resolver.js.
