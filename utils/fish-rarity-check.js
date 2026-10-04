@@ -1177,4 +1177,5 @@ new FishRarityCheck(
     { descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values) }),
 ).run();
 require('./testing/runtime/render_frame_test_composition').checkRenderFrameComposition();
+require('./testing/runtime/chum_test_composition').checkChumComposition();
 console.log("Fish rarity checks passed.");
