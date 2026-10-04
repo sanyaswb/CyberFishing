@@ -31,6 +31,16 @@ function checkRenderFrameComposition() {
   const chum={getZones:()=>[{isDelivered:true,isExpired:false,x:100,y:100,baseRadius:40,currentBonus:0.5,baitConfig:{minBonus:0,maxBonus:1}}],getBoats:()=>[{pos:{x:200,y:200},angle:0,energy:50,stats:{maxEnergy:100},config:{emoji:'boat'},state:'deploying',target:{x:300,y:300},waypoints:[{x:350,y:350}],sensorRays:[{startX:200,startY:200,endX:300,endY:300,isBlocked:false}]}]};
   const boatBuilder=new c.BoatChumRenderFrameBuilder({chum,projector,config});
   const worldBuilder=new c.WorldRenderFrameBuilder({map:{getBackgroundRenderData:()=>background},projector,config,canvasMetrics:metrics,boatChumBuilder:boatBuilder,debugBuilder:{buildInto(){}},locationId:'test'});
+  const worldOptions={map:{getBackgroundRenderData:()=>background},projector,config,canvasMetrics:metrics,boatChumBuilder:boatBuilder,locationId:'test'};
+  for(const debugBuilder of [{},false]) assert.throws(()=>new c.WorldRenderFrameBuilder({...worldOptions,debugBuilder}),/requires debugBuilder/);
+  const productionWorld=new c.WorldRenderFrameBuilder(worldOptions),productionFrame=new c.GameRenderFrame();
+  let productionBoat;
+  for(let index=0;index<120;index++) {
+    productionFrame.reset();productionWorld.buildInto({target:productionFrame.world,invalidCastMarker:null,debugEnabled:true});
+    assert.equal(productionFrame.world.chumZones.count,1);assert.equal(productionFrame.world.boats.count,1);
+    assert.equal(productionFrame.world.debugImage.visible,false);assert.equal(productionFrame.world.dynamicZones.count,0);
+    const boat=productionFrame.world.boats.getAt(0);if(productionBoat)assert.equal(boat,productionBoat);productionBoat=boat;
+  }
   const styles={resolveBarStyle:()=>({})},bounds={top:0,bottom:600};let aiming=false;
   const chumSource={isAiming:()=>aiming,getEquipment:()=>({}),getGameStateName:()=> 'casting',getCastDistance:()=>300,getPowerAimVisual:()=>({active:true,mode:'chum',screenX:250,power:0.5}),getAccuracyPreview:()=>({active:true,x:250,y:300,radiusX:10,radiusY:5}),getBounds:()=>bounds,getNow:()=>clock.now};
   const castingBuilder=new c.CastingRenderFrameBuilder({projector,config,canvasMetrics:metrics,hudStyleResolver:styles,chumSource});

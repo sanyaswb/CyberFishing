@@ -3686,6 +3686,7 @@
             "Error",
             "Number",
             "Object",
+            "TypeError",
             "undefined"
           ],
           "browserApis": [],
@@ -24909,6 +24910,58 @@
         ],
         "targetBoundary": "game-application",
         "targetPath": "src/game/application/fishing/fixed_catch_fish_factory.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/application/fishing/gameplay_override_reader.js",
+      "currentArea": "game/application/fishing",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "Number",
+            "String",
+            "undefined"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/gameplay_override_reader.js",
         "migrationWave": 4
       },
       "analysis": {

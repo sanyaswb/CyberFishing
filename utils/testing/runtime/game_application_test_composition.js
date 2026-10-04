@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { SourceRuntime } = require('../core/source_runtime');
 
 // Real Bootstrap facades and frame orchestration, with deterministic external service ports.
-async function checkGameApplicationComposition() {
+async function checkGameApplicationComposition(diagnostics = true) {
   const errors=[],events=[],disposed=[],warnings=[];
   class FixedDate extends Date { constructor(...args){super(...(args.length?args:[Date.UTC(2026,9,4)]));} static now(){return Date.UTC(2026,9,4);} }
   const source=new SourceRuntime({globals:{Date:FixedDate,performance:{now:()=>0},console:{log(){},error(...args){errors.push(args);}}}});
@@ -40,14 +40,18 @@ async function checkGameApplicationComposition() {
     fishing:{consumeWetFeederChum(eq,exposure){assert.equal(eq,equipment);events.push(['wet',exposure]);}},castManager:{update(dt){assert.equal(dt,16);events.push('cast');}},
     equipmentRules:{getMaxHookDepth:()=>8,getRodDisplayName:()=> 'Test rod'},baitRules:{isActiveLure:()=>false},playerCastRules:{canPlayerCast:(eq,boat)=>eq===equipment&&boat===null},
     depthUI:{updateMax(value){assert.equal(value,8);},dispose(){disposed.push('depth');}},timeUI:{update(value){assert.equal(value,5);events.push('time');},dispose(){disposed.push('time');}},holdUI:{dispose(){disposed.push('hold');}}};
-  const compositionRoot={create(){throw new Error('Injected runtime must be reused');},createApplicationServices(options){appPorts=options.appPorts;assert.equal(options.runtime,runtime);assert.equal(options.runtimeConfig,config);assert.equal(options.clock,clock);assert.equal(options.rng,rng);return{loop,fightService,debugService:{update(context){debugContext??=context;assert.equal(context,debugContext);assert.equal(context.getEquipment(),equipment);assert.equal(context.getInputState(),input);events.push('debug');}},chumController,stateMachine,renderCoordinator,
+  const compositionRoot={create(){throw new Error('Injected runtime must be reused');},createApplicationServices(options){appPorts=options.appPorts;assert.equal(options.runtime,runtime);assert.equal(options.runtimeConfig,config);assert.equal(options.clock,clock);assert.equal(options.rng,rng);return{loop,fightService,debugService:diagnostics === 'malformed' ? {} : diagnostics ? {update(context){debugContext??=context;assert.equal(context,debugContext);assert.equal(context.getEquipment(),equipment);assert.equal(context.getInputState(),input);events.push('debug');}} : null,chumController,stateMachine,renderCoordinator,
     biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv},castService:{cast(x,y,depth,options){assert.equal(options.equipment,equipment);return castResult;}}};}};
   const debugEvents={emit(type,detail){events.push([type,detail]);},on:()=>()=>{},clear(){disposed.push('debug');}};
+  if (diagnostics === 'malformed') {
+    assert.throws(() => new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,logger:new source.context.ConsoleLogger()}), /optional debugService.update/);
+    return;
+  }
   const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,logger:new source.context.ConsoleLogger()});
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
   assert.equal(source.context.EventLifecycle.getActiveListenerCount(),3);
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);
-  for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','cast','time','chum-ui','boat','input','state','inventory-ui','debug','draw']);}
+  for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','cast','time','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
   assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),1); // Preserve the existing null playable-bound clamp.
   windowTarget.emit('resize');assert.equal(app.getViewportSize().width,900);assert.equal(app.getViewportSize(),viewport);
   input.pointerDown=true;events.length=0;app.update(16);assert.equal(events.includes('pan'),false);input.pointerDown=false;

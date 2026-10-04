@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "027",
+  "slug": "native-gameplay-and-optional-diagnostics",
+  "baseCommit": "ee0457a7728cd48891d71b563db2efa63d29f468",
+  "reason": "Owner native production decision: preserve active Fixed Catch and GodMode through injected production dependencies; diagnostics may be absent under explicit contracts. Stateless GameplayOverrideReader reads the sole live config owner. Only diagnostic composition factories/lifecycle/frame/service dependencies become nullable; supplied callbacks/products are validated. Fixed Catch remains mandatory. Preserve DEV factory receiver/order. No gameplay formulas, saves, state owners or config defaults change.",
+  "reclassified": [],
+  "introducedModules": [
+    {
+      "currentPath": "src/game/application/fishing/gameplay_override_reader.js",
+      "targetBoundary": "game-application",
+      "roles": [
+        "application-service"
+      ],
+      "reason": "Stateless accessor projection of injected config; no imports/browser/DEV/owned config."
+    }
+  ],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/game/application/fishing/gameplay_override_reader.js",
+      "before": null,
+      "after": "bf86ace24b85c61273f995c6338d4df0b19c70c2d2706704c050a1c22fb952cd"
+    },
+    {
+      "path": "src/bootstrap/production/game_composition_root.js",
+      "before": "dabb0c3b17fbaf1012da2a62d47b32e1694e82c12a95a7ca3d20209134f1853e",
+      "after": "a1159a3280e6e26974dd3b4676335f834d42b3ec26f7c85b45e872206cb45aa6"
+    },
+    {
+      "path": "src/bootstrap/production/game_application.js",
+      "before": "5a89e93d7aa370eb89e2bd25b7ddce8412fd032712a48a4a631a7f74174593e8",
+      "after": "5c3ad156ee4e16d3b9e30efa561efe6f9f414aa358e329b50dbf346f93096894"
+    },
+    {
+      "path": "src/game/presentation/rendering/world_render_frame_builder.js",
+      "before": "32564ad97b1076f315e4b593e4f9aa2be93123b494cc42fdca278bb3887949c9",
+      "after": "173420c88c31c77097ad138eb822fd08d15d0e0c7fef20a78ae99ed0a8887f44"
+    },
+    {
+      "path": "src/platform/browser/ui/game_controls.js",
+      "before": "05b0887ef4c3921c4dd0f579ae9445bffc449955beb63e1b9be7f4562fba4541",
+      "after": "a7a6d120d2bbbac3f35676a646a5c949db608325b90c6167c3c17e71ab468e21"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "240bdbf679320d9f6be1ae0ca4de8d0db914e6a5fd0dfd2a0dbe0875f27257ec",
+      "after": "5fa4319a02026883e5b42e693a0b671d9ec6a70ada3e74b79af0d36e988a410e"
+    },
+    {
+      "path": "utils/testing/runtime/game_application_test_composition.js",
+      "before": "de3db158f4bade5dddcfee92cde9f269c03fcfdd1836f6a3f418971ee9f6e190",
+      "after": "3f8340e82898e19b062a3fb651bf4a22cead89c0e65c55c1de4334ac5f2de5d8"
+    },
+    {
+      "path": "utils/inventory-lifecycle-check.js",
+      "before": "d49fdbf59131901dd55735e5aceb3d42c496194c35223410e453e4881767bdae",
+      "after": "0c52a9ebfbe2cc8b0604db6ba19877e3d1b9a489393b7125effd783e6b0562b2"
+    },
+    {
+      "path": "utils/testing/runtime/render_frame_test_composition.js",
+      "before": "b6aaf939ded87fefe10317f0b97ef3f08d2b0799e10012411d678e822c5298b9",
+      "after": "b2a853a2b66777d1f103f1159798b0531162353e0e2faf88806372ad03aead74"
+    },
+    {
+      "path": "utils/game-cycle-check.js",
+      "before": "58bc69e8d7f72522befeb525f0f5967d9991e9c1eb48e2944376f6069d438ba5",
+      "after": "bdc041aecc03a4fd2ec1c260ae3361bc87a8f9c4df8c6f97c1b5da94624a3c14"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "fc36c55b5536c50292b2ab75d092519665ac84000d19772aec69dabf91fac6af",
+      "after": "e37e8f755ab84491f2538ae63e973bda7928d7dfbeeed106484ff7f46883ffd6"
+    }
+  ],
+  "beforeProvenance": {
+    "capturedSnapshot": "temporary capability snapshot at base commit",
+    "gitBlobFallback": [
+      "utils/game-cycle-check.js",
+      "architecture/migration/module_migration_manifest.json"
+    ]
+  },
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "Every original GodMode getter compared against production reader across master truthiness/raw flags/percent clamps/modes/live config replacement. Real FishingController preserves ordinary failure loss then prevents loss and feeder consumption using the injected reader.",
+    "Real GameApplication 120-frame update/render order and reuse with diagnostics present/absent; malformed debug service rejected. World/boat frame reuse, empty diagnostic payload and malformed builder covered.",
+    "Optional final diagnostic biteEnv query audited against current ordinary state callbacks: gameplay query precedes update; expiry unequips current load, recast resets exposure, out-of-water transitions prevent consumption. Fixture covers repeated query/scouting/recast/infiniteResources. No universal purity claim or arbitrary callback proof.",
+    "DEV factory.apply(this,args) preserves receiver; world map/frame/renderer group coherent; DEV tools require synchronizer. No fake diagnostics. Old DEV GodMode remains temporary stateless adapter until Stage 6 imports production reader."
+  ],
+  "verification": {
+    "focused": {
+      "utils/config-runtime-check.js": {
+        "status": "PASS"
+      },
+      "utils/inventory-lifecycle-check.js": {
+        "status": "PASS"
+      },
+      "utils/fish-rarity-check.js": {
+        "status": "PASS"
+      },
+      "utils/game-cycle-check.js": {
+        "status": "PASS"
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS-current-classic-DEV",
+      "configAndIdentityFacts": 9,
+      "activeLoops": 1,
+      "duplicateLoopStarts": 0,
+      "roleButtonTexts": 52,
+      "buttonTextsIdenticalAfterReload": true,
+      "saveStringsIdenticalAfterReload": true,
+      "saveKeys": 3,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending",
+      "limitation": "Role-based button count is this checkpoint measurement; historical 030 used another DOM selector and is not recaptured. Native production acceptance remains pending."
+    },
+    "acceptanceReport": "architecture/archive/stage5_native_preparatory_acceptance.json",
+    "acceptanceReportSha256": "a5a54109f96d2d7e07bc97daf99bac5ec1ca80eecf0d2cff6d79b97cd54aa1c9",
+    "acceptanceScope": "Joint frozen preparatory tree for 028.1–028.3 before actual native pages. Native branch requires separate cutover acceptance."
+  }
+}

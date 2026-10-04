@@ -165,6 +165,25 @@ export class GameCompositionRoot {
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
   } = {}) {
+    for (const [name, factory] of Object.entries({
+      createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider,
+      createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
+      createDevTools, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
+      isCatchResolutionLogEnabled,
+    })) {
+      if (factory != null && typeof factory !== "function") {
+        throw new TypeError("GameCompositionRoot requires optional callback " + name);
+      }
+    }
+    const worldDebugFactories = [createLocationDebugMapBuilder, createWorldDebugRenderer,
+      createLocationDebugRenderFrameBuilder];
+    const worldDebugCount = worldDebugFactories.filter(factory => factory != null).length;
+    if (worldDebugCount !== 0 && worldDebugCount !== worldDebugFactories.length) {
+      throw new TypeError("GameCompositionRoot requires coherent world debug factories");
+    }
+    if (createDevTools != null && createHookedFishProfileSynchronizer == null) {
+      throw new TypeError("GameCompositionRoot requires hooked fish synchronizer for DEV tools");
+    }
     this.#createLocationDebugMapBuilder = createLocationDebugMapBuilder;
     this.#createItemProgressionDebugSnapshotProvider = createItemProgressionDebugSnapshotProvider;
     this.#createFixedCatchFishFactory = createFixedCatchFishFactory;
@@ -209,6 +228,9 @@ export class GameCompositionRoot {
     const canvasMetrics = new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
     const devFlags = this.#createDevFlags(this.#config);
+    new DependencyContractValidator({ consumer: "GameCompositionRoot.build" }).requireMethods(
+      devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"],
+    );
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
     const debugEvents = new BrowserDebugAdapter(this.#documentTarget, () =>
@@ -259,7 +281,7 @@ export class GameCompositionRoot {
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
       locationsConfig: this.#config.locations,
-      diagnostics: this.#getRenderDiagnostics(),
+      diagnostics: this.#readRenderDiagnostics(),
     });
     contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
       "preloadApplicationAssets",
@@ -274,9 +296,9 @@ export class GameCompositionRoot {
     contracts.requireMethods(locationAssetLoader, "locationAssetLoader", [
       "load",
     ]);
-    const locationDebugMapBuilder = this.#createLocationDebugMapBuilder({
-      canvasFactory,
-    });
+    const locationDebugMapBuilder = this.#createOptionalDiagnostic(
+      this.#createLocationDebugMapBuilder, "locationDebugMapBuilder", [{ canvasFactory }], ["build"],
+    );
     const hudStyleResolver = new HudStyleResolver({
       hudStylesProvider: () => this.#config.ui?.hudStyles || {},
     });
@@ -351,12 +373,13 @@ export class GameCompositionRoot {
     const itemProgressionDomAdapter = new ItemProgressionDomAdapter({
       visualResolver: itemProgressionVisualResolver,
     });
-    const itemProgressionDebugProvider =
-      this.#createItemProgressionDebugSnapshotProvider({
+    const itemProgressionDebugProvider = this.#createOptionalDiagnostic(
+      this.#createItemProgressionDebugSnapshotProvider, "itemProgressionDebugProvider", [{
         itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
         progressionResolver: itemProgressionResolver,
         effectiveStatsResolver: effectiveItemStatsResolver,
-      });
+      }], ["getSnapshots"],
+    );
     contracts.requireMethods(itemRarityResolver, "itemRarityResolver", [
       "resolve",
     ]);
@@ -391,7 +414,7 @@ export class GameCompositionRoot {
       ["apply", "appendTooltip", "updateCapacity", "clear"],
     );
     const victoryLayoutResolver = new VictoryLayoutResolver({
-      diagnostics: this.#getRenderDiagnostics(),
+      diagnostics: this.#readRenderDiagnostics(),
     });
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
@@ -444,17 +467,21 @@ export class GameCompositionRoot {
       fishAnomalyVariantResolver,
       fishVisualVariantResolver,
     });
-    const hookedFishProfileSynchronizer =
-      this.#createHookedFishProfileSynchronizer({
+    contracts.requireMethods(fixedCatchFishFactory, "fixedCatchFishFactory", ["create"]);
+    const hookedFishProfileSynchronizer = this.#createOptionalDiagnostic(
+      this.#createHookedFishProfileSynchronizer, "hookedFishProfileSynchronizer", [{
         fishRarityResolver,
         fishVisualVariantResolver,
-      });
+      }], ["synchronize"],
+    );
     const hudBarRenderer = new HudBarRenderer(surface);
     const worldSceneRenderer = new WorldSceneRenderer({
       surface,
       assets: imageAssets,
     });
-    const worldDebugRenderer = this.#createWorldDebugRenderer({ surface });
+    const worldDebugRenderer = this.#createOptionalDiagnostic(
+      this.#createWorldDebugRenderer, "worldDebugRenderer", [{ surface }], ["render"],
+    );
     const boatChumRenderer = new BoatChumRenderer({
       surface,
       primitives,
@@ -529,7 +556,7 @@ export class GameCompositionRoot {
     };
     this.#validateRenderContracts(contracts, {
       worldSceneRenderer,
-      worldDebugRenderer,
+      ...(worldDebugRenderer == null ? {} : { worldDebugRenderer }),
       boatChumRenderer,
       castSceneRenderer,
       fightAreaRenderer,
@@ -542,7 +569,7 @@ export class GameCompositionRoot {
       invalidCastMarkerRenderer,
     });
     const pipeline = new GameRenderPipeline({
-      diagnostics: this.#getRenderDiagnostics(),
+      diagnostics: this.#readRenderDiagnostics(),
       passes: RenderOrder.createPassList({
         world: new WorldRenderPass({
           components: [
@@ -552,12 +579,12 @@ export class GameCompositionRoot {
               renderer: worldSceneRenderer,
               selectModel: (frame) => frame.world,
             }),
-            new RenderComponent({
+            ...(worldDebugRenderer == null ? [] : [new RenderComponent({
               id: "world-debug",
               order: RenderOrder.values.WORLD_DEBUG,
               renderer: worldDebugRenderer,
               selectModel: (frame) => frame.world,
-            }),
+            })]),
             new RenderComponent({
               id: "boat-chum",
               order: RenderOrder.values.WORLD_ENTITIES,
@@ -707,10 +734,12 @@ export class GameCompositionRoot {
       }),
       ui: new UIManager(
         this.#config,
-        this.#createUiLifecycle(this.#createDevTools(this.#config, hookedFishProfileSynchronizer, {
-          itemProgressionDebugProvider,
-          itemProgressionResolver,
-        })),
+        this.#createUiLifecycle(this.#createOptionalDiagnostic(
+          this.#createDevTools, "devTools", [this.#config, hookedFishProfileSynchronizer, {
+            itemProgressionDebugProvider,
+            itemProgressionResolver,
+          }], ["dispose"],
+        )),
         { cache: CacheManager },
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
@@ -915,7 +944,9 @@ export class GameCompositionRoot {
       }),
     });
 
-    const debugService = this.#createDebugService(config);
+    const debugService = this.#createOptionalDiagnostic(
+      this.#createDebugService, "debugService", [config], ["update"],
+    );
 
     const biteEnvironmentService = new BiteEnvironmentService({
       world: runtime.world,
@@ -1044,12 +1075,14 @@ export class GameCompositionRoot {
         projector: runtime.projector,
         config,
       }),
-      debugBuilder: this.#createLocationDebugRenderFrameBuilder({
-        map: runtime.map,
-        projector: runtime.projector,
-        config,
-        debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
-      }),
+      debugBuilder: this.#createOptionalDiagnostic(
+        this.#createLocationDebugRenderFrameBuilder, "locationDebugRenderFrameBuilder", [{
+          map: runtime.map,
+          projector: runtime.projector,
+          config,
+          debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
+        }], ["buildInto"],
+      ),
     });
     const castingBuilder = new CastingRenderFrameBuilder({
       projector: runtime.projector,
@@ -1140,7 +1173,7 @@ export class GameCompositionRoot {
     const renderCoordinator = new GameRenderCoordinator({
       stateMachine,
       frameBuffer: new RenderFrameBuffer({
-        diagnostics: this.#getRenderDiagnostics(),
+        diagnostics: this.#readRenderDiagnostics(),
       }),
       frameBuilder,
       pipeline: runtime.rendering.pipeline,
@@ -1229,8 +1262,26 @@ export class GameCompositionRoot {
       contracts.requireMethods(builders[name], name, ["buildInto"]);
     }
   }
+  #createOptionalDiagnostic(factory, name, args, methods) {
+    if (factory == null) return null;
+    const value = factory.apply(this, args);
+    return new DependencyContractValidator({ consumer: "GameCompositionRoot" })
+      .requireMethods(value, name, methods);
+  }
+
+  #readRenderDiagnostics() {
+    const diagnostics = this.#getRenderDiagnostics?.();
+    if (diagnostics != null) {
+      new DependencyContractValidator({ consumer: "GameCompositionRoot" }).requireMethods(
+        diagnostics, "renderDiagnostics", ["recordAssetRequestCreated", "recordVictoryLayoutCreated",
+          "recordRenderPassCreated", "recordFrameCreated", "recordBufferGrowth"],
+      );
+    }
+    return diagnostics;
+  }
+
   #createUiLifecycle(devTools) {
-    return { dispose: () => devTools?.dispose?.() };
+    return devTools == null ? null : { dispose: () => devTools?.dispose?.() };
   }
 
 }

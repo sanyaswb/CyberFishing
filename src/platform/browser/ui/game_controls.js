@@ -18,7 +18,7 @@ export class UIManager {
 
   constructor(config, lifecycle, { cache } = {}) {
     this.#cache = cache;
-    if (!lifecycle || typeof lifecycle.dispose !== "function") {
+    if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("UIManager requires devTools");
     }
     this.#config = config;

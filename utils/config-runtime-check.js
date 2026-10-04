@@ -171,4 +171,45 @@ function checkDevelopmentInputs() {
 }
 checkDevelopmentInputs();
 
+function checkProductionOverrideReader() {
+  const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
+  const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
+  source.load("src/debug/god_mode.js", { expose: ["GodMode"] });
+  source.load("src/app/adapters.js", { expose: ["DevFlagsProvider"] });
+  source.load("src/app/bootstrap.js", { expose: ["GameCompositionRoot"] });
+  const reader = new GameplayOverrideReader(config), original = source.context.GodMode;
+  const names = Object.entries(Object.getOwnPropertyDescriptors(original)).filter(([, value]) => value.get).map(([name]) => name);
+  const flags = new source.context.DevFlagsProvider({ config, godModeSource: () => reader });
+  for (const enabled of [undefined, false, 0, true, 1, "enabled"]) {
+    for (const value of [undefined, false, true, 1, "yes"]) {
+      config.debug.godMode = { enabled, infiniteResources:value, noEquipmentLoss:value, noHookEscape:value,
+        noLineBreak:value, noRodBreak:value, noFishStaminaLoss:value, infiniteCasting:value,
+        fixedBiteChanceEnabled:value, fixedBiteChancePercent:-20, forceAnomalyChance:value, biteSequenceMode:"GUARANTEED" };
+      for (const name of names) assert.equal(reader[name], original[name], name + " accessor parity");
+      assert.equal(flags.isEnabled("noEquipmentLoss"), original.noEquipmentLoss === true);
+      assert.equal(flags.godModeValue("biteSequenceMode"), original.biteSequenceMode);
+    }
+  }
+  for (const percent of [-5,0,50,100,150,"42",NaN,Infinity]) {
+    config.debug.godMode = { enabled:true,fixedBiteChanceEnabled:true,fixedBiteChancePercent:percent };
+    assert.equal(reader.fixedBiteChancePercent, original.fixedBiteChancePercent);
+  }
+  for (const mode of [undefined,"default","NORMAL","guaranteed","other"]) {
+    config.debug.godMode.biteSequenceMode = mode;
+    assert.equal(reader.biteSequenceMode, original.biteSequenceMode);
+  }
+  config.debug.godMode = { enabled:true,noEquipmentLoss:true };
+  assert.equal(flags.isEnabled("noEquipmentLoss"), true, "live owner replacement enables the production effect");
+  config.debug.godMode.enabled = false;
+  assert.equal(flags.isEnabled("noEquipmentLoss"), false, "master setting is read live");
+  const Root = source.context.GameCompositionRoot;
+  assert.doesNotThrow(() => new Root(config));
+  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled"])
+    assert.throws(() => new Root(config, { [option]:false }), /optional callback/);
+  assert.throws(() => new Root(config, { createWorldDebugRenderer:()=>({render(){}}) }), /coherent world debug/);
+  assert.throws(() => new Root(config, { createDevTools:()=>({dispose(){}}) }), /synchronizer/);
+  assert.doesNotThrow(() => new Root(config, { createDebugService:null, getRenderDiagnostics:null }));
+}
+checkProductionOverrideReader();
+
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");

@@ -589,6 +589,9 @@ export class GameApplication {
 
     this.#loop = services.loop;
     this.#fightService = services.fightService;
+    if (services.debugService != null && typeof services.debugService.update !== "function") {
+      throw new TypeError("GameApplication requires optional debugService.update");
+    }
     this.#debugService = services.debugService;
     this.#chumController = services.chumController;
     this.#stateMachine = services.stateMachine;
@@ -624,7 +627,7 @@ export class GameApplication {
       setState: (name, data) => this.setState(name, data),
     });
 
-    this.#debugContext = this.#createDebugContext();
+    this.#debugContext = this.#debugService == null ? null : this.#createDebugContext();
 
     this.#rebuildFloat();
 
@@ -933,7 +936,7 @@ export class GameApplication {
     }
 
     // Reuse the pre-built debug context object — no per-frame allocation.
-    this.#debugService.update(this.#debugContext);
+    this.#debugService?.update(this.#debugContext);
   }
 
 

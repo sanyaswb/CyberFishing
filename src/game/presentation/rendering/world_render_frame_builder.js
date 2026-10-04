@@ -31,7 +31,7 @@ export class WorldRenderFrameBuilder {
         "WorldRenderFrameBuilder requires boatChumBuilder",
       );
     }
-    if (!debugBuilder || typeof debugBuilder.buildInto !== "function") {
+    if (debugBuilder != null && typeof debugBuilder.buildInto !== "function") {
       throw new TypeError(
         "WorldRenderFrameBuilder requires debugBuilder",
       );
@@ -51,7 +51,7 @@ export class WorldRenderFrameBuilder {
       this.#config.canvas?.backgroundColor || "#0f171e";
     this.#buildBackground(target);
     this.#buildClipRegions(target.clipRegions);
-    this.#debugBuilder.buildInto(target, debugEnabled);
+    this.#debugBuilder?.buildInto(target, debugEnabled);
     this.#boatChumBuilder.buildInto(target);
     this.#buildInvalidMarker(target.invalidCastMarker, invalidCastMarker);
   }

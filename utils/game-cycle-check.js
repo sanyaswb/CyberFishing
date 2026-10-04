@@ -99,6 +99,7 @@ const LEGACY_FILES = [
   "src/entities/tackle.js",
   "src/entities/fish.js",
   "src/app/rules.js",
+  "src/app/adapters.js",
   "src/input/pull_input_mapper.js",
   "src/systems/drag_system.js",
   "src/systems/line_system.js",
@@ -136,6 +137,7 @@ const context = vm.createContext({
   JSON,
   Date,
   window: { innerWidth: 1280, innerHeight: 720 },
+  GameplayOverrideReader: require("../src/game/application/fishing/gameplay_override_reader.js").GameplayOverrideReader,
 });
 
 const compatibilityLoader = new StageThreeCompatibilityTestLoader({
@@ -2021,6 +2023,36 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
     projector.focusOnVirtualPos(35, 1000 / 60);
     verify(biteService.getBiteEnvData().dayOfWeek === 3, "bite environment snapshot is assembled each frame");
   }
+  const load = { instanceId: "feeder-load", quantity: 2 }, equipped = { feederChum: load };
+  let consumes = 0, losses = 0, state = "waiting", castStartedAt = 0;
+  const overrideConfig = { debug: { godMode: { enabled: true, infiniteResources: false } } };
+  const productionFlags = new DevFlagsProvider({ config: overrideConfig, godModeSource: () => newReader });
+  const newReader = new GameplayOverrideReader(overrideConfig);
+  const controller = new FishingController({ inventory: {}, equipment: {
+    consumeAllBaits(eq) { verify(eq === equipped, "failure uses the equipped owner");losses++; },
+    consumeFeederChum(eq, unequip) { verify(eq === equipped && unequip === true, "expiry preserves receiver and unequip contract");
+      eq.feederChum.quantity--;eq.feederChum = null;consumes++;return true; },
+  }, devFlags: productionFlags, equipmentRules: { isFeeder: () => true }, baitRules: {} });
+  controller.applyFailureEquipmentLoss("hook", equipped);verify(losses === 1, "disabled override preserves ordinary failure loss");
+  overrideConfig.debug.godMode.noEquipmentLoss = true;controller.applyFailureEquipmentLoss("hook", equipped);
+  verify(losses === 1, "production noEquipmentLoss prevents failure consumption through the injected reader");
+  const sharedEnv = { chumTargets: [] }, targets = sharedEnv.chumTargets;
+  const feederFloat = { ...floatEntity, getChumBonus: elapsed => ({ isExpired: elapsed >= 1, bonus: 2, targets: ["fish"] }) };
+  const feederEnvironment = new BiteEnvironmentService({ world: gameWorld, env: environment, chum,
+    inventory: { getEquipped: () => equipped }, floatRef: () => feederFloat, clock,
+    castManager: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => true },
+    getCurrentHookDepth: () => 2, getCastStartTime: () => castStartedAt, getDayOfWeek: () => 3, getTimeScale: () => 1,
+    getGameStateName: () => state, consumeExpiredFeederChum: eq => controller.consumeExpiredFeederChum(eq), biteEnvData: sharedEnv });
+  for (const query of [1, 2]) verify(feederEnvironment.getBiteEnvData() === sharedEnv && sharedEnv.chumTargets === targets,
+    "gameplay and optional diagnostic queries retain one environment owner");
+  verify(consumes === 1 && load.quantity === 1 && equipped.feederChum === null, "repeat query cannot consume an unequipped expired load");
+  equipped.feederChum = load;state = "scouting";feederEnvironment.getBiteEnvData();
+  verify(consumes === 1 && equipped.feederChum === load, "return transition cannot consume the replacement load");
+  state = "waiting";castStartedAt = clock.now;feederEnvironment.getBiteEnvData();
+  verify(consumes === 1 && sharedEnv.chumBonus === 2, "same-frame recast resets exposure before the optional diagnostic point");
+  overrideConfig.debug.godMode.infiniteResources = true;castStartedAt = 0;
+  for (const waterState of ["waiting", "biting", "playing"]) {state = waterState;feederEnvironment.getBiteEnvData();}
+  verify(consumes === 1 && load.quantity === 1, "production infiniteResources preserves repeated-query behavior");
   const screen = projector.virtualToScreen(35, 35);
   const virtual = projector.screenToVirtual(screen.x, screen.y);
   verify(Number.isFinite(lastBounds.left + lastBounds.right + lastBounds.top + lastBounds.bottom) &&
