@@ -615,10 +615,6 @@
         {
           "symbol": "CanvasMetricsProvider",
           "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "DevFlagsProvider",
-          "mechanism": "global-this-property"
         }
       ]
     },
@@ -858,6 +854,26 @@
       "globalProviders": [
         {
           "symbol": "Net",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5e28756461b3",
+      "bridge": "src/app/adapters.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "reason": "Existing DEV flag and canvas document composition relocated from Root into classic Development Bootstrap; retire with that Stage 6 consumer.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CanvasMetricsProvider",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "DevFlagsProvider",
           "mechanism": "global-this-property"
         }
       ]

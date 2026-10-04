@@ -75,4 +75,61 @@ function check(structured) {
 }
 check(true);
 check(false);
+function checkDevelopmentInputs() {
+  const fs = require("node:fs"), acorn = require("acorn");
+  const source = fs.readFileSync(require("node:path").join(__dirname, "../src/app/script.js"), "utf8");
+  const tree = acorn.parse(source, { ecmaVersion: "latest" });
+  let options;
+  function visit(node) {
+    if (!node || typeof node !== "object") return;
+    if (node.type === "NewExpression" && node.callee.name === "GameCompositionRoot") {
+      assert.equal(options, undefined, "one development Root construction");
+      options = node.arguments[1];
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) value.forEach(visit);
+      else if (value && typeof value === "object") visit(value);
+    }
+  }
+  visit(tree);
+  assert.equal(options?.type, "ObjectExpression");
+  const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {};
+  class Flags { constructor(options) { this.options = options; } }
+  class Renderer { constructor(options) { this.options = options; } }
+  class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
+  const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
+    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: { enabled: true }, RenderAllocationDiagnostics: diagnostics,
+    CONFIG_RUNTIME_CONTEXT: configRuntime } });
+  runtime.load("src/app/adapters.js", { expose: ["CanvasMetricsProvider"] });
+  runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
+  const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
+  assert.equal(ports.documentTarget, document);
+  assert.equal(ports.windowTarget, window);
+  const config = {}, flags = ports.createDevFlags(config);
+  assert.equal(flags.options.config, config);
+  assert.equal(flags.options.godModeSource(), runtime.context.GodMode);
+  assert.equal(flags.options.debugModulesSource(), window.DEBUG_MODULES);
+  window.DEBUG_MODULES = { catchResolution: false };
+  assert.equal(flags.options.debugModulesSource(), window.DEBUG_MODULES, "flag source stays live");
+  assert.equal(ports.isCatchResolutionLogEnabled(), false);
+  window.DEBUG_MODULES.catchResolution = true;
+  assert.equal(ports.isCatchResolutionLogEnabled(), true);
+  window.document = null;
+  assert.equal(ports.isCatchResolutionLogEnabled(), false);
+  window.document = document;
+  assert.equal(ports.getRenderDiagnostics(), diagnostics);
+  const replacement = {};
+  runtime.context.RenderAllocationDiagnostics = replacement;
+  assert.equal(ports.getRenderDiagnostics(), replacement, "diagnostics lookup stays live at each cold call site");
+  const rendererOptions = { surface: {} }, synchronizer = {}, progression = {};
+  assert.equal(ports.createWorldDebugRenderer(rendererOptions).options, rendererOptions);
+  assert.equal(ports.createLocationDebugRenderFrameBuilder(rendererOptions).options, rendererOptions);
+  const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
+  assert.equal(tools.config, config);
+  assert.equal(tools.synchronizer, synchronizer);
+  assert.equal(tools.options.configRuntime, configRuntime);
+  assert.equal(tools.options.itemProgressionResolver, progression);
+}
+checkDevelopmentInputs();
+
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");

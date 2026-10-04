@@ -1,7 +1,32 @@
 class GameCompositionRoot {
   #config;
   #runtimeConfig;
-  constructor(config = null) {
+  #documentTarget;
+  #windowTarget;
+  #createDevFlags;
+  #createWorldDebugRenderer;
+  #createDevTools;
+  #createLocationDebugRenderFrameBuilder;
+  #getRenderDiagnostics;
+  #isCatchResolutionLogEnabled;
+  constructor(config = null, {
+    documentTarget,
+    windowTarget,
+    createDevFlags,
+    createWorldDebugRenderer,
+    createDevTools,
+    createLocationDebugRenderFrameBuilder,
+    getRenderDiagnostics,
+    isCatchResolutionLogEnabled,
+  } = {}) {
+    this.#documentTarget = documentTarget;
+    this.#windowTarget = windowTarget;
+    this.#createDevFlags = createDevFlags;
+    this.#createWorldDebugRenderer = createWorldDebugRenderer;
+    this.#createDevTools = createDevTools;
+    this.#createLocationDebugRenderFrameBuilder = createLocationDebugRenderFrameBuilder;
+    this.#getRenderDiagnostics = getRenderDiagnostics;
+    this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
     this.#runtimeConfig = {};
     for (const key of Object.getOwnPropertyNames(this.#config)) {
@@ -25,18 +50,13 @@ class GameCompositionRoot {
   }
 
   async build(canvasId) {
-    const canvas = document.getElementById(canvasId);
+    const canvas = this.#documentTarget.getElementById(canvasId);
     const canvasMetrics = new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
-    const devFlags = new DevFlagsProvider({
-      config: this.#config,
-      godModeSource: () => (typeof GodMode !== "undefined" ? GodMode : null),
-      debugModulesSource: () =>
-        typeof window !== "undefined" ? window.DEBUG_MODULES : null,
-    });
+    const devFlags = this.#createDevFlags(this.#config);
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
-    const debugEvents = new BrowserDebugAdapter(document, () =>
+    const debugEvents = new BrowserDebugAdapter(this.#documentTarget, () =>
       devFlags.isDebugEnabled(),
     );
     const runtime = await this.create(
@@ -55,8 +75,8 @@ class GameCompositionRoot {
       devFlags,
       audio,
       debugEvents,
-      windowTarget: window,
-      documentTarget: document,
+      windowTarget: this.#windowTarget,
+      documentTarget: this.#documentTarget,
       runtime,
       clock,
       logger: new ConsoleLogger(),
@@ -84,7 +104,7 @@ class GameCompositionRoot {
     const assetPreloadCoordinator = new AssetPreloadCoordinator({
       imageAssets,
       locationsConfig: this.#config.locations,
-      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+      diagnostics: this.#getRenderDiagnostics(),
     });
     contracts.requireMethods(assetPreloadCoordinator, "assetPreloadCoordinator", [
       "preloadApplicationAssets",
@@ -216,7 +236,7 @@ class GameCompositionRoot {
       ["apply", "appendTooltip", "updateCapacity", "clear"],
     );
     const victoryLayoutResolver = new VictoryLayoutResolver({
-      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+      diagnostics: this.#getRenderDiagnostics(),
     });
     contracts.requireMethods(victoryLayoutResolver, "victoryLayoutResolver", [
       "resolve",
@@ -279,7 +299,7 @@ class GameCompositionRoot {
       surface,
       assets: imageAssets,
     });
-    const worldDebugRenderer = new WorldDebugRenderer({ surface });
+    const worldDebugRenderer = this.#createWorldDebugRenderer({ surface });
     const boatChumRenderer = new BoatChumRenderer({
       surface,
       primitives,
@@ -367,7 +387,7 @@ class GameCompositionRoot {
       invalidCastMarkerRenderer,
     });
     const pipeline = new GameRenderPipeline({
-      diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+      diagnostics: this.#getRenderDiagnostics(),
       passes: RenderOrder.createPassList({
         world: new WorldRenderPass({
           components: [
@@ -459,7 +479,7 @@ class GameCompositionRoot {
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
-      new InventoryEventBridge(new BrowserEventTargetAdapter(document)),
+      new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
       castDistanceCalculator,
       lineRules,
       runtimeConfigProvider,
@@ -532,8 +552,7 @@ class GameCompositionRoot {
       }),
       ui: new UIManager(
         this.#config,
-        this.#createUiLifecycle(new DevTools(this.#config, hookedFishProfileSynchronizer, {
-          configRuntime: CONFIG_RUNTIME_CONTEXT,
+        this.#createUiLifecycle(this.#createDevTools(this.#config, hookedFishProfileSynchronizer, {
           itemProgressionDebugProvider,
           itemProgressionResolver,
         })),
@@ -541,7 +560,7 @@ class GameCompositionRoot {
       ),
       chum: new ChumManager(locId, chumConfigObj, projector, {
         cache: CacheManager,
-        configEvents: document,
+        configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
         onBoatReturned: (context) =>
@@ -582,8 +601,8 @@ class GameCompositionRoot {
     }
     systems.inventoryUI = InventoryV2Bootstrap.create({
       facade: inventoryV2Facade,
-      documentRef: document,
-      mountNode: document?.body,
+      documentRef: this.#documentTarget,
+      mountNode: this.#documentTarget?.body,
       warningTimers: new BrowserTimeoutScheduler(),
       onAction: (action) => inventory.dispatchInventoryV2Action(action),
       rarityDomAdapter: itemRarityDomAdapter,
@@ -728,8 +747,7 @@ class GameCompositionRoot {
       devFlags,
       catchResolver: new CatchResolutionService({
         logger: new ConsoleLogger(),
-        isLogEnabled: () => typeof window !== "undefined" && !!window.document &&
-          window.DEBUG_MODULES?.catchResolution === true,
+        isLogEnabled: this.#isCatchResolutionLogEnabled,
       }),
       fightSessionFactory: new FightSessionFactory({
         config,
@@ -871,7 +889,7 @@ class GameCompositionRoot {
         projector: runtime.projector,
         config,
       }),
-      debugBuilder: new LocationDebugRenderFrameBuilder({
+      debugBuilder: this.#createLocationDebugRenderFrameBuilder({
         map: runtime.map,
         projector: runtime.projector,
         config,
@@ -967,7 +985,7 @@ class GameCompositionRoot {
     const renderCoordinator = new GameRenderCoordinator({
       stateMachine,
       frameBuffer: new RenderFrameBuffer({
-        diagnostics: typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+        diagnostics: this.#getRenderDiagnostics(),
       }),
       frameBuilder,
       pipeline: runtime.rendering.pipeline,

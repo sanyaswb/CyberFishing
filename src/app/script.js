@@ -1,7 +1,24 @@
 (async function startCyberFishing() {
   window.CYBER_FISHING_GAME_CLEANUP?.();
 
-  const compositionRoot = new GameCompositionRoot();
+  const compositionRoot = new GameCompositionRoot(null, {
+    documentTarget: CanvasMetricsProvider.getDocumentTarget(),
+    windowTarget: window,
+    createDevFlags: (config) => new DevFlagsProvider({
+      config,
+      godModeSource: () => (typeof GodMode !== "undefined" ? GodMode : null),
+      debugModulesSource: () => typeof window !== "undefined" ? window.DEBUG_MODULES : null,
+    }),
+    createWorldDebugRenderer: (options) => new WorldDebugRenderer(options),
+    createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {
+      configRuntime: CONFIG_RUNTIME_CONTEXT,
+      ...options,
+    }),
+    createLocationDebugRenderFrameBuilder: (options) => new LocationDebugRenderFrameBuilder(options),
+    getRenderDiagnostics: () => typeof RenderAllocationDiagnostics !== "undefined" ? RenderAllocationDiagnostics : null,
+    isCatchResolutionLogEnabled: () => CanvasMetricsProvider.hasDocumentTarget() &&
+      window.DEBUG_MODULES?.catchResolution === true,
+  });
   const game = new Game("gameCanvas", compositionRoot);
   window.game = game;
   const started = await game.start();

@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "021",
+  "slug": "production-root-development-ports",
+  "baseCommit": "6054322f68160df2813a440909330883a535acda",
+  "reason": "Prepare frozen cluster 026 by moving original DEV constructor/diagnostics/flag/logger closures and live document/window targets to the actual classic Development Bootstrap. Root composes through constructor-injected factory/target ports at the identical call sites and nested constructor order. Script is composition, not a thin entrypoint; graph v6 assigns its DEV startup to Stage 6 while requiring native production entry and one-instance browser cutover at 028. No new global, state owner, per-frame allocation, throw or gameplay change. Raw CONFIG/ITEM_DB input preparation remains separate.",
+  "reclassified": [
+    {
+      "currentPath": "src/app/script.js",
+      "before": {
+        "migrationStatus": "classified",
+        "roles": [
+          "entrypoint"
+        ],
+        "targetBoundary": "entrypoint-dev",
+        "targetPath": "src/entrypoints/dev.entry.js",
+        "migrationWave": 7
+      },
+      "after": {
+        "migrationStatus": "classified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-development",
+        "targetPath": "src/bootstrap/development/legacy_game_startup.js",
+        "migrationWave": 7
+      },
+      "followUpStage": "stage-6",
+      "reason": "Actual body composes Root/Game, watchdog/metrics and browser lifecycle; thin native entrypoints remain separate."
+    }
+  ],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [
+    "debt-boundary-dependency-28f5b8bf4610",
+    "debt-boundary-dependency-3225127798f8",
+    "debt-boundary-dependency-37a9f9bb3070",
+    "debt-boundary-dependency-3c97bb04fc53",
+    "debt-boundary-dependency-b9dffb5f45d5",
+    "debt-browser-capability-07aca4fda103",
+    "debt-browser-capability-b35170043e87"
+  ],
+  "importEdges": [],
+  "files": [
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "e960b56c9bb4eb97eb946cadfdfdc0e1154e497fb4ae7c55b96d584a6fbca56d",
+      "after": "832e1f01e83707197220e5b8f02ac4859a31e4ea042905ccee9678c033435c58"
+    },
+    {
+      "path": "src/app/script.js",
+      "before": "6a86f035dfbb409814e87e846598bcc6d9175c90bb1fa090d9372b6e926753c6",
+      "after": "b6c272bd8f8cbcb9e71590b73b9f61109d28fd09ede75154f66cddaec2abc888"
+    },
+    {
+      "path": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "before": "40cc59cd262ca090db3a39d1e63248c5da1d625a82dc9c70bd42a30d97d75480",
+      "after": "9abcf5383d398b329b8e632a911a59bbf2643a97de91f4b6a655484d7bdfef44"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e99bd48e3f7ab3516b2cbd76cdc6534c1494abe70522b4b7273619f15503719a",
+      "after": "e692ae20824128a5c82e7975c75f672f2e62cdc267103d59f2ca1b18c7a7b111"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "before": "9a3f84907cb5156d882fbb7ec23f888c708895fc4fddf203b407fc41ae194874",
+      "after": "b00f985d51fde0864043c4b75ab3920c2186dcd84ee63e02ed824ea3296bbc30"
+    },
+    {
+      "path": "architecture/guards/known_debt_registry.json",
+      "before": "d611b5a6c47c2271de6e114de3179d8c55c744884e6186e75f5f627cc85f5cee",
+      "after": "248f74dfdc40c1253d8136b0ec341b45b9c64a41f766e90b41e0406fbd9d0021"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "871b4d04bb0e481524b5480afd8a74afaff2bd56ba49cf77d009b3e98ebb5c73",
+      "after": "83b65dfd541affdc7e8d8e27b1a72ba2b4f02fed04e90c09f4c21dc6df27965d"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "Original Root constructor/build is used by startup; config-runtime scenario uses only explicitly passed config/live getters. Eight cold ports are assigned once; four diagnostics lookups stay at their old call sites. UI dispose closure, DEV class construction, callbacks, renderer/frame buffer objects and live target receivers remain unchanged.",
+    "CanvasMetricsProvider already owns browser viewport/canvas access. Its two narrow static document selectors support cold composition and preserve the original missing-window/document catch-log condition; no cached document or extra platform/global wrapper. Existing published class identity is unchanged.",
+    "Shared Platform bridge keeps Root BrowserAudio/Debug/Canvas consumers. Development Bootstrap receives only existing CanvasMetricsProvider/DevFlagsProvider surfaces; neither global baseline nor activation count grows.",
+    "Existing config-runtime scenario parses and exercises the actual startup option object. It verifies document/window references, original renderer option identity, DEV config/progression/runtime identity and live flag/diagnostics/logger override callbacks. Original success output is preserved."
+  ],
+  "verification": {
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 34,
+    "knownDebtsAfter": 27,
+    "focused": {
+      "utils/config-runtime-check.js": {
+        "status": "PASS"
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 171,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}

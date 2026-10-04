@@ -368,12 +368,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "CONFIG_RUNTIME_CONTEXT",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CacheManager",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -482,18 +476,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "DebugService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -531,18 +513,6 @@
             },
             {
               "symbol": "DerivedStatMetricStrategy",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "DevFlagsProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "DevTools",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -743,12 +713,6 @@
               "symbol": "GameWorld",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -1034,12 +998,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "LocationDebugRenderFrameBuilder",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "LocationManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1139,12 +1097,6 @@
               "symbol": "ReelRetrieveSpeedCalculator",
               "mechanism": "identifier",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
               "executionPhase": "deferred"
             },
             {
@@ -1268,12 +1220,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "WorldDebugRenderer",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "WorldRenderFrameBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1303,10 +1249,7 @@
             "Object",
             "undefined"
           ],
-          "browserApis": [
-            "document",
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -1477,14 +1420,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "CONFIG_RUNTIME_CONTEXT",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/config.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "CacheManager",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -1629,22 +1564,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/debug/debug.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "DEBUG_MODULES",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/debug.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "DebugService",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -1698,22 +1617,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/items/progression/derived_stat_metric_strategy.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "DevFlagsProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/adapters.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "DevTools",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/debug/dev_tools.js",
               "resolution": "confirmed"
             },
             {
@@ -1978,14 +1881,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/app/world.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "GodMode",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/debug/god_mode.js",
               "resolution": "confirmed"
             },
             {
@@ -2365,14 +2260,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "LocationDebugRenderFrameBuilder",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/rendering/location_debug_render_frame_builder.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "LocationManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2506,14 +2393,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/fishing/reel_retrieve_speed_calculator.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RenderAllocationDiagnostics",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/render/core/render_allocation_diagnostics.js",
               "resolution": "confirmed"
             },
             {
@@ -2677,14 +2556,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "WorldDebugRenderer",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/render/world/world_debug_renderer.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "WorldRenderFrameBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -2715,8 +2586,7 @@
               "symbols": [
                 "BrowserAudioAdapter",
                 "BrowserDebugAdapter",
-                "CanvasMetricsProvider",
-                "DevFlagsProvider"
+                "CanvasMetricsProvider"
               ],
               "resolution": "confirmed"
             },
@@ -2851,13 +2721,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/app/rendering/location_debug_render_frame_builder.js",
-              "symbols": [
-                "LocationDebugRenderFrameBuilder"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/app/rendering/outcome_render_frame_builder.js",
               "symbols": [
                 "OutcomeRenderFrameBuilder"
@@ -2925,13 +2788,6 @@
               "target": "src/assets/asset_preload_coordinator.js",
               "symbols": [
                 "AssetPreloadCoordinator"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/config.js",
-              "symbols": [
-                "CONFIG_RUNTIME_CONTEXT"
               ],
               "resolution": "confirmed"
             },
@@ -3231,27 +3087,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/debug/debug.js",
-              "symbols": [
-                "DEBUG_MODULES"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/dev_tools.js",
-              "symbols": [
-                "DevTools"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/debug/god_mode.js",
-              "symbols": [
-                "GodMode"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/debug/services/hooked_fish_profile_synchronizer.js",
               "symbols": [
                 "HookedFishProfileSynchronizer"
@@ -3346,13 +3181,6 @@
               "target": "src/render/core/image_asset_provider.js",
               "symbols": [
                 "ImageAssetProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/core/render_allocation_diagnostics.js",
-              "symbols": [
-                "RenderAllocationDiagnostics"
               ],
               "resolution": "confirmed"
             },
@@ -3535,13 +3363,6 @@
               "target": "src/render/world/location_debug_map_builder.js",
               "symbols": [
                 "LocationDebugMapBuilder"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/render/world/world_debug_renderer.js",
-              "symbols": [
-                "WorldDebugRenderer"
               ],
               "resolution": "confirmed"
             },
@@ -5481,6 +5302,12 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "CONFIG_RUNTIME_CONTEXT",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "CYBER_FISHING_GAME_CLEANUP",
               "mechanism": "window-property",
               "accessRequirement": "guarded",
@@ -5489,6 +5316,36 @@
             {
               "symbol": "CYBER_FISHING_MEMORY_WATCHDOG",
               "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "CanvasMetricsProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DevFlagsProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "DevTools",
+              "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
@@ -5523,7 +5380,19 @@
               "executionPhase": "deferred"
             },
             {
+              "symbol": "GodMode",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "InputManager",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "LocationDebugRenderFrameBuilder",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
@@ -5532,6 +5401,18 @@
               "symbol": "MemoryLeakWatchdog",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "RenderAllocationDiagnostics",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred"
+            },
+            {
+              "symbol": "WorldDebugRenderer",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
               "executionPhase": "deferred"
             },
             {
@@ -5561,16 +5442,64 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "entrypoint"
+          "bootstrap"
         ],
-        "targetBoundary": "entrypoint-dev",
-        "targetPath": "src/entrypoints/dev.entry.js",
+        "targetBoundary": "bootstrap-development",
+        "targetPath": "src/bootstrap/development/legacy_game_startup.js",
         "migrationWave": 7
       },
       "analysis": {
         "dependencies": {
           "status": "verified",
           "confirmed": [
+            {
+              "symbol": "CONFIG_RUNTIME_CONTEXT",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/config.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "CanvasMetricsProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/adapters.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/debug/debug.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DEBUG_MODULES",
+              "mechanism": "window-property",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/debug.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DevFlagsProvider",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/adapters.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "DevTools",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/debug/dev_tools.js",
+              "resolution": "confirmed"
+            },
             {
               "symbol": "EventBus",
               "mechanism": "identifier",
@@ -5612,11 +5541,27 @@
               "resolution": "confirmed"
             },
             {
+              "symbol": "GodMode",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/debug/god_mode.js",
+              "resolution": "confirmed"
+            },
+            {
               "symbol": "InputManager",
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/core/core.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "LocationDebugRenderFrameBuilder",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/app/rendering/location_debug_render_frame_builder.js",
               "resolution": "confirmed"
             },
             {
@@ -5626,9 +5571,33 @@
               "executionPhase": "deferred",
               "target": "src/debug/services/memory_leak_watchdog.js",
               "resolution": "confirmed"
+            },
+            {
+              "symbol": "RenderAllocationDiagnostics",
+              "mechanism": "identifier",
+              "accessRequirement": "guarded",
+              "executionPhase": "deferred",
+              "target": "src/render/core/render_allocation_diagnostics.js",
+              "resolution": "confirmed"
+            },
+            {
+              "symbol": "WorldDebugRenderer",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/render/world/world_debug_renderer.js",
+              "resolution": "confirmed"
             }
           ],
           "items": [
+            {
+              "target": "src/app/adapters.js",
+              "symbols": [
+                "CanvasMetricsProvider",
+                "DevFlagsProvider"
+              ],
+              "resolution": "confirmed"
+            },
             {
               "target": "src/app/bootstrap.js",
               "symbols": [
@@ -5651,9 +5620,44 @@
               "resolution": "confirmed"
             },
             {
+              "target": "src/app/rendering/location_debug_render_frame_builder.js",
+              "symbols": [
+                "LocationDebugRenderFrameBuilder"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/config.js",
+              "symbols": [
+                "CONFIG_RUNTIME_CONTEXT"
+              ],
+              "resolution": "confirmed"
+            },
+            {
               "target": "src/core/core.js",
               "symbols": [
                 "InputManager"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/debug.js",
+              "symbols": [
+                "DEBUG_MODULES"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/dev_tools.js",
+              "symbols": [
+                "DevTools"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/debug/god_mode.js",
+              "symbols": [
+                "GodMode"
               ],
               "resolution": "confirmed"
             },
@@ -5675,6 +5679,20 @@
               "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
               "symbols": [
                 "EventLifecycle"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/render/core/render_allocation_diagnostics.js",
+              "symbols": [
+                "RenderAllocationDiagnostics"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/render/world/world_debug_renderer.js",
+              "symbols": [
+                "WorldDebugRenderer"
               ],
               "resolution": "confirmed"
             }
@@ -46431,6 +46449,7 @@
             "Audio",
             "AudioContext",
             "CustomEvent",
+            "document",
             "fetch",
             "innerHeight",
             "innerWidth",
