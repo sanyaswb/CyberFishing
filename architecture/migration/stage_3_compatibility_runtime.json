@@ -1007,18 +1007,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "ConfigOverrideStore",
-      "legacyScriptIndex": 25,
-      "legacySymbol": "ConfigOverrideStore",
-      "shimFile": "activations/025_configoverridestore.js",
-      "sourceProvider": "src/config/runtime/config_override_store.js",
-      "targetModule": "src/game/config/runtime/config_override_store.js",
-      "id": "activation-256de641d185",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-28138de81e82",
       "owner": "stage-3.22.prerequisite.vector2-extraction",
       "sourceProvider": "src/core/math/vector2.js",
@@ -1087,6 +1075,18 @@
       "targetModule": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
       "id": "activation-2af009b4d5ac",
       "owner": "stage-4.cluster-021-inventory-equipment-loadout",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "createRuntimeConfigContext",
+      "legacyScriptIndex": 28,
+      "legacySymbol": "createRuntimeConfigContext",
+      "shimFile": "activations/028_createruntimeconfigcontext.js",
+      "sourceProvider": "src/config/runtime/config_context_composition.js",
+      "targetModule": "src/bootstrap/production/config_context.js",
+      "id": "activation-2b279430ded7",
+      "owner": "stage-5.cluster-014-config-context-composition",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -1723,18 +1723,6 @@
       "legacySymbol": "BiteRules",
       "legacyScriptIndex": 397,
       "shimFile": "activations/397_biterules.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "deepCloneConfig",
-      "legacyScriptIndex": 27,
-      "legacySymbol": "deepCloneConfig",
-      "shimFile": "activations/027_deepcloneconfig.js",
-      "sourceProvider": "src/infrastructure/config/deep_clone_config.js",
-      "targetModule": "src/platform/browser/config/deep_clone_config.js",
-      "id": "activation-65855576983d",
-      "owner": "stage-4.cluster-031-platform-config-clone",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2783,18 +2771,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "ResolvedConfigProvider",
-      "legacyScriptIndex": 26,
-      "legacySymbol": "ResolvedConfigProvider",
-      "shimFile": "activations/026_resolvedconfigprovider.js",
-      "sourceProvider": "src/config/runtime/resolved_config_provider.js",
-      "targetModule": "src/game/config/runtime/resolved_config_provider.js",
-      "id": "activation-c1a6acc96ce5",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "ChumManager",
       "legacyScriptIndex": 223,
       "legacySymbol": "ChumManager",
@@ -3035,18 +3011,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "deepFreezeConfig",
-      "legacyScriptIndex": 27,
-      "legacySymbol": "deepFreezeConfig",
-      "shimFile": "activations/027_deepfreezeconfig.js",
-      "sourceProvider": "src/config/runtime/immutable_config.js",
-      "targetModule": "src/game/config/runtime/immutable_config.js",
-      "id": "activation-e461775c453b",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "ItemDatabase",
       "legacyScriptIndex": 226,
       "legacySymbol": "ItemDatabase",
@@ -3213,18 +3177,6 @@
       "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "exportName": "setRuntimeConfigPath",
-      "legacyScriptIndex": 27,
-      "legacySymbol": "setRuntimeConfigPath",
-      "shimFile": "activations/027_setruntimeconfigpath.js",
-      "sourceProvider": "src/config/runtime/immutable_config.js",
-      "targetModule": "src/game/config/runtime/immutable_config.js",
-      "id": "activation-f41fa91bd5c9",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "exportName": "CastManager",
@@ -3587,6 +3539,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-030-fight-physics-system"
+    },
+    {
+      "activation": {
+        "exportName": "ConfigOverrideStore",
+        "legacyScriptIndex": 25,
+        "legacySymbol": "ConfigOverrideStore",
+        "shimFile": "activations/025_configoverridestore.js",
+        "sourceProvider": "src/config/runtime/config_override_store.js",
+        "targetModule": "src/game/config/runtime/config_override_store.js",
+        "id": "activation-256de641d185",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-014-config-context-composition"
     },
     {
       "activation": {
@@ -4199,6 +4168,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-030-fight-physics-system"
+    },
+    {
+      "activation": {
+        "exportName": "deepCloneConfig",
+        "legacyScriptIndex": 27,
+        "legacySymbol": "deepCloneConfig",
+        "shimFile": "activations/027_deepcloneconfig.js",
+        "sourceProvider": "src/infrastructure/config/deep_clone_config.js",
+        "targetModule": "src/platform/browser/config/deep_clone_config.js",
+        "id": "activation-65855576983d",
+        "owner": "stage-4.cluster-031-platform-config-clone",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-014-config-context-composition"
     },
     {
       "activation": {
@@ -5103,6 +5089,23 @@
     },
     {
       "activation": {
+        "exportName": "ResolvedConfigProvider",
+        "legacyScriptIndex": 26,
+        "legacySymbol": "ResolvedConfigProvider",
+        "shimFile": "activations/026_resolvedconfigprovider.js",
+        "sourceProvider": "src/config/runtime/resolved_config_provider.js",
+        "targetModule": "src/game/config/runtime/resolved_config_provider.js",
+        "id": "activation-c1a6acc96ce5",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-014-config-context-composition"
+    },
+    {
+      "activation": {
         "id": "activation-c23a9b7efff6",
         "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
         "sourceProvider": "src/systems/rod_lateral_control_system.js",
@@ -5358,6 +5361,23 @@
     },
     {
       "activation": {
+        "exportName": "deepFreezeConfig",
+        "legacyScriptIndex": 27,
+        "legacySymbol": "deepFreezeConfig",
+        "shimFile": "activations/027_deepfreezeconfig.js",
+        "sourceProvider": "src/config/runtime/immutable_config.js",
+        "targetModule": "src/game/config/runtime/immutable_config.js",
+        "id": "activation-e461775c453b",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-014-config-context-composition"
+    },
+    {
+      "activation": {
         "id": "activation-e5ee66b391d6",
         "owner": "stage-3.candidate-019-items-b0af5033",
         "sourceProvider": "src/core/items/freshness/bait_freshness_decay_policy.js",
@@ -5508,6 +5528,23 @@
       "placeholder": "shared-source-line-removed",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-037-fishing-runtime-services"
+    },
+    {
+      "activation": {
+        "exportName": "setRuntimeConfigPath",
+        "legacyScriptIndex": 27,
+        "legacySymbol": "setRuntimeConfigPath",
+        "shimFile": "activations/027_setruntimeconfigpath.js",
+        "sourceProvider": "src/config/runtime/immutable_config.js",
+        "targetModule": "src/game/config/runtime/immutable_config.js",
+        "id": "activation-f41fa91bd5c9",
+        "owner": "stage-4.cluster-007-config-runtime",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-014-config-context-composition"
     },
     {
       "activation": {

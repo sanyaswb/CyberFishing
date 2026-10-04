@@ -855,22 +855,6 @@
       ]
     },
     {
-      "id": "bridge-37b3c77d4735",
-      "bridge": "src/config/runtime/resolved_config_provider.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/runtime/config_context_composition.js",
-      "target": "src/game/config/runtime/resolved_config_provider.js",
-      "reason": "Preserve the exact ResolvedConfigProvider consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ResolvedConfigProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-394299e6e95b",
       "bridge": "src/ui/styles/fight_area_style_resolver.js",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
@@ -2027,22 +2011,6 @@
       ]
     },
     {
-      "id": "bridge-731c6855160e",
-      "bridge": "src/config/runtime/config_override_store.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/runtime/config_context_composition.js",
-      "target": "src/game/config/runtime/config_override_store.js",
-      "reason": "Preserve the exact ConfigOverrideStore consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ConfigOverrideStore",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-7376f5e6b272",
       "bridge": "src/engine/compat/stage_2/dependency_contract_validator_legacy_bridge.js",
       "source": "src/app/bootstrap.js",
@@ -3191,22 +3159,6 @@
       ]
     },
     {
-      "id": "bridge-c044a5d16c7a",
-      "bridge": "src/infrastructure/config/deep_clone_config.js",
-      "owner": "stage-4.cluster-031-platform-config-clone",
-      "source": "src/config/runtime/config_context_composition.js",
-      "target": "src/platform/browser/config/deep_clone_config.js",
-      "reason": "Preserve the exact deepCloneConfig consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "deepCloneConfig",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-c0fbf6710409",
       "bridge": "src/entities/fish.js",
       "source": "src/debug/services/active_fish_dev_tools_schema.js",
@@ -3266,6 +3218,22 @@
       "globalProviders": [
         {
           "symbol": "ConsoleLogger",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c33bba4a0ce7",
+      "bridge": "src/config/runtime/config_context_composition.js",
+      "owner": "stage-5.cluster-014-config-context-composition",
+      "source": "src/config/config.js",
+      "target": "src/bootstrap/production/config_context.js",
+      "reason": "Preserve the exact createRuntimeConfigContext consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "createRuntimeConfigContext",
           "mechanism": "global-this-property"
         }
       ]
@@ -3490,26 +3458,6 @@
       "globalProviders": [
         {
           "symbol": "LocationAssetLoader",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d79a5af918c5",
-      "bridge": "src/config/runtime/immutable_config.js",
-      "owner": "stage-4.cluster-007-config-runtime",
-      "source": "src/config/runtime/config_context_composition.js",
-      "target": "src/game/config/runtime/immutable_config.js",
-      "reason": "Preserve the exact deepFreezeConfig, setRuntimeConfigPath consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "deepFreezeConfig",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "setRuntimeConfigPath",
           "mechanism": "global-this-property"
         }
       ]
