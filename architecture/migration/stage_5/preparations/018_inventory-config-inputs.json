@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "018",
+  "slug": "inventory-config-inputs",
+  "baseCommit": "0a0658db58006170f4b2928b9758802c286caabf",
+  "reason": "Frozen cluster 023 requires raw catalog input isolation. All actual compose/create production and test sites supply itemDefinitionResolver; remove its unread raw ITEM_DB fallback under the existing constructor-default rule. Supply assemblyProfileConfig explicitly through the cold Root callback and both real test compositions. A six-line GameConfig accessor returns the original frozen external catalog by identity, with no cloning/cache/state/global; Root uses its existing startup-only native import mechanism. No new Domain/Application imports, debt, schema or hot-loop allocations. Default no-argument compose already required injected stat collaborators and was not a valid production construction path.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "importEdges": [
+    {
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/config/inventory/inventory_composition_config.js",
+      "reason": "Cold composition reads external config through the GameConfig accessor and passes the same catalog reference."
+    },
+    {
+      "source": "src/game/config/inventory/inventory_composition_config.js",
+      "target": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "reason": "GameConfig owns external catalog assembly; accessor returns the original frozen object."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/application/inventory/inventory_v2_composition_root.js",
+      "before": "60bbce5d409167e0476a554579f962b046ed47814d23fe725d66e79dad67803a",
+      "after": "0e99d885101ae6776f94f95eb4e3c799132eb274af695b4e6c8420570d978b7c"
+    },
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "9adb699dd7c08d3b429d218d0f0132c9c0c2eeb66ed866d4b128e5eaf68520c7",
+      "after": "75d97ef43662dd199d12710919692b58b83e40c8c8655e420d198154f9b2218c"
+    },
+    {
+      "path": "src/game/config/inventory/inventory_composition_config.js",
+      "before": null,
+      "after": "49dca282e4cb2079368df61110766413a37eb606ac9d06e7616f4e70c226c36f"
+    },
+    {
+      "path": "utils/inventory-v2-integration-check.js",
+      "before": "cc1679f825967e3418196a4e42ef25444d554ecf93209cade971eb0fabdb34b7",
+      "after": "0a5b5d6d58ad68767cfc073a8ac654282b09ad6ece13c993e3e5519baf781c2c"
+    },
+    {
+      "path": "utils/inventory-save-round-trip-check.js",
+      "before": "c6712b3e507ad51a2e6eebd91f88278574fb425f555051770065b241f55d4102",
+      "after": "65be295cb8f489b0f622ee884cbf11c6eaa7b54eb10f33d22bece6be7d59d8e6"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e5910cd5a243bd6574d823702edaa1b050a6bfcc344fa259f27564d6736b24f2",
+      "after": "17818a313802d2032abaf3997653f14ba5836268e17c528f0fc713786f4281b0"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "rg src/utils finds Root callback, inventory integration makeComposition and save-round-trip compose as the only direct callers. InventoryManager passes its existing authoritative database; both tests pass their explicit definition resolvers.",
+    "Original method bodies use the same catalog/definitions at the same collaborator construction sites; #resolveSnapshot receives the same catalog for legacy migration. Root creates one cold option copy per inventory composition; no update/render changes.",
+    "023_save-round-trip.json was captured before this preparation during a rejected/rolled-back migration attempt. Keep its bytes as historical evidence; capture the prepared 023 hot-loop baseline separately before applying.",
+    "The catalog is deeply frozen and the Domain registry normalizes copies at construction; no production/DEV writer exists. Accessor identity equals its canonical native ESM catalog. Existing cumulative activation/global catalog identity stays unchanged during this preparation; final 028 removes the cumulative compiled copy so all browser consumers share one native graph. Extra module evaluation is cold, never per frame."
+  ],
+  "verification": {
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 37,
+    "knownDebtsAfter": 37,
+    "focused": {
+      "utils/inventory-v2-integration-check.js": {
+        "status": "PASS"
+      },
+      "utils/inventory-save-round-trip-check.js": {
+        "status": "PASS"
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 259,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}

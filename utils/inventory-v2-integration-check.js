@@ -294,6 +294,7 @@ vm.runInContext(
     return InventoryV2CompositionRoot.compose({
       ...itemStatCollaborators,
       cache,
+      assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
       initialSnapshot: {
         schemaVersion: 2,
         items,

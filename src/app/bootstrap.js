@@ -454,6 +454,7 @@ class GameCompositionRoot {
     const { createRandomInventoryId } = await import("../platform/browser/inventory/random_inventory_id.js");
     const { BrowserEventTargetAdapter } = await import("../platform/browser/runtime/legacy_runtime_adapters.js");
     const { BrowserTimeoutScheduler } = await import("../platform/browser/time/browser_timeout_scheduler.js");
+    const { getInventoryAssemblyProfileConfig } = await import("../game/config/inventory/inventory_composition_config.js");
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,
@@ -474,7 +475,10 @@ class GameCompositionRoot {
       {
         slotConfig: SLOT_CONFIG,
         createItemViewFactory: (options) => new InventoryItemViewFactory(options),
-        composeInventoryV2: (options) => InventoryV2CompositionRoot.compose(options),
+        composeInventoryV2: (options) => InventoryV2CompositionRoot.compose({
+          ...options,
+          assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
+        }),
         actions: InventoryV2ActionType,
         makeRandomId: createRandomInventoryId,
         now: () => Date.now(),

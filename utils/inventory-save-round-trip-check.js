@@ -137,6 +137,7 @@ const result = vm.runInContext(`(() => {
     return InventoryV2CompositionRoot.compose({
       ...itemStatCollaborators,
       cache,
+      assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
       itemDefinitionResolver: (itemId) => definitions[itemId] || null,
       instanceIdFactory: (source = {}) => (typeof source === "string" ? source : source.instanceId || source.itemId || "item") +
         "~save-" + (++sequence),

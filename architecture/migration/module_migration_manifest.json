@@ -6919,18 +6919,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ITEM_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "InventoryItemReservationPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -7432,22 +7420,6 @@
               "resolution": "confirmed"
             },
             {
-              "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/inventory/item_assembly_profile_config.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ITEM_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/databases/item_db.js",
-              "resolution": "confirmed"
-            },
-            {
               "symbol": "InventoryItemReservationPolicy",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -7928,13 +7900,6 @@
               "resolution": "confirmed"
             },
             {
-              "target": "src/config/databases/item_db.js",
-              "symbols": [
-                "ITEM_DB"
-              ],
-              "resolution": "confirmed"
-            },
-            {
               "target": "src/config/inventory/equipment_slot_config.js",
               "symbols": [
                 "EQUIPMENT_ALL_SLOT_IDS",
@@ -7960,13 +7925,6 @@
               "target": "src/config/inventory/inventory_v2_sort_config.js",
               "symbols": [
                 "INVENTORY_V2_SORT_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/inventory/item_assembly_profile_config.js",
-              "symbols": [
-                "ITEM_ASSEMBLY_PROFILE_CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -34261,6 +34219,53 @@
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/factories/fish_profile_factory.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/inventory/inventory_composition_config.js",
+      "currentArea": "game/config/inventory",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/inventory/inventory_composition_config.js",
         "migrationWave": 1
       },
       "analysis": {

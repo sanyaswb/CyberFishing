@@ -22,13 +22,12 @@ class InventoryV2CompositionRoot {
     itemFreshnessResolver = null,
     itemStatOverridePolicy,
     effectiveStatsResolver,
+    assemblyProfileConfig,
   } = {}) {
     // The composed item stat override policy is shared by every item-state collaborator.
     const overridePolicy = itemStatOverridePolicy;
     const itemStateMigration = new LegacyItemStateMigration({ overridePolicy });
-    const definitions =
-      itemDefinitionResolver ||
-      (typeof ITEM_DB !== "undefined" ? ITEM_DB : null);
+    const definitions = itemDefinitionResolver || null;
     const hydrator = new InventoryV2ItemHydrator({
       itemDefinitionResolver: definitions,
       effectiveStatsResolver,
@@ -61,6 +60,7 @@ class InventoryV2CompositionRoot {
       now,
       itemStateMigration,
       effectiveStatsResolver,
+      assemblyProfileConfig,
     });
     const snapshot = resolvedState.snapshot;
 
@@ -83,7 +83,7 @@ class InventoryV2CompositionRoot {
       states: snapshot.assemblies,
     });
     const profileRegistry = new AssemblyProfileRegistry(
-      ITEM_ASSEMBLY_PROFILE_CONFIG,
+      assemblyProfileConfig,
       { itemDefinitionResolver: definitionLookup },
     );
     const assemblyReader = new ItemAssemblyReader({
@@ -408,6 +408,7 @@ class InventoryV2CompositionRoot {
     now,
     itemStateMigration,
     effectiveStatsResolver,
+    assemblyProfileConfig,
   }) {
     if (initialSnapshot) {
       const migration = new InventoryV2SnapshotMigration({
@@ -472,7 +473,7 @@ class InventoryV2CompositionRoot {
       now,
       itemStateMigration,
       effectiveStatsResolver,
-      assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
+      assemblyProfileConfig,
     }).migrate({
       legacyItems: sourceItems,
       legacyEquipment: sourceEquipment,
