@@ -1983,18 +1983,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "ChumUI",
-      "legacyScriptIndex": 228,
-      "legacySymbol": "ChumUI",
-      "shimFile": "activations/228_chumui.js",
-      "sourceProvider": "src/ui/legacy/chum_controls.js",
-      "targetModule": "src/platform/browser/ui/chum_controls.js",
-      "id": "activation-67ec8a3b51a7",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "LoadoutApplicationService",
       "legacyScriptIndex": 182,
       "legacySymbol": "LoadoutApplicationService",
@@ -2065,6 +2053,18 @@
       "owner": "stage-5.cluster-006-inventory-read-models",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "ChumController",
+      "legacyScriptIndex": 404,
+      "legacySymbol": "ChumController",
+      "shimFile": "activations/404_chumcontroller.js",
+      "sourceProvider": "src/app/chum.js",
+      "targetModule": "src/bootstrap/production/chum_feature_bootstrap.js",
+      "id": "activation-7070865ff56d",
+      "owner": "stage-5.cluster-022-chum-feature-composition",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "DevFlagsProvider",
@@ -3711,18 +3711,6 @@
       "removalStage": "stage-6"
     },
     {
-      "exportName": "CastPowerAim",
-      "legacyScriptIndex": 398,
-      "legacySymbol": "CastPowerAim",
-      "shimFile": "activations/398_castpoweraim.js",
-      "sourceProvider": "src/app/cast_power.js",
-      "targetModule": "src/game/application/casting/cast_power_aim.js",
-      "id": "activation-fd85ee1fe622",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "CastingRenderFrameBuilder",
       "legacyScriptIndex": 412,
       "legacySymbol": "CastingRenderFrameBuilder",
@@ -4626,6 +4614,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-014-config-context-composition"
+    },
+    {
+      "activation": {
+        "exportName": "ChumUI",
+        "legacyScriptIndex": 228,
+        "legacySymbol": "ChumUI",
+        "shimFile": "activations/228_chumui.js",
+        "sourceProvider": "src/ui/legacy/chum_controls.js",
+        "targetModule": "src/platform/browser/ui/chum_controls.js",
+        "id": "activation-67ec8a3b51a7",
+        "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-022-chum-feature-composition"
     },
     {
       "activation": {
@@ -6122,6 +6127,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-005-config-derived"
+    },
+    {
+      "activation": {
+        "exportName": "CastPowerAim",
+        "legacyScriptIndex": 398,
+        "legacySymbol": "CastPowerAim",
+        "shimFile": "activations/398_castpoweraim.js",
+        "sourceProvider": "src/app/cast_power.js",
+        "targetModule": "src/game/application/casting/cast_power_aim.js",
+        "id": "activation-fd85ee1fe622",
+        "owner": "stage-4.cluster-026-world-and-casting",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-022-chum-feature-composition"
     },
     {
       "activation": {

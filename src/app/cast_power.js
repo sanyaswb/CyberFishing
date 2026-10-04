@@ -1,1 +1,1 @@
-globalThis.CastPowerAim = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/application/casting/cast_power_aim.js"]["CastPowerAim"];
+// Retired Stage 4 activation activation-fd85ee1fe622: CastPowerAim is served only through ESM imports of src/game/application/casting/cast_power_aim.js.

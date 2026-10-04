@@ -1,0 +1,235 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "022",
+  "slug": "chum-feature-composition",
+  "milestone": "M3",
+  "boundary": "bootstrap-production",
+  "tier": "A",
+  "tierEvidence": "ChumController composes the existing Platform UI and Application power-aim capability with injected inventory/fishing/map/clock/config ports. It retains its original aim, pending-drop, boat association and UI lifecycle ownership. Actual composition exercises 120 power-aim/UI frames, click lock, legacy hand casts, invalid distance/water, pending timing, manual/automatic boat delivery, map controls and dispose. Member bodies, formulas, allocations and call traces remain unchanged.",
+  "modules": [
+    {
+      "currentPath": "src/app/chum.js",
+      "targetPath": "src/bootstrap/production/chum_feature_bootstrap.js",
+      "exports": [
+        "ChumController"
+      ],
+      "imports": [
+        {
+          "symbol": "CastPowerAim",
+          "from": "src/game/application/casting/cast_power_aim.js"
+        },
+        {
+          "symbol": "ChumUI",
+          "from": "src/platform/browser/ui/chum_controls.js"
+        }
+      ],
+      "reviewedBlockers": [
+        {
+          "blocker": "mixed-responsibility-requires-decomposition",
+          "reason": "ChumController composes the existing Platform UI and Application power-aim capability with injected inventory/fishing/map/clock/config ports. It retains its original aim, pending-drop, boat association and UI lifecycle ownership. Actual composition exercises 120 power-aim/UI frames, click lock, legacy hand casts, invalid distance/water, pending timing, manual/automatic boat delivery, map controls and dispose. Member bodies, formulas, allocations and call traces remain unchanged."
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "hot-loop",
+      "kind": "hot-loop",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "022",
+        "--kind",
+        "hot-loop",
+        "--classes",
+        "ChumController",
+        "--scenarios",
+        "utils/fish-rarity-check.js"
+      ]
+    }
+  ],
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-022-chum-feature-composition",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/app/chum.js",
+        "targetPath": "src/bootstrap/production/chum_feature_bootstrap.js",
+        "sourceSha256": "f87e387d1155b3a3daa905e838403bbc160f1fba5dbb4e96ba451163cc9dc42d",
+        "targetSha256": "21dace3d58ab468389b4e52c23c1e3e594a940aae015f6f67226dc431a79a998"
+      }
+    ],
+    "activations": [
+      "activation-7070865ff56d"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [
+      "activation-67ec8a3b51a7",
+      "activation-fd85ee1fe622"
+    ],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-b95500999b06"
+    ],
+    "bridgesRetired": [
+      "bridge-27dcbb9728a5",
+      "bridge-d99a24a6bdc4"
+    ],
+    "importEdges": [
+      "src/bootstrap/production/chum_feature_bootstrap.js->src/game/application/casting/cast_power_aim.js",
+      "src/bootstrap/production/chum_feature_bootstrap.js->src/platform/browser/ui/chum_controls.js"
+    ],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/022_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "92451f06f460730541f0cd38d056f45ea60e84b3ccfdc1137285e0298d10a8b5",
+        "after": "151790977c8e0811c7a7e6bdb0070e0f25beb219a2240df27a3bfabaf6d274e2"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "d2fd3eca228ce0110f1a1a4109fba367f4e61c3d7147a859cc2e0c8611390e4e",
+        "after": "d2fd3eca228ce0110f1a1a4109fba367f4e61c3d7147a859cc2e0c8611390e4e"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "cb293ae2e8fe5e2558f29eb0eceef9ce96ad5ac489f3edff20524e17ba5ca739",
+        "after": "549f50c4b7974e25383ac963dc088adb18668425e69a8655070ba4765f70c2f6"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "ca860781c5ed956bcea9b28bce507d766433f781c5ed23031e35197a5aff198c",
+        "after": "e5910cd5a243bd6574d823702edaa1b050a6bfcc344fa259f27564d6736b24f2"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "3908484f35cf355d8f491ef3c02e66dc753718ca4ac22cbe5decd387f18af7f9",
+        "after": "eb2079e0a631fe320e6f776bd294def9a53905479c8f9dc7746650934d2a5d01"
+      },
+      {
+        "path": "index.html",
+        "before": "09c0f4fc7efad804184b19383c916fde86e16d0b4e2f4c77add26d906263678a",
+        "after": "b214e691f182a9a9597384158fa8531c3804d0e4e914d259ebe6ed8289952518"
+      },
+      {
+        "path": "src/app/cast_power.js",
+        "before": "d97d91874621704bf07c9d4f8fe0a88141a798668eb8f5e204161f34a93c351b",
+        "after": "d13930e73da7e449f44c0c707de4a80d96dccba2113ca1a9ab8da32c788b9d29"
+      },
+      {
+        "path": "src/app/chum.js",
+        "before": "f87e387d1155b3a3daa905e838403bbc160f1fba5dbb4e96ba451163cc9dc42d",
+        "after": "117ff73c06f9f66c73c9d067b741f9c6c3fb04dfd12352496927ac26b58369fa"
+      },
+      {
+        "path": "src/bootstrap/production/chum_feature_bootstrap.js",
+        "before": null,
+        "after": "21dace3d58ab468389b4e52c23c1e3e594a940aae015f6f67226dc431a79a998"
+      },
+      {
+        "path": "src/ui/legacy/chum_controls.js",
+        "before": "d3cd0b16ee8a67cde152428ae468e78bef759001be9de4a4c72be815ba028f25",
+        "after": "29bda6b6b3617ad7763d7905233e93dd87fab84a77630ceeb083f35fa7941daf"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 792 modules, 949 unified edges, 852 globals, 37 exact known-debt diagnostics, 0 FAIL in 870ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 792/792 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 259 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 259 activations and 261 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 59 record(s), 58 applied, 191 ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and 23 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "hot-loop",
+        "status": "PASS",
+        "sha256": "71426168f8371203d0d0dae355ae0e35e1525646b5049b3af778df77feb8f37e"
+      }
+    ],
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 259,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}

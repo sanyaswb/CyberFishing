@@ -583,22 +583,6 @@
       ]
     },
     {
-      "id": "bridge-27dcbb9728a5",
-      "bridge": "src/ui/legacy/chum_controls.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/app/chum.js",
-      "target": "src/platform/browser/ui/chum_controls.js",
-      "reason": "Preserve the exact ChumUI consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ChumUI",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-2943aa6fa8b8",
       "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
       "source": "src/app/application.js",
@@ -3191,6 +3175,22 @@
       ]
     },
     {
+      "id": "bridge-b95500999b06",
+      "bridge": "src/app/chum.js",
+      "owner": "stage-5.cluster-022-chum-feature-composition",
+      "source": "src/app/bootstrap.js",
+      "target": "src/bootstrap/production/chum_feature_bootstrap.js",
+      "reason": "Preserve the exact ChumController consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ChumController",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b9b3fc4ec0d1",
       "bridge": "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
       "owner": "stage-5.cluster-003-item-and-fish-descriptors",
@@ -3714,22 +3714,6 @@
       "globalProviders": [
         {
           "symbol": "RarityAnimationResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-d99a24a6bdc4",
-      "bridge": "src/app/cast_power.js",
-      "owner": "stage-4.cluster-026-world-and-casting",
-      "source": "src/app/chum.js",
-      "target": "src/game/application/casting/cast_power_aim.js",
-      "reason": "Preserve the exact CastPowerAim consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CastPowerAim",
           "mechanism": "global-this-property"
         }
       ]

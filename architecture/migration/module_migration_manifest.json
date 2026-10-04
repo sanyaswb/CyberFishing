@@ -3965,9 +3965,58 @@
         "legacyLoadOrder": 398,
         "providers": {
           "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "compatibility-bridge"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/casting/cast_power_aim.js",
+        "migrationWave": 4
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": [
+            "mixed-responsibility-requires-decomposition"
+          ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/app/chum.js",
+      "currentArea": "app",
+      "observed": {
+        "legacyLoadOrder": 404,
+        "providers": {
+          "status": "verified",
           "items": [
             {
-              "symbol": "CastPowerAim",
+              "symbol": "ChumController",
               "mechanism": "global-this-property",
               "availability": "program-init"
             }
@@ -4001,9 +4050,9 @@
         "roles": [
           "compatibility-bridge"
         ],
-        "targetBoundary": "game-application",
-        "targetPath": "src/game/application/casting/cast_power_aim.js",
-        "migrationWave": 4
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/chum_feature_bootstrap.js",
+        "migrationWave": 7
       },
       "analysis": {
         "dependencies": {
@@ -4019,109 +4068,6 @@
               "resolution": "unresolved"
             }
           ],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": [
-            "mixed-responsibility-requires-decomposition"
-          ]
-        }
-      }
-    },
-    {
-      "currentPath": "src/app/chum.js",
-      "currentArea": "app",
-      "observed": {
-        "legacyLoadOrder": 404,
-        "providers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "ChumController",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            }
-          ],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [
-            {
-              "symbol": "CastPowerAim",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ChumUI",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Math",
-            "WeakMap"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "classified",
-        "roles": [
-          "bootstrap"
-        ],
-        "targetBoundary": "bootstrap-production",
-        "targetPath": "src/bootstrap/production/chum_feature_bootstrap.js",
-        "migrationWave": 7
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "CastPowerAim",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/cast_power.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ChumUI",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/legacy/chum_controls.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/app/cast_power.js",
-              "symbols": [
-                "CastPowerAim"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/legacy/chum_controls.js",
-              "symbols": [
-                "ChumUI"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -9505,6 +9451,56 @@
             "dev-production-coupling",
             "high-level-self-composition"
           ]
+        }
+      }
+    },
+    {
+      "currentPath": "src/bootstrap/production/chum_feature_bootstrap.js",
+      "currentArea": "bootstrap/production",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Math",
+            "WeakMap"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/chum_feature_bootstrap.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
         }
       }
     },
@@ -55317,32 +55313,17 @@
         "legacyLoadOrder": 228,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "ChumUI",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -55362,15 +55343,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
