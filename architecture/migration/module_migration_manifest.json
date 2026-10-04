@@ -25,11 +25,6 @@
               "availability": "program-init"
             },
             {
-              "symbol": "ConfigProvider",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
-            {
               "symbol": "DevFlagsProvider",
               "mechanism": "global-this-property",
               "availability": "program-init"
@@ -104,22 +99,7 @@
           "items": [
             {
               "symbol": "GameApplication",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "GameDebugFacade",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "GameFishingFacade",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
-              "symbol": "GameViewportFacade",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -129,70 +109,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "BaitFactory",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "ConfigProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "EventLifecycle",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "FishingCastExposureResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "GameClock",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Net",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "RodVisualOffsetSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -200,12 +120,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Array",
-            "Date",
-            "Math",
-            "Number",
-            "Object",
-            "TypeError"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -215,7 +130,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "bootstrap"
+          "compatibility-bridge"
         ],
         "targetBoundary": "bootstrap-production",
         "targetPath": "src/bootstrap/production/game_application.js",
@@ -224,163 +139,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "BaitFactory",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/entities/tackle.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "ConfigProvider",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/adapters.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "EventLifecycle",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/databases/fish_db.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FISH_DB",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/config/databases/fish_db.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "FishingCastExposureResolver",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/fishing/fishing_cast_exposure_resolver.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "GameClock",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/core/game_clock.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/inventory/inventory_item_location.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Net",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/entities/tackle.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "RodVisualOffsetSystem",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/systems/rod_visual_offset_system.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "Vector2",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/core/math/vector2.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/app/adapters.js",
-              "symbols": [
-                "ConfigProvider"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/app/core/game_clock.js",
-              "symbols": [
-                "GameClock"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/config/databases/fish_db.js",
-              "symbols": [
-                "FISH_DB"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/fishing/fishing_cast_exposure_resolver.js",
-              "symbols": [
-                "FishingCastExposureResolver"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/inventory/inventory_item_location.js",
-              "symbols": [
-                "InventoryItemLocation"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/core/math/vector2.js",
-              "symbols": [
-                "Vector2"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
-              "symbols": [
-                "EventLifecycle"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/entities/tackle.js",
-              "symbols": [
-                "BaitFactory",
-                "Net"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/systems/rod_visual_offset_system.js",
-              "symbols": [
-                "RodVisualOffsetSystem"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -7570,6 +7339,60 @@
       }
     },
     {
+      "currentPath": "src/bootstrap/production/game_application.js",
+      "currentArea": "bootstrap/production",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Array",
+            "Date",
+            "Math",
+            "Number",
+            "Object",
+            "TypeError"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game_application.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/bootstrap/production/game_version_badge.js",
       "currentArea": "bootstrap/production",
       "observed": {
@@ -11791,32 +11614,17 @@
         "legacyLoadOrder": 67,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "FishingCastExposureResolver",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -11836,15 +11644,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -14334,32 +14134,17 @@
         "legacyLoadOrder": 144,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "InventoryItemLocation",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -14379,15 +14164,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -29158,11 +28935,6 @@
         "providers": {
           "status": "verified",
           "items": [
-            {
-              "symbol": "BaitFactory",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            },
             {
               "symbol": "Net",
               "mechanism": "global-this-property",
@@ -50404,32 +50176,17 @@
         "legacyLoadOrder": 215,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "RodVisualOffsetSystem",
-              "mechanism": "global-this-property",
-              "availability": "program-init"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
           "status": "verified",
-          "builtins": [
-            "globalThis"
-          ],
+          "builtins": [],
           "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
@@ -50449,15 +50206,7 @@
           "status": "verified",
           "confirmed": [],
           "items": [],
-          "unresolved": [
-            {
-              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
-              "mechanism": "global-this-property",
-              "accessRequirement": "required",
-              "executionPhase": "eager",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

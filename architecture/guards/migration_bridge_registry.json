@@ -83,6 +83,22 @@
       ]
     },
     {
+      "id": "bridge-03e715a37e74",
+      "bridge": "src/app/application.js",
+      "owner": "stage-5.cluster-025-game-application-composition",
+      "source": "src/app/bootstrap.js",
+      "target": "src/bootstrap/production/game_application.js",
+      "reason": "Preserve the exact GameApplication consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameApplication",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-04ac871515bf",
       "bridge": "src/systems/chum_system.js",
       "owner": "stage-4.cluster-027-bite-chum",
@@ -323,42 +339,6 @@
       ]
     },
     {
-      "id": "bridge-219aa1d24209",
-      "bridge": "src/entities/tackle.js",
-      "source": "src/app/application.js",
-      "target": "src/game/domain/tackle/tackle.js",
-      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "BaitFactory",
-          "mechanism": "global-this-property"
-        },
-        {
-          "symbol": "Net",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-22513569b93c",
-      "bridge": "src/app/adapters.js",
-      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
-      "source": "src/app/application.js",
-      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
-      "reason": "Preserve the exact ConfigProvider consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "ConfigProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-23ff0af82ed3",
       "bridge": "src/render/pipeline/hud_render_pass.js",
       "owner": "stage-5.cluster-019-scene-composites-and-passes",
@@ -386,22 +366,6 @@
       "globalProviders": [
         {
           "symbol": "BoatChumRenderFrameBuilder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-2943aa6fa8b8",
-      "bridge": "src/core/fishing/fishing_cast_exposure_resolver.js",
-      "source": "src/app/application.js",
-      "target": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
-      "reason": "Preserve the exact Fishing domain consumers until their legacy symbols are removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "FishingCastExposureResolver",
           "mechanism": "global-this-property"
         }
       ]
@@ -482,22 +446,6 @@
       "globalProviders": [
         {
           "symbol": "ItemConditionResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-32e76a7b6e47",
-      "bridge": "src/systems/rod_visual_offset_system.js",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "source": "src/app/application.js",
-      "target": "src/game/presentation/fishing/rod_visual_offset_system.js",
-      "reason": "Preserve the exact RodVisualOffsetSystem consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RodVisualOffsetSystem",
           "mechanism": "global-this-property"
         }
       ]
@@ -670,22 +618,6 @@
         },
         {
           "symbol": "DevFlagsProvider",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-45364c413248",
-      "bridge": "src/core/math/vector2.js",
-      "source": "src/app/application.js",
-      "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
-      "owner": "stage-3.22.prerequisite.vector2-extraction",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "Vector2",
           "mechanism": "global-this-property"
         }
       ]
@@ -1187,22 +1119,6 @@
       ]
     },
     {
-      "id": "bridge-7059e3a04dab",
-      "bridge": "src/app/core/game_clock.js",
-      "owner": "stage-4.cluster-014-platform-diagnostics-clock",
-      "source": "src/app/application.js",
-      "target": "src/platform/browser/time/game_clock.js",
-      "reason": "Preserve the exact GameClock consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "GameClock",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-71e67ef41642",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -1442,22 +1358,6 @@
       "globalProviders": [
         {
           "symbol": "FightPhysicsConfigAdapter",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-81fd90ae9bb0",
-      "bridge": "src/core/inventory/inventory_item_location.js",
-      "source": "src/app/application.js",
-      "target": "src/game/domain/inventory/inventory_item_location.js",
-      "reason": "Preserve the exact Inventory domain consumers until their legacy symbols are removed.",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryItemLocation",
           "mechanism": "global-this-property"
         }
       ]
@@ -1838,38 +1738,6 @@
       "globalProviders": [
         {
           "symbol": "AlwaysKnownBaitEffectivenessPolicy",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a5a1cd90cdd5",
-      "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
-      "source": "src/app/application.js",
-      "target": "src/engine/events/event_lifecycle.js",
-      "reason": "Keep the reviewed classic application consumer synchronous until its Stage 5 application migration.",
-      "owner": "stage-2.3-engine-event-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "EventLifecycle",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-a5b8a44625d9",
-      "bridge": "src/config/databases/fish_db.js",
-      "owner": "stage-4.cluster-005-config-derived",
-      "source": "src/app/application.js",
-      "target": "src/game/config/databases/fish_database.js",
-      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "FISH_DB",
           "mechanism": "global-this-property"
         }
       ]

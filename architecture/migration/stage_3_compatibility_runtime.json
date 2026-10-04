@@ -639,18 +639,6 @@
   ],
   "activationPositions": [
     {
-      "exportName": "RodVisualOffsetSystem",
-      "legacyScriptIndex": 215,
-      "legacySymbol": "RodVisualOffsetSystem",
-      "shimFile": "activations/215_rodvisualoffsetsystem.js",
-      "sourceProvider": "src/systems/rod_visual_offset_system.js",
-      "targetModule": "src/game/presentation/fishing/rod_visual_offset_system.js",
-      "id": "activation-00b0efde0486",
-      "owner": "stage-5.cluster-004-visual-style-resolvers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "PROJECT_VERSION_CONFIG",
       "legacyScriptIndex": 1,
       "legacySymbol": "PROJECT_VERSION_CONFIG",
@@ -2103,18 +2091,6 @@
       "removalStage": "stage-6"
     },
     {
-      "id": "activation-a8f13a41b355",
-      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
-      "sourceProvider": "src/entities/tackle.js",
-      "targetModule": "src/game/domain/tackle/tackle.js",
-      "exportName": "BaitFactory",
-      "legacySymbol": "BaitFactory",
-      "legacyScriptIndex": 205,
-      "shimFile": "activations/205_baitfactory.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "CacheManager",
       "legacyScriptIndex": 41,
       "legacySymbol": "CacheManager",
@@ -2271,16 +2247,16 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-bafccd351254",
-      "owner": "stage-3.candidate-013-fishing-0267b3ea",
-      "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
-      "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
-      "exportName": "FishingCastExposureResolver",
-      "legacySymbol": "FishingCastExposureResolver",
-      "legacyScriptIndex": 67,
-      "shimFile": "activations/067_fishingcastexposureresolver.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "removalStage": "stage-5"
+      "exportName": "GameApplication",
+      "legacyScriptIndex": 421,
+      "legacySymbol": "GameApplication",
+      "shimFile": "activations/421_gameapplication.js",
+      "sourceProvider": "src/app/application.js",
+      "targetModule": "src/bootstrap/production/game_application.js",
+      "id": "activation-bccc1f1e7667",
+      "owner": "stage-5.cluster-025-game-application-composition",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "WorldSceneRenderer",
@@ -2317,18 +2293,6 @@
       "owner": "stage-4.cluster-027-bite-chum",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "id": "activation-c3a8ca11fb0e",
-      "owner": "stage-3.candidate-017-inventory-fd62478b",
-      "sourceProvider": "src/core/inventory/inventory_item_location.js",
-      "targetModule": "src/game/domain/inventory/inventory_item_location.js",
-      "exportName": "InventoryItemLocation",
-      "legacySymbol": "InventoryItemLocation",
-      "legacyScriptIndex": 144,
-      "shimFile": "activations/144_inventoryitemlocation.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "exportName": "UIManager",
@@ -2547,18 +2511,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "ConfigProvider",
-      "legacyScriptIndex": 396,
-      "legacySymbol": "ConfigProvider",
-      "shimFile": "activations/396_configprovider.js",
-      "sourceProvider": "src/app/adapters.js",
-      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
-      "id": "activation-edcb5d7fec22",
-      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "OffscreenCanvasFactory",
       "legacyScriptIndex": 348,
       "legacySymbol": "OffscreenCanvasFactory",
@@ -2759,6 +2711,23 @@
     },
     {
       "activation": {
+        "exportName": "RodVisualOffsetSystem",
+        "legacyScriptIndex": 215,
+        "legacySymbol": "RodVisualOffsetSystem",
+        "shimFile": "activations/215_rodvisualoffsetsystem.js",
+        "sourceProvider": "src/systems/rod_visual_offset_system.js",
+        "targetModule": "src/game/presentation/fishing/rod_visual_offset_system.js",
+        "id": "activation-00b0efde0486",
+        "owner": "stage-5.cluster-004-visual-style-resolvers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-025-game-application-composition"
+    },
+    {
+      "activation": {
         "exportName": "EquipmentTransitionExecutor",
         "legacyScriptIndex": 180,
         "legacySymbol": "EquipmentTransitionExecutor",
@@ -2855,7 +2824,7 @@
         "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
         "removalStage": "stage-5"
       },
-      "placeholder": "shared-source-line-removed",
+      "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-006-inventory-read-models"
     },
@@ -5394,6 +5363,23 @@
     },
     {
       "activation": {
+        "id": "activation-a8f13a41b355",
+        "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+        "sourceProvider": "src/entities/tackle.js",
+        "targetModule": "src/game/domain/tackle/tackle.js",
+        "exportName": "BaitFactory",
+        "legacySymbol": "BaitFactory",
+        "legacyScriptIndex": 205,
+        "shimFile": "activations/205_baitfactory.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-025-game-application-composition"
+    },
+    {
+      "activation": {
         "id": "activation-a94480a6d930",
         "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
         "sourceProvider": "src/entities/fish.js",
@@ -5717,6 +5703,23 @@
     },
     {
       "activation": {
+        "id": "activation-bafccd351254",
+        "owner": "stage-3.candidate-013-fishing-0267b3ea",
+        "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
+        "targetModule": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+        "exportName": "FishingCastExposureResolver",
+        "legacySymbol": "FishingCastExposureResolver",
+        "legacyScriptIndex": 67,
+        "shimFile": "activations/067_fishingcastexposureresolver.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-025-game-application-composition"
+    },
+    {
+      "activation": {
         "id": "activation-bc66e23232d8",
         "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
         "sourceProvider": "src/config/inventory/equipment_slot_config.js",
@@ -5799,6 +5802,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-037-fishing-runtime-services"
+    },
+    {
+      "activation": {
+        "id": "activation-c3a8ca11fb0e",
+        "owner": "stage-3.candidate-017-inventory-fd62478b",
+        "sourceProvider": "src/core/inventory/inventory_item_location.js",
+        "targetModule": "src/game/domain/inventory/inventory_item_location.js",
+        "exportName": "InventoryItemLocation",
+        "legacySymbol": "InventoryItemLocation",
+        "legacyScriptIndex": 144,
+        "shimFile": "activations/144_inventoryitemlocation.js",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-025-game-application-composition"
     },
     {
       "activation": {
@@ -6275,6 +6295,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-023-inventory-composition"
+    },
+    {
+      "activation": {
+        "exportName": "ConfigProvider",
+        "legacyScriptIndex": 396,
+        "legacySymbol": "ConfigProvider",
+        "shimFile": "activations/396_configprovider.js",
+        "sourceProvider": "src/app/adapters.js",
+        "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+        "id": "activation-edcb5d7fec22",
+        "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-025-game-application-composition"
     },
     {
       "activation": {

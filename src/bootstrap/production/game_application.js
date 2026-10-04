@@ -1,0 +1,1243 @@
+import { BaitFactory, Net } from "../../game/domain/tackle/tackle.js";
+import { ConfigProvider } from "../../platform/browser/runtime/legacy_runtime_adapters.js";
+import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
+import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { FishingCastExposureResolver } from "../../game/domain/fishing/fishing_cast_exposure_resolver.js";
+import { GameClock } from "../../platform/browser/time/game_clock.js";
+import { InventoryItemLocation } from "../../game/domain/inventory/inventory_item_location.js";
+import { RodVisualOffsetSystem } from "../../game/presentation/fishing/rod_visual_offset_system.js";
+import { Vector2 } from "../../engine/math/vector2.js";
+
+export class GameViewportFacade {
+  #world;
+  #projector;
+  #canvasMetrics;
+  #config;
+  #biteEnvironmentService;
+  #rodVirtualPos = new Vector2(0, 0);
+  #baseRodVirtualPos = new Vector2(0, 0);
+  #screenScratch = new Vector2(0, 0);
+  #playableScratch = new Vector2(0, 0);
+  #viewportSize = { width: 0, height: 0 };
+  #rodVisualOffsetSystem = new RodVisualOffsetSystem();
+
+  constructor({
+    world,
+    projector,
+    canvasMetrics,
+    config,
+    biteEnvironmentService,
+  }) {
+    this.#world = world;
+    this.#projector = projector;
+    this.#canvasMetrics = canvasMetrics;
+    this.#config = config;
+    this.#biteEnvironmentService = biteEnvironmentService;
+  }
+
+  refreshViewport(recalculateMap = true) {
+    this.#world.refreshViewport(recalculateMap);
+  }
+
+  refreshLocationConfig(locationsConfig, locationResources) {
+    this.#world.refreshLocationConfig(locationsConfig, locationResources);
+  }
+
+  applyPan(input, stateName, isAimingChum) {
+    if (!input.panDeltaX && !input.panDeltaY) return;
+    if (stateName !== "scouting" && !isAimingChum) return;
+    if (
+      this.#config.casting?.enabled !== false &&
+      input.pointerDown &&
+      (stateName === "scouting" || isAimingChum)
+    ) {
+      return;
+    }
+    this.#world.pan(input.panDeltaX, 0);
+  }
+
+  getDynamicBounds() {
+    return this.#biteEnvironmentService.getDynamicBounds();
+  }
+
+  checkWater(vx, vy) {
+    return this.#biteEnvironmentService.checkWater(vx, vy);
+  }
+
+  getRodVirtualPos(bounds, screenXOverride = null) {
+    const screenX = this.getRodScreenX(screenXOverride, bounds);
+
+    this.#projector.screenToVirtual(screenX, 0, this.#rodVirtualPos);
+    this.#rodVirtualPos.y = bounds.bottom;
+    return this.#rodVirtualPos;
+  }
+
+  getBaseRodVirtualPos(bounds, screenXOverride = null) {
+    const screenX = this.#resolveBaseRodScreenX(screenXOverride);
+
+    this.#projector.screenToVirtual(screenX, 0, this.#baseRodVirtualPos);
+    this.#baseRodVirtualPos.y = bounds.bottom;
+    return this.#baseRodVirtualPos;
+  }
+
+  getScreenOffsetRatio(floatPos, screenXOverride = null) {
+    const sPos = this.#projector.virtualToScreen(
+      floatPos.x,
+      floatPos.y,
+      this.#screenScratch,
+    );
+    const screenX = this.getRodScreenX(screenXOverride, null);
+    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
+    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
+  }
+
+  updateRodVisualOffset({ dtMs, input, fightDebug, bounds, stateName } = {}) {
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    const activeInput =
+      stateName === "playing"
+        ? input
+        : {
+            ...input,
+            rodControlActive: false,
+            rodControlDirectionX: 0,
+            rodControlInputRatio: 0,
+          };
+    const offsetX = this.#rodVisualOffsetSystem.update({
+      dtSec: Math.max(0, Number(dtMs) || 0) / 1000,
+      inputState: activeInput,
+      fightDebug,
+      config: rodControlConfig,
+      canvasWidth: this.#canvasMetrics.width,
+    });
+    if (fightDebug) {
+      const visualFrame = this.#rodVisualOffsetSystem.getFrame();
+      fightDebug.rodVisualOffsetX = offsetX;
+      fightDebug.rodVisualClamped = this.#rodVisualOffsetSystem.isClamped();
+      fightDebug.rodVisualDeltaX = visualFrame.deltaPx;
+      fightDebug.rodVisualMaxOffsetX = visualFrame.maxOffsetPx;
+      fightDebug.rodVisualStrokeRatio = visualFrame.strokeRatio;
+      fightDebug.rodVisualAtLimit =
+        visualFrame.atLimit || fightDebug.rodVisualClamped;
+      fightDebug.rodVisualTargetOffsetX = visualFrame.targetOffsetPx;
+      fightDebug.rodVisualWeightSpeedRatio = visualFrame.weightSpeedRatio;
+      fightDebug.rodAimWeightSpeedRatio = visualFrame.weightSpeedRatio;
+      fightDebug.rodAimFishLoadRatio = visualFrame.weightLoadRatio;
+      fightDebug.rodAimEffectiveFishLoadKg = visualFrame.effectiveFishLoadKg;
+      fightDebug.rodAimLoadLimitKg = visualFrame.weightLoadLimitKg;
+      fightDebug.rodAimWeightCurvePower = visualFrame.weightCurvePower;
+      fightDebug.rodAimWeightMinSpeedRatio = visualFrame.weightSpeedMinRatio;
+      fightDebug.rodAimWeightMaxSpeedRatio = visualFrame.weightSpeedMaxRatio;
+      fightDebug.rodAimLoadSpeedRatio = visualFrame.loadSpeedRatio;
+      fightDebug.rodAimLineSpeedRatio = visualFrame.lineSpeedRatio;
+      fightDebug.rodAimDirectionSpeedRatio = visualFrame.directionSpeedRatio;
+      fightDebug.rodAimDirectionSpeedMode = visualFrame.directionSpeedMode;
+      fightDebug.rodAimFishMoveX = visualFrame.fishMoveX;
+      fightDebug.rodAimFishDirectionX = visualFrame.fishMoveDirectionX;
+      fightDebug.rodAimSpeedPxPerSecond = visualFrame.aimSpeedPxPerSecond;
+      fightDebug.rodAimLineMode = visualFrame.lineMode;
+      fightDebug.rodControlVisualDrivenByInput = visualFrame.drivenByInput;
+      fightDebug.rodControlVisualMode = visualFrame.mode;
+      fightDebug.rodControlFreeLineVisualMode = visualFrame.freeLineMode;
+    }
+  }
+
+  getRodScreenX(screenXOverride = null, bounds = null) {
+    const baseX = this.#resolveBaseRodScreenX(screenXOverride);
+    const playable = this.#resolvePlayableScreenBounds(bounds);
+    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
+      this.#config.physics?.fight?.rodControl ||
+      {};
+    return this.#rodVisualOffsetSystem.resolveScreenX({
+      baseX,
+      canvasWidth: this.#canvasMetrics.width,
+      playableLeft: playable.left,
+      playableRight: playable.right,
+      config: rodControlConfig,
+    });
+  }
+
+  #resolveBaseRodScreenX(screenXOverride = null) {
+    const rodConfig = this.#config.ui?.rod || {};
+    const rodX =
+      Number.isFinite(screenXOverride)
+        ? screenXOverride
+        : rodConfig.x === "center"
+          ? this.#canvasMetrics.width / 2
+          : Number(rodConfig.x);
+    return Number.isFinite(rodX)
+      ? rodX
+      : this.#canvasMetrics.width / 2;
+  }
+
+  #resolvePlayableScreenBounds(bounds) {
+    if (!bounds) return { left: null, right: null };
+    const left = Number(bounds.left);
+    const right = Number(bounds.right);
+    if (!Number.isFinite(left) || !Number.isFinite(right)) {
+      return { left: null, right: null };
+    }
+    const leftScreen = this.#projector.virtualToScreen(
+      left,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    const rightScreen = this.#projector.virtualToScreen(
+      right,
+      Number(bounds.bottom) || 0,
+      this.#playableScratch,
+    ).x;
+    return {
+      left: Math.min(leftScreen, rightScreen),
+      right: Math.max(leftScreen, rightScreen),
+    };
+  }
+
+  getViewportSize() {
+    this.#viewportSize.width = this.#canvasMetrics.width;
+    this.#viewportSize.height = this.#canvasMetrics.height;
+    return this.#viewportSize;
+  }
+}
+
+export class GameDebugFacade {
+  #devFlags;
+  #debugEvents;
+  #listeners;
+  #documentTarget;
+
+  constructor({ devFlags, debugEvents, listeners, documentTarget }) {
+    this.#devFlags = devFlags;
+    this.#debugEvents = debugEvents;
+    this.#listeners = listeners;
+    this.#documentTarget = documentTarget;
+  }
+
+  isDebugEnabled() {
+    return this.#devFlags.isDebugEnabled();
+  }
+
+  emit(type, detail) {
+    this.#debugEvents.emit(type, detail);
+  }
+
+  on(type, handler) {
+    return this.#debugEvents.on(type, handler);
+  }
+
+  subscribeConfigUpdated(handler) {
+    return this.#listeners.add(this.#documentTarget, "config-updated", handler);
+  }
+
+  subscribeHookedFishRuntimeUpdated(handler) {
+    return this.#listeners.add(
+      this.#documentTarget,
+      "debug-hooked-fish-updated",
+      handler,
+    );
+  }
+
+  clear() {
+    this.#debugEvents.clear();
+  }
+}
+
+export class GameFishingFacade {
+  #inventory;
+  #chum;
+  #playerCastRules;
+  #equipmentRules;
+  #config;
+  #castService;
+  #biteEnvironmentService;
+  #getCurrentHookDepth;
+  #setCurrentHookDepth;
+  #setFloat;
+  #setCastDistanceRatio;
+  #setCastStartTime;
+  #setState;
+
+  constructor({
+    inventory,
+    chum,
+    playerCastRules,
+    equipmentRules,
+    config,
+    castService,
+    biteEnvironmentService,
+    getCurrentHookDepth,
+    setCurrentHookDepth,
+    setFloat,
+    setCastDistanceRatio,
+    setCastStartTime,
+    setState,
+  }) {
+    this.#inventory = inventory;
+    this.#chum = chum;
+    this.#playerCastRules = playerCastRules;
+    this.#equipmentRules = equipmentRules;
+    this.#config = config;
+    this.#castService = castService;
+    this.#biteEnvironmentService = biteEnvironmentService;
+    this.#getCurrentHookDepth = getCurrentHookDepth;
+    this.#setCurrentHookDepth = setCurrentHookDepth;
+    this.#setFloat = setFloat;
+    this.#setCastDistanceRatio = setCastDistanceRatio;
+    this.#setCastStartTime = setCastStartTime;
+    this.#setState = setState;
+  }
+
+  castLine(vx, vy, cellDepth, options = {}) {
+    const result = this.#castService.cast(vx, vy, cellDepth, {
+      equipment: this.#inventory.getEquipped(),
+      currentHookDepth: this.#getCurrentHookDepth(),
+      rodVirtualPos: options.rodVirtualPos || null,
+    });
+    if (!result.success) return result;
+
+    this.#setFloat(result.floatEntity);
+    this.#setCastDistanceRatio(result.castDistanceRatio);
+    this.#setCastStartTime(result.castStartTime);
+    this.#setCurrentHookDepth(result.currentHookDepth);
+    this.#setState(result.nextState);
+    return result;
+  }
+
+  canPlayerCast() {
+    const equipment = this.#inventory.getEquipped();
+    const activeBoat = this.#chum.getBoats()[0] || null;
+    return this.#playerCastRules.canPlayerCast(equipment, activeBoat);
+  }
+
+  getMaxHookDepth() {
+    return this.#equipmentRules.getMaxHookDepth(
+      this.#inventory.getEquipped(),
+      this.#config,
+    );
+  }
+
+  getEnvDataForBite() {
+    return this.#biteEnvironmentService.getBiteEnvData();
+  }
+}
+
+export class GameApplication {
+  #projector;
+  #map;
+  #env;
+  #input;
+  #ui;
+  #inventoryUI;
+  #chum;
+  #bite;
+  #inventory;
+  #gameStateName = "scouting";
+  #canvasMetrics;
+  #float;
+  #net;
+  #castManager;
+  #depthUI;
+  #timeUI;
+  #holdUI;
+  #hasEquippedNet = false;
+  #location;
+  #rng;
+  #devFlags;
+  #runtimeConfig;
+  #debugEvents;
+  #windowTarget;
+  #documentTarget;
+  #logger;
+  #clock = new GameClock();
+  #castExposureResolver = new FishingCastExposureResolver();
+  #listeners = new EventLifecycle();
+  #loop;
+  #world;
+  #renderCoordinator;
+  #assetPreloadCoordinator;
+  #locationAssetLoader;
+  #fishingController;
+  #chumController;
+  #stateMachine;
+  #config;
+  #composition;
+  #debugService;
+  #fightService;
+  #viewportFacade;
+  #debugFacade;
+  #equipmentRules;
+  #baitRules;
+  #fishingFacade;
+  #castRodScreenX = null;
+  #removeInventoryChangedListener = null;
+  // Reusable debug context object — allocated once, never recreated per frame.
+  #debugContext;
+  #dayOfWeek = new Date().getDay();
+  #lastInputState = {
+    isPulling: false,
+    pullDirection: null,
+    panDeltaX: 0,
+    panDeltaY: 0,
+    swipeDeltaY: 0,
+    toggleHold: false,
+    pumpAction: false,
+    dragIncrease: false,
+    dragDecrease: false,
+    castPowerIncrease: false,
+    castPowerDecrease: false,
+    aimLeft: false,
+    aimRight: false,
+    retrieve: false,
+    clickPos: null,
+    isDoubleClick: false,
+    longPressPos: null,
+    pointerDown: false,
+    pointerStart: { x: 0, y: 0 },
+    pointerCurrent: { x: 0, y: 0 },
+    pointerDelta: { x: 0, y: 0 },
+    pointerGestureId: 0,
+    pointerReleased: false,
+    pointerReleaseCancelled: false,
+    pointerRelease: { x: 0, y: 0 },
+    rodControlActive: false,
+    rodControlDirectionX: 0,
+    rodControlInputRatio: 0,
+    rodControlAnchorX: 0,
+    rodControlCurrentX: 0,
+  };
+  #stateUpdateContext = { env: null, biteEnv: null, input: null };
+  #biteEnvData = {
+    locationId: "",
+    hookDepth: 0,
+    bottomDepth: 0,
+    lineLength: 0,
+    timePhase: "day",
+    dayOfWeek: 0,
+    zoneBonus: 1,
+    chumBonus: 1,
+    chumTargets: [],
+    isRaining: false,
+    isFoggy: false,
+    castSpamMultiplier: 1,
+  };
+  eatenBaits = [];
+
+  invalidCastMarker = null;
+  castStartTime = 0;
+  castDistanceRatio = 0;
+  currentHookDepth = 1.0;
+  lastTime = 0;
+
+  constructor({
+    canvas,
+    canvasMetrics,
+    config,
+    compositionRoot,
+    devFlags,
+    audio,
+    debugEvents,
+    windowTarget,
+    documentTarget,
+    runtime = null,
+    clock = null,
+    logger,
+  }) {
+    if (clock) this.#clock = clock;
+    this.#logger = logger;
+    this.#canvasMetrics = canvasMetrics;
+    this.#config = new ConfigProvider(config);
+    // The live runtime config the tackle entities read (DEV adapter overrides stay live).
+    this.#runtimeConfig = config;
+    this.#composition = compositionRoot;
+    this.#devFlags = devFlags;
+    this.#debugEvents = debugEvents;
+    this.#windowTarget = windowTarget;
+    this.#documentTarget = documentTarget;
+    this.#debugFacade = new GameDebugFacade({
+      devFlags: this.#devFlags,
+      debugEvents: this.#debugEvents,
+      listeners: this.#listeners,
+      documentTarget: this.#documentTarget,
+    });
+    runtime =
+      runtime ||
+      this.#composition.create(
+        canvas,
+        this.#canvasMetrics,
+        this.#clock,
+        this.#debugEvents,
+        this.#devFlags,
+        audio,
+      );
+    this.#location = runtime.location;
+    this.#rng = runtime.rng;
+    this.#projector = runtime.projector;
+    this.#map = runtime.map;
+    this.#env = runtime.env;
+    this.#input = runtime.input;
+    this.#ui = runtime.ui;
+    this.#inventoryUI = runtime.inventoryUI;
+    this.#chum = runtime.chum;
+    this.#bite = runtime.bite;
+    this.#inventory = runtime.inventory;
+    this.#inventory.setFreshnessExposureProvider?.((item) => {
+      const active = ["waiting", "biting", "playing"].includes(
+        this.#stateMachine?.currentName || this.#gameStateName,
+      );
+      return active && InventoryItemLocation.isAttached(item?.location)
+        ? this.#getCastExposureMs()
+        : 0;
+    });
+    this.#world = runtime.world;
+    this.#assetPreloadCoordinator = runtime.rendering.assetPreloadCoordinator;
+    if (
+      !this.#assetPreloadCoordinator ||
+      typeof this.#assetPreloadCoordinator.preloadVictoryAssets !== "function"
+    ) {
+      throw new TypeError("GameApplication requires AssetPreloadCoordinator");
+    }
+    this.#locationAssetLoader = runtime.rendering.locationAssetLoader;
+    if (!this.#locationAssetLoader || typeof this.#locationAssetLoader.load !== "function") {
+      throw new TypeError("GameApplication requires LocationAssetLoader");
+    }
+    this.#fishingController = runtime.fishing;
+    this.#net = runtime.net;
+    this.#castManager = runtime.castManager;
+    this.#equipmentRules = runtime.equipmentRules;
+    this.#baitRules = runtime.baitRules;
+    this.#depthUI = runtime.depthUI;
+    this.#timeUI = runtime.timeUI;
+    this.#holdUI = runtime.holdUI;
+    const appPorts = {
+      update: (dt) => {
+        this.update(dt);
+        this.lastTime = this.#clock.now;
+      },
+      draw: () => this.draw(),
+      getFloat: () => this.#float,
+      getNet: () => this.#net,
+      getCurrentHookDepth: () => this.currentHookDepth,
+      getCastStartTime: () => this.castStartTime,
+      getCastDistanceRatio: () => this.castDistanceRatio,
+      getDayOfWeek: () => this.#dayOfWeek,
+      getChumCastDistance: () => this.chumCastDistance,
+      isAimingChum: () => this.isAimingChum,
+      eatenBaits: this.eatenBaits,
+      currentHookDepthRef: {
+        get: () => this.currentHookDepth,
+        set: (value) => {
+          this.currentHookDepth = value;
+        },
+      },
+      canPlayerCast: () => this.canPlayerCast(),
+      getMaxHookDepth: () => this.getMaxHookDepth(),
+      checkWater: (vx, vy) => this.checkWater(vx, vy),
+      getBiteEnv: () => this.getEnvDataForBite(),
+      getDynamicBounds: () => this.getDynamicBounds(),
+      getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
+      getBaseRodVirtualPos: (bounds) => this.getBaseRodVirtualPos(bounds),
+      getRodScreenX: () => this.getRodScreenX(),
+      getScreenOffsetRatio: (pos) => this.getScreenOffsetRatio(pos),
+      setState: (name, data) => this.setState(name, data),
+      castLine: (vx, vy, depth, options) =>
+        this.castLine(vx, vy, depth, options),
+      markInvalidCast: (pos) => this.markInvalidCast(pos),
+      showMissingRodInventoryWarning: () =>
+        this.#showMissingRodInventoryWarning(),
+      showMissingReelInventoryWarning: () =>
+        this.#showMissingReelInventoryWarning(),
+      showMissingLineInventoryWarning: () =>
+        this.#showMissingLineInventoryWarning(),
+      setInvalidCastMarker: (marker) => {
+        this.invalidCastMarker = marker;
+      },
+      getInvalidCastMarker: () => this.invalidCastMarker,
+      isDebugEnabled: () => this.isDebugEnabled(),
+      emitDebugEvent: (type, detail) => this.emitDebugEvent(type, detail),
+      subscribeConfigUpdated: (handler) => this.subscribeConfigUpdated(handler),
+      getViewportSize: () => this.getViewportSize(),
+      panViewport: (deltaX) => this.#world.pan(deltaX, 0),
+      getInputState: () => this.#lastInputState,
+      getChumPowerAimVisual: () =>
+        this.#chumController?.getPowerAimVisualState?.() || null,
+      getChumAccuracyPreview: () =>
+        this.#chumController?.getPowerAimAccuracyPreview?.(
+          this.getDynamicBounds(),
+        ) || null,
+      getGameStateName: () =>
+        this.#stateMachine?.currentName || this.#gameStateName,
+      onStateChanged: (name) => {
+        this.#gameStateName = name;
+        if (this.#inventory) this.#inventory.setLock(name !== "scouting");
+      },
+    };
+
+    const services = this.#composition.createApplicationServices({
+      runtime,
+      appPorts,
+      config: this.#config,
+      clock: this.#clock,
+      rng: this.#rng,
+      devFlags: this.#devFlags,
+      runtimeConfig: this.#runtimeConfig,
+      audio,
+      debugEvents: this.#debugEvents,
+      canvasMetrics: this.#canvasMetrics,
+      biteEnvData: this.#biteEnvData,
+    });
+
+    this.#loop = services.loop;
+    this.#fightService = services.fightService;
+    this.#debugService = services.debugService;
+    this.#chumController = services.chumController;
+    this.#stateMachine = services.stateMachine;
+    this.#renderCoordinator = services.renderCoordinator;
+    this.#viewportFacade = new GameViewportFacade({
+      world: this.#world,
+      projector: this.#projector,
+      canvasMetrics: this.#canvasMetrics,
+      config: this.#config,
+      biteEnvironmentService: services.biteEnvironmentService,
+    });
+    this.#fishingFacade = new GameFishingFacade({
+      inventory: this.#inventory,
+      chum: this.#chum,
+      playerCastRules: runtime.playerCastRules,
+      equipmentRules: runtime.equipmentRules,
+      config: this.#config,
+      castService: services.castService,
+      biteEnvironmentService: services.biteEnvironmentService,
+      getCurrentHookDepth: () => this.currentHookDepth,
+      setCurrentHookDepth: (value) => {
+        this.currentHookDepth = value;
+      },
+      setFloat: (floatEntity) => {
+        this.#float = floatEntity;
+      },
+      setCastDistanceRatio: (value) => {
+        this.castDistanceRatio = value;
+      },
+      setCastStartTime: (value) => {
+        this.castStartTime = value;
+      },
+      setState: (name, data) => this.setState(name, data),
+    });
+
+    this.#debugContext = this.#createDebugContext();
+
+    this.#rebuildFloat();
+
+    this.#initEvents();
+    this.setState("scouting");
+  }
+
+  #createDebugContext() {
+    return {
+      emitDebugEvent: (type, detail) => this.emitDebugEvent(type, detail),
+      getEnvSnapshot: () => this.#env?.getSnapshot?.() || {},
+      getFloatPosition: () => this.#float?.getPosition?.() || { x: 0, y: 0 },
+      getBiteEnv: () => this.getEnvDataForBite(),
+      getEquipment: () => this.#inventory?.getEquipped?.() || {},
+      getInputState: () => this.#lastInputState,
+      getGameStateName: () => this.gameStateName,
+      getCastExposureMs: () => this.#getCastExposureMs(),
+      getLiveChances: (biteEnv, options) => {
+        const bite = this.#bite;
+        return (
+          bite?.getLiveChances?.(biteEnv, options) ||
+          bite?.getDebugChances?.(biteEnv, options) ||
+          bite?.calculateLiveChances?.(biteEnv, options) ||
+          bite?.previewChances?.(biteEnv, options) ||
+          null
+        );
+      },
+      getChumZones: () =>
+        this.#chum?.getChumZones?.() ||
+        this.#chum?.getZones?.() ||
+        this.#chum?.zones ||
+        [],
+      getActiveBoat: () => {
+        const controllerBoat = this.#chumController?.activeBoat;
+        if (controllerBoat) return controllerBoat;
+        const boats = this.#chum?.getBoats?.();
+        return boats && boats.length > 0 ? boats[0] : null;
+      },
+      checkWater: (vx, vy) => this.checkWater(vx, vy),
+      getChumDataAt: (vx, vy) =>
+        this.#chum?.getChumDataAt?.(vx, vy) || { bonus: 1, targets: [] },
+      getStateDebugData: () => {
+        const state = this.#stateMachine?.currentState;
+        return typeof state?.getDebugData === "function"
+          ? state.getDebugData()
+          : null;
+      },
+    };
+  }
+
+  #handleInventoryChanged(newEq) {
+    const netConfig = newEq.net
+      ? newEq.net.effectiveStats || newEq.net
+      : { active: false, maxWeight: 0, length: 10, chances: [] };
+
+    if (this.#net && typeof this.#net.updateConfig === "function") {
+      this.#net.updateConfig(netConfig);
+    } else {
+      this.#net = new Net(
+        netConfig,
+        this.#config.fightPhysicsConfig?.getDistanceConfig?.() || {},
+      );
+    }
+
+    this.#hasEquippedNet = !!newEq.net;
+    this.#chumController?.refreshActiveHandChum();
+
+    if (typeof this.#ui?.updateNetButtonState === "function") {
+      this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
+    }
+
+    if (this.#depthUI && typeof this.#depthUI.updateMax === "function") {
+      this.#depthUI.updateMax(this.getMaxHookDepth());
+    }
+  }
+
+  #rebuildFloat() {
+    const eq = this.#inventory.getEquipped();
+
+    let physicsType = "float";
+    let physicsConfig = {};
+
+    if (this.#baitRules.isActiveLure(eq.baits?.[0])) {
+      physicsType = this.#baitRules.getPhysicsType(
+        eq.baits[0],
+        eq.baits[0].variant || eq.baits[0].itemType,
+      );
+      physicsConfig = { ...eq.baits[0] };
+    } else if (eq.rod?.variant === "feeder" && eq.feederRig) {
+      physicsType = "feeder";
+      physicsConfig = { ...eq.feederRig };
+    } else if (eq.float) {
+      physicsType = "float";
+      physicsConfig = { ...eq.float };
+    }
+
+    this.#float = BaitFactory.create(
+      physicsType,
+      0,
+      0,
+      physicsConfig,
+      eq,
+      this.#rng,
+      this.#debugEvents,
+      this.#devFlags,
+      this.#runtimeConfig,
+    );
+  }
+
+  #initEvents() {
+    this.#removeInventoryChangedListener?.();
+    this.#removeInventoryChangedListener = this.#inventory.onInventoryChanged(
+      (detail) => {
+        this.#handleInventoryChanged(
+          detail?.equipment || this.#inventory.getEquipped(),
+        );
+      },
+    );
+    this.#handleInventoryChanged(this.#inventory.getEquipped());
+
+    this.#listeners.add(this.#windowTarget, "resize", () => {
+      this.#canvasMetrics.resizeToViewport();
+      this.#refreshViewport();
+    });
+
+    this.#ui.onNetClick = () => {
+      const state = this.#stateMachine?.currentState;
+      if (state && typeof state.handleNetClick === "function")
+        state.handleNetClick();
+    };
+
+    this.#ui.onContinueClick = () => this.setState("scouting");
+    this.#refreshViewport();
+
+    this.#debugFacade.subscribeConfigUpdated((e) => {
+      if (this.#isItemDatabaseUpdate(e)) {
+        this.#handleItemDatabaseUpdate();
+      }
+      if (this.#isFishDatabaseUpdate(e)) {
+        this.#handleFishDatabaseUpdate();
+      }
+      if (this.#isMapDatabaseUpdate(e)) {
+        this.#handleMapDatabaseUpdate();
+      }
+      if (this.#isLocationsConfigUpdate(e)) {
+        this.#reloadLocationConfig().catch((error) => {
+          this.#logger.error("[Location] Failed to reload location config", error);
+        });
+      }
+      this.#renderCoordinator.invalidateStyles();
+    });
+    this.#debugFacade.subscribeHookedFishRuntimeUpdated((e) => {
+      this.#handleHookedFishRuntimeUpdate(e);
+    });
+  }
+
+  #isItemDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "ITEM_DB";
+  }
+
+  #handleItemDatabaseUpdate() {
+    this.#inventory?.refreshItemData?.();
+    const eq = this.#inventory?.getEquipped?.();
+    if (eq) this.#fightService?.syncEquipment(eq);
+  }
+
+  #isFishDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "FISH_DB";
+  }
+
+  #handleFishDatabaseUpdate() {
+    if (typeof FISH_DB === "undefined") return;
+    this.#bite?.setFishDatabase?.(FISH_DB);
+  }
+
+  #handleHookedFishRuntimeUpdate(event) {
+    const fish = event?.detail?.fish;
+    if (!fish) return;
+    this.#fightService?.syncFishRuntime?.(fish);
+  }
+
+  #isMapDatabaseUpdate(event) {
+    const path = event?.detail?.path;
+    return Array.isArray(path) && path[0] === "MAP_DB";
+  }
+
+  #handleMapDatabaseUpdate() {
+    this.#reloadLocationConfig().catch((error) => {
+      this.#logger.error("[Location] Failed to reload map config", error);
+    });
+  }
+
+  async #reloadLocationConfig() {
+    const locationId = this.#location.id;
+    await this.#assetPreloadCoordinator.preloadLocation(locationId);
+    const resources = await this.#locationAssetLoader.load(
+      locationId,
+      this.#location.config,
+      this.#config.locations,
+    );
+    this.#viewportFacade.refreshLocationConfig(this.#config.locations, resources);
+  }
+
+  #isLocationsConfigUpdate(event) {
+    const path = event?.detail?.path;
+    if (!Array.isArray(path) || path.length === 0) return false;
+    const rootIndex = path[0] === "CONFIG" ? 1 : 0;
+    return path[rootIndex] === "locations";
+  }
+
+  #refreshViewport(recalculateMap = true) {
+    this.#viewportFacade.refreshViewport(recalculateMap);
+  }
+
+  setState(name, data = {}) {
+    const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    const rodWasRetrieved = this.#shouldConsumeWetFeederChum(
+      currentName,
+      name,
+    );
+    const retrievalContext = rodWasRetrieved
+      ? this.#createRodRetrievalContext()
+      : null;
+    if (retrievalContext) this.#consumeWetFeederChum(retrievalContext);
+    if (name === "scouting") {
+      this.#castRodScreenX = null;
+    }
+    if (name === "playing") {
+      this.#preloadFishingAssets(data?.fish || {});
+    }
+    if (name === "victory") {
+      return this.#transitionToVictoryWhenAssetsReady(data, {
+        rodRetrievalContext: retrievalContext,
+      });
+    }
+    this.#stateMachine.setState(name, data);
+    if (retrievalContext) {
+      this.#inventory?.handleRodRetrieved?.(retrievalContext);
+    }
+  }
+
+  #preloadFishingAssets(fish) {
+    this.#assetPreloadCoordinator
+      .preloadFishingAssets(this.#inventory.getEquipped(), fish)
+      .catch(() => {});
+  }
+
+  #transitionToVictoryWhenAssetsReady(
+    data,
+    { rodRetrievalContext = null } = {},
+  ) {
+    return this.#assetPreloadCoordinator
+      .preloadVictoryAssets(data?.fish || {})
+      .then(() => {
+        this.#stateMachine.setState("victory", data);
+        if (rodRetrievalContext) {
+          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+        }
+      })
+      .catch((error) => {
+        this.#stateMachine.setState("failed", {
+          reason: "asset_load_failed",
+          error,
+        });
+        if (rodRetrievalContext) {
+          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+        }
+      });
+  }
+
+  update(dt) {
+    const timeScale = this.#config.debug?.timeScale || 1;
+    this.#syncDragControlAvailability();
+    const input = this.#input.getState();
+    this.#lastInputState = input;
+    this.#applyViewportPan(input);
+    const bounds = this.getDynamicBounds();
+
+    const envSnapshot = this.#world.update(dt, timeScale, bounds);
+    this.#castManager.update(dt);
+    this.#timeUI.update(envSnapshot.time);
+    this.updateChumUI();
+
+    const wasAimingChum = this.isAimingChum;
+    if (wasAimingChum) {
+      this.handleChumAiming(input, bounds, dt);
+      this.#blockFishingInputDuringChumAim(input);
+    } else {
+      this.handleGlobalBoatControl(input);
+      this.#stateMachine.handleInput(input);
+    }
+
+    const context = this.#stateUpdateContext;
+    context.input = input;
+    context.env = this.#env.getPhysicsEnv();
+    context.biteEnv = this.getEnvDataForBite();
+    this.#stateMachine.update(dt, bounds, context);
+    this.#inventoryUI?.updateDynamicProgression?.(dt);
+    this.#updateRodVisualOffset(dt, input, bounds);
+
+    if (this.invalidCastMarker) {
+      this.invalidCastMarker.timer -= dt;
+      if (this.invalidCastMarker.timer <= 0) this.invalidCastMarker = null;
+    }
+
+    // Reuse the pre-built debug context object — no per-frame allocation.
+    this.#debugService.update(this.#debugContext);
+  }
+
+
+  #syncDragControlAvailability() {
+    const eq = this.#inventory?.getEquipped?.() || {};
+    const rodAllowsReel = eq.rod?.effectiveStats?.hasReel !== false;
+    const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
+    this.#input?.setDragControlEnabled?.(rodAllowsReel && reelHasDrag);
+  }
+
+  #applyViewportPan(input) {
+    const stateName = this.#stateMachine?.currentName || this.#gameStateName;
+    this.#viewportFacade.applyPan(input, stateName, this.isAimingChum);
+  }
+
+  #blockFishingInputDuringChumAim(input) {
+    input.isPulling = false;
+    input.pullDirection = null;
+    input.longPressPos = null;
+    input.clickPos = null;
+    input.isDoubleClick = false;
+  }
+
+  #shouldConsumeWetFeederChum(currentName, nextName) {
+    if (
+      currentName !== "waiting" &&
+      currentName !== "biting" &&
+      currentName !== "playing"
+    ) {
+      return false;
+    }
+    return (
+      nextName === "scouting" ||
+      nextName === "victory" ||
+      nextName === "failed"
+    );
+  }
+
+  #consumeWetFeederChum(context = this.#createRodRetrievalContext()) {
+    this.#fishingController?.consumeWetFeederChum?.(
+      context.equipment,
+      context.exposureMs,
+    );
+  }
+
+  #getCastExposureMs() {
+    return this.#castExposureResolver.resolve({
+      nowMs: this.#clock.now,
+      castStartTimeMs: this.castStartTime,
+      timeScale: this.#config.debug?.timeScale || 1,
+    });
+  }
+
+  #createRodRetrievalContext() {
+    const equipment = this.#inventory?.getEquipped?.() || {};
+    return Object.freeze({
+      equipment,
+      exposureMs: this.#getCastExposureMs(),
+      exposureToken: `cast:${this.castStartTime}`,
+      baitInstanceIds: Object.freeze(
+        (equipment.baits || [])
+          .filter((bait) => bait?.instanceId)
+          .map((bait) => bait.instanceId),
+      ),
+    });
+  }
+
+  draw() {
+    this.#renderCoordinator.render();
+  }
+
+  castLine(vx, vy, cellDepth, options = {}) {
+    const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    if (
+      currentName === "waiting" ||
+      currentName === "biting" ||
+      currentName === "playing"
+    ) {
+      const retrievalContext = this.#createRodRetrievalContext();
+      this.#consumeWetFeederChum(retrievalContext);
+      this.#inventory?.handleRodRetrieved?.(retrievalContext);
+    }
+
+    this.#castRodScreenX = Number.isFinite(options.rodScreenX)
+      ? options.rodScreenX
+      : null;
+    const result = this.#fishingFacade.castLine(vx, vy, cellDepth, options);
+    if (!result?.success) {
+      this.#castRodScreenX = null;
+    }
+    if (result?.reason === "missing_rod") {
+      this.#showMissingRodInventoryWarning();
+    } else if (result?.reason === "missing_reel") {
+      this.#showMissingReelInventoryWarning();
+    } else if (result?.reason === "missing_line") {
+      this.#showMissingLineInventoryWarning();
+    }
+    return result;
+  }
+
+  canPlayerCast() {
+    return this.#fishingFacade.canPlayerCast();
+  }
+
+  getDynamicBounds() {
+    return this.#viewportFacade.getDynamicBounds();
+  }
+
+  getMaxHookDepth() {
+    return this.#fishingFacade.getMaxHookDepth();
+  }
+
+  getRodVirtualPos(bounds) {
+    return this.#viewportFacade.getRodVirtualPos(bounds, this.#castRodScreenX);
+  }
+
+  getBaseRodVirtualPos(bounds) {
+    return this.#viewportFacade.getBaseRodVirtualPos(
+      bounds,
+      this.#castRodScreenX,
+    );
+  }
+
+  getRodScreenX(bounds = null) {
+    return this.#viewportFacade.getRodScreenX(
+      this.#castRodScreenX,
+      bounds || this.getDynamicBounds(),
+    );
+  }
+
+  getScreenOffsetRatio(floatPos) {
+    return this.#viewportFacade.getScreenOffsetRatio(
+      floatPos,
+      this.#castRodScreenX,
+    );
+  }
+
+  #updateRodVisualOffset(dt, input, bounds) {
+    const stateName = this.#stateMachine?.currentName || this.#gameStateName;
+    const fightDebug = this.#fightService?.tensionMeter?.getDebugData?.() || {};
+    this.#viewportFacade.updateRodVisualOffset({
+      dtMs: dt,
+      input,
+      fightDebug,
+      bounds,
+      stateName,
+    });
+  }
+
+  checkWater(vx, vy) {
+    return this.#viewportFacade.checkWater(vx, vy);
+  }
+
+  getEnvDataForBite() {
+    return this.#fishingFacade.getEnvDataForBite();
+  }
+
+  updateChumUI() {
+    this.#chumController.updateUI();
+  }
+
+  handleChumClick() {
+    this.#chumController.handleClick();
+  }
+
+  toggleChumAim() {
+    this.#chumController.toggleAim();
+  }
+
+  handleChumAiming(input, bounds, dt = 0) {
+    this.#chumController.handleAiming(input, bounds, dt);
+  }
+
+  handleGlobalBoatControl(input) {
+    this.#chumController.handleGlobalBoatControl(input);
+  }
+
+  get isAimingChum() {
+    return this.#chumController?.isAiming || false;
+  }
+
+  set isAimingChum(value) {
+    this.#chumController?.setAiming(value);
+  }
+
+  get activeBoat() {
+    return this.#chumController?.activeBoat || null;
+  }
+
+  set activeBoat(boat) {
+    if (this.#chumController) {
+      this.#chumController.activeBoat = boat;
+    }
+  }
+
+  markInvalidCast(p) {
+    this.invalidCastMarker = { x: p.x, y: p.y, timer: 500 };
+  }
+
+  #showMissingRodInventoryWarning() {
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.("Спочатку споряди вудку для закидання.");
+  }
+
+  #showMissingReelInventoryWarning() {
+    const eq = this.#inventory?.getEquipped?.();
+    const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || "Ця";
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.(
+      `${rodName}: потрібна котушка для закидання.`,
+    );
+  }
+
+  #showMissingLineInventoryWarning() {
+    this.#inventoryUI?.open?.();
+    this.#inventoryUI?.showWarning?.("Спочатку споряди ліску для закидання.");
+  }
+
+  start() {
+    return this.#loop.start();
+  }
+
+  stop() {
+    this.#loop.stop();
+  }
+
+  dispose() {
+    this.stop();
+    this.#stateMachine?.dispose();
+    this.#removeInventoryChangedListener?.();
+    this.#removeInventoryChangedListener = null;
+
+    this.#input?.dispose?.();
+    this.#chumController?.dispose?.();
+    this.#chum?.dispose?.();
+    this.#inventory?.dispose?.();
+    this.#inventoryUI?.dispose?.();
+    this.#depthUI?.dispose?.();
+    this.#timeUI?.dispose?.();
+    this.#holdUI?.dispose?.();
+    if (this.#ui) {
+      this.#ui.onNetClick = null;
+      this.#ui.onContinueClick = null;
+      this.#ui.dispose?.();
+    }
+    this.#listeners.dispose();
+    this.#debugFacade.clear();
+  }
+
+  get gameStateName() {
+    return this.#stateMachine?.currentName || this.#gameStateName;
+  }
+  get clock() {
+    return this.#clock;
+  }
+  get rng() {
+    return this.#rng;
+  }
+  get locationId() {
+    return this.#location.id;
+  }
+  get chumCastDistance() {
+    return this.#location.chumCastDistance;
+  }
+  isDebugEnabled() {
+    return this.#debugFacade.isDebugEnabled();
+  }
+  addLifecycleListener(target, type, handler, options) {
+    return this.#listeners.add(target, type, handler, options);
+  }
+  subscribeConfigUpdated(handler) {
+    return this.#debugFacade.subscribeConfigUpdated(handler);
+  }
+  getViewportSize() {
+    return this.#viewportFacade.getViewportSize();
+  }
+  emitDebugEvent(type, detail) {
+    this.#debugFacade.emit(type, detail);
+  }
+  onDebugEvent(type, handler) {
+    return this.#debugFacade.on(type, handler);
+  }
+  get float() {
+    return this.#float;
+  }
+  get castManager() {
+    return this.#castManager;
+  }
+  get fishing() {
+    return this.#fishingController;
+  }
+  get depthUI() {
+    return this.#depthUI;
+  }
+  get holdUI() {
+    return this.#holdUI;
+  }
+  get net() {
+    return this.#net;
+  }
+  get fight() {
+    return this.#fightService;
+  }
+  get config() {
+    return this.#config;
+  }
+}
