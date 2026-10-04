@@ -672,4 +672,6 @@ class InventoryLifecycleCheckSuite {
 const runtime = new InventoryRuntimeLoader().load();
 const fixtures = new InventoryFixtureFactory(runtime);
 new InventoryLifecycleCheckSuite(fixtures).run();
-console.log("Inventory lifecycle checks passed.");
+require("./testing/runtime/game_application_test_composition").checkGameApplicationComposition().then(() => {
+  console.log("Inventory lifecycle checks passed.");
+}).catch(error => { console.error(error); process.exitCode = 1; });
