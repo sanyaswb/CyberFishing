@@ -174,7 +174,7 @@ class StageFourClusterPlan {
         const identity = { bridge: currentPath, owner: this.owner, source: reader.consumer, target: targetPath };
         bridgesAdded.push({ id: CanonicalBridgeIdentity.id(identity), ...identity,
           reason: `Preserve the exact ${symbols.join(", ")} consumer until its legacy symbol is removed.`,
-          introducedStage: `stage-${this.stage}`, removalStage: reader.removalStage,
+          introducedStage: `stage-${this.stage}`, removalStage: latestStage([`stage-${this.stage}`, reader.removalStage]),
           globalProviders: symbols.map((symbol) => ({ symbol, mechanism: "global-this-property" })) });
       }
     }

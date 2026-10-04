@@ -32,6 +32,10 @@ const manifest = new Map(json("architecture/migration/module_migration_manifest.
   .map((entry) => [entry.currentPath, entry]));
 const contract = json("architecture/migration/stage_3_compatibility_runtime.json");
 const bridges = new Set(json("architecture/guards/migration_bridge_registry.json").bridges.map((item) => item.id));
+for (const bridge of json("architecture/guards/migration_bridge_registry.json").bridges) {
+  assert(Number(bridge.removalStage.slice(-1)) >= Number(bridge.introducedStage.slice(-1)),
+    `${bridge.id}: retirement cannot precede introduction`);
+}
 const boundaryOf = (file) => policy.targetBoundaries
   .flatMap((boundary) => boundary.pathPrefixes.filter((prefix) => file.startsWith(prefix)).map((prefix) => ({ boundary, prefix })))
   .sort((left, right) => right.prefix.length - left.prefix.length)[0]?.boundary;
