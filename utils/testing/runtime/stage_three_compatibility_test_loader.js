@@ -68,7 +68,10 @@ class StageThreeCompatibilityTestLoader {
       const code = retired.map((activation) => renderer.render(activation, this.#contract.transport.symbol)).join("");
       vm.runInContext(code, this.#context, { filename: `test-only-retired:${relativePath}` });
       // A shared source (batch 045) also keeps active activations: load them below as usual.
-      if (!this.#activationBySource.has(relativePath)) return relativePath;
+      if (!this.#activationBySource.has(relativePath)) {
+        this.#exposeRequested(retired, exposedNames);
+        return relativePath;
+      }
     }
     const activations = this.#activationBySource.get(relativePath) || [];
     if (activations.length > 0) this.#loadRuntime();
@@ -86,11 +89,28 @@ class StageThreeCompatibilityTestLoader {
         filename: resolvedPath,
       });
     });
+    this.#exposeRequested([...activations, ...(retired || [])], exposedNames);
     return resolvedPaths.length === 1 ? resolvedPaths[0] : [...resolvedPaths];
   }
 
   loadAll(relativePaths) {
     for (const relativePath of relativePaths) this.load(relativePath);
+  }
+
+  // Explicit test imports may include exports that have no classic production consumer.
+  #exposeRequested(activations, names) {
+    if (!activations.length || !names.length) return;
+    const targets = [...new Set(activations.map(item => item.targetModule))];
+    vm.runInContext(`((targets, names) => {
+      for (const name of names) {
+        if (globalThis[name] !== undefined) continue;
+        for (const target of targets) {
+          const exports = globalThis.${this.#contract.transport.symbol}.modules[target];
+          if (Object.prototype.hasOwnProperty.call(exports, name)) { globalThis[name] = exports[name]; break; }
+        }
+      }
+    })(${JSON.stringify(targets)}, ${JSON.stringify(names)});`, this.#context,
+    { filename: "test-only-explicit-exports" });
   }
 
   #loadRuntime() {
