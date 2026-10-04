@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "030",
+  "evidenceKind": "api-parity",
+  "scenarios": [
+    "utils/fish-rarity-check.js"
+  ],
+  "classes": {
+    "FixedCatchFishFactory": {
+      "sourcePath": "src/app/fixed_catch_fish_factory.js",
+      "members": [
+        {
+          "name": "#fishRarityResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "3b32ed8b6a4a8ae5b38ecdecddc78f010d71a51b2e02a1e5448cc35abaf7f900"
+        },
+        {
+          "name": "#fishAnomalyVariantResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "b960123208649798e646a4b3f7d8600e82d5aaa0ec9377116a5b069dc27bc4a8"
+        },
+        {
+          "name": "#fishVisualVariantResolver",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "e7e75d583e35cad1b8b628abaf20b51f044006918de0461d2c99764518a4e059"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "1d17575b5d8a6b575e42e79fb50636e1cc87f74d09d87d07011bf3657349dda1",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 3,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "create",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "a20ba2090746c12a81e0fd7108aeb1f1a9d558a3243ba8994bf73b8aa739d889",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 7,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveAnomalyId",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "426c62d89cf752f9be709c452de1361b7952eb06114c04055fed6462489c0d9a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#findLevelRange",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "dc0370ae2a5e4eb2f3e7ba3463db6995254bdf3d3b45e77cc0da6da7a2742464",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#resolveLevelAverageWeightKg",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "962c07f5e0194a5e30ed9eaca429fadaae9e51735690ba51edde11b523a39287",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 8,
+        "arrayExpressions": 0,
+        "newExpressions": 4,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "Array",
+          "member": "#findLevelRange",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#findLevelRange",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#findLevelRange",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "#resolveAnomalyId",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#resolveLevelAverageWeightKg",
+          "kind": "method"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "undefined",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "create",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/fish-rarity-check.js": {
+          "sha256": "5bcebfa66f8e2435a1695ce77a22528f617bfa17a81d0c53c01ac2e4e3b624f2",
+          "calls": {
+            "create": 9
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

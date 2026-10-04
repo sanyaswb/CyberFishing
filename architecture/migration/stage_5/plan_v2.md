@@ -12,15 +12,15 @@ remain unchanged. See native_production_owner_decision.md.
 
 Date: 2026-10-04. Implementation resumed with cluster 027 in the new session.
 This is the current task queue, not a new scope/cluster review or a Stage 5 closure.
-The authoritative reviewed membership/order remains `graph_review_v7.json`.
+The authoritative reviewed membership/order is now `graph_review_v8.json`.
 Read `stage5_continuation_spec.md` for the English execution specification, verified
 checkpoint, acceptance evidence and implementation constraints. `plan_v1.md` is the
 historical initial plan; its starting counts and pending preparations are superseded.
 
 ## Completed
 
-- [x] Clusters 001–027 and Engine prerequisite 029: 28 applied clusters, 101 ESM targets.
-- [x] Preparations 001–025, including loadout clock propagation (017), external DEV
+- [x] Clusters 001–027 and prerequisites 029/030: 29 applied clusters, 102 ESM targets.
+- [x] Preparations 001–026, including loadout clock propagation (017), external DEV
   factories, injected Root config, portable inventory imports and browser lifecycle.
 - [x] Presentation/render/UI/config-context/version declarations, Inventory composition,
   Inventory UI Bootstrap, GameApplication/facades and production GameCompositionRoot.
@@ -71,6 +71,6 @@ historical initial plan; its starting counts and pending preparations are supers
 Stage 5 remains incomplete. Production still starts through classic Development
 Bootstrap and the compatibility IIFE. No native cutover, Stage 5 release/closure/tag,
 post-Stage-5 dead-code cleanup or owner manual play is claimed by this checkpoint.
-Version remains 0.25.2; migration label is 5.28. Runtime: 27 active activations,
-380 retired activations, 7 inert modules, 52 bridges, 852 historical global baseline
+Version remains 0.25.2; migration label is 5.29. Runtime: 28 active activations,
+380 retired activations, 7 inert modules, 53 bridges, 852 historical global baseline
 entries and 24 known debts. These are migration facts, not proof of native browser boot.

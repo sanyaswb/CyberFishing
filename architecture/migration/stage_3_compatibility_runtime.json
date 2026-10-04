@@ -952,6 +952,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "FixedCatchFishFactory",
+      "legacyScriptIndex": 406,
+      "legacySymbol": "FixedCatchFishFactory",
+      "shimFile": "activations/406_fixedcatchfishfactory.js",
+      "sourceProvider": "src/app/fixed_catch_fish_factory.js",
+      "targetModule": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "id": "activation-d6a8604d2c25",
+      "owner": "stage-5.cluster-030-fixed-catch-production-prerequisite",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-f31861589962",
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "sourceProvider": "src/entities/fish.js",

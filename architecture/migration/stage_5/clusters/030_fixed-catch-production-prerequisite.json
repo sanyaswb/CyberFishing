@@ -43,6 +43,174 @@
       ]
     }
   ],
-  "output": null,
-  "verification": null
+  "output": {
+    "status": "applied",
+    "owner": "stage-5.cluster-030-fixed-catch-production-prerequisite",
+    "runtimeSlot": 1,
+    "targets": [
+      {
+        "currentPath": "src/app/fixed_catch_fish_factory.js",
+        "targetPath": "src/game/application/fishing/fixed_catch_fish_factory.js",
+        "sourceSha256": "1291791555c84763246dca806d1fe5cfd8ca0f46bee90dca0ffec666ab07869d",
+        "targetSha256": "4e5a0c166b247b1b22799236e469f21a1722cb2780628cf350252f0b4a924b8d"
+      }
+    ],
+    "activations": [
+      "activation-d6a8604d2c25"
+    ],
+    "inertModules": [],
+    "sideEffectReviews": [],
+    "activationsRetired": [],
+    "retiredStageTwoWrappers": [],
+    "bridgesAdded": [
+      "bridge-0d6e7f743352"
+    ],
+    "bridgesRetired": [],
+    "importEdges": [],
+    "gameCycleBefore": {
+      "file": "node_modules/.cache/stage-5-clusters/030_game_cycle_before.txt",
+      "sha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "lines": 217
+    },
+    "files": [
+      {
+        "path": "architecture/build/package_contract.json",
+        "before": "07a30d99e00a69d22538546680e0c9843c185fbb4075b143db0b67fc34b67391",
+        "after": "5d068ce5cbabd3d20657087c30e02192ea8d12c2f3e105a145188936a49d44b9"
+      },
+      {
+        "path": "architecture/guards/known_debt_registry.json",
+        "before": "386e94adbf5c6a8af3bf2bee818c7f0e729510061a4362d21c47002e12b126dc",
+        "after": "386e94adbf5c6a8af3bf2bee818c7f0e729510061a4362d21c47002e12b126dc"
+      },
+      {
+        "path": "architecture/guards/migration_bridge_registry.json",
+        "before": "0c1a494d8595c0b63fecfe427bcc629df784d05b825d710c06123accbd5ed47a",
+        "after": "d6c224428a7437accd735d32efd4ffa4380338d45cf06ec065a74f9279ea34d4"
+      },
+      {
+        "path": "architecture/migration/module_migration_manifest.json",
+        "before": "ea6300a2e9b480c249988e4eab349d18418e4def32b092eab7c3f202331db5d8",
+        "after": "fc36c55b5536c50292b2ab75d092519665ac84000d19772aec69dabf91fac6af"
+      },
+      {
+        "path": "architecture/migration/stage_3_compatibility_runtime.json",
+        "before": "027737c4d374d238d03400af5987e6a3f3ff214e03af41909342246c856b2fbd",
+        "after": "cbd0fc9172e0b8ce29ca7a6c09812a420bea43665a5e8168338453dd7f2ad4c5"
+      },
+      {
+        "path": "index.html",
+        "before": "05c0e3c2ca8261c36609260c80eb298848ddb6ebe33f013b2edc1f15a13f6a15",
+        "after": "d0ca496ffd42facb4189a2e1aa387d3683b1e38465df0a0a2f493fe11ace1d23"
+      },
+      {
+        "path": "src/app/fixed_catch_fish_factory.js",
+        "before": "1291791555c84763246dca806d1fe5cfd8ca0f46bee90dca0ffec666ab07869d",
+        "after": "36b208ff0d463320c8d074c68a7a6bc359912c8107c99d5388992de0e3b6c537"
+      },
+      {
+        "path": "src/game/application/fishing/fixed_catch_fish_factory.js",
+        "before": null,
+        "after": "4e5a0c166b247b1b22799236e469f21a1722cb2780628cf350252f0b4a924b8d"
+      }
+    ],
+    "resolvedDebts": []
+  },
+  "verification": {
+    "guards": [
+      {
+        "check": "utils/architecture/architecture-guard-corpus-check.js",
+        "status": "PASS",
+        "summary": "Architecture guard corpus passed: 802 modules, 762 unified edges, 852 globals, 24 exact known-debt diagnostics, 0 FAIL in 941ms; read-only."
+      },
+      {
+        "check": "utils/architecture/migration-manifest-integrity-check.js",
+        "status": "PASS",
+        "summary": "Migration manifest integrity passed: 802/802 actual src/**/*.js files tracked."
+      },
+      {
+        "check": "utils/architecture/package-contract-check.js",
+        "status": "PASS",
+        "summary": "Root package contract passed: cyber-fishing@0.25.2, 9 direct dependencies, 205 locked packages, npm lockfile v3; 9 fixtures; read-only."
+      },
+      {
+        "check": "utils/architecture/stage-3-runtime-load-order-check.js",
+        "status": "PASS",
+        "summary": "Stage 3 runtime load order passed: runtime at slot 1 before 28 published and 0 planned activations; 6 negative fixture cases."
+      },
+      {
+        "check": "utils/architecture/domain-boundary-check.js",
+        "status": "PASS",
+        "summary": "Domain boundary passed: 139 Domain modules, 101 imports inside Domain/Engine, 0 forbidden or free globals, 0 bound availability checks, 28 activations and 53 bridges with removal stages."
+      },
+      {
+        "check": "utils/architecture/stage-4-cluster-records-check.js",
+        "status": "PASS",
+        "summary": "Stage 4 cluster records passed: 67 record(s), 65 applied, 198 ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and 23 release fixtures, 13 stage-identity cases; 3 release record(s), version 0.25.2."
+      }
+    ],
+    "gameCycle": {
+      "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "evidence": [
+      {
+        "name": "api-parity",
+        "status": "PASS",
+        "sha256": "0940ece9dd18106ed1df3393bf245b202797a3cae84b038d7ae34410631bce91"
+      }
+    ],
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "acceptanceReport": "architecture/archive/stage5_030_fixed_catch_acceptance.json",
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "identities": {
+        "game": true,
+        "root": true,
+        "fixedCatch": true,
+        "config": true,
+        "context": true
+      },
+      "activeLoops": 1,
+      "duplicateLoopStarts": 0,
+      "inventoryButtons": 64,
+      "inventoryButtonTextsIdenticalAfterReload": true,
+      "saveStrings": 3,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending",
+      "basis": "Real current classic DEV page with ignored instrumented copy; 64 currently visible button texts and three existing inventory save strings preserved after reload; fixed class equals its canonical IIFE namespace. Tab/server closed, fixture removed."
+    }
+  }
 }

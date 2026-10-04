@@ -83,6 +83,22 @@
       ]
     },
     {
+      "id": "bridge-0d6e7f743352",
+      "bridge": "src/app/fixed_catch_fish_factory.js",
+      "owner": "stage-5.cluster-030-fixed-catch-production-prerequisite",
+      "source": "src/app/script.js",
+      "target": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "reason": "Preserve the exact FixedCatchFishFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FixedCatchFishFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-11bab2b81092",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
