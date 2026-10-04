@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "028",
+  "slug": "dual-page-tooling-contract",
+  "baseCommit": "789bab6bdacadd66d8b68d5894d8197bb115a419",
+  "reason": "Owner exact native index / retained classic dev.html topology. Live legacy observers/builders/projectors/cluster editors select the single explicit policy source with no fallback; frozen historical fixtures retain index.html. Existing package/Vite/release/rarity checks validate the actual production native graph separately from classic DEV. Exact source selections and topology/graph negative fixtures are mandatory; no guard baseline, exception or historical evidence is weakened.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "utils/architecture/migration/legacy_script_order_reader.js",
+      "before": "00d228b48c41b07bae028379d6f41be661ab87c90093f01aa11f0574e4247b15",
+      "after": "5d9e4566845c5a0a80e1ecef3f12878ac4f6a5dacf07a7a4ff7eaebbfce2e914"
+    },
+    {
+      "path": "utils/architecture/migration-manifest-integrity-check.js",
+      "before": "d930ee995c8715677adefc8b45778b3daea8b2f3c7bc668248b40a54041f9a53",
+      "after": "3c75594c6754e935d20b008b38038f1eca172592389ebc4b4de3bcf3c34a89a1"
+    },
+    {
+      "path": "utils/architecture/reconcile-migration-manifest.js",
+      "before": "5cd188354b9fe2fe85a79332a9e359e0b3507e51eb7378c5af42407c4d409607",
+      "after": "1fc83fbad166dc93480d571127d1272022f1064af3a28747fd7e1d1b563d39bc"
+    },
+    {
+      "path": "utils/architecture/persist-migration-observations.js",
+      "before": "7112af1d7e2060c180cb50b6be1cf7f7e1a76e471807a9d765d73e4fac7ceca5",
+      "after": "7b6136fe420bcae42ddefda96c42254a86ac8003646e09a5960bfaf412773cb9"
+    },
+    {
+      "path": "utils/architecture/migration-manifest-validator-check.js",
+      "before": "238040d03abfdaaa3fedc303587472c1e5d6c5456cdbe6c467694c910ce4ddb4",
+      "after": "f3d6ab7f35dc52667f2d63d2a0e5a87ff755a206c870c9fd5b60a02e075288b3"
+    },
+    {
+      "path": "utils/architecture/provider-resolution-corpus-check.js",
+      "before": "82ca7fdc0a308c940bbd6793eca4bc852aea9890dff17a00ccc508cf58b90782",
+      "after": "78b8baa53760f6edb56343a4acb6c59f7be9e7ef57b274d9759789f29a360622"
+    },
+    {
+      "path": "utils/architecture/observation/persistence/live_observation_snapshot.js",
+      "before": "c37b9d79876e579c4e8bd845b97ea6e55259b4bb7370127ef73171a8cc785a1e",
+      "after": "9d6ae86f1053e5f60b066b017586a6c95dd40ef79fdca40493b48741aebe8ff3"
+    },
+    {
+      "path": "utils/architecture/migration/stage_two_runtime_script_alias_resolver.js",
+      "before": "b5e2c75515dae1a1a1f31063e940f1546bf00f2f3d4aa3f7d6e3d5ae1db3eec0",
+      "after": "aea5d9b46eb9e4106127730c85275989334b113f4d2b61f95cc5830af0d44176"
+    },
+    {
+      "path": "utils/build/build_stage_3_compat_runtime.js",
+      "before": "262bdf664152d4b366833a8bd9ff13b51b7163ec53cb246a3e6ba55d4c66966e",
+      "after": "619eeb3204483d4f9b3a34576ec6934c96d80c482132068d5fb06496b0fe1bbd"
+    },
+    {
+      "path": "utils/architecture/stage-3-runtime-load-order-check.js",
+      "before": "50818000446af47ff5200e101f88bdf575139fa3cabf4672e640b50eb6758f37",
+      "after": "81ec0aaa425831b5fef757e6682f06131f51c3e8d1e6d8a34bf623707bd71515"
+    },
+    {
+      "path": "utils/architecture/approved-stage-2-batch-freeze-check.js",
+      "before": "73a058590202bcf5051d6963b2cfee3ad90f5bf7b3785a229ff21a74af5ff61c",
+      "after": "a382db775238da95ca14551d61d6362b6bd5b435626791127343acd131e4a20b"
+    },
+    {
+      "path": "utils/build/build_legacy_bridges.js",
+      "before": "6a73bc7e60de213e92e786bc53f80d674c5a70c3a59fa57a303468b659591049",
+      "after": "8963e5d2b55d492f3b79f50e85b186bb58a0bd64e8b7ab7b24c13b82c3d9de02"
+    },
+    {
+      "path": "utils/architecture/domain_batches/stage_three_batch_candidate_build.js",
+      "before": "a9014b754baecd6c53ff2ad1d0f46d22dfc80b7765c90188fc071585adca89cf",
+      "after": "73051ddd62f6377fe6b02b887b0604d4e59ca507d28e087797ce814de279ed97"
+    },
+    {
+      "path": "utils/architecture/domain_batches/stage_three_live_preflight.js",
+      "before": "87d16af9e1d36466a6e7a2130271458f0135933b809940bdbcb422e759e6be08",
+      "after": "17b8446258312ad8fd7f593a0c6f3579d1f460140b0e41cc7f943ad727f148be"
+    },
+    {
+      "path": "utils/architecture/domain_batches/stage_three_batch_010_preflight.js",
+      "before": "ceba429a381d261812d76573d977ca0938d4b27b3aa88c76445028e57e343121",
+      "after": "306caafeded4b5c0ebcd2fccf59b09e15e84acaee49bac472f8b7eddee113834"
+    },
+    {
+      "path": "utils/architecture/domain_batches/stage_three_batch_execution_plan_projector.js",
+      "before": "6e662e4fb96f3108faa7a9681859a16737f3abf07b0f5c20beb04a2db47636ea",
+      "after": "4f38feef0b6ac5a19aba5e2907e8ffe4add53ae128f3a54975f84141636e27ca"
+    },
+    {
+      "path": "utils/architecture/stage_four/cluster_path.js",
+      "before": "066068961a19be15486037ccc45f93371738500c822afbd6fc59089b41d39fa4",
+      "after": "dda878f0228872d721cd9120f9c8d49c0895da4ea37ba24d2079171140f42604"
+    },
+    {
+      "path": "utils/architecture/stage-4-cluster-records-check.js",
+      "before": "946f5ac757aa4ca7285288251bb998279d3a5e7eef6e249bcb70d81fd2faf483",
+      "after": "ea8dbebf1c2f05780af06d715f0a8978acd3479a41f517d2e3d9cbef7881604c"
+    },
+    {
+      "path": "utils/architecture/legacy-slot-split-check.js",
+      "before": "b5f8d6ba95b0364db433f2c67f58ec1878850c3551075c147a6a0a8dd09d2a64",
+      "after": "38dbab101168a7dc8074848b5151410ffe48f7fa0a9e8f2568882d923027d0ab"
+    },
+    {
+      "path": "utils/architecture/package_contract/package_contract_validator.js",
+      "before": "54388563b2050ef400bb4d049fc02b1f1015e1797c83171ed08dbaed38b8cc86",
+      "after": "beac28226ea79263ac2d6551ed76e611aa317e9b96c3890b97aa3cbe3a219b16"
+    },
+    {
+      "path": "utils/architecture/package_contract/root_package_validator.js",
+      "before": "9c3ec3d576a4359767ddad33b75726a1e185595b612a3f32be00b5cd3d067c57",
+      "after": "75c75a7b9028a5e95d7cf244c14e96073b92caa7d17aba381e2717d72f15d370"
+    },
+    {
+      "path": "utils/architecture/package-contract-check.js",
+      "before": "2bcc3cd607456826280c1333a640ca003e3b924c2487bb7696d23b28126141e4",
+      "after": "c1b2cb41dab122f640325b9a65ddefc0303119f819f429046c6ec3da891b835c"
+    },
+    {
+      "path": "utils/architecture/architecture-guard-corpus-check.js",
+      "before": "37e0b771208ad812994df07c0e43b655c44fef8c95e7feddbebe7cd4e2612525",
+      "after": "811667f827491a74000cdd8d423a6969899f552570a3a8ed798224397e98de65"
+    },
+    {
+      "path": "utils/architecture/stage_four/release_path.js",
+      "before": "930643b4ff925bd839d37478fa2831c280f605c9bb60c5d0c8888f658336ed38",
+      "after": "369fedf08ff78e3e6c6db17d02d5bb1e2566be8c17a749adc530c4cc9b3ac9c0"
+    },
+    {
+      "path": "utils/architecture/esm_infrastructure/vite_fixture_contract_validator.js",
+      "before": "9a9548de921a9e216c834b006cfdd4704a0a8e2081baab830791ab4567366aa2",
+      "after": "b3c4317a7597fa28e139e9318b68554144d2b9a207179945797231b5cca30d76"
+    },
+    {
+      "path": "utils/architecture/vite-fixture-build-check.js",
+      "before": "0ef39003a4fb9f53f75d6ec0a08ee5f2989eba746838c1a33a9fcf447b8530f2",
+      "after": "8270dd7a4a9950ea0e2192a999cbd340c4e5f1ef64b26cc8ab42c8add6101417"
+    },
+    {
+      "path": "utils/rarity-production-check.js",
+      "before": "6e2ec8fbb0196b49490a10049665c2058f9ef25ba1cd6de15def07b3548c7172",
+      "after": "19a9e4ef9cf9cf408c323148538511f21a23ed2be78f514ba96007de337d76c2"
+    },
+    {
+      "path": "utils/architecture/architecture-policy-check.js",
+      "before": "c02c6492365b3a247444d43c6b37593e05c9feaf248c60811765e737d26fbce3",
+      "after": "c25bfc5de380d7f98b727d3c83d7b45fa60c445968617d555cc23376fadd14c8"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "LegacyScriptOrderReader.sourcePath accepts only explicit index.html/dev.html policy source, verifies regular file, rejects missing source/file/path traversal/query/absolute/other selection; no fallback to native page.",
+    "Live selectors/builders/observers/cluster editor use one source; historical release/batch/ledger fixtures explicitly retain historical index context.",
+    "Exact reviewed native page/topology and transitive graph checks reject DEV/transport/unresolved/non-.js imports and invalid startup document. Native rarity branch validates canonical CONFIG/catalog/adapter/context and compares retained classic data. Version queries pin both pages and native catalog to package+lock.",
+    "Version-copy dev.html entry is withheld until page cutover; preparation leaves the current copy utility usable."
+  ],
+  "verification": {
+    "focused": {
+      "status": "PASS-package-rarity-ledger-topology-negative-probe"
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "acceptanceReport": "architecture/archive/stage5_native_preparatory_acceptance.json",
+    "acceptanceReportSha256": "a5a54109f96d2d7e07bc97daf99bac5ec1ca80eecf0d2cff6d79b97cd54aa1c9",
+    "acceptanceScope": "Joint frozen preparatory tree for 028.1–028.3 before actual native pages. Native branch requires separate cutover acceptance."
+  }
+}

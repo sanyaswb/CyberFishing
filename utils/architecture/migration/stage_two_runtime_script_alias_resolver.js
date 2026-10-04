@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { LegacyScriptOrderReader } = require("./legacy_script_order_reader");
 const { StageFourClusterLedger } = require("../stage_four/cluster_ledger");
 const {
   ActiveBridgePlanResolver,
@@ -25,7 +26,7 @@ class StageTwoRuntimeScriptAliasResolver {
     const readJson = (relativePath) => JSON.parse(
       fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
     );
-    const indexHtml = fs.readFileSync(path.join(projectRoot, "index.html"), "utf8");
+    const indexHtml = fs.readFileSync(LegacyScriptOrderReader.sourcePath(projectRoot), "utf8");
     const bridgeRegistry = readJson(
       "architecture/guards/migration_bridge_registry.json",
     );

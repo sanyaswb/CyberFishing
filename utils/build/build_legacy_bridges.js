@@ -4,6 +4,7 @@ const path = require("node:path");
 const espree = require("espree");
 const estraverse = require("estraverse");
 const { ArchitecturePolicy } = require("../architecture/core/architecture_policy");
+const { LegacyScriptOrderReader } = require("../architecture/migration/legacy_script_order_reader");
 const {
   ActiveBridgePlanResolver,
   ApprovedDependencyClosureValidator,
@@ -289,7 +290,7 @@ class LegacyBridgeBuildApplication {
   }
 
   #runtimeFacts() {
-    const html = fs.readFileSync(path.join(this.projectRoot, "index.html"), "utf8");
+    const html = fs.readFileSync(LegacyScriptOrderReader.sourcePath(this.projectRoot), "utf8");
     return Object.freeze({
       moduleScriptCount: (
         html.match(/<script\b[^>]*\btype\s*=\s*["']module["']/giu) || []

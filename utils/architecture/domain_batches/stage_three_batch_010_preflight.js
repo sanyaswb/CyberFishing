@@ -135,7 +135,7 @@ class Batch010Preflight {
     assert(auditEntry, "historical domain audit entry missing");
     assert.deepEqual(auditEntry.dependencyAudit.facts.reverseConsumers, consumerFacts.map(({ source, sourceBoundary, symbols }) => ({ source, sourceBoundary, symbols })),
       "domain reverse consumer evidence differs from current graph");
-    const logical = new LegacyScriptOrderReader(path.join(this.root, PATHS.index), {
+    const logical = new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(this.root, policy), {
       scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(this.root),
     }).read();
     const sourcePosition = logical.find(script => script.currentPath === target.currentPath)?.legacyLoadOrder;

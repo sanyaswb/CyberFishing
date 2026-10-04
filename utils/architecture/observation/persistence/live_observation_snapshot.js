@@ -23,7 +23,7 @@ class LiveObservationSnapshot {
       projector: new ObservationManifestProjector(new ManifestDependencyProjector()),
     }).build({
       sourceFiles: new SourceFileScanner({ projectRoot, sourceRoot: path.join(projectRoot, "src") }).scan(),
-      legacyScripts: new LegacyScriptOrderReader(path.join(projectRoot, "index.html"), {
+      legacyScripts: new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(projectRoot, policy), {
         scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(projectRoot),
       }).read(),
     });

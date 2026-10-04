@@ -622,7 +622,7 @@ new MigrationManifestValidatorCheck({
       sourceRoot: SOURCE_ROOT,
     }).scan(),
     legacyScripts: new LegacyScriptOrderReader(
-      path.join(PROJECT_ROOT, "index.html"),
+      LegacyScriptOrderReader.sourcePath(PROJECT_ROOT, policy),
       { scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT) },
     ).read(),
     canonicalPath: new CanonicalModulePath(),

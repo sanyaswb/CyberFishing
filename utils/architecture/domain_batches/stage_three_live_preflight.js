@@ -102,7 +102,7 @@ class StageThreeLivePreflight {
           .map(({ source, sourceBoundary, symbols }) => ({ source, sourceBoundary, symbols })),
         `domain reverse consumer evidence differs: ${target.currentPath}`);
     }
-    const logical = new LegacyScriptOrderReader(path.join(this.root, PATHS.index), {
+    const logical = new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(this.root, policy), {
       scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(this.root),
     }).read();
     for (const activation of batch.compatibility.newActivations) {

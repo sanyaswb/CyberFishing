@@ -5,6 +5,8 @@
 // non-contiguous members, a split at the wrong logical slot, module scripts).
 const assert = require("node:assert/strict");
 const path = require("node:path");
+const fs = require("node:fs");
+const os = require("node:os");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { LegacySlotSplitRegistry, KIND } = require("./migration/legacy_slot_split_registry");
 const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
@@ -58,11 +60,43 @@ rejects(() => registry([[2, ["src/v.js", "src/core.js"]]]).assertMatches(read([.
 rejects(() => registry([[2, ["src/v.js", "src/v.js"]]]), /duplicated member/u);
 rejects(() => registry([[2, ["src/v.js"]]]), /at least two members/u);
 
+// Selection follows the reviewed policy even when production has become a native module document.
+const selectionRoot = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "cyber-legacy-source-"));
+const selectionPolicy = source => ({ migrationManifest: { legacyLoadOrder: { source } } });
+const selectionPolicyPath = path.join(selectionRoot, "architecture/module_architecture.json");
+let rejectedSelections = 0;
+const rejectSelection = (action, pattern) => { assert.throws(action, pattern); rejectedSelections += 1; };
+try {
+  fs.mkdirSync(path.dirname(selectionPolicyPath));
+  fs.writeFileSync(selectionPolicyPath, JSON.stringify(selectionPolicy("dev.html")));
+  fs.writeFileSync(path.join(selectionRoot, "index.html"), html([["src/entrypoints/game.entry.js", null, "module"]]));
+  fs.writeFileSync(path.join(selectionRoot, "dev.html"), html([["src/legacy/a.js"], ["src/legacy/b.js"]]));
+  assert.equal(LegacyScriptOrderReader.sourcePath(selectionRoot), path.join(selectionRoot, "dev.html"));
+  assert.deepEqual(new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(selectionRoot)).read()
+    .map(script => script.currentPath), ["src/legacy/a.js", "src/legacy/b.js"]);
+  assert.equal(LegacyScriptOrderReader.sourcePath(selectionRoot, selectionPolicy("index.html")),
+    path.join(selectionRoot, "index.html"), "an explicit historical policy preserves its original source");
+  for (const source of [undefined, "../index.html", "other.html", "index.html?v=1", path.resolve(selectionRoot, "index.html")]) {
+    rejectSelection(() => LegacyScriptOrderReader.sourcePath(selectionRoot, selectionPolicy(source)), /Unreviewed/u);
+  }
+  rejectSelection(() => LegacyScriptOrderReader.sourcePath(selectionRoot, {}), /Unreviewed/u);
+  fs.unlinkSync(path.join(selectionRoot, "dev.html"));
+  rejectSelection(() => LegacyScriptOrderReader.sourcePath(selectionRoot), /Selected.*missing/u);
+  fs.mkdirSync(path.join(selectionRoot, "dev.html"));
+  rejectSelection(() => LegacyScriptOrderReader.sourcePath(selectionRoot), /Selected.*missing/u);
+  fs.unlinkSync(selectionPolicyPath);
+  rejectSelection(() => LegacyScriptOrderReader.sourcePath(selectionRoot), /ENOENT/u);
+} finally {
+  assert.equal(path.dirname(selectionRoot), fs.realpathSync(os.tmpdir()));
+  assert(path.basename(selectionRoot).startsWith("cyber-legacy-source-"));
+  fs.rmSync(selectionRoot, { recursive: true, force: true });
+}
+
 // The live document splits exactly the reviewed slots.
-const live = new LegacyScriptOrderReader(path.join(ROOT, "index.html"), {
+const live = new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(ROOT), {
   scriptAliases: new StageTwoRuntimeScriptAliasResolver().loadProject(ROOT),
 }).read();
 const result = LegacySlotSplitRegistry.load(ROOT).assertMatches(live);
 const logicalSlots = new Set(live.filter(script => script.type === "classic").map(script => script.legacyLoadOrder)).size;
 console.log(`Legacy slot splits passed: ${result.splitSlots} reviewed split slot(s) with ${result.members} members, ` +
-  `${logicalSlots} logical classic slots; 11 invalid split fixtures rejected.`);
+  `${logicalSlots} logical classic slots; 11 invalid split and ${rejectedSelections} invalid selection fixtures rejected.`);

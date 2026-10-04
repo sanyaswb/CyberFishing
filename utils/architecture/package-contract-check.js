@@ -8,6 +8,7 @@ const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_a
 const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 
 const { StageFourRelease } = require("./stage_four/release_path");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -17,6 +18,8 @@ const paths = {
   version: path.join(PROJECT_ROOT, StageFourRelease.versionSource(file => fs.readFileSync(path.join(PROJECT_ROOT, file), "utf8"))),
   gitignore: path.join(PROJECT_ROOT, ".gitignore"),
   index: path.join(PROJECT_ROOT, "index.html"),
+  legacy: LegacyScriptOrderReader.sourcePath(PROJECT_ROOT),
+  policy: path.join(PROJECT_ROOT, "architecture/module_architecture.json"),
   stageThreeState: path.join(
     PROJECT_ROOT,
     "architecture/migration/stage_3_execution_state.json",
@@ -46,6 +49,7 @@ class PackageContractCheck {
       bytes.get("stageThreeRuntime").toString("utf8"),
     );
     const expectedStage = {
+      nativeProduction: JSON.parse(bytes.get("policy").toString("utf8")).migrationManifest.legacyLoadOrder.source === "dev.html",
       // Stage 4.N after N applied cluster records; the Stage 3 label until the first one.
       current: StageFourClusterLedger.cumulative(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
         read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
@@ -74,7 +78,7 @@ class PackageContractCheck {
     });
     for (const [name, before] of bytes) assert(before.equals(fs.readFileSync(paths[name])), `Package contract check mutated ${name}`);
     const directCount = contract.dependencyPolicy.directSections.reduce((total, section) => total + Object.keys(packageJson[section]).length, 0);
-    console.log(`Root package contract passed: ${packageJson.name}@${packageJson.version}, ${directCount} direct dependencies, ${Object.keys(packageLock.packages).length - 1} locked packages, npm lockfile v${packageLock.lockfileVersion}; 9 fixtures; read-only.`);
+    console.log(`Root package contract passed: ${packageJson.name}@${packageJson.version}, ${directCount} direct dependencies, ${Object.keys(packageLock.packages).length - 1} locked packages, npm lockfile v${packageLock.lockfileVersion}; 12 fixtures; read-only.`);
   }
 
   #readProjectVersion(source) {
@@ -98,6 +102,12 @@ class PackageContractCheck {
 
   #runFixtures(actual) {
     const clone = (value) => JSON.parse(JSON.stringify(value));
+    for (const field of ["productionEntrypoint", "sourceRuntime"]) {
+      const stale = clone(actual.contract); stale.stage[field] = "unreviewed";
+      assert.throws(() => this.contractValidator.validate(stale, actual.expectedStage), /reviewed stage topology/u);
+    }
+    assert.throws(() => this.contractValidator.validate(actual.contract,
+      { ...actual.expectedStage, nativeProduction: !actual.expectedStage.nativeProduction }), /reviewed stage topology/u);
     assert.throws(() => this.contractValidator.validate(
       { ...clone(actual.contract), schemaVersion: 99 },
       actual.expectedStage,

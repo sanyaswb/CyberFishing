@@ -9,6 +9,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { CumulativeRuntimeLoadSlot } = require("../build/compat_runtime/cumulative_runtime_load_slot");
 const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
@@ -26,7 +27,7 @@ function violations(load, positions) {
 
 const contract = json("architecture/migration/stage_3_compatibility_runtime.json");
 const runtimePath = contract.output.directory + contract.output.runtimeFile;
-const load = CumulativeRuntimeLoadSlot.read({ html: read("index.html").toString("utf8"),
+const load = CumulativeRuntimeLoadSlot.read({ html: fs.readFileSync(LegacyScriptOrderReader.sourcePath(ROOT), "utf8"),
   aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract), runtimePath });
 const state = json("architecture/migration/stage_3_execution_state.json");
 const plan = new StageThreeApprovedPlanSource({ read }).load(state).document;

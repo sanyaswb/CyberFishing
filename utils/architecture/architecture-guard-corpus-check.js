@@ -7,6 +7,7 @@ const { ArchitectureGuardEngine } = require("./guards/architecture_guard_engine"
 const { GuardReportFormatter } = require("./guards/core/guard_report_formatter");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
@@ -16,6 +17,7 @@ const paths = {
   bridges: path.join(PROJECT_ROOT, "architecture/guards/migration_bridge_registry.json"),
   globals: path.join(PROJECT_ROOT, "architecture/guards/global_provider_baseline.json"),
   index: path.join(PROJECT_ROOT, "index.html"),
+  legacy: LegacyScriptOrderReader.sourcePath(PROJECT_ROOT),
 };
 const trackedBytes = new Map(Object.entries(paths).map(([key, file]) => [key, fs.readFileSync(file)]));
 const policy = JSON.parse(trackedBytes.get("policy").toString("utf8"));

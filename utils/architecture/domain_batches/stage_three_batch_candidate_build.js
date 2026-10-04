@@ -81,7 +81,7 @@ class StageThreeBatchCandidateBuild {
         outputManager: this.outputManager,
         ...(this.viteLoader ? { viteLoader: this.viteLoader } : {}),
         scriptOrderProvider: () => this.indexHtml === null
-          ? new LegacyScriptOrderReader(this.#absolute("index.html"),
+          ? new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(this.projectRoot),
             { scriptAliases: aliases }).read()
           : new LegacyScriptOrderReader(null, { scriptAliases: aliases }).parse(this.indexHtml),
       }).run();

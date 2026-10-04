@@ -18,6 +18,7 @@ const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_con
 const { MigrationBridgeRegistryValidator } = require("../guards/contracts/guard_artifact_repository");
 const { ManifestEntryFactory } = require("../migration/manifest_entry_factory");
 const { CurrentAreaResolver } = require("../migration/current_area_resolver");
+const { LegacyScriptOrderReader } = require("../migration/legacy_script_order_reader");
 const { StageThreeRuntimeScriptAliasResolver } = require("../migration/stage_three_runtime_script_alias_resolver");
 const { ArchitectureGuardSnapshotBuilder } = require("../guards/corpus/architecture_guard_snapshot_builder");
 const { ArchitectureGuardEngine } = require("../guards/architecture_guard_engine");
@@ -143,6 +144,8 @@ class StageFourClusterPlan {
     const manifest = workspace.json(PATHS.manifest);
     const contract = workspace.json(PATHS.contract);
     const registry = workspace.json(PATHS.registry);
+    const legacyDocument = path.basename(LegacyScriptOrderReader.sourcePath(path.dirname(workspace.path(PATHS.index)),
+      workspace.json(PATHS.policy, { strict: false })));
     const entries = new Map(manifest.modules.map((entry) => [entry.currentPath, entry]));
     const members = new Map(record.modules.map((module) => [module.currentPath, module]));
     const memberTargets = new Map(record.modules.map((module) => [module.currentPath, module.targetPath]));
@@ -221,7 +224,7 @@ class StageFourClusterPlan {
       ...retiredStageTwoWrappers.map(wrapper => [wrapper.file,null])]);
     assert.deepEqual(this.#propertyReaders(retiredActivations.map((item) => item.legacySymbol), retiringSources), [],
       "a retiring activation still has property readers outside the migrating consumers and shims");
-    const load = CumulativeRuntimeLoadSlot.read({ html: workspace.text(PATHS.index),
+    const load = CumulativeRuntimeLoadSlot.read({ html: workspace.text(legacyDocument),
       aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract),
       runtimePath: contract.output.directory + contract.output.runtimeFile });
     const early = activations.filter((item) => item.legacyScriptIndex < load.slot ||
@@ -236,7 +239,7 @@ class StageFourClusterPlan {
     assert.deepEqual(propertyReaders.map((item) => `${item.file}:${item.symbol}`),
       (record.reviewedPropertyReaders || []).map((item) => `${item.file}:${item.symbol}`).sort(),
       "global property readers that wake up when an activation exposes the symbol must be reviewed");
-    return { owner: this.owner, stage: this.stage, targets, consumers, activations: activations.sort(byId), inert, retiredActivations, retiredStageTwoWrappers,
+    return { owner: this.owner, stage: this.stage, legacyDocument, targets, consumers, activations: activations.sort(byId), inert, retiredActivations, retiredStageTwoWrappers,
       bridgesAdded: bridgesAdded.sort(byId), bridgesRetired, runtimeSlot: load.slot, propertyReaders,
       importEdges: targets.flatMap((target) => (target.module.imports || []).map((item) =>
         `${target.module.targetPath}->${item.from}`)) };
@@ -314,7 +317,7 @@ class StageFourClusterApply {
     const record = workspace.json(this.recordFile);
     assert.equal(record.output, null, "cluster record is already applied");
     const plan = new StageFourClusterPlan(workspace, record).build();
-    const touched = [...new Set([...Object.values(PATHS).filter((file) => file !== PATHS.policy),
+    const touched = [...new Set([...Object.values(PATHS).filter((file) => file !== PATHS.policy).map(file => file === PATHS.index ? plan.legacyDocument : file),
       ...plan.targets.flatMap((target) => [target.module.currentPath, target.module.targetPath]),
       ...plan.retiredActivations.map((item) => item.sourceProvider), ...plan.retiredStageTwoWrappers.map(item => item.file)])].sort();
     const dirty = workspace.git(["status", "--porcelain", "--", ...touched]).trim();
@@ -329,7 +332,7 @@ class StageFourClusterApply {
     const contract = workspace.json(PATHS.contract);
     const shim = new ActivationShimRenderer();
     const writes = new Map();
-    let index = workspace.text(PATHS.index);
+    let index = workspace.text(plan.legacyDocument);
     for (const target of plan.targets) {
       const { currentPath, targetPath, exports } = target.module;
       writes.set(targetPath, target.targetSource);
@@ -362,7 +365,7 @@ class StageFourClusterApply {
         : new RetiredActivationPlaceholder().renderProvider(future.retiredActivations
           .filter(item => item.activation.sourceProvider === sourceProvider).map(item => item.activation)));
     }
-    writes.set(PATHS.index, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
+    writes.set(plan.legacyDocument, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
     for (const wrapper of plan.retiredStageTwoWrappers) writes.set(wrapper.file,
       new RetiredActivationPlaceholder().renderProvider(plan.retiredActivations.filter(item => wrapper.activationIds.includes(item.id))));
     new CumulativeRuntimeContractValidator().validate(future);

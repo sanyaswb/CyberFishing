@@ -22,8 +22,11 @@ class PackageContractValidator {
       `package contract must record Stage ${expectedStage?.current}`,
     );
     require(contract?.stage?.vite === "fixture-bridge-and-cumulative-runtime-infrastructure", "Vite usage must be limited to fixtures and approved compatibility infrastructure");
-    require(contract?.stage?.productionEntrypoint === "unchanged-index-html", "production entrypoint must remain index.html");
-    require(contract?.stage?.sourceRuntime === "classic-scripts-with-cumulative-iife-runtime", "classic source runtime must identify the cumulative IIFE runtime");
+    const nativeProduction = expectedStage?.nativeProduction === true;
+    require(contract?.stage?.productionEntrypoint === (nativeProduction ? "native-index-html-game-entry" : "unchanged-index-html"),
+      "production entrypoint differs from the reviewed stage topology");
+    require(contract?.stage?.sourceRuntime === (nativeProduction ? "native-production-and-classic-dev-cumulative-iife" : "classic-scripts-with-cumulative-iife-runtime"),
+      "source runtime differs from the reviewed stage topology");
     require(contract?.stage?.commonJsTooling === "preserved", "CommonJS tooling must remain preserved");
     require(contract?.stage?.bridgeBuild?.status === "transitioned-to-cumulative-runtime", "isolated legacy bridge runtime must be transitioned");
     require(contract?.stage?.bridgeBuild?.registry === "architecture/guards/migration_bridge_registry.json", "legacy bridge registry path is invalid");

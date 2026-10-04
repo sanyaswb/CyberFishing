@@ -81,12 +81,17 @@ class StageFourRelease {
   }
 
   // Version pins of a tree; all of them must agree.
-  static currentVersion(read) {
+  static currentVersion(read, policy = null) {
     const packageJson = JSON.parse(read(FILES.package));
     const lock = JSON.parse(read(FILES.lock));
     const source = /^(?:export )?const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu.exec(read(StageFourRelease.versionSource(read)))?.[1];
-    const queries = [...read(FILES.index).matchAll(/src\/config\/project_version\.js\?v=([0-9.]+)"/gu)].map((m) => m[1]);
-    const versions = [packageJson.version, lock.version, lock.packages[""].version, source, ...queries];
+    const legacySource = policy === null ? FILES.index : policy.migrationManifest?.legacyLoadOrder?.source;
+    assert(["index.html", "dev.html"].includes(legacySource), "Unreviewed legacy version source");
+    const queries = [...read(legacySource).matchAll(/src\/config\/project_version\.js\?v=([0-9.]+)"/gu)].map((m) => m[1]);
+    const nativeQueries = legacySource === "dev.html"
+      ? [...read(FILES.index).matchAll(/src\/entrypoints\/game\.entry\.js\?v=([0-9.]+)"/gu)].map(m => m[1]) : [];
+    assert(legacySource !== "dev.html" || nativeQueries.length === 1, "native production version query must occur exactly once");
+    const versions = [packageJson.version, lock.version, lock.packages[""].version, source, ...queries, ...nativeQueries];
     assert(queries.length === 1 && versions.every((value) => value === versions[0]),
       `version pins disagree: ${versions.join(", ")}`);
     return versions[0];

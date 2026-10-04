@@ -56,7 +56,7 @@ const {
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const SOURCE_ROOT = path.join(PROJECT_ROOT, "src");
-const INDEX_PATH = path.join(PROJECT_ROOT, "index.html");
+const LEGACY_SOURCE_PATH = LegacyScriptOrderReader.sourcePath(PROJECT_ROOT);
 const POLICY_PATH = path.join(
   PROJECT_ROOT,
   "architecture",
@@ -83,7 +83,7 @@ const summary = new PersistMigrationObservationsCommand({
     projectRoot: PROJECT_ROOT,
     sourceRoot: SOURCE_ROOT,
   }),
-  legacyScriptOrderReader: new LegacyScriptOrderReader(INDEX_PATH, {
+  legacyScriptOrderReader: new LegacyScriptOrderReader(LEGACY_SOURCE_PATH, {
     scriptAliases,
   }),
   snapshotBuilder: new MigrationObservationSnapshotBuilder({

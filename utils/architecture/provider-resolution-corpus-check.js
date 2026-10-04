@@ -229,7 +229,7 @@ new ProviderResolutionCorpusCheck({
   ),
   analyzer: new LegacyDependencyGraphAnalyzerFactory().create(resolutionModel),
   legacyScriptOrderReader: new LegacyScriptOrderReader(
-    path.join(PROJECT_ROOT, "index.html"),
+    LegacyScriptOrderReader.sourcePath(PROJECT_ROOT, architecture),
     { scriptAliases },
   ),
   contract: observationContract,

@@ -73,7 +73,7 @@ class StageThreeCompatibilityBuildApplication {
       outputManager: this.outputManager,
       additionalTargetModules: StageFourClusterLedger.cumulative(this.projectRoot).targetModules(),
       scriptOrderProvider: () => new LegacyScriptOrderReader(
-        this.#path("index.html"),
+        LegacyScriptOrderReader.sourcePath(this.projectRoot),
         { scriptAliases: aliases },
       ).read(),
     }).run();

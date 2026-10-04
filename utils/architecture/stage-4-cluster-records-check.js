@@ -304,7 +304,8 @@ const retirementPlan = (held, propertyReader = false, stage = 4) => {
   const runtime = { output: { directory: "dist/fixture/", runtimeFile: "runtime.js" }, activationPositions: [b1, b2] };
   const artifacts = new Map([[PATHS.manifest, { modules: [entry, { currentPath: "src/b.js",
     architecture: { roles: ["compatibility-bridge"], targetPath: b1.targetModule } }] }],
-  [PATHS.contract, runtime], [PATHS.registry, { bridges: [bridge("src/a.js", "B1"), ...held] }]]);
+  [PATHS.contract, runtime], [PATHS.registry, { bridges: [bridge("src/a.js", "B1"), ...held] }],
+  [PATHS.policy, { migrationManifest: { legacyLoadOrder: { source: "index.html" } } }]]);
   const workspace = { json: (file) => artifacts.get(file), exists: () => false, path: (file) => path.join(ROOT, file),
     text: (file) => file === PATHS.index
       ? '<script src="dist/fixture/runtime.js"></script>\n<script src="dist/fixture/activations/001_b1.js"></script>\n' +
@@ -412,7 +413,7 @@ stageCase(new MigratedSourcePlaceholder().render({ currentPath: "src/a.js", targ
 // only the version fields, the index query, the version statements and the new entry (plus a declared trim).
 const releases = StageFourRelease.records(ROOT);
 const latestRelease = releases.filter((record) => record.output).at(-1);
-assert.equal(StageFourRelease.currentVersion(read), latestRelease?.toRelease || state.releaseVersion, "version pins");
+assert.equal(StageFourRelease.currentVersion(read, policy), latestRelease?.toRelease || state.releaseVersion, "version pins");
 for (const record of releases.filter((item) => item.output)) {
   assert.deepEqual(record.output.files.map((file) => file.path).sort(), Object.values(RELEASE_FILES).sort(), record.file);
   assert(record.output.files.every((file) => /^[0-9a-f]{64}$/u.test(file.before) && /^[0-9a-f]{64}$/u.test(file.after) &&
@@ -462,6 +463,27 @@ for (const esm of [false, true]) {
 }
 
 releaseCases += 4;
+const nativeVersionTexts = releaseTexts("1.0.0");
+const nativeVersionPolicy = { migrationManifest: { legacyLoadOrder: { source: "dev.html" } } };
+nativeVersionTexts.set("dev.html", nativeVersionTexts.get("index.html"));
+nativeVersionTexts.set("index.html", '<script type="module" src="src/entrypoints/game.entry.js?v=1.0.0"></script>');
+assert.equal(StageFourRelease.currentVersion(file => nativeVersionTexts.get(file), nativeVersionPolicy), "1.0.0");
+for (const [file, value, pattern] of [
+  ["index.html", nativeVersionTexts.get("index.html").replace("1.0.0", "9.9.9"), /version pins disagree/u],
+  ["index.html", "", /exactly once/u],
+  ["index.html", nativeVersionTexts.get("index.html").repeat(2), /exactly once/u],
+  ["dev.html", "", /version pins disagree/u],
+  ["dev.html", nativeVersionTexts.get("dev.html").replace("1.0.0", "9.9.9"), /version pins disagree/u],
+]) {
+  const texts = new Map(nativeVersionTexts); texts.set(file, value);
+  assert.throws(() => StageFourRelease.currentVersion(name => texts.get(name), nativeVersionPolicy), pattern);
+  releaseCases += 1;
+}
+assert.throws(() => StageFourRelease.currentVersion(file => nativeVersionTexts.get(file)), /version pins disagree/u,
+  "the historical default cannot silently read DEV instead of index");
+assert.throws(() => StageFourRelease.currentVersion(file => nativeVersionTexts.get(file),
+  { migrationManifest: { legacyLoadOrder: { source: "other.html" } } }), /Unreviewed/u);
+releaseCases += 3;
 const rejectsRelease = (file, after, pattern) => {
   assert.throws(releaseDelta(releaseFixture, file, oldTexts.get(file), after), pattern, file);
   releaseCases += 1;
@@ -583,4 +605,4 @@ if (fs.existsSync(path.join(ROOT, closureFile))) {
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
   `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
-  `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read)}.`);
+  `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read, policy)}.`);

@@ -21,11 +21,26 @@ class ViteFixtureBuildCheck {
     const entryPath = path.resolve(PROJECT_ROOT, contract.fixture.entry);
     const indexPath = path.join(PROJECT_ROOT, "index.html");
     const indexBefore = fs.readFileSync(indexPath, "utf8");
+    const policy = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, "architecture/module_architecture.json"), "utf8"));
+    const legacyPath = LegacyScriptOrderReader.sourcePath(PROJECT_ROOT, policy);
+    const legacyBefore = fs.readFileSync(legacyPath, "utf8");
+    const runtime = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
+    const runtimePath = runtime.output.directory + runtime.output.runtimeFile;
+    const topologyValidator = new ViteFixtureContractValidator(PROJECT_ROOT);
+    topologyValidator.validateRuntimeTopology({ legacySource: policy.migrationManifest.legacyLoadOrder.source,
+      indexHtml: indexBefore, legacyHtml: legacyBefore, version: packageJson.version, runtimePath,
+      gameEntrypointExists: fs.existsSync(path.join(PROJECT_ROOT, "src/entrypoints/game.entry.js")),
+      devEntrypointExists: fs.existsSync(path.join(PROJECT_ROOT, "src/entrypoints/dev.entry.js")) });
+    this.#runRuntimeFixtures(topologyValidator, runtimePath);
+    const nativeGraph = policy.migrationManifest.legacyLoadOrder.source === "dev.html"
+      ? topologyValidator.validateProductionGraph({ manifest: JSON.parse(fs.readFileSync(
+        path.join(PROJECT_ROOT, "architecture/migration/module_migration_manifest.json"), "utf8")) }) : [];
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
-    const logicalScripts = new LegacyScriptOrderReader(indexPath, { scriptAliases }).read();
+    const logicalScripts = new LegacyScriptOrderReader(legacyPath, { scriptAliases }).read();
     assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts), 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
     assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0, "Vite fixture infrastructure must not activate module scripts");
-    for (const forbidden of contract.forbiddenEntrypoints) assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Stage 1.8.2 cannot create ${forbidden}`);
+    if (nativeGraph.length === 0) for (const forbidden of contract.forbiddenEntrypoints)
+      assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Classic runtime cannot create ${forbidden}`);
     const repositorySnapshot = new RepositoryContentSnapshot(PROJECT_ROOT);
     const before = repositorySnapshot.capture();
     const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-vite-fixture-"));
@@ -65,7 +80,58 @@ class ViteFixtureBuildCheck {
     }
     repositorySnapshot.assertEqual(before, repositorySnapshot.capture());
     assert.equal(fs.readFileSync(indexPath, "utf8"), indexBefore, "Vite fixture build changed index.html");
-    console.log("Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 logical classic positions and game runtime/assets untouched; 4 contract fixtures.");
+    assert.equal(fs.readFileSync(legacyPath, "utf8"), legacyBefore, "Vite fixture build changed the selected legacy document");
+    console.log(`Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 logical classic positions and game runtime/assets untouched; 4 contract + 20 runtime topology/graph fixtures; ${nativeGraph.length} native production modules.`);
+  }
+
+  #runRuntimeFixtures(validator, runtimePath) {
+    const tag = source => '<script src="' + source + '"></script>';
+    const valid = { legacySource: "dev.html", version: "1.0.0", runtimePath,
+      indexHtml: '<script type="module" src="src/entrypoints/game.entry.js?v=1.0.0"></script>',
+      legacyHtml: tag(runtimePath) + tag("src/a.js"), gameEntrypointExists: true, devEntrypointExists: false };
+    validator.validateRuntimeTopology(valid);
+    for (const delta of [
+      { indexHtml: valid.indexHtml + tag("src/a.js") }, { indexHtml: valid.indexHtml.repeat(2) },
+      { indexHtml: valid.indexHtml.replace('</script>', 'run()</script>') },
+      { indexHtml: valid.indexHtml.replace('type="module"', '') }, { indexHtml: valid.indexHtml.replace("1.0.0", "9.9.9") },
+      { gameEntrypointExists: false }, { devEntrypointExists: true },
+      { legacyHtml: tag("src/a.js") }, { legacyHtml: valid.legacyHtml + tag(runtimePath) },
+      { legacyHtml: valid.legacyHtml + valid.indexHtml },
+    ]) assert.throws(() => validator.validateRuntimeTopology({ ...valid, ...delta }), /Runtime entrypoint topology/u);
+    const temporaryRoot = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "cyber-native-graph-"));
+    try {
+      const files = [["src/entrypoints/game.entry.js", "entrypoint-game"],
+        ["src/bootstrap/production/main.js", "bootstrap-production"], ["src/engine/leaf.js", "engine"],
+        ["src/bootstrap/development/dev.js", "bootstrap-development"], ["src/engine/compat/bridge.js", "engine"]];
+      const manifest = { modules: files.map(([currentPath, targetBoundary]) => ({ currentPath,
+        architecture: { targetBoundary, migrationStatus: "verified", roles: currentPath.includes("/compat/") ? ["compatibility-bridge"] : [] } })) };
+      const write = (file, text) => { const absolute = path.join(temporaryRoot, file); fs.mkdirSync(path.dirname(absolute), { recursive: true }); fs.writeFileSync(absolute, text); };
+      for (const [file] of files) write(file, 'export class A {}');
+      const entry = 'import { start } from "../bootstrap/production/main.js"; start();';
+      const bootstrap = 'import { A } from "../../engine/leaf.js"; export function start() { return new A(); }';
+      write(files[0][0], entry); write(files[1][0], bootstrap);
+      const graphValidator = new ViteFixtureContractValidator(temporaryRoot);
+      assert.equal(graphValidator.validateProductionGraph({ manifest }).length, 3);
+      for (const source of [
+        'import "../development/dev.js"; export function start() {}',
+        'export { A } from "../development/dev.js";',
+        'import "../../engine/compat/bridge.js"; export function start() {}',
+        'export function start() { return import("../development/dev.js"); }',
+        'export function start(path) { return import(path); }',
+        'import "unreviewed-package"; export function start() {}',
+        'import "./missing.js"; export function start() {}',
+        'import "../../engine/leaf"; export function start() {}',
+        'export function start() { return globalThis["__CYBER_FISHING_COMPAT_RUNTIME__"]; }',
+        'export function start() { return globalThis.GodMode; }',
+      ]) {
+        write(files[1][0], source);
+        assert.throws(() => graphValidator.validateProductionGraph({ manifest }), /Native production graph/u);
+      }
+    } finally {
+      assert.equal(path.dirname(temporaryRoot), fs.realpathSync(os.tmpdir()));
+      assert(path.basename(temporaryRoot).startsWith("cyber-native-graph-"));
+      fs.rmSync(temporaryRoot, { recursive: true, force: true });
+    }
   }
 
   #runContractFixtures(contract, packageJson, installedVite) {

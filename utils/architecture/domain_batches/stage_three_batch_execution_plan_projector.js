@@ -80,11 +80,13 @@ class StageThreeBatchExecutionPlanProjector {
     const completedCount = executionState.completedBatchIds.length;
     const selectedBatch = approvedPlan.batches[completedCount - 1];
     if (!selectedBatch) throw new Error("Current completed Stage 3 batch is missing");
-    const html = this.#bytes(this.#paths.index).toString("utf8");
+    const legacySource = path.relative(this.#projectRoot, LegacyScriptOrderReader.sourcePath(this.#projectRoot,
+      JSON.parse(this.#bytes("architecture/module_architecture.json").toString("utf8"))));
+    const html = this.#bytes(legacySource).toString("utf8");
     const scriptTags = [...html.matchAll(/<script\b([^>]*)\bsrc=["']([^"']+)["'][^>]*>/giu)];
     const moduleScriptCount = scriptTags.filter((match) => /\btype=["']module["']/iu.test(match[1])).length;
     const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(this.#projectRoot);
-    const logical = new LegacyScriptOrderReader(this.#absolute(this.#paths.index), {
+    const logical = new LegacyScriptOrderReader(this.#absolute(legacySource), {
       scriptAliases: aliases,
     }).read();
     const runtimeScriptCount = scriptTags.filter((match) =>

@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 const { ArchitecturePolicy } = require("./core/architecture_policy");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const {
   ApprovedStageTwoBatchValidator,
 } = require("./classification/approved_stage_two_batch_validator");
@@ -44,7 +45,7 @@ class ApprovedStageTwoBatchFreezeCheck {
         "migration",
         "stage_2_execution_state.json",
       ),
-      index: path.join(projectRoot, "index.html"),
+      index: LegacyScriptOrderReader.sourcePath(projectRoot),
     });
   }
 

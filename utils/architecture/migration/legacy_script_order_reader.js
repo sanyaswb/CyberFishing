@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const path = require("node:path");
 
 // Reads the ordered legacy scripts of index.html. Every classic script occupies one logical legacy
 // slot (legacyLoadOrder) unless it is a member of a split slot: the members of one historical slot
@@ -9,6 +10,21 @@ class LegacyScriptOrderReader {
   constructor(indexPath, { scriptAliases = new Map() } = {}) {
     this.indexPath = indexPath;
     this.scriptAliases = new Map(scriptAliases);
+  }
+
+  // The reviewed legacy document is policy-owned; an absent selection never falls back to production.
+  static sourcePath(projectRoot, policy = null) {
+    const definition = policy ?? JSON.parse(fs.readFileSync(
+      path.join(projectRoot, "architecture/module_architecture.json"), "utf8"));
+    const source = definition.migrationManifest?.legacyLoadOrder?.source;
+    if (source !== "index.html" && source !== "dev.html") {
+      throw new Error(`Unreviewed legacy load-order source: ${source}`);
+    }
+    const sourcePath = path.join(projectRoot, source);
+    if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
+      throw new Error(`Selected legacy load-order source is missing: ${source}`);
+    }
+    return sourcePath;
   }
 
   // Number of logical classic slots of read scripts (members of a split slot count once).

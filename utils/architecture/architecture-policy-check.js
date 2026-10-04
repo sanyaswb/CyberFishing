@@ -457,10 +457,17 @@ class MigrationManifestPolicyValidator {
       "currentArea must be derived mechanically from the source path",
     );
     result.require(
-      manifest.legacyLoadOrder?.source === "index.html" &&
+      ((manifest.legacyLoadOrder?.source === "index.html" && manifest.browserStartup === undefined) ||
+        (manifest.legacyLoadOrder?.source === "dev.html" &&
+          JSON.stringify(manifest.browserStartup) === JSON.stringify({
+            productionSource: "index.html", productionEntrypoint: "src/entrypoints/game.entry.js",
+            productionRuntime: "native-esm", developmentSource: "dev.html",
+            developmentRuntime: "classic-cumulative-iife", nativeDevelopmentStage: "stage-6",
+            decision: "architecture/migration/stage_5/native_production_owner_decision.md",
+          }))) &&
         manifest.legacyLoadOrder?.firstValue === 1 &&
         manifest.legacyLoadOrder?.outsideLegacyGraph === null,
-      "legacy load order must be read from index.html and support null",
+      "legacy load order must match the exact reviewed browser topology and support null",
     );
     this.#validateObservationContract(policy.observationContract, result);
     this.#validateClassificationContract(policy, result);
