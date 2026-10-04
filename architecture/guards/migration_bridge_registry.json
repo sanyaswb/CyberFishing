@@ -1003,6 +1003,22 @@
       ]
     },
     {
+      "id": "bridge-41df300f3d51",
+      "bridge": "src/ui/version/game_version_badge.js",
+      "owner": "stage-5.cluster-016-version-badge-composition",
+      "source": "src/ui/version_badge.js",
+      "target": "src/bootstrap/production/game_version_badge.js",
+      "reason": "Preserve the exact GameVersionBadge consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "GameVersionBadge",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-428b2b351677",
       "bridge": "src/app/adapters.js",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
@@ -3031,22 +3047,6 @@
       ]
     },
     {
-      "bridge": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "owner": "stage-5.preparation-015-version-badge-browser-lookup",
-      "source": "src/ui/version/game_version_badge.js",
-      "target": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "reason": "Temporary existing DOM-factory export transport for Bootstrap lookup; remove when prepared badge declaration migrates in cluster 016. No new global; exact canonical consumer and existing InventoryV2DomFactory surface.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "InventoryV2DomFactory",
-          "mechanism": "global-this-property"
-        }
-      ],
-      "id": "bridge-ba5c19c17a73"
-    },
-    {
       "id": "bridge-ba5fe0aa9f4e",
       "bridge": "src/render/screens/victory_layout_resolver.js",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
@@ -3922,22 +3922,6 @@
         },
         {
           "symbol": "PlayerCastRules",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-eb02269abfe7",
-      "bridge": "src/config/project_version_catalog.js",
-      "owner": "stage-5.cluster-015-presentation-version-catalog",
-      "source": "src/ui/version/game_version_badge.js",
-      "target": "src/game/presentation/version/project_version.js",
-      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "PROJECT_VERSION_CONFIG",
           "mechanism": "global-this-property"
         }
       ]

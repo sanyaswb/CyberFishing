@@ -9683,6 +9683,55 @@
       }
     },
     {
+      "currentPath": "src/bootstrap/production/game_version_badge.js",
+      "currentArea": "bootstrap/production",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [
+            "Boolean"
+          ],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "bootstrap"
+        ],
+        "targetBoundary": "bootstrap-production",
+        "targetPath": "src/bootstrap/production/game_version_badge.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/config/config.js",
       "currentArea": "config",
       "observed": {
@@ -55047,7 +55096,7 @@
           "items": [
             {
               "symbol": "GameVersionBadge",
-              "mechanism": "global-lexical",
+              "mechanism": "global-this-property",
               "availability": "program-init"
             }
           ],
@@ -55057,16 +55106,10 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
+              "executionPhase": "eager"
             }
           ],
           "issues": []
@@ -55074,7 +55117,7 @@
         "environment": {
           "status": "verified",
           "builtins": [
-            "Boolean"
+            "globalThis"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -55084,7 +55127,7 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "bootstrap"
+          "compatibility-bridge"
         ],
         "targetBoundary": "bootstrap-production",
         "targetPath": "src/bootstrap/production/game_version_badge.js",
@@ -55093,41 +55136,17 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
+          "confirmed": [],
+          "items": [],
+          "unresolved": [
             {
-              "symbol": "InventoryV2DomFactory",
-              "mechanism": "identifier",
+              "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+              "mechanism": "global-this-property",
               "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "PROJECT_VERSION_CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/project_version_catalog.js",
-              "resolution": "confirmed"
+              "executionPhase": "eager",
+              "resolution": "unresolved"
             }
           ],
-          "items": [
-            {
-              "target": "src/config/project_version_catalog.js",
-              "symbols": [
-                "PROJECT_VERSION_CONFIG"
-              ],
-              "resolution": "confirmed"
-            },
-            {
-              "target": "src/ui/inventory/inventory_v2_dom_factory.js",
-              "symbols": [
-                "InventoryV2DomFactory"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
-          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },

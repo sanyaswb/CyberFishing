@@ -2394,6 +2394,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "GameVersionBadge",
+      "legacyScriptIndex": 229,
+      "legacySymbol": "GameVersionBadge",
+      "shimFile": "activations/229_gameversionbadge.js",
+      "sourceProvider": "src/ui/version/game_version_badge.js",
+      "targetModule": "src/bootstrap/production/game_version_badge.js",
+      "id": "activation-a19e630e4037",
+      "owner": "stage-5.cluster-016-version-badge-composition",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "InventoryV2LoadoutPanelRenderer",
       "legacyScriptIndex": 252,
       "legacySymbol": "InventoryV2LoadoutPanelRenderer",
