@@ -369,7 +369,7 @@ class InventoryV2StaticContractCheck {
     const legacyUi = this.#reader.readLegacyUi();
 
     this.#assertSafeTextRendering(combined);
-    this.#assertGlobalClasses([parameterConfig,...files.map(file=>file.legacySource)].join("\n"));
+    this.#assertClassExports([combined,...files.map(file=>file.legacySource)].join("\n"));
     this.#assertLongPressContract(combined, style);
     this.#assertHorizontalScrollContract(combined, legacyUi, style);
     this.#assertVisualContract(style);
@@ -389,7 +389,7 @@ class InventoryV2StaticContractCheck {
     assert.ok(!source.includes(".outerHTML"), "UI must not assign outerHTML");
   }
 
-  #assertGlobalClasses(source) {
+  #assertClassExports(source) {
     const expected = [
       "InventoryV2ActionContract",
       "InventoryV2UI",
@@ -410,8 +410,8 @@ class InventoryV2StaticContractCheck {
     ];
     for (const className of expected) {
       assert.ok(
-        source.includes(`globalThis.${className} =`),
-        `${className} must be registered globally`,
+        source.includes(`globalThis.${className} =`) || source.includes(`export class ${className} `),
+        `${className} must be exposed by the classic provider or its named ESM export`,
       );
     }
   }
