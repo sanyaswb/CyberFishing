@@ -1047,6 +1047,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "GameRenderCoordinator",
+      "legacyScriptIndex": 420,
+      "legacySymbol": "GameRenderCoordinator",
+      "shimFile": "activations/420_gamerendercoordinator.js",
+      "sourceProvider": "src/app/rendering/game_render_coordinator.js",
+      "targetModule": "src/game/presentation/rendering/game_render_coordinator.js",
+      "id": "activation-23251be39b44",
+      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-23610c146ce8",
       "owner": "stage-3.candidate-021-equipment-4044fcef",
       "sourceProvider": "src/core/equipment/auto_refill_policy.js",
@@ -1815,18 +1827,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "GameRenderIntent",
-      "legacyScriptIndex": 408,
-      "legacySymbol": "GameRenderIntent",
-      "shimFile": "activations/408_gamerenderintent.js",
-      "sourceProvider": "src/app/rendering/game_render_intent.js",
-      "targetModule": "src/game/presentation/rendering/game_render_intent.js",
-      "id": "activation-59e7d2ca16c7",
-      "owner": "stage-5.cluster-017-render-frame-storage",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "InventoryV2DomFactory",
       "legacyScriptIndex": 240,
       "legacySymbol": "InventoryV2DomFactory",
@@ -2209,6 +2209,18 @@
       "shimFile": "activations/048_itemraritystrategyregistry.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "GameRenderPipeline",
+      "legacyScriptIndex": 389,
+      "legacySymbol": "GameRenderPipeline",
+      "shimFile": "activations/389_gamerenderpipeline.js",
+      "sourceProvider": "src/render/pipeline/game_render_pipeline.js",
+      "targetModule": "src/game/presentation/rendering/game_render_pipeline.js",
+      "id": "activation-7c58e9b6fa15",
+      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-7d1f057c4c36",
@@ -4546,6 +4558,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-341.batch-040-casting-items-line-rules-1fef9b89"
+    },
+    {
+      "activation": {
+        "exportName": "GameRenderIntent",
+        "legacyScriptIndex": 408,
+        "legacySymbol": "GameRenderIntent",
+        "shimFile": "activations/408_gamerenderintent.js",
+        "sourceProvider": "src/app/rendering/game_render_intent.js",
+        "targetModule": "src/game/presentation/rendering/game_render_intent.js",
+        "id": "activation-59e7d2ca16c7",
+        "owner": "stage-5.cluster-017-render-frame-storage",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-021-render-pipeline-coordinator"
     },
     {
       "activation": {

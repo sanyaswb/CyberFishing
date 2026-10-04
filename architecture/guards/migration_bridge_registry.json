@@ -2639,22 +2639,6 @@
       ]
     },
     {
-      "id": "bridge-95b2c79faa95",
-      "bridge": "src/app/rendering/game_render_intent.js",
-      "owner": "stage-5.cluster-017-render-frame-storage",
-      "source": "src/app/rendering/game_render_coordinator.js",
-      "target": "src/game/presentation/rendering/game_render_intent.js",
-      "reason": "Preserve the exact GameRenderIntent consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "GameRenderIntent",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-95d3da316a17",
       "bridge": "src/core/assemblies/assembly_completion_policy.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -3127,22 +3111,6 @@
       ]
     },
     {
-      "id": "bridge-b4426d497785",
-      "bridge": "src/render/core/render_order.js",
-      "owner": "stage-5.cluster-017-render-frame-storage",
-      "source": "src/render/pipeline/game_render_pipeline.js",
-      "target": "src/game/presentation/rendering/game_render_order.js",
-      "reason": "Preserve the exact RenderOrder consumer until its legacy symbol is removed.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderOrder",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-b5021bf062d9",
       "bridge": "src/render/fishing/float_renderer.js",
       "owner": "stage-5.cluster-018-canvas-render-leaves",
@@ -3250,6 +3218,22 @@
       "globalProviders": [
         {
           "symbol": "VictoryLayoutResolver",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc10ce5b4857",
+      "bridge": "src/app/rendering/game_render_coordinator.js",
+      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/game_render_coordinator.js",
+      "reason": "Preserve the exact GameRenderCoordinator consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameRenderCoordinator",
           "mechanism": "global-this-property"
         }
       ]
@@ -4290,6 +4274,22 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f62a52db36c4",
+      "bridge": "src/render/pipeline/game_render_pipeline.js",
+      "owner": "stage-5.cluster-021-render-pipeline-coordinator",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/game_render_pipeline.js",
+      "reason": "Preserve the exact GameRenderPipeline consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameRenderPipeline",
           "mechanism": "global-this-property"
         }
       ]
