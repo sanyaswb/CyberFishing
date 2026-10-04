@@ -6,6 +6,72 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 
 
 
+// Actual Canvas renderers and composites over reused visible/hidden models and deterministic draw commands.
+function checkCanvasScenes() {
+  const runtime=new SourceRuntime();runtime.load('src/ui/styles/degradation_color_resolver.js',{expose:['DegradationColorResolver']});
+  runtime.run('for(const file of ["render_math","composite_renderer","render_pass"])Object.assign(globalThis,globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/rendering/"+file+".js"]);');
+  const definitions=[['hud/hud_bar_renderer','HudBarRenderer'],['casting/cast_scene_renderer','CastSceneRenderer'],['fishing/fight_area_renderer','FightAreaRenderer'],
+    ['fishing/float_renderer','FloatRenderer'],['fishing/rod_line_renderer','RodLineRenderer'],['hud/fight_status_bars_renderer','FightStatusBarsRenderer'],
+    ['hud/hold_charges_renderer','HoldChargesRenderer'],['hud/player_pressure_fatigue_indicator_renderer','PlayerPressureFatigueIndicatorRenderer'],
+    ['screens/game_over_renderer','GameOverRenderer'],['screens/star_rating_renderer','StarRatingRenderer'],['screens/victory_renderer','VictoryRenderer'],
+    ['world/boat_chum_renderer','BoatChumRenderer'],['world/world_scene_renderer','WorldSceneRenderer'],['fishing/fishing_scene_renderer','FishingSceneRenderer'],
+    ['hud/fight_hud_renderer','FightHudRenderer'],['pipeline/casting_render_pass','CastingRenderPass'],['pipeline/fishing_render_pass','FishingRenderPass'],
+    ['pipeline/hud_render_pass','HudRenderPass'],['pipeline/outcome_render_pass','OutcomeRenderPass'],['pipeline/world_render_pass','WorldRenderPass']];
+  for(const [file,name]of definitions)runtime.load('src/render/'+file+'.js',{expose:[name]});
+  const c=runtime.context,commands=[],stack=[],surface={globalAlpha:1};
+  const drawMethods=['beginPath','closePath','moveTo','lineTo','arc','ellipse','quadraticCurveTo','rect','clip','fill','stroke','fillRect','strokeRect','fillText','translate','rotate','setLineDash','drawImage','drawCurrentSurface','clear'];
+  for(const name of drawMethods)surface[name]=(...args)=>{for(const value of args)if(typeof value==='number')assert(Number.isFinite(value),name+' received a non-finite coordinate');commands.push([name,...args]);};
+  surface.save=()=>{stack.push(surface.globalAlpha);commands.push(['save']);};surface.restore=()=>{assert(stack.length>0,'balanced drawing save/restore');surface.globalAlpha=stack.pop();commands.push(['restore']);};
+  const textOptions=[],primitives={beginClip(regions){commands.push(['beginClip',regions.count]);return true;},endClip(clipped){commands.push(['endClip',clipped]);},
+    roundedRect(...args){commands.push(['roundedRect',...args]);},drawImageCover(...args){commands.push(['imageCover',...args]);},drawFittedText(options){textOptions.push(options);commands.push(['fittedText',options.text,options.x,options.y]);}};
+  const image={id:'fish-image'},assets={tryGet:id=>id==='missing'?null:image},style={x:'center',gradient:{},statuses:[{threshold:0,color:'#00ff00'},{threshold:66,color:'#ff0000'}]},styles={resolveBarStyle:()=>style};
+  const areaStyle={lastDashFill:'#123',lastDashStroke:'#456',lastDashDash:[4,6],catchFill:'#234',catchStroke:'#567',netStroke:'#789',netFill:'#abc',sectorFill:'#234',sectorClampedFill:'#345',sectorStroke:'#456',sectorClampedStroke:'#567',sectorAxis:'#678',lineRadiusStroke:'#789'};
+  const theme={color:[30,120,200],maximumColor:[255,200,0],neutralColor:[90,90,90],glow:{panelAlpha:0.3,panelBlur:4,imageAlpha:0.4,imageBlur:6},background:{alpha:0.4},frameAlpha:0.7,borderWidth:2,isAnimated:false,frameDash:[3,5],frameDashSpeedPxPerSecond:10};
+  const bars=new c.HudBarRenderer(surface),cast=new c.CastSceneRenderer({surface,primitives,hudBarRenderer:bars,hudStyleResolver:styles}),fight=new c.FightAreaRenderer({surface,primitives,styleResolver:{resolve:()=>areaStyle}}),
+    float=new c.FloatRenderer({surface}),rod=new c.RodLineRenderer({surface}),status=new c.FightStatusBarsRenderer({surface,hudBarRenderer:bars,styleResolver:styles}),
+    hold=new c.HoldChargesRenderer({surface}),fatigue=new c.PlayerPressureFatigueIndicatorRenderer({surface}),gameOver=new c.GameOverRenderer({surface}),
+    stars=new c.StarRatingRenderer({surface,primitives}),victory=new c.VictoryRenderer({surface,primitives,assets,themeResolver:{resolve:()=>theme},starRatingRenderer:stars}),
+    boat=new c.BoatChumRenderer({surface,primitives}),world=new c.WorldSceneRenderer({surface,assets});
+  const list=items=>({count:items.length,getAt:index=>items[index]}),points=list([{x:10,y:10},{x:20,y:20},{x:30,y:10}]),empty=list([]),rect={x:10,y:10,width:180,height:50};
+  const worldModel={visible:true,backgroundColor:'#123',backgroundLayers:list([{assetId:'scene',alpha:0.6,x:0,y:0,width:800,height:600},{assetId:'missing',alpha:0.2,x:0,y:0,width:800,height:600}]),clipRegions:empty,
+    chumZones:list([{x:100,y:100,radiusX:20,radiusY:10,opacity:0.5}]),waypoints:list([{x:200,y:200,scale:1,showIndex:true,index:2}]),
+    boats:list([{x:250,y:250,angle:0,fontSize:20,emoji:'boat',barWidth:40,barY:12,barHeight:4,energyColor:'#00ff00',energyRatio:0.5}]),
+    sensorRays:list([{startX:250,startY:250,endX:300,endY:300,blocked:false}]),invalidCastMarker:{visible:true,x:200,y:200}};
+  const castModel={visible:true,aimingZone:{visible:true,clipRegions:empty,lineY:150,viewportWidth:800,mode:'rod',fillHeight:100},
+    accuracyArea:{visible:true,x:200,y:200,radiusX:20,radiusY:10,fillColor:'#123',strokeColor:'#456',lineWidth:2,dash:[2,3]},
+    powerAim:{visible:true,screenX:250,originY:500,targetY:150,lineColor:'#123',lineWidth:2,dash:[2,3],dashOffset:1,glowBlur:5,powerRatio:0.5,powerColor:'#456',viewportWidth:800,mode:'rod'}};
+  const fightModel={visible:true,clipRegions:empty,lastDashZone:{visible:true,y:100,width:800,height:100},catchZone:{visible:true,kind:'ellipse',x:200,y:200,radiusX:30,radiusY:20,y:200,width:800,height:100,lineY:200},netZone:{visible:true,y:300,width:800,height:50},showSector:true,sectorPoints:points,sectorClamped:false,apexX:20,apexY:20,axisEndX:40,axisEndY:40,showLineRadius:true,lineRadiusPoints:points};
+  const fishingModel={visible:true,fightAreas:fightModel,rodLine:{visible:true,rodBaseX:400,rodTopY:450,rodWidth:6,rodHeight:100,lineVisible:true,controlX:350,controlY:350,targetX:250,targetY:200,lineColor:'#123',lineWidth:2},
+    float:{visible:true,x:250,y:200,color:'#ff0000',glow:true,glowBlur:4,kind:'float',width:6,height:20,radius:5,radiusX:8,radiusY:4,rotationRad:0.2}};
+  const hudModel={visible:true,viewportWidth:800,fishCondition:{visible:true,phase:'stamina',staminaRatio:0.7,staminaValue:'7/10',exhaustionRatio:0.2,exhaustionValue:'2/10'},rodStroke:{visible:true,ratio:0.5,value:'5'},rodControl:{visible:true,ratio:0.5,value:'5',active:true},
+    tension:{visible:true,ratio:0.5,pulse:0.5,value:'50%',dragMarkerVisible:true,dragMarkerRatio:0.6},tackleStress:{visible:true,ratio:0.3,label:'Stress',value:'30%'},
+    holdCharges:{visible:true,max:3,current:1,active:true,restoringCount:1,restoreProgress:[0.5],viewportWidth:800,viewportHeight:600},
+    playerPressureFatigue:{viewportWidth:800,config:{enabled:true,idleVisible:true},state:{stateName:'grace',graceDurationMs:1000,graceElapsedMs:500,fatigueProgress:0.5}}};
+  const victoryModel={visible:true,width:800,height:600,nowMs:1000,config:{blurPx:2,panelRadius:10,imageBorderWidth:2,rarityStarGap:7,rarityStarRadius:12},spriteId:'fish',fish:{name:'Test Fish',level:3,rarity:{isResolved:true,halfSteps:3,maxHalfSteps:6,maxStars:3,unitsPerStar:2,isMaximum:false}},layout:{panel:{x:20,y:20,width:500,height:500},padding:20,image:rect,badge:rect,rarity:rect,stats:{x:20,y:200,columns:2,pillWidth:100,pillHeight:20,pillGap:5},claim:rect,release:rect},stats:list([{label:'Weight 1kg',tone:'neutral'},{label:'Level 3'}])};
+  const frame={world:worldModel,casting:castModel,fishing:fishingModel,hud:hudModel,outcome:{visible:true,mode:'victory',victory:victoryModel,gameOver:{visible:true,width:800,height:600,title:'LINE SNAPPED',titleColor:'#f00',description:'Tension exceeded capacity'}}};
+  const component=(id,order,renderer,key)=>({id,order,renderer,selectModel:model=>key?model[key]:model,isVisible:model=>model.visible!==false});
+  const fishing=new c.FishingSceneRenderer({components:[component('rod',2,rod,'rodLine'),component('areas',1,fight,'fightAreas'),component('float',3,float,'float')]}),
+    hud=new c.FightHudRenderer({components:[component('status',1,status),component('hold',2,hold,'holdCharges'),component('fatigue',3,fatigue,'playerPressureFatigue')]});
+  const passes=[new c.WorldRenderPass({components:[component('world',1,world,'world'),component('boat',2,boat,'world')]}),new c.CastingRenderPass({renderer:cast}),new c.FishingRenderPass({renderer:fishing}),new c.HudRenderPass({renderer:hud}),new c.OutcomeRenderPass({gameOverRenderer:gameOver,victoryRenderer:victory})];
+  const sequence=[];const orderPass=new c.WorldRenderPass({components:[component('later',2,{render(){sequence.push('later');}}),component('first',1,{render(){sequence.push('first');}})]});orderPass.render(frame);assert.deepEqual(sequence,['first','later']);
+  let expected=null;
+  for(let index=0;index<120;index++) {
+    commands.length=0;textOptions.length=0;surface.globalAlpha=1;for(const pass of passes)pass.render(frame);world.renderInvalidCastMarker(worldModel.invalidCastMarker);
+    assert.equal(stack.length,0);assert.equal(surface.globalAlpha,1);const actual=JSON.stringify(commands);if(expected===null)expected=actual;else assert.equal(actual,expected,'drawing order and arguments repeat exactly');
+    assert(commands.some(entry=>entry[0]==='quadraticCurveTo'));assert(commands.some(entry=>entry[0]==='fillText'&&entry[1]==='HOLD'));assert(commands.some(entry=>entry[0]==='fittedText'&&entry[1]==='Test Fish'));
+    const unique=new Set(textOptions);assert.equal(unique.size,2,'victory and star renderer each reuse one fitted-text options object');
+  }
+  for(const kind of ['hooked','lure','feeder','float']){fishingModel.float.kind=kind;float.render(fishingModel.float);}
+  fightModel.catchZone.kind='line';fightModel.sectorClamped=true;fight.render(fightModel);theme.isAnimated=true;victoryModel.spriteId='missing';victory.render(victoryModel);
+  victoryModel.fish.rarity.isMaximum=true;victoryModel.fish.rarity.halfSteps=6;victory.render(victoryModel);victoryModel.fish.rarity.isResolved=false;victory.render(victoryModel);
+  for(const stateName of ['idle','grace','fatigue','recovered']){hudModel.playerPressureFatigue.state.stateName=stateName;fatigue.render(hudModel.playerPressureFatigue);}
+  hudModel.tension.ratio=0.2;status.render(hudModel);hudModel.tension.ratio=0.9;status.render(hudModel);frame.outcome.mode='failed';passes[4].render(frame);
+  assert(commands.some(entry=>entry[0]==='fillText'&&entry[1]==='LINE SNAPPED'));
+  commands.length=0;for(const model of [frame.world,frame.casting,frame.fishing,frame.hud,frame.outcome])model.visible=false;for(const pass of passes)pass.render(frame);assert.equal(commands.length,0,'hidden passes do not draw');
+  assert.throws(()=>new c.FloatRenderer({}),/requires surface/);assert.throws(()=>new c.VictoryRenderer({surface,primitives,assets}),/requires themeResolver/);
+  assert.equal(stack.length,0);
+}
+
 // Repeated render-frame storage and ordering checks; no drawing or gameplay state ownership.
 function checkRenderStorage() {
   const runtime=new SourceRuntime();
@@ -494,6 +560,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkCanvasScenes();
   checkRenderStorage();
   checkVersionBadge();
   checkBrowserWidgets();
