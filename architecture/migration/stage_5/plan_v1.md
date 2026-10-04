@@ -1,5 +1,10 @@
 # Stage 5: Presentation and Bootstrap execution plan v1
 
+Historical initial plan (2026-10-02). For the owner-requested 2026-10-04 checkpoint
+and next-session queue, read `plan_v2.md` and `stage5_continuation_spec.md`.
+Current reviewed membership/order is `graph_review_v7.json`; the v1 starting facts
+and preparation queue below remain initial-review provenance, not current status.
+
 This is the first Stage 5 deliverable required by `stage_4/stage5_handoff.md`.
 The authoritative scope and cluster membership are in `graph_review_v1.json`.
 It records source-byte hashes, actual classic consumers, constructor sites, resolved
