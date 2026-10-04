@@ -6,6 +6,44 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 
 
 
+// Repeated render-frame storage and ordering checks; no drawing or gameplay state ownership.
+function checkRenderStorage() {
+  const runtime=new SourceRuntime();
+  runtime.load('src/render/core/render_frame_buffer.js',{expose:['ReusableRenderList','GameRenderFrame','RenderFrameBuffer']});
+  runtime.load('src/render/core/render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE']});
+  runtime.load('src/app/rendering/game_render_intent.js',{expose:['GameRenderIntent']});
+  const c=runtime.context, growth=[],diagnostics={recordFrameCreated(){growth.push('frame');},recordBufferGrowth(id){growth.push(id);}};
+  const buffer=new c.RenderFrameBuffer({diagnostics}),frame=buffer.current,intent=new c.GameRenderIntent();
+  const names=['world.backgroundLayers','world.clipRegions','world.dynamicZones','world.chumZones','world.waypoints','world.boats','world.sensorRays',
+    'fishing.fightAreas.clipRegions','fishing.fightAreas.sectorPoints','fishing.fightAreas.lineRadiusPoints','outcome.victory.stats'];
+  const lists=names.map(path=>path.split('.').reduce((value,key)=>value[key],frame)),records=lists.map(list=>list.acquire());
+  const casting=intent.casting,fishing=intent.fishing,outcome=intent.outcome;
+  assert.equal(c.RenderOrder.values,c.RENDER_ORDER);assert.equal(c.RenderOrder.sequence,c.RENDER_SEQUENCE);
+  assert(Object.isFrozen(c.RenderOrder.values)&&Object.isFrozen(c.RenderOrder.sequence));
+  assert.equal(c.RenderOrder.compare(100,400),-300);assert.equal(c.RenderOrder.compare('bad',null),0);
+  const passByName=Object.fromEntries(Array.from(c.RENDER_SEQUENCE,name=>[name,{id:name,render(){}}]));
+  const passes=c.RenderOrder.createPassList(passByName);assert.deepEqual(Array.from(passes,p=>p.id),['world','casting','fishing','hud','outcome']);
+  assert.throws(()=>c.RenderOrder.createPassList({}),/requires the "world" pass/);
+  for(let index=1;index<=120;index++) {
+    const result=index%2?buffer.acquire(index,1/60,'fishing'):buffer.acquire({frameNumber:index,dt:1/30,stateName:'victory'});
+    assert.equal(result,frame);assert.equal(buffer.current,frame);assert.equal(frame.frameNumber,index);assert.equal(frame.dt,index%2?1/60:1/30);
+    for(let i=0;i<lists.length;i++) {
+      const list=lists[i];assert.equal(list.count,0);assert.equal(list.getAt(0),null);assert.equal(list.getAt(-1),null);
+      assert.equal(list.acquire(),records[i]);records[i].frame=index;assert.equal(list.count,1);assert.equal(list.getAt('0.7'),records[i]);
+      assert.equal(list.getActiveUnchecked(0),records[i]);let visited=0;list.forEachActive((entry,n)=>{assert.equal(entry,records[i]);assert.equal(n,0);visited++;});assert.equal(visited,1);
+    }
+    frame.world.visible=true;frame.casting.visible=true;frame.casting.aimingZone.visible=true;frame.fishing.float.visible=true;frame.hud.tension.visible=true;frame.outcome.victory.visible=true;
+    intent.casting.visible=true;intent.casting.accuracyPreview={};intent.fishing.tensionMeter={};intent.outcome.fish={};intent.stateName='playing';
+    assert.equal(intent.reset(),intent);assert.equal(intent.casting,casting);assert.equal(intent.fishing,fishing);assert.equal(intent.outcome,outcome);
+    assert.equal(casting.visible,false);assert.equal(casting.accuracyPreview,null);assert.equal(fishing.tensionMeter,null);assert.equal(outcome.fish,null);assert.equal(intent.stateName,'');
+  }
+  assert.equal(growth.length,1+lists.length,'storage records grow once and are reused across 120 frames');
+  frame.reset({dt:-1});assert.equal(frame.dt,0);assert.equal(frame.world.visible,false);assert.equal(frame.casting.visible,false);
+  assert.equal(frame.casting.aimingZone.visible,false);assert.equal(frame.fishing.float.visible,false);assert.equal(frame.hud.tension.visible,false);assert.equal(frame.outcome.victory.visible,false);
+  const list=new c.ReusableRenderList();assert.equal(list.reset(),list);assert.throws(()=>list.forEachActive(null),/requires callback/);
+  const standalone=new c.GameRenderFrame();assert.equal(standalone.reset(8,'invalid',null),standalone);assert.equal(standalone.frameNumber,8);assert.equal(standalone.dt,0);
+}
+
 // Version API and original eager mounting phase, including live document replacement and errors.
 function checkVersionBadge() {
   const fs=require('node:fs');
@@ -455,6 +493,7 @@ async function main() {
   assert.equal(Object.keys(preloads[0]).length,2);
   assert(result.depthReader,"depth data must be created through the injected canvas factory");
   assert.equal(calls.at(-1)[0],images[1]);
+  checkRenderStorage();
   checkVersionBadge();
   checkBrowserWidgets();
   checkTimeoutScheduler();
