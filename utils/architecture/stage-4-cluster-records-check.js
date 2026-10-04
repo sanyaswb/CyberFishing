@@ -56,6 +56,33 @@ assert.throws(()=>resolveImportSource({...importFacts,symbol:"Other"}),/one exac
 assert.throws(()=>resolveImportSource({...importFacts,registry:{bridges:[]}}),/one exact registered/u);
 assert.throws(()=>resolveImportSource({...importFacts,registry:{bridges:[...importFacts.registry.bridges,...importFacts.registry.bridges]}}),/one exact registered/u);
 assert.throws(()=>resolveImportSource({...importFacts,entries:new Map()}),/not ESM/u);
+// GameConfig facades are identity aliases, not an exception for arbitrary factories or raw imports.
+const rawPath = "src/game/config/raw/items/item_database.js", facadePath = "src/game/config/databases/item_catalog.js";
+const rawProvider = { currentPath: "src/config/databases/item_db.js", architecture: { roles: ["compatibility-bridge"], targetPath: rawPath } };
+const rawEntry = { currentPath: rawPath, architecture: { targetBoundary: "game-config-raw", migrationStatus: "verified", targetPath: rawPath } };
+const facadeEntry = { currentPath: facadePath, architecture: { targetBoundary: "game-config", migrationStatus: "verified", targetPath: facadePath } };
+const aliasSource = 'import { ITEM_DB as catalog } from "../raw/items/item_database.js"; export const ITEM_DB = catalog;';
+const aliasFacts = { provider: rawProvider, symbol: "ITEM_DB", consumer: "src/app/bootstrap.js", memberTargets: new Map(),
+  entries: new Map([[rawPath, rawEntry], [facadePath, facadeEntry]]), registry: { bridges: [] }, candidate: facadePath, readSource: () => aliasSource };
+assert.equal(resolveImportSource(aliasFacts), facadePath);
+assert.equal(resolveImportSource({ ...aliasFacts, candidate: null }), rawPath);
+for (const source of [
+  aliasSource.replace("= catalog", "= { ...catalog }"),
+  aliasSource.replace("const ITEM_DB", "let ITEM_DB"),
+  aliasSource.replace("= catalog", "= other"),
+  aliasSource.replace("../raw/items/item_database.js", "../raw/items/other.js"),
+  aliasSource.replace("import { ITEM_DB", "import { OTHER"),
+  aliasSource.replace("export const ITEM_DB", "export const OTHER"),
+  aliasSource + " export const OTHER = catalog;",
+  aliasSource + " catalog.changed = true;",
+  aliasSource.replace("= catalog", "= Object.assign({}, catalog)"),
+]) assert.throws(() => resolveImportSource({ ...aliasFacts, readSource: () => source }), /config facade/u);
+for (const change of [{ targetBoundary: "platform" }, { migrationStatus: "classified" }, { targetPath: rawPath }]) {
+  assert.throws(() => resolveImportSource({ ...aliasFacts, entries: new Map([[rawPath, rawEntry],
+    [facadePath, { ...facadeEntry, architecture: { ...facadeEntry.architecture, ...change } }]]) }), /verified GameConfig/u);
+}
+assert.throws(() => resolveImportSource({ ...aliasFacts, entries: new Map([[rawPath, rawEntry]]) }), /verified GameConfig/u);
+
 const stageTwoPlanFixture = {batches:[{id:"stage-2.fixture",bridgeStrategy:{bridges:[{wrapperPath:stageTwoProvider.currentPath,
   targetModule:stageTwoTarget.currentPath,legacyConsumers:["src/test.js"]}]}}]};
 const { CanonicalBridgeIdentity } = require("../build/legacy_bridge_build_config");

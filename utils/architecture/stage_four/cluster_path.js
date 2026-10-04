@@ -5,6 +5,7 @@ const childProcess = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const espree = require("espree");
 const { RECORD_KIND, StageFourClusterLedger, recordStage, stageDirectories } = require("./cluster_ledger");
 const { StageFourEsmTargetProjector } = require("./esm_target_projector");
 const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
@@ -51,7 +52,8 @@ const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
 const byId = (left, right) => left.id.localeCompare(right.id);
 const latestStage = (stages) => [...stages].sort().at(-1);
 
-function resolveImportSource({ provider, symbol, consumer, memberTargets, entries, registry }) {
+function resolveImportSource({ provider, symbol, consumer, memberTargets, entries, registry, candidate = null,
+  readSource = file => fs.readFileSync(file, "utf8") }) {
   const member = memberTargets.get(provider?.currentPath);
   if (member) return member;
   if (provider?.currentPath.startsWith("src/engine/compat/stage_2/")) {
@@ -62,7 +64,29 @@ function resolveImportSource({ provider, symbol, consumer, memberTargets, entrie
     assert(target && ["esm", "verified"].includes(target.architecture.migrationStatus), "Stage 2 target is not ESM");
     return target.currentPath;
   }
-  if (provider?.architecture.roles.includes("compatibility-bridge")) return provider.architecture.targetPath;
+  if (provider?.architecture.roles.includes("compatibility-bridge")) {
+    const target = provider.architecture.targetPath;
+    if (candidate && candidate !== target && entries.get(target)?.architecture.targetBoundary === "game-config-raw") {
+      const facade = entries.get(candidate);
+      assert(facade?.architecture.targetBoundary === "game-config" &&
+        facade.architecture.migrationStatus === "verified" && facade.architecture.targetPath === candidate,
+      "config facade must be a verified GameConfig module");
+      const tree = espree.parse(readSource(candidate), { ecmaVersion: "latest", sourceType: "module" });
+      const [input, output] = tree.body;
+      const binding = input?.specifiers?.[0], declaration = output?.declaration?.declarations?.[0];
+      assert(tree.body.length === 2 && input.type === "ImportDeclaration" && input.specifiers.length === 1 &&
+        binding.type === "ImportSpecifier" && binding.imported.name === symbol &&
+        typeof input.source.value === "string" && input.source.value.startsWith(".") && input.source.value.endsWith(".js") &&
+        path.posix.normalize(path.posix.join(path.posix.dirname(candidate), input.source.value)) === target &&
+        output.type === "ExportNamedDeclaration" && !output.source && output.declaration?.type === "VariableDeclaration" &&
+        output.declaration.kind === "const" && output.declaration.declarations.length === 1 &&
+        declaration.id.type === "Identifier" && declaration.id.name === symbol && declaration.init?.type === "Identifier" &&
+        declaration.init.name === binding.local.name,
+      "config facade must preserve the exact imported object with no logic, allocation or additional export");
+      return candidate;
+    }
+    return target;
+  }
   if (provider && ["esm", "verified"].includes(provider.architecture.migrationStatus) &&
       provider.architecture.targetPath === provider.currentPath) return provider.currentPath;
   return null;
@@ -227,7 +251,8 @@ class StageFourClusterPlan {
     const expected = dependencies.items.flatMap((item) => {
       const provider = entries.get(item.target);
       return item.symbols.map((symbol) => {
-        const from = resolveImportSource({ provider, symbol, consumer: module.currentPath, memberTargets, entries, registry });
+        const from = resolveImportSource({ provider, symbol, consumer: module.currentPath, memberTargets, entries, registry,
+          candidate: module.imports?.find(item => item.symbol === symbol)?.from, readSource: file => this.workspace.text(file) });
         assert(from, `${module.currentPath}: dependency ${item.target} is still classic (migrate it first)`);
         return `${symbol}<-${from}`;
       });

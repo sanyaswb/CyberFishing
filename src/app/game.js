@@ -2,7 +2,7 @@ class Game {
   #app;
   #ready;
 
-  constructor(canvasId, compositionRoot = new GameCompositionRoot()) {
+  constructor(canvasId, compositionRoot) {
     this.#ready = Promise.resolve(compositionRoot.build(canvasId)).then(
       (app) => {
         this.#app = app;

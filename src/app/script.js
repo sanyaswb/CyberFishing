@@ -1,7 +1,7 @@
 (async function startCyberFishing() {
   window.CYBER_FISHING_GAME_CLEANUP?.();
 
-  const compositionRoot = new GameCompositionRoot(null, {
+  const compositionRoot = new GameCompositionRoot(CONFIG, {
     documentTarget: CanvasMetricsProvider.getDocumentTarget(),
     windowTarget: window,
     createDevFlags: (config) => new DevFlagsProvider({

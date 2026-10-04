@@ -362,12 +362,6 @@
               "executionPhase": "deferred"
             },
             {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
               "symbol": "CacheManager",
               "mechanism": "identifier",
               "accessRequirement": "guarded",
@@ -1409,14 +1403,6 @@
               "accessRequirement": "required",
               "executionPhase": "deferred",
               "target": "src/app/adapters.js",
-              "resolution": "confirmed"
-            },
-            {
-              "symbol": "CONFIG",
-              "mechanism": "identifier",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "target": "src/config/runtime/config_data.js",
               "resolution": "confirmed"
             },
             {
@@ -2815,7 +2801,6 @@
             {
               "target": "src/config/runtime/config_data.js",
               "symbols": [
-                "CONFIG",
                 "SLOT_CONFIG"
               ],
               "resolution": "confirmed"
@@ -4115,14 +4100,7 @@
         },
         "consumers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "GameCompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "environment": {
@@ -4147,25 +4125,8 @@
       "analysis": {
         "dependencies": {
           "status": "verified",
-          "confirmed": [
-            {
-              "symbol": "GameCompositionRoot",
-              "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "target": "src/app/bootstrap.js",
-              "resolution": "confirmed"
-            }
-          ],
-          "items": [
-            {
-              "target": "src/app/bootstrap.js",
-              "symbols": [
-                "GameCompositionRoot"
-              ],
-              "resolution": "confirmed"
-            }
-          ],
+          "confirmed": [],
+          "items": [],
           "unresolved": [],
           "ambiguous": [],
           "issues": []
@@ -5302,6 +5263,12 @@
           "status": "verified",
           "items": [
             {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred"
+            },
+            {
               "symbol": "CONFIG_RUNTIME_CONTEXT",
               "mechanism": "identifier",
               "accessRequirement": "required",
@@ -5452,6 +5419,14 @@
         "dependencies": {
           "status": "verified",
           "confirmed": [
+            {
+              "symbol": "CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "deferred",
+              "target": "src/config/runtime/config_data.js",
+              "resolution": "confirmed"
+            },
             {
               "symbol": "CONFIG_RUNTIME_CONTEXT",
               "mechanism": "identifier",
@@ -5630,6 +5605,13 @@
               "target": "src/config/config.js",
               "symbols": [
                 "CONFIG_RUNTIME_CONTEXT"
+              ],
+              "resolution": "confirmed"
+            },
+            {
+              "target": "src/config/runtime/config_data.js",
+              "symbols": [
+                "CONFIG"
               ],
               "resolution": "confirmed"
             },
@@ -31473,6 +31455,53 @@
         ],
         "targetBoundary": "game-config",
         "targetPath": "src/game/config/databases/fish_database.js",
+        "migrationWave": 1
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/game/config/databases/item_catalog.js",
+      "currentArea": "game/config/databases",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "config-factory"
+        ],
+        "targetBoundary": "game-config",
+        "targetPath": "src/game/config/databases/item_catalog.js",
         "migrationWave": 1
       },
       "analysis": {

@@ -515,6 +515,22 @@
       ]
     },
     {
+      "id": "bridge-39c4ab443ab0",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/app/script.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Classic Development Bootstrap explicitly supplies the same live CONFIG to production Root; retire with that Stage 6 consumer.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-3c8c08b9ad11",
       "bridge": "src/core/items/progression/item_quality_resolver.js",
       "owner": "stage-5.cluster-003-item-and-fish-descriptors",
@@ -1768,10 +1784,6 @@
       "introducedStage": "stage-4",
       "removalStage": "stage-5",
       "globalProviders": [
-        {
-          "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        },
         {
           "symbol": "SLOT_CONFIG",
           "mechanism": "global-this-property"

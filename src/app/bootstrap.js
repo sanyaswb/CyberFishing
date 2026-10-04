@@ -9,7 +9,7 @@ class GameCompositionRoot {
   #createLocationDebugRenderFrameBuilder;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
-  constructor(config = null, {
+  constructor(config, {
     documentTarget,
     windowTarget,
     createDevFlags,
@@ -27,7 +27,7 @@ class GameCompositionRoot {
     this.#createLocationDebugRenderFrameBuilder = createLocationDebugRenderFrameBuilder;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
-    this.#config = config || (typeof CONFIG !== "undefined" ? CONFIG : {});
+    this.#config = config || {};
     this.#runtimeConfig = {};
     for (const key of Object.getOwnPropertyNames(this.#config)) {
       Object.defineProperty(this.#runtimeConfig, key, {

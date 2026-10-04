@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "022",
+  "slug": "production-root-config-inputs",
+  "baseCommit": "78a3dc1af626acb382de833503a6debc5c056492",
+  "reason": "Prepare native production Root config ownership without changing legacy exposures or duplicating mutable state. All actual Root callers receive config explicitly; the only Game production caller already passes Root. Remove the two unused hidden config/Root defaults under the owner constructor-default rule, without new validation. Expose the original authoritative raw ITEM_DB reference through a two-declaration GameConfig item_catalog module. During ESM projection accept a proposed GameConfig facade import only after proving its AST is precisely a named raw import plus a same-object const export: no behavior, cloning, state, extra export or exposure. Reuse the existing module.imports field and shared resolver/records gate, with negative fixtures. This is stricter than accepting an arbitrary facade and leaves the raw global activation, canonical identity and historical bridge contracts unchanged. Two real consumers: production Root now; original DEV item editor in Stage 6.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "importEdges": [
+    {
+      "source": "src/game/config/databases/item_catalog.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "reason": "GameConfig exposes the exact original mutable catalog by reference; raw data keeps its authoritative owner."
+    }
+  ],
+  "files": [
+    {
+      "path": "src/app/bootstrap.js",
+      "before": "832e1f01e83707197220e5b8f02ac4859a31e4ea042905ccee9678c033435c58",
+      "after": "2ea8dafde0b1b40cd8f0e7b9100644e6ea175f4c9756d561614a1175c62d6188"
+    },
+    {
+      "path": "src/app/game.js",
+      "before": "fbb1cf7cf8dd05b956a4720bfc7a14c124685bf6d1626d0d0a08a4628cd3c524",
+      "after": "3dc4ec748beaec150c62eeab171eeb001d70f71bb3a45de113b10e549d5baa59"
+    },
+    {
+      "path": "src/app/script.js",
+      "before": "b6c272bd8f8cbcb9e71590b73b9f61109d28fd09ede75154f66cddaec2abc888",
+      "after": "7ea843bef730eff20820f86225c9238ab335b0bcd0329a6ea5a24f8243dd3ceb"
+    },
+    {
+      "path": "src/game/config/databases/item_catalog.js",
+      "before": null,
+      "after": "bdf818c08c451f537f7157291cff73b963f17017273b199f490efb77d3fa180f"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e692ae20824128a5c82e7975c75f672f2e62cdc267103d59f2ca1b18c7a7b111",
+      "after": "5a485403724a2920228954620bfb429a000ef748645e3c737dbbb0406232bbf1"
+    },
+    {
+      "path": "architecture/guards/migration_bridge_registry.json",
+      "before": "b00f985d51fde0864043c4b75ab3920c2186dcd84ee63e02ed824ea3296bbc30",
+      "after": "381eca36129e939e35b554d1e244a70b6bdbd03779b24b809f234bd67df49a49"
+    },
+    {
+      "path": "utils/architecture/stage_four/cluster_path.js",
+      "before": "4554b01bd6379ead589c3761a446c7563ef711c86e54d65af980726ea6b888ca",
+      "after": "066068961a19be15486037ccc45f93371738500c822afbd6fc59089b41d39fa4"
+    },
+    {
+      "path": "utils/architecture/stage-4-cluster-records-check.js",
+      "before": "233589e92bde3d0f47df362c8126f2282f2976c38c4408cde83b450eca2ffa09",
+      "after": "23e9b1e708eb3a1819ca423ca3bb0164bf61e00caf7ea47f3a661889577cb7d1"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "No native config import is executed by classic startup in this preparation. Native item_catalog first enters the single cumulative graph through Root migration 026; its import and legacy raw activation refer to the same module record. Final native cutover must preserve this identity.",
+    "Keep every historical activation and bridge identity unchanged. Classic Root still has its pre-existing raw catalog debt until its 026 import is projected through the proven GameConfig facade. No guard allowlist or debt is added.",
+    "Production reclassification waits for the remaining DebugService, FixedCatchFishFactory, HookedFishProfileSynchronizer, ItemProgressionDebugSnapshotProvider and LocationDebugMapBuilder constructors; do not admit production DEV edges. Existing guard rejection exposed these additional actual sites."
+  ],
+  "verification": {
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 27,
+    "knownDebtsAfter": 27,
+    "focused": {
+      "utils/config-runtime-check.js": {
+        "status": "PASS"
+      },
+      "utils/architecture/stage-4-cluster-records-check.js": {
+        "status": "PASS",
+        "configFacadeNegativeCases": 13
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "status": "PASS",
+      "exportIdentities": 171,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "version": "0.25.2",
+      "inventoryButtonsIdentical": true,
+      "saveStringsIdenticalAfterReload": true,
+      "warnings": 0,
+      "errors": 0,
+      "ownerManualPlay": "pending"
+    }
+  }
+}
