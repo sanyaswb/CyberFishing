@@ -5130,28 +5130,7 @@
         "legacyLoadOrder": 424,
         "providers": {
           "status": "verified",
-          "items": [
-            {
-              "symbol": "CYBER_FISHING_GAME_CLEANUP",
-              "mechanism": "window-property",
-              "availability": "deferred"
-            },
-            {
-              "symbol": "CYBER_FISHING_MEMORY_WATCHDOG",
-              "mechanism": "window-property",
-              "availability": "deferred"
-            },
-            {
-              "symbol": "game",
-              "mechanism": "window-property",
-              "availability": "deferred"
-            },
-            {
-              "symbol": "getCyberFishingMemoryReport",
-              "mechanism": "window-property",
-              "availability": "deferred"
-            }
-          ],
+          "items": [],
           "issues": []
         },
         "consumers": {
@@ -5166,18 +5145,6 @@
             {
               "symbol": "CONFIG_RUNTIME_CONTEXT",
               "mechanism": "identifier",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CYBER_FISHING_GAME_CLEANUP",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred"
-            },
-            {
-              "symbol": "CYBER_FISHING_MEMORY_WATCHDOG",
-              "mechanism": "window-property",
               "accessRequirement": "required",
               "executionPhase": "deferred"
             },
@@ -5306,12 +5273,6 @@
               "mechanism": "identifier",
               "accessRequirement": "required",
               "executionPhase": "deferred"
-            },
-            {
-              "symbol": "game",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred"
             }
           ],
           "issues": []
@@ -5322,9 +5283,7 @@
             "Error"
           ],
           "browserApis": [
-            "addEventListener",
             "console",
-            "removeEventListener",
             "window"
           ],
           "dynamicConstructs": [],
@@ -5332,7 +5291,7 @@
         }
       },
       "architecture": {
-        "migrationStatus": "classified",
+        "migrationStatus": "migrating",
         "roles": [
           "bootstrap"
         ],
@@ -5679,29 +5638,7 @@
               "resolution": "confirmed"
             }
           ],
-          "unresolved": [
-            {
-              "symbol": "CYBER_FISHING_GAME_CLEANUP",
-              "mechanism": "window-property",
-              "accessRequirement": "guarded",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            },
-            {
-              "symbol": "CYBER_FISHING_MEMORY_WATCHDOG",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            },
-            {
-              "symbol": "game",
-              "mechanism": "window-property",
-              "accessRequirement": "required",
-              "executionPhase": "deferred",
-              "resolution": "unresolved"
-            }
-          ],
+          "unresolved": [],
           "ambiguous": [],
           "issues": []
         },
@@ -46378,6 +46315,53 @@
         ],
         "targetBoundary": "platform",
         "targetPath": "src/platform/browser/location/location_asset_loader.js",
+        "migrationWave": 5
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/platform/browser/runtime/browser_game_lifecycle.js",
+      "currentArea": "platform/browser/runtime",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "platform-adapter"
+        ],
+        "targetBoundary": "platform",
+        "targetPath": "src/platform/browser/runtime/browser_game_lifecycle.js",
         "migrationWave": 5
       },
       "analysis": {

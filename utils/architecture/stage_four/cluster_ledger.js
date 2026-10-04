@@ -84,6 +84,23 @@ class StageFourClusterLedger {
     return LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.preparations(projectRoot, stage));
   }
 
+  // Preserve historical native import approvals while recording an exact importer relocation.
+  static reviewedPreparationImportEdges(projectRoot, records = StageFourClusterLedger.cumulativePreparations(projectRoot)) {
+    const edges = new Map();
+    const key = edge => edge.source + "->" + edge.target;
+    for (const record of records) {
+      StageFourClusterLedger.validatePreparationImports(record);
+      for (const edge of record.importEdges || []) edges.set(key(edge), edge);
+      for (const pair of record.replacedImportEdges || []) {
+        assert.deepEqual(edges.get(key(pair.before)), pair.before, "relocated preparation import must be an exact approved edge");
+        assert(!edges.has(key(pair.after)), "relocated preparation import already exists");
+        edges.delete(key(pair.before));
+        edges.set(key(pair.after), pair.after);
+      }
+    }
+    return [...edges.values()];
+  }
+
   static validateBridgeRelocation({ before, after }) {
     assert.equal(before.id, CanonicalBridgeIdentity.id(before), "original bridge identity");
     assert.equal(after.id, CanonicalBridgeIdentity.id(after), "relocated bridge identity");
@@ -102,7 +119,16 @@ class StageFourClusterLedger {
       assert(/^src\/.+\.js$/u.test(edge.source) && /^src\/.+\.js$/u.test(edge.target),
         "preparation import endpoints must be explicit source modules");
     }
-    assert.equal(new Set((record.importEdges || []).map(edge => `${edge.source}->${edge.target}`)).size,
+    for (const { before, after, reason } of record.replacedImportEdges || []) {
+      assert(reason, "preparation import relocation needs a written reason");
+      assert(files.has(before.source) && files.has(after.source), "preparation import relocation must record both sources");
+      assert.notEqual(before.source, after.source, "preparation import relocation must move the importer");
+      assert(/^src\/.+\.js$/u.test(after.source), "preparation import relocation needs an explicit source module");
+      assert.deepEqual(after, { ...before, source: after.source }, "preparation import relocation may change only importer");
+    }
+    assert.equal(new Set((record.replacedImportEdges || []).map(pair => pair.before.source + "->" + pair.before.target)).size,
+      (record.replacedImportEdges || []).length, "duplicate preparation import relocation");
+    assert.equal(new Set((record.importEdges || []).map(edge => edge.source + "->" + edge.target)).size,
       (record.importEdges || []).length, "duplicate preparation import");
   }
 

@@ -110,6 +110,19 @@ const stageFourPreparations = StageFourClusterLedger.preparations(ROOT);
 const preparationImport = {files:[{path:"src/app/bootstrap.js"}],importEdges:[{
   source:"src/app/bootstrap.js",target:"src/platform/browser/inventory/random_inventory_id.js",reason:"UUID port"}]};
 assert.doesNotThrow(()=>StageFourClusterLedger.validatePreparationImports(preparationImport));
+const importRelocation = { files: [{path:"src/app/bootstrap.js"},{path:"src/app/script.js"}], replacedImportEdges: [{
+  before: preparationImport.importEdges[0], after: {...preparationImport.importEdges[0], source:"src/app/script.js"}, reason:"same importer body moved" }] };
+assert.deepEqual(StageFourClusterLedger.reviewedPreparationImportEdges(null,[preparationImport,importRelocation]),[importRelocation.replacedImportEdges[0].after]);
+for (const change of [{target:"src/platform/browser/time/game_clock.js"},{reason:"rewritten"},{source:"src/app/bootstrap.js"},{source:"bad.js"}])
+  assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importRelocation,replacedImportEdges:[{
+    ...importRelocation.replacedImportEdges[0],after:{...importRelocation.replacedImportEdges[0].after,...change}}]}),/preparation import/u);
+assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importRelocation,files:[{path:"src/app/script.js"}]}),/preparation import/u);
+assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importRelocation,replacedImportEdges:[{...importRelocation.replacedImportEdges[0],reason:""}]}),/preparation import/u);
+assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importRelocation,replacedImportEdges:[...importRelocation.replacedImportEdges,...importRelocation.replacedImportEdges]}),/duplicate/u);
+assert.throws(()=>StageFourClusterLedger.reviewedPreparationImportEdges(null,[importRelocation]),/exact approved/u);
+assert.throws(()=>StageFourClusterLedger.reviewedPreparationImportEdges(null,[preparationImport,importRelocation,importRelocation]),/exact approved/u);
+assert.throws(()=>StageFourClusterLedger.reviewedPreparationImportEdges(null,[preparationImport,{...preparationImport,files:importRelocation.files,importEdges:[importRelocation.replacedImportEdges[0].after]},importRelocation]),/already exists/u);
+
 for(const change of [{source:"src/app/unrecorded.js"},{target:"../escape.js"},{reason:""}])
   assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
     importEdges:[{...preparationImport.importEdges[0],...change}]}),/preparation import/u);

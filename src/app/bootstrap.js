@@ -6,6 +6,10 @@ class GameCompositionRoot {
   #createFixedCatchFishFactory;
   #createHookedFishProfileSynchronizer;
   #createDebugService;
+  #loadRandomInventoryId;
+  #loadBrowserEventTargetAdapter;
+  #loadBrowserTimeoutScheduler;
+  #loadInventoryAssemblyProfileConfig;
   #documentTarget;
   #windowTarget;
   #createDevFlags;
@@ -20,6 +24,10 @@ class GameCompositionRoot {
     createFixedCatchFishFactory,
     createHookedFishProfileSynchronizer,
     createDebugService,
+    loadRandomInventoryId,
+    loadBrowserEventTargetAdapter,
+    loadBrowserTimeoutScheduler,
+    loadInventoryAssemblyProfileConfig,
     documentTarget,
     windowTarget,
     createDevFlags,
@@ -34,6 +42,10 @@ class GameCompositionRoot {
     this.#createFixedCatchFishFactory = createFixedCatchFishFactory;
     this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
     this.#createDebugService = createDebugService;
+    this.#loadRandomInventoryId = loadRandomInventoryId;
+    this.#loadBrowserEventTargetAdapter = loadBrowserEventTargetAdapter;
+    this.#loadBrowserTimeoutScheduler = loadBrowserTimeoutScheduler;
+    this.#loadInventoryAssemblyProfileConfig = loadInventoryAssemblyProfileConfig;
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
     this.#createDevFlags = createDevFlags;
@@ -487,10 +499,10 @@ class GameCompositionRoot {
       this.#runtimeConfig,
       physicsConfig,
     );
-    const { createRandomInventoryId } = await import("../platform/browser/inventory/random_inventory_id.js");
-    const { BrowserEventTargetAdapter } = await import("../platform/browser/runtime/legacy_runtime_adapters.js");
-    const { BrowserTimeoutScheduler } = await import("../platform/browser/time/browser_timeout_scheduler.js");
-    const { getInventoryAssemblyProfileConfig } = await import("../game/config/inventory/inventory_composition_config.js");
+    const { createRandomInventoryId } = await this.#loadRandomInventoryId();
+    const { BrowserEventTargetAdapter } = await this.#loadBrowserEventTargetAdapter();
+    const { BrowserTimeoutScheduler } = await this.#loadBrowserTimeoutScheduler();
+    const { getInventoryAssemblyProfileConfig } = await this.#loadInventoryAssemblyProfileConfig();
     const inventory = new InventoryManager(
       ITEM_DB,
       this.#config.player,

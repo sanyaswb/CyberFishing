@@ -93,6 +93,39 @@ function checkDevelopmentInputs() {
   }
   visit(tree);
   assert.equal(options?.type, "ObjectExpression");
+  // Preserve each original serial await; only its importer moves to Development Bootstrap.
+  const rootSource = new SourceRuntime().readAuthoredSource("src/app/bootstrap.js");
+  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../platform/browser/runtime/legacy_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../game/config/inventory/inventory_composition_config.js"]]) {
+    const property = options.properties.find(item => item.key.name === name);
+    assert.equal(property.value.type, "ArrowFunctionExpression");
+    assert.equal(property.value.body.type, "ImportExpression");
+    assert.equal(property.value.body.source.value, specifier);
+    assert.equal(rootSource.split("const { " + symbol + " } = await this.#" + name + "();").length, 2);
+  }
+  assert.equal(rootSource.includes("await import("), false);
+  const lifecycleSource = fs.readFileSync(require("node:path").join(__dirname, "../src/platform/browser/runtime/browser_game_lifecycle.js"), "utf8");
+  const Lifecycle = new SourceRuntime().run(lifecycleSource.replace("export class", "class") + ";BrowserGameLifecycle");
+  const calls = [], target = { addEventListener(...args) { calls.push(["add", ...args]); }, removeEventListener(...args) { calls.push(["remove", ...args]); } };
+  const lifecycle = new Lifecycle(target), gameHandle = {}, watchdog = { getReport() { return this; } }, cleanup = () => {};
+  target.CYBER_FISHING_GAME_CLEANUP = function () { assert.equal(this, target); calls.push(["previous"]); };
+  lifecycle.cleanupPreviousGame(); assert.equal(calls.pop()[0], "previous");
+  lifecycle.publishGame(gameHandle);
+  lifecycle.publishWatchdog(watchdog);
+  assert.equal(target.game, gameHandle);
+  assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, watchdog);
+  assert.equal(target.getCyberFishingMemoryReport(), watchdog, "report receiver and identity");
+  lifecycle.installPagehideCleanup(cleanup);
+  assert.equal(target.CYBER_FISHING_GAME_CLEANUP, cleanup);
+  assert.equal(calls[0][0], "add"); assert.equal(calls[0][1], "pagehide"); assert.equal(calls[0][2], cleanup); assert.equal(calls[0][3].once, true);
+  lifecycle.removePagehideListener(cleanup);
+  assert.equal(calls[1][0], "remove"); assert.equal(calls[1][1], "pagehide"); assert.equal(calls[1][2], cleanup);
+  const replacementGame = {}, replacementWatchdog = {};
+  lifecycle.publishGame(replacementGame); lifecycle.publishWatchdog(replacementWatchdog);
+  lifecycle.clearPublishedHandles(gameHandle, watchdog);
+  assert.equal(target.game, replacementGame); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, replacementWatchdog);
+  lifecycle.clearPublishedHandles(replacementGame, replacementWatchdog);
+  assert.equal(target.game, null); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, null);
+  lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {};
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }

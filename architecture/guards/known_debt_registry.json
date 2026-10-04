@@ -473,30 +473,6 @@
       }
     },
     {
-      "id": "debt-browser-capability-f5fd6f506ff5",
-      "rule": "browser-capability",
-      "source": "src/app/script.js",
-      "target": "environment:browser-events",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "eager-load-order-coupling",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "f5fd6f506ff5905e768aa4153efe9fb84a492676b86d13492f6e21c6753f5d3b",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/script.js",
-        "target": "environment:browser-events",
-        "identifier": "removeEventListener"
-      }
-    },
-    {
       "id": "debt-browser-capability-fa13d99b8c0f",
       "rule": "browser-capability",
       "source": "src/debug/debug.js",
@@ -535,30 +511,6 @@
         "source": "src/config/project_version.js",
         "target": "environment:browser-runtime",
         "identifier": "window"
-      }
-    },
-    {
-      "id": "debt-browser-capability-fb71661f669c",
-      "rule": "browser-capability",
-      "source": "src/app/script.js",
-      "target": "environment:browser-events",
-      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
-      "blockers": [
-        "browser-api-coupling",
-        "dev-production-coupling",
-        "eager-load-order-coupling",
-        "legacy-global-contract",
-        "mixed-responsibility-requires-decomposition"
-      ],
-      "owner": "architecture-team",
-      "migrationWave": 7,
-      "removalStage": "stage-2",
-      "evidenceFingerprint": "fb71661f669c8f2c38bb1ec1837b67c37192815d13f91b0e1d049713b350a797",
-      "identity": {
-        "rule": "browser-capability",
-        "source": "src/app/script.js",
-        "target": "environment:browser-events",
-        "identifier": "addEventListener"
       }
     },
     {

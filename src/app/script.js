@@ -1,7 +1,13 @@
 (async function startCyberFishing() {
-  window.CYBER_FISHING_GAME_CLEANUP?.();
+  const { BrowserGameLifecycle } = await import("../platform/browser/runtime/browser_game_lifecycle.js");
+  const browserLifecycle = new BrowserGameLifecycle(window);
+  browserLifecycle.cleanupPreviousGame();
 
   const compositionRoot = new GameCompositionRoot(CONFIG, {
+    loadRandomInventoryId: () => import("../platform/browser/inventory/random_inventory_id.js"),
+    loadBrowserEventTargetAdapter: () => import("../platform/browser/runtime/legacy_runtime_adapters.js"),
+    loadBrowserTimeoutScheduler: () => import("../platform/browser/time/browser_timeout_scheduler.js"),
+    loadInventoryAssemblyProfileConfig: () => import("../game/config/inventory/inventory_composition_config.js"),
     documentTarget: CanvasMetricsProvider.getDocumentTarget(),
     windowTarget: window,
     createDevFlags: (config) => new DevFlagsProvider({
@@ -25,7 +31,7 @@
       window.DEBUG_MODULES?.catchResolution === true,
   });
   const game = new Game("gameCanvas", compositionRoot);
-  window.game = game;
+  browserLifecycle.publishGame(game);
   const started = await game.start();
 
   const memoryConfig = compositionRoot.getMemoryWatchdogConfig();
@@ -52,24 +58,19 @@
       : null;
 
   watchdog?.start();
-  window.CYBER_FISHING_MEMORY_WATCHDOG = watchdog;
-  window.getCyberFishingMemoryReport = () => watchdog?.getReport() || null;
+  browserLifecycle.publishWatchdog(watchdog);
 
   let disposed = false;
   const cleanup = () => {
     if (disposed) return;
     disposed = true;
-    window.removeEventListener("pagehide", cleanup);
+    browserLifecycle.removePagehideListener(cleanup);
     watchdog?.dispose();
     game.dispose();
-    if (window.game === game) window.game = null;
-    if (window.CYBER_FISHING_MEMORY_WATCHDOG === watchdog) {
-      window.CYBER_FISHING_MEMORY_WATCHDOG = null;
-    }
+    browserLifecycle.clearPublishedHandles(game, watchdog);
   };
 
-  window.CYBER_FISHING_GAME_CLEANUP = cleanup;
-  window.addEventListener("pagehide", cleanup, { once: true });
+  browserLifecycle.installPagehideCleanup(cleanup);
 
   if (!started) {
     console.error(
