@@ -1,24 +1,18 @@
-const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
-for (const relativePath of [
-  "dist/stage-3-compat-runtime/compat_runtime.iife.js",
+// Explicit imports also load retired shims in this test realm.
+const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
+new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll([
   "src/config/inventory/equipment_slot_presentation_config.js",
   "src/config/inventory/inventory_rule_messages.js",
   "src/core/inventory/inventory_item_location.js",
   "src/core/inventory/flat_inventory_item_repository.js",
   "src/core/line/line_allocation_policy.js",
-  "src/application/inventory/inventory_v2_line_allocation_service.js",
-]) {
-  vm.runInContext(
-    fs.readFileSync(path.join(root, relativePath), "utf8"),
-    context,
-    { filename: relativePath },
-  );
-}
+  "src/application/inventory/inventory_v2_line_allocation_service.js"
+]);
 
 vm.runInContext(`(() => {
   const assert = (condition, message) => {
