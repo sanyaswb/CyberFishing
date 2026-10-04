@@ -2260,6 +2260,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "SeededRng",
+      "legacyScriptIndex": 390,
+      "legacySymbol": "SeededRng",
+      "shimFile": "activations/390_seededrng.js",
+      "sourceProvider": "src/app/utils.js",
+      "targetModule": "src/engine/random/seeded_rng.js",
+      "id": "activation-bf223e27376a",
+      "owner": "stage-5.cluster-029-seeded-random-prerequisite",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
       "exportName": "WorldSceneRenderer",
       "legacyScriptIndex": 363,
       "legacySymbol": "WorldSceneRenderer",

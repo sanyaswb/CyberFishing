@@ -35,6 +35,22 @@
       ]
     },
     {
+      "id": "bridge-02d6395e7c10",
+      "bridge": "src/app/utils.js",
+      "owner": "stage-5.cluster-029-seeded-random-prerequisite",
+      "source": "src/app/bootstrap.js",
+      "target": "src/engine/random/seeded_rng.js",
+      "reason": "Preserve the exact SeededRng consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "SeededRng",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-02e7d86b6845",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",

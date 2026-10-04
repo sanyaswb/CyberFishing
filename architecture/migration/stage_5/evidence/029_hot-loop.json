@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "029",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/game-cycle-check.js"
+  ],
+  "classes": {
+    "SeededRng": {
+      "sourcePath": "src/app/utils.js",
+      "members": [
+        {
+          "name": "#state",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "c8f64502d93bcb41bc7d0ef114601c0f13b11010f2ca25b9a8af5df8ea16cfa9"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "d44cfc3a2d31fb7258ab00d13b643fb3943c5f7d5fab5c9942c8c1b9dffd226c",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "#normalizeSeed",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "bc0e57a1032997944d8a21acd896ecb0f73d5ee84fe0df5b51ca6d306f04d6ea",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "next",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "d8bf77490b5b396aa0308bc6a8ae389fcc5406dc7faf0170050e44866d9f21a1",
+          "parameters": 0,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "range",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2327e1228755c987cfa6db8472abf97f497839507d21161dbc5a7a4f1af5b620",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "int",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "9e6e86210798e473fa789af808368fb8641bdfa4c58e689849ae7af1e7748f42",
+          "parameters": 2,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 1
+          }
+        },
+        {
+          "name": "chance",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "7fa32c837647ca5622517a8d456901f4c7a96b52467cc72415bcf8fcd773874f",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "pick",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "28736e26519a41b5f88192c478f6987fc72d5ea2cadaccbdf56021fad4523b16",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 0,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 1
+      },
+      "freeIdentifiers": [
+        {
+          "name": "String",
+          "member": "#normalizeSeed",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "#normalizeSeed",
+          "kind": "method"
+        },
+        {
+          "name": "Number",
+          "member": "#normalizeSeed",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "int",
+          "kind": "method"
+        },
+        {
+          "name": "Math",
+          "member": "next",
+          "kind": "method"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/game-cycle-check.js": {
+          "sha256": "0a7d16816952f6f3033df9ac559b3fe22e7a81d271e7a0f62b9bfb3ca5a8353b",
+          "calls": {
+            "next": 4,
+            "range": 2,
+            "int": 1,
+            "chance": 2,
+            "pick": 1
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}
