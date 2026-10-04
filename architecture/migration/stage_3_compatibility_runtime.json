@@ -607,6 +607,13 @@
       "module": "src/platform/browser/dom/engine_interface.js",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "reason": "Existing UI_EXCEPTIONS object and three literal arrays retain one identity and original mutability. No external read/write during declaration evaluation; original initEngineInterface call remains in its classic activation file at logical slot 228. Context-menu handler reads these arrays live."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "2d5a26fafdbc241e87f3d56ba89d7d4dbdb8f8c3e9e3bad7c214b0111265f8a5",
+      "module": "src/game/presentation/version/project_version.js",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
+      "reason": "Existing Object.freeze literal version config and frozen notes, built once. Version string, label and frozen identity unchanged. Browser alias is still exposed from original classic activation at logical slot 1, after the catalog activation."
     }
   ],
   "activationPositions": [
@@ -619,6 +626,18 @@
       "targetModule": "src/game/presentation/fishing/rod_visual_offset_system.js",
       "id": "activation-00b0efde0486",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-5"
+    },
+    {
+      "exportName": "PROJECT_VERSION_CONFIG",
+      "legacyScriptIndex": 1,
+      "legacySymbol": "PROJECT_VERSION_CONFIG",
+      "shimFile": "activations/001_project_version_config.js",
+      "sourceProvider": "src/config/project_version_catalog.js",
+      "targetModule": "src/game/presentation/version/project_version.js",
+      "id": "activation-02f5a576e2e7",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },

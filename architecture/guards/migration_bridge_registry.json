@@ -1543,6 +1543,22 @@
       ]
     },
     {
+      "id": "bridge-632724395a95",
+      "bridge": "src/config/project_version_catalog.js",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
+      "source": "src/config/project_version.js",
+      "target": "src/game/presentation/version/project_version.js",
+      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "PROJECT_VERSION_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-635531dc786c",
       "bridge": "src/render/core/canvas_2d_surface.js",
       "owner": "stage-4.cluster-012-platform-canvas-assets",
@@ -2994,6 +3010,22 @@
       "globalProviders": [
         {
           "symbol": "ITEM_ASSEMBLY_PROFILE_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b7e6f51ee0c6",
+      "bridge": "src/config/project_version_catalog.js",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
+      "source": "src/ui/version_badge.js",
+      "target": "src/game/presentation/version/project_version.js",
+      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-5",
+      "globalProviders": [
+        {
+          "symbol": "PROJECT_VERSION_CONFIG",
           "mechanism": "global-this-property"
         }
       ]
