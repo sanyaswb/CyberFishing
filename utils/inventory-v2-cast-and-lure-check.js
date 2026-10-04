@@ -351,8 +351,8 @@ class StateLifecycleCheck {
 
 class CompositionSeamCheck {
   run() {
-    const bootstrap = fs.readFileSync(path.join(ROOT, "src/app/bootstrap.js"), "utf8");
-    const application = fs.readFileSync(path.join(ROOT, "src/app/application.js"), "utf8");
+    const bootstrap = new SourceRuntime().readAuthoredSource("src/app/bootstrap.js");
+    const application = new SourceRuntime().readAuthoredSource("src/app/application.js");
     const inventory = new SourceRuntime().readAuthoredSource("src/systems/inventory_system.js");
 
     Assertion.that(
