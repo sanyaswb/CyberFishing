@@ -1,1 +1,1 @@
-globalThis.InventoryV2SavedLoadoutPreviewRenderer = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js"]["InventoryV2SavedLoadoutPreviewRenderer"];
+// Retired Stage 5 activation activation-40c46058b093: InventoryV2SavedLoadoutPreviewRenderer is served only through ESM imports of src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js.

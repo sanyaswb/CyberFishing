@@ -1,1 +1,1 @@
-globalThis.InventoryV2InventoryGridRenderer = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_grid_renderer.js"]["InventoryV2InventoryGridRenderer"];
+// Retired Stage 5 activation activation-29c7c09a6496: InventoryV2InventoryGridRenderer is served only through ESM imports of src/game/presentation/inventory/inventory_grid_renderer.js.

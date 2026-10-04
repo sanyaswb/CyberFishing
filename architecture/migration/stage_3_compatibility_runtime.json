@@ -723,18 +723,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2ResourceMeterRenderer",
-      "legacyScriptIndex": 246,
-      "legacySymbol": "InventoryV2ResourceMeterRenderer",
-      "shimFile": "activations/246_inventoryv2resourcemeterrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_resource_meter_renderer.js",
-      "id": "activation-0963870743fc",
-      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "VictoryActionGestureResolver",
       "legacyScriptIndex": 39,
       "legacySymbol": "VictoryActionGestureResolver",
@@ -975,18 +963,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2InventoryGridRenderer",
-      "legacyScriptIndex": 255,
-      "legacySymbol": "InventoryV2InventoryGridRenderer",
-      "shimFile": "activations/255_inventoryv2inventorygridrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_grid_renderer.js",
-      "id": "activation-29c7c09a6496",
-      "owner": "stage-5.cluster-010-inventory-panel-renderers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "CanvasMetricsProvider",
       "legacyScriptIndex": 396,
       "legacySymbol": "CanvasMetricsProvider",
@@ -1081,30 +1057,6 @@
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "exportName": "InventoryV2ViewModelNormalizer",
-      "legacyScriptIndex": 239,
-      "legacySymbol": "InventoryV2ViewModelNormalizer",
-      "shimFile": "activations/239_inventoryv2viewmodelnormalizer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
-      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
-      "id": "activation-2ea780215625",
-      "owner": "stage-5.cluster-007-inventory-view-contracts",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "InventoryV2UI",
-      "legacyScriptIndex": 256,
-      "legacySymbol": "InventoryV2UI",
-      "shimFile": "activations/256_inventoryv2ui.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_ui.js",
-      "targetModule": "src/game/presentation/inventory/inventory_ui.js",
-      "id": "activation-2eece033a1a2",
-      "owner": "stage-5.cluster-012-inventory-ui-lifecycle",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "id": "activation-2fc19b0cf09b",
@@ -1275,18 +1227,6 @@
       "removalStage": "stage-6"
     },
     {
-      "exportName": "InventoryV2SavedLoadoutPreviewRenderer",
-      "legacyScriptIndex": 254,
-      "legacySymbol": "InventoryV2SavedLoadoutPreviewRenderer",
-      "shimFile": "activations/254_inventoryv2savedloadoutpreviewrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js",
-      "id": "activation-40c46058b093",
-      "owner": "stage-5.cluster-010-inventory-panel-renderers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "FishingController",
       "legacyScriptIndex": 402,
       "legacySymbol": "FishingController",
@@ -1345,18 +1285,6 @@
       "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "exportName": "InventoryV2ItemCardRenderer",
-      "legacyScriptIndex": 250,
-      "legacySymbol": "InventoryV2ItemCardRenderer",
-      "shimFile": "activations/250_inventoryv2itemcardrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_item_card_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_card_renderer.js",
-      "id": "activation-4b6fd0c168bd",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "exportName": "TimeDisplayUI",
@@ -1551,18 +1479,6 @@
       "removalStage": "stage-6"
     },
     {
-      "exportName": "InventoryV2DomFactory",
-      "legacyScriptIndex": 240,
-      "legacySymbol": "InventoryV2DomFactory",
-      "shimFile": "activations/240_inventoryv2domfactory.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_dom_factory.js",
-      "targetModule": "src/platform/browser/dom/inventory_v2_dom_factory.js",
-      "id": "activation-5b0c13d957dc",
-      "owner": "stage-4.cluster-013-platform-dom-adapters",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-5c6e63e8ffb9",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "sourceProvider": "src/core/inventory/equip_target_selection_policy.js",
@@ -1645,18 +1561,6 @@
       "owner": "stage-4.cluster-029-inventory-system",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "exportName": "InventoryV2FacadeContract",
-      "legacyScriptIndex": 239,
-      "legacySymbol": "InventoryV2FacadeContract",
-      "shimFile": "activations/239_inventoryv2facadecontract.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
-      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
-      "id": "activation-6245ef6547a7",
-      "owner": "stage-5.cluster-007-inventory-view-contracts",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "id": "activation-649929a35f50",
@@ -1851,18 +1755,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2ResourceMeterResolver",
-      "legacyScriptIndex": 245,
-      "legacySymbol": "InventoryV2ResourceMeterResolver",
-      "shimFile": "activations/245_inventoryv2resourcemeterresolver.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
-      "targetModule": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
-      "id": "activation-7d2f0130ab96",
-      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "FISH_DB",
       "legacyScriptIndex": 14,
       "legacySymbol": "FISH_DB",
@@ -2019,18 +1911,6 @@
       "removalStage": "stage-6"
     },
     {
-      "exportName": "InventoryV2AssemblyParameterSectionResolver",
-      "legacyScriptIndex": 248,
-      "legacySymbol": "InventoryV2AssemblyParameterSectionResolver",
-      "shimFile": "activations/248_inventoryv2assemblyparametersectionresolver.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
-      "targetModule": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
-      "id": "activation-8d6b46e6f6e9",
-      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "ItemConditionDescriptor",
       "legacyScriptIndex": 54,
       "legacySymbol": "ItemConditionDescriptor",
@@ -2065,18 +1945,6 @@
       "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
-    },
-    {
-      "exportName": "InventoryV2ActionContract",
-      "legacyScriptIndex": 239,
-      "legacySymbol": "InventoryV2ActionContract",
-      "shimFile": "activations/239_inventoryv2actioncontract.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
-      "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
-      "id": "activation-93c7589fb62d",
-      "owner": "stage-5.cluster-007-inventory-view-contracts",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
     },
     {
       "exportName": "VictoryThemeResolver",
@@ -2139,16 +2007,16 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2ItemParametersRenderer",
-      "legacyScriptIndex": 249,
-      "legacySymbol": "InventoryV2ItemParametersRenderer",
-      "shimFile": "activations/249_inventoryv2itemparametersrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_parameters_renderer.js",
-      "id": "activation-a17c5a07c5f3",
-      "owner": "stage-5.cluster-009-inventory-item-renderers",
+      "exportName": "InventoryV2Bootstrap",
+      "legacyScriptIndex": 257,
+      "legacySymbol": "InventoryV2Bootstrap",
+      "shimFile": "activations/257_inventoryv2bootstrap.js",
+      "sourceProvider": "src/ui/inventory/inventory_v2_bootstrap.js",
+      "targetModule": "src/bootstrap/production/inventory_ui_bootstrap.js",
+      "id": "activation-a15195ea8bf8",
+      "owner": "stage-5.cluster-024-inventory-ui-composition",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "removalStage": "stage-6"
     },
     {
       "exportName": "GameVersionBadge",
@@ -2159,18 +2027,6 @@
       "targetModule": "src/bootstrap/production/game_version_badge.js",
       "id": "activation-a19e630e4037",
       "owner": "stage-5.cluster-016-version-badge-composition",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "InventoryV2LoadoutPanelRenderer",
-      "legacyScriptIndex": 252,
-      "legacySymbol": "InventoryV2LoadoutPanelRenderer",
-      "shimFile": "activations/252_inventoryv2loadoutpanelrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_loadout_panel_renderer.js",
-      "id": "activation-a2486833ea5a",
-      "owner": "stage-5.cluster-010-inventory-panel-renderers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2207,18 +2063,6 @@
       "legacySymbol": "BoatRules",
       "legacyScriptIndex": 397,
       "shimFile": "activations/397_boatrules.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "InventoryV2ItemParametersResolver",
-      "legacyScriptIndex": 247,
-      "legacySymbol": "InventoryV2ItemParametersResolver",
-      "shimFile": "activations/247_inventoryv2itemparametersresolver.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-      "targetModule": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
-      "id": "activation-a5520e73eb57",
-      "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -2427,18 +2271,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2HeaderRenderer",
-      "legacyScriptIndex": 251,
-      "legacySymbol": "InventoryV2HeaderRenderer",
-      "shimFile": "activations/251_inventoryv2headerrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_header_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_header_renderer.js",
-      "id": "activation-badc09ea7915",
-      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-bafccd351254",
       "owner": "stage-3.candidate-013-fishing-0267b3ea",
       "sourceProvider": "src/core/fishing/fishing_cast_exposure_resolver.js",
@@ -2631,18 +2463,6 @@
       "removalStage": "stage-6"
     },
     {
-      "exportName": "InventoryV2AssemblyEditorRenderer",
-      "legacyScriptIndex": 253,
-      "legacySymbol": "InventoryV2AssemblyEditorRenderer",
-      "shimFile": "activations/253_inventoryv2assemblyeditorrenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
-      "id": "activation-ddc212822491",
-      "owner": "stage-5.cluster-010-inventory-panel-renderers",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-e0d0ff620077",
       "owner": "stage-3.replan-322.batch-027-items-e8f84667",
       "sourceProvider": "src/core/items/progression/item_metric_strategy_registry.js",
@@ -2751,18 +2571,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2AttachmentBadgeRenderer",
-      "legacyScriptIndex": 242,
-      "legacySymbol": "InventoryV2AttachmentBadgeRenderer",
-      "shimFile": "activations/242_inventoryv2attachmentbadgerenderer.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
-      "targetModule": "src/game/presentation/inventory/inventory_attachment_badge_renderer.js",
-      "id": "activation-f2f22279b4f6",
-      "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "id": "activation-f31861589962",
       "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
       "sourceProvider": "src/entities/fish.js",
@@ -2847,18 +2655,6 @@
       "removalStage": "stage-5"
     },
     {
-      "exportName": "InventoryV2TooltipPresenter",
-      "legacyScriptIndex": 244,
-      "legacySymbol": "InventoryV2TooltipPresenter",
-      "shimFile": "activations/244_inventoryv2tooltippresenter.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
-      "targetModule": "src/game/presentation/inventory/inventory_tooltip_presenter.js",
-      "id": "activation-f8fcc8fa4bf8",
-      "owner": "stage-5.cluster-011-inventory-tooltip",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "ItemProgressionVisualResolver",
       "legacyScriptIndex": 237,
       "legacySymbol": "ItemProgressionVisualResolver",
@@ -2879,18 +2675,6 @@
       "legacySymbol": "AlwaysKnownBaitEffectivenessPolicy",
       "legacyScriptIndex": 64,
       "shimFile": "activations/064_alwaysknownbaiteffectivenesspolicy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "exportName": "InventoryV2LongPressController",
-      "legacyScriptIndex": 241,
-      "legacySymbol": "InventoryV2LongPressController",
-      "shimFile": "activations/241_inventoryv2longpresscontroller.js",
-      "sourceProvider": "src/ui/inventory/inventory_v2_long_press_controller.js",
-      "targetModule": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
-      "id": "activation-fac254bdd3da",
-      "owner": "stage-4.cluster-033-platform-long-press",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
     },
@@ -3023,6 +2807,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-023-inventory-composition"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2ResourceMeterRenderer",
+        "legacyScriptIndex": 246,
+        "legacySymbol": "InventoryV2ResourceMeterRenderer",
+        "shimFile": "activations/246_inventoryv2resourcemeterrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_resource_meter_renderer.js",
+        "id": "activation-0963870743fc",
+        "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -3451,6 +3252,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2InventoryGridRenderer",
+        "legacyScriptIndex": 255,
+        "legacySymbol": "InventoryV2InventoryGridRenderer",
+        "shimFile": "activations/255_inventoryv2inventorygridrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_inventory_grid_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_grid_renderer.js",
+        "id": "activation-29c7c09a6496",
+        "owner": "stage-5.cluster-010-inventory-panel-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-2a74f4c05932",
         "owner": "stage-3.candidate-013-fishing-0267b3ea",
         "sourceProvider": "src/core/fishing/fish_direction_intent_sampler.js",
@@ -3482,6 +3300,40 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-023-inventory-composition"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2ViewModelNormalizer",
+        "legacyScriptIndex": 239,
+        "legacySymbol": "InventoryV2ViewModelNormalizer",
+        "shimFile": "activations/239_inventoryv2viewmodelnormalizer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+        "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+        "id": "activation-2ea780215625",
+        "owner": "stage-5.cluster-007-inventory-view-contracts",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2UI",
+        "legacyScriptIndex": 256,
+        "legacySymbol": "InventoryV2UI",
+        "shimFile": "activations/256_inventoryv2ui.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_ui.js",
+        "targetModule": "src/game/presentation/inventory/inventory_ui.js",
+        "id": "activation-2eece033a1a2",
+        "owner": "stage-5.cluster-012-inventory-ui-lifecycle",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -3825,6 +3677,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2SavedLoadoutPreviewRenderer",
+        "legacyScriptIndex": 254,
+        "legacySymbol": "InventoryV2SavedLoadoutPreviewRenderer",
+        "shimFile": "activations/254_inventoryv2savedloadoutpreviewrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js",
+        "id": "activation-40c46058b093",
+        "owner": "stage-5.cluster-010-inventory-panel-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "exportName": "BITE_FALLBACK_PHYSICS_CONFIG",
         "legacyScriptIndex": 17,
         "legacySymbol": "BITE_FALLBACK_PHYSICS_CONFIG",
@@ -3907,6 +3776,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-023-inventory-composition"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2ItemCardRenderer",
+        "legacyScriptIndex": 250,
+        "legacySymbol": "InventoryV2ItemCardRenderer",
+        "shimFile": "activations/250_inventoryv2itemcardrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_item_card_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_card_renderer.js",
+        "id": "activation-4b6fd0c168bd",
+        "owner": "stage-5.cluster-009-inventory-item-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -4182,6 +4068,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2DomFactory",
+        "legacyScriptIndex": 240,
+        "legacySymbol": "InventoryV2DomFactory",
+        "shimFile": "activations/240_inventoryv2domfactory.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_dom_factory.js",
+        "targetModule": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+        "id": "activation-5b0c13d957dc",
+        "owner": "stage-4.cluster-013-platform-dom-adapters",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "exportName": "InventoryV2LineAllocationService",
         "legacyScriptIndex": 197,
         "legacySymbol": "InventoryV2LineAllocationService",
@@ -4213,6 +4116,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-024-inventory-command-service"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2FacadeContract",
+        "legacyScriptIndex": 239,
+        "legacySymbol": "InventoryV2FacadeContract",
+        "shimFile": "activations/239_inventoryv2facadecontract.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+        "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+        "id": "activation-6245ef6547a7",
+        "owner": "stage-5.cluster-007-inventory-view-contracts",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -4624,6 +4544,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2ResourceMeterResolver",
+        "legacyScriptIndex": 245,
+        "legacySymbol": "InventoryV2ResourceMeterResolver",
+        "shimFile": "activations/245_inventoryv2resourcemeterresolver.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_resource_meter_resolver.js",
+        "targetModule": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
+        "id": "activation-7d2f0130ab96",
+        "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "exportName": "FIGHT_PHYSICS_CONFIG",
         "legacyScriptIndex": 18,
         "legacySymbol": "FIGHT_PHYSICS_CONFIG",
@@ -4947,6 +4884,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2AssemblyParameterSectionResolver",
+        "legacyScriptIndex": 248,
+        "legacySymbol": "InventoryV2AssemblyParameterSectionResolver",
+        "shimFile": "activations/248_inventoryv2assemblyparametersectionresolver.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js",
+        "targetModule": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
+        "id": "activation-8d6b46e6f6e9",
+        "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-8d90074016f4",
         "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
         "sourceProvider": "src/core/fishing/reel_recovery_fish_slowdown_policy.js",
@@ -5029,6 +4983,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-322.batch-029-fishing-f2a8faba"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2ActionContract",
+        "legacyScriptIndex": 239,
+        "legacySymbol": "InventoryV2ActionContract",
+        "shimFile": "activations/239_inventoryv2actioncontract.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_view_model.js",
+        "targetModule": "src/game/presentation/inventory/inventory_view_model.js",
+        "id": "activation-93c7589fb62d",
+        "owner": "stage-5.cluster-007-inventory-view-contracts",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "shared-source-line-removed",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -5219,6 +5190,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2ItemParametersRenderer",
+        "legacyScriptIndex": 249,
+        "legacySymbol": "InventoryV2ItemParametersRenderer",
+        "shimFile": "activations/249_inventoryv2itemparametersrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_parameters_renderer.js",
+        "id": "activation-a17c5a07c5f3",
+        "owner": "stage-5.cluster-009-inventory-item-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-a1c4f48a2220",
         "owner": "stage-3.candidate-018-items-8ea4be10",
         "sourceProvider": "src/core/items/metrics/item_bounded_metric_resolver.js",
@@ -5233,6 +5221,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-336.batch-037-items-5fccd461"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2LoadoutPanelRenderer",
+        "legacyScriptIndex": 252,
+        "legacySymbol": "InventoryV2LoadoutPanelRenderer",
+        "shimFile": "activations/252_inventoryv2loadoutpanelrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_loadout_panel_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_loadout_panel_renderer.js",
+        "id": "activation-a2486833ea5a",
+        "owner": "stage-5.cluster-010-inventory-panel-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -5284,6 +5289,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-5.cluster-023-inventory-composition"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2ItemParametersResolver",
+        "legacyScriptIndex": 247,
+        "legacySymbol": "InventoryV2ItemParametersResolver",
+        "shimFile": "activations/247_inventoryv2itemparametersresolver.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
+        "targetModule": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+        "id": "activation-a5520e73eb57",
+        "owner": "stage-5.cluster-005-inventory-parameter-resolvers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {
@@ -5678,6 +5700,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2HeaderRenderer",
+        "legacyScriptIndex": 251,
+        "legacySymbol": "InventoryV2HeaderRenderer",
+        "shimFile": "activations/251_inventoryv2headerrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_header_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_header_renderer.js",
+        "id": "activation-badc09ea7915",
+        "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-bc66e23232d8",
         "owner": "stage-3.replan-342.batch-042-equipment-6f782961",
         "sourceProvider": "src/config/inventory/equipment_slot_config.js",
@@ -6035,6 +6074,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2AssemblyEditorRenderer",
+        "legacyScriptIndex": 253,
+        "legacySymbol": "InventoryV2AssemblyEditorRenderer",
+        "shimFile": "activations/253_inventoryv2assemblyeditorrenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_assembly_editor_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
+        "id": "activation-ddc212822491",
+        "owner": "stage-5.cluster-010-inventory-panel-renderers",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-e092bb522808",
         "owner": "stage-3.replan-322.batch-034-fishing-b761d4f1",
         "sourceProvider": "src/core/fishing/reel_hold_recovery_system.js",
@@ -6324,6 +6380,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2AttachmentBadgeRenderer",
+        "legacyScriptIndex": 242,
+        "legacySymbol": "InventoryV2AttachmentBadgeRenderer",
+        "shimFile": "activations/242_inventoryv2attachmentbadgerenderer.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_attachment_badge_renderer.js",
+        "targetModule": "src/game/presentation/inventory/inventory_attachment_badge_renderer.js",
+        "id": "activation-f2f22279b4f6",
+        "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-f41223b184f9",
         "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
         "sourceProvider": "src/entities/tackle.js",
@@ -6426,6 +6499,23 @@
     },
     {
       "activation": {
+        "exportName": "InventoryV2TooltipPresenter",
+        "legacyScriptIndex": 244,
+        "legacySymbol": "InventoryV2TooltipPresenter",
+        "shimFile": "activations/244_inventoryv2tooltippresenter.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_tooltip_presenter.js",
+        "targetModule": "src/game/presentation/inventory/inventory_tooltip_presenter.js",
+        "id": "activation-f8fcc8fa4bf8",
+        "owner": "stage-5.cluster-011-inventory-tooltip",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
+    },
+    {
+      "activation": {
         "id": "activation-fa95b209e285",
         "owner": "stage-3.candidate-015-fishing-37dc3452",
         "sourceProvider": "src/core/fishing/endurance/endurance_movement_debuff_calculator.js",
@@ -6440,6 +6530,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-3.replan-350.batch-051-fishing-95a74a4a"
+    },
+    {
+      "activation": {
+        "exportName": "InventoryV2LongPressController",
+        "legacyScriptIndex": 241,
+        "legacySymbol": "InventoryV2LongPressController",
+        "shimFile": "activations/241_inventoryv2longpresscontroller.js",
+        "sourceProvider": "src/ui/inventory/inventory_v2_long_press_controller.js",
+        "targetModule": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+        "id": "activation-fac254bdd3da",
+        "owner": "stage-4.cluster-033-platform-long-press",
+        "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-024-inventory-ui-composition"
     },
     {
       "activation": {

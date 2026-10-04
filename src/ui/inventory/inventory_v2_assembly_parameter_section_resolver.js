@@ -1,1 +1,1 @@
-globalThis.InventoryV2AssemblyParameterSectionResolver = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js"]["InventoryV2AssemblyParameterSectionResolver"];
+// Retired Stage 5 activation activation-8d6b46e6f6e9: InventoryV2AssemblyParameterSectionResolver is served only through ESM imports of src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js.

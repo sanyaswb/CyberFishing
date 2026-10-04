@@ -1,1 +1,1 @@
-globalThis.InventoryV2HeaderRenderer = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/inventory/inventory_header_renderer.js"]["InventoryV2HeaderRenderer"];
+// Retired Stage 5 activation activation-badc09ea7915: InventoryV2HeaderRenderer is served only through ESM imports of src/game/presentation/inventory/inventory_header_renderer.js.
