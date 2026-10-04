@@ -608,9 +608,9 @@ class MigrationManifestPolicyValidator {
       "game-presentation": ["compatibility-bridge", "presentation"],
       platform: ["compatibility-bridge", "platform-adapter"],
       dev: ["dev-tool"],
-      "bootstrap-production": ["bootstrap"],
+      "bootstrap-production": ["compatibility-bridge", "bootstrap"],
       "bootstrap-development": ["bootstrap"],
-      "entrypoint-game": ["entrypoint"],
+      "entrypoint-game": ["compatibility-bridge", "entrypoint"],
       "entrypoint-dev": ["entrypoint"],
     };
     result.require(
