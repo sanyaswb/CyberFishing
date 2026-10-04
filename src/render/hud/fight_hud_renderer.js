@@ -1,12 +1,1 @@
-class FightHudRenderer {
-  #composite;
-
-  constructor({ components }) {
-    this.#composite = new CompositeRenderer({ components });
-  }
-
-  render(model) {
-    if (!model.visible) return;
-    this.#composite.render(model);
-  }
-}
+globalThis.FightHudRenderer = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/hud/fight_hud_renderer.js"]["FightHudRenderer"];

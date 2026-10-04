@@ -1,0 +1,498 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-tier-a-evidence",
+  "cluster": "019",
+  "evidenceKind": "hot-loop",
+  "scenarios": [
+    "utils/platform-runtime-check.js"
+  ],
+  "classes": {
+    "CastingRenderPass": {
+      "sourcePath": "src/render/pipeline/casting_render_pass.js",
+      "members": [
+        {
+          "name": "#renderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6cdc12456bf545a4bb01d0e44ce718971ed3112681d9407f4526fe025ba76504"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "8b8276136588d1b01017413c98d653391bd6293519cff3848d58b9013d57780b",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "2d6a57c00878c14c478147c576002c0fe047f3c9353a807be0803c4996d9f2c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "c0cd3ee7384bf4302d09ec081ed528ca9b4cffe83433210eeb1aee8c0a23de8d",
+          "calls": {
+            "render": 121
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "FightHudRenderer": {
+      "sourcePath": "src/render/hud/fight_hud_renderer.js",
+      "members": [
+        {
+          "name": "#composite",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7208346d96c09f09912e5f6981f97d52d706b9ba5b34f16f1bc44c96dbec2031"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "d9cf6cdf4cde9d06e3a341417d94ba8b744c6763b2fe8f9de8255875df24cc75",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "defe0eef4688c391c19523f83a7280d68df5b497039b42ff5807d8a347d0587a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "CompositeRenderer",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "bfd09d061ec652445188ac2a736511a9aa5b6d381904066e00e8cec2c4d5175a",
+          "calls": {
+            "render": 120
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "FishingRenderPass": {
+      "sourcePath": "src/render/pipeline/fishing_render_pass.js",
+      "members": [
+        {
+          "name": "#renderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6cdc12456bf545a4bb01d0e44ce718971ed3112681d9407f4526fe025ba76504"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "e336e7748a1da39a44fb07268f28049fd48c72f5ddb81d7f0d34d65ea113c709",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "934f0afcdd0049ce3feb9d6d33d483b5de2b4826e910b4ca9bcbb09d6a813864",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "c0cd3ee7384bf4302d09ec081ed528ca9b4cffe83433210eeb1aee8c0a23de8d",
+          "calls": {
+            "render": 121
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "FishingSceneRenderer": {
+      "sourcePath": "src/render/fishing/fishing_scene_renderer.js",
+      "members": [
+        {
+          "name": "#composite",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7208346d96c09f09912e5f6981f97d52d706b9ba5b34f16f1bc44c96dbec2031"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "d9cf6cdf4cde9d06e3a341417d94ba8b744c6763b2fe8f9de8255875df24cc75",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "defe0eef4688c391c19523f83a7280d68df5b497039b42ff5807d8a347d0587a",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "CompositeRenderer",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "d0a60e7f8db499c9e0cbf36e863843701d854c9b8a37df9e11cd2f2334d077da",
+          "calls": {
+            "render": 120
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "HudRenderPass": {
+      "sourcePath": "src/render/pipeline/hud_render_pass.js",
+      "members": [
+        {
+          "name": "#renderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "6cdc12456bf545a4bb01d0e44ce718971ed3112681d9407f4526fe025ba76504"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "3289ce6e71a852199e0418f04f27f7333a036cdf3790f8fab41a2e2f70501bb5",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "5484eff8e9db3652f21e5ba7c72536a34a96aaa25b93073d3125aa5a11c197f3",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "c0cd3ee7384bf4302d09ec081ed528ca9b4cffe83433210eeb1aee8c0a23de8d",
+          "calls": {
+            "render": 121
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "OutcomeRenderPass": {
+      "sourcePath": "src/render/pipeline/outcome_render_pass.js",
+      "members": [
+        {
+          "name": "#gameOverRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "9674a580642e03a978998203fbbcc618a884ad30fbaa5a987b04ae66c81a92d0"
+        },
+        {
+          "name": "#victoryRenderer",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "efca50bacda7237b1f00250ea6524b71b6c4ecdbf26c5e96e021654d1b65a88a"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "c1966921a5c4a7dc87ac384a8295703033bb3844b1cbaedd3b2ec54a7ed492a4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 2,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "41df73926df84844905514d7d18ddc81f741ab5fc6e6603b9ac4f96ce7dff1c4",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 0,
+        "arrayExpressions": 0,
+        "newExpressions": 2,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        },
+        {
+          "name": "TypeError",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "0fde0794d0eb0c73e21f6a864df9bf00fdb46a6a863589108627807d8b3e0d4f",
+          "calls": {
+            "render": 122
+          },
+          "deltaTime": {}
+        }
+      }
+    },
+    "WorldRenderPass": {
+      "sourcePath": "src/render/pipeline/world_render_pass.js",
+      "members": [
+        {
+          "name": "#composite",
+          "kind": "field",
+          "static": false,
+          "bodySha256": "7208346d96c09f09912e5f6981f97d52d706b9ba5b34f16f1bc44c96dbec2031"
+        },
+        {
+          "name": "constructor",
+          "kind": "constructor",
+          "static": false,
+          "bodySha256": "9d9ec97b7eb874143a7fdab4cbe1190a58ec55dc8fac755ea4a5ad687f18a567",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 1,
+            "arrayExpressions": 0,
+            "newExpressions": 1,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        },
+        {
+          "name": "render",
+          "kind": "method",
+          "static": false,
+          "bodySha256": "3a0be52b3e3a88871f3b5af05af54e62533e5ffd4dfeb9a7cd87dc04bf9829aa",
+          "parameters": 1,
+          "allocations": {
+            "objectExpressions": 0,
+            "arrayExpressions": 0,
+            "newExpressions": 0,
+            "objectFreezeCalls": 0,
+            "objectAssignCalls": 0,
+            "roundingCalls": 0
+          }
+        }
+      ],
+      "allocationTotals": {
+        "objectExpressions": 1,
+        "arrayExpressions": 0,
+        "newExpressions": 1,
+        "objectFreezeCalls": 0,
+        "objectAssignCalls": 0,
+        "roundingCalls": 0
+      },
+      "freeIdentifiers": [
+        {
+          "name": "CompositeRenderer",
+          "member": "constructor",
+          "kind": "constructor"
+        }
+      ],
+      "wallClockReads": [],
+      "realmLookups": [],
+      "typeofLookups": [],
+      "scenarios": {
+        "utils/platform-runtime-check.js": {
+          "sha256": "a1fe6ac4346c16660a7f9e7764cee9060d4f44f6d320b0c1fbc14a4068ea3fc9",
+          "calls": {
+            "render": 122
+          },
+          "deltaTime": {}
+        }
+      }
+    }
+  }
+}

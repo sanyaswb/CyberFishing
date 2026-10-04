@@ -1,13 +1,1 @@
-class WorldRenderPass extends RenderPass {
-  #composite;
-
-  constructor({ components }) {
-    super();
-    this.#composite = new CompositeRenderer({ components });
-  }
-
-  render(frame) {
-    if (!frame.world.visible) return;
-    this.#composite.render(frame);
-  }
-}
+globalThis.WorldRenderPass = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/presentation/rendering/world_render_pass.js"]["WorldRenderPass"];

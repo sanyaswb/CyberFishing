@@ -371,22 +371,6 @@
       ]
     },
     {
-      "id": "bridge-1af90d9ee5a6",
-      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
-      "source": "src/render/fishing/fishing_scene_renderer.js",
-      "target": "src/engine/rendering/composite_renderer.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CompositeRenderer",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-1bb21771dce7",
       "bridge": "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
       "owner": "stage-4.cluster-018-storage",
@@ -551,17 +535,17 @@
       ]
     },
     {
-      "id": "bridge-246319f5e6e2",
-      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
-      "source": "src/render/pipeline/outcome_render_pass.js",
-      "target": "src/engine/rendering/render_pass.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
+      "id": "bridge-23ff0af82ed3",
+      "bridge": "src/render/pipeline/hud_render_pass.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/hud_render_pass.js",
+      "reason": "Preserve the exact HudRenderPass consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
-          "symbol": "RenderPass",
+          "symbol": "HudRenderPass",
           "mechanism": "global-this-property"
         }
       ]
@@ -882,22 +866,6 @@
       "globalProviders": [
         {
           "symbol": "FightAreaStyleResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-397a03218e06",
-      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
-      "source": "src/render/pipeline/hud_render_pass.js",
-      "target": "src/engine/rendering/render_pass.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderPass",
           "mechanism": "global-this-property"
         }
       ]
@@ -1383,6 +1351,22 @@
       ]
     },
     {
+      "id": "bridge-56e55289e29d",
+      "bridge": "src/render/pipeline/fishing_render_pass.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/fishing_render_pass.js",
+      "reason": "Preserve the exact FishingRenderPass consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FishingRenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-578a50df2ee3",
       "bridge": "src/ui/inventory/inventory_v2_item_parameters_renderer.js",
       "owner": "stage-5.cluster-009-inventory-item-renderers",
@@ -1527,6 +1511,22 @@
       ]
     },
     {
+      "id": "bridge-5f59762b301d",
+      "bridge": "src/render/pipeline/casting_render_pass.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/casting_render_pass.js",
+      "reason": "Preserve the exact CastingRenderPass consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CastingRenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-5f6c783bbcd7",
       "bridge": "src/core/items/rarity/item_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -1538,22 +1538,6 @@
       "globalProviders": [
         {
           "symbol": "ItemRarityResolver",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-60496caa95fd",
-      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
-      "source": "src/render/pipeline/casting_render_pass.js",
-      "target": "src/engine/rendering/render_pass.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderPass",
           "mechanism": "global-this-property"
         }
       ]
@@ -1735,6 +1719,22 @@
       ]
     },
     {
+      "id": "bridge-654bc3fd2448",
+      "bridge": "src/render/fishing/fishing_scene_renderer.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/fishing_scene_renderer.js",
+      "reason": "Preserve the exact FishingSceneRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FishingSceneRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-65b032d1255d",
       "bridge": "src/application/inventory/inventory_v2_item_order_resolver.js",
       "owner": "stage-5.cluster-006-inventory-read-models",
@@ -1891,6 +1891,22 @@
       ]
     },
     {
+      "id": "bridge-6ac5e587de02",
+      "bridge": "src/render/pipeline/world_render_pass.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/world_render_pass.js",
+      "reason": "Preserve the exact WorldRenderPass consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "WorldRenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-6b182910c818",
       "bridge": "src/core/equipment/rod_capability_resolver.js",
       "source": "src/application/inventory/inventory_v2_composition_root.js",
@@ -1950,22 +1966,6 @@
       "globalProviders": [
         {
           "symbol": "Vector2",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-6cb8d6b6b5dd",
-      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
-      "source": "src/render/pipeline/world_render_pass.js",
-      "target": "src/engine/rendering/composite_renderer.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CompositeRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2086,6 +2086,22 @@
       "globalProviders": [
         {
           "symbol": "MAP_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-731268dfa3b5",
+      "bridge": "src/render/pipeline/outcome_render_pass.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/rendering/outcome_render_pass.js",
+      "reason": "Preserve the exact OutcomeRenderPass consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "OutcomeRenderPass",
           "mechanism": "global-this-property"
         }
       ]
@@ -2586,22 +2602,6 @@
         },
         {
           "symbol": "LineCompatibilityRules",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-9538204fd8a3",
-      "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
-      "source": "src/render/hud/fight_hud_renderer.js",
-      "target": "src/engine/rendering/composite_renderer.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "CompositeRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -3431,22 +3431,6 @@
       ]
     },
     {
-      "id": "bridge-c518ccc47a20",
-      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
-      "source": "src/render/pipeline/world_render_pass.js",
-      "target": "src/engine/rendering/render_pass.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderPass",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-c58ac0fd515b",
       "bridge": "src/ui/inventory/inventory_v2_resource_meter_renderer.js",
       "owner": "stage-5.cluster-008-inventory-dom-render-leaves",
@@ -3522,6 +3506,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2Facade",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-cf40bf1c24e3",
+      "bridge": "src/render/hud/fight_hud_renderer.js",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/fight_hud_renderer.js",
+      "reason": "Preserve the exact FightHudRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightHudRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -4322,22 +4322,6 @@
       "globalProviders": [
         {
           "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-fc583dce9ac7",
-      "bridge": "src/engine/compat/stage_2/render_pass_legacy_bridge.js",
-      "source": "src/render/pipeline/fishing_render_pass.js",
-      "target": "src/engine/rendering/render_pass.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderPass",
           "mechanism": "global-this-property"
         }
       ]

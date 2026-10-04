@@ -723,6 +723,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "CastingRenderPass",
+      "legacyScriptIndex": 385,
+      "legacySymbol": "CastingRenderPass",
+      "shimFile": "activations/385_castingrenderpass.js",
+      "sourceProvider": "src/render/pipeline/casting_render_pass.js",
+      "targetModule": "src/game/presentation/rendering/casting_render_pass.js",
+      "id": "activation-0862dec29554",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "id": "activation-0937f80ab214",
       "owner": "stage-3.replan-322.batch-023-items-c91fce82",
       "sourceProvider": "src/core/items/progression/numeric_stat_metric_strategy.js",
@@ -1057,6 +1069,18 @@
       "owner": "stage-4.cluster-020-inventory-storage-application",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "FishingSceneRenderer",
+      "legacyScriptIndex": 371,
+      "legacySymbol": "FishingSceneRenderer",
+      "shimFile": "activations/371_fishingscenerenderer.js",
+      "sourceProvider": "src/render/fishing/fishing_scene_renderer.js",
+      "targetModule": "src/game/presentation/fishing/fishing_scene_renderer.js",
+      "id": "activation-272f140c2274",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-28138de81e82",
@@ -1803,6 +1827,18 @@
       "removalStage": "stage-6"
     },
     {
+      "exportName": "WorldRenderPass",
+      "legacyScriptIndex": 384,
+      "legacySymbol": "WorldRenderPass",
+      "shimFile": "activations/384_worldrenderpass.js",
+      "sourceProvider": "src/render/pipeline/world_render_pass.js",
+      "targetModule": "src/game/presentation/rendering/world_render_pass.js",
+      "id": "activation-5d75f8998618",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2LineAllocationService",
       "legacyScriptIndex": 197,
       "legacySymbol": "InventoryV2LineAllocationService",
@@ -1813,6 +1849,18 @@
       "owner": "stage-4.cluster-023-inventory-lines",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "HudRenderPass",
+      "legacyScriptIndex": 387,
+      "legacySymbol": "HudRenderPass",
+      "shimFile": "activations/387_hudrenderpass.js",
+      "sourceProvider": "src/render/pipeline/hud_render_pass.js",
+      "targetModule": "src/game/presentation/rendering/hud_render_pass.js",
+      "id": "activation-5ef2a9e4d138",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "InventoryV2ActionType",
@@ -1993,6 +2041,18 @@
       "shimFile": "activations/077_compositemetricstrategy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "FightHudRenderer",
+      "legacyScriptIndex": 377,
+      "legacySymbol": "FightHudRenderer",
+      "shimFile": "activations/377_fighthudrenderer.js",
+      "sourceProvider": "src/render/hud/fight_hud_renderer.js",
+      "targetModule": "src/game/presentation/hud/fight_hud_renderer.js",
+      "id": "activation-72eb6f8e004d",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "id": "activation-73dd5c8cd351",
@@ -2316,18 +2376,6 @@
       "id": "activation-874b3c10074b",
       "owner": "stage-4.cluster-021-inventory-equipment-loadout",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
-    },
-    {
-      "id": "activation-886fb34615aa",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "dist/legacy-bridges/render_pass.iife.js",
-      "targetModule": "src/engine/rendering/render_pass.js",
-      "exportName": "RenderPass",
-      "legacySymbol": "RenderPass",
-      "legacyScriptIndex": 358,
-      "shimFile": "activations/358_renderpass.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
       "removalStage": "stage-5"
     },
     {
@@ -2967,18 +3015,6 @@
       "removalStage": "stage-5"
     },
     {
-      "id": "activation-bf033497a3e1",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "dist/legacy-bridges/composite_renderer.iife.js",
-      "targetModule": "src/engine/rendering/composite_renderer.js",
-      "exportName": "CompositeRenderer",
-      "legacySymbol": "CompositeRenderer",
-      "legacyScriptIndex": 362,
-      "shimFile": "activations/362_compositerenderer.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
-      "removalStage": "stage-5"
-    },
-    {
       "exportName": "WorldSceneRenderer",
       "legacyScriptIndex": 363,
       "legacySymbol": "WorldSceneRenderer",
@@ -3541,6 +3577,30 @@
       "shimFile": "activations/162_unlimitedinventorycapacitypolicy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "FishingRenderPass",
+      "legacyScriptIndex": 386,
+      "legacySymbol": "FishingRenderPass",
+      "shimFile": "activations/386_fishingrenderpass.js",
+      "sourceProvider": "src/render/pipeline/fishing_render_pass.js",
+      "targetModule": "src/game/presentation/rendering/fishing_render_pass.js",
+      "id": "activation-fb6591d97f54",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "OutcomeRenderPass",
+      "legacyScriptIndex": 388,
+      "legacySymbol": "OutcomeRenderPass",
+      "shimFile": "activations/388_outcomerenderpass.js",
+      "sourceProvider": "src/render/pipeline/outcome_render_pass.js",
+      "targetModule": "src/game/presentation/rendering/outcome_render_pass.js",
+      "id": "activation-fd7f40c82733",
+      "owner": "stage-5.cluster-019-scene-composites-and-passes",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "CastPowerAim",
@@ -4772,6 +4832,23 @@
     },
     {
       "activation": {
+        "id": "activation-886fb34615aa",
+        "owner": "stage-3.candidate-001-inventory-85f44b2e",
+        "sourceProvider": "dist/legacy-bridges/render_pass.iife.js",
+        "targetModule": "src/engine/rendering/render_pass.js",
+        "exportName": "RenderPass",
+        "legacySymbol": "RenderPass",
+        "legacyScriptIndex": 358,
+        "shimFile": "activations/358_renderpass.js",
+        "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-019-scene-composites-and-passes"
+    },
+    {
+      "activation": {
         "id": "activation-89d032a4a1e8",
         "owner": "stage-3.replan-322.batch-025-fishing-9bcfae5e",
         "sourceProvider": "src/core/fishing/stamina/stamina_pressure_resolver.js",
@@ -5330,6 +5407,23 @@
       "placeholder": "inert-classic-position",
       "reason": "all-listed-legacy-consumers-migrated",
       "retiredBy": "stage-4.cluster-030-fight-physics-system"
+    },
+    {
+      "activation": {
+        "id": "activation-bf033497a3e1",
+        "owner": "stage-3.candidate-001-inventory-85f44b2e",
+        "sourceProvider": "dist/legacy-bridges/composite_renderer.iife.js",
+        "targetModule": "src/engine/rendering/composite_renderer.js",
+        "exportName": "CompositeRenderer",
+        "legacySymbol": "CompositeRenderer",
+        "legacyScriptIndex": 362,
+        "shimFile": "activations/362_compositerenderer.js",
+        "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
+        "removalStage": "stage-5"
+      },
+      "placeholder": "inert-classic-position",
+      "reason": "all-listed-legacy-consumers-migrated",
+      "retiredBy": "stage-5.cluster-019-scene-composites-and-passes"
     },
     {
       "activation": {
