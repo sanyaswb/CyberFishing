@@ -1,0 +1,3 @@
+# Stage 5 version source projection
+
+Preserve the logical source anchor src/config/project_version.js and its exact conditional alias publication at slot 1. Separate its existing catalog declarations into src/config/project_version_catalog.js at the same slot, then project that catalog to src/game/presentation/version/project_version.js. The live release/version-copy/package readers resolve these three reviewed representations in sequence; each version declaration must still match package/lock/index pins. Historical Stage 4 release deltas continue using their unchanged original source and fixtures. The package contract logical anchor remains unchanged until native entry cutover. No version bump, extra version owner or new global.

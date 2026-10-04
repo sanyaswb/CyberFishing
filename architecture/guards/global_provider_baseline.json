@@ -1132,18 +1132,18 @@
     },
     {
       "currentPath": "src/config/project_version.js",
-      "symbol": "CURRENT_PROJECT_VERSION",
-      "mechanism": "global-lexical",
-      "availability": "program-init"
-    },
-    {
-      "currentPath": "src/config/project_version.js",
       "symbol": "CYBER_FISHING_PROJECT_VERSION",
       "mechanism": "window-property",
       "availability": "conditional"
     },
     {
-      "currentPath": "src/config/project_version.js",
+      "currentPath": "src/config/project_version_catalog.js",
+      "symbol": "CURRENT_PROJECT_VERSION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/project_version_catalog.js",
       "symbol": "PROJECT_VERSION_CONFIG",
       "mechanism": "global-lexical",
       "availability": "program-init"

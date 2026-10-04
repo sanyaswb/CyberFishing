@@ -7,12 +7,14 @@ const { PackageLockValidator } = require("./package_contract/package_lock_valida
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 
+const { StageFourRelease } = require("./stage_four/release_path");
+
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
   packageJson: path.join(PROJECT_ROOT, "package.json"),
   packageLock: path.join(PROJECT_ROOT, "package-lock.json"),
   contract: path.join(PROJECT_ROOT, "architecture/build/package_contract.json"),
-  version: path.join(PROJECT_ROOT, "src/config/project_version.js"),
+  version: path.join(PROJECT_ROOT, StageFourRelease.versionSource(file => fs.readFileSync(path.join(PROJECT_ROOT, file), "utf8"))),
   gitignore: path.join(PROJECT_ROOT, ".gitignore"),
   index: path.join(PROJECT_ROOT, "index.html"),
   stageThreeState: path.join(

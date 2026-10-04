@@ -3,6 +3,14 @@
   "kind": "cyber-fishing-legacy-slot-splits",
   "splits": [
     {
+      "slot": 1,
+      "members": [
+        "src/config/project_version_catalog.js",
+        "src/config/project_version.js"
+      ],
+      "transition": "architecture/migration/stage_5/preparations/014_version-catalog-source.json"
+    },
+    {
       "slot": 27,
       "members": [
         "src/infrastructure/config/deep_clone_config.js",

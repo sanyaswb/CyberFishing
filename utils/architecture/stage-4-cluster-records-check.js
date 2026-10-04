@@ -409,6 +409,17 @@ for (const record of [releaseFixture, { ...releaseFixture, changelogTrimFrom: "0
   }
 }
 const [oldTexts, newTexts] = [releaseTexts("1.0.0"), releaseTexts("1.1.0", "b")];
+for (const esm of [false, true]) {
+  const texts = releaseTexts("1.0.0");
+  texts.set(RELEASE_FILES.source, 'if (typeof window !== "undefined") window.CYBER_FISHING_PROJECT_VERSION = PROJECT_VERSION_CONFIG;');
+  texts.set("src/config/project_version_catalog.js", esm ? "globalThis.PROJECT_VERSION_CONFIG = runtimeExport;" : 'const CURRENT_PROJECT_VERSION = "1.0.0";');
+  texts.set("src/game/presentation/version/project_version.js", 'export const CURRENT_PROJECT_VERSION = "1.0.0";');
+  assert.equal(StageFourRelease.currentVersion(file => texts.get(file)), "1.0.0");
+  texts.set("package.json", JSON.stringify({version:"9.9.9"}));
+  assert.throws(() => StageFourRelease.currentVersion(file => texts.get(file)), /version pins disagree/u);
+}
+
+releaseCases += 4;
 const rejectsRelease = (file, after, pattern) => {
   assert.throws(releaseDelta(releaseFixture, file, oldTexts.get(file), after), pattern, file);
   releaseCases += 1;

@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "014",
+  "slug": "version-catalog-source",
+  "baseCommit": "a0a3bd9501ccfb831ffb428f6fc7b5b7ff23680c",
+  "reason": "Keep the exact original conditional browser alias publication at logical slot 1. Separate the catalog declaration bytes first, then migrate the catalog alone; tooling resolves the reviewed classic/prepared/native version source while all package/lock/index pins remain equal. Frozen Stage 4 release statements and records are unchanged. Alias activation is explicitly owned by native cutover 028.",
+  "reclassified": [],
+  "movedProviders": [
+    {
+      "currentPath": "src/config/project_version_catalog.js",
+      "symbol": "CURRENT_PROJECT_VERSION",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    },
+    {
+      "currentPath": "src/config/project_version_catalog.js",
+      "symbol": "PROJECT_VERSION_CONFIG",
+      "mechanism": "global-lexical",
+      "availability": "program-init"
+    }
+  ],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "src/config/project_version.js",
+      "before": "3bc7575c956454832511450ac849b24c393618b7cd9a01f9d6a9bcddff4b9a3c",
+      "after": "436b6e40c203dce00a036123b7a75c835becb05806d003987078c3cc024087bc"
+    },
+    {
+      "path": "src/config/project_version_catalog.js",
+      "before": null,
+      "after": "749dc6d3f62c72285016df09d605ac7361bb34fc964f198acd0a7ff62b064dbd"
+    },
+    {
+      "path": "index.html",
+      "before": "5000b9ed5fc41a76f4bc8e3cdd4c5827d8c9fba372fc92406013b4bddeeafeb9",
+      "after": "1b864c691125bd3955d839273da9b483a53e0f2dafcdf19427803b37423b4684"
+    },
+    {
+      "path": "utils/architecture/stage_four/release_path.js",
+      "before": "1062f092ad32b68648843f893f8ccb4ba2b113bd9b9d1adba2e7482244b74e45",
+      "after": "930643b4ff925bd839d37478fa2831c280f605c9bb60c5d0c8888f658336ed38"
+    },
+    {
+      "path": "utils/architecture/package-contract-check.js",
+      "before": "8f7cc0b7f678eacd475c9143b63c177727114797659a943f09f0cd2f966a60f0",
+      "after": "2bcc3cd607456826280c1333a640ca003e3b924c2487bb7696d23b28126141e4"
+    },
+    {
+      "path": "utils/create-version-copy.js",
+      "before": "fbdecd4b9252b2e8113f1b2539c548dc9c77f08b8dfbea4bb5d3cea7ebc5d8df",
+      "after": "35082175a77559fa579c8122e0273942a96ecf60e0cf47f4a83680dc52f8dd48"
+    },
+    {
+      "path": "utils/architecture/stage-4-cluster-records-check.js",
+      "before": "13e0f1c0f0efbdb933e779b0c496161b0510c1b39574709e090e6d37fe92847c",
+      "after": "da225aa7a4c4f1565453bed10d1dab999a7b004264763b2b88880d68f14652e6"
+    },
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e06acf57e34b19fd99b7ea886ca13c6c32ca2468a87cc18c1d4a9a5d257b357e",
+      "after": "0c8e7f7a8d15e9dbe5d6917caf43cf8435f6b6406a1a67be618a9576422e09ad"
+    },
+    {
+      "path": "architecture/migration/legacy_slot_splits.json",
+      "before": "468e3b112ad58fe0287255e461a9902d3926000b0197ff0b8fd0af0e48e3fb63",
+      "after": "2b05d2693249a74631b9d4151b72ecf7c045bbbf552c7b566d3698f88894cff5"
+    },
+    {
+      "path": "architecture/guards/global_provider_baseline.json",
+      "before": "2d3e295bc0867c297408231548590f26ead7a670172be63c0abf44d5f1123e0b",
+      "after": "2eaf1591e7a63f652975620cf1b26af06bbc6a68ea693e95941f521e79a3859c"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "focused": {
+      "utils/architecture/package-contract-check.js": {
+        "before": "71eabb44f7ef0900b1fc1750c171c6d0a095eef1c370abb146bbf3c281be689d",
+        "after": "71eabb44f7ef0900b1fc1750c171c6d0a095eef1c370abb146bbf3c281be689d"
+      },
+      "utils/config-runtime-check.js": {
+        "before": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697",
+        "after": "34bc0c723b124a0f53cc23792a9ceda5c4d6f9c8ab99d63264f11e81fbb39697"
+      },
+      "utils/game-cycle-check.js": {
+        "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+        "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f"
+      }
+    },
+    "byteConcatenationIdentical": true,
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 38,
+    "knownDebtsAfter": 38,
+    "versionCopyReader": "0.25.2, read-only",
+    "suites": {
+      "quick": {
+        "totals": {
+          "selected": 24,
+          "executed": 24,
+          "cached": 0,
+          "passed": 24,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "a0a3bd9501ccfb831ffb428f6fc7b5b7ff23680c",
+          "files": 1694,
+          "before": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "after": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "unchanged": true
+        }
+      },
+      "architecture": {
+        "totals": {
+          "selected": 32,
+          "executed": 32,
+          "cached": 0,
+          "passed": 32,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "a0a3bd9501ccfb831ffb428f6fc7b5b7ff23680c",
+          "files": 1694,
+          "before": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "after": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "unchanged": true
+        }
+      },
+      "full": {
+        "totals": {
+          "selected": 64,
+          "executed": 64,
+          "cached": 0,
+          "passed": 64,
+          "failed": 0,
+          "isolationViolations": 0
+        },
+        "source": {
+          "commit": "a0a3bd9501ccfb831ffb428f6fc7b5b7ff23680c",
+          "files": 1694,
+          "before": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "after": "44578871bbb0812d955be0ebe6cb8d84919c5db8d5ea955dfbb5a7c606eda3e5",
+          "unchanged": true
+        }
+      }
+    },
+    "browser": {
+      "performer": "codex-automated-substitute",
+      "exportsChecked": 227,
+      "configFacts": 8,
+      "activeLoops": 1,
+      "inventoryAndSavesIdentical": true,
+      "reloadSavesIdentical": true,
+      "version": "0.25.2",
+      "errors": 0,
+      "warnings": 0
+    }
+  }
+}

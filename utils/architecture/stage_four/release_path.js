@@ -71,11 +71,20 @@ class StageFourRelease {
     assert(record.versionDecision, "release record needs its version decision");
   }
 
+  // Reviewed representations of the unchanged logical version source anchor (Stage 5).
+  static versionSource(read) {
+    const literal = /^(?:export )?const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu;
+    if (literal.test(read(FILES.source))) return FILES.source;
+    const prepared = "src/config/project_version_catalog.js";
+    if (literal.test(read(prepared))) return prepared;
+    return "src/game/presentation/version/project_version.js";
+  }
+
   // Version pins of a tree; all of them must agree.
   static currentVersion(read) {
     const packageJson = JSON.parse(read(FILES.package));
     const lock = JSON.parse(read(FILES.lock));
-    const source = /^const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu.exec(read(FILES.source))?.[1];
+    const source = /^(?:export )?const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu.exec(read(StageFourRelease.versionSource(read)))?.[1];
     const queries = [...read(FILES.index).matchAll(/src\/config\/project_version\.js\?v=([0-9.]+)"/gu)].map((m) => m[1]);
     const versions = [packageJson.version, lock.version, lock.packages[""].version, source, ...queries];
     assert(queries.length === 1 && versions.every((value) => value === versions[0]),

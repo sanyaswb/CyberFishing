@@ -11405,14 +11405,88 @@
           "status": "verified",
           "items": [
             {
-              "symbol": "CURRENT_PROJECT_VERSION",
-              "mechanism": "global-lexical",
-              "availability": "program-init"
-            },
-            {
               "symbol": "CYBER_FISHING_PROJECT_VERSION",
               "mechanism": "window-property",
               "availability": "conditional"
+            }
+          ],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "PROJECT_VERSION_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "conditional"
+            }
+          ],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [
+            "window"
+          ],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "classified",
+        "roles": [
+          "presentation"
+        ],
+        "targetBoundary": "game-presentation",
+        "targetPath": "src/game/presentation/version/project_version.js",
+        "migrationWave": 6
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [
+            {
+              "symbol": "PROJECT_VERSION_CONFIG",
+              "mechanism": "identifier",
+              "accessRequirement": "required",
+              "executionPhase": "conditional",
+              "target": "src/config/project_version_catalog.js",
+              "resolution": "confirmed"
+            }
+          ],
+          "items": [
+            {
+              "target": "src/config/project_version_catalog.js",
+              "symbols": [
+                "PROJECT_VERSION_CONFIG"
+              ],
+              "resolution": "confirmed"
+            }
+          ],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/config/project_version_catalog.js",
+      "currentArea": "config",
+      "observed": {
+        "legacyLoadOrder": 1,
+        "providers": {
+          "status": "verified",
+          "items": [
+            {
+              "symbol": "CURRENT_PROJECT_VERSION",
+              "mechanism": "global-lexical",
+              "availability": "program-init"
             },
             {
               "symbol": "PROJECT_VERSION_CONFIG",
@@ -11432,9 +11506,7 @@
           "builtins": [
             "Object"
           ],
-          "browserApis": [
-            "window"
-          ],
+          "browserApis": [],
           "dynamicConstructs": [],
           "issues": []
         }
@@ -11459,7 +11531,9 @@
         },
         "blockers": {
           "status": "verified",
-          "items": []
+          "items": [
+            "legacy-global-contract"
+          ]
         }
       }
     },
@@ -54961,13 +55035,13 @@
               "mechanism": "identifier",
               "accessRequirement": "guarded",
               "executionPhase": "deferred",
-              "target": "src/config/project_version.js",
+              "target": "src/config/project_version_catalog.js",
               "resolution": "confirmed"
             }
           ],
           "items": [
             {
-              "target": "src/config/project_version.js",
+              "target": "src/config/project_version_catalog.js",
               "symbols": [
                 "PROJECT_VERSION_CONFIG"
               ],
