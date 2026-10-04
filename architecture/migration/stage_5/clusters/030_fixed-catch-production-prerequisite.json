@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-cluster",
+  "id": "030",
+  "slug": "fixed-catch-production-prerequisite",
+  "milestone": "M3",
+  "boundary": "game-application",
+  "tier": "B",
+  "tierEvidence": "Owner decision 2026-10-04: Stage 5 completes native default production through game.entry -> Production Bootstrap -> Engine/Game/Platform. dev.html retains the existing classic/IIFE startup until native dev.entry in Stage 6. No new legacy loader and no native/IIFE combination within one realm. Preserve all enabled Fixed Catch/GodMode gameplay effects through injected production dependencies; diagnostics may be explicitly absent. Save/state/boundary/acceptance requirements are unchanged.",
+  "modules": [
+    {
+      "currentPath": "src/app/fixed_catch_fish_factory.js",
+      "targetPath": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "exports": [
+        "FixedCatchFishFactory"
+      ],
+      "imports": [],
+      "reviewedBlockers": [
+        {
+          "blocker": "dev-production-coupling",
+          "reason": "Preparation 026 reviews actual enabled gameplay responsibility and injected collaborators; class is not concrete DEV infrastructure."
+        }
+      ]
+    }
+  ],
+  "reviewedPropertyReaders": [],
+  "evidenceCommands": [
+    {
+      "name": "api-parity",
+      "kind": "api-parity",
+      "script": "utils/architecture/stage-4-evidence.js",
+      "args": [
+        "--stage",
+        "5",
+        "--cluster",
+        "030",
+        "--kind",
+        "api-parity",
+        "--classes",
+        "FixedCatchFishFactory",
+        "--scenarios",
+        "utils/fish-rarity-check.js"
+      ]
+    }
+  ],
+  "output": null,
+  "verification": null
+}

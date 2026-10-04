@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "026",
+  "slug": "native-production-scope-decision",
+  "baseCommit": "bad1cb007c21c5e86dc2e08fa1a2613c89b4d52e",
+  "reason": "Owner decision 2026-10-04: Stage 5 completes native default production through game.entry -> Production Bootstrap -> Engine/Game/Platform. dev.html retains the existing classic/IIFE startup until native dev.entry in Stage 6. No new legacy loader and no native/IIFE combination within one realm. Preserve all enabled Fixed Catch/GodMode gameplay effects through injected production dependencies; diagnostics may be explicitly absent. Save/state/boundary/acceptance requirements are unchanged.",
+  "reclassified": [
+    {
+      "currentPath": "src/app/fixed_catch_fish_factory.js",
+      "before": {
+        "migrationStatus": "classified",
+        "roles": [
+          "dev-tool"
+        ],
+        "targetBoundary": "dev",
+        "targetPath": "src/dev/fishing/fixed_catch_fish_factory.js",
+        "migrationWave": 7
+      },
+      "after": {
+        "migrationStatus": "classified",
+        "roles": [
+          "application-service"
+        ],
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/fixed_catch_fish_factory.js",
+        "migrationWave": 4
+      },
+      "followUpStage": "stage-5",
+      "reason": "Actual enabled WaitingState consumer calls create; class only depends on three injected resolvers and language builtins, and owns no config/browser/DEV state."
+    }
+  ],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "files": [
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "cc34c14cfc740dd99fedd1f1439295dd8d426e804a3d4913edd3ae6c622b787a",
+      "after": "ea6300a2e9b480c249988e4eab349d18418e4def32b092eab7c3f202331db5d8"
+    },
+    {
+      "path": "architecture/migration/stage_5/graph_review_v8.json",
+      "before": null,
+      "after": "a857c5a90c20362e0d530646c1afa36b5a046f355e4e519486f0c5ea88ae5989"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "constructionEvidence": [
+    "Root factory options inject exact rarity/anomaly/visual resolvers; WaitingState uses enabled fixedCatch without DEV imports. Existing fish-rarity scenarios cover class methods."
+  ],
+  "verification": {
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "knownDebtsBefore": 24,
+    "knownDebtsAfter": 24,
+    "focused": {
+      "utils/game-cycle-check.js": {
+        "status": "PASS"
+      }
+    },
+    "suites": {
+      "quick": {
+        "selected": 24,
+        "executed": 24,
+        "cached": 0,
+        "passed": 24,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "architecture": {
+        "selected": 32,
+        "executed": 32,
+        "cached": 0,
+        "passed": 32,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      },
+      "full": {
+        "selected": 64,
+        "executed": 64,
+        "cached": 0,
+        "passed": 64,
+        "failed": 0,
+        "isolationViolations": 0,
+        "sourceUnchanged": true
+      }
+    },
+    "acceptanceReport": "architecture/archive/stage5_native_production_scope_acceptance.json",
+    "browser": {
+      "status": "not-required-metadata-only",
+      "basis": "Production bytes unchanged; existing 027 browser checkpoint remains applicable. Native pages are not implemented by this decision."
+    }
+  }
+}

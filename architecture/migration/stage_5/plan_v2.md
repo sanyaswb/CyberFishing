@@ -1,3 +1,13 @@
+# Current owner decision: native production now; native DEV in Stage 6
+
+Stage 5 delivers full index.html -> game.entry.js -> Production Bootstrap, with
+no DEV/compatibility runtime/legacy loader. dev.html retains exact classic/IIFE
+startup until Stage 6 delivers dev.entry.js and retires its old transport.
+Enabled Fixed Catch/GodMode effects remain injected production dependencies.
+Diagnostic overlay/render/watchdog may be explicitly absent. Graph v8 supersedes
+v7 browser scope only; completed evidence and all architecture/save/state gates
+remain unchanged. See native_production_owner_decision.md.
+
 # Stage 5 remaining execution plan v2
 
 Date: 2026-10-04. Implementation resumed with cluster 027 in the new session.

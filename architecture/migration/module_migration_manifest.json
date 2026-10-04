@@ -690,11 +690,11 @@
       "architecture": {
         "migrationStatus": "classified",
         "roles": [
-          "dev-tool"
+          "application-service"
         ],
-        "targetBoundary": "dev",
-        "targetPath": "src/dev/fishing/fixed_catch_fish_factory.js",
-        "migrationWave": 7
+        "targetBoundary": "game-application",
+        "targetPath": "src/game/application/fishing/fixed_catch_fish_factory.js",
+        "migrationWave": 4
       },
       "analysis": {
         "dependencies": {
