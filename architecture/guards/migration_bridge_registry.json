@@ -19,6 +19,22 @@
       ]
     },
     {
+      "id": "bridge-01724120a7b3",
+      "bridge": "src/render/screens/game_over_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/game_over_renderer.js",
+      "reason": "Preserve the exact GameOverRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameOverRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-02e7d86b6845",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -403,22 +419,6 @@
       ]
     },
     {
-      "id": "bridge-1cdd6e08f07e",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/render/screens/victory_renderer.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-1d27448ffde5",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -626,6 +626,22 @@
       "globalProviders": [
         {
           "symbol": "HoldChargesUI",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-2cc9ae6d5e4f",
+      "bridge": "src/render/hud/hud_bar_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/hud_bar_renderer.js",
+      "reason": "Preserve the exact HudBarRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HudBarRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -1415,22 +1431,6 @@
       ]
     },
     {
-      "id": "bridge-595a005d7c64",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/render/casting/cast_scene_renderer.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-597a189600f4",
       "bridge": "src/config/runtime/config_data.js",
       "owner": "stage-4.cluster-010-config-root",
@@ -1719,6 +1719,22 @@
       ]
     },
     {
+      "id": "bridge-6486d3fc3720",
+      "bridge": "src/render/screens/victory_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/victory_renderer.js",
+      "reason": "Preserve the exact VictoryRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "VictoryRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-65b032d1255d",
       "bridge": "src/application/inventory/inventory_v2_item_order_resolver.js",
       "owner": "stage-5.cluster-006-inventory-read-models",
@@ -1902,6 +1918,22 @@
       "globalProviders": [
         {
           "symbol": "InventoryV2ItemCardRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-6bb6d3e8bf48",
+      "bridge": "src/render/hud/fight_status_bars_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/fight_status_bars_renderer.js",
+      "reason": "Preserve the exact FightStatusBarsRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightStatusBarsRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2447,6 +2479,22 @@
       ]
     },
     {
+      "id": "bridge-8d1ee89839db",
+      "bridge": "src/render/world/boat_chum_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/world/boat_chum_renderer.js",
+      "reason": "Preserve the exact BoatChumRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "BoatChumRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-8d36f9222504",
       "bridge": "src/core/fish/fish_rarity_resolver.js",
       "source": "src/app/bootstrap.js",
@@ -2543,22 +2591,6 @@
       ]
     },
     {
-      "id": "bridge-93b3ed37a13e",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/render/hud/fight_status_bars_renderer.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-9538204fd8a3",
       "bridge": "src/engine/compat/stage_2/composite_renderer_legacy_bridge.js",
       "source": "src/render/hud/fight_hud_renderer.js",
@@ -2618,6 +2650,22 @@
       "globalProviders": [
         {
           "symbol": "FishingReadinessPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-96ab3a09861c",
+      "bridge": "src/render/world/world_scene_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/world/world_scene_renderer.js",
+      "reason": "Preserve the exact WorldSceneRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "WorldSceneRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -2851,6 +2899,22 @@
       ]
     },
     {
+      "id": "bridge-a8d5f292a71f",
+      "bridge": "src/render/fishing/fight_area_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/fight_area_renderer.js",
+      "reason": "Preserve the exact FightAreaRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightAreaRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-a9380f14d75c",
       "bridge": "src/core/items/rarity/item_rarity_strategy_registry.js",
       "source": "src/app/bootstrap.js",
@@ -3047,6 +3111,22 @@
       ]
     },
     {
+      "id": "bridge-b5021bf062d9",
+      "bridge": "src/render/fishing/float_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/float_renderer.js",
+      "reason": "Preserve the exact FloatRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FloatRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-b687745f9ff8",
       "bridge": "src/infrastructure/location/offscreen_canvas_factory.js",
       "owner": "stage-4.cluster-012-platform-canvas-assets",
@@ -3058,6 +3138,22 @@
       "globalProviders": [
         {
           "symbol": "OffscreenCanvasFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-b6a0cb3dc366",
+      "bridge": "src/render/hud/hold_charges_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/hold_charges_renderer.js",
+      "reason": "Preserve the exact HoldChargesRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HoldChargesRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -3495,22 +3591,6 @@
       ]
     },
     {
-      "id": "bridge-d3fd9d86467b",
-      "bridge": "src/engine/compat/stage_2/render_math_legacy_bridge.js",
-      "source": "src/render/screens/star_rating_renderer.js",
-      "target": "src/engine/rendering/render_math.js",
-      "reason": "Keep the reviewed classic consumer synchronous until its Stage 5 migration.",
-      "owner": "stage-2.4-engine-rendering-primitives",
-      "introducedStage": "stage-2",
-      "removalStage": "stage-5",
-      "globalProviders": [
-        {
-          "symbol": "RenderMath",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-d49bc31ed975",
       "bridge": "src/config/inventory/inventory_rule_messages.js",
       "owner": "stage-5.cluster-002-inventory-rule-messages",
@@ -3682,6 +3762,22 @@
       "globalProviders": [
         {
           "symbol": "CompositeMetricStrategy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-dbea74d1a177",
+      "bridge": "src/render/fishing/rod_line_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/fishing/rod_line_renderer.js",
+      "reason": "Preserve the exact RodLineRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RodLineRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -4023,6 +4119,22 @@
       ]
     },
     {
+      "id": "bridge-ecf19cad0684",
+      "bridge": "src/render/screens/star_rating_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/screens/star_rating_renderer.js",
+      "reason": "Preserve the exact StarRatingRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "StarRatingRenderer",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
       "id": "bridge-ed0bb2e35bf4",
       "bridge": "src/infrastructure/storage/cache_manager.js",
       "owner": "stage-4.cluster-036-platform-cache",
@@ -4082,6 +4194,22 @@
       "globalProviders": [
         {
           "symbol": "UnlimitedInventoryCapacityPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ef7dbdc9d951",
+      "bridge": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js",
+      "reason": "Preserve the exact PlayerPressureFatigueIndicatorRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "PlayerPressureFatigueIndicatorRenderer",
           "mechanism": "global-this-property"
         }
       ]
@@ -4210,6 +4338,22 @@
       "globalProviders": [
         {
           "symbol": "RenderPass",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-fc910758ded3",
+      "bridge": "src/render/casting/cast_scene_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "source": "src/app/bootstrap.js",
+      "target": "src/game/presentation/casting/cast_scene_renderer.js",
+      "reason": "Preserve the exact CastSceneRenderer consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CastSceneRenderer",
           "mechanism": "global-this-property"
         }
       ]

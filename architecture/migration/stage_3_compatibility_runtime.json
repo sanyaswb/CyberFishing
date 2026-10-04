@@ -621,6 +621,20 @@
       "module": "src/game/presentation/rendering/game_render_order.js",
       "owner": "stage-5.cluster-017-render-frame-storage",
       "reason": "Two original Object.freeze literal catalogs created once, no browser/DEV or external side effect. Same catalog objects, sequence and values retained."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "0e3d9b835994b0d2b3a13c3eb2cef023e970c3e558e9076b77a4c0ec8dd49af2",
+      "module": "src/game/presentation/casting/cast_scene_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Original frozen literal dash arrays evaluated once. Same array values and frozen object identity; no browser/DEV external effect."
+    },
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "b6b82615c11a009b6ef250ff56130aa432c9ee1151ee655963cf5b2dcb0bb88a",
+      "module": "src/game/presentation/fishing/fight_area_renderer.js",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Original frozen literal dash arrays evaluated once. Same array values and frozen object identity; no browser/DEV external effect."
     }
   ],
   "activationPositions": [
@@ -985,6 +999,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "GameOverRenderer",
+      "legacyScriptIndex": 378,
+      "legacySymbol": "GameOverRenderer",
+      "shimFile": "activations/378_gameoverrenderer.js",
+      "sourceProvider": "src/render/screens/game_over_renderer.js",
+      "targetModule": "src/game/presentation/screens/game_over_renderer.js",
+      "id": "activation-20d09aa2c0f7",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2SettingsTransactionParticipant",
       "legacyScriptIndex": 179,
       "legacySymbol": "InventoryV2SettingsTransactionParticipant",
@@ -1201,6 +1227,30 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "FightAreaRenderer",
+      "legacyScriptIndex": 368,
+      "legacySymbol": "FightAreaRenderer",
+      "shimFile": "activations/368_fightarearenderer.js",
+      "sourceProvider": "src/render/fishing/fight_area_renderer.js",
+      "targetModule": "src/game/presentation/fishing/fight_area_renderer.js",
+      "id": "activation-3043e1c8cf5a",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "HoldChargesRenderer",
+      "legacyScriptIndex": 374,
+      "legacySymbol": "HoldChargesRenderer",
+      "shimFile": "activations/374_holdchargesrenderer.js",
+      "sourceProvider": "src/render/hud/hold_charges_renderer.js",
+      "targetModule": "src/game/presentation/hud/hold_charges_renderer.js",
+      "id": "activation-307dbffc6a2f",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "WaitingState",
       "legacyScriptIndex": 407,
       "legacySymbol": "WaitingState",
@@ -1209,6 +1259,18 @@
       "targetModule": "src/game/application/state/game_state_machine.js",
       "id": "activation-30ec895c8786",
       "owner": "stage-4.cluster-028-orchestrators",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "VictoryRenderer",
+      "legacyScriptIndex": 383,
+      "legacySymbol": "VictoryRenderer",
+      "shimFile": "activations/383_victoryrenderer.js",
+      "sourceProvider": "src/render/screens/victory_renderer.js",
+      "targetModule": "src/game/presentation/screens/victory_renderer.js",
+      "id": "activation-3154167629e2",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -1453,6 +1515,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "FightStatusBarsRenderer",
+      "legacyScriptIndex": 375,
+      "legacySymbol": "FightStatusBarsRenderer",
+      "shimFile": "activations/375_fightstatusbarsrenderer.js",
+      "sourceProvider": "src/render/hud/fight_status_bars_renderer.js",
+      "targetModule": "src/game/presentation/hud/fight_status_bars_renderer.js",
+      "id": "activation-4af8eac597b0",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2ItemCardRenderer",
       "legacyScriptIndex": 250,
       "legacySymbol": "InventoryV2ItemCardRenderer",
@@ -1499,6 +1573,18 @@
       "shimFile": "activations/076_targetrangemetricstrategy.js",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "HudBarRenderer",
+      "legacyScriptIndex": 373,
+      "legacySymbol": "HudBarRenderer",
+      "shimFile": "activations/373_hudbarrenderer.js",
+      "sourceProvider": "src/render/hud/hud_bar_renderer.js",
+      "targetModule": "src/game/presentation/hud/hud_bar_renderer.js",
+      "id": "activation-4f6eaff0c05b",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "DEGRADATION_COLOR_CONFIG",
@@ -1845,6 +1931,18 @@
       "targetModule": "src/game/presentation/styles/fight_area_style_resolver.js",
       "id": "activation-6bfcf119f04d",
       "owner": "stage-5.cluster-004-visual-style-resolvers",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "PlayerPressureFatigueIndicatorRenderer",
+      "legacyScriptIndex": 376,
+      "legacySymbol": "PlayerPressureFatigueIndicatorRenderer",
+      "shimFile": "activations/376_playerpressurefatigueindicatorrenderer.js",
+      "sourceProvider": "src/render/hud/player_pressure_fatigue_indicator_renderer.js",
+      "targetModule": "src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js",
+      "id": "activation-6c0af8a52aee",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -2293,6 +2391,18 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "RodLineRenderer",
+      "legacyScriptIndex": 369,
+      "legacySymbol": "RodLineRenderer",
+      "shimFile": "activations/369_rodlinerenderer.js",
+      "sourceProvider": "src/render/fishing/rod_line_renderer.js",
+      "targetModule": "src/game/presentation/fishing/rod_line_renderer.js",
+      "id": "activation-8d5b889bbc6e",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "InventoryV2AssemblyParameterSectionResolver",
       "legacyScriptIndex": 248,
       "legacySymbol": "InventoryV2AssemblyParameterSectionResolver",
@@ -2339,6 +2449,18 @@
       "owner": "stage-4.cluster-022-inventory-refill",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-5"
+    },
+    {
+      "exportName": "StarRatingRenderer",
+      "legacyScriptIndex": 381,
+      "legacySymbol": "StarRatingRenderer",
+      "shimFile": "activations/381_starratingrenderer.js",
+      "sourceProvider": "src/render/screens/star_rating_renderer.js",
+      "targetModule": "src/game/presentation/screens/star_rating_renderer.js",
+      "id": "activation-92ebc96475c8",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "InventoryV2ActionContract",
@@ -2409,6 +2531,18 @@
       "targetModule": "src/game/config/raw/items/item_database.js",
       "id": "activation-9dc9359360d2",
       "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "CastSceneRenderer",
+      "legacyScriptIndex": 367,
+      "legacySymbol": "CastSceneRenderer",
+      "shimFile": "activations/367_castscenerenderer.js",
+      "sourceProvider": "src/render/casting/cast_scene_renderer.js",
+      "targetModule": "src/game/presentation/casting/cast_scene_renderer.js",
+      "id": "activation-9e53d14903ec",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
@@ -2845,6 +2979,30 @@
       "removalStage": "stage-5"
     },
     {
+      "exportName": "WorldSceneRenderer",
+      "legacyScriptIndex": 363,
+      "legacySymbol": "WorldSceneRenderer",
+      "shimFile": "activations/363_worldscenerenderer.js",
+      "sourceProvider": "src/render/world/world_scene_renderer.js",
+      "targetModule": "src/game/presentation/world/world_scene_renderer.js",
+      "id": "activation-c1e9e9c777e2",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "FloatRenderer",
+      "legacyScriptIndex": 370,
+      "legacySymbol": "FloatRenderer",
+      "shimFile": "activations/370_floatrenderer.js",
+      "sourceProvider": "src/render/fishing/float_renderer.js",
+      "targetModule": "src/game/presentation/fishing/float_renderer.js",
+      "id": "activation-c280ddd4eae3",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
       "exportName": "ChumManager",
       "legacyScriptIndex": 223,
       "legacySymbol": "ChumManager",
@@ -2877,6 +3035,18 @@
       "targetModule": "src/platform/browser/ui/game_controls.js",
       "id": "activation-c3af50745e36",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "BoatChumRenderer",
+      "legacyScriptIndex": 366,
+      "legacySymbol": "BoatChumRenderer",
+      "shimFile": "activations/366_boatchumrenderer.js",
+      "sourceProvider": "src/render/world/boat_chum_renderer.js",
+      "targetModule": "src/game/presentation/world/boat_chum_renderer.js",
+      "id": "activation-c547b17fe895",
+      "owner": "stage-5.cluster-018-canvas-render-leaves",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
       "removalStage": "stage-6"
     },
