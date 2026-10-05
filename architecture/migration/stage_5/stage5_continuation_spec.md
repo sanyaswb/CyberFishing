@@ -1,5 +1,15 @@
 # Current owner decision: native production now; native DEV in Stage 6
 
+Current verified progress (2026-10-05): work package B tooling archival is complete.
+262 obsolete utilities / 25,470 lines and the unused three-line import were removed;
+utils now 216 JS/JSON files / 46,324 lines, src unchanged at 810 / 82,056.
+Quick 24/24, Architecture 32/32 and uncached Full 64/64 passed with identical
+game-cycle stdout; native and retained DEV browser acceptance passed, one loop,
+zero console issues, identical gameplay controls/saves/reload and complete cleanup.
+Exact working bytes are recoverable at pushed tag stage5-tools-archive.
+Evidence: tooling_archive_applied.json and ../../archive/stage5_tooling_archival_{acceptance,browser}.json.
+Next: packages A/C/D/E/F, then separately verified G; Stage 5 release/closure remains pending.
+
 Current execution authority (2026-10-05): the owner requests autonomous completion under
 `stage5_next_chat_spec.md`, including verified post-closure cleanup. Re-observed develop
 `a3e2551` matches origin/develop; native graph 350 modules / 521 imports; current

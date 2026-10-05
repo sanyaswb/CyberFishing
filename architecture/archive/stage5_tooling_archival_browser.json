@@ -1,0 +1,145 @@
+{
+  "performer": "codex-automated-acceptance",
+  "status": "PASS",
+  "date": "2026-10-05",
+  "build": "normal node utils/dev-server.js; compatibility built with 28 activations",
+  "urls": [
+    "http://127.0.0.1:4173/index.html",
+    "http://127.0.0.1:4173/dev.html"
+  ],
+  "fixtureMethod": "Ignored fixtures derived from current real pages; canonical native imports for production; one cumulative transport for classic DEV; read facts from fixture DOM. Direct real-page starts checked separately.",
+  "native": {
+    "identities": [
+      "gameIdentity",
+      "applicationIdentity",
+      "rootIdentity",
+      "configContextIdentity",
+      "configOwner",
+      "physicsIdentity",
+      "fixedCatchInjected"
+    ],
+    "rootBuildCalls": 1,
+    "startupPromiseIdentity": true,
+    "gameReturnedIdentity": true,
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "transport": false,
+    "devGlobals": [],
+    "watchdog": "absent",
+    "flags": {
+      "noLineBreak": false,
+      "noHookEscape": false,
+      "infiniteResources": false,
+      "noRodBreak": false,
+      "noEquipmentLoss": true,
+      "fixedBiteChanceEnabled": true,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "liveFlags": true,
+    "pause": {
+      "activeCount": 0,
+      "duplicateStartAttempts": 0
+    },
+    "resume": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "cleanup": {
+      "loops": {
+        "activeCount": 0,
+        "duplicateStartAttempts": 0
+      },
+      "game": true,
+      "watchdog": true,
+      "listeners": {
+        "event": 0,
+        "lifecycle": 0,
+        "input": 0
+      }
+    },
+    "inventoryRoleButtons": 50,
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "dev": {
+    "identities": [
+      "gameIdentity",
+      "applicationIdentity",
+      "rootIdentity",
+      "configContextIdentity",
+      "configOwner",
+      "physicsIdentity",
+      "fixedCatchInjected"
+    ],
+    "rootBuildCalls": 1,
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "transport": true,
+    "watchdog": "absent",
+    "flags": {
+      "noLineBreak": false,
+      "noHookEscape": false,
+      "infiniteResources": false,
+      "noRodBreak": false,
+      "noEquipmentLoss": true,
+      "fixedBiteChanceEnabled": true,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "liveFlags": true,
+    "pause": {
+      "activeCount": 0,
+      "duplicateStartAttempts": 0
+    },
+    "resume": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "cleanup": {
+      "loops": {
+        "activeCount": 0,
+        "duplicateStartAttempts": 0
+      },
+      "game": true,
+      "watchdog": true,
+      "listeners": {
+        "event": 0,
+        "lifecycle": 0,
+        "input": 0
+      }
+    },
+    "inventoryRoleButtons": 52,
+    "diagnosticControls": [
+      "⚙️",
+      "×"
+    ],
+    "sameGameplayTexts": true,
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "gameplaySaveKeys": [
+    "fishing_game_player_equipment",
+    "fishing_game_player_inventory",
+    "fishing_game_player_inventory_v2"
+  ],
+  "gameplaySavesSameAcrossPages": true,
+  "additionalDiagnosticKey": "fishing_game_dev_tools_sections_state",
+  "originalSavesRestored": true,
+  "screenshots": [
+    "C:/Users/merko/.codex/visualizations/2026/10/05/01a10b7b-eeea-7780-931c-25742b350c7c/stage5_archive_direct_index.jpg",
+    "C:/Users/merko/.codex/visualizations/2026/10/05/01a10b7b-eeea-7780-931c-25742b350c7c/stage5_archive_direct_dev.jpg",
+    "C:/Users/merko/.codex/visualizations/2026/10/05/01a10b7b-eeea-7780-931c-25742b350c7c/stage5_archive_native_inventory.jpg",
+    "C:/Users/merko/.codex/visualizations/2026/10/05/01a10b7b-eeea-7780-931c-25742b350c7c/stage5_archive_dev_inventory.jpg"
+  ],
+  "limitations": "Browser startup, canonical identity, configured enabled/off flags and a live flag toggle, inventory/depth input, pause/resume, save/reload and pagehide disposal. Full cast/hook/fight/land/break and enabled gameplay effects are covered by focused/game-cycle scenarios; no owner play or long browser fishing session claimed.",
+  "ownedTabsClosed": true,
+  "ownedServerStopped": true,
+  "ignoredFixturesRemoved": true
+}

@@ -258,3 +258,18 @@ these files unreachable after removing history reconstruction from the runner an
 The remaining historical helpers are retained where live fixtures and planners still consume them.
 No live check was removed. Cache regression still proves obsolete scopes and tooling drift invalidate
 seals; current checks execute directly in the workspace.
+
+## Stage 5 historical tooling archival (2026-10-05)
+
+The unused three-line hydration import disconnected 262 historical replay/planning utilities
+(25,470 lines); every one was removed after the current 64-check/package/CLI/native-fixture/evidence
+closure proved zero incoming live edges. No catalog check or historical evidence source was removed.
+Current utility size: 216 JS/JSON files / 46,324 newline-counted lines. See
+`architecture/migration/stage_5/tooling_archive_applied.json` for current verification status.
+
+Native commit `aac62f615e1e709460680e7eab71b861871d9c1b` preserves all normalized Git blobs;
+`stage3-evidence-archive` preserves 257 matching current blobs and earlier forms of five later variants.
+Annotated tag `stage5-tools-archive` points to `fcade4bebef24116bc910b5c2e36dba125e23cea` and preserves all
+262 exact working-byte blobs, rechecked against the audit SHA256 values. For byte-identical recovery,
+read `git cat-file blob stage5-tools-archive:<path>` with a binary subprocess and write stdout bytes
+directly. A filtered Git checkout or PowerShell text redirection does not establish byte identity.
