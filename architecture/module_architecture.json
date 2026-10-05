@@ -439,7 +439,7 @@
       "rootValue": "root"
     },
     "legacyLoadOrder": {
-      "source": "index.html",
+      "source": "dev.html",
       "firstValue": 1,
       "outsideLegacyGraph": null
     },
@@ -1082,6 +1082,15 @@
       ],
       "migrationWaveMustAllowTargetBoundary": true,
       "rolesMustBeAllowedByTargetBoundary": true
+    },
+    "browserStartup": {
+      "productionSource": "index.html",
+      "productionEntrypoint": "src/entrypoints/game.entry.js",
+      "productionRuntime": "native-esm",
+      "developmentSource": "dev.html",
+      "developmentRuntime": "classic-cumulative-iife",
+      "nativeDevelopmentStage": "stage-6",
+      "decision": "architecture/migration/stage_5/native_production_owner_decision.md"
     }
   },
   "architectureGuards": {

@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Fishing Mechanic Prototype</title>
+    <link rel="stylesheet" href="src/ui/styles/style.css" />
+    <link rel="stylesheet" href="src/ui/styles/inventory_v2.css?v=0.24.30" />
+  </head>
+  <body>
+    <canvas id="gameCanvas"></canvas>
+    <div
+      id="gameVersionBadge"
+      class="game-version-badge"
+      aria-label="Поточна версія гри"
+    ></div>
+    <script src="dist/stage-3-compat-runtime/compat_runtime.iife.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/001_project_version_config.js" data-legacy-slot="1"></script>
+    <script src="src/config/project_version.js?v=0.25.2" data-legacy-slot="1"></script>
+    <script src="dist/stage-3-compat-runtime/activations/002_rarity_visual_config.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/003_degradation_color_config.js"></script>
+    <script src="src/config/items/item_progression_config.js"></script>
+    <script src="src/config/items/item_stat_override_config.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/006_item_db.js"></script>
+    <script src="src/config/databases/fish/presets/fish_profile_factory.js"></script>
+    <script src="src/config/databases/fish/presets/fish_profile_presets.js"></script>
+    <script src="src/config/databases/fish/species/peaceful_fish.js"></script>
+    <script src="src/config/databases/fish/species/predator_fish.js"></script>
+    <script src="src/config/databases/fish/species/rare_fish.js"></script>
+    <script src="src/config/databases/fish/species/event_fish.js"></script>
+    <script src="src/config/databases/fish/fish_categories.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/014_fish_db.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/015_map_db.js"></script>
+    <script src="src/config/physics/environment_physics_config.js"></script>
+    <script src="src/config/physics/retrieve_physics_config.js"></script>
+    <script src="src/config/physics/fight_physics_config.js"></script>
+    <script src="src/config/physics/tackle_physics_config.js"></script>
+    <script src="src/config/physics/tension_physics_config.js"></script>
+    <script src="src/config/physics/physics_formula_map.js"></script>
+    <script src="src/config/physics/physics_units_and_naming.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/023_fightphysicsconfigadapter.js"></script>
+    <script src="src/config/physics/physics_config.js"></script>
+    <script src="src/config/runtime/config_override_store.js"></script>
+    <script src="src/config/runtime/resolved_config_provider.js"></script>
+    <script src="src/infrastructure/config/deep_clone_config.js" data-legacy-slot="27"></script>
+    <script src="src/config/runtime/immutable_config.js" data-legacy-slot="27"></script>
+    <script src="dist/stage-3-compat-runtime/activations/028_config.js" data-legacy-slot="28"></script>
+    <script src="dist/stage-3-compat-runtime/activations/028_createruntimeconfigcontext.js" data-legacy-slot="28"></script>
+    <script src="src/config/config.js" data-legacy-slot="28"></script>
+    <script src="src/config/inventory/item_assembly_profile_config.js"></script>
+<script src="src/config/inventory/equipment_slot_config.js" data-legacy-slot="30"></script>
+    <script src="src/config/inventory/equipment_slot_presentation_config.js" data-legacy-slot="30"></script>
+    <script src="src/config/inventory/inventory_rule_messages.js" data-legacy-slot="30"></script>
+    <script src="src/config/inventory/inventory_v2_item_parameter_config.js"></script>
+    <script src="src/config/inventory/inventory_v2_sort_config.js"></script>
+    <script src="src/config/validation/item_rarity_config_validator.js"></script>
+    <script src="src/config/validation/rarity_config_validator.js"></script>
+    <script src="src/config/validation/item_progression_config_validator.js"></script>
+    <script src="src/config/validation/degradation_color_config_validator.js"></script>
+    <script src="src/config/validation/config_schema_validator.js"></script>
+
+    <script src="src/input/pull_input_mapper.js"></script>
+    <script src="src/input/victory_action_gesture_resolver.js"></script>
+
+    <script src="src/core/input/fight_input_action_composer.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/041_inputmanager.js" data-legacy-slot="41"></script>
+    <script src="src/infrastructure/diagnostics/event_logger.js" data-legacy-slot="41"></script>
+    <script src="dist/stage-3-compat-runtime/activations/041_cachemanager.js" data-legacy-slot="41"></script>
+    <script src="dist/stage-3-compat-runtime/activations/041_vector2.js" data-legacy-slot="41"></script>
+    <script src="src/core/fish/fish_rarity_resolver.js"></script>
+    <script src="src/core/fish/fish_anomaly_variant_resolver.js"></script>
+    <script src="src/core/fish/fish_visual_variant_resolver.js"></script>
+    <script src="src/core/items/rarity/item_rarity_descriptor.js"></script>
+    <script src="src/core/items/rarity/item_rarity_strategy.js"></script>
+    <script src="src/core/items/rarity/authored_item_rarity_strategy.js"></script>
+    <script src="src/core/items/rarity/item_rarity_strategy_registry.js"></script>
+    <script src="src/core/items/rarity/item_rarity_resolver.js"></script>
+    <script src="src/core/items/rarity/effective_item_rarity_resolver.js"></script>
+    <script src="src/core/items/item_stat_override_policy.js"></script>
+    <script src="src/core/items/effective_item_stats_resolver.js"></script>
+    <script src="src/core/items/metrics/item_bounded_metric_resolver.js"></script>
+    <script src="src/core/items/condition/item_condition_descriptor.js"></script>
+    <script src="src/core/items/condition/item_condition_resolver.js"></script>
+    <script src="src/core/items/freshness/item_freshness_descriptor.js"></script>
+    <script src="src/core/items/freshness/item_freshness_state_policy.js"></script>
+    <script src="src/core/items/freshness/bait_freshness_decay_policy.js"></script>
+    <script src="src/core/items/freshness/bait_freshness_modifier.js"></script>
+    <script src="src/core/items/freshness/item_freshness_resolver.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_descriptor.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_match.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_grade_policy.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_knowledge_policy.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_resolver.js"></script>
+    <script src="src/core/items/bait/bait_effectiveness_catalog_resolver.js"></script>
+    <script src="src/core/fishing/fishing_cast_exposure_resolver.js"></script>
+    <script src="src/core/items/quality/item_quality_grade_policy.js"></script>
+    <script src="src/core/items/quality/hook_quality_modifier.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/070_hookpowerpolicy.js"></script>
+    <script src="src/core/items/quality/net_quality_modifier.js"></script>
+    <script src="src/core/items/quality/environmental_compensation_modifier.js"></script>
+    <script src="src/core/items/progression/item_metric_strategy.js"></script>
+    <script src="src/core/items/progression/numeric_stat_metric_strategy.js"></script>
+    <script src="src/core/items/progression/derived_stat_metric_strategy.js"></script>
+    <script src="src/core/items/progression/target_range_metric_strategy.js"></script>
+    <script src="src/core/items/progression/composite_metric_strategy.js"></script>
+    <script src="src/core/items/progression/item_metric_strategy_registry.js"></script>
+    <script src="src/core/items/progression/item_catalog_baseline_registry.js" data-legacy-slot="79"></script>
+    <script src="src/infrastructure/diagnostics/console_logger.js" data-legacy-slot="79"></script>
+    <script src="src/core/items/progression/item_rating_resolver.js"></script>
+    <script src="src/core/items/progression/item_rating_tier_resolver.js"></script>
+    <script src="src/core/items/progression/item_quality_resolver.js"></script>
+    <script src="src/core/items/progression/item_capacity_resolver.js"></script>
+    <script src="src/core/items/progression/item_progression_descriptor.js"></script>
+    <script src="src/core/items/progression/item_progression_resolver.js"></script>
+
+    <script src="dist/stage-3-compat-runtime/activations/086_inventoryequiptargetselectionpolicy.js"></script>
+    <script src="src/core/inventory/inventory_item_stacking_policy.js"></script>
+    <script src="src/core/float_tackle_line_budget_policy.js"></script>
+    <script src="src/core/distance_unit_converter.js" data-legacy-slot="89"></script>
+    <script src="src/core/casting_distance.js" data-legacy-slot="89"></script>
+    <script src="src/core/line/line_spool_state.js"></script>
+    <script src="src/core/fishing/rod_pull_state.js"></script>
+    <script src="src/core/fishing/rod_stroke_state.js"></script>
+    <script src="src/core/fishing/rod_stroke_tracker.js"></script>
+    <script src="src/core/fishing/rod_stroke_distance_tracker.js"></script>
+    <script src="src/core/fishing/player_force_budget_allocator.js"></script>
+    <script src="src/core/fishing/player_pressure/player_pressure_gain_resolver.js"></script>
+    <script src="src/core/fishing/player_pressure/player_tension_build_rate_resolver.js"></script>
+    <script src="src/core/fishing/player_pressure/player_reel_fatigue_session.js"></script>
+    <script src="src/core/fishing/player_pressure/player_pressure_fatigue_source_resolver.js"></script>
+    <script src="src/core/fishing/player_pressure/player_pressure_fatigue_state.js"></script>
+    <script src="src/core/fishing/player_pressure/player_pressure_fatigue_calculator.js"></script>
+    <script src="src/core/fishing/stamina/active_endurance_drain_calculator.js"></script>
+    <script src="src/core/fishing/stamina/passive_endurance_drain_calculator.js"></script>
+    <script src="src/core/fishing/stamina/stamina_lateral_position_resolver.js"></script>
+    <script src="src/core/fishing/stamina/stamina_pressure_resolver.js"></script>
+    <script src="src/core/fishing/stamina/stamina_drain_calculator.js"></script>
+    <script src="src/core/fishing/stamina/stamina_regen_calculator.js"></script>
+    <script src="src/core/fishing/stamina/stamina_transition_resolver.js"></script>
+    <script src="src/core/fishing/stamina/stamina_phase_machine.js"></script>
+    <script src="src/core/fishing/stamina/stamina_balance_frame.js"></script>
+    <script src="src/core/fishing/endurance/endurance_movement_debuff_calculator.js"></script>
+    <script src="src/core/fishing/reel_retrieve_speed_calculator.js"></script>
+    <script src="src/core/fishing/reel_auto_recovery_calculator.js"></script>
+    <script src="src/core/fishing/reel_hold_load_policy.js"></script>
+    <script src="src/core/fishing/reel_hold_recovery_system.js"></script>
+    <script src="src/core/fishing/reel_recovery_fish_slowdown_policy.js"></script>
+    <script src="src/core/fishing/recoverable_line_calculator.js"></script>
+    <script src="src/core/fishing/rod_stroke_capacity_resolver.js"></script>
+    <script src="src/core/fishing/rod_pull_calculator.js"></script>
+    <script src="src/core/fishing/landing_policy.js"></script>
+    <script src="src/core/fishing/retrieve_policy.js"></script>
+    <script src="src/core/fishing/fish_retrieve_result.js"></script>
+    <script src="src/core/fishing/hold_opposition_resolver.js"></script>
+    <script src="src/core/fishing/fish_direction_intent_sampler.js"></script>
+    <script src="src/core/fishing/fish_fight_direction_resolver.js"></script>
+    <script src="src/core/fishing/rod_control_tension_mode_resolver.js"></script>
+    <script src="src/core/fishing/rod_control_angle_resolver.js"></script>
+    <script src="src/core/fishing/drag_force_calculator.js"></script>
+    <script src="src/core/fishing/line_tension_calculator.js"></script>
+    <script src="src/core/fishing/line_constraint_state_resolver.js"></script>
+    <script src="src/core/fishing/line_constrained_fish_motion_resolver.js"></script>
+    <script src="src/core/fishing/line_radial_movement_splitter.js"></script>
+    <script src="src/core/fishing/rod_control_movement_projector.js"></script>
+    <script src="src/core/fishing/pole_fight_sector_geometry.js"></script>
+    <script src="src/core/fishing/pole_fight_sector_constraint.js"></script>
+    <script src="src/core/fishing/pole_fight_sector_angle_constraint.js"></script>
+    <script src="src/core/fishing/tackle_failure_selector.js"></script>
+    <script src="src/core/fishing/tackle_stress_accumulator.js"></script>
+    <script src="src/core/fishing/simple_fight_force_calculator.js"></script>
+    <script src="src/core/fishing/landing_lift_tension_calculator.js"></script>
+    <script src="src/core/fishing/landing_lift_readiness_policy.js"></script>
+    <script src="src/core/line/line_allocation_policy.js"></script>
+    <script src="src/core/line/line_inventory_controller.js"></script>
+
+    <!-- Inventory v2 domain -->
+<script src="src/core/inventory/inventory_item_location.js"></script>
+    <script src="src/core/inventory/inventory_item_reservation_policy.js"></script>
+    <script src="src/core/inventory/flat_inventory_item_repository.js"></script>
+    <script src="src/core/inventory/item_assembly_stacking_policy.js"></script>
+    <script src="src/core/inventory/unlimited_assembly_capacity_policy.js"></script>
+    <script src="src/core/assemblies/assembly_state.js"></script>
+    <script src="src/core/assemblies/assembly_state_repository.js"></script>
+    <script src="src/core/assemblies/assembly_profile_registry.js"></script>
+    <script src="src/core/assemblies/item_assembly_reader.js"></script>
+    <script src="src/core/assemblies/assembly_attachment_target_resolver.js"></script>
+    <script src="src/core/assemblies/assembly_completion_policy.js"></script>
+    <script src="src/core/assemblies/exact_assembly_refill_signature_policy.js"></script>
+    <script src="src/core/assemblies/item_assembly_service.js"></script>
+    <script src="src/core/equipment/rod_capability_resolver.js"></script>
+    <script src="src/core/equipment/equipment_slot_visibility_policy.js"></script>
+    <script src="src/core/equipment/terminal_line_slot_resolver.js" data-legacy-slot="159"></script>
+    <script src="src/ui/inventory/terminal_line_slot_label_resolver.js" data-legacy-slot="159"></script>
+    <script src="src/core/equipment/equipment_state.js"></script>
+    <script src="src/core/equipment/equipment_slot_availability_policy.js"></script>
+    <script src="src/core/equipment/inventory_capacity_policy.js"></script>
+    <script src="src/core/equipment/equipment_transition_planner.js"></script>
+    <script src="src/core/equipment/exact_item_signature_policy.js"></script>
+    <script src="src/core/equipment/auto_refill_policy.js"></script>
+    <script src="src/core/equipment/fishing_readiness_policy.js"></script>
+    <script src="src/core/equipment/equipment_compatibility_policy.js"></script>
+    <script src="src/core/loadouts/equipment_loadout.js"></script>
+    <script src="src/core/loadouts/equipment_loadout_repository.js"></script>
+    <script src="src/core/loadouts/loadout_equipment_transition_planner.js"></script>
+
+    <!-- Inventory v2 persistence and application services -->
+    <script src="src/infrastructure/storage/legacy_inventory_unit_allocator.js"></script>
+    <script src="src/infrastructure/storage/inventory_item_snapshot_mapper.js"></script>
+    <script src="src/infrastructure/storage/legacy_item_state_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_state_store.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_legacy_migration.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_snapshot_factory.js"></script>
+    <script src="src/infrastructure/storage/inventory_v2_transaction_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_transaction_participants.js"></script>
+    <script src="src/application/inventory/equipment_transition_executor.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_transition_port.js"></script>
+    <script src="src/application/inventory/loadout_application_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_loadout_port.js"></script>
+    <script src="src/application/inventory/equipment_read_model_factory.js"></script>
+    <script src="src/application/inventory/equipment_auto_refill_target_provider.js"></script>
+    <script src="src/application/inventory/auto_refill_coordinator.js"></script>
+    <script src="src/application/inventory/inventory_v2_refill_ports.js"></script>
+    <script src="src/application/inventory/refill_compatible_signature_policy.js"></script>
+    <script src="src/application/inventory/freshest_refill_candidate_policy.js"></script>
+    <script src="src/application/inventory/apply_bait_exposure_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_hydrator.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_view_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_subfilter_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_item_order_resolver.js"></script>
+    <script src="src/application/inventory/inventory_v2_context_item_filter.js"></script>
+    <script src="src/application/inventory/inventory_v2_view_model_factory.js"></script>
+    <script src="src/application/inventory/inventory_v2_line_allocation_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_equipment_line_readiness_policy.js"></script>
+    <script src="src/application/inventory/inventory_v2_command_service.js"></script>
+    <script src="src/application/inventory/inventory_v2_gameplay_bridge.js"></script>
+    <script src="src/application/inventory/inventory_v2_facade.js"></script>
+    <script src="src/application/inventory/inventory_v2_composition_root.js"></script>
+    <script src="src/services/weakest_tackle_limit_resolver.js"></script>
+    <script src="src/world/world.js" data-legacy-slot="204"></script>
+    <script src="src/world/viewport_projector.js" data-legacy-slot="204"></script>
+
+<script src="src/entities/tackle.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/206_fishphysicsprofile.js"></script>
+
+    <script src="src/systems/stamina_system.js" data-legacy-slot="207"></script>
+    <script src="src/systems/buff_manager.js" data-legacy-slot="207"></script>
+    <script src="src/systems/drag_system.js"></script>
+    <script src="src/systems/line_system.js"></script>
+    <script src="src/systems/player_force_system.js"></script>
+    <script src="src/systems/fish_force_system.js"></script>
+    <script src="src/systems/player_pull_motion_smoother.js"></script>
+    <script src="src/systems/rod_pull_system.js"></script>
+    <script src="src/systems/rod_lateral_control_system.js"></script>
+    <script src="src/systems/rod_visual_offset_system.js"></script>
+    <script src="src/systems/fish_retrieve_system.js"></script>
+    <script src="src/systems/reel_system.js"></script>
+    <script src="src/systems/tension_system.js"></script>
+    <script src="src/systems/tackle_stress_system.js"></script>
+    <script src="src/systems/fight_physics_pipeline.js"></script>
+    <script src="src/systems/fight_physics_system.js"></script>
+    <script src="src/systems/bite_system.js"></script>
+    <script src="src/systems/chum_system.js"></script>
+    <script src="src/systems/inventory_item_factory.js"></script>
+    <script src="src/systems/inventory_item_view_factory.js"></script>
+    <script src="src/systems/inventory_system.js"></script>
+
+    <script src="dist/stage-3-compat-runtime/activations/227_horizontalscrollcontroller.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/228_initengineinterface.js" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/engine_interface_activation.js?v=0.24.30" data-legacy-slot="228"></script>
+    <script src="dist/stage-3-compat-runtime/activations/228_uiutils.js" data-legacy-slot="228"></script>
+    <script src="dist/stage-3-compat-runtime/activations/228_uidraggablebutton.js" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/game_controls.js" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/chum_controls.js" data-legacy-slot="228"></script>
+    <script src="src/ui/ui.js?v=0.24.30" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/depth_selector.js" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/time_display.js" data-legacy-slot="228"></script>
+    <script src="src/ui/legacy/hold_charges.js" data-legacy-slot="228"></script>
+    <script src="dist/stage-3-compat-runtime/activations/229_gameversionbadge.js" data-legacy-slot="229"></script>
+    <script src="src/ui/version_badge.js" data-legacy-slot="229"></script>
+    <script src="src/ui/styles/hud_style_resolver.js"></script>
+    <script src="src/ui/styles/fight_area_style_resolver.js"></script>
+    <script src="src/ui/styles/outcome_style_resolver.js"></script>
+      <script src="src/ui/styles/rarity_visual_resolver.js"></script>
+      <script src="src/ui/styles/degradation_color_resolver.js"></script>
+      <script src="src/ui/rarity/item_rarity_dom_adapter.js"></script>
+      <script src="src/ui/condition/item_condition_dom_adapter.js"></script>
+    <script src="src/ui/progression/item_progression_visual_resolver.js"></script>
+    <script src="src/ui/progression/item_progression_dom_adapter.js"></script>
+
+    <!-- Inventory v2 presentation -->
+<script src="src/ui/inventory/inventory_v2_view_model.js"></script>
+    <script src="src/ui/inventory/inventory_v2_dom_factory.js"></script>
+    <script src="src/ui/inventory/inventory_v2_long_press_controller.js"></script>
+    <script src="src/ui/inventory/inventory_v2_attachment_badge_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_balance_parameter_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_tooltip_presenter.js"></script>
+    <script src="src/ui/inventory/inventory_v2_resource_meter_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_resource_meter_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_assembly_parameter_section_resolver.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_parameters_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_item_card_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_header_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_loadout_panel_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_assembly_editor_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_saved_loadout_preview_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_inventory_grid_renderer.js"></script>
+    <script src="src/ui/inventory/inventory_v2_ui.js"></script>
+    <script src="src/ui/inventory/inventory_v2_bootstrap.js"></script>
+
+    <script src="src/debug/services/debug_formatters.js?v=0.24.30"></script>
+    <script src="src/debug/services/debug_data_selectors.js"></script>
+    <script src="src/debug/services/location_debug_data_provider.js"></script>
+    <script src="src/debug/services/memory_leak_watchdog.js"></script>
+    <script src="src/debug/core/debug_context.js"></script>
+    <script src="src/debug/core/debug_module_registry.js"></script>
+    <script src="src/debug/core/debug_console.js"></script>
+    <script src="src/debug/core/debug_event_binder.js"></script>
+    <script src="src/debug/core/null_debug_runtime.js"></script>
+    <script src="src/debug/modules/base_debug_module.js"></script>
+    <script src="src/debug/modules/location_debug_module.js"></script>
+    <script src="src/debug/modules/map_debug_module.js"></script>
+    <script src="src/debug/modules/forces_debug_module.js"></script>
+    <script src="src/debug/modules/deviations_debug_module.js"></script>
+    <script src="src/debug/modules/tension_debug_module.js"></script>
+    <script src="src/debug/modules/rod_stroke_debug_module.js"></script>
+    <script src="src/debug/modules/reel_hold_gate_debug_module.js"></script>
+    <script src="src/debug/modules/reel_hold_gate_live_probe.js"></script>
+    <script src="src/debug/modules/stamina_debug_module.js"></script>
+    <script src="src/debug/modules/exhaustion_debug_module.js"></script>
+    <script src="src/debug/modules/catch_time_debug_module.js"></script>
+    <script src="src/debug/modules/prediction_debug_module.js"></script>
+    <script src="src/debug/modules/net_debug_module.js"></script>
+    <script src="src/debug/modules/bite_ticks_debug_module.js"></script>
+    <script src="src/debug/debug.js"></script>
+    <script src="src/debug/god_mode.js"></script>
+    <script src="src/debug/overlay/config/overlay_modules_config.js"></script>
+    <script src="src/debug/overlay/services/overlay_settings_store.js"></script>
+    <script src="src/debug/overlay/services/overlay_view_state_store.js"></script>
+    <script src="src/debug/overlay/services/overlay_html_builder.js"></script>
+    <script src="src/debug/overlay/services/overlay_value_formatter.js"></script>
+    <script src="src/debug/overlay/services/worst_case_force_debug_selector.js"></script>
+    <script src="src/debug/overlay/services/overlay_metric_catalog.js"></script>
+    <script src="src/debug/overlay/services/overlay_metric_resolver.js"></script>
+    <script src="src/debug/overlay/services/overlay_console_metric_inspector.js"></script>
+    <script src="src/debug/overlay/core/overlay_module_base.js"></script>
+    <script src="src/debug/overlay/core/overlay_module_registry.js"></script>
+    <script src="src/debug/overlay/core/overlay_update_loop.js"></script>
+    <script src="src/debug/overlay/core/overlay_controller.js"></script>
+    <script src="src/debug/overlay/dom/overlay_style_installer.js"></script>
+    <script src="src/debug/overlay/dom/overlay_scale_controls.js"></script>
+    <script src="src/debug/overlay/dom/overlay_window_drag_controller.js"></script>
+    <script src="src/debug/overlay/dom/overlay_dom_adapter.js"></script>
+    <script src="src/debug/overlay/dom/overlay_metric_info_bridge.js"></script>
+    <script src="src/debug/overlay/dom/overlay_interaction_bridge.js"></script>
+    <script src="src/debug/overlay/modules/echo_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/behavior_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fish_balance_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fish_power_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/debuffs_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/player_max_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/live_forces_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/chances_detail_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/chum_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/stamina_balance_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/worst_case_overlay_module.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_section_base.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_fish_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_control_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_drag_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_line_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_movement_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_tension_section.js"></script>
+    <script src="src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js"></script>
+    <script src="src/debug/overlay/overlay_bootstrap.js"></script>
+    <script src="src/debug/services/active_fish_dev_tools_schema.js"></script>
+    <script src="src/debug/services/location_dev_tools_schema.js"></script>
+    <script src="src/debug/services/hooked_fish_profile_synchronizer.js"></script>
+    <script src="src/debug/services/item_progression_debug_snapshot_provider.js"></script>
+    <script src="src/debug/services/dev_tools_parameter_alias_registry.js"></script>
+    <script src="src/debug/services/dev_tools_control_binding_registry.js"></script>
+    <script src="src/debug/dev_tools.js"></script>
+
+    <script src="src/render/core/canvas_2d_surface.js"></script>
+    <script src="src/infrastructure/location/offscreen_canvas_factory.js"></script>
+    <script src="src/render/core/canvas_primitives.js"></script>
+    <script src="src/render/core/image_asset_provider.js"></script>
+    <script src="src/render/core/render_allocation_diagnostics.js"></script>
+    <script src="dist/legacy-bridges/asset_manifest.iife.js"></script>
+    <script src="dist/legacy-bridges/asset_load_result.iife.js"></script>
+    <script src="src/assets/asset_preload_coordinator.js"></script>
+    <script src="src/infrastructure/location/depth_map_reader.js"></script>
+    <script src="src/infrastructure/location/location_asset_loader.js"></script>
+    <script src="src/render/core/render_frame_buffer.js"></script>
+    <script src="dist/legacy-bridges/render_pass.iife.js"></script>
+    <script src="src/render/core/render_order.js"></script>
+    <script src="dist/legacy-bridges/render_math.iife.js"></script>
+    <script src="dist/legacy-bridges/render_component.iife.js"></script>
+    <script src="dist/legacy-bridges/composite_renderer.iife.js"></script>
+    <script src="src/render/world/world_scene_renderer.js"></script>
+    <script src="src/render/world/world_debug_renderer.js"></script>
+    <script src="src/render/world/location_debug_map_builder.js"></script>
+    <script src="src/render/world/boat_chum_renderer.js"></script>
+    <script src="src/render/casting/cast_scene_renderer.js"></script>
+    <script src="src/render/fishing/fight_area_renderer.js"></script>
+    <script src="src/render/fishing/rod_line_renderer.js"></script>
+    <script src="src/render/fishing/float_renderer.js"></script>
+    <script src="src/render/fishing/fishing_scene_renderer.js"></script>
+    <script src="src/render/fishing/line_visual_state_controller.js"></script>
+    <script src="src/render/hud/hud_bar_renderer.js"></script>
+    <script src="src/render/hud/hold_charges_renderer.js"></script>
+    <script src="src/render/hud/fight_status_bars_renderer.js"></script>
+    <script src="src/render/hud/player_pressure_fatigue_indicator_renderer.js"></script>
+    <script src="src/render/hud/fight_hud_renderer.js"></script>
+    <script src="src/render/screens/game_over_renderer.js"></script>
+    <script src="src/render/screens/victory_layout_resolver.js"></script>
+    <script src="src/render/screens/rarity_animation_resolver.js"></script>
+    <script src="src/render/screens/star_rating_renderer.js"></script>
+    <script src="src/render/screens/victory_theme_resolver.js"></script>
+    <script src="src/render/screens/victory_renderer.js"></script>
+    <script src="src/render/pipeline/world_render_pass.js"></script>
+    <script src="src/render/pipeline/casting_render_pass.js"></script>
+    <script src="src/render/pipeline/fishing_render_pass.js"></script>
+    <script src="src/render/pipeline/hud_render_pass.js"></script>
+    <script src="src/render/pipeline/outcome_render_pass.js"></script>
+    <script src="src/render/pipeline/game_render_pipeline.js"></script>
+
+    <!-- APP UTILS -->
+    <script src="src/core/math/normalize_distance.js" data-legacy-slot="390"></script>
+    <script src="src/app/utils.js" data-legacy-slot="390"></script>
+
+    <!-- APP CORE -->
+    <script src="dist/stage-3-compat-runtime/activations/391_eventbus.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/392_eventlifecycle.js"></script>
+    <script src="src/app/core/game_clock.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/394_gameloop.js"></script>
+    <script src="dist/legacy-bridges/dependency_contract_validator.iife.js"></script>
+
+    <!-- APP ADAPTERS / PROVIDERS -->
+    <script src="dist/stage-3-compat-runtime/activations/396_canvasmetricsprovider.js"></script>
+<script src="dist/stage-3-compat-runtime/activations/396_devflagsprovider.js"></script>
+
+    <!-- APP RULES -->
+    <script src="src/app/rules.js"></script>
+    <script src="src/app/cast_power.js"></script>
+
+    <!-- APP CONTEXT -->
+    <script src="src/app/context.js"></script>
+
+    <!-- APP WORLD -->
+    <script src="src/app/world.js"></script>
+
+    <!-- APP DOMAIN SERVICES -->
+    <script src="src/app/inventory.js"></script>
+    <script src="src/app/fishing.js"></script>
+    <script src="src/app/bite.js"></script>
+    <script src="src/app/chum.js"></script>
+    <script src="src/app/debug.js?v=0.24.30"></script>
+
+    <!-- APP STATES -->
+    <script src="dist/stage-3-compat-runtime/activations/406_fixedcatchfishfactory.js"></script>
+    <script src="src/app/states.js"></script>
+
+    <!-- APP RENDERING -->
+    <script src="src/app/rendering/game_render_intent.js"></script>
+    <script src="src/app/rendering/boat_chum_render_frame_builder.js"></script>
+    <script src="src/app/rendering/location_debug_render_frame_builder.js"></script>
+    <script src="src/app/rendering/world_render_frame_builder.js"></script>
+    <script src="src/app/rendering/casting_render_frame_builder.js"></script>
+    <script src="src/app/rendering/landing_area_render_frame_builder.js"></script>
+    <script src="src/app/rendering/fight_area_render_frame_builder.js"></script>
+    <script src="src/app/rendering/fight_hud_frame_builder.js"></script>
+    <script src="src/app/rendering/fishing_equipment_render_model_builder.js"></script>
+    <script src="src/app/rendering/fishing_render_frame_builder.js"></script>
+    <script src="src/app/rendering/outcome_render_frame_builder.js"></script>
+    <script src="src/app/rendering/game_render_frame_builder.js"></script>
+    <script src="src/app/rendering/game_render_coordinator.js"></script>
+
+    <!-- APP APPLICATION / BOOTSTRAP -->
+    <script src="src/app/application.js"></script>
+    <script src="dist/stage-3-compat-runtime/activations/422_gamecompositionroot.js"></script>
+
+    <!-- PUBLIC GAME API -->
+    <script src="dist/stage-3-compat-runtime/activations/423_game.js"></script>
+
+    <!-- START GAME -->
+    <script src="src/app/script.js"></script>
+  </body>
+</html>

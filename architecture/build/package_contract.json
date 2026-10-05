@@ -31,8 +31,8 @@
   "stage": {
     "current": "5.29",
     "vite": "fixture-bridge-and-cumulative-runtime-infrastructure",
-    "productionEntrypoint": "unchanged-index-html",
-    "sourceRuntime": "classic-scripts-with-cumulative-iife-runtime",
+    "productionEntrypoint": "native-index-html-game-entry",
+    "sourceRuntime": "native-production-and-classic-dev-cumulative-iife",
     "commonJsTooling": "preserved",
     "bridgeBuild": {
       "status": "transitioned-to-cumulative-runtime",

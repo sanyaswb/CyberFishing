@@ -212,4 +212,118 @@ function checkProductionOverrideReader() {
 }
 checkProductionOverrideReader();
 
+async function checkNativeProductionStartup() {
+  const acorn = require("acorn"), fs = require("node:fs"), path = require("node:path");
+  const { Game } = require("../src/bootstrap/production/game.js");
+  const { BrowserGameLifecycle } = require("../src/platform/browser/runtime/browser_game_lifecycle.js");
+  const { EventBus } = require("../src/engine/events/event_bus.js");
+  const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
+  const { FixedCatchFishFactory } = require("../src/game/application/fishing/fixed_catch_fish_factory.js");
+  const { FightPhysicsConfigAdapter } = require("../src/game/config/physics/fight_physics_config_adapter.js");
+  // Evaluate the actual module bodies with controlled imported collaborators and import callbacks.
+  function evaluate(file, names, bindings) {
+    const source = fs.readFileSync(path.join(__dirname, "..", file), "utf8");
+    const tree = acorn.parse(source, { ecmaVersion: "latest", sourceType: "module" }), edits = [];
+    for (const node of tree.body) {
+      if (node.type === "ImportDeclaration") edits.push([node.start, node.end, ""]);
+      else if (node.type === "ExportNamedDeclaration") {
+        assert(node.declaration, "fixture expects a native declaration export");
+        edits.push([node.start, node.declaration.start, ""]);
+      }
+    }
+    function visit(node) {
+      if (!node || typeof node !== "object") return;
+      if (node.type === "ImportExpression") edits.push([node.start, node.start + 6, "importModule"]);
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value === "object") visit(value);
+      }
+    }
+    visit(tree);
+    let evaluated = source;
+    for (const [start, end, replacement] of edits.sort((a, b) => b[0] - a[0]))
+      evaluated = evaluated.slice(0, start) + replacement + evaluated.slice(end);
+    return new SourceRuntime({ globals: bindings }).run("(function(){\n" + evaluated + "\nreturn {" + names.join(",") + "};})()", file);
+  }
+  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/legacy_runtime_adapters.js", ["DevFlagsProvider"], { EventBus });
+  const { createRuntimeConfigContext } = evaluate("src/bootstrap/production/config_context.js", ["createRuntimeConfigContext"], {
+    ...require("../src/game/config/runtime/config_override_store.js"), ...require("../src/game/config/runtime/resolved_config_provider.js"),
+    ...require("../src/platform/browser/config/deep_clone_config.js"), ...require("../src/game/config/runtime/immutable_config.js"),
+  });
+  const loaders = {
+    loadRandomInventoryId: "../../platform/browser/inventory/random_inventory_id.js",
+    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/legacy_runtime_adapters.js",
+    loadBrowserTimeoutScheduler: "../../platform/browser/time/browser_timeout_scheduler.js",
+    loadInventoryAssemblyProfileConfig: "../../game/config/inventory/inventory_composition_config.js",
+  };
+  for (const readyState of ["loading", "interactive", "complete"]) {
+    const fishCatalog = [], mapCatalog = {}, physicsCatalog = {};
+    const config = { physics: physicsCatalog, spawns: { fishes: fishCatalog }, locations: { map: mapCatalog }, rarity: { visual: null }, degradationColors: null,
+      debug: { godMode: { enabled: true, noEquipmentLoss: true } } };
+    const visual = {}, degradation = {}, version = {}, windowListeners = new Map(), documentListeners = new Map();
+    let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, reader;
+    const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
+      removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
+      CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
+    const documentTarget = { readyState, addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); } };
+    class Adapter extends FightPhysicsConfigAdapter { constructor(owner) { super(owner);adapters++;assert.equal(owner, config); } }
+    const composition = evaluate("src/bootstrap/production/game_config_composition.js", ["createProductionConfigContext"], {
+      CONFIG: config, RARITY_VISUAL_CONFIG: visual, DEGRADATION_COLOR_CONFIG: degradation, FightPhysicsConfigAdapter: Adapter,
+      createRuntimeConfigContext(owner) { contexts++;assert.equal(owner, config);assert.equal(owner.rarity.visual, visual);
+        assert.equal(owner.degradationColors, degradation);assert(owner.fightPhysicsConfig instanceof FightPhysicsConfigAdapter);return createRuntimeConfigContext(owner); },
+    });
+    const platform = evaluate("src/platform/browser/runtime/browser_startup_environment.js",
+      ["getBrowserStartupEnvironment", "publishBrowserStartupConfig", "activateBrowserStartupInterface"],
+      { window: windowTarget, document: documentTarget, initEngineInterface() { activations++; } });
+    class Overrides extends GameplayOverrideReader { constructor(owner) { super(owner);assert.equal(owner, config);reader = this; } }
+    const imports = [], modules = Object.fromEntries(Object.values(loaders).map(specifier => [specifier, {}]));
+    let resolveBuild;
+    const buildReady = new Promise(resolve => { resolveBuild = resolve; });
+    const app = { start() { starts++;return true; }, dispose() { disposals++; } };
+    class Root {
+      constructor(owner, ports) {
+        roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "createDevFlags", "createFixedCatchFishFactory"].sort(), "production supplies only gameplay and platform ports");
+        this.ports = ports;
+        const flags = ports.createDevFlags(owner);assert(flags instanceof DevFlagsProvider);assert.equal(flags.isEnabled("noEquipmentLoss"), true);
+        owner.debug.godMode.enabled = false;assert.equal(flags.isEnabled("noEquipmentLoss"), false);owner.debug.godMode.enabled = true;
+        assert(reader instanceof GameplayOverrideReader);
+        assert(ports.createFixedCatchFishFactory({ fishRarityResolver: { resolve() {} }, fishAnomalyVariantResolver: { resolve() {} },
+          fishVisualVariantResolver: { resolveImagePath() {} } }) instanceof FixedCatchFishFactory);
+      }
+      async build(canvasId) {
+        builds++;assert.equal(canvasId, "gameCanvas");
+        for (const [name, specifier] of Object.entries(loaders)) assert.equal(await this.ports[name](), modules[specifier]);
+        return buildReady;
+      }
+      printStorageUsage() { storage++; }
+    }
+    const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
+      CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, DevFlagsProvider, GameplayOverrideReader: Overrides,
+      FixedCatchFishFactory, GameCompositionRoot: Root, ...composition, ...platform,
+      GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
+      importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
+    });
+    const first = startup.startProductionGame(), second = startup.startProductionGame();
+    assert.equal(first, second, "concurrent startup shares the original promise");resolveBuild(app);
+    const game = await first, context = windowTarget.CYBER_FISHING_CONFIG_RUNTIME;
+    assert(game instanceof Game);assert.equal(await game.ready, app);assert.equal(windowTarget.game, game);
+    assert.equal(composition.createProductionConfigContext(), context);assert.equal(composition.createProductionConfigContext(), context);
+    assert.equal(context.overrideStore, context.resolvedProvider.overrideStore);assert(Object.isFrozen(context.baseConfig));
+    assert.equal(config.rarity.visual, visual);assert.equal(config.degradationColors, degradation);assert.equal(config.fightPhysicsConfig.config, config);
+    assert.equal(config.spawns.fishes, fishCatalog);assert.equal(config.locations.map, mapCatalog);assert.equal(config.physics, physicsCatalog);
+    const descriptor = Object.getOwnPropertyDescriptor(config, "fightPhysicsConfig");
+    assert.equal(descriptor.enumerable, false);assert.equal(descriptor.configurable, true);assert.equal(descriptor.writable, false);
+    assert.deepEqual(imports, Object.values(loaders));assert.deepEqual([roots, builds, starts, contexts, adapters, activations, storage, previous], [1,1,1,1,1,1,1,1]);
+    assert.equal(windowTarget.CYBER_FISHING_PROJECT_VERSION, version);assert.equal(windowTarget.CYBER_FISHING_MEMORY_WATCHDOG, null);assert.equal(windowTarget.getCyberFishingMemoryReport(), null);
+    if (readyState === "loading") { assert.equal(mounts, 0);assert.equal(documentListeners.size, 1);documentListeners.get("DOMContentLoaded")(); }
+    else assert.equal(documentListeners.size, 0);
+    assert.equal(mounts, 1);assert.equal(windowListeners.size, 1);assert.equal(pagehideAdds, 1);
+    const cleanup = windowListeners.get("pagehide");assert.equal(cleanup, windowTarget.CYBER_FISHING_GAME_CLEANUP);cleanup();cleanup();
+    assert.equal(disposals, 1);assert.equal(windowListeners.size, 0);assert.equal(windowTarget.game, null);assert.equal(windowTarget.CYBER_FISHING_MEMORY_WATCHDOG, null);
+    assert.equal(startup.startProductionGame(), first, "completed single-shot startup retains its original promise");assert.equal(roots, 1);
+  }
+}
+checkNativeProductionStartup().then(() => {
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
+}).catch(error => { console.error(error);process.exitCode = 1; });

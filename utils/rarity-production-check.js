@@ -19,7 +19,7 @@ class ProductionRarityConfigLoader {
     new legacy.Validator().assertValid(legacy);
     if (path.basename(LegacyScriptOrderReader.sourcePath(ROOT)) === "index.html") return legacy;
     const native = this.#loadNative();
-    for (const key of ["rarityConfig", "fishDb", "itemDb", "mapDb"]) {
+    for (const key of ["runtimeConfig", "degradationColors", "rarityConfig", "fishDb", "itemDb", "mapDb"]) {
       assert.deepEqual(native[key], JSON.parse(JSON.stringify(legacy[key])), "native/DEV config parity: " + key);
     }
     return native;
@@ -42,6 +42,7 @@ class ProductionRarityConfigLoader {
       imported("DegradationColorConfigValidator", "src/game/presentation/visual/degradation_color_config_validator.js"),
       'const globalsBefore = Reflect.ownKeys(globalThis);',
       'const context = createProductionConfigContext();',
+      'assert.equal(createProductionConfigContext(), context, "one canonical config context per realm");',
       'assert.equal(CONFIG.rarity.visual, RARITY_VISUAL_CONFIG);',
       'assert.equal(CONFIG.degradationColors, DEGRADATION_COLOR_CONFIG);',
       'assert(CONFIG.fightPhysicsConfig instanceof FightPhysicsConfigAdapter);',
@@ -53,13 +54,13 @@ class ProductionRarityConfigLoader {
       'assert.equal(ITEM_DB, rawItemDb);',
       'assert(Object.isFrozen(context.baseConfig));',
       'assert.equal(context.overrideStore, context.resolvedProvider.overrideStore);',
-      'const data = { rarityConfig: CONFIG.rarity, fishDb: FISH_DB, itemDb: ITEM_DB, mapDb: MAP_DB };',
+      'const data = { runtimeConfig: CONFIG, degradationColors: CONFIG.degradationColors, rarityConfig: CONFIG.rarity, fishDb: FISH_DB, itemDb: ITEM_DB, mapDb: MAP_DB };',
       'new RarityConfigValidator().assertValid(data);',
       'new DegradationColorConfigValidator().assertValid(CONFIG.degradationColors);',
       'assert.deepEqual(Reflect.ownKeys(globalThis), globalsBefore);',
       'process.stdout.write(JSON.stringify(data));',
     ].join("\n");
-    const result = spawnSync(process.execPath, ["--experimental-default-type=module", "--input-type=module", "-e", source],
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", source],
       { cwd: ROOT, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
     assert.equal(result.status, 0, "Native rarity configuration failed:\n" + result.stderr);
     return JSON.parse(result.stdout);
@@ -81,6 +82,7 @@ class ProductionRarityConfigLoader {
     }
     vm.runInContext(
       [
+        "globalThis.__RUNTIME_CONFIG__ = CONFIG;",
         "globalThis.__RARITY_CONFIG__ = CONFIG.rarity;",
         "globalThis.__FISH_DB__ = FISH_DB;",
         "globalThis.__ITEM_DB__ = ITEM_DB;",
@@ -90,6 +92,8 @@ class ProductionRarityConfigLoader {
       context,
     );
     return {
+      runtimeConfig: context.__RUNTIME_CONFIG__,
+      degradationColors: context.__RUNTIME_CONFIG__.degradationColors,
       rarityConfig: context.__RARITY_CONFIG__,
       fishDb: context.__FISH_DB__,
       itemDb: context.__ITEM_DB__,

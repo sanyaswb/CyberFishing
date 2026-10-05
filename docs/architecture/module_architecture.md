@@ -102,7 +102,7 @@ Module roles are recorded in the migration manifest. They let architecture check
 - No fixed source-module count is part of policy; the checked invariant is manifest entries equal current filesystem entries.
 - Stable entry order: `currentPath-ascending`.
 - Current area strategy: `source-relative-directory`.
-- Legacy order source: `index.html`, starting at `1`; files outside the legacy graph use `null`.
+- Legacy order source: `dev.html`, starting at `1`; files outside the legacy graph use `null`.
 - Observation mode: `ast-scope-aware`; principle: `facts-only`; architecture classification: `forbidden`.
 - Observation statuses: `pending`, `verified`, `partial`, `failed`.
 - Provider mechanisms: `global-lexical`, `global-var`, `global-function`, `window-property`, `global-this-property`, `implicit-global`.
