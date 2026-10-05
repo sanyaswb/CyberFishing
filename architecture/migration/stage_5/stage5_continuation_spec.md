@@ -10,6 +10,8 @@ and Fixed Catch prerequisite 030; prior graphs and completed evidence remain his
 provenance. All architecture/save/state gates remain unchanged. See
 `native_production_owner_decision.md`.
 
+The current next-chat execution brief is [next_chat_completion_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/next_chat_completion_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
+
 # CyberFishing: Stage 5 continuation execution specification
 
 Date: 2026-10-05. Language: English. Workspace: `D:\dev\code\cyber-fishing`.
