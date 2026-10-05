@@ -54,9 +54,7 @@ class RuntimeLoader {
     ]);
     // Production activates only the export with legacy consumers. This legacy-shaped test also
     // exercises the other two named exports through their exact identity in the loaded ESM module.
-    const capacityModule = context.__CYBER_FISHING_COMPAT_RUNTIME__.modules[
-      "src/game/domain/inventory/inventory_capacity_policy.js"
-    ];
+    const capacityModule = loader.getExports('src/game/domain/inventory/inventory_capacity_policy.js');
     context.InventoryCapacityPolicy = capacityModule.InventoryCapacityPolicy;
     context.DelegatingInventoryCapacityPolicy = capacityModule.DelegatingInventoryCapacityPolicy;
     loader.load("src/core/equipment/equipment_transition_planner.js", [
@@ -117,8 +115,7 @@ class RuntimeLoader {
         messages: context.INVENTORY_RULE_MESSAGES,
       });
     }
-    context.EquipmentSlotAvailabilityState ||= context.__CYBER_FISHING_COMPAT_RUNTIME__.modules[
-      "src/game/presentation/inventory/equipment_slot_availability_policy.js"]?.EquipmentSlotAvailabilityState;
+    context.EquipmentSlotAvailabilityState ||= loader.getExports('src/game/presentation/inventory/equipment_slot_availability_policy.js')?.EquipmentSlotAvailabilityState;
     context.EquipmentSlotAvailabilityPolicy = bindConstructorDefaults(context.EquipmentSlotAvailabilityPolicy,
       () => ({ visibilityPolicy: new context.EquipmentSlotVisibilityPolicy({ slotConfig: context.EQUIPMENT_SLOT_CONFIG }),
         terminalLineResolver: new context.TerminalLineSlotResolver() }));

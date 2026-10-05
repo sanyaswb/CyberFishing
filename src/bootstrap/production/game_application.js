@@ -28,12 +28,16 @@ export class GameViewportFacade {
     config,
     biteEnvironmentService,
   }) {
+    try {
+
     this.#world = world;
     this.#projector = projector;
     this.#canvasMetrics = canvasMetrics;
     this.#config = config;
     this.#biteEnvironmentService = biteEnvironmentService;
-  }
+  
+    } catch (error) { this.dispose(); throw error; }
+}
 
   refreshViewport(recalculateMap = true) {
     this.#world.refreshViewport(recalculateMap);
@@ -352,6 +356,7 @@ export class GameApplication {
   #clock = new GameClock();
   #castExposureResolver = new FishingCastExposureResolver();
   #listeners = new EventLifecycle();
+  #disposed = false;
   #loop;
   #world;
   #renderCoordinator;
@@ -1160,10 +1165,12 @@ export class GameApplication {
   }
 
   stop() {
-    this.#loop.stop();
+    this.#loop?.stop();
   }
 
   dispose() {
+    if (this.#disposed) return;
+    this.#disposed = true;
     this.stop();
     this.#stateMachine?.dispose();
     this.#removeInventoryChangedListener?.();
@@ -1183,7 +1190,7 @@ export class GameApplication {
       this.#ui.dispose?.();
     }
     this.#listeners.dispose();
-    this.#debugFacade.clear();
+    this.#debugFacade?.clear();
   }
 
   get gameStateName() {

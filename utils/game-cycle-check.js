@@ -143,6 +143,7 @@ const compatibilityLoader = new StageThreeCompatibilityTestLoader({
   context,
 });
 compatibilityLoader.loadRuntime();
+context.nativeTestExport=(file,name)=>compatibilityLoader.getExports(file)[name];
 // Prerequisites 006, 017 and 028 extracted providers into their own classic files; replays of
 // trees recorded before them still declare the symbols in their original source files.
 const EXTRACTED_PROVIDERS = ["src/core/math/vector2.js", "src/core/distance_unit_converter.js",
@@ -1890,7 +1891,7 @@ assert(spinningVictory.transition?.name === "victory", "spinning rod lands a lig
 // without an activation is read from the cumulative runtime exports.
 function domainClass(name, targetModule) {
   try { return eval(name); } catch (error) {
-    return globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules[targetModule][name];
+    return nativeTestExport(targetModule,name);
   }
 }
 

@@ -10,10 +10,14 @@ export function publishBrowserStartupConfig(windowTarget, configRuntime, project
 }
 
 export function activateBrowserStartupInterface(documentTarget, mountVersionBadge) {
-  initEngineInterface();
+  const disposeInterface = initEngineInterface(documentTarget);
   if (documentTarget.readyState === "loading") {
     documentTarget.addEventListener("DOMContentLoaded", mountVersionBadge, { once: true });
   } else {
     mountVersionBadge();
   }
+  return () => {
+    documentTarget.removeEventListener("DOMContentLoaded", mountVersionBadge);
+    disposeInterface?.();
+  };
 }

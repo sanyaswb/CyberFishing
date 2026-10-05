@@ -4,8 +4,8 @@ export const UI_EXCEPTIONS = {
   ids: [],
 };
 
-export function initEngineInterface() {
-  const style = document.createElement("style");
+export function initEngineInterface(documentTarget = document) {
+  const style = documentTarget.createElement("style");
   style.innerHTML = `
         * {
             -webkit-tap-highlight-color: transparent !important;
@@ -31,16 +31,23 @@ export function initEngineInterface() {
             transform: scale(0.96);
         }
     `;
-  document.head.appendChild(style);
+  documentTarget.head.appendChild(style);
 
-  document.addEventListener("touchstart", () => {}, { passive: true });
-  document.addEventListener("contextmenu", (e) => {
+  const onTouchStart = () => {};
+  const onContextMenu = (e) => {
     const t = e.target;
     const isException =
       UI_EXCEPTIONS.tags.includes(t.tagName) ||
       UI_EXCEPTIONS.classes.some((c) => t.classList.contains(c)) ||
       UI_EXCEPTIONS.ids.includes(t.id);
     if (!isException) e.preventDefault();
-  });
+  };
+  documentTarget.addEventListener("touchstart", onTouchStart, { passive: true });
+  documentTarget.addEventListener("contextmenu", onContextMenu);
+  return () => {
+    documentTarget.removeEventListener("touchstart", onTouchStart);
+    documentTarget.removeEventListener("contextmenu", onContextMenu);
+    style.remove();
+  };
 }
 

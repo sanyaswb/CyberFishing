@@ -5,7 +5,7 @@ const { SourceRuntime } = require('../core/source_runtime');
 function checkRenderFrameComposition() {
   const runtime=new SourceRuntime();
   runtime.load('src/core/math/vector2.js',{expose:['Vector2']});
-  runtime.run('Object.assign(globalThis,globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/rendering/render_math.js"]);');
+  runtime.load('src/engine/rendering/render_math.js');
   runtime.load('src/render/core/image_asset_provider.js',{expose:['ImageAssetProvider']});
   runtime.load('src/render/core/render_frame_buffer.js',{expose:['GameRenderFrame','RenderFrameBuffer']});
   runtime.load('src/render/core/render_order.js',{expose:['RenderOrder']});

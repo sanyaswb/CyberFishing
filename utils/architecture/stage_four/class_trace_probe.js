@@ -41,8 +41,7 @@ const INSTALL = `((host) => {
   const resolve = (name) => {
     try { if (typeof globalThis[name] === "function") return globalThis[name]; } catch {}
     try { const value = eval(name); if (typeof value === "function") return value; } catch {}
-    return Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__?.modules || {})
-      .map(exports => exports[name]).find(value => typeof value === "function");
+    return host.nativeExports?.[name];
   };
   for (const name of host.pending()) {
     const Class = resolve(name);
@@ -99,21 +98,32 @@ const host = {
   pending: () => CLASSES,
 };
 const installers = new WeakMap();
+const nativeExports = new WeakMap();
 const originalRun = vm.runInContext;
 let installing = false;
+function install(context) {
+  if (!installers.has(context)) installers.set(context, originalRun.call(vm, INSTALL, context));
+  installers.get(context)({ ...host, nativeExports: nativeExports.get(context) });
+}
+function registerNativeNamespace(context, namespace) {
+  const exports = nativeExports.get(context) || {};
+  Object.assign(exports, namespace);
+  nativeExports.set(context, exports);
+  install(context);
+}
 vm.runInContext = function traced(code, context, options) {
   const result = originalRun.call(this, code, context, options);
   if (!installing) {
     installing = true;
     try {
-      if (!installers.has(context)) installers.set(context, originalRun.call(vm, INSTALL, context));
-      installers.get(context)(host);
+      install(context);
     } finally {
       installing = false;
     }
   }
   return result;
 };
+module.exports = { registerNativeNamespace };
 
 process.on("exit", () => {
   const traces = Object.fromEntries([...records].map(([name, record]) =>

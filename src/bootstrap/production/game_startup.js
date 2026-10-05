@@ -15,14 +15,18 @@ let startup;
 
 // One startup per ESM realm, including concurrent calls from the same entry module.
 export function startProductionGame() {
-  return startup ??= startGame();
+  if (startup) return startup;
+  const requested = startGame();
+  startup = requested;
+  requested.catch(() => { if (startup === requested) startup = null; });
+  return requested;
 }
 
 async function startGame() {
   const { windowTarget, documentTarget } = getBrowserStartupEnvironment();
   const configRuntime = createProductionConfigContext();
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
-  activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
+  const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
   const overrides = new GameplayOverrideReader(CONFIG);
@@ -38,7 +42,6 @@ async function startGame() {
   });
   const game = new Game("gameCanvas", compositionRoot);
   browserLifecycle.publishGame(game);
-  const started = await game.start();
   browserLifecycle.publishWatchdog(null);
 
   let disposed = false;
@@ -47,12 +50,19 @@ async function startGame() {
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
     game.dispose();
-    browserLifecycle.clearPublishedHandles(game, null);
+    disposeInterface?.();
+    browserLifecycle.clearPublishedHandles(game, null, cleanup);
   };
   browserLifecycle.installPagehideCleanup(cleanup);
+  try {
+  await game.ready;
+  if (disposed) { game.dispose(); return game; }
+  const started = await game.start();
+  if (disposed) return game;
   if (!started) {
     new ConsoleLogger().error(new Error("[Bootstrap] CyberFishing game loop did not start."));
   }
   compositionRoot.printStorageUsage();
   return game;
+  } catch (error) { cleanup(); throw error; }
 }

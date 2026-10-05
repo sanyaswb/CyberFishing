@@ -47,7 +47,7 @@ async function startGame() {
   const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
   const configRuntime = createProductionConfigContext();
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
-  activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
+  const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
@@ -67,8 +67,9 @@ async function startGame() {
     probe?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
+    disposeInterface?.();
     if (gameReady) game?.dispose();
-    browserLifecycle.clearPublishedHandles(game, watchdog);
+    browserLifecycle.clearPublishedHandles(game, watchdog, cleanup);
     startup = null;
   };
   try {

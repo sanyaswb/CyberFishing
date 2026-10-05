@@ -101,7 +101,7 @@ export class DevTools {
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
     tooltipProvider.ready.then(() => {
-      if (this.#isOpen) this.#populatePanel();
+      if (!this.#isDisposed && this.#isOpen) this.#populatePanel();
     });
     document.addEventListener(
       "debug-live-update",

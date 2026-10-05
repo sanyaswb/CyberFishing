@@ -58,6 +58,7 @@ export class OverlayMetricInfoBridge {
 
   dispose() {
     this.stop();
+    this.#catalog.dispose?.();
   }
 
   #listenForDebugData() {

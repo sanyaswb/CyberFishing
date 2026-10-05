@@ -12,6 +12,11 @@ export class UIDraggableButton {
   #offsetX;
   #offsetY;
   #id; // Унікальний ідентифікатор для кешу
+  #onClickShield = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  #pointerId = null;
 
   constructor(element, onClickCallback, config, options = {}) {
     this.#element = element;
@@ -108,10 +113,22 @@ export class UIDraggableButton {
   #initEvents() {
     this.#element.addEventListener("pointerdown", this.onPointerDown);
 
-    this.#element.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    });
+    this.#element.addEventListener("click", this.#onClickShield);
+  }
+
+  dispose() {
+    if (this.#holdTimer !== null) clearTimeout(this.#holdTimer);
+    this.#holdTimer = null;
+    this.#element.removeEventListener("pointerdown", this.onPointerDown);
+    this.#element.removeEventListener("click", this.#onClickShield);
+    this.#element.removeEventListener("pointermove", this.onPointerMove);
+    this.#element.removeEventListener("pointerup", this.onPointerUp);
+    this.#element.removeEventListener("pointercancel", this.onPointerUp);
+    if (this.#pointerId !== null && this.#element.hasPointerCapture?.(this.#pointerId))
+      this.#element.releasePointerCapture(this.#pointerId);
+    this.#pointerId = null;
+    this.#isDragging = false;
+    this.#onClickCallback = null;
   }
 
   onPointerDown(e) {
@@ -120,6 +137,7 @@ export class UIDraggableButton {
     if (e.button !== 0 && e.pointerType === "mouse") return;
 
     this.#element.setPointerCapture(e.pointerId);
+    this.#pointerId = e.pointerId;
 
     this.#isDragging = false;
     this.#startX = e.clientX;
@@ -181,6 +199,7 @@ export class UIDraggableButton {
 
   onPointerUp(e) {
     this.#element.releasePointerCapture(e.pointerId);
+    this.#pointerId = null;
     this.#element.removeEventListener("pointermove", this.onPointerMove, {
       capture: true,
     });

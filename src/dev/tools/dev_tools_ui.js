@@ -10,6 +10,7 @@ export class DevToolsUI {
   #onToggleCallback;
   #tooltipProvider;
   #controlBindings = new DevToolsControlBindingRegistry();
+  #dragButton;
 
   constructor(onToggleCallback, config, tooltipProvider = null) {
     this.#onToggleCallback = onToggleCallback;
@@ -32,6 +33,9 @@ export class DevToolsUI {
   }
 
   dispose() {
+    this.#dragButton?.dispose();
+    this.#dragButton = null;
+    this.#tooltipProvider?.dispose();
     this.#controlBindings.clear();
     this.#btn?.remove();
     this.#panel?.remove();
@@ -303,7 +307,7 @@ export class DevToolsUI {
     UIUtils.makeSolid(this.#btn);
 
     if (typeof UIDraggableButton !== "undefined") {
-      new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
+      this.#dragButton = new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
         id: "devtools_btn",
         cache: typeof CacheManager !== "undefined" ? CacheManager : null,
         noTransform: true,

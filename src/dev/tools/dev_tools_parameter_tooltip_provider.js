@@ -1,6 +1,8 @@
 export class DevToolsParameterTooltipProvider {
   #descriptionsByKey = {};
   #readyPromise;
+  #abortController = typeof AbortController === "function" ? new AbortController() : null;
+  #disposed = false;
 
   constructor({
     urls = [
@@ -13,6 +15,12 @@ export class DevToolsParameterTooltipProvider {
 
   get ready() {
     return this.#readyPromise;
+  }
+
+  dispose() {
+    this.#disposed = true;
+    this.#abortController?.abort();
+    this.#descriptionsByKey = {};
   }
 
   getTooltip(labelText) {
@@ -35,7 +43,7 @@ export class DevToolsParameterTooltipProvider {
     );
 
     for (const response of responses) {
-      if (response.status === "fulfilled") {
+      if (!this.#disposed && response.status === "fulfilled") {
         this.#ingestDescriptions(response.value);
       }
     }
@@ -43,12 +51,13 @@ export class DevToolsParameterTooltipProvider {
 
   async #loadOne(url) {
     try {
-      const response = await fetch(url, { cache: "no-cache" });
+      const response = await fetch(url, { cache: "no-cache", signal: this.#abortController?.signal });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
       return await response.json();
     } catch (error) {
+      if (this.#disposed) return null;
       console.warn(
         "[DevTools] Tooltip descriptions failed to load:",
         url,

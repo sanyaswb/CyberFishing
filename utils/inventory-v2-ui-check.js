@@ -935,8 +935,8 @@ class InventoryV2StaticContractCheck {
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
-    runtime.run('globalThis.HorizontalScrollController = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/dom/horizontal_scroll_controller.js"].HorizontalScrollController;');
-    const identities=runtime.run('(() => { let checked=0; for (const exports of Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules)) for (const [name,value] of Object.entries(exports)) if (Object.hasOwn(globalThis,name)) { if (globalThis[name] !== value) throw new Error("UI export identity changed: "+name); checked++; } return checked; })()');
+    runtime.load('src/platform/browser/dom/horizontal_scroll_controller.js');
+    let identities=0; for(const exports of runtime.moduleNamespaces) for(const [name,value]of Object.entries(exports)) if(Object.hasOwn(runtime.context,name)){if(runtime.context[name]!==value)throw new Error('UI export identity changed: '+name);identities++;}
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
     sandbox.InventoryV2ItemParametersResolver = bindConstructorDefaults(sandbox.InventoryV2ItemParametersResolver,
       () => ({ resourceMeterResolver: new sandbox.InventoryV2ResourceMeterResolver() }));

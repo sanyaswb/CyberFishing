@@ -9,7 +9,7 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 // Actual Canvas renderers and composites over reused visible/hidden models and deterministic draw commands.
 function checkCanvasScenes() {
   const runtime=new SourceRuntime();runtime.load('src/ui/styles/degradation_color_resolver.js',{expose:['DegradationColorResolver']});
-  runtime.run('for(const file of ["render_math","composite_renderer","render_pass"])Object.assign(globalThis,globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/rendering/"+file+".js"]);');
+  for(const file of ['render_math','composite_renderer','render_pass'])runtime.load('src/engine/rendering/'+file+'.js');
   const definitions=[['hud/hud_bar_renderer','HudBarRenderer'],['casting/cast_scene_renderer','CastSceneRenderer'],['fishing/fight_area_renderer','FightAreaRenderer'],
     ['fishing/float_renderer','FloatRenderer'],['fishing/rod_line_renderer','RodLineRenderer'],['hud/fight_status_bars_renderer','FightStatusBarsRenderer'],
     ['hud/hold_charges_renderer','HoldChargesRenderer'],['hud/player_pressure_fatigue_indicator_renderer','PlayerPressureFatigueIndicatorRenderer'],
@@ -217,7 +217,7 @@ function checkTimeoutScheduler() {
 function checkVisualFrames() {
   const runtime=new SourceRuntime();
   runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
-  runtime.run('globalThis.RenderMath = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/rendering/render_math.js"].RenderMath;');
+  runtime.load('src/engine/rendering/render_math.js',{expose:['RenderMath']});
   const definitions=[
     ['src/ui/styles/fight_area_style_resolver.js','FightAreaStyleResolver'],
     ['src/ui/styles/hud_style_resolver.js','HudStyleResolver'],
@@ -346,12 +346,12 @@ async function checkGameLoopAndAdapters() {
     requestAnimationFrame(callback){frames.set(++nextFrame,callback);return nextFrame;},
     cancelAnimationFrame(id){cancelled.push(id);frames.delete(id);}}});
   runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
-  runtime.run('globalThis.EventBus = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/engine/events/event_bus.js"].EventBus;');
+  runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
   runtime.load("src/app/core/game_loop.js",{expose:["GameLoop"]});
   runtime.load("src/app/adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
     "BrowserEventTargetAdapter","CanvasMetricsProvider","ConfigProvider","DevFlagsProvider"]});
   // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
-  const adapters=runtime.run('globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/runtime/legacy_runtime_adapters.js"]')||{};
+  const adapters=runtime.importModule('src/platform/browser/runtime/legacy_runtime_adapters.js')||{};
   const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter}=runtime.context;
   const BrowserEventTargetAdapter=runtime.context.BrowserEventTargetAdapter||adapters.BrowserEventTargetAdapter;
   const json=value=>JSON.stringify(value);
@@ -469,7 +469,7 @@ async function main() {
     ["src/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
     ["src/infrastructure/storage/cache_manager.js","CacheManager"],
   ]) runtime.load(file,{expose:[name]});
-  runtime.run('for (const module of ["src/engine/assets/asset_manifest.js", "src/engine/assets/asset_load_result.js"]) Object.assign(globalThis, globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules[module]);');
+  for (const module of ['src/engine/assets/asset_manifest.js','src/engine/assets/asset_load_result.js']) runtime.load(module);
   const {GameClock,ImageAssetProvider,OffscreenCanvasFactory,LocationAssetLoader} = runtime.context;
   const clock = new GameClock(100);
   const deltas = [clock.tick(100),clock.tick(116),clock.tick(500),clock.tick(490)];

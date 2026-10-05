@@ -12,7 +12,7 @@ class SourceRuntime {
   #context;
   #compatibilityLoader;
 
-  constructor({ rootDir = DEFAULT_ROOT, globals = {} } = {}) {
+  constructor({ rootDir = DEFAULT_ROOT, globals = {}, moduleStubs = {} } = {}) {
     this.#rootDir = rootDir;
     this.#context = vm.createContext({ console, ...globals });
     const contractPath = path.join(
@@ -23,6 +23,7 @@ class SourceRuntime {
       ? new StageThreeCompatibilityTestLoader({
         projectRoot: this.#rootDir,
         context: this.#context,
+        moduleStubs,
       })
       : null;
   }
@@ -32,16 +33,21 @@ class SourceRuntime {
   }
 
   read(relativePath) {
-    return fs.readFileSync(path.join(this.#rootDir, relativePath), "utf8");
+    const sourcePath = fs.existsSync(path.join(this.#rootDir, relativePath)) ? relativePath :
+      this.#compatibilityLoader?.resolveSource(relativePath) || relativePath;
+    return fs.readFileSync(path.join(this.#rootDir, sourcePath), "utf8");
   }
 
   readAuthoredSource(relativePath) {
-    const manifest = JSON.parse(this.read("architecture/migration/module_migration_manifest.json"));
-    const entry = manifest.modules.find(item => item.currentPath === relativePath);
-    const sourcePath = entry?.architecture.roles.includes("compatibility-bridge")
-      ? entry.architecture.targetPath : relativePath;
+    const sourcePath = this.#compatibilityLoader?.resolveSource(relativePath) || relativePath;
     return this.read(sourcePath);
   }
+
+  importModule(relativePath) {
+    return this.#compatibilityLoader.getExports(relativePath);
+  }
+
+  get moduleNamespaces() { return this.#compatibilityLoader.namespaces; }
 
   load(relativePath, { expose = [] } = {}) {
     if (this.#compatibilityLoader?.hasActivation(relativePath)) {

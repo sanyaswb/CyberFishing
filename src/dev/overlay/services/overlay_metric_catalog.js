@@ -1,6 +1,8 @@
 export class OverlayMetricCatalog {
   #entriesByLabel = new Map();
   #readyPromise;
+  #abortController = typeof AbortController === "function" ? new AbortController() : null;
+  #disposed = false;
 
   constructor({
     url = "src/config/metadata/overlay_metric_descriptions.json",
@@ -13,14 +15,21 @@ export class OverlayMetricCatalog {
     return this.#readyPromise;
   }
 
+  dispose() {
+    this.#disposed = true;
+    this.#abortController?.abort();
+    this.#entriesByLabel.clear();
+  }
+
   async #load(url, fetchSource) {
     if (!fetchSource) return;
     try {
-      const response = await fetchSource(url, { cache: "no-cache" });
+      const response = await fetchSource(url, { cache: "no-cache", signal: this.#abortController?.signal });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const entries = await response.json();
-      this.#entriesByLabel = new Map(Object.entries(entries || {}));
+      if (!this.#disposed) this.#entriesByLabel = new Map(Object.entries(entries || {}));
     } catch (error) {
+      if (this.#disposed) return;
       console.warn("[OverlayMetricCatalog] Metadata failed to load:", url, error);
     }
   }

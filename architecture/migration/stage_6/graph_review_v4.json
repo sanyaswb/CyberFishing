@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-graph-review",
+  "version": 4,
+  "baseCommit": "a2f270e788bf74667c516a70f72bcc33358b8ddd",
+  "status": "reviewed-native-test-and-lifecycle-successor",
+  "reason": "Retire the live test dependency on generated compatibility transport before browser cutover. Preserve synchronous VM APIs, canonical ESM class identity, realm isolation and every existing game-cycle/check fixture. Cold startup transfers disposable resources to Application only after success; failed composition releases already constructed input/inventory/DOM resources. DEV restart, pending-build pagehide, metadata abort and drag timer cleanup become explicit.",
+  "ownership": {
+    "testRuntime": "One module namespace cache per VM, test-only path aliases, explicit test stub contracts. No generated runtime or transport global. Evidence trace probe receives native namespaces directly without global publication.",
+    "startup": "Cold resource ownership transfers on successful construction. Application dispose is idempotent; each DEV startup resets only its own singleton promise. Existing platform handles are cleared by identity.",
+    "interface": "Startup owns its engine styles, contextmenu/touchstart/DOMContentLoaded listeners. No cumulative listeners on restart.",
+    "metadata": "DEV tools and overlay cancel owned metadata requests and ignore late results; disposed panel cannot rebuild.",
+    "drag": "DEV tools owns UIDraggableButton and cancels its pending hold timer and element/pointer listeners."
+  },
+  "productionGraph": {
+    "modules": 350,
+    "importEdges": 522,
+    "newImports": 0
+  },
+  "preparedNativeTargets": 100,
+  "newEntrypointPending": 1
+}

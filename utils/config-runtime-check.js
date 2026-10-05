@@ -218,8 +218,8 @@ function checkProductionOverrideReader() {
   source.load("src/debug/god_mode.js", { expose: ["GodMode"] });
   source.load("src/app/adapters.js", { expose: ["DevFlagsProvider"] });
   source.load("src/app/bootstrap.js", { expose: ["GameCompositionRoot"] });
-  const reader = new GameplayOverrideReader(config), original = source.context.GodMode;
-  const names = Object.entries(Object.getOwnPropertyDescriptors(original)).filter(([, value]) => value.get).map(([name]) => name);
+  const reader = new GameplayOverrideReader(config), original = new source.context.GodMode(config);
+  const names = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(original))).filter(([, value]) => value.get).map(([name]) => name);
   const flags = new source.context.DevFlagsProvider({ config, godModeSource: () => reader });
   for (const enabled of [undefined, false, 0, true, 1, "enabled"]) {
     for (const value of [undefined, false, true, 1, "yes"]) {
@@ -306,7 +306,8 @@ async function checkNativeProductionStartup() {
     const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
       CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
-    const documentTarget = { readyState, addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); } };
+    const documentTarget = { readyState, addEventListener(type, fn, options) { assert.equal(options.once, true);documentListeners.set(type, fn); },
+      removeEventListener(type,fn){if(documentListeners.get(type)===fn)documentListeners.delete(type);} };
     class Adapter extends FightPhysicsConfigAdapter { constructor(owner) { super(owner);adapters++;assert.equal(owner, config); } }
     const composition = evaluate("src/bootstrap/production/game_config_composition.js", ["createProductionConfigContext"], {
       CONFIG: config, RARITY_VISUAL_CONFIG: visual, DEGRADATION_COLOR_CONFIG: degradation, FightPhysicsConfigAdapter: Adapter,
@@ -439,7 +440,46 @@ function checkNativeDevelopmentDisplays() {
   console.log("Native DEV display parity: 19 overlays, "+comparisons+" active HTML comparisons, exact no-active/unknown/type labels, isolated catalog and stable Domain facts.");
 }
 
-checkNativeProductionStartup().then(() => {
+async function checkNativeDevelopmentLifecycle() {
+  const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,probeDispose:0,watchdogDispose:0};
+  const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
+  const config={locations:{map:{}},debug:{consoleModules:{},memoryWatchdog:{enabled:true}}};
+  const configRuntime={runtimeConfig:config};
+  let resolveBuild,rejectBuild,buildReady;
+  const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
+  const app={start(){counts.start++;return true;},dispose(){counts.gameDispose++;}};
+  class Root { constructor(config,options){counts.root++;this.options=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
+  const resource=key=>({dispose(){counts[key]++;}});
+  const source=new SourceRuntime({moduleStubs:{
+    'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget:{}}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
+    'src/game/config/runtime/game_config.js':{CONFIG:config},
+    'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext:()=>configRuntime},
+    'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
+    'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
+    'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
+    'src/dev/modules/reel_hold_gate_live_probe.js':{ReelHoldGateLiveProbe:class{dispose(){counts.probeDispose++;}}},
+    'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
+  }});
+  const startup=source.importModule('src/bootstrap/development/legacy_game_startup.js');
+  assert.equal(source.context.__CYBER_FISHING_COMPAT_RUNTIME__,undefined,'native harness never publishes a transport');
+  const Game=source.importModule('src/bootstrap/production/game.js').Game;
+  assert.equal(Game,source.importModule('src/bootstrap/production/game.js').Game,'one native class per VM context');
+  assert.notEqual(Game,new SourceRuntime().importModule('src/bootstrap/production/game.js').Game,'different VM realms retain isolated module identity');
+  resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
+  const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);assert.equal(listeners.size,1);
+  const cleanup=windowTarget.CYBER_FISHING_GAME_CLEANUP;cleanup();cleanup();
+  assert.equal(counts.gameDispose,1);assert.equal(counts.watchdogDispose,1);assert.equal(listeners.size,0);
+  assert.equal(windowTarget.game,null);assert.equal(windowTarget.CYBER_FISHING_GAME_CLEANUP,null);assert.equal(windowTarget.getCyberFishingMemoryReport,null);
+  resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
+  assert.equal(counts.root,2);assert.equal(counts.start,2);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
+  resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
+  assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);assert.equal(counts.probeDispose,3);
+  resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
+  assert.equal(counts.start,2,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
+  assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.probeDispose,4);assert.equal(counts.watchdogDispose,2);
+}
+
+checkNativeProductionStartup().then(checkNativeDevelopmentLifecycle).then(() => {
 checkNativeDevelopmentDisplays();
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
 }).catch(error => { console.error(error);process.exitCode = 1; });

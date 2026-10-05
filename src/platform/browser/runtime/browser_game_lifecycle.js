@@ -22,11 +22,14 @@ export class BrowserGameLifecycle {
     this.#target.removeEventListener("pagehide", cleanup);
   }
 
-  clearPublishedHandles(game, watchdog) {
+  clearPublishedHandles(game, watchdog, cleanup = null) {
     if (this.#target.game === game) this.#target.game = null;
     if (this.#target.CYBER_FISHING_MEMORY_WATCHDOG === watchdog) {
       this.#target.CYBER_FISHING_MEMORY_WATCHDOG = null;
+      this.#target.getCyberFishingMemoryReport = null;
     }
+    if (cleanup && this.#target.CYBER_FISHING_GAME_CLEANUP === cleanup)
+      this.#target.CYBER_FISHING_GAME_CLEANUP = null;
   }
 
   installPagehideCleanup(cleanup) {

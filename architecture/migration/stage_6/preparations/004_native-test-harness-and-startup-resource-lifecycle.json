@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-preparation",
+  "id": "004",
+  "slug": "native-test-harness-and-startup-resource-lifecycle",
+  "baseCommit": "a2f270e788bf74667c516a70f72bcc33358b8ddd",
+  "reason": "Retire the live test dependency on generated compatibility transport before browser cutover. Preserve synchronous VM APIs, canonical ESM class identity, realm isolation and every existing game-cycle/check fixture. Cold startup transfers disposable resources to Application only after success; failed composition releases already constructed input/inventory/DOM resources. DEV restart, pending-build pagehide, metadata abort and drag timer cleanup become explicit.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "introducedModules": [],
+  "files": [
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "e2bf0e971e79da445aae759010391c66dd5a9a114db88001ca07549354083cbd",
+      "after": "0e04a9cc5f006d9198ce0338d757b576b501cab9db3885ff99f6d8404287f187"
+    },
+    {
+      "path": "src/bootstrap/development/legacy_game_startup.js",
+      "before": "28ede4f4de3472df95ad35e1cd6058385dd91e8f98b6a49eb0aa7fe9501b7d09",
+      "after": "366c61909e8c4cb57f332f565652831254e3870e7eb57b373a32dbfb11e32c27"
+    },
+    {
+      "path": "src/bootstrap/production/game_application.js",
+      "before": "7c9cac2105c3adbb5de15cdb60033c27fcd1d1b04644dbe853e6d4df29829e78",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "a4f09097669ebe8eb1b40bf847bb59dd213711dcc07ff812dc4c80a2697cf286"
+    },
+    {
+      "path": "src/bootstrap/production/game_composition_root.js",
+      "before": "0a269280804a3f6eeba5acd1dec93d19b6d9d9e2621615e3df821164cb2990fe",
+      "after": "adf5d0796c5a92d6b39922e00b228e2baf1aa1147a8c98a42a235309c0ec09fa"
+    },
+    {
+      "path": "src/bootstrap/production/game_startup.js",
+      "before": "0f663149d1dd4b56de914046ffe94a38a6c792a665c217f1bb10f6b1dadd2c4b",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "fa498ae106b1120cbc35b179ffcb70bd944ab8b8613a57375e0b52a9f3e89113"
+    },
+    {
+      "path": "src/dev/overlay/dom/overlay_metric_info_bridge.js",
+      "before": "2e98a1461bb7e2ce85667c1091daf763b81ed3c1f2941d0b51591ace7a956b25",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "368454d3706b75b52afe5c9364c8b1dedcbfd7f9b7a3d13172765c388db473bc"
+    },
+    {
+      "path": "src/dev/overlay/services/overlay_metric_catalog.js",
+      "before": "fcf405d53b9be493d84e831072d5425fe9cc8bae07ba963b02c7bbe84a5ea32d",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "e081ffec9da1fd55dfb149872e03bca0f245b8d430346f8403c014713ce2fbc4"
+    },
+    {
+      "path": "src/dev/tools/dev_tools.js",
+      "before": "6f2b7bd937b36a58598f02533804cf2942b0778998c795741b03012297995ecc",
+      "after": "cae141df5a1907d528a10814d4555a6da5326cb2b6dab16536a67255f15fcfdf"
+    },
+    {
+      "path": "src/dev/tools/dev_tools_parameter_tooltip_provider.js",
+      "before": "9de09b89c56c12843796131e8ee551dc0a94527f6808fabcc5be9bb5c422aa25",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "727baa78db5e51c50979c77f14ce8dfc4d5315a24444b41c28a9498eafb18341"
+    },
+    {
+      "path": "src/dev/tools/dev_tools_ui.js",
+      "before": "6d43bfe847cf24197a3a3c163ca3233fa1bb877596783fad7499c9a2d881b30e",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "d08e89a781aabb4c55b43e21d07eb1982abb94347a3922b98b68f4332ccb71b5"
+    },
+    {
+      "path": "src/platform/browser/dom/draggable_button.js",
+      "before": "a043f4f7d3e9e5e70a707366d364df91cf7438acb6044f6f98ea176396eab115",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "12c8983fb88ae54cd81c659944133f4f7caf664dcdc84036a75a12db9d753cbb"
+    },
+    {
+      "path": "src/platform/browser/dom/engine_interface.js",
+      "before": "08fb6d99ce97294d86c1365d62b80721c6279bebb6670a09f64153ef2aee246e",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "7f147e925834f4cb5ccc37e33a4655731d58067cf9e33807d8312dab3a520a1c"
+    },
+    {
+      "path": "src/platform/browser/runtime/browser_game_lifecycle.js",
+      "before": "83fb05dceb2cef6d3b87d73d3563b202248e1c85a10a25ec5140a1debd375802",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "0cb6a2c281bbce0d4c0af7f50b8e000529ac7eae5a64bfcf9b0e66cea2926995"
+    },
+    {
+      "path": "src/platform/browser/runtime/browser_startup_environment.js",
+      "before": "1ec9f04564ebbf80814d6a61e80a967472d9b10da104003fb954e5ce7f4f4d54",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "4770878d56b7bb53b4491b8e5f592933312cf37323fc0125bcf004e534808fdf"
+    },
+    {
+      "path": "utils/architecture/stage_four/class_trace_probe.js",
+      "before": "09384a07a12560d1a91fd96df3d13609db84dbac79f4efef798f7965ed95a295",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "659c4eea32b86446dd0bf531d8680cb4555c50110088664e391ffa8bed7255d0"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "2ceaafb32e87b801f1a95c1b5f0bd44af36067d3b4c798e55a102a713c1cdb7a",
+      "after": "3d48ddbc2d400672962c3af1c483a20b1e41df17944723f0c98d9cef0ea78aca"
+    },
+    {
+      "path": "utils/game-cycle-check.js",
+      "before": "e5cc6714d447970efd867a5b027ff567ff3211d48bdeb4e4a4928476a1c93e44",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "218a219bacbe83ced75523e49fa1cfe6db3171aba018b45824f0d6fe2636b2c1"
+    },
+    {
+      "path": "utils/inventory-v2-equipment-check.js",
+      "before": "8e3e820f798ec0fcbbf0b6f31d505b247d06500cd2975a90d3ed7dce68db109d",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "312a36eb1d9f15add2663c25ac088676e347d219f75e5a59d21f35123b70f043"
+    },
+    {
+      "path": "utils/inventory-v2-ui-check.js",
+      "before": "528a6c2550af73fcf0ea1decdb1502016afe757fae0a559f97a3850b2c696a4f",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "5ab1edb03893e1c60d12c24824be1eda495fb82d4e0aa138dc340707db1627a9"
+    },
+    {
+      "path": "utils/platform-runtime-check.js",
+      "before": "ead48dca9525afed3a85a9e2a4a9cb73f317c368a944e5eba9c29bbe8d1177f2",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "ac00d672e9b431c2ba8febf92d759751da0c78ac52a2ec3d36e6cc8b9659d8c9"
+    },
+    {
+      "path": "utils/testing/core/source_runtime.js",
+      "before": "bd65d4c7fad453cb9fbd29800d7ea3cefeb5d240aeea53f0882aebf6dca8baf1",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "a56a7c5adab6434474066448a5ce459636e126a42cadca0eadbfb4bae6ae14f2"
+    },
+    {
+      "path": "utils/testing/runtime/chum_test_composition.js",
+      "before": "3cb72faa7e74be5a6cefa4f2fda72f593c5b848982beefdc9c3cbac86820442d",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "202b6e1319642fdce88f61ab16b06ed1cfe2fcf8edcf1ac73a93207bbc3e3647"
+    },
+    {
+      "path": "utils/testing/runtime/game_application_test_composition.js",
+      "before": "faf8533f342d99cf3c4d126f3900380e8d50b919cd1364fb4c72b7197622972d",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "9b1e940a3397358e03feec728afdc41e70e192d0f046d99b30d6d1c5c5dcbb9b"
+    },
+    {
+      "path": "utils/testing/runtime/render_frame_test_composition.js",
+      "before": "68690687e95f3b846188ce6b569e584baf5df9c09f1081612b85b20af19b19d2",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "753d58066165a57fd3ea7454058e7da2c165f97d9d2e63b7f5fe55e81e954a94"
+    },
+    {
+      "path": "utils/testing/runtime/stage_three_compatibility_test_loader.js",
+      "before": "3e641747e4ee9c178ffadc91d3607e9af5fb991f5bb641258992f5e296352c5a",
+      "beforeEvidence": "Git blob normalized recovery bytes; exact runtime source body change is visible in this successor diff",
+      "after": "e76ac13416d5a7f1c68f1c530371eb110c96f1993b248fda8eeda4311ab34425"
+    },
+    {
+      "path": "utils/testing/runtime/native_esm_test_loader.js",
+      "before": null,
+      "after": "1dc9fc7c8ce8132559b3fb17cf0d1ebf4b61794735418aa410b0f454918eba88"
+    }
+  ],
+  "importEdges": [],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "status": "accepted",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "retainedChecks": 64,
+    "retainedFixtureCases": "All original checks retained. Added native per-realm identity, repeated DEV startup/dispose, rejected build, pagehide during pending build, and retained single-shot Production completion semantics.",
+    "browser": {
+      "liveSetResetImport": true,
+      "adapterIdentity": true,
+      "restartGameLoops": 1,
+      "duplicateStarts": 0,
+      "failedConstruction": "Failure injected after real InputManager creation; rollback leaves 0 loops and 0 managed listeners",
+      "errors": [],
+      "warnings": []
+    },
+    "acceptanceReport": "architecture/archive/stage6_004_native-harness-and-lifecycle_acceptance.json",
+    "nativeTrace": {
+      "BuffManager": {
+        "methods": 3,
+        "calls": 62
+      },
+      "LocationMap": {
+        "methods": 13,
+        "calls": 616
+      }
+    }
+  },
+  "ownership": {
+    "testRuntime": "One module namespace cache per VM, test-only path aliases, explicit test stub contracts. No generated runtime or transport global. Evidence trace probe receives native namespaces directly without global publication.",
+    "startup": "Cold resource ownership transfers on successful construction. Application dispose is idempotent; each DEV startup resets only its own singleton promise. Existing platform handles are cleared by identity.",
+    "interface": "Startup owns its engine styles, contextmenu/touchstart/DOMContentLoaded listeners. No cumulative listeners on restart.",
+    "metadata": "DEV tools and overlay cancel owned metadata requests and ignore late results; disposed panel cannot rebuild.",
+    "drag": "DEV tools owns UIDraggableButton and cancels its pending hold timer and element/pointer listeners."
+  }
+}

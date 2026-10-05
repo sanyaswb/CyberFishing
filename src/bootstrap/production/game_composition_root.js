@@ -264,6 +264,11 @@ export class GameCompositionRoot {
   }
 
   async create(canvas, canvasMetrics, clock, debugEvents, devFlags, audio) {
+    // Cold startup owns resources until successful construction transfers them to Application.
+    const owned = [];
+    const own = value => { if (value != null) owned.push(value); return value; };
+    try {
+
     // The item stat override table reaches the Domain policy only through composition.
     const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: this.#config.itemStatOverrides });
     const effectiveItemStatsResolver = new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy });
@@ -661,7 +666,7 @@ export class GameCompositionRoot {
     const { BrowserEventTargetAdapter } = await this.#loadBrowserEventTargetAdapter();
     const { BrowserTimeoutScheduler } = await this.#loadBrowserTimeoutScheduler();
     const { getInventoryAssemblyProfileConfig } = await this.#loadInventoryAssemblyProfileConfig();
-    const inventory = new InventoryManager(
+    const inventory = own(new InventoryManager(
       this.#itemDb,
       this.#config.player,
       new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
@@ -689,7 +694,7 @@ export class GameCompositionRoot {
         makeRandomId: createRandomInventoryId,
         now: () => Date.now(),
       },
-    );
+    ));
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     const bootstrapItemDatabase = new ItemDatabase(this.#itemDb);
@@ -731,28 +736,28 @@ export class GameCompositionRoot {
         rng,
         this.#config.spawns,
       ),
-      input: new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
+      input: own(new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
         fightInputActionComposer: typeof FightInputActionComposer !== "undefined" ? new FightInputActionComposer() : null,
-      }),
-      ui: new UIManager(
+      })),
+      ui: own(new UIManager(
         this.#config,
-        this.#createUiLifecycle(this.#createOptionalDiagnostic(
+        this.#createUiLifecycle(own(this.#createOptionalDiagnostic(
           this.#createDevTools, "devTools", [this.#config, hookedFishProfileSynchronizer, {
             itemProgressionDebugProvider,
             itemProgressionResolver,
           }], ["dispose"],
-        )),
+        ))),
         { cache: CacheManager },
-      ),
-      chum: new ChumManager(locId, chumConfigObj, projector, {
+      )),
+      chum: own(new ChumManager(locId, chumConfigObj, projector, {
         cache: CacheManager,
         configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
         onBoatReturned: (context) =>
           inventory.handleBoatReturned?.(context),
-      }),
+      })),
       bite: new BiteSystem(
         this.#config.spawns,
         this.#config,
@@ -786,7 +791,7 @@ export class GameCompositionRoot {
     if (!inventoryV2Facade) {
       throw new Error("Inventory V2 composition is required");
     }
-    systems.inventoryUI = InventoryV2Bootstrap.create({
+    systems.inventoryUI = own(InventoryV2Bootstrap.create({
       facade: inventoryV2Facade,
       documentRef: this.#documentTarget,
       mountNode: this.#documentTarget?.body,
@@ -805,7 +810,7 @@ export class GameCompositionRoot {
         debugConfig: this.#config.debug?.inventory,
         rarityVisualResolver,
       }),
-    });
+    }));
     const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
@@ -838,9 +843,9 @@ export class GameCompositionRoot {
       physicsConfig?.getDistanceConfig?.() || {},
     );
     const castManager = new CastManager();
-    const depthUI = new DepthSelectorUI();
-    const timeUI = new TimeDisplayUI();
-    const holdUI = new HoldChargesUI();
+    const depthUI = own(new DepthSelectorUI());
+    const timeUI = own(new TimeDisplayUI());
+    const holdUI = own(new HoldChargesUI());
     return {
       location,
       rng,
@@ -894,7 +899,14 @@ export class GameCompositionRoot {
       boatRules,
       playerCastRules,
     };
-  }
+  
+    } catch (error) {
+      for (let index = owned.length - 1; index >= 0; index--) {
+        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+      }
+      throw error;
+    }
+}
 
   createApplicationServices({
     runtime,
@@ -909,6 +921,11 @@ export class GameCompositionRoot {
     canvasMetrics,
     biteEnvData,
   }) {
+    // Cold startup owns resources until successful construction transfers them to Application.
+    const owned = [];
+    const own = value => { if (value != null) owned.push(value); return value; };
+    try {
+
     const contracts = new DependencyContractValidator({
       stage: "bootstrap",
       consumer: "GameCompositionRoot.createApplicationServices",
@@ -1027,7 +1044,7 @@ export class GameCompositionRoot {
     };
 
     const stateDepsFactory = new StateDepsFactory(stateFactoryRoot);
-    const stateMachine = new StateMachine({
+    const stateMachine = own(new StateMachine({
       stateRegistry: (name) => {
         const states = {
           scouting: ScoutingState,
@@ -1042,9 +1059,9 @@ export class GameCompositionRoot {
         return new StateClass(stateDepsFactory.create(name));
       },
       onStateChanged: appPorts.onStateChanged,
-    });
+    }));
 
-    const chumController = new ChumController({
+    const chumController = own(new ChumController({
       inventory: runtime.inventory,
       chum: runtime.chum,
       projector: runtime.projector,
@@ -1065,7 +1082,7 @@ export class GameCompositionRoot {
       getGameStateName: appPorts.getGameStateName,
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
-    });
+    }));
 
     const worldBuilder = new WorldRenderFrameBuilder({
       map: runtime.map,
@@ -1213,7 +1230,14 @@ export class GameCompositionRoot {
       loop,
       debugEvents,
     };
-  }
+  
+    } catch (error) {
+      for (let index = owned.length - 1; index >= 0; index--) {
+        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+      }
+      throw error;
+    }
+}
 
   #validateRenderContracts(contracts, renderers) {
     const names = Object.keys(renderers);
