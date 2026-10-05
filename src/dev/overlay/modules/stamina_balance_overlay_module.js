@@ -5,6 +5,7 @@ export class StaminaBalanceOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("staminaBalance", options);
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

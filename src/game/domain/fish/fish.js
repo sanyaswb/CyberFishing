@@ -288,6 +288,7 @@ export class Fish {
   #behavior;
   #masteryPowerMult = 1.0;
   #lastDebuffName = null;
+  #debuffState;
 
   #originalBehaviors = null;
   #hasActiveDebuff = false;
@@ -296,6 +297,11 @@ export class Fish {
 
   // Composition injects the diagnostics logger (a platform adapter in production).
   constructor(level, weight, fishConfig, rng = null, logger = null) {
+    const owner = this;
+    this.#debuffState = Object.freeze({
+      get active() { return owner.#hasActiveDebuff; },
+      get type() { return owner.#lastDebuffName; },
+    });
     this.#level = level;
     this.#weight = weight;
     this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(fishConfig);
@@ -386,6 +392,10 @@ export class Fish {
     return Math.max(0, this.#powerDebuff);
   }
 
+  getDebuffState() { return this.#debuffState; }
+
+  // Retained public diagnostic projection. Stage 7 may retire it after the API transition;
+  // native DEV displays use the read-only facts above and own their labels.
   get activeDebuffName() {
     return this.#hasActiveDebuff
       ? this.#lastDebuffName || "Невідомий"

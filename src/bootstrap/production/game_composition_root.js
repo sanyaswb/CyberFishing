@@ -128,6 +128,7 @@ import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_re
 
 export class GameCompositionRoot {
   #config;
+  #itemDb;
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
@@ -152,6 +153,7 @@ export class GameCompositionRoot {
     createFixedCatchFishFactory,
     createHookedFishProfileSynchronizer,
     createDebugService,
+    itemDb = ITEM_DB,
     loadRandomInventoryId,
     loadBrowserEventTargetAdapter,
     loadBrowserTimeoutScheduler,
@@ -202,6 +204,7 @@ export class GameCompositionRoot {
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#config = config || {};
+    this.#itemDb = itemDb;
     this.#runtimeConfig = {};
     for (const key of Object.getOwnPropertyNames(this.#config)) {
       Object.defineProperty(this.#runtimeConfig, key, {
@@ -345,7 +348,7 @@ export class GameCompositionRoot {
       new CompositeMetricStrategy(),
     ]);
     const itemCatalogBaselineRegistry = new ItemCatalogBaselineRegistry({
-      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+      itemDb: this.#itemDb || {},
       strategyRegistry: itemMetricStrategyRegistry,
       effectiveStatsResolver: effectiveItemStatsResolver,
       logger: new ConsoleLogger(),
@@ -375,7 +378,7 @@ export class GameCompositionRoot {
     });
     const itemProgressionDebugProvider = this.#createOptionalDiagnostic(
       this.#createItemProgressionDebugSnapshotProvider, "itemProgressionDebugProvider", [{
-        itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+        itemDb: this.#itemDb || {},
         progressionResolver: itemProgressionResolver,
         effectiveStatsResolver: effectiveItemStatsResolver,
       }], ["getSnapshots"],
@@ -659,7 +662,7 @@ export class GameCompositionRoot {
     const { BrowserTimeoutScheduler } = await this.#loadBrowserTimeoutScheduler();
     const { getInventoryAssemblyProfileConfig } = await this.#loadInventoryAssemblyProfileConfig();
     const inventory = new InventoryManager(
-      ITEM_DB,
+      this.#itemDb,
       this.#config.player,
       new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
       castDistanceCalculator,
@@ -689,7 +692,7 @@ export class GameCompositionRoot {
     );
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
-    const bootstrapItemDatabase = new ItemDatabase(ITEM_DB);
+    const bootstrapItemDatabase = new ItemDatabase(this.#itemDb);
     const bootstrapStatsResolver = effectiveItemStatsResolver;
     const projectDefinition = (itemId) => {
       const definition = bootstrapItemDatabase.getItemData(itemId);
@@ -699,15 +702,15 @@ export class GameCompositionRoot {
         effectiveStats: bootstrapStatsResolver.resolve({ definition }),
       };
     };
-    if (typeof ITEM_DB !== "undefined" && ITEM_DB.chums) {
-      for (const [key, item] of Object.entries(ITEM_DB.chums)) {
+    if (this.#itemDb && this.#itemDb.chums) {
+      for (const [key, item] of Object.entries(this.#itemDb.chums)) {
         chumConfigObj.baits[key] = projectDefinition(item.id);
       }
     }
-    if (typeof ITEM_DB !== "undefined" && ITEM_DB.deliveryMethods) {
-      const firstBoatKey = Object.keys(ITEM_DB.deliveryMethods)[0];
+    if (this.#itemDb && this.#itemDb.deliveryMethods) {
+      const firstBoatKey = Object.keys(this.#itemDb.deliveryMethods)[0];
       if (firstBoatKey) {
-        const boatDefinition = ITEM_DB.deliveryMethods[firstBoatKey];
+        const boatDefinition = this.#itemDb.deliveryMethods[firstBoatKey];
         chumConfigObj.deliveryMethods.boat = projectDefinition(
           boatDefinition.id,
         );
@@ -1227,7 +1230,7 @@ export class GameCompositionRoot {
     new RarityConfigValidator().assertValid({
       rarityConfig: this.#config.rarity,
       fishDb: this.#config.spawns?.fishes || [],
-      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+      itemDb: this.#itemDb || {},
       mapDb: this.#config.locations?.map || {},
     });
   }
@@ -1240,7 +1243,7 @@ export class GameCompositionRoot {
     }
     new ItemProgressionConfigValidator({ effectiveStatsResolver }).assertValid({
       progressionConfig: this.#config.itemProgression,
-      itemDb: typeof ITEM_DB !== "undefined" ? ITEM_DB : {},
+      itemDb: this.#itemDb || {},
     });
   }
 

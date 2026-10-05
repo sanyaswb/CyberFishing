@@ -1,3 +1,4 @@
+import { formatDebuffName } from "../../formatting/debuff_name_formatter.js";
 import { OverlayModule } from "../overlay_module.js";
 
 export class FishDebuffsSummaryOverlayModule extends OverlayModule {
@@ -5,7 +6,7 @@ export class FishDebuffsSummaryOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("fishDebuffsSummary", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {
@@ -14,7 +15,7 @@ export class FishDebuffsSummaryOverlayModule extends OverlayModule {
 
   render(data) {
     const f = this.#formatter;
-    const randomDebuff = data.activeDebuffName || "none";
+    const randomDebuff = formatDebuffName(data.debuffState,data.activeDebuffName || "none");
     const movementActive = !!data.enduranceMovementDebuffActive;
     const progress = this.#resolveFirstFinite(
       data.enduranceMovementDebuffProgress,

@@ -900,16 +900,7 @@ export class DevTools {
   }
 
   #refreshFightPhysicsAdapter() {
-    if (
-      typeof this.#config === "undefined" ||
-      typeof FightPhysicsConfigAdapter === "undefined"
-    )
-      return;
-    Object.defineProperty(this.#config, "fightPhysicsConfig", {
-      value: new FightPhysicsConfigAdapter(this.#config),
-      enumerable: false,
-      configurable: true,
-    });
+    // The canonical adapter reads this live config; Bootstrap owns its single identity.
   }
 
   #renderRuntimeOverrideControls(parentElement) {

@@ -3673,9 +3673,10 @@
           "status": "verified",
           "builtins": [
             "Array",
+            "Date",
+            "Map",
             "Object",
-            "String",
-            "undefined"
+            "Set"
           ],
           "browserApis": [],
           "dynamicConstructs": [],
@@ -23616,6 +23617,53 @@
       }
     },
     {
+      "currentPath": "src/dev/data/dev_item_catalog.js",
+      "currentArea": "dev/data",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "dev-tool"
+        ],
+        "targetBoundary": "dev",
+        "targetPath": "src/dev/data/dev_item_catalog.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
       "currentPath": "src/dev/diagnostics/render_allocation_diagnostics.js",
       "currentArea": "dev/diagnostics",
       "observed": {
@@ -23801,6 +23849,53 @@
         ],
         "targetBoundary": "dev",
         "targetPath": "src/dev/fishing/worst_case_force_debug_selector.js",
+        "migrationWave": 7
+      },
+      "analysis": {
+        "dependencies": {
+          "status": "verified",
+          "confirmed": [],
+          "items": [],
+          "unresolved": [],
+          "ambiguous": [],
+          "issues": []
+        },
+        "blockers": {
+          "status": "verified",
+          "items": []
+        }
+      }
+    },
+    {
+      "currentPath": "src/dev/formatting/debuff_name_formatter.js",
+      "currentArea": "dev/formatting",
+      "observed": {
+        "legacyLoadOrder": null,
+        "providers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "consumers": {
+          "status": "verified",
+          "items": [],
+          "issues": []
+        },
+        "environment": {
+          "status": "verified",
+          "builtins": [],
+          "browserApis": [],
+          "dynamicConstructs": [],
+          "issues": []
+        }
+      },
+      "architecture": {
+        "migrationStatus": "verified",
+        "roles": [
+          "dev-tool"
+        ],
+        "targetBoundary": "dev",
+        "targetPath": "src/dev/formatting/debuff_name_formatter.js",
         "migrationWave": 7
       },
       "analysis": {
@@ -33029,6 +33124,7 @@
             "Array",
             "Boolean",
             "Object",
+            "Set",
             "String",
             "undefined"
           ],

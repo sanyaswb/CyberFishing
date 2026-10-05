@@ -1,3 +1,4 @@
+import { formatDebuffName } from "../formatting/debuff_name_formatter.js";
 import { ConsoleTableDebugModule } from "./base_debug_module.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 
@@ -27,7 +28,7 @@ export class ExhaustionDebugModule extends ConsoleTableDebugModule {
         config.masteryPowerMultiplier,
         3,
       ),
-      "Active debuff": live.activeDebuffName || "n/a",
+      "Active debuff": formatDebuffName(live.debuffState,live.activeDebuffName || "n/a"),
     });
   }
 }

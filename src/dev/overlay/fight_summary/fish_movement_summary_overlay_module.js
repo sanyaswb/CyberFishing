@@ -5,7 +5,7 @@ export class FishMovementSummaryOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("fishMovementSummary", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

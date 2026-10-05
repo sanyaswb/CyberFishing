@@ -5,7 +5,7 @@ export class RodControlSummaryOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("rodControlSummary", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

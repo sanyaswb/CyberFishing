@@ -2,7 +2,7 @@ export class FishLiveForceSummarySection {
   #formatter;
 
   constructor(options = {}) {
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   hasData(data) {

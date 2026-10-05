@@ -5,7 +5,7 @@ export class LineAndDragSummaryOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("lineAndDragSummary", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

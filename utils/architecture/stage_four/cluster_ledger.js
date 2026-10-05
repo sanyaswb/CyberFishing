@@ -188,6 +188,18 @@ class StageFourClusterLedger {
   // imports. Two uses: bootstrap's event adapter and UUID capability before inventory migration.
   static validatePreparationImports(record) {
     const files = new Set((record.files || []).map(item => item.path));
+    for (const change of record.moduleImportSuccessors || []) {
+      assert(record.kind === preparationKind(6) && files.has(change.path) && change.reason,
+        "module import successor needs an exact Stage 6 source edit and reason");
+      for (const imports of [change.before,change.after]) {
+        assert(Array.isArray(imports) && imports.every(item => /^[A-Za-z_$][\w$]*$/u.test(item.symbol) &&
+          /^src\/.+\.js$/u.test(item.from)),"module import successor needs explicit named imports");
+        assert.equal(new Set(imports.map(item => item.symbol + "<-" + item.from)).size,imports.length,
+          "duplicate module import successor surface");
+      }
+    }
+    assert.equal(new Set((record.moduleImportSuccessors || []).map(item => item.path)).size,
+      (record.moduleImportSuccessors || []).length,"duplicate module import successor");
     for (const edge of record.importEdges || []) {
       assert(edge.reason, "preparation import needs a written reason");
       assert(files.has(edge.source), "preparation import source must be a recorded edit");
@@ -205,6 +217,19 @@ class StageFourClusterLedger {
       (record.replacedImportEdges || []).length, "duplicate preparation import relocation");
     assert.equal(new Set((record.importEdges || []).map(edge => edge.source + "->" + edge.target)).size,
       (record.importEdges || []).length, "duplicate preparation import");
+  }
+
+  // A later source transition extends an exact frozen module import surface without editing history.
+  static reviewedModuleImports(file, original, records) {
+    let expected = [...original];
+    const identity = imports => imports.map(item => item.symbol + "<-" + item.from).sort();
+    for (const record of records) for (const change of record.moduleImportSuccessors || []) {
+      if (change.path !== file) continue;
+      assert.deepEqual(identity(change.before),identity(expected),"module import successor must extend exact historical imports");
+      assert.notDeepEqual(identity(change.after),identity(expected),"module import successor must change the import surface");
+      expected = change.after;
+    }
+    return expected;
   }
 
   // A relocated consumer may already have a bridge to the same module. Canonical identities are

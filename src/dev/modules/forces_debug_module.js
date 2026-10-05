@@ -1,3 +1,4 @@
+import { formatDebuffName } from "../formatting/debuff_name_formatter.js";
 import { ConsoleTableDebugModule } from "./base_debug_module.js";
 import { DebugDataSelectors } from "../services/debug_data_selectors.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
@@ -40,7 +41,7 @@ export class ForcesDebugModule extends ConsoleTableDebugModule {
       ),
       "Pull multiplier live": DebugFormatters.number(live.pullMult, 3),
       "Move multiplier live": DebugFormatters.number(live.moveMult, 3),
-      "Active debuff": live.activeDebuffName || "n/a",
+      "Active debuff": formatDebuffName(live.debuffState,live.activeDebuffName || "n/a"),
     });
   }
 }

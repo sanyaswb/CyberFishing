@@ -1,3 +1,4 @@
+import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
@@ -53,6 +54,8 @@ async function startGame() {
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
   const godMode = new GodMode(CONFIG);
+  const itemCatalog = createDevItemCatalog(ITEM_DB);
+  const mapCatalog = CONFIG.locations.map;
   let consoleRuntime, overlayRuntime, probe, game, watchdog;
   let gameReady = false;
   let disposed = false;
@@ -73,6 +76,7 @@ async function startGame() {
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget});
     probe = new ReelHoldGateLiveProbe({debugModulesSource});
     const compositionRoot = new GameCompositionRoot(CONFIG, {
+      itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
       loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/legacy_runtime_adapters.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
@@ -86,7 +90,7 @@ async function startGame() {
       createDebugService: config => new DebugService(config, debugModulesSource),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime,
-        catalogs: {items: ITEM_DB, fishes: FISH_DB, maps: CONFIG.locations.map}, settingsStore, debugModulesSource,
+        catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
           return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider)};

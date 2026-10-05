@@ -31,7 +31,8 @@ function check(structured) {
   assert.equal(port.physics,config.physics);
   const value = {value:5};
   ctx.set(["CONFIG","physics","nested"],value);
-  assert.equal(config.physics.nested,value,"live write keeps the original identity");
+  assert.notEqual(config.physics.nested,value,"the store owns values; the runtime keeps its injected read identity");
+  assert.equal(port.physics.nested.value,5);
   value.value=9;
   assert.equal(provider.get("physics.nested").value,5,"store clones the input independently");
   const detached=provider.get("physics.nested");detached.value=99;
@@ -48,7 +49,8 @@ function check(structured) {
   assert.equal(port.physics.nested.value,1);
   assert.equal(JSON.stringify(ctx.exportOverrides()),"{}");
   const replacement={enabled:false};config.physics=replacement;
-  assert.equal(port.physics,replacement,"the RuntimeConfig port reads root replacements live");
+  assert.notEqual(port.physics,replacement,"the stable runtime view does not expose caller-owned writable values");
+  assert.equal(port.physics.enabled,false);
   const adapter={getRodControlConfig:()=>({value:1})};
   // A production config exposes this property before its port is created.
   Object.defineProperty(config,"fightPhysicsConfig",{value:adapter,configurable:true,enumerable:false});
@@ -59,15 +61,54 @@ function check(structured) {
   const replacementAdapter={getRodControlConfig:()=>({value:2})};
   Object.defineProperty(config,"fightPhysicsConfig",{value:replacementAdapter,configurable:true,enumerable:false});
   assert.equal(consumerConfig.fightPhysicsConfig,replacementAdapter,"existing Application consumers read adapter overrides live");
-  assert.equal(consumerConfig.physics,replacement);
+  assert.equal(consumerConfig.physics,port.physics);
+  assert.equal(consumerConfig.physics.enabled,false);
   assert.equal(anotherPort.fightPhysicsConfig,replacementAdapter,"adapter overrides are read per call");
   assert.equal(Object.keys(anotherPort).includes("fightPhysicsConfig"),false);
-  const metrics=new runtime.context.OverlayMetricResolver({baseConfig:base});
+  const metrics=new runtime.context.OverlayMetricResolver({baseConfig:base,configSource:() => config});
   assert.equal(metrics.resolvePath("BASE_CONFIG.physics.nested.value").value,1);
   const validateVersion=projectVersion=>new runtime.context.ConfigSchemaValidator({config,baseConfig:base,overrideStore:store,projectVersion}).validate();
   assert.equal(validateVersion(undefined).warnings.filter(issue=>issue.path==="project.version").length,1);
   assert.equal(validateVersion({version:"0.25.0"}).errors.filter(issue=>issue.path==="PROJECT_VERSION_CONFIG.version").length,0);
   assert.equal(validateVersion({version:"invalid"}).errors.filter(issue=>issue.path==="PROJECT_VERSION_CONFIG.version").length,1);
+  const livePhysics = config.physics;
+  ctx.set("physics", {enabled:true,nested:{value:10,sibling:20},list:[1,2]});
+  ctx.set("physics.nested.value",0);
+  assert.equal(livePhysics,config.physics,"already injected entities retain a live branch identity");
+  assert.equal(livePhysics.nested.value,0); assert.equal(livePhysics.nested.sibling,20);
+  assert.equal(provider.get("physics.nested").value,0,"parent reads include child overrides");
+  assert.equal(provider.get("physics.nested.sibling"),20,"child reads include ancestor overrides");
+  ctx.set("physics.list.1",9); assert.equal(config.physics.list[1],9); assert(Array.isArray(config.physics.list));
+  ctx.set("physics.nested",{value:null}); assert.equal(provider.get("physics.nested.value",42),null);
+  assert.equal(provider.get("physics.nested.sibling",42),42);
+  ctx.set("physics.enabled",false); ctx.set("physics.newField",7);
+  ctx.importOverrides({"physics.nested.value":11});
+  assert.equal(config.physics.enabled,false,"omitted imports keep previous live values");
+  assert.equal(config.physics.newField,7);
+  assert.equal(JSON.stringify(ctx.exportOverrides()),'{"physics.nested.value":11}');
+  ctx.reset("physics.newField"); assert.equal(config.physics.newField,7,"base-missing reset keeps live value");
+  ctx.resetAll(); assert.equal(config.physics.nested.value,1);
+  assert.equal(config.physics.enabled,false,"resetAll visits only currently exported paths");
+  ctx.set("physics.nested.value",30); ctx.set("physics.nested.sibling",40); ctx.reset("physics.nested");
+  assert.equal(config.physics.nested.value,1,"parent reset restores whole base subtree");
+  assert.equal(config.physics.nested.sibling,undefined,"older child records do not reappear after parent reset");
+  assert.equal(store.get("physics.nested.value"),30,"export metadata preserves the existing exact-key format");
+  ctx.resetAll();
+  assert.equal(config.physics.nested.value,1); assert.equal(config.physics.nested.sibling,undefined);
+  assert.equal(JSON.stringify(ctx.exportOverrides()),"{}");
+  ctx.set("physics",{enabled:false}); ctx.set("physics.enabled",true); ctx.set("physics",{enabled:false});
+  assert.equal(config.physics.enabled,false,"latest parent write wins over earlier child writes");
+  assert.equal(JSON.stringify(ctx.exportOverrides()),'{"physics":{"enabled":false},"physics.enabled":true}');
+  ctx.resetAll();
+  if (structured) { ctx.set("physics.nested.value",undefined); assert.equal(provider.get("physics.nested.value",42),undefined); }
+  const readsBefore = cloneCalls;
+  for(let i=0;i<1000;i++) assert.equal(config.physics.enabled,true);
+  assert.equal(cloneCalls,readsBefore,"hot runtime reads perform no clone/materialization");
+  const catalog={lake:{name:"A"}}, source={locations:{map:catalog},spawns:{fishes:[]}};
+  const linked=runtime.context.createRuntimeConfigContext(source,{catalogs:{"locations.map":catalog,"spawns.fishes":source.spawns.fishes}});
+  assert.equal(source.locations.map,catalog,"catalog identity stays with its separate owner");
+  catalog.lake.name="B"; assert.equal(source.locations.map.lake.name,"B");
+  linked.set("locations.map.lake.name","C"); assert.equal(source.locations.map.lake.name,"C"); assert.equal(catalog.lake.name,"B");
   const date = new Date("2020-01-01T00:00:00Z");
   const clonedDate=runtime.context.deepCloneConfig({date});
   if(structured){assert(clonedDate.date instanceof Date);assert(cloneCalls>0);}
@@ -269,8 +310,8 @@ async function checkNativeProductionStartup() {
     class Adapter extends FightPhysicsConfigAdapter { constructor(owner) { super(owner);adapters++;assert.equal(owner, config); } }
     const composition = evaluate("src/bootstrap/production/game_config_composition.js", ["createProductionConfigContext"], {
       CONFIG: config, RARITY_VISUAL_CONFIG: visual, DEGRADATION_COLOR_CONFIG: degradation, FightPhysicsConfigAdapter: Adapter,
-      createRuntimeConfigContext(owner) { contexts++;assert.equal(owner, config);assert.equal(owner.rarity.visual, visual);
-        assert.equal(owner.degradationColors, degradation);assert(owner.fightPhysicsConfig instanceof FightPhysicsConfigAdapter);return createRuntimeConfigContext(owner); },
+      createRuntimeConfigContext(owner, options) { contexts++;assert.equal(owner, config);assert.equal(owner.rarity.visual, visual);
+        assert.equal(owner.degradationColors, degradation);assert(owner.fightPhysicsConfig instanceof FightPhysicsConfigAdapter);return createRuntimeConfigContext(owner, options); },
     });
     const platform = evaluate("src/platform/browser/runtime/browser_startup_environment.js",
       ["getBrowserStartupEnvironment", "publishBrowserStartupConfig", "activateBrowserStartupInterface"],
@@ -324,6 +365,81 @@ async function checkNativeProductionStartup() {
     assert.equal(startup.startProductionGame(), first, "completed single-shot startup retains its original promise");assert.equal(roots, 1);
   }
 }
+function checkNativeDevelopmentDisplays() {
+  const fs = require("node:fs"), path = require("node:path"), acorn = require("acorn");
+  const root = path.resolve(__dirname,"..");
+  const inventory = JSON.parse(fs.readFileSync(path.join(root,"architecture/migration/stage_6/stage6_module_inventory.json")));
+  const globals = {};
+  for (const module of inventory.migrationModules.filter(module => module.boundary === "dev"))
+    Object.assign(globals,require(path.join(root,module.target)));
+  const config = require("../src/game/config/runtime/game_config.js").CONFIG;
+  const settingsStore = new globals.OverlaySettingsStore(Object.fromEntries(Object.keys(globals.OVERLAY_MODULES).map(key=>[key,true])));
+  const captured = [];
+  const overlayModules = inventory.migrationModules.filter(module => module.target.startsWith("src/dev/overlay/") &&
+    module.exports.some(name => globals[name]?.prototype?.isActive));
+  const bindings = {...globals};
+  for (const module of overlayModules) for (const name of module.exports) {
+    const Native = globals[name]; if (!Native?.prototype?.isActive || name === "OverlayModule") continue;
+    bindings[name] = class extends Native { constructor(options) { super(options); captured.push({module,name,options,instance:this}); } };
+  }
+  bindings.OverlayController = class { start() {} dispose() {} };
+  bindings.OverlayMetricCatalog = class {};
+  bindings.OverlayMetricInfoBridge = class { start() {} dispose() {} };
+  bindings.OverlayUpdateLoop = class { constructor(options) { assert.equal(options.intervalMs,150); } };
+  const file = "src/bootstrap/development/debug_overlay_bootstrap.js", source = fs.readFileSync(path.join(root,file),"utf8");
+  const tree = acorn.parse(source,{ecmaVersion:"latest",sourceType:"module"});
+  const body = tree.body.filter(node => node.type !== "ImportDeclaration").map(node => source.slice(node.declaration?.start || node.start,node.end)).join("\n");
+  const factory = new SourceRuntime({globals:bindings}).run("(function(){"+body+";return createDebugOverlayRuntime;})()",file);
+  const runtime = factory({config,baseConfig:config,settingsStore,documentTarget:{},windowTarget:{}});
+  assert.equal(captured.length,19,"all original main overlays are composed exactly once");
+  const data = {gameState:"playing",hookedFish:{id:"fish",name:"Fish",physics:{behaviors:{swim:{forceMultiplier:1,speedMultiplier:1,weight:1}}}},
+    fishState:"swim",fishBasePower:1,fishInitialPower:1,fishBaseForceCurrentKg:1,fishCurrentStateMaxForceKg:1,
+    fishPassiveKg:1,fishOppositionKg:1,activeDebuffName:"Немає",fishConditionPhase:"stamina",currentStamina:1,fishConditionMaxStamina:2,
+    liveChances:[],chumZones:[],baits:[],equipment:{},bottomDepth:2,hookDepth:1,lineLength:3};
+  let comparisons = 0;
+  for (const record of captured) {
+    const original = fs.readFileSync(path.join(root,record.module.source),"utf8");
+    const parsed = acorn.parse(original,{ecmaVersion:"latest"});
+    const declarations = parsed.body.filter(node => ["ClassDeclaration","FunctionDeclaration","VariableDeclaration"].includes(node.type))
+      .map(node => original.slice(node.start,node.end)).join("\n");
+    const Original = new SourceRuntime({globals:{...globals,CONFIG:config,window:{OverlaySettingsStore:settingsStore}}})
+      .run("(function(){"+declarations+";return "+record.name+";})()",record.module.source);
+    const legacy = new Original(record.options);
+    for (const state of ["playing","waiting","biting","scouting"]) {
+      data.gameState = state;
+      assert.equal(Boolean(record.instance.isActive(data)),Boolean(legacy.isActive(data)),record.name+" activation "+state);
+      if (!legacy.isActive(data)) continue;
+      assert.equal(record.instance.render(data),legacy.render(data),record.name+" HTML/text/metrics parity "+state);
+      comparisons++;
+    }
+  }
+  assert(comparisons >= 15);
+  runtime.dispose();runtime.dispose();
+  const {formatDebuffName} = require("../src/dev/formatting/debuff_name_formatter.js");
+  for (const [state,label] of [[{active:false,type:"swimPull"},"Немає"],[{active:true,type:null},"Невідомий"],[{active:true,type:"dashPull"},"dashPull"]])
+    assert.equal(formatDebuffName(state),label);
+  const {ITEM_DB} = require("../src/game/config/databases/item_catalog.js");
+  const {createDevItemCatalog,DEV_BUILD_TEMPLATES} = require("../src/dev/data/dev_item_catalog.js");
+  const catalog = createDevItemCatalog(ITEM_DB);
+  assert.equal(Object.keys(ITEM_DB.builds).length,0,"production contains no DEV templates");
+  assert.deepEqual(Object.keys(catalog.builds),["debug_float_build","debug_feeder_build"]);
+  assert.equal(catalog.rods,ITEM_DB.rods,"normal categories retain shared catalog identity");
+  assert.equal(catalog.builds.debug_float_build,DEV_BUILD_TEMPLATES.debug_float_build);
+  const {ConfiguredInventorySeeder} = require("../src/game/application/inventory/legacy_inventory_system.js");
+  const items = new Map(), inventoryAdapter = {getInstance:id=>items.get(id),remove:id=>items.delete(id),addItem:item=>items.set(item.instanceId,item)};
+  new ConfiguredInventorySeeder({inventory:inventoryAdapter,itemDB:catalog,playerConfig:{}}).seed();
+  assert(items.has("debug_float_build_box") && items.has("debug_feeder_build_box"));
+  const previousItems=JSON.stringify([...items.values()]);
+  new ConfiguredInventorySeeder({inventory:inventoryAdapter,itemDB:ITEM_DB,playerConfig:{}}).seed();
+  assert.equal(JSON.stringify([...items.values()]),previousItems,"old DEV build IDs and serialized records survive production seeding");
+  const {Fish,FishPhysicsProfile} = require("../src/game/domain/fish/fish.js");
+  const fish = new Fish(1,1,{behaviors:{swim:{forceMultiplier:1}}});
+  const facts = fish.getDebuffState();assert(Object.isFrozen(facts));assert.equal(facts,fish.getDebuffState());
+  assert.equal(facts.active,false);assert.equal(formatDebuffName(facts),fish.activeDebuffName);
+  console.log("Native DEV display parity: 19 overlays, "+comparisons+" active HTML comparisons, exact no-active/unknown/type labels, isolated catalog and stable Domain facts.");
+}
+
 checkNativeProductionStartup().then(() => {
+checkNativeDevelopmentDisplays();
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
 }).catch(error => { console.error(error);process.exitCode = 1; });

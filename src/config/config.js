@@ -9,7 +9,7 @@ if (typeof FightPhysicsConfigAdapter !== "undefined") {
   });
 }
 
-const CONFIG_RUNTIME_CONTEXT = createRuntimeConfigContext(CONFIG);
+const CONFIG_RUNTIME_CONTEXT = createRuntimeConfigContext(CONFIG, {catalogs: {"locations.map": CONFIG.locations?.map, "rarity.visual": CONFIG.rarity.visual, "degradationColors": CONFIG.degradationColors, "spawns.fishes": CONFIG.spawns?.fishes}});
 
 const BASE_CONFIG = CONFIG_RUNTIME_CONTEXT.baseConfig;
 const CONFIG_OVERRIDE_STORE = CONFIG_RUNTIME_CONTEXT?.overrideStore || null;

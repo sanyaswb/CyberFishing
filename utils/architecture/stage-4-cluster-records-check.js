@@ -252,6 +252,15 @@ for(const change of [{source:"src/app/unrecorded.js"},{target:"../escape.js"},{r
     importEdges:[{...preparationImport.importEdges[0],...change}]}),/preparation import/u);
 assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
   importEdges:[preparationImport.importEdges[0],preparationImport.importEdges[0]]}),/duplicate/u);
+const importSuccessor = {kind:"cyber-fishing-stage-6-preparation",files:[{path:"src/game/config/provider.js"}],
+  moduleImportSuccessors:[{path:"src/game/config/provider.js",before:[],after:[{symbol:"freeze",from:"src/game/config/immutable.js"}],reason:"resolved config source"}]};
+StageFourClusterLedger.validatePreparationImports(importSuccessor);
+assert.deepEqual(StageFourClusterLedger.reviewedModuleImports("src/game/config/provider.js",[],[importSuccessor]),importSuccessor.moduleImportSuccessors[0].after);
+assert.throws(()=>StageFourClusterLedger.reviewedModuleImports("src/game/config/provider.js",[{symbol:"stale",from:"src/game/config/immutable.js"}],[importSuccessor]),/exact historical imports/u);
+assert.throws(()=>StageFourClusterLedger.reviewedModuleImports("src/game/config/provider.js",[],[importSuccessor,importSuccessor]),/exact historical imports/u);
+for(const change of [{kind:"cyber-fishing-stage-5-preparation"},{files:[]},{moduleImportSuccessors:[{...importSuccessor.moduleImportSuccessors[0],reason:""}]}])
+  assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importSuccessor,...change}),/module import successor/u);
+assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...importSuccessor,moduleImportSuccessors:[...importSuccessor.moduleImportSuccessors,...importSuccessor.moduleImportSuccessors]}),/duplicate module import successor/u);
 const preparationRetired = new Set(preparations.flatMap(record => [
   ...(record.removedBridges || []).map(item => item.id),
   ...(record.replacedBridges || []).map(pair => pair.before.id), ...(record.mergedBridges || []).map(merge => merge.from.id)]));
@@ -323,9 +332,10 @@ ledger.records.forEach((record, index) => {
     const imports = tree.body.filter((node) => node.type === "ImportDeclaration").flatMap((node) =>
       node.specifiers.map((specifier) => `${specifier.imported.name}<-${path.posix.normalize(
         path.posix.join(path.posix.dirname(file), node.source.value))}`)).sort();
-    assert.deepEqual(imports, (module.imports || []).map((item) => `${item.symbol}<-${item.from}`).sort(),
+    const reviewedImports = StageFourClusterLedger.reviewedModuleImports(file,module.imports || [],preparations);
+    assert.deepEqual(imports, reviewedImports.map((item) => `${item.symbol}<-${item.from}`).sort(),
       `${file}: imports differ from the record`);
-    for (const item of module.imports || []) {
+    for (const item of reviewedImports) {
       assert(boundary.allowedDependencies.includes(boundaryOf(item.from)?.id), `${file}: forbidden import ${item.from}`);
     }
     const allowed = new Set([...LANGUAGE_BUILTINS, ...(module.allowedGlobals || [])]);
@@ -792,7 +802,16 @@ const validateStageFiveClosure = (closure,entries,preparationRecords,liveBridges
     runtime.activationPositions.every(item => item.removalStage === "stage-6"),"Stage 5 retirement remains");
   assert.deepEqual(closure.retained,{bridges:liveBridges.length+removedBridges.length,activations:runtime.activationPositions.length+removedActivations.length,
     globals:852,knownDebts:json("architecture/guards/known_debt_registry.json").debts.length+cleanupRecords.flatMap(record => record.resolvedDebts).length},"Stage 5 retained identities");
-  assert.deepEqual(closure.nativeGraph,new StageFourRelease(ROOT,5).nativeGraph(),"Stage 5 native graph");
+  let reviewedGraph = closure.nativeGraph;
+  for (const record of preparations.filter(record => record.nativeProductionGraphSuccessor)) {
+    const change = record.nativeProductionGraphSuccessor;
+    assert.equal(record.kind,"cyber-fishing-stage-6-preparation","Stage 5 native graph successor stage");
+    assert(change.reason && change.after.devOrCompatibility === 0 && change.after.unresolved === 0 &&
+      change.after.entry === reviewedGraph.entry,"Stage 5 native graph successor boundary");
+    assert.deepEqual(change.before,reviewedGraph,"Stage 5 native graph successor historical identity");
+    reviewedGraph = change.after;
+  }
+  assert.deepEqual(reviewedGraph,new StageFourRelease(ROOT,5).nativeGraph(),"Stage 5 native graph");
   assert(closure.metrics.lines.utils <= 70358 && closure.metrics.lines.src === 82056,"Stage 5 closure budget");
 };
 const stageFiveFixture = {schemaVersion:1,kind:"cyber-fishing-stage-5-closure",status:"closed",modules:stageFiveModules,
@@ -801,7 +820,7 @@ const stageFiveFixture = {schemaVersion:1,kind:"cyber-fishing-stage-5-closure",s
   graphReview:{path:"architecture/migration/stage_5/graph_review_v8.json",version:8,
     sha256:require("node:crypto").createHash("sha256").update(read("architecture/migration/stage_5/graph_review_v8.json")).digest("hex")},
   retirementUpdates,retained:{bridges:53,activations:28,globals:852,knownDebts:24},
-  nativeGraph:new StageFourRelease(ROOT,5).nativeGraph(),metrics:{lines:{utils:46324,src:82056}}};
+  nativeGraph:preparations.find(record=>record.nativeProductionGraphSuccessor)?.nativeProductionGraphSuccessor.before || new StageFourRelease(ROOT,5).nativeGraph(),metrics:{lines:{utils:46324,src:82056}}};
 const liveClosureBridges = json("architecture/guards/migration_bridge_registry.json").bridges;
 assert.doesNotThrow(() => validateStageFiveClosure(stageFiveFixture,manifest,StageFourClusterLedger.preparations(ROOT,5),liveClosureBridges,contract));
 for (const change of [{kind:"cyber-fishing-stage-4-closure"},{modules:stageFiveModules.slice(1)},

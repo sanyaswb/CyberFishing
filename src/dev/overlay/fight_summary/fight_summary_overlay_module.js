@@ -5,7 +5,7 @@ export class FightSummaryOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("fightSummary", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-preparation",
+  "id": "003",
+  "slug": "authoritative-config-and-dev-data",
+  "baseCommit": "7e849ffdc68e9d7e57e320e08ea87e90cb1b2351",
+  "reason": "Separate source transition after prepared native composition acceptance. A stable accessor read view has no writable configuration facts: immutable base + one override store resolve values. Preserve legacy set/reset/import live results and exported keys, explicit catalog identity, canonical adapter identity, template IDs/content and diagnostic display labels.",
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "resolvedDebts": [],
+  "introducedModules": [
+    {
+      "currentPath": "src/dev/data/dev_item_catalog.js",
+      "migrationStatus": "verified",
+      "roles": [
+        "dev-tool"
+      ],
+      "targetBoundary": "dev",
+      "targetPath": "src/dev/data/dev_item_catalog.js",
+      "migrationWave": 7
+    },
+    {
+      "currentPath": "src/dev/formatting/debuff_name_formatter.js",
+      "migrationStatus": "verified",
+      "roles": [
+        "dev-tool"
+      ],
+      "targetBoundary": "dev",
+      "targetPath": "src/dev/formatting/debuff_name_formatter.js",
+      "migrationWave": 7
+    }
+  ],
+  "files": [
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "430500624e702b863210028781eb36b18548e4930b896f0cbfa152c34de6a729",
+      "after": "e2bf0e971e79da445aae759010391c66dd5a9a114db88001ca07549354083cbd"
+    },
+    {
+      "path": "src/bootstrap/development/legacy_game_startup.js",
+      "before": "7e4f421b0565dc45e8613d4d87c4c265697b0cfb8ff7a9c1aa6b911a52d90f23",
+      "after": "28ede4f4de3472df95ad35e1cd6058385dd91e8f98b6a49eb0aa7fe9501b7d09"
+    },
+    {
+      "path": "src/bootstrap/production/config_context.js",
+      "before": "1b18d0639d4de2f8a11cdc011503e085a969e187e293e7ce7b4d5fda62e3449a",
+      "after": "580ade8bcb6e1f55f356e290d1e481b9d3d5a049089cd7b3b4c6a80d86c0f855"
+    },
+    {
+      "path": "src/bootstrap/production/game_composition_root.js",
+      "before": "a1159a3280e6e26974dd3b4676335f834d42b3ec26f7c85b45e872206cb45aa6",
+      "after": "0a269280804a3f6eeba5acd1dec93d19b6d9d9e2621615e3df821164cb2990fe"
+    },
+    {
+      "path": "src/bootstrap/production/game_config_composition.js",
+      "before": "00dc9c59d3960397fa67776dc6b619f8d9bcb3f893a4b116cc47cdedde9e1d50",
+      "after": "c5aa8457e979dd61ae0a343b86b146dd5e5d47c186fa439dfd49f11ca0c76dec"
+    },
+    {
+      "path": "src/config/config.js",
+      "before": "4bdff83e863810ed0f8eb2fbf3985d9b0b2e985650ef6ca767f87aae83ba5e44",
+      "after": "466d0b4836df08b86618283234777e6079d1a461a004b73f473ad3a2303f4cba"
+    },
+    {
+      "path": "src/dev/modules/exhaustion_debug_module.js",
+      "before": "62cf1ca73826c3ba06720faac63bd6b8c1865dc4e2583389ed76ee591e24959b",
+      "after": "cff1bc68b6f0fb882e4a35735e4f10105390dec96f9365767bc1dd27a89a6898"
+    },
+    {
+      "path": "src/dev/modules/forces_debug_module.js",
+      "before": "cd26eb6204c06a436d62871d5d5e068daad3de192b498cceb17c4139beac93f3",
+      "after": "2b3b7cb1d8929ccc14c8d641bb83e614145120130ddb64857ac0f03364097580"
+    },
+    {
+      "path": "src/dev/overlay/fight_summary/fight_summary_overlay_module.js",
+      "before": "55ef9e93ac4fd9086a5f64c6a3c3ea5b86f4aee39bf2ff2bc0c21acc8c948ba7",
+      "after": "d531f39b91aa88b2bb47a36cffccb13b0da668fb4bcb407eb246019e0a2db1e3"
+    },
+    {
+      "path": "src/dev/overlay/fight_summary/fish_movement_summary_overlay_module.js",
+      "before": "401b2247a5ba11d9d67f04b44df85063bf5c2ca5dd0d78b1b4e5035df498f0c4",
+      "after": "95d1733cf9475b0530f18515a71761d604db139172e52291af80ca6f6e51bdc9"
+    },
+    {
+      "path": "src/dev/overlay/fight_summary/line_and_drag_summary_overlay_module.js",
+      "before": "b8d0d77fb7e9cec203fff05435d7911c8ae6cf79f8db409f3b5707e2a659e1e8",
+      "after": "e2b5823756ace9b9ad9273b9493f32da6154d33d3637f54d72b95685fa3865f2"
+    },
+    {
+      "path": "src/dev/overlay/fight_summary/rod_control_summary_overlay_module.js",
+      "before": "5c08910831f46c46bb62990bdc99b19621ec729d617504b6c84ee7d977dc6af4",
+      "after": "f7f1268c33df57207540e71f8764f7aa1d08c522487d1cc82605c8416f66638e"
+    },
+    {
+      "path": "src/dev/overlay/fish_balance/fish_current_force_overlay_module.js",
+      "before": "6bf4c4cde59f2ec6a4ee0de38ea986b306f0df719a1070d67bc4f24992f55d34",
+      "after": "7f8465d48d7bccbc43e97bb5db43bbb133814bfd5ab982ba76c95da20687928e"
+    },
+    {
+      "path": "src/dev/overlay/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "before": "b055f6136920347fd7fa93f2f09eec430f5838cd150cd113dba95d7fb7837fbd",
+      "after": "c4d27abf3778c2c66f94b9d09c8acfecb16fc4812e4a3293edf54f465a0bf3e0"
+    },
+    {
+      "path": "src/dev/overlay/fish_balance/fish_live_force_summary_section.js",
+      "before": "329ad64cb83a9fef4015dacf6502701c89b712dbd8341dcfe00895761b6dd9f7",
+      "after": "3a6d97ebe19b1825113b5076aa169c90ee0618732d8bad644d3207875a40b0ed"
+    },
+    {
+      "path": "src/dev/overlay/fish_balance/fish_summary_overlay_module.js",
+      "before": "d4871a87fa1ba140a8dbe06aa5a9d3f5cc9db9c90cd85e68f48c358b72f39d80",
+      "after": "ac80477272aabafe5b70776b3013be32ff48b495f40ac2bf1e121c05882f48a8"
+    },
+    {
+      "path": "src/dev/overlay/modules/debuffs_overlay_module.js",
+      "before": "9bca5e93df0096013728bd78ced286014c252cf5d96d4a804a664295db201344",
+      "after": "00737fe4549f2bafb5dade92b14da5d4746b8f38f980b95e0511622b6806220e"
+    },
+    {
+      "path": "src/dev/overlay/modules/stamina_balance_overlay_module.js",
+      "before": "51a110a1362614a8f9248227a127548c1397669a3fea027511ac28c15328137f",
+      "after": "0f6c6884b9e9cb7cb508f1222ab6f8086e905b14054136716ba2be349306ce89"
+    },
+    {
+      "path": "src/dev/tools/dev_tools.js",
+      "before": "00d7b2da42602cdeb1440b87f6c7e335a71a9b8d47bb78620f372cd345eb4082",
+      "after": "6f2b7bd937b36a58598f02533804cf2942b0778998c795741b03012297995ecc"
+    },
+    {
+      "path": "src/game/application/fishing/fishing_runtime_services.js",
+      "before": "c3f8aefaa42b4ff66a01bb0c8937024ef76e4c133ed22d9f13be2fffbef60ceb",
+      "after": "2b345e3f0ee5f2683260eb3e7c4dbb30f3e7e0bb0b6f25ab60c1e1b915889547"
+    },
+    {
+      "path": "src/game/config/raw/items/item_database.js",
+      "before": "23b40561d12a1bf9cda6b60744f5655d498dd4fed5d13c4ce8df9c975da56cd4",
+      "after": "c05855e7210490e98496a67de4109b7022965a7b85dc3c87b70746abf2becc4b"
+    },
+    {
+      "path": "src/game/config/runtime/config_override_store.js",
+      "before": "9bdfa2a463f13225014854cc8d929b8f7d207881ec62a97e50ad48a1a8e904d4",
+      "after": "a57e528969db1675a31de59d224315ced73e38c3b2c7e7c87a9182adde02cf22"
+    },
+    {
+      "path": "src/game/config/runtime/resolved_config_provider.js",
+      "before": "6665c5cf217d0ab92e53d95665506e08ce8737c2e0e6cd4fad93e49b76c2a5eb",
+      "after": "c791b5c822dc6456687e1b3195ea8bfee613ce196319aaaa3d4c794e69573508"
+    },
+    {
+      "path": "src/game/domain/fish/fish.js",
+      "before": "8f237780c40e0101814e9b16f52c09f15400a46146e959595df1b32548442a1e",
+      "after": "6b52a14d55e6d87c2a0587bfa618f8275d64393d85118f62723c1a1a9689c140"
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "75979c3f94540aa3bdad26a64f54960c60f6b3fe1aec94f473bc0468010038b6",
+      "after": "2ceaafb32e87b801f1a95c1b5f0bd44af36067d3b4c798e55a102a713c1cdb7a"
+    },
+    {
+      "path": "src/dev/data/dev_item_catalog.js",
+      "before": null,
+      "after": "9d9fa0634436a551371bf6e6d29d48f3ee1ca1392560e350ea2e280cc1d6efde"
+    },
+    {
+      "path": "src/dev/formatting/debuff_name_formatter.js",
+      "before": null,
+      "after": "19d10fd248874d20dff7fbda46d54d7518da564f10be1aa1d38f11f2ad821f0e"
+    },
+    {
+      "path": "utils/architecture/stage_four/cluster_ledger.js",
+      "before": "64aa164e8c7aca32105c5545a188041834bda2a31ac7e6ff5d9ba8cf889a4caf",
+      "after": "081cb08de6de3c5c9a798fe3d26ffbdd0ee89a3c47c5a80bc53e90fad3f4a576"
+    },
+    {
+      "path": "utils/architecture/stage-4-cluster-records-check.js",
+      "before": "2194c9373ae6fad8e9c0914ee39cf00de8f1dd9206997da64bd806150ed00a1f",
+      "after": "cfb1714dd690c33fed39731069b9c12c04f9df75e864a6cce85b5994f1721ead"
+    },
+    {
+      "path": "utils/item-progression-check.js",
+      "before": "c164761f5a64f027e0a7e583e4f5c195941107219471b528d6872effa42bd59f",
+      "beforeEvidence": "Git blob recovery bytes; original tracked tests are retained and extended for the explicit DEV data split",
+      "after": "338a80b7429a8a84b060bccc160240a7bf8e6ff44ff1fcde9cfa1acaeb6ed4d8"
+    }
+  ],
+  "importEdges": [
+    {
+      "source": "src/game/config/runtime/resolved_config_provider.js",
+      "target": "src/game/config/runtime/immutable_config.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    },
+    {
+      "source": "src/bootstrap/development/legacy_game_startup.js",
+      "target": "src/dev/data/dev_item_catalog.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    },
+    {
+      "source": "src/dev/modules/exhaustion_debug_module.js",
+      "target": "src/dev/formatting/debuff_name_formatter.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    },
+    {
+      "source": "src/dev/modules/forces_debug_module.js",
+      "target": "src/dev/formatting/debuff_name_formatter.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    },
+    {
+      "source": "src/dev/overlay/modules/debuffs_overlay_module.js",
+      "target": "src/dev/formatting/debuff_name_formatter.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    },
+    {
+      "source": "src/dev/overlay/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "target": "src/dev/formatting/debuff_name_formatter.js",
+      "reason": "Separate Stage 6 source/DEV data transition: canonical composition dependency with no transport or new global."
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "status": "accepted",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "config": "structuredClone and JSON fallback, exact/parent/child writes and reset, siblings, arrays, false/zero/null/undefined, omitted import values, base-missing reset values, exported key order, one stable live view, detached diagnostics, shared catalog references, no clone/allocation on steady-state hot reads",
+    "devDisplay": "All 19 main overlay activations compared over four states; 18 active HTML comparisons against existing class bodies. Missing formatter injections found and corrected. Read-only debuff state is one stable view, labels are identical.",
+    "gameCycleSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "templateSaveCompatibility": "ConfiguredInventorySeeder creates the exact two DEV box IDs; subsequent Production seeding preserves every existing serialized item byte. Original 21 gameplay + 3 technical validation baseline now runs on the composed DEV catalog as well as the separate Production validation.",
+    "acceptanceReport": "architecture/archive/stage6_003_config-and-dev-data_acceptance.json",
+    "browser": {
+      "canonicalGame": true,
+      "canonicalApplication": true,
+      "promiseIdentity": true,
+      "liveSetResetImport": true,
+      "adapterIdentity": true,
+      "activeGameLoops": 1,
+      "duplicateStarts": 0,
+      "cleanupGameLoops": 0,
+      "cleanupManagedListeners": 0,
+      "savedKeysRestored": 1,
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "retainedPublicApi": {
+    "domain": "Fish.activeDebuffName remains unchanged as a compatibility projection; Fish.getDebuffState() adds a stable immutable view of the existing private facts without another state owner.",
+    "application": "getActiveDebuffName()/activeDebuffName remain unchanged; debug adapter adds getDebuffState()/debuffState for native DEV display.",
+    "stage7": "After reviewing any external API consumers, retire the legacy text projection and its Application forwarding; do not rename/remove either API in Stage 6."
+  },
+  "saveCompatibility": "Both DEV template IDs name build-template/instance IDs, not stored item definitions. Existing saves contain sys_build_box and ordinary rod/line/float/hook/reel definitions and retain the old instance/build IDs; removal of template seeding from fresh Production does not change serialized records or restoration.",
+  "moduleImportSuccessors": [
+    {
+      "path": "src/game/config/runtime/resolved_config_provider.js",
+      "before": [],
+      "after": [
+        {
+          "symbol": "deepFreezeConfig",
+          "from": "src/game/config/runtime/immutable_config.js"
+        }
+      ],
+      "reason": "Separate authoritative config transition: resolved cache freezes cloned override data; context no longer mutates raw config through setRuntimeConfigPath."
+    },
+    {
+      "path": "src/bootstrap/production/config_context.js",
+      "before": [
+        {
+          "symbol": "ConfigOverrideStore",
+          "from": "src/game/config/runtime/config_override_store.js"
+        },
+        {
+          "symbol": "deepCloneConfig",
+          "from": "src/platform/browser/config/deep_clone_config.js"
+        },
+        {
+          "symbol": "deepFreezeConfig",
+          "from": "src/game/config/runtime/immutable_config.js"
+        },
+        {
+          "symbol": "setRuntimeConfigPath",
+          "from": "src/game/config/runtime/immutable_config.js"
+        },
+        {
+          "symbol": "ResolvedConfigProvider",
+          "from": "src/game/config/runtime/resolved_config_provider.js"
+        }
+      ],
+      "after": [
+        {
+          "symbol": "ConfigOverrideStore",
+          "from": "src/game/config/runtime/config_override_store.js"
+        },
+        {
+          "symbol": "deepCloneConfig",
+          "from": "src/platform/browser/config/deep_clone_config.js"
+        },
+        {
+          "symbol": "deepFreezeConfig",
+          "from": "src/game/config/runtime/immutable_config.js"
+        },
+        {
+          "symbol": "ResolvedConfigProvider",
+          "from": "src/game/config/runtime/resolved_config_provider.js"
+        }
+      ],
+      "reason": "Separate authoritative config transition: resolved cache freezes cloned override data; context no longer mutates raw config through setRuntimeConfigPath."
+    }
+  ],
+  "nativeProductionGraphSuccessor": {
+    "before": {
+      "entry": "src/entrypoints/game.entry.js",
+      "modules": 350,
+      "importEdges": 521,
+      "devOrCompatibility": 0,
+      "unresolved": 0
+    },
+    "after": {
+      "entry": "src/entrypoints/game.entry.js",
+      "modules": 350,
+      "importEdges": 522,
+      "devOrCompatibility": 0,
+      "unresolved": 0
+    },
+    "reason": "The separate source transition adds exactly resolved_config_provider -> immutable_config, approved by the exact module import successor; all production ownership stays unchanged."
+  }
+}

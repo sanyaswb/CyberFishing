@@ -15,6 +15,6 @@ export function createProductionConfigContext() {
     enumerable: false,
     configurable: true,
   });
-  configRuntime = createRuntimeConfigContext(CONFIG);
+  configRuntime = createRuntimeConfigContext(CONFIG, {catalogs: {"locations.map": CONFIG.locations.map, "rarity.visual": CONFIG.rarity.visual, "degradationColors": CONFIG.degradationColors, "spawns.fishes": CONFIG.spawns.fishes}});
   return configRuntime;
 }

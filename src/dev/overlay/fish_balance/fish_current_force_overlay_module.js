@@ -5,7 +5,7 @@ export class FishCurrentForceOverlayModule extends OverlayModule {
 
   constructor(options = {}) {
     super("fishCurrentForce", options);
-    this.#formatter;
+    this.#formatter = options.formatter;
   }
 
   shouldRender(data) {

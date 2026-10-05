@@ -1,3 +1,4 @@
+import { formatDebuffName } from "../../formatting/debuff_name_formatter.js";
 import { OverlayModule } from "../overlay_module.js";
 
 export class DebuffsModule extends OverlayModule {
@@ -13,7 +14,7 @@ export class DebuffsModule extends OverlayModule {
     let html = this.formatHeader("☠️ АКТИВНІ ДЕБАФИ", "#ff00ff");
 
     // Секція рандомних дебафів
-    const debuffName = d.activeDebuffName || "Немає";
+    const debuffName = formatDebuffName(d.debuffState,d.activeDebuffName);
     let debuffDesc = '<span style="color: #8a9bac;">фаза 2 ще ціла</span>';
 
     if (debuffName !== "Немає") {

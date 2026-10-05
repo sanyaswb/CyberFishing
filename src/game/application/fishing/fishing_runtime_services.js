@@ -1158,6 +1158,7 @@ export class FightService {
       getMoveMultiplier: () =>
         this.#tensionMeter?.getDebugData?.().moveMult || 0,
       getActiveDebuffName: () => this.#fish?.activeDebuffName || "Немає",
+      getDebuffState: () => this.#fish?.getDebuffState?.() || null,
       getMasteryMultiplier: () => this.#fish?.getMasteryMultiplier?.() || 1.0,
     };
   }
@@ -1217,6 +1218,7 @@ export class FightService {
       pullMult: fs?.getPullMultiplier?.() || 0,
       moveMult: fs?.getMoveMultiplier?.() || 0,
       activeDebuffName: fs?.getActiveDebuffName?.() || "Немає",
+      debuffState: fs?.getDebuffState?.() || null,
       masteryCurrentMult: fs?.getMasteryMultiplier?.() || 1.0,
       masteryTimerMs: sc?.getMasteryTimer?.() || 0,
       isMasteryActive: sc?.isMasteryActive?.() || false,
