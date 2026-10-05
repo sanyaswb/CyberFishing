@@ -1,0 +1,4548 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-planning-inventory",
+  "status": "specification-baseline-not-implementation-evidence",
+  "observedAt": "2026-10-05",
+  "baseCommit": "6ece75794c1f103e0bace13ad4f8a7e2b7064a11",
+  "baseRelease": "0.26.1",
+  "countSemantics": "Files/modules, not classes or import statements. Production includes static and literal dynamic closure; migration lists unique current authored sources and unique planned targets. Historical migrationWave is not a stage number. Final native DEV graph must be measured after implementation.",
+  "sourcePins": [
+    {
+      "file": "architecture/migration/module_migration_manifest.json",
+      "sha256": "5e759d4ab5679a1b85594e5259f858544d502dfdaa0943aebce5ca10310ef842"
+    },
+    {
+      "file": "architecture/guards/migration_bridge_registry.json",
+      "sha256": "52a1713b19ea443aa260938490a4a3828c2920bf7c9b260cf5223a6d9f0f0576"
+    },
+    {
+      "file": "architecture/migration/stage_3_compatibility_runtime.json",
+      "sha256": "2dcb462f780a0434893328d246a813717ffed2be257e4c9ceac1ef6323e52ad2"
+    },
+    {
+      "file": "architecture/guards/known_debt_registry.json",
+      "sha256": "978c9dd24ece488ee7122555d8422652e4c875d56b9080d66a62654834773ae5"
+    },
+    {
+      "file": "dev.html",
+      "sha256": "2dec0a399741b0ca22150b227f550f1c2a07d1219f72ba2b70ef770c022e420c"
+    }
+  ],
+  "counts": {
+    "productionModules": 350,
+    "productionImportEdges": 521,
+    "productionGroups": {
+      "src/bootstrap": 10,
+      "src/engine": 12,
+      "src/entrypoints": 1,
+      "src/game/application": 48,
+      "src/game/config": 27,
+      "src/game/domain": 136,
+      "src/game/presentation": 84,
+      "src/platform": 32
+    },
+    "migrationSourceFiles": 96,
+    "devModules": 93,
+    "developmentBootstrapModules": 3,
+    "migrationGroups": {
+      "dev-currently-outside-debug": 6,
+      "development-bootstrap": 3,
+      "debug-core": 5,
+      "dev-tools": 1,
+      "god-mode": 1,
+      "console-modules-and-probe": 15,
+      "overlay-config": 1,
+      "overlay-core": 4,
+      "overlay-dom": 6,
+      "overlay-modules-and-sections": 36,
+      "overlay-services": 8,
+      "dev-services-schemas-watchdog": 10
+    },
+    "newRequiredEntrypoints": 1,
+    "bridges": 50,
+    "bridgeReaderFiles": 26,
+    "bridgeTargetModules": 25,
+    "activeActivations": 26,
+    "retiredActivations": 380,
+    "inertModules": 5,
+    "knownDebts": 19,
+    "devHtmlExternalScriptTags": 446,
+    "devHtmlCompatibilityRuntimeTags": 1,
+    "devHtmlActivationTags": 26,
+    "devHtmlStageTwoBridgeTags": 7,
+    "devHtmlClassicSourceTags": 412
+  },
+  "newRequiredEntrypoint": {
+    "path": "src/entrypoints/dev.entry.js",
+    "boundary": "entrypoint-dev",
+    "responsibility": "Import only Development Bootstrap and request one native DEV startup."
+  },
+  "migrationModules": [
+    {
+      "source": "src/app/debug.js",
+      "target": "src/dev/runtime/debug_service.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "4419cf2399e2b0e0de2214be09c18de5bbf23c33d7c701dcb0af51e6977457f2",
+      "targetExists": false,
+      "exports": [
+        "DebugService"
+      ],
+      "dependencySources": [
+        "src/debug/debug.js"
+      ],
+      "reviewedBlockers": [
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/app/rendering/location_debug_render_frame_builder.js",
+      "target": "src/dev/location/location_debug_render_frame_builder.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "99ef10be545f3594cdb81045db534f8ddacf85e1c17ae036755b843d57968daa",
+      "targetExists": false,
+      "exports": [
+        "LocationDebugRenderFrameBuilder"
+      ],
+      "dependencySources": [
+        "src/core/math/vector2.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/app/script.js",
+      "target": "src/bootstrap/development/legacy_game_startup.js",
+      "boundary": "bootstrap-development",
+      "group": "development-bootstrap",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "8aee50d9fea595e9cf7bbcb659d3dacc5840915af8e8e308d0c8415718d5c282",
+      "targetExists": false,
+      "exports": [],
+      "dependencySources": [
+        "src/app/adapters.js",
+        "src/app/bootstrap.js",
+        "src/app/core/game_loop.js",
+        "src/app/debug.js",
+        "src/app/fixed_catch_fish_factory.js",
+        "src/app/game.js",
+        "src/app/rendering/location_debug_render_frame_builder.js",
+        "src/config/config.js",
+        "src/config/runtime/config_data.js",
+        "src/core/core.js",
+        "src/debug/debug.js",
+        "src/debug/dev_tools.js",
+        "src/debug/god_mode.js",
+        "src/debug/services/hooked_fish_profile_synchronizer.js",
+        "src/debug/services/item_progression_debug_snapshot_provider.js",
+        "src/debug/services/memory_leak_watchdog.js",
+        "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+        "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+        "src/render/core/render_allocation_diagnostics.js",
+        "src/render/world/location_debug_map_builder.js",
+        "src/render/world/world_debug_renderer.js"
+      ],
+      "reviewedBlockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "eager-load-order-coupling",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ]
+    },
+    {
+      "source": "src/config/physics/physics_formula_map.js",
+      "target": "src/dev/physics/physics_formula_map.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "4f0e0667abacf20d5a90e95584d8ddd1dd0230510b9a27d8e10f18e41a3f501b",
+      "targetExists": false,
+      "exports": [
+        "PHYSICS_FORMULA_MAP"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/core/debug_console.js",
+      "target": "src/dev/core/debug_console.js",
+      "boundary": "dev",
+      "group": "debug-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "00f1d8b88e01bb04a2a3d94b8e7c41eaf55ea42ecad6d23ac777a157e0efb426",
+      "targetExists": false,
+      "exports": [
+        "DebugConsole",
+        "DebugConsoleClass"
+      ],
+      "dependencySources": [
+        "src/debug/core/debug_context.js",
+        "src/debug/core/debug_module_registry.js",
+        "src/debug/debug.js"
+      ],
+      "reviewedBlockers": [
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/debug/core/debug_context.js",
+      "target": "src/dev/core/debug_context.js",
+      "boundary": "dev",
+      "group": "debug-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "6551c5d51b13efeea61ce2459daa35e6ce9f5f81a120e343d5950a33c0109a0c",
+      "targetExists": false,
+      "exports": [
+        "DebugContext",
+        "DebugContext"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/core/debug_event_binder.js",
+      "target": "src/dev/core/debug_event_binder.js",
+      "boundary": "dev",
+      "group": "debug-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1647eb54b2c55c420b5cb3419250db2a6f1a276b4f6660ad313b7c7163996b44",
+      "targetExists": false,
+      "exports": [
+        "DebugEventBinder",
+        "DebugEventBinder"
+      ],
+      "dependencySources": [
+        "src/debug/debug.js"
+      ],
+      "reviewedBlockers": [
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/debug/core/debug_module_registry.js",
+      "target": "src/dev/core/debug_module_registry.js",
+      "boundary": "dev",
+      "group": "debug-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "55799c89cc49040cf0277a604f7eef3516efac38d3c7227795ef876ec58f5642",
+      "targetExists": false,
+      "exports": [
+        "DebugModuleRegistry",
+        "DebugModuleRegistry"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/core/null_debug_runtime.js",
+      "target": "src/dev/core/null_debug_runtime.js",
+      "boundary": "dev",
+      "group": "debug-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "b185e9dbba995f17d7ac20c469e2369d466091e2789ef0297c9cd8cae1227772",
+      "targetExists": false,
+      "exports": [
+        "NullDebugRuntime",
+        "NullDebugRuntime"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/debug.js",
+      "target": "src/bootstrap/development/debug_console_bootstrap.js",
+      "boundary": "bootstrap-development",
+      "group": "development-bootstrap",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "c263f3845d2cf21dda4bcc7d504f6fedb4ff0edbe365c540f31f49b05bb82a02",
+      "targetExists": false,
+      "exports": [
+        "CYBER_FISHING_DEBUG_EVENT_BINDER",
+        "CYBER_FISHING_DEBUG_EVENT_BINDER",
+        "DEBUG_CONSOLE_MODULES",
+        "DEBUG_MODULES",
+        "DEBUG_MODULE_REGISTRY",
+        "DebugConsole",
+        "DebugRuntime",
+        "biteSequenceLogger",
+        "biteTickLogger",
+        "debugConsole",
+        "debugContext",
+        "debugEventBinder",
+        "debugModuleRegistry",
+        "getActiveLocationDebugData",
+        "getActiveLocationDebugData",
+        "getZoneBounds",
+        "getZoneBounds",
+        "printBiteSequenceLog",
+        "printBiteTickLog",
+        "printLocationMapDebug"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/core/debug_console.js",
+        "src/debug/core/debug_context.js",
+        "src/debug/core/debug_event_binder.js",
+        "src/debug/core/debug_module_registry.js",
+        "src/debug/debug.js",
+        "src/debug/modules/bite_ticks_debug_module.js",
+        "src/debug/modules/catch_time_debug_module.js",
+        "src/debug/modules/deviations_debug_module.js",
+        "src/debug/modules/exhaustion_debug_module.js",
+        "src/debug/modules/forces_debug_module.js",
+        "src/debug/modules/location_debug_module.js",
+        "src/debug/modules/map_debug_module.js",
+        "src/debug/modules/net_debug_module.js",
+        "src/debug/modules/prediction_debug_module.js",
+        "src/debug/modules/reel_hold_gate_debug_module.js",
+        "src/debug/modules/rod_stroke_debug_module.js",
+        "src/debug/modules/stamina_debug_module.js",
+        "src/debug/modules/tension_debug_module.js",
+        "src/debug/services/location_debug_data_provider.js"
+      ],
+      "reviewedBlockers": [
+        "eager-load-order-coupling",
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/debug/dev_tools.js",
+      "target": "src/dev/tools/dev_tools.js",
+      "boundary": "dev",
+      "group": "dev-tools",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "557b8c5491bc2b88ebbdfacef73a7ac831e3d84fc34efdf422f9ac6b47a23e60",
+      "targetExists": false,
+      "exports": [
+        "DEBUG_MODULES",
+        "DevTools",
+        "DevToolsParameterTooltipProvider",
+        "DevToolsUI"
+      ],
+      "dependencySources": [
+        "src/config/databases/fish_db.js",
+        "src/config/databases/item_db.js",
+        "src/config/databases/map_db.js",
+        "src/config/physics/physics_config_adapter.js",
+        "src/config/runtime/config_data.js",
+        "src/debug/debug.js",
+        "src/debug/overlay/config/overlay_modules_config.js",
+        "src/debug/overlay/services/overlay_settings_store.js",
+        "src/debug/services/active_fish_dev_tools_schema.js",
+        "src/debug/services/dev_tools_control_binding_registry.js",
+        "src/debug/services/dev_tools_parameter_alias_registry.js",
+        "src/debug/services/location_dev_tools_schema.js",
+        "src/infrastructure/storage/cache_manager.js",
+        "src/ui/legacy/draggable_button.js",
+        "src/ui/legacy/ui_event_shield.js"
+      ],
+      "reviewedBlockers": [
+        "mixed-responsibility-requires-decomposition"
+      ]
+    },
+    {
+      "source": "src/debug/god_mode.js",
+      "target": "src/dev/god_mode.js",
+      "boundary": "dev",
+      "group": "god-mode",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1060ed73fb8c58d7332af4a60d7378e91da404dd7ca3a5f058ba0db76098021f",
+      "targetExists": false,
+      "exports": [
+        "GodMode",
+        "GodMode"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/base_debug_module.js",
+      "target": "src/dev/modules/base_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0d47c1adb1336177f6c5731cfa4c3f6fd4929a6e9e29cdba545c393a0e5cf872",
+      "targetExists": false,
+      "exports": [
+        "BaseDebugModule",
+        "BaseDebugModule",
+        "ConsoleTableDebugModule",
+        "ConsoleTableDebugModule"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "target": "src/dev/modules/bite_ticks_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "73ab8d1541b49f635d008e1923954f44d45b9f1f2778aa6ccfb3d781ab661f94",
+      "targetExists": false,
+      "exports": [
+        "BiteSequenceLogPrinter",
+        "BiteSequenceLogPrinter",
+        "BiteTickLogPrinter",
+        "BiteTickLogPrinter",
+        "BiteTicksDebugModule",
+        "BiteTicksDebugModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/debug.js",
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": [
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/debug/modules/catch_time_debug_module.js",
+      "target": "src/dev/modules/catch_time_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "8decc9c58dfc19ba095ce2e19d2a911437316446cc7da1bedcb3d0cd1f7bed57",
+      "targetExists": false,
+      "exports": [
+        "CatchTimeDebugModule",
+        "CatchTimeDebugModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_data_selectors.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/deviations_debug_module.js",
+      "target": "src/dev/modules/deviations_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "e68ade71dab2e6994e814ccf6e98489ceea8dc32ea69ccf4cc841b8b55d3631e",
+      "targetExists": false,
+      "exports": [
+        "DeviationsDebugModule",
+        "DeviationsDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/exhaustion_debug_module.js",
+      "target": "src/dev/modules/exhaustion_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "ce87dfe75f04890c752e32aac36030892898889bfe1b7d24e185c7be861327bc",
+      "targetExists": false,
+      "exports": [
+        "ExhaustionDebugModule",
+        "ExhaustionDebugModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/forces_debug_module.js",
+      "target": "src/dev/modules/forces_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "00c87f337db91133262ce440baa11aceb63d3482c3ff45da06da74ba6d7e1137",
+      "targetExists": false,
+      "exports": [
+        "ForcesDebugModule",
+        "ForcesDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_data_selectors.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/location_debug_module.js",
+      "target": "src/dev/modules/location_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "c2cc75c9c42933f575abe56eb49e350e9267171f9b366dca31e8858ccfb92ed2",
+      "targetExists": false,
+      "exports": [
+        "LocationDebugModule",
+        "LocationDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js",
+        "src/debug/services/location_debug_data_provider.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/map_debug_module.js",
+      "target": "src/dev/modules/map_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "ace11e7cedff6b5a7bf37c39ef74ed3ef20f1c74fed246ee35b3757aa7f4dc50",
+      "targetExists": false,
+      "exports": [
+        "MapDebugModule",
+        "MapDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/location_debug_data_provider.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/net_debug_module.js",
+      "target": "src/dev/modules/net_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0a0e309e9baa071a310189eca2c3cd0c2902ee2bc92976b41763ac6402338cef",
+      "targetExists": false,
+      "exports": [
+        "NetDebugModule",
+        "NetDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_data_selectors.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/prediction_debug_module.js",
+      "target": "src/dev/modules/prediction_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "72bf20dcbaa8fd45171ccd8c7f58ab48da017f73b9657c1702d872a9cbfed6ef",
+      "targetExists": false,
+      "exports": [
+        "PredictionDebugModule",
+        "PredictionDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "target": "src/dev/modules/reel_hold_gate_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1892e0ba07c39974be9c7c008a15d4a415933e98d1c09c508dcb52260ae7404d",
+      "targetExists": false,
+      "exports": [
+        "ReelHoldGateDebugModule",
+        "ReelHoldGateDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "target": "src/dev/modules/reel_hold_gate_live_probe.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "3323cfd44785c2713dc3ef96eaa6c482c51ce8888d024fc97ca860dabb973538",
+      "targetExists": false,
+      "exports": [
+        "CYBER_FISHING_REEL_HOLD_GATE_LIVE_PROBE",
+        "ReelHoldGateLiveProbe",
+        "ReelHoldGateLiveProbe"
+      ],
+      "dependencySources": [
+        "src/debug/debug.js"
+      ],
+      "reviewedBlockers": [
+        "mixed-responsibility-requires-decomposition"
+      ]
+    },
+    {
+      "source": "src/debug/modules/rod_stroke_debug_module.js",
+      "target": "src/dev/modules/rod_stroke_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "46ba801f858b2f5723e4e9db636eb78e708c3aa0852308b42934cbfbe73f27c2",
+      "targetExists": false,
+      "exports": [
+        "RodStrokeDebugModule",
+        "RodStrokeDebugModule"
+      ],
+      "dependencySources": [
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/stamina_debug_module.js",
+      "target": "src/dev/modules/stamina_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "7597a9cb4bc69babdbf676aaaa9b0680162698c007cf3001697d5b512df63641",
+      "targetExists": false,
+      "exports": [
+        "StaminaDebugModule",
+        "StaminaDebugModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/modules/tension_debug_module.js",
+      "target": "src/dev/modules/tension_debug_module.js",
+      "boundary": "dev",
+      "group": "console-modules-and-probe",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "3817a5d70c222429a617f27a49473d62fd36cf4de9e0761a9e1fc76ef12d1d1e",
+      "targetExists": false,
+      "exports": [
+        "TensionDebugModule",
+        "TensionDebugModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/modules/base_debug_module.js",
+        "src/debug/services/debug_formatters.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/config/overlay_modules_config.js",
+      "target": "src/dev/overlay/config/overlay_modules_config.js",
+      "boundary": "dev",
+      "group": "overlay-config",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "31f8b47ccc44e8315892c218b6bf82b1789180e2dfc4b66481918ed097bea530",
+      "targetExists": false,
+      "exports": [
+        "ADVANCED_OVERLAY_MODULE_KEYS",
+        "ADVANCED_OVERLAY_MODULE_KEYS",
+        "BALANCE_OVERLAY_MODULE_KEYS",
+        "BALANCE_OVERLAY_MODULE_KEYS",
+        "FIGHT_PHYSICS_CATEGORY_KEYS",
+        "FIGHT_PHYSICS_CATEGORY_KEYS",
+        "FIGHT_PHYSICS_RENDER_KEYS",
+        "FIGHT_PHYSICS_RENDER_KEYS",
+        "FIGHT_PHYSICS_SECTION_KEYS",
+        "FIGHT_PHYSICS_SECTION_KEYS",
+        "OPTIONAL_OVERLAY_MODULE_KEYS",
+        "OPTIONAL_OVERLAY_MODULE_KEYS",
+        "OVERLAY_MODULES",
+        "OVERLAY_MODULES",
+        "OVERLAY_MODULE_GROUPS",
+        "OVERLAY_MODULE_GROUPS",
+        "OVERLAY_MODULE_LABELS",
+        "OVERLAY_MODULE_LABELS"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_controller.js",
+      "target": "src/dev/overlay/core/overlay_controller.js",
+      "boundary": "dev",
+      "group": "overlay-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "b7445fe95ff5ab9ad6299fe53f683ecda8412e445db810ac9bebaf54c4e944f0",
+      "targetExists": false,
+      "exports": [
+        "OverlayController",
+        "OverlayController"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/core/overlay_update_loop.js",
+        "src/debug/overlay/dom/overlay_dom_adapter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_module_base.js",
+      "target": "src/dev/overlay/overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "d472a7d44429464335a842398400b4757fe6b719d5a8c850fbb872f696a8e148",
+      "targetExists": false,
+      "exports": [
+        "OverlayModule",
+        "OverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/services/overlay_html_builder.js",
+        "src/debug/overlay/services/overlay_settings_store.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_module_registry.js",
+      "target": "src/dev/overlay/core/overlay_module_registry.js",
+      "boundary": "dev",
+      "group": "overlay-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "d4859d6ca9d21f9a4c26dd638837599626b050aed5130c25096d02ceb68ff6c1",
+      "targetExists": false,
+      "exports": [
+        "OverlayModuleRegistry",
+        "OverlayModuleRegistry"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_update_loop.js",
+      "target": "src/dev/overlay/core/overlay_update_loop.js",
+      "boundary": "dev",
+      "group": "overlay-core",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "3039964b2a4b098cb0880d1899237119420ab317063fcbaee17fece61f5062d3",
+      "targetExists": false,
+      "exports": [
+        "OverlayUpdateLoop",
+        "OverlayUpdateLoop"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/dev/overlay/dom/overlay_dom_adapter.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "21adf148619319e09cf4115097eb4cb34f41ecdd8bd4355311be88aa84e9e758",
+      "targetExists": false,
+      "exports": [
+        "OverlayDomAdapter",
+        "OverlayDomAdapter"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/dom/overlay_scale_controls.js",
+        "src/debug/overlay/dom/overlay_style_installer.js",
+        "src/debug/overlay/dom/overlay_window_drag_controller.js",
+        "src/infrastructure/storage/cache_manager.js",
+        "src/ui/legacy/draggable_button.js",
+        "src/ui/legacy/ui_event_shield.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "target": "src/dev/overlay/dom/overlay_interaction_bridge.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "edc24300ec766926ebb0485c201f440488ae24dadc1ef043d802807675dc4df1",
+      "targetExists": false,
+      "exports": [
+        "OverlayInteractionBridge",
+        "OverlayInteractionBridge"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "target": "src/dev/overlay/dom/overlay_metric_info_bridge.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "6ff64607d6734466dbbb6a86ccad7b91ef1e33ad5e33bc242541d4ad7b3ec614",
+      "targetExists": false,
+      "exports": [
+        "OverlayMetricInfoBridge",
+        "OverlayMetricInfoBridge"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/services/overlay_console_metric_inspector.js",
+        "src/debug/overlay/services/overlay_metric_catalog.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "target": "src/dev/overlay/dom/overlay_scale_controls.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "965b5601bda3c263c507f18ea2d82a9f79002fa8572203227641b658cda13c51",
+      "targetExists": false,
+      "exports": [
+        "OverlayScaleControls",
+        "OverlayScaleControls"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_style_installer.js",
+      "target": "src/dev/overlay/dom/overlay_style_installer.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "cea6cd30765f09f5bddbbee585be8bc5087321375511367d3d61ddd8dffd7eb8",
+      "targetExists": false,
+      "exports": [
+        "OverlayStyleInstaller",
+        "OverlayStyleInstaller"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/dev/overlay/dom/overlay_window_drag_controller.js",
+      "boundary": "dev",
+      "group": "overlay-dom",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0b74e78235337d40e582a7d686f7853adfb32ecdec468b14d80ee085f4a1ca82",
+      "targetExists": false,
+      "exports": [
+        "OverlayWindowDragController",
+        "OverlayWindowDragController"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/infrastructure/storage/cache_manager.js",
+        "src/ui/legacy/ui_event_shield.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "target": "src/dev/overlay/modules/behavior_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "b6bb748a96c1cf8e61920947068851a3a09d000b560b0d873f0e25bbe132c314",
+      "targetExists": false,
+      "exports": [
+        "BehaviorModule",
+        "BehaviorModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "target": "src/dev/overlay/modules/chances_detail_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "98f2c570d8906bd5fce1e1f00160b29957b035f7a945beb25859cc4ac9332a2a",
+      "targetExists": false,
+      "exports": [
+        "ChancesDetailModule",
+        "ChancesDetailModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/chum_overlay_module.js",
+      "target": "src/dev/overlay/modules/chum_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "4fc8d6b70f4d8e9c6ed0b798387435a0ef725a74cb9a7051cebfacdde7f31bb2",
+      "targetExists": false,
+      "exports": [
+        "ChumOverlayModule",
+        "ChumOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "target": "src/dev/overlay/modules/debuffs_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "e4e3e4ff0cae92346ed2de2e90d0fcd0b2287507bf2778c6d40eaf507d71fba0",
+      "targetExists": false,
+      "exports": [
+        "DebuffsModule",
+        "DebuffsModule"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/echo_overlay_module.js",
+      "target": "src/dev/overlay/modules/echo_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "514fd01b81e2ccd50bf92741810789b00608af7ca6afe7d96d01fc1a1b21bd81",
+      "targetExists": false,
+      "exports": [
+        "EchoModule",
+        "EchoModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_auto_recovery_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1968aab1f04496c6782b6cab6fa05f5645ec536e95f21768b987cea3ac3e5225",
+      "targetExists": false,
+      "exports": [
+        "FightAutoRecoverySection",
+        "FightAutoRecoverySection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_drag_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "51a236a18692e6c90dbf85c4421c4411cf4091bb63f003e62c80de6a69760169",
+      "targetExists": false,
+      "exports": [
+        "FightDragSection",
+        "FightDragSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_fish_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "f8db9566cd125ffadba786e4b99f1bc58312110bc52ac97a21e99398b714b911",
+      "targetExists": false,
+      "exports": [
+        "FightFishSection",
+        "FightFishSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_line_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "4c7b7ecccf8dd9952394fdadecd24153b5f02c44c35cdc256ce25c82191fb0ba",
+      "targetExists": false,
+      "exports": [
+        "FightLineSection",
+        "FightLineSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_movement_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "e16e506f1d8af75afa54768320cdeafad84a93414d6643da3b92ab0d5844b63b",
+      "targetExists": false,
+      "exports": [
+        "FightMovementSection",
+        "FightMovementSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "target": "src/dev/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "45992824f154fbf4f6142d873711295af206a5c35f8b81e7bb6b1028715acfc2",
+      "targetExists": false,
+      "exports": [
+        "FightPhysicsOverlayModule",
+        "FightPhysicsOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/config/overlay_modules_config.js",
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+        "src/debug/overlay/services/overlay_html_builder.js",
+        "src/debug/overlay/services/overlay_settings_store.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_reel_hold_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "dfc8e1847aabd9157b0bbf38de186e9cd3fd19985386af18d426217e5129e1f5",
+      "targetExists": false,
+      "exports": [
+        "FightReelHoldSection",
+        "FightReelHoldSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_control_force_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "c5a08d755e599608af31eb3fd3d4fd00449de097e9cc2d91d9bce90bef240578",
+      "targetExists": false,
+      "exports": [
+        "FightRodControlForceSection",
+        "FightRodControlForceSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_control_geometry_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "43e5fe9022597374985831e7f6f03ff9d2b160f59e2d1d8dc4f5b1490c13706d",
+      "targetExists": false,
+      "exports": [
+        "FightRodControlGeometrySection",
+        "FightRodControlGeometrySection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_control_input_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "4dceae521b8f949cf4d84431aea79b046594531eecc7fbe286d2ce5b789236e5",
+      "targetExists": false,
+      "exports": [
+        "FightRodControlInputSection",
+        "FightRodControlInputSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_control_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "2b058327addff9954ee614265b6efb40eb457b6f6ca1617d9359053fd16c61c3",
+      "targetExists": false,
+      "exports": [
+        "FightRodControlSection",
+        "FightRodControlSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+        "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+        "src/debug/overlay/services/overlay_html_builder.js",
+        "src/debug/overlay/services/overlay_settings_store.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_control_visual_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "ca125d16d2a1dcd4e3d85fde8dfffd6e71c2083cd5cb6144e7b80a84280b9b3a",
+      "targetExists": false,
+      "exports": [
+        "FightRodControlVisualSection",
+        "FightRodControlVisualSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_hold_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "d764c4329069862359400d3ab5b16e8ded1384d12cdc157d617fc64188b2b149",
+      "targetExists": false,
+      "exports": [
+        "FightRodHoldSection",
+        "FightRodHoldSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_rod_stroke_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "b88580efd2355fddf77b4a820f5f98a5524e73e1bb6aa698b3e486feac9d37f9",
+      "targetExists": false,
+      "exports": [
+        "FightRodStrokeSection",
+        "FightRodStrokeSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "target": "src/dev/overlay/fight_physics/fight_section_base.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0aa98ce4ee26e2c31f876f862a00155ae3945088d8e62671241a2a56b62d5e12",
+      "targetExists": false,
+      "exports": [
+        "FightSectionBase",
+        "FightSectionBase"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/services/overlay_html_builder.js",
+        "src/debug/overlay/services/overlay_settings_store.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "target": "src/dev/overlay/fight_physics/fight_tension_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "8cef00d3371aaa59d56e887ea03d6925d499ec99a6a576cf8d65469cf36a4db7",
+      "targetExists": false,
+      "exports": [
+        "FightTensionSection",
+        "FightTensionSection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/modules/fight_physics/fight_section_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "target": "src/dev/overlay/fight_summary/fight_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "c8f21fc730fa8e02b861abb12170477f057242caadd3297f449a3ffaace0ed62",
+      "targetExists": false,
+      "exports": [
+        "FightSummaryOverlayModule",
+        "FightSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "target": "src/dev/overlay/fight_summary/fish_movement_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0d473e92e1baeb712c11040edec2f5b7d1e16b7cb3be60115e2bf60e0767d998",
+      "targetExists": false,
+      "exports": [
+        "FishMovementSummaryOverlayModule",
+        "FishMovementSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "target": "src/dev/overlay/fight_summary/line_and_drag_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "66ebc21c1bb603c90b0e62e2b6468393698cc11aa8eefb05edbdf5bcb6d1e69b",
+      "targetExists": false,
+      "exports": [
+        "LineAndDragSummaryOverlayModule",
+        "LineAndDragSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "target": "src/dev/overlay/fight_summary/rod_control_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "daf41ed40d8f4728b0c2fb26b97701e790a58db5224db0daac2d0147a3a6c049",
+      "targetExists": false,
+      "exports": [
+        "RodControlSummaryOverlayModule",
+        "RodControlSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "target": "src/dev/overlay/modules/fish_balance_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "fb609d556934f22085813a9f9eddc2f10340b1bfa7f07e8ae146ebfc5c4cc6a9",
+      "targetExists": false,
+      "exports": [
+        "FishBalanceModule",
+        "FishBalanceModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+        "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "target": "src/dev/overlay/fish_balance/fish_current_force_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "30c194551ef6ed9dd0013500bc3992e827339f2237bb136a43cd1ca0fb5798e8",
+      "targetExists": false,
+      "exports": [
+        "FishCurrentForceOverlayModule",
+        "FishCurrentForceOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "target": "src/dev/overlay/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "71d01809d70bb1e517e9da70c6560de9d070162607a6772bac4a6987e506c822",
+      "targetExists": false,
+      "exports": [
+        "FishDebuffsSummaryOverlayModule",
+        "FishDebuffsSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "target": "src/dev/overlay/fish_balance/fish_live_force_summary_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "2cff5effb461999641d712f6165d1ff200c7fdee8863a9f4ded826db8a6df307",
+      "targetExists": false,
+      "exports": [
+        "FishLiveForceSummarySection",
+        "FishLiveForceSummarySection"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "target": "src/dev/overlay/fish_balance/fish_state_force_preview_section.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "eeff8c15cb41dc5bd36d731ecd9f3b5b18570ce22ec6ec4563137779fdb9e1d6",
+      "targetExists": false,
+      "exports": [
+        "FishStateForcePreviewSection",
+        "FishStateForcePreviewSection"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/services/overlay_html_builder.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "target": "src/dev/overlay/fish_balance/fish_summary_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "c228ace885767e3c574d7855ca3ae248f1ad7d968b9ec9b5f485aee9b29b7e2b",
+      "targetExists": false,
+      "exports": [
+        "FishSummaryOverlayModule",
+        "FishSummaryOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "target": "src/dev/overlay/modules/fish_power_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "a0bcec45f9a4f17ffbc8580d4355b8e4bd548d21c7018d9e30d4e4c7a119e19f",
+      "targetExists": false,
+      "exports": [
+        "FishPowerModule",
+        "FishPowerModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "target": "src/dev/overlay/modules/live_forces_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "bad7c84efd5306a91c7a10d9c00f0c7ce1e7c63b7e6e90b6381377d878a540b3",
+      "targetExists": false,
+      "exports": [
+        "LiveForcesModule",
+        "LiveForcesModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "target": "src/dev/overlay/modules/player_max_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "fdb9d8f53ff5a4f962a600f56e5cbbc5fc961d21b19ae7777271cf7b0d5a8272",
+      "targetExists": false,
+      "exports": [
+        "PlayerMaxModule",
+        "PlayerMaxModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "target": "src/dev/overlay/modules/stamina_balance_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "406c849822684a72c03d7dd2994be893ff703a55a5a49be1ee00b15e2f371a5c",
+      "targetExists": false,
+      "exports": [
+        "StaminaBalanceOverlayModule",
+        "StaminaBalanceOverlayModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/overlay_value_formatter.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "target": "src/dev/overlay/modules/worst_case_overlay_module.js",
+      "boundary": "dev",
+      "group": "overlay-modules-and-sections",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "cd3928a9f75e1ae9fbd38f198f7e5dd3d0902ef83f25c98a0ee944aaea01d0a1",
+      "targetExists": false,
+      "exports": [
+        "WorstCaseModule",
+        "WorstCaseModule"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/core/overlay_module_base.js",
+        "src/debug/overlay/services/worst_case_force_debug_selector.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "src/bootstrap/development/debug_overlay_bootstrap.js",
+      "boundary": "bootstrap-development",
+      "group": "development-bootstrap",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "f762d003aa499d8b3b9b1356d6593c144cb1e7f5de8eeee40a26d9132b6d0312",
+      "targetExists": false,
+      "exports": [
+        "CYBER_FISHING_DEBUG_OVERLAY",
+        "CYBER_FISHING_OVERLAY_METRIC_INFO",
+        "CYBER_FISHING_OVERLAY_VIEW_STATE"
+      ],
+      "dependencySources": [
+        "src/config/config.js",
+        "src/config/runtime/config_data.js",
+        "src/debug/overlay/core/overlay_controller.js",
+        "src/debug/overlay/core/overlay_module_registry.js",
+        "src/debug/overlay/dom/overlay_dom_adapter.js",
+        "src/debug/overlay/dom/overlay_interaction_bridge.js",
+        "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+        "src/debug/overlay/modules/behavior_overlay_module.js",
+        "src/debug/overlay/modules/chances_detail_overlay_module.js",
+        "src/debug/overlay/modules/chum_overlay_module.js",
+        "src/debug/overlay/modules/debuffs_overlay_module.js",
+        "src/debug/overlay/modules/echo_overlay_module.js",
+        "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+        "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+        "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+        "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+        "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+        "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+        "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+        "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+        "src/debug/overlay/modules/fish_balance_overlay_module.js",
+        "src/debug/overlay/modules/fish_power_overlay_module.js",
+        "src/debug/overlay/modules/live_forces_overlay_module.js",
+        "src/debug/overlay/modules/player_max_overlay_module.js",
+        "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+        "src/debug/overlay/modules/worst_case_overlay_module.js",
+        "src/debug/overlay/services/overlay_console_metric_inspector.js",
+        "src/debug/overlay/services/overlay_html_builder.js",
+        "src/debug/overlay/services/overlay_metric_resolver.js",
+        "src/debug/overlay/services/overlay_settings_store.js",
+        "src/debug/overlay/services/overlay_view_state_store.js",
+        "src/debug/overlay/services/worst_case_force_debug_selector.js"
+      ],
+      "reviewedBlockers": [
+        "eager-load-order-coupling",
+        "legacy-global-contract"
+      ]
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "target": "src/dev/overlay/overlay_console_metric_inspector.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1a5d477f574c0516051a53c969bcd5556d12c9626bf91c9331ca050f781f1a57",
+      "targetExists": false,
+      "exports": [
+        "OverlayConsoleMetricInspector",
+        "OverlayConsoleMetricInspector"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/services/overlay_metric_resolver.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_html_builder.js",
+      "target": "src/dev/overlay/services/overlay_html_builder.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "3c487888701069c9b8060e8847de1c81a25f91bbf5db2f415210ea314e4a8981",
+      "targetExists": false,
+      "exports": [
+        "OverlayHtmlBuilder",
+        "OverlayHtmlBuilder"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "target": "src/dev/overlay/services/overlay_metric_catalog.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "e349b631d51807ab32ed4b49cd16f4a2674c48a648f5af5d43a291b36ffbd25f",
+      "targetExists": false,
+      "exports": [
+        "OverlayMetricCatalog",
+        "OverlayMetricCatalog"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "target": "src/dev/overlay/overlay_metric_resolver.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "a6d06a06924d7ab820639cc2af844fcde789ff9cd2ce294864dd1c91e1c2ec19",
+      "targetExists": false,
+      "exports": [
+        "OverlayMetricResolver",
+        "OverlayMetricResolver"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_settings_store.js",
+      "target": "src/dev/overlay/overlay_settings_store.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "723da67d1ab50a58e03e9e46d8a0e4fd271313ae6b1d90f0233646cdc3b037a0",
+      "targetExists": false,
+      "exports": [
+        "OverlaySettingsStore",
+        "OverlaySettingsStore",
+        "OverlaySettingsStoreClass"
+      ],
+      "dependencySources": [
+        "src/debug/overlay/config/overlay_modules_config.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_value_formatter.js",
+      "target": "src/dev/overlay/services/overlay_value_formatter.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1a79b8ca1f7060d6c3e0191b52afa44d86924c4bbc841487596e08e0b818e609",
+      "targetExists": false,
+      "exports": [
+        "OverlayValueFormatter",
+        "OverlayValueFormatter"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_view_state_store.js",
+      "target": "src/dev/overlay/services/overlay_view_state_store.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "0c768f68dbeb5a96ba61f18a522d47ae5cf0d5571f6c2a02e34eb05b66e37253",
+      "targetExists": false,
+      "exports": [
+        "OverlayViewStateStore",
+        "OverlayViewStateStore"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "target": "src/dev/fishing/worst_case_force_debug_selector.js",
+      "boundary": "dev",
+      "group": "overlay-services",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "daf85fa1dc1e32255a141db618760caa2682dbe29eaa698b4365554619cec783",
+      "targetExists": false,
+      "exports": [
+        "WorstCaseForceDebugSelector",
+        "WorstCaseForceDebugSelector"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/active_fish_dev_tools_schema.js",
+      "target": "src/dev/fishing/active_fish_dev_tools_schema.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "6008aee4ab79321a3f299bf45c97c19d1bf665f523e41cf004e2e40afe4f3e0b",
+      "targetExists": false,
+      "exports": [
+        "ACTIVE_FISH_DEV_TOOLS_SCHEMA",
+        "ACTIVE_FISH_DEV_TOOLS_SCHEMA",
+        "ActiveFishDevToolsVisibilityPolicy",
+        "ActiveFishDevToolsVisibilityPolicy"
+      ],
+      "dependencySources": [
+        "src/entities/fish.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/debug_data_selectors.js",
+      "target": "src/dev/services/debug_data_selectors.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "da2c6b3ad91cbcb25ea4c724b7061b64c596a1d4a33096f0e4dcb681fe1a7bd6",
+      "targetExists": false,
+      "exports": [
+        "DebugDataSelectors",
+        "DebugDataSelectors"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/debug_formatters.js",
+      "target": "src/dev/formatting/debug_formatters.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1c019cbac4031a203d9b04a60d62cd8a33ce7baab65e475e5aad788e62a11e41",
+      "targetExists": false,
+      "exports": [
+        "DebugFormatters",
+        "DebugFormatters"
+      ],
+      "dependencySources": [
+        "src/core/items/hook/hook_power_policy.js"
+      ],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/dev_tools_control_binding_registry.js",
+      "target": "src/dev/services/dev_tools_control_binding_registry.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1059d98505d9a308fcaffe89ecfc8d8716edd19fa8e290ea322f461b06bb4316",
+      "targetExists": false,
+      "exports": [
+        "DevToolsControlBindingRegistry",
+        "DevToolsControlBindingRegistry"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "target": "src/dev/services/dev_tools_parameter_alias_registry.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "6ab815ab92f164e2e8c51af32e4a8d4086e67ae0f3758d0de12b4e9e920e161d",
+      "targetExists": false,
+      "exports": [
+        "DEV_TOOLS_PARAMETER_ALIAS_SCHEMA",
+        "DEV_TOOLS_PARAMETER_ALIAS_SCHEMA",
+        "DevToolsParameterAliasRegistry",
+        "DevToolsParameterAliasRegistry"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "target": "src/dev/fishing/hooked_fish_profile_synchronizer.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "b8ebd13c1871ae4789303f92ec3cca0a918e13122468f418d466482c2de449cf",
+      "targetExists": false,
+      "exports": [
+        "HookedFishProfileSynchronizer"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "target": "src/dev/items/item_progression_debug_snapshot_provider.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "f91c9e600ad8c1848a243dad0987a24491d385067d0e2fa023deab311edb0d09",
+      "targetExists": false,
+      "exports": [
+        "ItemProgressionDebugSnapshotProvider"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/location_debug_data_provider.js",
+      "target": "src/dev/location/location_debug_data_provider.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "cf718d68c442e9cb8d8fae89f07d8cf17f36b4c1b4c7af6be8a91e837f82c299",
+      "targetExists": false,
+      "exports": [
+        "LocationDebugDataProvider",
+        "LocationDebugDataProvider",
+        "LocationDebugPrinter",
+        "LocationDebugPrinter"
+      ],
+      "dependencySources": [
+        "src/config/runtime/config_data.js"
+      ],
+      "reviewedBlockers": [
+        "mixed-responsibility-requires-decomposition"
+      ]
+    },
+    {
+      "source": "src/debug/services/location_dev_tools_schema.js",
+      "target": "src/dev/services/location_dev_tools_schema.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "5afdaddf356cf2ef0327f7f3a945778b45cb5bb979dacd40d4d86f239167d573",
+      "targetExists": false,
+      "exports": [
+        "LocationDevToolsSchema",
+        "LocationDevToolsSchema"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/debug/services/memory_leak_watchdog.js",
+      "target": "src/dev/services/memory_leak_watchdog.js",
+      "boundary": "dev",
+      "group": "dev-services-schemas-watchdog",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "1af1277ce7bf070f2ed81bd03137f51e1b82d2384eba3c287ca96bee0c5de5f6",
+      "targetExists": false,
+      "exports": [
+        "MemoryLeakWatchdog",
+        "MemoryLeakWatchdog"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/render/core/render_allocation_diagnostics.js",
+      "target": "src/dev/diagnostics/render_allocation_diagnostics.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "17b1271dd3b5d943dcfed64fedc8a4829814e94d732bebee75a202d48d9d9156",
+      "targetExists": false,
+      "exports": [
+        "RenderAllocationDiagnostics"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": [
+        "dev-production-coupling"
+      ]
+    },
+    {
+      "source": "src/render/world/location_debug_map_builder.js",
+      "target": "src/dev/location/location_debug_map_builder.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "15934f19efbef27a153de9210e0e8b94ccd416aec7b9448f6119e40afaf29278",
+      "targetExists": false,
+      "exports": [
+        "LocationDebugMapBuilder"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    },
+    {
+      "source": "src/render/world/world_debug_renderer.js",
+      "target": "src/dev/rendering/world_debug_renderer.js",
+      "boundary": "dev",
+      "group": "dev-currently-outside-debug",
+      "historicalMigrationWave": 7,
+      "sourceSha256": "a380c53f2aace3b86e1bfe37593aaeaa85c2933605c91b7f8efcfb889178c17f",
+      "targetExists": false,
+      "exports": [
+        "WorldDebugRenderer"
+      ],
+      "dependencySources": [],
+      "reviewedBlockers": []
+    }
+  ],
+  "reusedProductionGraph": [
+    {
+      "file": "src/bootstrap/production/chum_feature_bootstrap.js",
+      "sha256": "21dace3d58ab468389b4e52c23c1e3e594a940aae015f6f67226dc431a79a998"
+    },
+    {
+      "file": "src/bootstrap/production/config_context.js",
+      "sha256": "1b18d0639d4de2f8a11cdc011503e085a969e187e293e7ce7b4d5fda62e3449a"
+    },
+    {
+      "file": "src/bootstrap/production/game.js",
+      "sha256": "47c142445cfc6e7dcee5f285b4d55959ef59339050c4337e692871bc334025a4"
+    },
+    {
+      "file": "src/bootstrap/production/game_application.js",
+      "sha256": "5c3ad156ee4e16d3b9e30efa561efe6f9f414aa358e329b50dbf346f93096894"
+    },
+    {
+      "file": "src/bootstrap/production/game_composition_root.js",
+      "sha256": "a1159a3280e6e26974dd3b4676335f834d42b3ec26f7c85b45e872206cb45aa6"
+    },
+    {
+      "file": "src/bootstrap/production/game_config_composition.js",
+      "sha256": "00dc9c59d3960397fa67776dc6b619f8d9bcb3f893a4b116cc47cdedde9e1d50"
+    },
+    {
+      "file": "src/bootstrap/production/game_startup.js",
+      "sha256": "0f663149d1dd4b56de914046ffe94a38a6c792a665c217f1bb10f6b1dadd2c4b"
+    },
+    {
+      "file": "src/bootstrap/production/game_version_badge.js",
+      "sha256": "d63e415d833416a157cecf8363ddd3c961667cd0c65ad522e66f76ea66cb2797"
+    },
+    {
+      "file": "src/bootstrap/production/inventory_composition_root.js",
+      "sha256": "404474de3576f20ec697ec3ca513b1e75cf7dec1b9617911dd430ff34e78d141"
+    },
+    {
+      "file": "src/bootstrap/production/inventory_ui_bootstrap.js",
+      "sha256": "5cc22a24e444d7d9c5a0638b3fbbf87a72b2691610b92862d505677dadbb7600"
+    },
+    {
+      "file": "src/engine/assets/asset_load_result.js",
+      "sha256": "b6d91cc6950680ad4f2d3a418abe923fb6d5dddc1668320aba381e2eebd83120"
+    },
+    {
+      "file": "src/engine/assets/asset_manifest.js",
+      "sha256": "d8c6988b6d9081c7a5675051096fc009dc4aaec37f881391ffb3a1b03a14ce30"
+    },
+    {
+      "file": "src/engine/di/dependency_contract_validator.js",
+      "sha256": "265a7bc61092b225d1f52c89216edd925cf525371778d4e2e34bc6a6fe1f3e89"
+    },
+    {
+      "file": "src/engine/events/event_bus.js",
+      "sha256": "661f6727943debc2ecc97f8b244179da0d092320fdd6da9f490ca8768382b122"
+    },
+    {
+      "file": "src/engine/events/event_lifecycle.js",
+      "sha256": "f2dd7d126c2921a69d0ddf8077947c73a8efd196b4230835fe64271e863d9628"
+    },
+    {
+      "file": "src/engine/math/normalize_distance.js",
+      "sha256": "a322d74da4364df49fe6b7670e35fe4d724df7699b198f2f53399501daaec97c"
+    },
+    {
+      "file": "src/engine/math/vector2.js",
+      "sha256": "dd24d498f31bfa5e76895607f7dc3cd5547b895c6e07a933eef951a2e3ebd866"
+    },
+    {
+      "file": "src/engine/random/seeded_rng.js",
+      "sha256": "47a3f267dcf4c3d22da0b4a772314a9b422d73528ac888ac58158f61377c8af7"
+    },
+    {
+      "file": "src/engine/rendering/composite_renderer.js",
+      "sha256": "0d6c13862e76619e3bb5e56be05d851ac27e301a1ce668051ed5be7096d7f79a"
+    },
+    {
+      "file": "src/engine/rendering/render_component.js",
+      "sha256": "4b3c88d960a500cb8ffeaee0f97978bc9126cc8716a183e462ebf7dc705f4252"
+    },
+    {
+      "file": "src/engine/rendering/render_math.js",
+      "sha256": "5527fbbe0a05bfedcf59ea264f8e39fa9c34e614823f0a1cb9c148c41aea5e43"
+    },
+    {
+      "file": "src/engine/rendering/render_pass.js",
+      "sha256": "9827353d3daabc8b7cba8df6472d1500b0d0705e5443a6e3e9e3827940a6731a"
+    },
+    {
+      "file": "src/entrypoints/game.entry.js",
+      "sha256": "b74125e4605af15afa452528cb365eb3dc17e0e29c635af8e13099e62a86cf82"
+    },
+    {
+      "file": "src/game/application/casting/cast_power_aim.js",
+      "sha256": "6daf84c7cb9344b00f2b8b83f60c0894fd61d0638e1ea20c5e3b8e04de187ae5"
+    },
+    {
+      "file": "src/game/application/chum/chum_service.js",
+      "sha256": "9627206884239143d26c3ed670725a93f7d1d221064f56833f442d10857b2a31"
+    },
+    {
+      "file": "src/game/application/fishing/bite_environment_service.js",
+      "sha256": "f4f4b8f1ce1be91e0e8355141a4038fd50528f66ae352ca6101021713320b12f"
+    },
+    {
+      "file": "src/game/application/fishing/bite_service.js",
+      "sha256": "376e44f213a9507adc5f2e7fa114658e88e1d3d2a8230c595931034c2cbb9b3d"
+    },
+    {
+      "file": "src/game/application/fishing/drag_control_service.js",
+      "sha256": "1c372d473472b07b639a09334c0d6bb08b7316877fa9375a031549044ce31c8f"
+    },
+    {
+      "file": "src/game/application/fishing/fight_physics_orchestrator.js",
+      "sha256": "76af8d48c707d10785d5135532a57ca850329262463c994d1834e8a6f8784a9d"
+    },
+    {
+      "file": "src/game/application/fishing/fight_physics_pipeline.js",
+      "sha256": "126570709af70407928d59674a80ab59451b77c30671694c1af0928ecdb75ea4"
+    },
+    {
+      "file": "src/game/application/fishing/fishing_runtime_services.js",
+      "sha256": "c3f8aefaa42b4ff66a01bb0c8937024ef76e4c133ed22d9f13be2fffbef60ceb"
+    },
+    {
+      "file": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "sha256": "4e5a0c166b247b1b22799236e469f21a1722cb2780628cf350252f0b4a924b8d"
+    },
+    {
+      "file": "src/game/application/fishing/gameplay_override_reader.js",
+      "sha256": "bf86ace24b85c61273f995c6338d4df0b19c70c2d2706704c050a1c22fb952cd"
+    },
+    {
+      "file": "src/game/application/fishing/mutable_fight_frame_context.js",
+      "sha256": "c1b9f88ff7953cf3acd2f40b93c37018b74936d36989cda765cfbc75cd780045"
+    },
+    {
+      "file": "src/game/application/fishing/reel_service.js",
+      "sha256": "79d7e8dc43287c63fb752710aca108cf45f1ff4801d2b93322d7e209fe8a048d"
+    },
+    {
+      "file": "src/game/application/fishing/tension_service.js",
+      "sha256": "8ad10acfff95d4feb8c4daff5ec1266ceca5746dafa3a0e38c10f326456a8b77"
+    },
+    {
+      "file": "src/game/application/input/fight_input_action_composer.js",
+      "sha256": "f91bd858fb3e9033b3eaaea6117543200555d64c5a44bb01e7ae6186c6d935be"
+    },
+    {
+      "file": "src/game/application/input/pull_input_mapper.js",
+      "sha256": "713c69fcf271e42dd890661f3ae69c210b4a629bdf2e54b726c1418b1dfd964b"
+    },
+    {
+      "file": "src/game/application/inventory/apply_bait_exposure_service.js",
+      "sha256": "ad3e6032d289c51e01549a6b3921d75ce2f46f30c5bd479916cc218f4c63cbd6"
+    },
+    {
+      "file": "src/game/application/inventory/auto_refill_coordinator.js",
+      "sha256": "36f78a70f884f62a2b625d4f469b2476d40999f919f1b14597c4bcc31e6dc3fd"
+    },
+    {
+      "file": "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+      "sha256": "f1784d742d881fd654df6fba2d9b7479496abd43ac4727ddf7074aebf15aff60"
+    },
+    {
+      "file": "src/game/application/inventory/equipment_read_model_factory.js",
+      "sha256": "5122dd0b99ad175be82bba774025fd9a5dd17a2a4a3e75ce3135e4e009cf0ba6"
+    },
+    {
+      "file": "src/game/application/inventory/equipment_service.js",
+      "sha256": "d2529a5dc7ab865b52397ed1b4c16ade860ce8af40986bc23dfd2ad43bf7f348"
+    },
+    {
+      "file": "src/game/application/inventory/equipment_transition_executor.js",
+      "sha256": "ff212944279aa403200f763bbd99f9193e7bc9f0467b6251cf3cc927601b2f91"
+    },
+    {
+      "file": "src/game/application/inventory/freshest_refill_candidate_policy.js",
+      "sha256": "bb69e148008004d055463a47f73733df3f50853037017baf3ca444a58de2bada"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_command_service.js",
+      "sha256": "ea46f5b79d2fee5379336f14823a768e4fb31d7b95ec74a7eb1bb4d3144b6c14"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_context_item_filter.js",
+      "sha256": "908b9c5f69f3e4fb9cdd7d10e2f6e78ba24f6fe23e17bebba0aa4fc715700909"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
+      "sha256": "dae42a21a59ea976e5f9796d6735c8b9c649392b0c3ba66a719e9b8962761146"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_equipment_transition_adapter.js",
+      "sha256": "2f3a2abfa38787002597182db625f8d1dd4217185cc94cdcc88d6c8541e05221"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_facade.js",
+      "sha256": "869369179ac255b213ae7d8cce8e6daf376ddec6a104ba8ffc3c053b2227c613"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_gameplay_facade.js",
+      "sha256": "c8de57d5093cb6f25afa2d027f4cf446ca54f0bb6f3107fe9da36352fb1df2d7"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_item_factory.js",
+      "sha256": "75d3d0a5156d5981163a0282519e93de30ec6e8caa2ef15bcd23f0fa84ed6416"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_item_hydrator.js",
+      "sha256": "9f717f0a0777efe3523d19fd71fdb6d5531b7bc6ca554474a7f3b511360bfee5"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_line_allocation_service.js",
+      "sha256": "f170596d3b0662fe6255da6f425c0f5481a2bdd9842218baff0c8bdebb31b35a"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_loadout_adapter.js",
+      "sha256": "23a3c16a34d0a2285bbf9e4bde937e9fac7603ef9fee56e326f6fb5c733ac1e5"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_refill_adapters.js",
+      "sha256": "def02d8174de8d1041ba39ef8dd24cbf8c126b632a6fa0ec0a343d182ce8b99c"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_transaction_coordinator.js",
+      "sha256": "98f493f08a21445734c0eeaaaeba657639de6726adf49f3cebadef1e7f037c74"
+    },
+    {
+      "file": "src/game/application/inventory/inventory_transaction_participants.js",
+      "sha256": "fd54bf4a3f2cea8dea2e4fb92a99526539e085fd7a8a851f7bcc889bd8f5ff5a"
+    },
+    {
+      "file": "src/game/application/inventory/legacy_inventory_system.js",
+      "sha256": "13ddfee4216c088beab3db4628757e2bbabe3d842d600b2f688fdd53bf651857"
+    },
+    {
+      "file": "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+      "sha256": "9aa8a1704f175f39ff9fbe5d842713a97dc62009c51025b3d8b09b2e8bbb0957"
+    },
+    {
+      "file": "src/game/application/inventory/line_inventory_controller.js",
+      "sha256": "7f19343fce589f1ad222e961df35c501e44268eb058b45696d36032058c22bf4"
+    },
+    {
+      "file": "src/game/application/inventory/loadout_application_service.js",
+      "sha256": "805a051f1a2cc358878bd23d9ee1f2786904b4cc29174b7cfcb8e0620f5bae67"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "sha256": "3bb733f78388209f5e2eb64a066d4bbcc3f6ff3bb2651d93a44303f3f78d32a5"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+      "sha256": "26462ecf2232c4c3f515c285f4a816d70bd7ef0690aa4acb07486274be793541"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
+      "sha256": "cd5b818b8669f6d135f654f6bc3e61df73e9ebfaba0ecf2a5fa34d25f40cef87"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+      "sha256": "7342d3b8149180cca9523885e8be8d83daa9cf93703e8c6675aadec914d2d95e"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/inventory_state_store.js",
+      "sha256": "083c195452f3726cfd772313db9af478c47d57d53c4beb97d7a535830b0421d1"
+    },
+    {
+      "file": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "sha256": "fcca4262c5924df6e38e5c7cedab768425dd56500b2b10305943848832e53907"
+    },
+    {
+      "file": "src/game/application/state/game_state_machine.js",
+      "sha256": "2fc46656ea48418eed8f61e541b2bcb676a2c6928e4b8a21a16d80430df1faac"
+    },
+    {
+      "file": "src/game/application/viewport/viewport_projector.js",
+      "sha256": "67467f1798cf4cf4319143b3d4994f38db7de9c5ae9e88a931fcb8ddf945dbd3"
+    },
+    {
+      "file": "src/game/application/world/game_world_service.js",
+      "sha256": "660b47aeddcfaf8a8ab5d050140d2be704b9cee63d76934a3ab46f4a65e2c0cc"
+    },
+    {
+      "file": "src/game/config/databases/fish/fish_categories.js",
+      "sha256": "94889b8682ff34b228e0ad9e33ef38d85431dc10ce1a9fa5d6f2d4c1aa21693a"
+    },
+    {
+      "file": "src/game/config/databases/fish_database.js",
+      "sha256": "627c387642df152b5349a99c776a9275de24c6721ca8d720eda4765b3d3b7343"
+    },
+    {
+      "file": "src/game/config/databases/item_catalog.js",
+      "sha256": "bdf818c08c451f537f7157291cff73b963f17017273b199f490efb77d3fa180f"
+    },
+    {
+      "file": "src/game/config/inventory/inventory_composition_config.js",
+      "sha256": "49dca282e4cb2079368df61110766413a37eb606ac9d06e7616f4e70c226c36f"
+    },
+    {
+      "file": "src/game/config/items/item_progression_config.js",
+      "sha256": "b23f00ec27d55087e1c0ac0ec5b4912aec38107b4b1b64b077186c0bf4fc99ec"
+    },
+    {
+      "file": "src/game/config/physics/fight_physics_config_adapter.js",
+      "sha256": "4be6b2eb107a27378af64e7a9821c66ca1f8537afb45ff3817fa006d3ea33eb0"
+    },
+    {
+      "file": "src/game/config/physics/physics_config.js",
+      "sha256": "ab06a6150f00367d00c8923e6eca78f7a64ffa1fdadcd3b28236f7ccee3abccc"
+    },
+    {
+      "file": "src/game/config/raw/fish/event_fish.js",
+      "sha256": "d8e80e231f162b1815f3b088aab8a840959ca5c61e361692c59e1ef0b2484950"
+    },
+    {
+      "file": "src/game/config/raw/fish/peaceful_fish.js",
+      "sha256": "03523df0da9c802fc6dd5b4705885fde728bf6c059d6c73f19585897fcfd0f0a"
+    },
+    {
+      "file": "src/game/config/raw/fish/predator_fish.js",
+      "sha256": "8029e8a1213ef46413736921f4880eb097957f81e4273cb03717d9ee1b6a4339"
+    },
+    {
+      "file": "src/game/config/raw/fish/rare_fish.js",
+      "sha256": "c4a659f3c6d403b7bbde47220335e14cb206fb047076d676c776d6db79e92cf3"
+    },
+    {
+      "file": "src/game/config/raw/inventory/item_assembly_profiles.js",
+      "sha256": "b03fb145b9433c95915f89f29622e51e6b08090258781652619a86c46714e687"
+    },
+    {
+      "file": "src/game/config/raw/items/item_database.js",
+      "sha256": "23b40561d12a1bf9cda6b60744f5655d498dd4fed5d13c4ce8df9c975da56cd4"
+    },
+    {
+      "file": "src/game/config/raw/items/item_stat_overrides.js",
+      "sha256": "753fae2c29fd3bc5e580221d20cc585363ecbebaba485bc3e21cc93a949b9797"
+    },
+    {
+      "file": "src/game/config/raw/locations/location_database.js",
+      "sha256": "88cc1b01ebb8536e6ec75ebe973b6f20dc14c54a1eb3a27e2c216fb1e218a447"
+    },
+    {
+      "file": "src/game/config/raw/physics/environment_physics.js",
+      "sha256": "7618171b171fdd6036a9315bee6ddad872bef0a17aa0c65d667e4d36a16d2bde"
+    },
+    {
+      "file": "src/game/config/raw/physics/fight_physics.js",
+      "sha256": "686787a7698fc3c8e42abadf4f2d2c3f13233751e8e8fd5a1ed1079071176344"
+    },
+    {
+      "file": "src/game/config/raw/physics/retrieve_physics.js",
+      "sha256": "82b9fdd9f0e29f11d524a113f38acd77ab9df3387a1a7b674656e7aeca75a9c4"
+    },
+    {
+      "file": "src/game/config/raw/physics/tackle_physics.js",
+      "sha256": "208b5a9299f296d34a1e2c5df7b0bde3289859c940a1ce593cb060aa5fb349fe"
+    },
+    {
+      "file": "src/game/config/raw/physics/tension_physics.js",
+      "sha256": "4673c1a5185a66e26c47bdda0577b0ee4c9ec481dc11ef11d2ea8d43c2f5aaa6"
+    },
+    {
+      "file": "src/game/config/runtime/config_override_store.js",
+      "sha256": "9bdfa2a463f13225014854cc8d929b8f7d207881ec62a97e50ad48a1a8e904d4"
+    },
+    {
+      "file": "src/game/config/runtime/game_config.js",
+      "sha256": "73d5b467bcb129d138017f55aa3831a18f255aa878bb773f1baaa8194efa4547"
+    },
+    {
+      "file": "src/game/config/runtime/immutable_config.js",
+      "sha256": "04b4c169a6d26d12b29915317a6b54fe67acd02113fc35d2fc4bb1b62c3008a3"
+    },
+    {
+      "file": "src/game/config/runtime/resolved_config_provider.js",
+      "sha256": "6665c5cf217d0ab92e53d95665506e08ce8737c2e0e6cd4fad93e49b76c2a5eb"
+    },
+    {
+      "file": "src/game/config/validation/item_progression_config_validator.js",
+      "sha256": "ff6f44f9f4372e787d77dd83a4db9f7e01d56d6d6d44856c53470507b45b6fe4"
+    },
+    {
+      "file": "src/game/config/validation/item_rarity_config_validator.js",
+      "sha256": "8bab58106753814f45689a00c3df3c9adedd3c1ce177f80d0146c6315f8618f4"
+    },
+    {
+      "file": "src/game/config/validation/rarity_config_validator.js",
+      "sha256": "4e34da4152475cac6273fbdb28898f5ec3a9eb4d2d7b97385525e7ec3689eb6b"
+    },
+    {
+      "file": "src/game/domain/assemblies/assembly_attachment_target_resolver.js",
+      "sha256": "769a6875ca8c143ad8b58421ae5c15291afe79b2a6eb483377421de0a7d411c5"
+    },
+    {
+      "file": "src/game/domain/assemblies/assembly_completion_policy.js",
+      "sha256": "865e502f14ed3f0c257d2c542bc39693113453839cedbd1be62be4366ff9a2ec"
+    },
+    {
+      "file": "src/game/domain/assemblies/assembly_profile_registry.js",
+      "sha256": "98471183c18d34e5405cabe9f830e3e4016d5ba4afc0d5b33ba65f8ed99af7b9"
+    },
+    {
+      "file": "src/game/domain/assemblies/assembly_state.js",
+      "sha256": "bc515932977c7464bd57e66fd60c00aa12a4b59dfd785df947594761a8888264"
+    },
+    {
+      "file": "src/game/domain/assemblies/assembly_state_repository.js",
+      "sha256": "a5c4b60bcaa5df0720fe8f73d39e0ef3126a14444a33cfe0890d94f031462fc8"
+    },
+    {
+      "file": "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+      "sha256": "ed1ac4990df81253abb10a144abc55276cca8ad1402e67af47256092381d7df6"
+    },
+    {
+      "file": "src/game/domain/assemblies/item_assembly_reader.js",
+      "sha256": "ee4264b48935f4e13d2f875bc05ad194bdcd888fed7240a0b104d3c30a56a94f"
+    },
+    {
+      "file": "src/game/domain/assemblies/item_assembly_service.js",
+      "sha256": "f35987579ee62f8f6197b0ab7d01cac4943d5b2a7fe54a191e6f9f02d1207a2c"
+    },
+    {
+      "file": "src/game/domain/assemblies/refill_compatible_signature_policy.js",
+      "sha256": "a95c1f8664278a888bdf9ed7af2105adac89db690307d3ed34f025f62713a077"
+    },
+    {
+      "file": "src/game/domain/casting/cast_distance_calculator.js",
+      "sha256": "a00e065bf47bc230d8092087851ed03933e9c00fb121967386e1e1d467e6b7e2"
+    },
+    {
+      "file": "src/game/domain/casting/distance_unit_converter.js",
+      "sha256": "222bd61811fb0d89e1519b72010eae8cd6222c65ad9d9ba7eeb1f51a34fa5435"
+    },
+    {
+      "file": "src/game/domain/equipment/auto_refill_policy.js",
+      "sha256": "0add94f56041ccccfbb00992f4c7400a7e24e6122b91d5d1c19c9dfffdfee17c"
+    },
+    {
+      "file": "src/game/domain/equipment/equipment_compatibility_policy.js",
+      "sha256": "b026501540fb9fca9df149082a519c861ec7f6c6488ee27acddf6738acf5f616"
+    },
+    {
+      "file": "src/game/domain/equipment/equipment_slot_catalog.js",
+      "sha256": "152dabe0a37c0c025c0eb4460dbab2fb5dc65cbde52cfbda13194c3eb224a6a9"
+    },
+    {
+      "file": "src/game/domain/equipment/equipment_slot_visibility_policy.js",
+      "sha256": "08bc674fd3c1c9c4e0fab392feb457baf8a4d002e0831683a767e3f0accf10f3"
+    },
+    {
+      "file": "src/game/domain/equipment/equipment_state.js",
+      "sha256": "308e03c8c184db4a49a9ace3fce03c88cc94db747769011d3c4c217d7da66081"
+    },
+    {
+      "file": "src/game/domain/equipment/equipment_transition_planner.js",
+      "sha256": "01c91dedd70ff8dd08a0aa409633f313a3d061badfd15a0d8b7b131a93f08de5"
+    },
+    {
+      "file": "src/game/domain/equipment/fishing_readiness_policy.js",
+      "sha256": "a793f539038d3cf63170f4a857ddbfd52690ceb498c54feb5688f617e45fb1d8"
+    },
+    {
+      "file": "src/game/domain/equipment/rod_capability_resolver.js",
+      "sha256": "554c7f3142ad8088df38a02fc0c3e71e86deb3fa9b8df93b673215df9b4e33eb"
+    },
+    {
+      "file": "src/game/domain/equipment/terminal_line_slot_resolver.js",
+      "sha256": "d7167878c4e8de1de3cc81f30d5d614fb73629a146c203f926a767fef64c81fd"
+    },
+    {
+      "file": "src/game/domain/fish/fish.js",
+      "sha256": "8f237780c40e0101814e9b16f52c09f15400a46146e959595df1b32548442a1e"
+    },
+    {
+      "file": "src/game/domain/fish/fish_anomaly_variant_resolver.js",
+      "sha256": "578fc668627917f8abc3eb5c5ea2f12f624cb535f33db1f1899888fe7d1f572b"
+    },
+    {
+      "file": "src/game/domain/fish/fish_rarity_resolver.js",
+      "sha256": "4339d5a84a90d109ed050b7a7728fd28b019b8474bb554aa0f7e240f914cf6e7"
+    },
+    {
+      "file": "src/game/domain/fishing/drag_force_calculator.js",
+      "sha256": "ce2ad02fa8e564e2ce7bde4b984a7c44275cf5def0764b5fedde2e4a45b4549c"
+    },
+    {
+      "file": "src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js",
+      "sha256": "29e58f64e4f2aca6b462a68e3b5f5a0b1bf8234cc39bd3de3beffe76778ec9a8"
+    },
+    {
+      "file": "src/game/domain/fishing/fish_direction_intent_sampler.js",
+      "sha256": "96f3a370872b7527649ff1a510a11f49933c458dc55fb85f2db2f965226f441a"
+    },
+    {
+      "file": "src/game/domain/fishing/fish_fight_direction_resolver.js",
+      "sha256": "38eb9d3dc055ae49df24352340c2a120201fb3c7eb4548742913da48046775ba"
+    },
+    {
+      "file": "src/game/domain/fishing/fish_force_system.js",
+      "sha256": "e6c44b279d45b1339f62d13414a085ecf395b597743b9b7c6a7c3e9875bf702e"
+    },
+    {
+      "file": "src/game/domain/fishing/fish_retrieve_result.js",
+      "sha256": "ce3324b8b152f3694385606eed497706349b61d69c95dcefe414696781bb6ad7"
+    },
+    {
+      "file": "src/game/domain/fishing/fish_retrieve_system.js",
+      "sha256": "3b0a9a783f3f07685d1c651125ff6c64d917a10f3a6a7ccd6880c7c3a237c0cd"
+    },
+    {
+      "file": "src/game/domain/fishing/fishing_cast_exposure_resolver.js",
+      "sha256": "0ec14e694e9321eaf2f68e5096b8370efe726dc093b1f79189e8d27c90d5c975"
+    },
+    {
+      "file": "src/game/domain/fishing/float_tackle_line_budget_policy.js",
+      "sha256": "1396b967242ebad01eae468f6941b6700b2f4ad4a4252433aaae1727cea6d44f"
+    },
+    {
+      "file": "src/game/domain/fishing/hold_opposition_resolver.js",
+      "sha256": "be576855e5bfe2b9d51e1187306c396195234f3717a248afd991fa284a7762ae"
+    },
+    {
+      "file": "src/game/domain/fishing/landing_lift_readiness_policy.js",
+      "sha256": "2137a01041b3ea84b252a96bec43d007d7ae3b81818de12bdb967a21e11600f3"
+    },
+    {
+      "file": "src/game/domain/fishing/landing_lift_tension_calculator.js",
+      "sha256": "ef7b757d9de46ad52d2e67155181f93a4c352c3719c7ef833025c3f7ed8c2d86"
+    },
+    {
+      "file": "src/game/domain/fishing/landing_policy.js",
+      "sha256": "5753ee29c7011760c52ac9baea84a63d6a89096c0e0ec610a3db9fc97adfa5d8"
+    },
+    {
+      "file": "src/game/domain/fishing/line_constrained_fish_motion_resolver.js",
+      "sha256": "bbba751a87c681b057250a55d59384f133d154970f795b90805afb04d68e2040"
+    },
+    {
+      "file": "src/game/domain/fishing/line_constraint_state_resolver.js",
+      "sha256": "0ca87cf34316c034dc9565c35e1f48461bb797b055d6b61dbef428fd793bf547"
+    },
+    {
+      "file": "src/game/domain/fishing/line_radial_movement_splitter.js",
+      "sha256": "b145f56fffc4962f4b32de8ec13d6efe6ec7613eeb371572349782e843426f9f"
+    },
+    {
+      "file": "src/game/domain/fishing/line_spool_state.js",
+      "sha256": "a816121ccb229b658a1d3d00cf34008227f036e1dc66f03a3a9fe89496e15c2a"
+    },
+    {
+      "file": "src/game/domain/fishing/line_system.js",
+      "sha256": "932e5778bce438e995c90af7561ca10b7d9bf619db0299195686a1025fdeda70"
+    },
+    {
+      "file": "src/game/domain/fishing/line_tension_calculator.js",
+      "sha256": "113079de8eaff33183acf09d26c116357fe5708cb601be43eca4806052c0c2ff"
+    },
+    {
+      "file": "src/game/domain/fishing/player_force_budget_allocator.js",
+      "sha256": "5bf4583aaaccebbd0660107cd08009fb1f0af16eee02b20b0a3e437434d2e54d"
+    },
+    {
+      "file": "src/game/domain/fishing/player_force_system.js",
+      "sha256": "14bdac6809585a1bd3d7c61713cccc9f5a477ccf36086410709fe794c07c12dd"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js",
+      "sha256": "a096bdf8365a3142efc3db5bd3b0e2387ca719eeaa59c82d05423775cdc5c9fc"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js",
+      "sha256": "a9aa157fbf3e3de86b9683d35123881968f750547bfc1322f148e21effa4faa2"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_pressure_fatigue_state.js",
+      "sha256": "0a63d265d0c3ef9961346de77bad52f6df8dc8cc1b2b3f58b4efb4822b4c5d52"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_pressure_gain_resolver.js",
+      "sha256": "bde868f802b00347b3dbd71cad33ef4f8af3223805045113b2b005e8b2b2ea68"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_reel_fatigue_session.js",
+      "sha256": "680e006444736e9b85de6671653c4f35fa38be8a74c27efe182a8d52b30d034a"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pressure/player_tension_build_rate_resolver.js",
+      "sha256": "e5601f5c9f83886f76afbf191a58fea2ea8ffa2d10e3fa8d2ae8be87d6085455"
+    },
+    {
+      "file": "src/game/domain/fishing/player_pull_motion_smoother.js",
+      "sha256": "8ef10fbf9d4cae01b6e5ab7df5c8115a7477593e5aacfd609277c2b0ff6aba4d"
+    },
+    {
+      "file": "src/game/domain/fishing/pole_fight_sector_angle_constraint.js",
+      "sha256": "853b19558066199ee59f9872e98bc8a6b1746cdfe36f438f37f1f949e772cbe7"
+    },
+    {
+      "file": "src/game/domain/fishing/pole_fight_sector_constraint.js",
+      "sha256": "8dbfbf585984287e68ac0ab87d50fd60283d184f4f99d8057696814a9a36a833"
+    },
+    {
+      "file": "src/game/domain/fishing/pole_fight_sector_geometry.js",
+      "sha256": "126b4845445dce0062c60471cd8b86f0189f3adb9ed95c8e4dfb0202d5ff1168"
+    },
+    {
+      "file": "src/game/domain/fishing/recoverable_line_calculator.js",
+      "sha256": "96fd594895bd40fd4bac467227abd7bc4affef134e07f62432b556d6a4e1a595"
+    },
+    {
+      "file": "src/game/domain/fishing/reel_auto_recovery_calculator.js",
+      "sha256": "181ffe8e130619355be13872d3f12594fdeac27bf2f9c306ff02120f46d06652"
+    },
+    {
+      "file": "src/game/domain/fishing/reel_hold_load_policy.js",
+      "sha256": "5aa716f077764d9ada772388d55e2a5d2c3c432e3c77acd06fd23979de8f92f3"
+    },
+    {
+      "file": "src/game/domain/fishing/reel_hold_recovery_system.js",
+      "sha256": "4aa7fb5e9bcb4330302016ebd6d7abce9d0e9abd806773d936cb452dad975b8d"
+    },
+    {
+      "file": "src/game/domain/fishing/reel_recovery_fish_slowdown_policy.js",
+      "sha256": "7286219af5664febd7f8d49a30a478177ccc914862a2c022e754ae4c66b8c4d2"
+    },
+    {
+      "file": "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
+      "sha256": "4347b9593ca7b8387fb64f224c343cdb8c7633ea8f5fb3aaad86fc970a374f7b"
+    },
+    {
+      "file": "src/game/domain/fishing/retrieve_policy.js",
+      "sha256": "b887424190cef8467b30b4d2e3df042bdb7ddd23c82e483ad711e9e059e992e2"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_control_angle_resolver.js",
+      "sha256": "74ae82848c7f2a6a617049da7759f1b51dba41e67b67572ec1c00fb07fec06b6"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_control_movement_projector.js",
+      "sha256": "bdd4e8095a2f72b43f07c0a9c386c7f8ad98df25b4721f585fe040143accaddc"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_control_tension_mode_resolver.js",
+      "sha256": "f5c3c80ce836e6afb00598b490b3717ec0c78881a7062f4370ca7b73665c0861"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_lateral_control_system.js",
+      "sha256": "b09528f0f8f2d5c09a293b863a7f7573f5da261da7756c95fb2c6cb30cb937ec"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_pull_calculator.js",
+      "sha256": "2adddffd819ba984d859468ad6cd8f2bec94db35ae1551670e46f1f483b64d58"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_pull_state.js",
+      "sha256": "111fa719ea32f02f7824b951e2cd31a214468dd609c32ca24cd85193c1c1431c"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_pull_system.js",
+      "sha256": "d57bb42b9904c7bb69055df4d849eca4b3181aeeabc83e8324c3531416e924e0"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
+      "sha256": "f9255171fe2a71afb2c971d5070529f7d462ddc093ed3298a57ee749548c7b44"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_stroke_distance_tracker.js",
+      "sha256": "c139bc08f8130b9a34570e808e5203c6e4665becdc7d157085f4cd308c61568e"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_stroke_state.js",
+      "sha256": "9454c72176e555ccce5501e18c13af687a373fdb1c4212884e52cf760c5d8248"
+    },
+    {
+      "file": "src/game/domain/fishing/rod_stroke_tracker.js",
+      "sha256": "19427337472dbafe28b90a3e9da57cffe26e2ba0d521c80d1f971ad10ec07f45"
+    },
+    {
+      "file": "src/game/domain/fishing/simple_fight_force_calculator.js",
+      "sha256": "a4cdce35a7ff59a9b5f3ab532180561e7bb55072e01cec526e895cc2dca05992"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/active_endurance_drain_calculator.js",
+      "sha256": "06b47d735cc37049540584c16c4ba56f707ae2e04dac7168823892c396accfb4"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/passive_endurance_drain_calculator.js",
+      "sha256": "6c9c52a2ecf6cde6ef58fa7983b5aaeed74ceb1221c173e8c51c8469b0ee650b"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_balance_frame.js",
+      "sha256": "c2e4f755fca4221a75095975ad4a2ce6525dee82ee68a27002d81f839ce973a0"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_drain_calculator.js",
+      "sha256": "7bd6e2aceb89b34f52ca605b670a6ef2ce7c637905cbfed8f4b82baf10432564"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_lateral_position_resolver.js",
+      "sha256": "61c4e53aa577fb3c3f01173cc97b7f5955c8fab34af861b47bd4e95f38887bff"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_phase_machine.js",
+      "sha256": "ddbf4ef5e8d4fc90c37361353bb68c3cef05ff2a946b7f7ec9782319be876b87"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_pressure_resolver.js",
+      "sha256": "33d31bbb22c87689a241472dc3753aae12939e50a49aaa25bf97f7b2d69ede52"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_regen_calculator.js",
+      "sha256": "9c25bb44daab6982a077bd552c694b8d15653d08f4d8974d88075a684f8cd2f3"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina/stamina_transition_resolver.js",
+      "sha256": "c68e5d9dee1e832f8866680359e9532d4617c054fd7c35b5c354ba7d4e68a523"
+    },
+    {
+      "file": "src/game/domain/fishing/stamina_system.js",
+      "sha256": "a3344d1d8bcc28e453351826dec9ace9de095da34060a6f0db7dc4a76beb177c"
+    },
+    {
+      "file": "src/game/domain/fishing/tackle_failure_selector.js",
+      "sha256": "73f6b40b8ef95f81788ee0a3206fe61d4001777ebac01d480653bd439535b748"
+    },
+    {
+      "file": "src/game/domain/fishing/tackle_stress_accumulator.js",
+      "sha256": "588c56b8ba6e216235ab8d50d250d492bdc1a6e6b8b1262b2e6f7560c10b1523"
+    },
+    {
+      "file": "src/game/domain/fishing/tackle_stress_system.js",
+      "sha256": "15b505e1a815ce08af2d3e85ca47f101d86761a3824cc42eb481cd1a5eb70ed9"
+    },
+    {
+      "file": "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
+      "sha256": "4e16547f8cad9b54d7b31132a1371fc029224e46ab725e689d42738b121a6c63"
+    },
+    {
+      "file": "src/game/domain/inventory/flat_inventory_item_repository.js",
+      "sha256": "68c8bb3a4a9c771a8743d13115c66702f9c2bd99807cb5ff23246fdf0b6c431b"
+    },
+    {
+      "file": "src/game/domain/inventory/inventory_capacity_policy.js",
+      "sha256": "d5c6887efb0631005a162b68c3a37e5db46c34d777104eb588f513dad2f19ed7"
+    },
+    {
+      "file": "src/game/domain/inventory/inventory_item_location.js",
+      "sha256": "57dfa89f74b611f6752ae846aa0664fafee9de752ac3555ea5a20b173d6972db"
+    },
+    {
+      "file": "src/game/domain/inventory/inventory_item_reservation_policy.js",
+      "sha256": "f5c5112df6d74a54584131e8d9e5e93a8faf774f587d573bf05bcc412a46d34e"
+    },
+    {
+      "file": "src/game/domain/inventory/inventory_item_stacking_policy.js",
+      "sha256": "6a2f3119bfa735aaa0500afc5acbd60ccc5e5c802f839d8bcf23342635b79ea2"
+    },
+    {
+      "file": "src/game/domain/inventory/item_assembly_stacking_policy.js",
+      "sha256": "92a612813bc1078a54388543f62a568db8cf47bc6ab5f04214b1ef13a4817f43"
+    },
+    {
+      "file": "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+      "sha256": "5c2855f96b49faaf4c2733a7bc3da42d714ff906dc6cc118b36f553caf8fc42e"
+    },
+    {
+      "file": "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "sha256": "a500e23fbd1c0c9997ea73dfcc24e130cb59b1c419b971f9b0a3d0bf7670495d"
+    },
+    {
+      "file": "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "sha256": "273b28edb55e869823ee2a64c8a25fc7ef74adf74e79d075b02580b511a5504d"
+    },
+    {
+      "file": "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "sha256": "6068138fa921b9a4687cd4e02393d230737f2287aa3fb5ff93b984f4d6aea3ef"
+    },
+    {
+      "file": "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "sha256": "0187266dd9ded59a4b260af2ccc806a46655735741ad907fb3747b1c6b325970"
+    },
+    {
+      "file": "src/game/domain/items/condition/item_condition_resolver.js",
+      "sha256": "3b1cd347269c5ca80aa159e8727b54e04e3c1cb46eabbdc1ec7e749590a01c32"
+    },
+    {
+      "file": "src/game/domain/items/effective_item_stats_resolver.js",
+      "sha256": "160ed376c3fb4334509d07011c58ee42f0148ec7309419b23ba8da6958963ae7"
+    },
+    {
+      "file": "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "sha256": "0bada8d4da7e268e5afa6b14cd35a31b5056f0e9df83e03d57f346933bc71fa4"
+    },
+    {
+      "file": "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "sha256": "c5cb52431562940e9a7e85b02e4e697e171c3de6565c9e361938b1a320e5a81f"
+    },
+    {
+      "file": "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "sha256": "06306c60b60917319b074e712ddccbc2071bbfc505e6d7a2aa6431f0509fffe2"
+    },
+    {
+      "file": "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "sha256": "ac171a19e01178620d4b4b23d9d7e1447ec8fd2f9bcf18b0288e19872f60bd99"
+    },
+    {
+      "file": "src/game/domain/items/hook/hook_power_policy.js",
+      "sha256": "63844ede1ac6f294400cf6dfe6543a248857154aa0f238b3e587d481186665da"
+    },
+    {
+      "file": "src/game/domain/items/item_stat_override_policy.js",
+      "sha256": "7cb101f0ae454fc333f83919f930508e2276ee2e1bcbdf158219db99f4ce279f"
+    },
+    {
+      "file": "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "sha256": "e70aa20f897bb61d7661c1d72a75f516aa886d59539067131dc4deec473b7ffa"
+    },
+    {
+      "file": "src/game/domain/items/progression/composite_metric_strategy.js",
+      "sha256": "a9aeaf59f474d6c9b233a243aa2362168af8eef20aea07f18166108e883d96a0"
+    },
+    {
+      "file": "src/game/domain/items/progression/derived_stat_metric_strategy.js",
+      "sha256": "26a3908c5d78280c95bbec52bd397199fb2ea66b7ca3e812b14c16c691783c68"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_capacity_resolver.js",
+      "sha256": "0ad461afe62524628d12fdb29530da68af06595e67b6316daa3f6fb8648f6c1b"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_catalog_baseline_registry.js",
+      "sha256": "18555b2d570c985a1fcd126645954051321d7495340494356068a1d1cf6129b1"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_metric_strategy.js",
+      "sha256": "d8c8a4a454a9beb13f9274522cee359ab9c6cf3eb03c66a899f687af1d7d5056"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_metric_strategy_registry.js",
+      "sha256": "71f1c37c1037e3b9452993a39a7bc13debde5587b5ab3a57bf71216460fb6212"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_progression_descriptor.js",
+      "sha256": "b938deebc0b050fa0d49236e579ffc5467e6612ee4434254f169d46f7443173d"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_progression_resolver.js",
+      "sha256": "556c3692960df3e1db3a3d7de477002e9ad7ebf02c3c1c95480b74135537b8f3"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_rating_resolver.js",
+      "sha256": "cc5b2d22e505d2ae8a42f3f1eba8ca0acfa292413df5f42732f04c484594917d"
+    },
+    {
+      "file": "src/game/domain/items/progression/item_rating_tier_resolver.js",
+      "sha256": "aaa6ac2e8255bb786021b6db892cb2fa20fe9f1be554a02e35bf4e93432315c0"
+    },
+    {
+      "file": "src/game/domain/items/progression/numeric_stat_metric_strategy.js",
+      "sha256": "9f5b0d0607d36cdc913064bce2cdc19b34811bd16639b26221ab35daec3bcf76"
+    },
+    {
+      "file": "src/game/domain/items/progression/target_range_metric_strategy.js",
+      "sha256": "4230a4038429f1c63fd490a19849bb4e3ca7e4ea9800e58a73db0d6399c62984"
+    },
+    {
+      "file": "src/game/domain/items/quality/environmental_compensation_modifier.js",
+      "sha256": "f1585397bcb14833849a3ced208faa503724b5669a89926969e7166901037977"
+    },
+    {
+      "file": "src/game/domain/items/quality/hook_quality_modifier.js",
+      "sha256": "e65405d00d830813cd1da89bb99af369108885ca6e0f83ab9e08a6ea800a5db8"
+    },
+    {
+      "file": "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "sha256": "8f14192fef82ec165eb406a5b1000b8b19db9369761619d2378953fe4aba35b6"
+    },
+    {
+      "file": "src/game/domain/items/quality/net_quality_modifier.js",
+      "sha256": "35596a22a74f1a6fb5bcdf882de87d17d9a40c1996d0df571c065fa6a58d4518"
+    },
+    {
+      "file": "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "sha256": "d94734c1e7c3dae8313d9c69098e46902e5b8fb640b8f7b38ff84ae2de4eeb46"
+    },
+    {
+      "file": "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "sha256": "e8307aa52ccf4e3aa0b362d0c6bb2b05ff8ba41c0ed2525340e7dde4aaf37757"
+    },
+    {
+      "file": "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "sha256": "417db35b34a462af84df7c12ae11a4f087cdffce7d048a336dde14968e780293"
+    },
+    {
+      "file": "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "sha256": "1b281c28e9e76d3c96655e2401c810525b36f6f2f707a647599aa23d7d6e9a66"
+    },
+    {
+      "file": "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "sha256": "01b90765a43e6f71f412de0db32dbb8433ea0e7379ea7eae57a9aae3d538e655"
+    },
+    {
+      "file": "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+      "sha256": "f47f76df0cc062f6a4a6e1e670267199e22a6d26d38f8a65dfe4f200ac17a1b6"
+    },
+    {
+      "file": "src/game/domain/line/line_allocation_policy.js",
+      "sha256": "64ac6c9084c98003965de390cc96a083d77f6ac3b57e97d4509dae8f0256c165"
+    },
+    {
+      "file": "src/game/domain/loadouts/equipment_loadout.js",
+      "sha256": "ea7af89716d5c99da98fdba27b0bbb4da82a45263b696c8001dacf319aa81f59"
+    },
+    {
+      "file": "src/game/domain/loadouts/equipment_loadout_repository.js",
+      "sha256": "f36ae048a61348cb01d757cd41f63696858670f8b07950d542cf353534aa1834"
+    },
+    {
+      "file": "src/game/domain/loadouts/loadout_equipment_transition_planner.js",
+      "sha256": "1972e17cc2b9b42a4135b795993520713717ab12f1d3509a7d0b144ed58517d6"
+    },
+    {
+      "file": "src/game/domain/locations/location_world.js",
+      "sha256": "9b158082350f420f29d9bd27b1508db1f8c68863c89483a69deef7734260a4bc"
+    },
+    {
+      "file": "src/game/domain/rules/gameplay_rules.js",
+      "sha256": "4487409b18e48fc020c5ff241505bf0c0800002181e6b9f349d53630b6824b08"
+    },
+    {
+      "file": "src/game/domain/tackle/tackle.js",
+      "sha256": "0187143d03855c21f72b0292a8118a5975f23dee17fec1b02a254d496677f463"
+    },
+    {
+      "file": "src/game/presentation/casting/cast_scene_renderer.js",
+      "sha256": "66fec98169edd0452df3b4b6c560d9aca34906413834ad78c7e878a156dbbb25"
+    },
+    {
+      "file": "src/game/presentation/fish/fish_visual_variant_resolver.js",
+      "sha256": "2c40e69b7ae6334f605aaa7e9ad40178f717b65d073878bec4f011c06eef1b5b"
+    },
+    {
+      "file": "src/game/presentation/fishing/fight_area_renderer.js",
+      "sha256": "8c89fed6673596ef993a169d95b7b0827023c39fef809abc8cc690b5cb24a5e3"
+    },
+    {
+      "file": "src/game/presentation/fishing/fishing_equipment_render_model_builder.js",
+      "sha256": "f666818f96cf288f9cb2de22c01a904a042c9b434e89ab84db59140ecd8bcab4"
+    },
+    {
+      "file": "src/game/presentation/fishing/fishing_scene_renderer.js",
+      "sha256": "52c5e7327f06c65cc17ff9ff9eac9f1690e698c3e1d1858e9f3e0b5dd2188771"
+    },
+    {
+      "file": "src/game/presentation/fishing/float_renderer.js",
+      "sha256": "b1da0b03638e00600b4ff2ff7eb360b1efcd568426efed8b1333ada9803adcd4"
+    },
+    {
+      "file": "src/game/presentation/fishing/line_visual_state_controller.js",
+      "sha256": "2a51fa69af6ff58124cbe1cacda946dcb835082a0afa913e918b1ea0df18dfde"
+    },
+    {
+      "file": "src/game/presentation/fishing/rod_line_renderer.js",
+      "sha256": "c04573b818f90ef461f2d085c6775d85616e39f29bfe12c4407d24f9fd09e9bb"
+    },
+    {
+      "file": "src/game/presentation/fishing/rod_visual_offset_system.js",
+      "sha256": "6c492343923e0afe66bb1c6704c89231fcf908750ec34495d33065f1acb7768e"
+    },
+    {
+      "file": "src/game/presentation/hud/fight_hud_frame_builder.js",
+      "sha256": "66e1cc5d11c6f855a16eb128b71fef064ac73d279b4ae4515720cbaca64b95e4"
+    },
+    {
+      "file": "src/game/presentation/hud/fight_hud_renderer.js",
+      "sha256": "8349c275a92590be4a77d5501b7dc42f3a8e083f2129349754761e8e429037ee"
+    },
+    {
+      "file": "src/game/presentation/hud/fight_status_bars_renderer.js",
+      "sha256": "1a8615f6552dbdf40ce27bea1c3b4100bbdd0a10e113653db5406b79b1b67cef"
+    },
+    {
+      "file": "src/game/presentation/hud/hold_charges_renderer.js",
+      "sha256": "aa384771951c1f0b3cee39afe05af8b373df8eff2397255b37407d2eaac210ca"
+    },
+    {
+      "file": "src/game/presentation/hud/hud_bar_renderer.js",
+      "sha256": "9174fad32a3b4f111b6ff705b6ec1ebe9c5a6b36c67a9c54b9a22ce727a7d418"
+    },
+    {
+      "file": "src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js",
+      "sha256": "827476d34b633f622622c625713dfa8c7f3962f40292b04852c0b427ebc1e286"
+    },
+    {
+      "file": "src/game/presentation/input/victory_action_gesture_resolver.js",
+      "sha256": "3293e1c738e98d275471c3e7cd30ce694d607039ad5cb8dd5a64c02b41c5f138"
+    },
+    {
+      "file": "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+      "sha256": "4dc0c26d144516d19c49ece47848475fb803e152fbf16075a4b2d7f088a0633f"
+    },
+    {
+      "file": "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+      "sha256": "76ebdf13698c669e65f440eefa14ee2a2804cb3f8190f84492ae60ca169b0979"
+    },
+    {
+      "file": "src/game/presentation/inventory/equipment_slot_availability_policy.js",
+      "sha256": "92eda97a8d426aa23a0189cf306e8cb6e76f6f74f818d54d33e525ce80c110df"
+    },
+    {
+      "file": "src/game/presentation/inventory/equipment_slot_presentation.js",
+      "sha256": "fe7e038beb6780d69d9e7225633174087a49fe655e2b47bf9652bedd18cca563"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_assembly_editor_renderer.js",
+      "sha256": "88afd7e2fe07fa91833c119a9b4d365d69bcad5dd9dbd169b9abd17eb472d737"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js",
+      "sha256": "6676eaa4fdd2d1d3c4637a26c8de43fd2111f5651116973dba0a65f5737464cb"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_attachment_badge_renderer.js",
+      "sha256": "276df623cd25e4fe7db4fb618693e5206dc56fb79f5058020bae0f0622e6e48c"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
+      "sha256": "081aca18b9c0eb885245ffa6587c2f9099a3d79891f15adfad130c92ff1629d7"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_grid_renderer.js",
+      "sha256": "e51786bf2a71f9b3d161833ea9b815da6f17740323507d1fb2d046bb1565e863"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_header_renderer.js",
+      "sha256": "578b1a83cab2e9d318ca507f274eec9d4291bd4fdd599560b7d2d27178c3cbdc"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_card_renderer.js",
+      "sha256": "e54e1faaaf8a29568a7662abc650f9768f1f0dcc674d5bfef10e74b607e98fef"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_order_resolver.js",
+      "sha256": "8057109a86a40387b390c866f75a00c7096980d3308d68cb61c65a848d019636"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_parameter_config.js",
+      "sha256": "9538950dc9cffca21892f15c7bff06b36119552226ab5cd96b04cfbfdf707b98"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_parameters_renderer.js",
+      "sha256": "0081618d7a37473171abd36b792e72f61d0b81d8963928a2183ea624e92017d3"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "sha256": "f96a6213b4233a7e343c96c8f418c9f9af8cb799e46a104a85de989ec76687d7"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_item_view_factory.js",
+      "sha256": "4553f3be468f17e1b272906a4f9fb56c4631c72810d7f728fd5eb566b748a327"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_loadout_panel_renderer.js",
+      "sha256": "4ce80b79d8afd928b0b75eaab235a5fd2791c7a5dc4d9b8bd94dfadde6a62d77"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_resource_meter_renderer.js",
+      "sha256": "9b8fdb99f45e51a91a5659462e29a915636c8409333b4bb1823705b03546945c"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_rule_messages.js",
+      "sha256": "dc1bddf1d92a92d194be7cbb13879090b895b8d62563c166a0857387623f6a73"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js",
+      "sha256": "d0f5732d7ca09b7a6f9371c0050efc4c1b20ca097766dffd72d39aa51214b6d3"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_sort_config.js",
+      "sha256": "a4d7253b9c4ecfad468d1705cdf127eae0ed132ee3762b1ca693d60f49255300"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_subfilter_resolver.js",
+      "sha256": "8eb31b39d26c307ef0a64a8ffcc8d94fe23fea5b9ab81421f51dad178c573d07"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_tooltip_presenter.js",
+      "sha256": "54331d5a1ed7b1d103a6416ac6ab0ee216e99e23a22ddb70684a623fe535d4f6"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_ui.js",
+      "sha256": "2ee23b124bf2a4e10d9030f1ddf44ec5ef3681e9935b4886d9f6e8c8f9f90703"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_v2_item_view_factory.js",
+      "sha256": "3015f31130200af359e20805220092915781591935a1afa9c77a3ef329155248"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js",
+      "sha256": "f7b16969fb609ca48be0a1fe562adb7fa483cefad0f27f5abeab443bd77be125"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_view_model.js",
+      "sha256": "81449c3fc032e4d83da53212d42bc9cc043ae2660d69305e39f60acc6d200bc1"
+    },
+    {
+      "file": "src/game/presentation/inventory/inventory_view_model_factory.js",
+      "sha256": "4483a1cc55882ee1e7880e93e316d2033a07a4458890ea22d10b7647835b7579"
+    },
+    {
+      "file": "src/game/presentation/inventory/item_condition_descriptor.js",
+      "sha256": "653604648f57488c78922ca8b57a0019acfadc55bb62c6f0c006d726cbeeb6f8"
+    },
+    {
+      "file": "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "sha256": "3545769e1bb4638b3b5b0d1417d96c5ef158b556771aa0731b121f1974abbdab"
+    },
+    {
+      "file": "src/game/presentation/inventory/item_progression_visual_resolver.js",
+      "sha256": "aa19f2467fcaa685d06917170ca3f47ca9896dbaf831c5c792fff7881d433443"
+    },
+    {
+      "file": "src/game/presentation/inventory/item_quality_resolver.js",
+      "sha256": "ba325dc92cbc115ff626ae84abd241c8cb7aec5e11fb05d299c885529613c195"
+    },
+    {
+      "file": "src/game/presentation/inventory/terminal_line_slot_label_resolver.js",
+      "sha256": "6c98b2d86b4c9e147e13ef6dd89fc705e463b4e3c8e42bc0b39d3b050b9d8e83"
+    },
+    {
+      "file": "src/game/presentation/rarity/rarity_visual_config.js",
+      "sha256": "0e2bb73ac6ad86bdbe6cfd030c4097882cd8f17ce0834613dba5f8287c81b852"
+    },
+    {
+      "file": "src/game/presentation/rendering/boat_chum_render_frame_builder.js",
+      "sha256": "5da9d4b50eaa164bbf4137e74ab04b52f014db2ad17b1c478a2adc47e9fbe28f"
+    },
+    {
+      "file": "src/game/presentation/rendering/casting_render_frame_builder.js",
+      "sha256": "52b85af808b746956c45a426e71e636e09de9e11d4296927a922d71ef69b4416"
+    },
+    {
+      "file": "src/game/presentation/rendering/casting_render_pass.js",
+      "sha256": "400bb0f05cdd3eb82841991a89bc1d3f836441232cd6dbe7c9dd97e487b88dbd"
+    },
+    {
+      "file": "src/game/presentation/rendering/fight_area_render_frame_builder.js",
+      "sha256": "0bf9798035ac8ab687d1b57ef0f95b0827ce3af37cf6d6808e41dfc9c89b62c6"
+    },
+    {
+      "file": "src/game/presentation/rendering/fishing_render_frame_builder.js",
+      "sha256": "5afa5eacb6d1520282576e70ac8c568762e1b044c773b4998a7327934de60d86"
+    },
+    {
+      "file": "src/game/presentation/rendering/fishing_render_pass.js",
+      "sha256": "b1aa755e1c1674843ac1f82a923d0fd09be8e56e0c2e7d3f4c723d1347c11966"
+    },
+    {
+      "file": "src/game/presentation/rendering/game_render_coordinator.js",
+      "sha256": "598654cf4aa7c21fc708e2bbb4680d142a5f0702ac35d177a03f693ab60b583e"
+    },
+    {
+      "file": "src/game/presentation/rendering/game_render_frame_builder.js",
+      "sha256": "c7d0f4a5969e57112ada0003040cf6f0fd4add9a4fd43b7b4f5584e09338f268"
+    },
+    {
+      "file": "src/game/presentation/rendering/game_render_intent.js",
+      "sha256": "d1d3349a3fa6918685ba12b323c7337079c8dff0dc86a3052cec1749353a2350"
+    },
+    {
+      "file": "src/game/presentation/rendering/game_render_order.js",
+      "sha256": "7301d322d66057f12463303f80f47d596eb404966339ee23d3591ad20b1a740e"
+    },
+    {
+      "file": "src/game/presentation/rendering/game_render_pipeline.js",
+      "sha256": "dd36373788de4817cf9ea97385d5c0cd17e1be9ab31236941b570fa19c828f59"
+    },
+    {
+      "file": "src/game/presentation/rendering/hud_render_pass.js",
+      "sha256": "7971c55f2c864d8500ce3a039c5db497864abfca41f9b4a10f5ba6d0002da737"
+    },
+    {
+      "file": "src/game/presentation/rendering/landing_area_render_frame_builder.js",
+      "sha256": "95585400c55807f15564fe8490d852ccfee6d2ffd354e1c1f086e8c9fa8142a3"
+    },
+    {
+      "file": "src/game/presentation/rendering/outcome_render_pass.js",
+      "sha256": "4d508a9ba7579e8d3cf18ac74253158165928b08aeb277e35f339e9f165f8aa0"
+    },
+    {
+      "file": "src/game/presentation/rendering/render_frame_buffer.js",
+      "sha256": "f5d55c812f2c0388732ce87daae6e7cde0610ac5f59fe32caacea1ef9dd30a43"
+    },
+    {
+      "file": "src/game/presentation/rendering/world_render_frame_builder.js",
+      "sha256": "173420c88c31c77097ad138eb822fd08d15d0e0c7fef20a78ae99ed0a8887f44"
+    },
+    {
+      "file": "src/game/presentation/rendering/world_render_pass.js",
+      "sha256": "de5f1854fce6fa47f6fa842f2b0f620bca882615a6239f0331276b22f3de53c4"
+    },
+    {
+      "file": "src/game/presentation/screens/game_over_renderer.js",
+      "sha256": "93e038efeb41226cb3ef2506d1c9020db44146d1bb4c4e296f2bbe79377d8a6a"
+    },
+    {
+      "file": "src/game/presentation/screens/outcome_render_frame_builder.js",
+      "sha256": "422673605e65e67bcf3bcca475bd68aa70a454ab2d0287dd082ec86547dab7b4"
+    },
+    {
+      "file": "src/game/presentation/screens/rarity_animation_resolver.js",
+      "sha256": "14c448117f4d0d9f9ad7f133747dc148a38547c73b20fb5dc75de61fb145b391"
+    },
+    {
+      "file": "src/game/presentation/screens/star_rating_renderer.js",
+      "sha256": "4015ce6e8f86254f230454f521e08eec9a9ff28610086e2e1e1725ee8b5968c7"
+    },
+    {
+      "file": "src/game/presentation/screens/victory_layout_resolver.js",
+      "sha256": "7e4f297f0ae871dbf0080f9f73b9cebf71a22cea13f23481eb4cd7e880ca2638"
+    },
+    {
+      "file": "src/game/presentation/screens/victory_renderer.js",
+      "sha256": "e59374bd987be544a756bf4fdde908f270c6cc632138b7e15865bfee6c4564ce"
+    },
+    {
+      "file": "src/game/presentation/screens/victory_theme_resolver.js",
+      "sha256": "c43c8603641f8760a6a2c9932e0cd3182b030cbcad430a2b45125bdd337b1358"
+    },
+    {
+      "file": "src/game/presentation/styles/degradation_color_resolver.js",
+      "sha256": "ffa550c5e3b7b66d2dd9e6f61d418e4c7e60a644a8858f20a7aceb91538fc9f1"
+    },
+    {
+      "file": "src/game/presentation/styles/fight_area_style_resolver.js",
+      "sha256": "28c359263fbcbfa9194074dc1536d005080e3d94a3cbd0c9359a67cc319e0993"
+    },
+    {
+      "file": "src/game/presentation/styles/hud_style_resolver.js",
+      "sha256": "31f19c11fc3af740f483286cfe41bd185149a05f7a5807a4f81eb84c93169f7c"
+    },
+    {
+      "file": "src/game/presentation/styles/outcome_style_resolver.js",
+      "sha256": "293129a3ac44252d9985d5b8c220ac5429ad496efa0f96c49ab63ab653617a1a"
+    },
+    {
+      "file": "src/game/presentation/styles/rarity_visual_resolver.js",
+      "sha256": "304c154368c965a59b294b63bd27e61413804338d4e84311fabae653f49d711a"
+    },
+    {
+      "file": "src/game/presentation/version/project_version.js",
+      "sha256": "5df32dfb61f9038b624f4b7ccc425700db6e9a9c35ec139ba39f2ddaf7ff7798"
+    },
+    {
+      "file": "src/game/presentation/visual/degradation_color_config.js",
+      "sha256": "10f6e747e8508ca958e048d64090267c71167a0ab03d6107ee3726f8f98fd86e"
+    },
+    {
+      "file": "src/game/presentation/visual/degradation_color_config_validator.js",
+      "sha256": "22600153120333fbfd478b2ed9e0aca13a28e1fee12e3f6a91df32586207aad5"
+    },
+    {
+      "file": "src/game/presentation/world/boat_chum_renderer.js",
+      "sha256": "7f03c124c0519385c6635157d50ffb42802fc16c504a09784b6befab649beea3"
+    },
+    {
+      "file": "src/game/presentation/world/world_scene_renderer.js",
+      "sha256": "9f5fbdc33fce81460c0bcb550333e6d2d80c0c2882b8d3d3f717332ab23066be"
+    },
+    {
+      "file": "src/platform/browser/assets/asset_preload_coordinator.js",
+      "sha256": "e259565029c26730714d70f0309e71cf0a23bf50948046a0c66cca5a03938fa9"
+    },
+    {
+      "file": "src/platform/browser/assets/image_asset_provider.js",
+      "sha256": "88b1d5f1a000181004eb020710b20a457093ca4052378d905a3cb283f9087679"
+    },
+    {
+      "file": "src/platform/browser/canvas/canvas_2d_surface.js",
+      "sha256": "0b385f7a968e7489ecc5152823aae188489438dfb8b0f91b91dab21dbd8b323c"
+    },
+    {
+      "file": "src/platform/browser/canvas/canvas_primitives.js",
+      "sha256": "b0bef1ad8ff511a7a71804eca8a4492cacb2c99bb44ca6ae1aeefc281e5f4379"
+    },
+    {
+      "file": "src/platform/browser/canvas/offscreen_canvas_factory.js",
+      "sha256": "e66fd56f8558b905735779c6bad5f674bbf5739dd934dd75b164c23bc614cf0f"
+    },
+    {
+      "file": "src/platform/browser/config/deep_clone_config.js",
+      "sha256": "149d0d7025deb16b72580c1c51670ecf01f09f5cc83f086907522eb28214348a"
+    },
+    {
+      "file": "src/platform/browser/diagnostics/console_logger.js",
+      "sha256": "d3132ed9e6efc7f6de390285c1523a77df5b6244a81775b521f199a6f94652df"
+    },
+    {
+      "file": "src/platform/browser/dom/draggable_button.js",
+      "sha256": "7b68b5b08c05b4bdfe1c3f7df5a6e8cef9d434378cf04e9b1834afeb40840448"
+    },
+    {
+      "file": "src/platform/browser/dom/engine_interface.js",
+      "sha256": "07949012e4e2e5c163d9cddfa357b5ba3510f80e03e8b3066f591acc06b94cd1"
+    },
+    {
+      "file": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "sha256": "0d22bdbb71e213efc19328a1a80b450d463462b017e21ffb0ceab4c984bee40f"
+    },
+    {
+      "file": "src/platform/browser/dom/inventory_v2_dom_factory.js",
+      "sha256": "54e6b7ad8c79db4b2793320d34371ef6a27169aba6ab02240fbe0311b0694603"
+    },
+    {
+      "file": "src/platform/browser/dom/inventory_v2_long_press_controller.js",
+      "sha256": "a31e39d1218c974af9f0fdd3d5945800395d814bbbb0343907acce2c8085112e"
+    },
+    {
+      "file": "src/platform/browser/dom/item_condition_dom_adapter.js",
+      "sha256": "e3edef66ba59a163fc9faa11e0c20be97fff0a03d7e2ed3a3028f5d1bc9df703"
+    },
+    {
+      "file": "src/platform/browser/dom/item_progression_dom_adapter.js",
+      "sha256": "55a6adfd2d817be646a99a25d7e8855cd4cb66adb504ca3b8a1271f369257800"
+    },
+    {
+      "file": "src/platform/browser/dom/item_rarity_dom_adapter.js",
+      "sha256": "91054c92b24b687d8e395b8efc0919b6fa5691daf85ec9b63a5ad9a2379ace17"
+    },
+    {
+      "file": "src/platform/browser/dom/ui_event_shield.js",
+      "sha256": "674540fd8a69abbe9572486d7287f349f44859f3b1cf310f736c3666b386128e"
+    },
+    {
+      "file": "src/platform/browser/input/input_manager.js",
+      "sha256": "72fff96394dd5a921b5f31c95458fcffb38ba5acd4c6a636e63575023a493959"
+    },
+    {
+      "file": "src/platform/browser/inventory/random_inventory_id.js",
+      "sha256": "a3a182406c04de603a3d93b8b0102d0aa09c452529401960fc51cf99b80f1e10"
+    },
+    {
+      "file": "src/platform/browser/location/depth_map_reader.js",
+      "sha256": "150d71225ad6591000844d38ddc649c25db36ca9d46d386d3f752c2e081e9432"
+    },
+    {
+      "file": "src/platform/browser/location/location_asset_loader.js",
+      "sha256": "84d064deaf866b1131e9353b594929220876901cac1e047390b793a7644b4e9d"
+    },
+    {
+      "file": "src/platform/browser/runtime/browser_game_lifecycle.js",
+      "sha256": "174828e8e3e58f6db3f81c996687f24722e32b9020e448c20bfb83fddf7485cc"
+    },
+    {
+      "file": "src/platform/browser/runtime/browser_startup_environment.js",
+      "sha256": "1ec9f04564ebbf80814d6a61e80a967472d9b10da104003fb954e5ce7f4f4d54"
+    },
+    {
+      "file": "src/platform/browser/runtime/game_loop.js",
+      "sha256": "346fcf11ca410fcea5a349ad1df35b6d4887a21561e5f3eb63d13c70236a10b0"
+    },
+    {
+      "file": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "sha256": "9abcf5383d398b329b8e632a911a59bbf2643a97de91f4b6a655484d7bdfef44"
+    },
+    {
+      "file": "src/platform/browser/storage/cache_manager.js",
+      "sha256": "698a15570a24752bcf7c6b47fe9e52a962f2194b6ed32fa08757904740648ba0"
+    },
+    {
+      "file": "src/platform/browser/time/browser_timeout_scheduler.js",
+      "sha256": "c4bb65f140a3464292f509f1c0b6a2dd8b214114dabd3ae1904158180cbad530"
+    },
+    {
+      "file": "src/platform/browser/time/game_clock.js",
+      "sha256": "8ccbc423ff0ff3e037a55c2bb40d9288737dd8cd11712ef4da0f8462a3d0f3a8"
+    },
+    {
+      "file": "src/platform/browser/ui/chum_controls.js",
+      "sha256": "f4b2e34fc9742b47f533bd3818a326271efe78f7a0526bcf1dff93fd8ed8d848"
+    },
+    {
+      "file": "src/platform/browser/ui/depth_selector.js",
+      "sha256": "1493607c758af574ddde999ed4dc528f711f82712331eeedc1c96fb3284a55ea"
+    },
+    {
+      "file": "src/platform/browser/ui/game_controls.js",
+      "sha256": "a7a6d120d2bbbac3f35676a646a5c949db608325b90c6167c3c17e71ab468e21"
+    },
+    {
+      "file": "src/platform/browser/ui/hold_charges.js",
+      "sha256": "efd738f7b2e5963716d64418422ff4571e4b78ead405021a9c6c6a62e4d50ccd"
+    },
+    {
+      "file": "src/platform/browser/ui/time_display.js",
+      "sha256": "867ddc8a7540f7a6abb7853980a25375f2b21f4edf6f01e3d43bdbc74150382b"
+    }
+  ],
+  "remainingBridgeHolders": [
+    {
+      "id": "bridge-02e7d86b6845",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/stamina_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-03c2663310fa",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-08de0d147791",
+      "bridge": "src/app/game.js",
+      "owner": "stage-5.cluster-027-game-bootstrap-facade",
+      "source": "src/app/script.js",
+      "target": "src/bootstrap/production/game.js",
+      "reason": "Preserve the exact Game consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "Game",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-0c3a82cc9ba1",
+      "bridge": "src/ui/legacy/draggable_button.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/dom/draggable_button.js",
+      "reason": "Preserve the exact UIDraggableButton consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIDraggableButton",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-0d5d25b21896",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/catch_time_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-0d6e7f743352",
+      "bridge": "src/app/fixed_catch_fish_factory.js",
+      "owner": "stage-5.cluster-030-fixed-catch-production-prerequisite",
+      "source": "src/app/script.js",
+      "target": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "reason": "Preserve the exact FixedCatchFishFactory consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FixedCatchFishFactory",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-11bab2b81092",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1d27448ffde5",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1ec73a3b4fea",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/exhaustion_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1efdb8174ba9",
+      "bridge": "src/app/bootstrap.js",
+      "owner": "stage-5.cluster-026-production-composition-root",
+      "source": "src/app/script.js",
+      "target": "src/bootstrap/production/game_composition_root.js",
+      "reason": "Preserve the exact GameCompositionRoot consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameCompositionRoot",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-1f0aabf6e9c3",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-39896fe57344",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/services/location_debug_data_provider.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-39c4ab443ab0",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/app/script.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Classic Development Bootstrap explicitly supplies the same live CONFIG to production Root; retire with that Stage 6 consumer.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-41df300f3d51",
+      "bridge": "src/ui/version/game_version_badge.js",
+      "owner": "stage-5.cluster-016-version-badge-composition",
+      "source": "src/ui/version_badge.js",
+      "target": "src/bootstrap/production/game_version_badge.js",
+      "reason": "Preserve the exact GameVersionBadge consumer until its legacy symbol is removed. Retain GameVersionBadge for src/ui/version_badge.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameVersionBadge",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-458830160792",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-492c2cd11c13",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-583ef0b7fc62",
+      "bridge": "src/config/physics/physics_config_adapter.js",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "source": "src/config/config.js",
+      "target": "src/game/config/physics/fight_physics_config_adapter.js",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader. Retain FightPhysicsConfigAdapter for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FightPhysicsConfigAdapter",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-597a189600f4",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/config/config.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed. Retain CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-5e28756461b3",
+      "bridge": "src/app/adapters.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "reason": "Existing DEV flag and canvas document composition relocated from Root into classic Development Bootstrap; retire with that Stage 6 consumer.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CanvasMetricsProvider",
+          "mechanism": "global-this-property"
+        },
+        {
+          "symbol": "DevFlagsProvider",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-632724395a95",
+      "bridge": "src/config/project_version_catalog.js",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
+      "source": "src/config/project_version.js",
+      "target": "src/game/presentation/version/project_version.js",
+      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed. Retain PROJECT_VERSION_CONFIG for src/config/project_version.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "PROJECT_VERSION_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-68b5ca7a7c78",
+      "bridge": "src/config/rarity/rarity_visual_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/config/config.js",
+      "target": "src/game/presentation/rarity/rarity_visual_config.js",
+      "reason": "Preserve the exact RARITY_VISUAL_CONFIG consumer until its legacy symbol is removed. Retain RARITY_VISUAL_CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "RARITY_VISUAL_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7001c95123b6",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-71e67ef41642",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-728c19ebfd24",
+      "bridge": "src/config/databases/map_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/raw/locations/location_database.js",
+      "reason": "Preserve the exact MAP_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "MAP_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-749f8561f15d",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-786da44a95fb",
+      "bridge": "src/config/visual/degradation_color_config.js",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "source": "src/config/config.js",
+      "target": "src/game/presentation/visual/degradation_color_config.js",
+      "reason": "Preserve the exact DEGRADATION_COLOR_CONFIG consumer until its legacy symbol is removed. Retain DEGRADATION_COLOR_CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "DEGRADATION_COLOR_CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7c4e1d0210cd",
+      "bridge": "src/config/databases/item_db.js",
+      "owner": "stage-4.cluster-004-config-data",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/raw/items/item_database.js",
+      "reason": "Preserve the exact ITEM_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "ITEM_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-7f84dcf883ff",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-87fd2a995705",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/core/overlay_controller.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8f5d2d19ec8e",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/god_mode.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-97a136a8a364",
+      "bridge": "src/core/core.js",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/input/input_manager.js",
+      "reason": "Preserve the exact InputManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InputManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-9a90ab115b6b",
+      "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
+      "source": "src/app/script.js",
+      "target": "src/engine/events/event_lifecycle.js",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration. Retain EventLifecycle for src/app/script.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "EventLifecycle",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a8155a87814b",
+      "bridge": "src/core/math/vector2.js",
+      "source": "src/app/rendering/location_debug_render_frame_builder.js",
+      "target": "src/engine/math/vector2.js",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly. Retain Vector2 for src/app/rendering/location_debug_render_frame_builder.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "Vector2",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a939370a6299",
+      "bridge": "src/ui/legacy/draggable_button.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/dom/draggable_button.js",
+      "reason": "Preserve the exact UIDraggableButton consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIDraggableButton",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-a945f83dbe68",
+      "bridge": "src/ui/legacy/engine_interface.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/ui/legacy/engine_interface_activation.js",
+      "target": "src/platform/browser/dom/engine_interface.js",
+      "reason": "Preserve the exact initEngineInterface consumer until its legacy symbol is removed. Retain initEngineInterface for src/ui/legacy/engine_interface_activation.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "initEngineInterface",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-aa83312e96c6",
+      "bridge": "src/config/databases/fish_db.js",
+      "owner": "stage-4.cluster-005-config-derived",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/game/config/databases/fish_database.js",
+      "reason": "Preserve the exact FISH_DB consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FISH_DB",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-afd5b0c5cf53",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc38f49d00dc",
+      "bridge": "src/core/items/hook/hook_power_policy.js",
+      "source": "src/debug/services/debug_formatters.js",
+      "target": "src/game/domain/items/hook/hook_power_policy.js",
+      "reason": "Preserve the exact hook power and item rarity consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HookPowerPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc3ec26d121f",
+      "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
+      "source": "src/app/script.js",
+      "target": "src/engine/events/event_bus.js",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration. Retain EventBus for src/app/script.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "owner": "stage-2.3-engine-event-primitives",
+      "introducedStage": "stage-2",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "EventBus",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-bc8a4f2acb5f",
+      "bridge": "src/app/core/game_loop.js",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "source": "src/app/script.js",
+      "target": "src/platform/browser/runtime/game_loop.js",
+      "reason": "Preserve the exact GameLoop consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "GameLoop",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c020b5f6780f",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c0fbf6710409",
+      "bridge": "src/entities/fish.js",
+      "source": "src/debug/services/active_fish_dev_tools_schema.js",
+      "target": "src/game/domain/fish/fish.js",
+      "reason": "Preserve the exact inventory, fish, tackle, rod pull and location consumers until their legacy symbols are removed.",
+      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "FishPhysicsProfile",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c33bba4a0ce7",
+      "bridge": "src/config/runtime/config_context_composition.js",
+      "owner": "stage-5.cluster-014-config-context-composition",
+      "source": "src/config/config.js",
+      "target": "src/bootstrap/production/config_context.js",
+      "reason": "Preserve the exact createRuntimeConfigContext consumer until its legacy symbol is removed. Retain createRuntimeConfigContext for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "createRuntimeConfigContext",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-c864eb224938",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d0947069c1da",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-d633e493731d",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-e85aa82cc3b1",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-ed0bb2e35bf4",
+      "bridge": "src/infrastructure/storage/cache_manager.js",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "target": "src/platform/browser/storage/cache_manager.js",
+      "reason": "Preserve the exact CacheManager consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CacheManager",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-efad96783bc1",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/debug.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f420adcb68b0",
+      "bridge": "src/config/runtime/config_data.js",
+      "owner": "stage-4.cluster-010-config-root",
+      "source": "src/debug/modules/tension_debug_module.js",
+      "target": "src/game/config/runtime/game_config.js",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "CONFIG",
+          "mechanism": "global-this-property"
+        }
+      ]
+    }
+  ],
+  "remainingActivations": [
+    {
+      "exportName": "PROJECT_VERSION_CONFIG",
+      "legacyScriptIndex": 1,
+      "legacySymbol": "PROJECT_VERSION_CONFIG",
+      "shimFile": "activations/001_project_version_config.js",
+      "sourceProvider": "src/config/project_version_catalog.js",
+      "targetModule": "src/game/presentation/version/project_version.js",
+      "id": "activation-02f5a576e2e7",
+      "owner": "stage-5.cluster-015-presentation-version-catalog",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/project_version.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "initEngineInterface",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "initEngineInterface",
+      "shimFile": "activations/228_initengineinterface.js",
+      "sourceProvider": "src/ui/legacy/engine_interface.js",
+      "targetModule": "src/platform/browser/dom/engine_interface.js",
+      "id": "activation-069ceb6464c6",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/legacy/engine_interface_activation.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "FightPhysicsConfigAdapter",
+      "legacyScriptIndex": 23,
+      "legacySymbol": "FightPhysicsConfigAdapter",
+      "shimFile": "activations/023_fightphysicsconfigadapter.js",
+      "sourceProvider": "src/config/physics/physics_config_adapter.js",
+      "targetModule": "src/game/config/physics/fight_physics_config_adapter.js",
+      "id": "activation-1104641c6cb5",
+      "owner": "stage-4.cluster-006-fight-physics-config-adapter",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "Game",
+      "legacyScriptIndex": 423,
+      "legacySymbol": "Game",
+      "shimFile": "activations/423_game.js",
+      "sourceProvider": "src/app/game.js",
+      "targetModule": "src/bootstrap/production/game.js",
+      "id": "activation-1123a4abf89d",
+      "owner": "stage-5.cluster-027-game-bootstrap-facade",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "id": "activation-28138de81e82",
+      "owner": "stage-3.22.prerequisite.vector2-extraction",
+      "sourceProvider": "src/core/math/vector2.js",
+      "targetModule": "src/engine/math/vector2.js",
+      "exportName": "Vector2",
+      "legacySymbol": "Vector2",
+      "legacyScriptIndex": 41,
+      "shimFile": "activations/041_vector2.js",
+      "reason": "Expose the Engine Vector2 constructor to its unmigrated classic consumers through the shared cumulative runtime. Classic DEV holders: src/app/rendering/location_debug_render_frame_builder.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "CanvasMetricsProvider",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "CanvasMetricsProvider",
+      "shimFile": "activations/396_canvasmetricsprovider.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-2a09d1c3f130",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "createRuntimeConfigContext",
+      "legacyScriptIndex": 28,
+      "legacySymbol": "createRuntimeConfigContext",
+      "shimFile": "activations/028_createruntimeconfigcontext.js",
+      "sourceProvider": "src/config/runtime/config_context_composition.js",
+      "targetModule": "src/bootstrap/production/config_context.js",
+      "id": "activation-2b279430ded7",
+      "owner": "stage-5.cluster-014-config-context-composition",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "GameLoop",
+      "legacyScriptIndex": 394,
+      "legacySymbol": "GameLoop",
+      "shimFile": "activations/394_gameloop.js",
+      "sourceProvider": "src/app/core/game_loop.js",
+      "targetModule": "src/platform/browser/runtime/game_loop.js",
+      "id": "activation-2db0890135e3",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "UIUtils",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "UIUtils",
+      "shimFile": "activations/228_uiutils.js",
+      "sourceProvider": "src/ui/legacy/ui_event_shield.js",
+      "targetModule": "src/platform/browser/dom/ui_event_shield.js",
+      "id": "activation-2e9c05cee13f",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "id": "activation-3d418582cb27",
+      "owner": "stage-3.replan-322.batch-030-items-a3bf25f7",
+      "sourceProvider": "src/core/items/hook/hook_power_policy.js",
+      "targetModule": "src/game/domain/items/hook/hook_power_policy.js",
+      "exportName": "HookPowerPolicy",
+      "legacySymbol": "HookPowerPolicy",
+      "legacyScriptIndex": 70,
+      "shimFile": "activations/070_hookpowerpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "id": "activation-3dcbed1b3310",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/event_bus.iife.js",
+      "targetModule": "src/engine/events/event_bus.js",
+      "exportName": "EventBus",
+      "legacySymbol": "EventBus",
+      "legacyScriptIndex": 391,
+      "shimFile": "activations/391_eventbus.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance. Classic DEV holders: src/app/script.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "MAP_DB",
+      "legacyScriptIndex": 15,
+      "legacySymbol": "MAP_DB",
+      "shimFile": "activations/015_map_db.js",
+      "sourceProvider": "src/config/databases/map_db.js",
+      "targetModule": "src/game/config/raw/locations/location_database.js",
+      "id": "activation-45b2387269ad",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "DEGRADATION_COLOR_CONFIG",
+      "legacyScriptIndex": 3,
+      "legacySymbol": "DEGRADATION_COLOR_CONFIG",
+      "shimFile": "activations/003_degradation_color_config.js",
+      "sourceProvider": "src/config/visual/degradation_color_config.js",
+      "targetModule": "src/game/presentation/visual/degradation_color_config.js",
+      "id": "activation-5245732607c3",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "CONFIG",
+      "legacyScriptIndex": 28,
+      "legacySymbol": "CONFIG",
+      "shimFile": "activations/028_config.js",
+      "sourceProvider": "src/config/runtime/config_data.js",
+      "targetModule": "src/game/config/runtime/game_config.js",
+      "id": "activation-571d84d41820",
+      "owner": "stage-4.cluster-010-config-root",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "DevFlagsProvider",
+      "legacyScriptIndex": 396,
+      "legacySymbol": "DevFlagsProvider",
+      "shimFile": "activations/396_devflagsprovider.js",
+      "sourceProvider": "src/app/adapters.js",
+      "targetModule": "src/platform/browser/runtime/legacy_runtime_adapters.js",
+      "id": "activation-70d2b3423dae",
+      "owner": "stage-4.cluster-019-game-loop-adapters-audio",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "FISH_DB",
+      "legacyScriptIndex": 14,
+      "legacySymbol": "FISH_DB",
+      "shimFile": "activations/014_fish_db.js",
+      "sourceProvider": "src/config/databases/fish_db.js",
+      "targetModule": "src/game/config/databases/fish_database.js",
+      "id": "activation-7f406ccd1451",
+      "owner": "stage-4.cluster-005-config-derived",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "UIDraggableButton",
+      "legacyScriptIndex": 228,
+      "legacySymbol": "UIDraggableButton",
+      "shimFile": "activations/228_uidraggablebutton.js",
+      "sourceProvider": "src/ui/legacy/draggable_button.js",
+      "targetModule": "src/platform/browser/dom/draggable_button.js",
+      "id": "activation-872a93240920",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "RARITY_VISUAL_CONFIG",
+      "legacyScriptIndex": 2,
+      "legacySymbol": "RARITY_VISUAL_CONFIG",
+      "shimFile": "activations/002_rarity_visual_config.js",
+      "sourceProvider": "src/config/rarity/rarity_visual_config.js",
+      "targetModule": "src/game/presentation/rarity/rarity_visual_config.js",
+      "id": "activation-8db5d02d700e",
+      "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "ITEM_DB",
+      "legacyScriptIndex": 6,
+      "legacySymbol": "ITEM_DB",
+      "shimFile": "activations/006_item_db.js",
+      "sourceProvider": "src/config/databases/item_db.js",
+      "targetModule": "src/game/config/raw/items/item_database.js",
+      "id": "activation-9dc9359360d2",
+      "owner": "stage-4.cluster-004-config-data",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "GameVersionBadge",
+      "legacyScriptIndex": 229,
+      "legacySymbol": "GameVersionBadge",
+      "shimFile": "activations/229_gameversionbadge.js",
+      "sourceProvider": "src/ui/version/game_version_badge.js",
+      "targetModule": "src/bootstrap/production/game_version_badge.js",
+      "id": "activation-a19e630e4037",
+      "owner": "stage-5.cluster-016-version-badge-composition",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/version_badge.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "CacheManager",
+      "legacyScriptIndex": 41,
+      "legacySymbol": "CacheManager",
+      "shimFile": "activations/041_cachemanager.js",
+      "sourceProvider": "src/infrastructure/storage/cache_manager.js",
+      "targetModule": "src/platform/browser/storage/cache_manager.js",
+      "id": "activation-a9bd2f5c7469",
+      "owner": "stage-4.cluster-036-platform-cache",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "InputManager",
+      "legacyScriptIndex": 41,
+      "legacySymbol": "InputManager",
+      "shimFile": "activations/041_inputmanager.js",
+      "sourceProvider": "src/core/core.js",
+      "targetModule": "src/platform/browser/input/input_manager.js",
+      "id": "activation-b9637707e94d",
+      "owner": "stage-4.cluster-016-core-input-cache",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "id": "activation-ce7da074f74a",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "dist/legacy-bridges/event_lifecycle.iife.js",
+      "targetModule": "src/engine/events/event_lifecycle.js",
+      "exportName": "EventLifecycle",
+      "legacySymbol": "EventLifecycle",
+      "legacyScriptIndex": 392,
+      "shimFile": "activations/392_eventlifecycle.js",
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance. Classic DEV holders: src/app/script.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "GameCompositionRoot",
+      "legacyScriptIndex": 422,
+      "legacySymbol": "GameCompositionRoot",
+      "shimFile": "activations/422_gamecompositionroot.js",
+      "sourceProvider": "src/app/bootstrap.js",
+      "targetModule": "src/bootstrap/production/game_composition_root.js",
+      "id": "activation-d48f4ef40396",
+      "owner": "stage-5.cluster-026-production-composition-root",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "FixedCatchFishFactory",
+      "legacyScriptIndex": 406,
+      "legacySymbol": "FixedCatchFishFactory",
+      "shimFile": "activations/406_fixedcatchfishfactory.js",
+      "sourceProvider": "src/app/fixed_catch_fish_factory.js",
+      "targetModule": "src/game/application/fishing/fixed_catch_fish_factory.js",
+      "id": "activation-d6a8604d2c25",
+      "owner": "stage-5.cluster-030-fixed-catch-production-prerequisite",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    },
+    {
+      "id": "activation-f31861589962",
+      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+      "sourceProvider": "src/entities/fish.js",
+      "targetModule": "src/game/domain/fish/fish.js",
+      "exportName": "FishPhysicsProfile",
+      "legacySymbol": "FishPhysicsProfile",
+      "legacyScriptIndex": 206,
+      "shimFile": "activations/206_fishphysicsprofile.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
+      "removalStage": "stage-6"
+    }
+  ],
+  "existingInertModules": [
+    {
+      "owner": "stage-4.cluster-011-config-schema-validator",
+      "sourceProvider": "src/config/validation/config_schema_validator.js",
+      "targetModule": "src/game/config/validation/config_schema_validator.js"
+    },
+    {
+      "owner": "stage-4.cluster-001-rarity-validators",
+      "sourceProvider": "src/config/validation/item_rarity_config_validator.js",
+      "targetModule": "src/game/config/validation/item_rarity_config_validator.js"
+    },
+    {
+      "owner": "stage-3.replan-350.batch-050-fish-fishing-inventory-locations-tackle-5a604f8c",
+      "sourceProvider": "src/systems/buff_manager.js",
+      "targetModule": "src/game/domain/fishing/buff_manager.js"
+    },
+    {
+      "owner": "stage-4.cluster-035-platform-event-logger",
+      "sourceProvider": "src/infrastructure/diagnostics/event_logger.js",
+      "targetModule": "src/platform/browser/diagnostics/event_logger.js"
+    },
+    {
+      "owner": "stage-4.cluster-012-platform-canvas-assets",
+      "sourceProvider": "src/infrastructure/location/depth_map_reader.js",
+      "targetModule": "src/platform/browser/location/depth_map_reader.js"
+    }
+  ],
+  "stageTwoBridgeTags": [
+    "dist/legacy-bridges/asset_manifest.iife.js",
+    "dist/legacy-bridges/asset_load_result.iife.js",
+    "dist/legacy-bridges/render_pass.iife.js",
+    "dist/legacy-bridges/render_math.iife.js",
+    "dist/legacy-bridges/render_component.iife.js",
+    "dist/legacy-bridges/composite_renderer.iife.js",
+    "dist/legacy-bridges/dependency_contract_validator.iife.js"
+  ],
+  "existingDebtIds": [
+    {
+      "id": "debt-boundary-dependency-0d301fbbd279",
+      "source": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-boundary-dependency-4d39e17dbd57",
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-boundary-dependency-8afc4b9d51af",
+      "source": "src/app/debug.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-boundary-dependency-8b88f6602236",
+      "source": "src/debug/core/debug_event_binder.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-boundary-dependency-8ea4a21033c1",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-boundary-dependency-a8be84a4b730",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/config/databases/map_db.js"
+    },
+    {
+      "id": "debt-boundary-dependency-ddafba94d583",
+      "source": "src/debug/dev_tools.js",
+      "target": "src/config/databases/item_db.js"
+    },
+    {
+      "id": "debt-boundary-dependency-e9d26a201a63",
+      "source": "src/debug/core/debug_console.js",
+      "target": "src/debug/debug.js"
+    },
+    {
+      "id": "debt-browser-capability-0f75ab0e5fec",
+      "source": "src/config/config.js",
+      "target": "environment:browser-runtime"
+    },
+    {
+      "id": "debt-browser-capability-217b67b54a15",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "environment:browser-events"
+    },
+    {
+      "id": "debt-browser-capability-529383e9f019",
+      "source": "src/ui/version_badge.js",
+      "target": "environment:dom"
+    },
+    {
+      "id": "debt-browser-capability-89eb9992e2b1",
+      "source": "src/debug/debug.js",
+      "target": "environment:browser-events"
+    },
+    {
+      "id": "debt-browser-capability-95c69c6ce6be",
+      "source": "src/app/script.js",
+      "target": "environment:browser-runtime"
+    },
+    {
+      "id": "debt-browser-capability-af5852de74bf",
+      "source": "src/app/script.js",
+      "target": "environment:diagnostics"
+    },
+    {
+      "id": "debt-browser-capability-bdc2cdd7e0fc",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "environment:dom"
+    },
+    {
+      "id": "debt-browser-capability-c55b438a1f3f",
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "target": "environment:browser-runtime"
+    },
+    {
+      "id": "debt-browser-capability-fa13d99b8c0f",
+      "source": "src/debug/debug.js",
+      "target": "environment:browser-runtime"
+    },
+    {
+      "id": "debt-browser-capability-faa9e9bb20c1",
+      "source": "src/config/project_version.js",
+      "target": "environment:browser-runtime"
+    },
+    {
+      "id": "debt-module-cycle-15009f483b96",
+      "source": "src/debug/core/debug_console.js",
+      "target": "scc:src/debug/core/debug_console.js|src/debug/core/debug_event_binder.js|src/debug/debug.js|src/debug/modules/bite_ticks_debug_module.js"
+    }
+  ],
+  "otherClassicReaderFiles": [
+    "src/config/config.js",
+    "src/config/project_version.js",
+    "src/ui/legacy/engine_interface_activation.js",
+    "src/ui/version_badge.js"
+  ],
+  "implementationCountingRule": "Do not add 350 + 96 + 1 and claim an implemented runtime graph: production entry/startup may be substituted and reviewed composition/data splits may add modules. Record graph-derived exact final totals and every target-path/count change in the implementation review."
+}

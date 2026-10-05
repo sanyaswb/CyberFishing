@@ -1,7 +1,7 @@
 # Stage 6 native DEV handoff
 
 Date: 2026-10-05. Stage 5 is closed at release 0.26.0 / migration label 5.29.
-Read stage_5_closure.json, Stage 5 graph v8, closure_projection_decision.md, preparations 027-030 and the actual current registries before edits. Keep their frozen history. Post-closure package G is complete at 0.26.1: preparation 031 and post_closure_cleanup_audit.md record exact removals and retained holders. This is the next implementation queue.
+Read stage_5_closure.json, Stage 5 graph v8, closure_projection_decision.md, preparations 027-030 and the actual current registries before edits. Keep their frozen history. Post-closure package G is complete at 0.26.1: preparation 031 and post_closure_cleanup_audit.md record exact removals and retained holders. This is the next implementation queue. The detailed execution specification is stage_6/stage6_spec.md; stage_6/stage6_module_inventory.json pins the 0.26.1 planning baseline: 93 DEV + 3 Development Bootstrap sources, one new DEV entry, 50 bridges / 26 activations and the reused 350-module production graph. These documents specify future work; Stage 6 is not implemented.
 
 Production is index.html -> game.entry -> Production Bootstrap -> Engine/Game/Platform, with 350 modules and 521 imports. DEV remains dev.html with the cumulative IIFE and classic scripts. Stage 5 has 29 applied clusters / 102 recorded targets, plus four startup modules in preparation 029. Original cluster 028 is the actual Development Bootstrap source, deferred to Stage 6 with null output/verification and its native-production obligation verified separately. Do not relabel it as applied.
 
