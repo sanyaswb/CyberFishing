@@ -17,7 +17,7 @@ const id = option("cluster");
 const stage = Number(option("stage") || 4);
 const step = option("step");
 if (!/^\d{3}$/u.test(id || "") || !["plan", "apply", "verify"].includes(step)) {
-  console.error("Usage: node utils/architecture/stage-4-cluster.js --cluster NNN --step plan|apply|verify [--stage 4|5]");
+  console.error("Usage: node utils/architecture/stage-4-cluster.js --cluster NNN --step plan|apply|verify [--stage 4|5|6]");
   process.exit(2);
 }
 const workspace = new StageFourWorkspace(ROOT);

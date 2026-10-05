@@ -191,7 +191,7 @@ class StageThreeApprovedPlanSource {
     try { bytes = this.read(RUNTIME_CONTRACT); } catch { return new Map(); }
     const retired = JSON.parse(bytes.toString("utf8")).retiredActivations || [];
     return new Map(retired.filter(record => {
-      const cluster = /^stage-([45])\.cluster-(\d{3})-([a-z0-9-]+)$/u.exec(record.retiredBy);
+      const cluster = /^stage-([456])\.cluster-(\d{3})-([a-z0-9-]+)$/u.exec(record.retiredBy);
       if (!cluster) return true;
       // Stage 4/5 retirements belong to their applied ledgers; they do not rewrite the frozen Stage 3 plan.
       const stage = Number(cluster[1]);

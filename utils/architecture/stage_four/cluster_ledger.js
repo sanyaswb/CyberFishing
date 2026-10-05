@@ -11,7 +11,7 @@ const RECORD_KIND = "cyber-fishing-stage-4-cluster";
 const RECORD_NAME = /^(\d{3})_[a-z0-9-]+\.json$/u;
 // Stage 5 reuses this mechanism (graph review stage_5 v1, toolingTransition): each stage keeps its own record
 // directory, kind and owner prefix; Stage 4 stays the default so its frozen readers and closure pins are unchanged.
-const LEDGER_STAGES = Object.freeze([4, 5]);
+const LEDGER_STAGES = Object.freeze([4, 5, 6]);
 const stageDirectories = (stage) => Object.freeze({
   clusters: `architecture/migration/stage_${stage}/clusters`,
   preparations: `architecture/migration/stage_${stage}/preparations`,

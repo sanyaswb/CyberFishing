@@ -488,6 +488,8 @@ assets
 DOM/Canvas adapters
 ```
 
+Stage 6 M0 (2026-10-05): preparation 001 qualifies the existing ledger/evidence/release tooling for Stage 6. Graph review v1 records all 96 actual source declarations/dependencies/evaluation surfaces and the four-module console cycle; dependency/ownership review continues before runtime edits. All 101 baseline pins match. Focused + direct game-cycle (unchanged SHA256), Quick 24/24, Architecture 32/32, uncached Full 64/64 PASS; report architecture/archive/stage6_001_tooling_acceptance.json. No runtime module has migrated yet.
+
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 
 - [x] FlatInventoryItemRepository clock/id injection: prerequisite 033 injects now; production always injects instanceIdFactory. Optional compatibility fallback removal is explicitly assigned to Stage 7 (API cleanup, not a Stage 4 migration blocker).
@@ -563,7 +565,7 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 
 Create a separate `dev.entry.js`. Physically separate the debug overlay, GodMode, diagnostics, watchdog, dev schemas, and balance tools from the production graph. Gradually remove legacy globals and classic scripts.
 
-Detailed implementation specification (2026-10-05; not applied): architecture/migration/stage_6/stage6_spec.md. Exact source/import/holder inventory: architecture/migration/stage_6/stage6_module_inventory.json. Baseline 0.26.1: 93 DEV + 3 Development Bootstrap source files, one new dev.entry; shared production graph 350 modules / 521 import edges; retire 50 bridge records from 26 classic reader files and 26 activations. Native dev.html replaces 446 external script tags with one module entry. Final DEV graph size is measured after implementation; config sourcing/data relocation are separate verified packages.
+Detailed implementation specification (2026-10-05; implementation in progress): architecture/migration/stage_6/stage6_spec.md. Exact source/import/holder inventory: architecture/migration/stage_6/stage6_module_inventory.json. Baseline 0.26.1: 93 DEV + 3 Development Bootstrap source files, one new dev.entry; shared production graph 350 modules / 521 import edges; retire 50 bridge records from 26 classic reader files and 26 activations. Native dev.html replaces 446 external script tags with one module entry. Final DEV graph size is measured after implementation; config sourcing/data relocation are separate verified packages.
 
 Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021):
 

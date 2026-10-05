@@ -518,7 +518,7 @@ try {
 } finally {
   fs.rmSync(temporaryRoot, { recursive: true, force: true });
 }
-stageThrows(() => recordStage({ kind: "cyber-fishing-stage-6-cluster" }), /unknown cluster record kind/u, "no Stage 6 ledger yet");
+stageThrows(() => recordStage({ kind: "cyber-fishing-stage-7-cluster" }), /unknown cluster record kind/u, "Stage 7 has no reviewed ledger");
 const appliedFixture = (stage) => ({ kind: `cyber-fishing-stage-${stage}-cluster`, output: { status: "applied" } });
 stageCase(new StageFourClusterLedger([appliedFixture(4), appliedFixture(4), appliedFixture(5)]).stageLabel("3.x") === "5.1",
   "the package label follows the latest stage with an applied record");
@@ -538,6 +538,54 @@ stageCase(stageFivePlan.owner === "stage-5.cluster-003-fixture" && stageFivePlan
 stageCase(new MigratedSourcePlaceholder().render({ currentPath: "src/a.js", targetPath: "src/game/presentation/a.js",
   exports: ["A"], stage: "Stage 5" }).startsWith("// Migrated Stage 5 source "), "a Stage 5 inert placeholder names its stage");
 
+
+// Stage 6 uses the same ledger, owner, evidence and retirement contracts. Earlier ledgers stay immutable.
+const stageSixRoot = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "stage-six-ledger-"));
+try {
+  const put = (stage, name, record) => {
+    const directory = path.join(stageSixRoot, "architecture/migration/stage_" + stage + "/clusters");
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(path.join(directory, name), JSON.stringify(record));
+  };
+  put(4, "001_old.json", {kind: "cyber-fishing-stage-4-cluster", id: "001"});
+  put(5, "001_old.json", {kind: "cyber-fishing-stage-5-cluster", id: "001"});
+  put(6, "001_native.json", {kind: "cyber-fishing-stage-6-cluster", id: "001"});
+  stageCase(StageFourClusterLedger.cumulative(stageSixRoot).records.map(recordStage).join(",") === "4,5,6",
+    "Stage 6 appends to the frozen cumulative prefix");
+  put(6, "001_native.json", {kind: "cyber-fishing-stage-5-cluster", id: "001"});
+  stageThrows(() => StageFourClusterLedger.read(stageSixRoot, 6), /identity differs/u, "wrong Stage 6 kind rejected");
+  put(6, "001_native.json", {kind: "cyber-fishing-stage-6-cluster", id: "001"});
+  put(6, "003_gap.json", {kind: "cyber-fishing-stage-6-cluster", id: "003"});
+  stageThrows(() => StageFourClusterLedger.read(stageSixRoot, 6), /contiguous/u, "Stage 6 gap rejected");
+} finally { fs.rmSync(stageSixRoot, {recursive: true, force: true}); }
+stageCase(new StageFourClusterLedger([appliedFixture(4), appliedFixture(5), appliedFixture(6)]).stageLabel("3.x") === "6.1",
+  "Stage 6 applied package label");
+stageCase(new StageFourClusterLedger([appliedFixture(5), {kind: "cyber-fishing-stage-6-cluster", output: null}])
+  .stageLabel("3.x") === "5.1", "pending Stage 6 keeps the accepted label");
+const stageSixEvidence = new StageFourTierAEvidence({root: ROOT, record: {kind: "cyber-fishing-stage-6-cluster", id: "001",
+  modules: []}, kind: "api-parity", classes: ["A"], scenarios: ["utils/x-check.js"]});
+stageCase(stageSixEvidence.file === "architecture/migration/stage_6/evidence/001_api-parity.json" &&
+  stageSixEvidence.evidenceKind === "cyber-fishing-stage-6-tier-a-evidence", "Stage 6 evidence identity");
+const stageSixPlan = retirementPlan([], false, 6);
+stageCase(stageSixPlan.owner === "stage-6.cluster-003-fixture" && stageSixPlan.stage === 6 &&
+  stageSixPlan.retiredActivations.length === 2 && stageSixPlan.inert.every(item => item.owner === stageSixPlan.owner),
+  "Stage 6 owns only its exact retirements");
+const stageSixRetirement = (kind, owner, ids) => new StageThreeApprovedPlanSource({read: file => {
+  if (file === PATHS.contract) return Buffer.from(JSON.stringify({retiredActivations: [{activation: b1,
+    retiredBy: "stage-6.cluster-001-native"}]}));
+  if (file === "architecture/migration/stage_6/clusters/001_native.json") return Buffer.from(JSON.stringify({kind,
+    id: "001", slug: "native", output: {status: "applied", owner, activationsRetired: ids}}));
+  return Buffer.from(read(file));
+}}).load(state);
+stageCase(stageSixRetirement("cyber-fishing-stage-6-cluster", "stage-6.cluster-001-native", [b1.id]).document.batches.length > 0,
+  "Stage 6 retirement exact holder");
+for (const [kind, owner, ids] of [["cyber-fishing-stage-5-cluster", "stage-6.cluster-001-native", [b1.id]],
+  ["cyber-fishing-stage-6-cluster", "stage-5.cluster-001-native", [b1.id]],
+  ["cyber-fishing-stage-6-cluster", "stage-6.cluster-001-native", []]]) {
+  stageThrows(() => stageSixRetirement(kind, owner, ids), /no exact applied Stage 6 cluster/u,
+    "Stage 6 retirement rejects another kind, owner or missing identity");
+}
+
 // Stage 4 releases: one chain from the last Stage 3 release; every version pin equals the latest applied release
 // (the Stage 3 release until the first one) and the CHANGELOG holds its entry. Fixtures: a release delta changes
 // only the version fields, the index query, the version statements and the new entry (plus a declared trim).
@@ -546,7 +594,7 @@ const cumulativeReleases = StageFourRelease.cumulativeRecords(ROOT);
 const latestRelease = cumulativeReleases.filter((record) => record.output).at(-1);
 assert.equal(StageFourRelease.currentVersion(read, policy), latestRelease?.toRelease || state.releaseVersion, "version pins");
 for (const record of cumulativeReleases.filter((item) => item.output)) {
-  const stage = Number(/^cyber-fishing-stage-(4|5)-release$/u.exec(record.kind)[1]);
+  const stage = Number(/^cyber-fishing-stage-(4|5|6)-release$/u.exec(record.kind)[1]);
   assert.deepEqual(record.output.files.map((file) => file.path).sort(), Object.values(releaseFiles(stage)).sort(), record.file);
   assert(record.output.files.every((file) => /^[0-9a-f]{64}$/u.test(file.before) && /^[0-9a-f]{64}$/u.test(file.after) &&
     file.edits.length > 0) && record.output.tag === `v${record.toRelease}`, `${record.file}: output`);
@@ -659,8 +707,8 @@ for (const [file,edits] of nativeReleaseEdits) {
   }
   releaseCases += 2;
 }
-assert.throws(() => new StageFourRelease(ROOT,6),/unsupported release stage/u);
-assert.throws(() => StageFourRelease.records(ROOT,6),/unsupported release stage/u);
+assert.throws(() => new StageFourRelease(ROOT,7),/unsupported release stage/u);
+assert.throws(() => StageFourRelease.records(ROOT,7),/unsupported release stage/u);
 assert.equal(new StageFourRelease(ROOT).stage,4);
 releaseCases += 10;
 

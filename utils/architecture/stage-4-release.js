@@ -17,7 +17,7 @@ const step = option("step");
 const stage = Number(option("stage") || 4);
 const directory = releaseDirectory(stage);
 if (!/^\d{3}$/u.test(id || "") || !["plan", "apply", "tag"].includes(step)) {
-  console.error("Usage: node utils/architecture/stage-4-release.js [--stage 4|5] --release NNN --step plan|apply|tag");
+  console.error("Usage: node utils/architecture/stage-4-release.js [--stage 4|5|6] --release NNN --step plan|apply|tag");
   process.exit(2);
 }
 const name = fs.readdirSync(path.join(ROOT, directory)).find((file) => file.startsWith(`${id}_`));

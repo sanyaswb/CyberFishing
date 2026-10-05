@@ -19,7 +19,7 @@ const id = option("cluster");
 const stage = Number(option("stage") || 4);
 if (!/^\d{3}$/u.test(id || "") || !option("kind") || !option("classes") || !option("scenarios")) {
   console.error("Usage: node utils/architecture/stage-4-evidence.js --cluster NNN --kind hot-loop|save-round-trip|api-parity " +
-    "--classes A,B --scenarios utils/x-check.js[,...] [--capture] [--static-methods] [--stage 4|5]");
+    "--classes A,B --scenarios utils/x-check.js[,...] [--capture] [--static-methods] [--stage 4|5|6]");
   process.exit(2);
 }
 const record = new StageFourWorkspace(ROOT).json(recordFileFor(ROOT, id, stage));
