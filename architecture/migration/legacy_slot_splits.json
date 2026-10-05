@@ -95,12 +95,11 @@
         "src/ui/legacy/draggable_button.js",
         "src/ui/legacy/game_controls.js",
         "src/ui/legacy/chum_controls.js",
-        "src/ui/ui.js",
         "src/ui/legacy/depth_selector.js",
         "src/ui/legacy/time_display.js",
         "src/ui/legacy/hold_charges.js"
       ],
-      "transition": "architecture/migration/stage_5/preparations/012_legacy-ui-browser-declarations.json"
+      "transition": "architecture/migration/stage_5/preparations/031_post-closure-unused-inventory-and-profiles.json"
     },
     {
       "slot": 229,

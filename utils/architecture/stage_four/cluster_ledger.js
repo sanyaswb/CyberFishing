@@ -32,10 +32,12 @@ const recordStage = (record) => {
 class StageFourClusterLedger {
   #records;
   #retirementUpdates;
+  #removedModules;
 
-  constructor(records, retirementUpdates = []) {
+  constructor(records, retirementUpdates = [], removedModules = []) {
     this.#records = Object.freeze([...records]);
     this.#retirementUpdates = Object.freeze([...retirementUpdates]);
+    this.#removedModules = Object.freeze([...removedModules]);
   }
 
   static read(projectRoot, stage = 4) {
@@ -62,7 +64,8 @@ class StageFourClusterLedger {
   // the cumulative applied facts; Stage 4 closure and release validation keep reading `read(root)` (Stage 4 only).
   static cumulative(projectRoot) {
     return new StageFourClusterLedger(LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.read(projectRoot, stage).records),
-      StageFourClusterLedger.cumulativePreparations(projectRoot).flatMap(record => record.retirementUpdates || []));
+      StageFourClusterLedger.cumulativePreparations(projectRoot).flatMap(record => record.retirementUpdates || []),
+      StageFourClusterLedger.cleanupRecords(projectRoot).flatMap(record => record.removedModules));
   }
 
   // Preparation records describe exact provider relocations before a cluster. Their bridge pairs
@@ -79,6 +82,7 @@ class StageFourClusterLedger {
       assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
       StageFourClusterLedger.validatePreparationImports(record);
       StageFourClusterLedger.validatePreparationRetirements(record);
+      StageFourClusterLedger.validateCleanupRecord(record);
       for (const pair of record.replacedBridges || []) StageFourClusterLedger.validateBridgeRelocation(pair);
       for (const merge of record.mergedBridges || []) StageFourClusterLedger.validateBridgeMerge(merge);
       return record;
@@ -143,6 +147,35 @@ class StageFourClusterLedger {
     } else assert.deepEqual(current, frozen, "historical retirement metadata drift");
   }
 
+  // Exact post-closure removal successors; do not alter historical migrations or expose new runtime APIs.
+  static cleanupRecords(projectRoot) {
+    return StageFourClusterLedger.cumulativePreparations(projectRoot).filter(record => record.postClosureCleanup);
+  }
+
+  static validateCleanupRecord(record) {
+    if (!record.postClosureCleanup) return;
+    assert(record.kind === preparationKind(5) && record.postClosureCleanup.closureTag === "stage5-closed" &&
+      record.postClosureCleanup.archiveTag === "stage5-dead-code-archive" &&
+      /^[0-9a-f]{40}$/u.test(record.postClosureCleanup.archiveCommit) &&
+      record.postClosureCleanup.decision === "architecture/migration/stage_5/post_closure_cleanup_audit.md",
+      "cleanup needs exact post-closure recovery and decision");
+    const paths = new Set();
+    for (const item of record.removedModules) {
+      assert(/^src\/.+\.js$/u.test(item.path) && !item.path.includes("..") && !paths.has(item.path) &&
+        /^[0-9a-f]{64}$/u.test(item.before) && /^[0-9a-f]{40}$/u.test(item.gitBlob) &&
+        item.manifest?.currentPath === item.path,"cleanup module identity and recovery"); paths.add(item.path);
+    }
+    for (const bridge of record.removedBridges) assert(bridge.id === CanonicalBridgeIdentity.id(bridge) &&
+      paths.has(bridge.source),"cleanup bridge must lose its exact consumer");
+    for (const activation of record.removedActivations) assert(activation.id === CanonicalActivationIdentity.id(activation) &&
+      paths.has(activation.sourceProvider) && record.removedBridges.some(bridge => bridge.target === activation.targetModule &&
+        bridge.globalProviders.some(surface => surface.symbol === activation.legacySymbol)),"cleanup activation exact holder");
+    assert.deepEqual(record.removedDebtRecords.map(item => item.id),record.resolvedDebts,"cleanup exact resolved debts");
+    assert(record.removedDebtRecords.every(item => paths.has(item.source)),"cleanup debt owner still exists");
+  }
+
+  removedTargetModules() { return this.#removedModules.map(item => item.path); }
+
   static validateBridgeRelocation({ before, after }) {
     assert.equal(before.id, CanonicalBridgeIdentity.id(before), "original bridge identity");
     assert.equal(after.id, CanonicalBridgeIdentity.id(after), "relocated bridge identity");
@@ -194,7 +227,8 @@ class StageFourClusterLedger {
   }
 
   targetModules() {
-    return this.applied.flatMap((record) => record.modules.map((module) => module.targetPath)).sort();
+    return this.applied.flatMap((record) => record.modules.map((module) => module.targetPath))
+      .filter(file => !this.removedTargetModules().includes(file)).sort();
   }
 
   // `target->from` edges in the guard corpus notation.

@@ -700,6 +700,18 @@ class StageThreeCompatibilityRuntimeFixtureCheck {
       }
     });
 
+    await count(async () => {
+      const project = new TemporaryFixtureProject();
+      try {
+        fixtureSources(project);
+        const contract = fixtureContract(project);
+        await assert.rejects(() => new CumulativeRuntimeBuildApplication({projectRoot:project.root,contract,
+          approvedPlan:fixturePlan(),executionState:fixtureState(),
+          removedTargetModules:[contract.activationPositions[0].targetModule]}).run(),
+          /Cleanup cannot remove an active activation target/u);
+      } finally { project.dispose(); }
+    });
+
     console.log(`Stage 3 compatibility runtime fixtures passed (${cases} cases).`);
   }
 }

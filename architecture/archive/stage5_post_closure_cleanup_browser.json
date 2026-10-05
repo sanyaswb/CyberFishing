@@ -1,0 +1,156 @@
+{
+  "performer": "codex-automated-acceptance",
+  "status": "PASS",
+  "date": "2026-10-05",
+  "version": "0.26.1",
+  "build": "normal node utils/dev-server.js; 346 project modules / 26 activations",
+  "urls": [
+    "http://127.0.0.1:4173/index.html",
+    "http://127.0.0.1:4173/dev.html"
+  ],
+  "fixtureMethod": "Ignored real-page fixtures expose canonical native/DEV runtime facts in DOM; actual pages checked separately.",
+  "native": {
+    "version": "0.26.1",
+    "identities": {
+      "game": true,
+      "application": true,
+      "root": true,
+      "configContext": true,
+      "configOwner": true,
+      "physics": true,
+      "fixedCatch": true
+    },
+    "buildCalls": 1,
+    "samePromise": true,
+    "returnedIdentity": true,
+    "transport": false,
+    "devGlobals": [],
+    "watchdog": "absent",
+    "flags": {
+      "noLineBreak": false,
+      "noHookEscape": false,
+      "infiniteResources": false,
+      "noRodBreak": false,
+      "noEquipmentLoss": true,
+      "fixedBiteChanceEnabled": true,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "live": true,
+    "restored": true,
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "pause": {
+      "activeCount": 0,
+      "duplicateStartAttempts": 0
+    },
+    "resume": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "cleanup": {
+      "loops": {
+        "activeCount": 0,
+        "duplicateStartAttempts": 0
+      },
+      "game": true,
+      "watchdog": true,
+      "listeners": {
+        "event": 0,
+        "lifecycle": 0,
+        "input": 0
+      }
+    },
+    "inventoryRoleButtons": 50,
+    "reloadSavesIdentical": true,
+    "loadoutValidation": "Existing loadout ownership is rejected by the current Inventory V2 action path.",
+    "console": []
+  },
+  "dev": {
+    "version": "0.26.1",
+    "identities": {
+      "game": true,
+      "application": true,
+      "root": true,
+      "configContext": true,
+      "configOwner": true,
+      "physics": true,
+      "fixedCatch": true
+    },
+    "buildCalls": 1,
+    "samePromise": null,
+    "returnedIdentity": null,
+    "transport": true,
+    "devGlobals": [
+      "GodMode",
+      "DEBUG_MODULES"
+    ],
+    "watchdog": "absent",
+    "flags": {
+      "noLineBreak": false,
+      "noHookEscape": false,
+      "infiniteResources": false,
+      "noRodBreak": false,
+      "noEquipmentLoss": true,
+      "fixedBiteChanceEnabled": true,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "live": true,
+    "restored": true,
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "pause": {
+      "activeCount": 0,
+      "duplicateStartAttempts": 0
+    },
+    "resume": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "cleanup": {
+      "loops": {
+        "activeCount": 0,
+        "duplicateStartAttempts": 0
+      },
+      "game": true,
+      "watchdog": true,
+      "listeners": {
+        "event": 0,
+        "lifecycle": 0,
+        "input": 0
+      }
+    },
+    "inventoryRoleButtons": 52,
+    "reloadSavesIdentical": true,
+    "loadoutValidation": true,
+    "console": []
+  },
+  "nativeDevInventoryButtonsIdentical": true,
+  "allSaveStringsIdentical": true,
+  "saveKeys": [
+    "fishing_game_dev_tools_sections_state",
+    "fishing_game_player_equipment",
+    "fishing_game_player_inventory",
+    "fishing_game_player_inventory_v2"
+  ],
+  "originalSavesRestored": true,
+  "directPagesConsole": {
+    "native": [],
+    "dev": []
+  },
+  "screenshots": [
+    "stage5_cleanup_direct_index.jpg",
+    "stage5_cleanup_direct_dev.jpg",
+    "stage5_cleanup_native_inventory.jpg",
+    "stage5_cleanup_dev_inventory.jpg"
+  ],
+  "limitations": "Focused tests and the unchanged deterministic game-cycle cover gameplay and successful loadout operations. Browser acceptance covers startup, canonical identities, shared config owner, live flags, one loop, inventory/input and loadout ownership rejection, exact save strings/reload and pagehide cleanup. No owner play or long cast/fight session is claimed. The initial probe compared ConfigProvider with its raw source directly; corrected to its existing raw getter and reloaded, with all identities true and zero console issues.",
+  "ownedTabsClosed": true,
+  "ownedServerStopped": true,
+  "temporaryFixturesRemoved": true
+}

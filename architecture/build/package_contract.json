@@ -46,8 +46,8 @@
       "contract": "architecture/migration/stage_3_compatibility_runtime.json",
       "executionState": "architecture/migration/stage_3_execution_state.json",
       "output": "dist/stage-3-compat-runtime/",
-      "runtimeInputs": 348,
-      "activationInputs": 28
+      "runtimeInputs": 344,
+      "activationInputs": 26
     }
   }
 }

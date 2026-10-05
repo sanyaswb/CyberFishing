@@ -259,22 +259,6 @@
       ]
     },
     {
-      "id": "bridge-4dc615f80537",
-      "bridge": "src/ui/interaction/horizontal_scroll_controller.js",
-      "owner": "stage-4.cluster-032-platform-horizontal-scroll",
-      "source": "src/ui/ui.js",
-      "target": "src/platform/browser/dom/horizontal_scroll_controller.js",
-      "reason": "Preserve the exact HorizontalScrollController consumer until its legacy symbol is removed. Retain HorizontalScrollController for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
-      "introducedStage": "stage-4",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "HorizontalScrollController",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
       "id": "bridge-583ef0b7fc62",
       "bridge": "src/config/physics/physics_config_adapter.js",
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
@@ -482,22 +466,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-8cc4c456e4c0",
-      "bridge": "src/ui/legacy/ui_event_shield.js",
-      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "source": "src/ui/ui.js",
-      "target": "src/platform/browser/dom/ui_event_shield.js",
-      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed. Retain UIUtils for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
-      "introducedStage": "stage-5",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "UIUtils",
           "mechanism": "global-this-property"
         }
       ]
@@ -834,22 +802,6 @@
       "globalProviders": [
         {
           "symbol": "CONFIG",
-          "mechanism": "global-this-property"
-        }
-      ]
-    },
-    {
-      "id": "bridge-f880b0a474c6",
-      "bridge": "src/core/inventory/equip_target_selection_policy.js",
-      "source": "src/ui/ui.js",
-      "target": "src/game/domain/inventory/equip_target_selection_policy.js",
-      "reason": "Preserve the exact synchronous UI consumer until presentation migration removes the legacy symbol. Retain InventoryEquipTargetSelectionPolicy for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "introducedStage": "stage-3",
-      "removalStage": "stage-6",
-      "globalProviders": [
-        {
-          "symbol": "InventoryEquipTargetSelectionPolicy",
           "mechanism": "global-this-property"
         }
       ]

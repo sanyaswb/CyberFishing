@@ -108,6 +108,67 @@ assert.equal(assetPlanner.plan(assetGraphFixture).issues.length,1);
 assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[{...assetActivation,id:"wrong"}]}).issues.length,1);
 const preparations = StageFourClusterLedger.cumulativePreparations(ROOT);
 const stageFourPreparations = StageFourClusterLedger.preparations(ROOT);
+const cleanupRecords = preparations.filter(record => record.postClosureCleanup);
+const removedModules = new Map(cleanupRecords.flatMap(record => record.removedModules).map(item => [item.path,item]));
+const removedBridges = cleanupRecords.flatMap(record => record.removedBridges);
+const removedActivations = cleanupRecords.flatMap(record => record.removedActivations);
+const archivedSources = new Map();
+for (const record of cleanupRecords) {
+  StageFourClusterLedger.validateCleanupRecord(record);
+  const git = (...args) => require("node:child_process").execFileSync("git",args,{cwd:ROOT,maxBuffer:30e6});
+  assert.equal(git("rev-parse","stage5-closed^{}").toString().trim(),record.baseCommit,"cleanup closed base");
+  assert.equal(git("rev-parse",record.postClosureCleanup.archiveTag+"^{}").toString().trim(),
+    record.postClosureCleanup.archiveCommit,"cleanup archive identity");
+  const historical = JSON.parse(git("show",record.baseCommit+":architecture/migration/module_migration_manifest.json"));
+  const historicJson = file => JSON.parse(git("show",record.baseCommit+":"+file));
+  const historicRuntime = historicJson("architecture/migration/stage_3_compatibility_runtime.json");
+  for (const [removed,original] of [[record.removedBridges,historicJson("architecture/guards/migration_bridge_registry.json").bridges],
+    [record.removedActivations,historicRuntime.activationPositions], [record.removedInertModules,historicRuntime.inertModules],
+    [record.removedSideEffectReviews,historicRuntime.sideEffectReviews],
+    [record.removedDebtRecords,historicJson("architecture/guards/known_debt_registry.json").debts]])
+    for (const item of removed) assert(original.some(candidate => JSON.stringify(candidate) === JSON.stringify(item)),
+      "cleanup must remove an exact historical record");
+  const approvedComments = record.removedLegacySlots.map(item => [String(item.slot),item.path]);
+  const actualComments = [...read("dev.html").matchAll(/<!-- retired-legacy-slot ([1-9][0-9]*): (src\/[a-z0-9_/.]+\.js) -->/giu)]
+    .map(match => [match[1],match[2]]);
+  assert.deepEqual(actualComments,approvedComments,"cleanup cannot hide unreviewed legacy slots");
+  for (const method of record.removedMethods) {
+    const before = git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+method.path).toString("utf8");
+    const tree = espree.parse(before,{ecmaVersion:"latest",sourceType:"module",range:true});
+    const owner = tree.body.find(node => node.type === "ExportNamedDeclaration" && node.declaration?.id?.name === method.class);
+    const node = owner.declaration.body.body.find(node => node.key?.name === method.name);
+    const start = before.lastIndexOf("\n",node.range[0])+1;
+    const end = before.indexOf("\n",node.range[1])+1;
+    assert.equal(require("node:crypto").createHash("sha256").update(before.slice(start,end)).digest("hex"),method.before,
+      "cleanup exact removed method bytes");
+    assert.equal(read(method.path),before.slice(0,start)+before.slice(end),"cleanup may remove only its recorded method");
+    assert.equal(before.slice(start,end).split("\n").length-1,method.lines,"cleanup removed method lines");
+  }
+  for (const item of record.removedModules) {
+    const bytes = git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+item.path);
+    assert.equal(require("node:crypto").createHash("sha256").update(bytes).digest("hex"),item.before,"cleanup exact recovery bytes");
+    assert.deepEqual(item.manifest,historical.modules.find(module => module.currentPath === item.path),"cleanup frozen module identity");
+    assert(!fs.existsSync(path.join(ROOT,item.path)) && !manifest.has(item.path),"cleanup module still exists");
+    archivedSources.set(item.path,bytes.toString("utf8"));
+  }
+  assert(record.removedBridges.every(item => !bridges.has(item.id)) && record.removedActivations.every(item =>
+    !contract.activationPositions.some(active => active.id === item.id)),"cleanup surface still exists");
+  assert(record.resolvedDebts.every(id => !json("architecture/guards/known_debt_registry.json").debts.some(item => item.id === id)),
+    "cleanup debt still exists");
+  assert.deepEqual(json("architecture/migration/legacy_slot_splits.json").splits.find(item => item.slot === 228),
+    record.legacySlotSplit.after,"cleanup exact split successor");
+  for (const item of record.removedLegacySlots) assert(read("dev.html").includes(
+    '<!-- retired-legacy-slot '+item.slot+': '+item.path+' -->'),"cleanup historical slot tombstone");
+  for (const change of [{postClosureCleanup:{...record.postClosureCleanup,closureTag:"stage4-closed"}},
+    {removedModules:[...record.removedModules,record.removedModules[0]]},
+    {removedModules:record.removedModules.map(item => ({...item,before:"unrecoverable"}))},
+    {removedBridges:record.removedBridges.map(item => ({...item,source:"src/app/script.js"}))},
+    {removedActivations:record.removedActivations.map(item => ({...item,targetModule:"src/other.js"}))}])
+    assert.throws(() => StageFourClusterLedger.validateCleanupRecord({...record,...change}),/cleanup/u);
+}
+const recordedSource = file => archivedSources.get(file) ?? read(file);
+const recordedEntry = file => manifest.get(file) ?? removedModules.get(file)?.manifest;
+
 const retirementPreparations = preparations.filter(record => record.retirementUpdates);
 const retirementUpdates = retirementPreparations.flatMap(record => record.retirementUpdates);
 assert.equal(new Set(retirementUpdates.map(update => update.id)).size, retirementUpdates.length, "duplicate retirement successor");
@@ -150,7 +211,8 @@ for (const record of retirementPreparations) {
   assert.deepEqual(contract.transport, record.transportRetirement.after, "transport retirement metadata drift");
   for (const update of record.retirementUpdates) {
     const actual = (update.kind === "bridge" ? json("architecture/guards/migration_bridge_registry.json").bridges :
-      contract.activationPositions).find(item => item.id === update.id);
+      contract.activationPositions).find(item => item.id === update.id) ||
+      (update.kind === "bridge" ? removedBridges : removedActivations).find(item => item.id === update.id);
     assert.deepEqual(actual, update.after, "current retirement metadata drift");
   }
   const update = record.retirementUpdates[0];
@@ -191,9 +253,11 @@ for(const change of [{source:"src/app/unrecorded.js"},{target:"../escape.js"},{r
 assert.throws(()=>StageFourClusterLedger.validatePreparationImports({...preparationImport,
   importEdges:[preparationImport.importEdges[0],preparationImport.importEdges[0]]}),/duplicate/u);
 const preparationRetired = new Set(preparations.flatMap(record => [
+  ...(record.removedBridges || []).map(item => item.id),
   ...(record.replacedBridges || []).map(pair => pair.before.id), ...(record.mergedBridges || []).map(merge => merge.from.id)]));
 const active = new Map(contract.activationPositions.map((item) => [item.id, item]));
-const retiredActivations = new Set((contract.retiredActivations || []).map((item) => item.activation.id));
+const retiredActivations = new Set([...(contract.retiredActivations || []).map((item) => item.activation.id),
+  ...removedActivations.map(item => item.id)]);
 const inert = new Set((contract.inertModules || []).map((item) => item.targetModule));
 // Apply order follows the graph review, not the record id (018 applies after 020): a bridge may be retired by any
 // other applied record, never by its own.
@@ -252,7 +316,7 @@ ledger.records.forEach((record, index) => {
     targets += 1;
     const file = module.targetPath;
     assert.equal(boundaryOf(file)?.id, record.boundary, `${file}: path outside ${record.boundary}`);
-    const tree = espree.parse(read(file), { ecmaVersion: "latest", sourceType: "module", tokens: true, range: true });
+    const tree = espree.parse(recordedSource(file), { ecmaVersion: "latest", sourceType: "module", tokens: true, range: true });
     const exported = tree.body.filter((node) => node.type === "ExportNamedDeclaration").flatMap((node) =>
       node.declaration.id ? [node.declaration.id.name] : node.declaration.declarations.map((item) => item.id.name));
     assert.deepEqual(exported.sort(), [...module.exports].sort(), `${file}: exports differ from the record`);
@@ -274,11 +338,15 @@ ledger.records.forEach((record, index) => {
         !(token.value === "CONFIG" && record.boundary === "game-config" && module.exports.includes("CONFIG")));
       assert.deepEqual(named.map((token) => token.value), [], `${file}: names a forbidden global`);
     }
-    const entry = manifest.get(file);
+    const entry = recordedEntry(file);
     assert(entry?.architecture.migrationStatus === "verified" && entry.architecture.targetBoundary === record.boundary,
       `${file}: Manifest entry is not a verified ${record.boundary} module`);
-    assert(manifest.get(module.currentPath)?.architecture.roles.includes("compatibility-bridge"),
+    assert(recordedEntry(module.currentPath)?.architecture.roles.includes("compatibility-bridge"),
       `${module.currentPath}: classic entry is not a compatibility bridge`);
+    if (removedModules.has(module.currentPath)) {
+      assert(!fs.existsSync(path.join(ROOT,module.currentPath)), "qualified cleanup source still exists");
+      continue;
+    }
     const shims = contract.activationPositions.filter((item) => item.sourceProvider === module.currentPath);
     if (shims.length > 0) {
       assert.equal(read(module.currentPath), shims.sort((left, right) => left.id.localeCompare(right.id))
@@ -674,8 +742,8 @@ const validateStageFiveClosure = (closure,entries,preparationRecords,liveBridges
   assert.deepEqual(runtime.transport,transition.transportRetirement.after,"Stage 5 transport retirement");
   assert(liveBridges.every(item => item.removalStage === "stage-6") &&
     runtime.activationPositions.every(item => item.removalStage === "stage-6"),"Stage 5 retirement remains");
-  assert.deepEqual(closure.retained,{bridges:liveBridges.length,activations:runtime.activationPositions.length,
-    globals:852,knownDebts:24},"Stage 5 retained identities");
+  assert.deepEqual(closure.retained,{bridges:liveBridges.length+removedBridges.length,activations:runtime.activationPositions.length+removedActivations.length,
+    globals:852,knownDebts:json("architecture/guards/known_debt_registry.json").debts.length+cleanupRecords.flatMap(record => record.resolvedDebts).length},"Stage 5 retained identities");
   assert.deepEqual(closure.nativeGraph,new StageFourRelease(ROOT,5).nativeGraph(),"Stage 5 native graph");
   assert(closure.metrics.lines.utils <= 70358 && closure.metrics.lines.src === 82056,"Stage 5 closure budget");
 };
@@ -703,11 +771,11 @@ const validateClosure = (closure, baseline, entries, preparationRecords, liveBri
     "Stage 4 closure identity");
   assert.deepEqual(closure.modules.map(item=>item.source).sort(), baseline.slice().sort(), "Stage 4 closure scope");
   for (const item of closure.modules) {
-    const current = entries.get(item.source)?.architecture;
+    const current = (entries.get(item.source) || removedModules.get(item.source)?.manifest)?.architecture;
     assert(current && current.targetPath === item.target, "Stage 4 closure target");
     if (item.status === "migrated") {
       assert((current.roles.includes("compatibility-bridge") || current.migrationStatus === "verified") &&
-        entries.get(item.target)?.architecture.migrationStatus === "verified", "Stage 4 closure ESM target");
+        recordedEntry(item.target)?.architecture.migrationStatus === "verified", "Stage 4 closure ESM target");
     } else {
       assert(item.status === "deferred" && /^stage-[5-7]$/u.test(item.stage) && item.reason,
         "Stage 4 closure deferred reason");

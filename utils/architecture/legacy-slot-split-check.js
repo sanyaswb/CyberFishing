@@ -60,6 +60,16 @@ rejects(() => registry([[2, ["src/v.js", "src/core.js"]]]).assertMatches(read([.
 rejects(() => registry([[2, ["src/v.js", "src/v.js"]]]), /duplicated member/u);
 rejects(() => registry([[2, ["src/v.js"]]]), /at least two members/u);
 
+// Removed slots retain the exact identities of all surviving scripts; invalid positions fail.
+const tombstone = '<!-- retired-legacy-slot 2: src/removed.js -->';
+const removalHtml = html([["src/a.js"]])+"\n"+tombstone+"\n"+html([["src/c.js"]]);
+const removalReader = new LegacyScriptOrderReader(null);
+assert.deepEqual(removalReader.parse(removalHtml).map(script => [script.currentPath,script.legacyLoadOrder]),
+  [["src/a.js",1],["src/c.js",3]]);
+for (const invalid of [removalHtml.replace("slot 2:","slot 3:"),removalHtml.replace(tombstone,tombstone+"\n"+tombstone),
+  removalHtml.replace(tombstone,html([["src/b.js"]])+"\n"+tombstone)])
+  assert.throws(() => removalReader.parse(invalid),/Retired legacy slot/u);
+
 // Selection follows the reviewed policy even when production has become a native module document.
 const selectionRoot = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "cyber-legacy-source-"));
 const selectionPolicy = source => ({ migrationManifest: { legacyLoadOrder: { source } } });
@@ -99,4 +109,4 @@ const live = new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(ROOT
 const result = LegacySlotSplitRegistry.load(ROOT).assertMatches(live);
 const logicalSlots = new Set(live.filter(script => script.type === "classic").map(script => script.legacyLoadOrder)).size;
 console.log(`Legacy slot splits passed: ${result.splitSlots} reviewed split slot(s) with ${result.members} members, ` +
-  `${logicalSlots} logical classic slots; 11 invalid split and ${rejectedSelections} invalid selection fixtures rejected.`);
+  `${logicalSlots} logical classic slots; 11 invalid split and ${rejectedSelections} invalid selection fixtures rejected; 3 invalid tombstone positions rejected.`);

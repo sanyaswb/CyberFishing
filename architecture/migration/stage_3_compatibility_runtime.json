@@ -374,13 +374,6 @@
     },
     {
       "decision": "approved-compatible",
-      "evidenceFingerprint": "3dc7964bc9462dbc0483d779cc8339ef082503ae306d060249f03a60b9918309",
-      "module": "src/game/config/raw/fish/fish_profile_presets.js",
-      "owner": "stage-4.cluster-003-fish-species",
-      "reason": "Module-level literal tables with no reader in src (export-only inert target, batch 028 precedent; Stage 7 task deletes the unread fish profile helpers); evaluation reads nothing external and writes no global."
-    },
-    {
-      "decision": "approved-compatible",
       "evidenceFingerprint": "45b0ef486e73eaab3af9acdd0f7e57090014d3a3c748de725f90bfc0c0ddb94f",
       "module": "src/game/config/raw/items/item_stat_overrides.js",
       "owner": "stage-4.cluster-004-config-data",
@@ -816,18 +809,6 @@
       "removalStage": "stage-6"
     },
     {
-      "id": "activation-5c6e63e8ffb9",
-      "owner": "stage-3.candidate-001-inventory-85f44b2e",
-      "sourceProvider": "src/core/inventory/equip_target_selection_policy.js",
-      "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
-      "exportName": "InventoryEquipTargetSelectionPolicy",
-      "legacySymbol": "InventoryEquipTargetSelectionPolicy",
-      "legacyScriptIndex": 86,
-      "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
-      "removalStage": "stage-6"
-    },
-    {
       "exportName": "DevFlagsProvider",
       "legacyScriptIndex": 396,
       "legacySymbol": "DevFlagsProvider",
@@ -837,18 +818,6 @@
       "id": "activation-70d2b3423dae",
       "owner": "stage-4.cluster-019-game-loop-adapters-audio",
       "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-6"
-    },
-    {
-      "exportName": "HorizontalScrollController",
-      "legacyScriptIndex": 227,
-      "legacySymbol": "HorizontalScrollController",
-      "shimFile": "activations/227_horizontalscrollcontroller.js",
-      "sourceProvider": "src/ui/interaction/horizontal_scroll_controller.js",
-      "targetModule": "src/platform/browser/dom/horizontal_scroll_controller.js",
-      "id": "activation-7956fbe2a8a1",
-      "owner": "stage-4.cluster-032-platform-horizontal-scroll",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "removalStage": "stage-6"
     },
     {
@@ -7447,16 +7416,6 @@
     }
   ],
   "inertModules": [
-    {
-      "owner": "stage-4.cluster-005-config-derived",
-      "sourceProvider": "src/config/databases/fish/presets/fish_profile_factory.js",
-      "targetModule": "src/game/config/factories/fish_profile_factory.js"
-    },
-    {
-      "owner": "stage-4.cluster-003-fish-species",
-      "sourceProvider": "src/config/databases/fish/presets/fish_profile_presets.js",
-      "targetModule": "src/game/config/raw/fish/fish_profile_presets.js"
-    },
     {
       "owner": "stage-4.cluster-011-config-schema-validator",
       "sourceProvider": "src/config/validation/config_schema_validator.js",

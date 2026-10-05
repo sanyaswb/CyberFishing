@@ -244,7 +244,7 @@ class ItemConditionCheck {
       path.join(ROOT, "src/game/application/inventory/inventory_item_factory.js"),
       "utf8",
     );
-    const ui = fs.readFileSync(path.join(ROOT, "src/ui/ui.js"), "utf8");
+    const ui = fs.readFileSync(path.join(ROOT, "src/game/presentation/inventory/inventory_item_card_renderer.js"), "utf8");
     Assertion.that(
       factory.includes("const condition = this.#conditionResolver?.resolve(hydrated)") &&
         factory.includes("if (condition) hydrated.condition = condition"),
@@ -255,7 +255,7 @@ class ItemConditionCheck {
       "derived condition is excluded from persistent item data",
     );
     Assertion.that(
-      ui.includes("this.#conditionDomAdapter?.apply(slotDiv, item.condition)"),
+      ui.includes("this.#conditionDomAdapter.apply(card, item.condition)"),
       "condition is applied to item thumbnails",
     );
   }

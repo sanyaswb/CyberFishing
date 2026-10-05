@@ -37,7 +37,7 @@ class ViteFixtureBuildCheck {
         path.join(PROJECT_ROOT, "architecture/migration/module_migration_manifest.json"), "utf8")) }) : [];
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
     const logicalScripts = new LegacyScriptOrderReader(legacyPath, { scriptAliases }).read();
-    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts), 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
+    assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts) + require("./stage_four/cluster_ledger").StageFourClusterLedger.cleanupRecords(PROJECT_ROOT).flatMap(record => record.removedLegacySlots).length, 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
     assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0, "Vite fixture infrastructure must not activate module scripts");
     if (nativeGraph.length === 0) for (const forbidden of contract.forbiddenEntrypoints)
       assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Classic runtime cannot create ${forbidden}`);
@@ -81,7 +81,7 @@ class ViteFixtureBuildCheck {
     repositorySnapshot.assertEqual(before, repositorySnapshot.capture());
     assert.equal(fs.readFileSync(indexPath, "utf8"), indexBefore, "Vite fixture build changed index.html");
     assert.equal(fs.readFileSync(legacyPath, "utf8"), legacyBefore, "Vite fixture build changed the selected legacy document");
-    console.log(`Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 logical classic positions and game runtime/assets untouched; 4 contract + 20 runtime topology/graph fixtures; ${nativeGraph.length} native production modules.`);
+    console.log(`Vite fixture build passed: exact Vite 8.2.1, synthetic ESM graph only, temporary output cleaned, 424 preserved historical positions (including exact recorded removals) and game runtime/assets untouched; 4 contract + 20 runtime topology/graph fixtures; ${nativeGraph.length} native production modules.`);
   }
 
   #runRuntimeFixtures(validator, runtimePath) {

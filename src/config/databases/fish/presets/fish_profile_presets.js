@@ -1,1 +1,0 @@
-// Migrated Stage 4 source src/config/databases/fish/presets/fish_profile_presets.js: COMMON_LAST_DASH_BEHAVIOR, COMMON_LAST_DASH_TRIGGER, FISH_PROFILE_PRESETS, PEACEFUL_DIRECTION, PREDATOR_DIRECTION served only through ESM imports of src/game/config/raw/fish/fish_profile_presets.js.

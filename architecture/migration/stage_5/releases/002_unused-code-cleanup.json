@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-release",
+  "id": "002",
+  "slug": "unused-code-cleanup",
+  "milestone": "M2",
+  "fromRelease": "0.26.0",
+  "toRelease": "0.26.1",
+  "title": "Verified Unused Code Cleanup",
+  "codename": "stage-5-unused-code-cleanup",
+  "updatedAt": "2026-10-05",
+  "notes": [
+    "Remove unused InventoryUI and fish profile helpers after closure",
+    "Preserve native and classic DEV gameplay, inventory and save behavior"
+  ],
+  "changelog": [
+    "Remove unused InventoryUI, its sole saveBuild caller path and unread fish profile/equip-target helpers.",
+    "Retire three bridges, two activations and five browser debts with exact recovery; preserve native/DEV behavior."
+  ],
+  "versionDecision": "architecture/migration/stage_5/post_closure_cleanup_audit.md",
+  "output": {
+    "status": "applied",
+    "tag": "v0.26.1",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "before": "96a62c8796beec04b81210c823c07270c2cd1b792514dffbe7042588e13fbf7e",
+        "after": "54f54e5e7a1f253d93811d85ebf4878ff97ab901926373c21065654e02f8ad75",
+        "edits": [
+          {
+            "from": "# CyberFishing changelog\n\n",
+            "to": "# CyberFishing changelog\n\n## v0.26.1 - Verified Unused Code Cleanup\n\n### Changed\n\n- Remove unused InventoryUI, its sole saveBuild caller path and unread fish profile/equip-target helpers.\n- Retire three bridges, two activations and five browser debts with exact recovery; preserve native/DEV behavior.\n\n",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "index.html",
+        "before": "8519bafc0006c8fc0893435c014c5e6300493e80acbfa9eb005c053f15eb9803",
+        "after": "54828dc1c453be617fd5fe2f81a58e5f599a0882e5af9f03165d056d69a7af6b",
+        "edits": [
+          {
+            "from": "src/entrypoints/game.entry.js?v=0.26.0\"",
+            "to": "src/entrypoints/game.entry.js?v=0.26.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "dev.html",
+        "before": "7c9623c22beffeea7963a9a6c69d1d1327a9a4c71946d26c3b22ada9e41ab900",
+        "after": "2dec0a399741b0ca22150b227f550f1c2a07d1219f72ba2b70ef770c022e420c",
+        "edits": [
+          {
+            "from": "src/config/project_version.js?v=0.26.0\"",
+            "to": "src/config/project_version.js?v=0.26.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "package-lock.json",
+        "before": "801d22761c78f74bda9135a81e8c5ee0f715b80cb1466ec37187df8e6ad57277",
+        "after": "6323a05bf7d609d9ed793fb9927cdbd30243f816882cdc2ebeae694d6b0f4780",
+        "edits": [
+          {
+            "from": "\"version\": \"0.26.0\"",
+            "to": "\"version\": \"0.26.1\"",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "path": "package.json",
+        "before": "995bdb94a9e6f83eb1108fd571123ee4f02ee6bca0260ff21977534b287ab196",
+        "after": "5a4f6899a1e5e16c0913a5339525bc0a44f0a2249925b31473d2d794b1866aaf",
+        "edits": [
+          {
+            "from": "\"version\": \"0.26.0\"",
+            "to": "\"version\": \"0.26.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "src/game/presentation/version/project_version.js",
+        "before": "ab85cf66deae665959049900651efcb534abd480e2a14a8111b6a473fa32a1eb",
+        "after": "5df32dfb61f9038b624f4b7ccc425700db6e9a9c35ec139ba39f2ddaf7ff7798",
+        "edits": [
+          {
+            "from": "export const CURRENT_PROJECT_VERSION = \"0.26.0\";",
+            "to": "export const CURRENT_PROJECT_VERSION = \"0.26.1\";",
+            "count": 1
+          },
+          {
+            "from": "  codename: \"stage-5-native-production\",",
+            "to": "  codename: \"stage-5-unused-code-cleanup\",",
+            "count": 1
+          },
+          {
+            "from": "  notes: Object.freeze([\n    \"Complete native Presentation and Production Bootstrap migration\",\n    \"Preserve gameplay and saves; continue native DEV composition in Stage 6\",\n  ]),",
+            "to": "  notes: Object.freeze([\n    \"Remove unused InventoryUI and fish profile helpers after closure\",\n    \"Preserve native and classic DEV gameplay, inventory and save behavior\",\n  ]),",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "metrics": {
+      "stage": 5,
+      "nativeProduction": {
+        "entry": "src/entrypoints/game.entry.js",
+        "modules": 350,
+        "importEdges": 521,
+        "devOrCompatibility": 0,
+        "unresolved": 0
+      },
+      "classicDevScriptTags": 412,
+      "files": {
+        "architecture": 472,
+        "src": 802,
+        "utils": 216
+      },
+      "deferredNativeProduction": [
+        {
+          "id": "028",
+          "status": "verified",
+          "reason": "Original script.js is actual Development Bootstrap, with DEV factories and watchdog orchestration. Stage 5 separately must deliver native game.entry.js, production composition and one canonical browser graph before closure; this source deferment does not waive that required cutover."
+        }
+      ],
+      "lines": {
+        "src": 80547,
+        "utils": 46782,
+        "architecture": 804051
+      },
+      "classicScriptTags": 0,
+      "clusters": {
+        "applied": 29,
+        "pending": [],
+        "deferred": [
+          "028"
+        ]
+      },
+      "activations": {
+        "active": 26,
+        "byRemovalStage": {
+          "stage-6": 26
+        },
+        "retired": 380,
+        "inert": 5
+      },
+      "bridges": {
+        "total": 50,
+        "byRemovalStage": {
+          "stage-6": 50
+        }
+      },
+      "knownDebts": 19,
+      "globalProviders": 852,
+      "stageFiveRetirementPath": {
+        "nativeDevelopmentStage": "stage-6",
+        "transport": "stage-6",
+        "condition": "all-listed-classic-dev-consumers-migrated"
+      }
+    }
+  }
+}

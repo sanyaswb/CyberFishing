@@ -1,7 +1,7 @@
 # Prior Stage 5 handoff — current execution queue link
 
-Stage 5 A-F is now verified closed at 0.26.0; this prior handoff is historical.
-Current cleanup queue: stage5_next_chat_spec.md package G; Stage 6: ../stage_6_handoff.md.
+Stage 5 A-F closed at 0.26.0; package G verified at 0.26.1; this prior handoff is historical.
+Current implementation queue: ../stage_6_handoff.md; completed A-G provenance: stage5_next_chat_spec.md.
 
 
 The current authoritative queue is [stage5_next_chat_spec.md](stage5_next_chat_spec.md).

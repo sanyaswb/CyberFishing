@@ -1,1 +1,0 @@
-globalThis.InventoryEquipTargetSelectionPolicy = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/game/domain/inventory/equip_target_selection_policy.js"]["InventoryEquipTargetSelectionPolicy"];

@@ -114,6 +114,7 @@ function checkRenderStorage() {
 // Version API and original eager mounting phase, including live document replacement and errors.
 function checkVersionBadge() {
   const fs=require('node:fs');
+  const expectedVersion=require('../package.json').version;
   const declaration=fs.existsSync('src/ui/version/game_version_badge.js')?'src/ui/version/game_version_badge.js':'src/ui/version_badge.js';
   for(const readyState of ['loading','complete']) {
     const listeners=[],queries=[],node={dataset:{},textContent:'',title:''};
@@ -125,11 +126,11 @@ function checkVersionBadge() {
     runtime.load(declaration,{expose:['GameVersionBadge']});
     if(declaration!=='src/ui/version_badge.js')runtime.load('src/ui/version_badge.js');
     if(readyState==='loading'){assert.equal(queries.length,0);assert.equal(listeners.length,1);assert.equal(listeners[0].type,'DOMContentLoaded');assert.equal(listeners[0].options.once,true);listeners[0].callback();}
-    assert.equal(queries.length,1);assert.equal(node.textContent,'v0.25.2 prototype');assert.equal(node.dataset.version,'0.25.2');
+    assert.equal(queries.length,1);assert.equal(node.textContent,`v${expectedVersion} prototype`);assert.equal(node.dataset.version,expectedVersion);
     const Badge=runtime.context.GameVersionBadge, mounted=Badge.mountById('custom');assert.equal(mounted.element,node);assert.equal(queries.at(-1),'custom');
     assert.equal(Badge.mountById('missing').element,null);
     const noElement=new Badge();noElement.render();assert.equal(noElement.element,null);
-    const noConfig=new Badge({element:node,versionConfig:null});noConfig.render();assert.equal(node.dataset.version,'0.25.2');
+    const noConfig=new Badge({element:node,versionConfig:null});noConfig.render();assert.equal(node.dataset.version,expectedVersion);
     const fallback=new Badge({element:node,versionConfig:{}});fallback.render();assert.equal(node.textContent,'vunknown');assert.equal(node.title,'CyberFishing');assert.equal(node.dataset.version,'unknown');
     const custom=new Badge({element:node,versionConfig:{version:'1.2.3',label:'Custom',channel:'test',name:'Example',codename:'case',updatedAt:'2020'}});custom.render();assert.equal(node.textContent,'Custom test');assert.equal(node.title,'Example · case · 2020');
     const replacement={dataset:{}};runtime.context.document={getElementById(id){assert.equal(this,runtime.context.document);assert.equal(id,'replacement');return replacement;}};

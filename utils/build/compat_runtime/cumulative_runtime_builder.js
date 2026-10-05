@@ -192,10 +192,12 @@ class CumulativeRuntimeBuildApplication {
     outputManager = null,
     scriptOrderProvider = null,
     additionalTargetModules = [],
+    removedTargetModules = [],
   } = {}) {
     this.projectRoot = path.resolve(projectRoot);
     // Stage 4: ESM targets of applied cluster records join the Stage 3 selection.
     this.additionalTargetModules = additionalTargetModules;
+    this.removedTargetModules = new Set(removedTargetModules);
     this.contract = contract;
     this.approvedPlan = approvedPlan;
     this.executionState = executionState;
@@ -236,8 +238,10 @@ class CumulativeRuntimeBuildApplication {
           executionState: this.stageTwoExecutionState,
         })
         : []);
+    if (contract.activationPositions.some(item => this.removedTargetModules.has(item.targetModule)))
+      throw new Error("Cleanup cannot remove an active activation target");
     const graph = new CumulativeGraphPlanner({ projectRoot: this.projectRoot }).plan({
-      targetModules: [...selection.targetModules, ...this.additionalTargetModules],
+      targetModules: [...selection.targetModules, ...this.additionalTargetModules].filter(file => !this.removedTargetModules.has(file)),
       approvedInfrastructureModules: contract.approvedInfrastructureModules,
       previousStageModules,
       previousRuntimeTransitions: contract.previousRuntimeTransitions,

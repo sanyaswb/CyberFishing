@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.26.1 - Verified Unused Code Cleanup
+
+### Changed
+
+- Remove unused InventoryUI, its sole saveBuild caller path and unread fish profile/equip-target helpers.
+- Retire three bridges, two activations and five browser debts with exact recovery; preserve native/DEV behavior.
+
 ## v0.26.0 - Stage 5 Native Production
 
 ### Changed

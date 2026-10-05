@@ -44,7 +44,8 @@ class LegacyScriptOrderReader {
   }
 
   parse(html) {
-    const scriptPattern = /<script\b([^>]*)\bsrc\s*=\s*["']([^"']+)["']([^>]*)>\s*<\/script>/gi;
+    // Harmless approved tombstones preserve historical slot identities after deleting obsolete files.
+    const scriptPattern = /<!-- retired-legacy-slot ([1-9][0-9]*): (src\/[a-z0-9_/.]+\.js) -->|<script\b([^>]*)\bsrc\s*=\s*["']([^"']+)["']([^>]*)>\s*<\/script>/gi;
     const scripts = [];
     const closedSlots = new Set();
     let legacyLoadOrder = 1;
@@ -52,11 +53,16 @@ class LegacyScriptOrderReader {
     let memberIndex = 0;
     let match = scriptPattern.exec(html);
     while (match) {
-      const attributes = `${match[1]} ${match[3]}`;
+      if (match[1]) {
+        if (openSlot !== null) { closedSlots.add(openSlot); openSlot = null; legacyLoadOrder += 1; }
+        if (Number(match[1]) !== legacyLoadOrder) throw new Error("Retired legacy slot is not at its historical position");
+        legacyLoadOrder += 1; match = scriptPattern.exec(html); continue;
+      }
+      const attributes = `${match[3]} ${match[5]}`;
       const type = /\btype\s*=\s*["']module["']/i.test(attributes)
         ? "module"
         : "classic";
-      const source = match[2];
+      const source = match[4];
       const normalizedSource = this.#normalizeSourcePath(source);
       if (
         this.scriptAliases.has(normalizedSource) &&

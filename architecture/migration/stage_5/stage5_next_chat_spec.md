@@ -1,19 +1,21 @@
 # CyberFishing — next-chat execution specification
 
-Current verified progress (2026-10-05): Stage 5 A-F complete; release 0.26.0.
-Native production: 350 modules / 521 imports, no DEV/transport reachability; graph v8,
-29 applied clusters / 102 targets, 30 preparations. Original source 028 stays deferred
-to native DEV in Stage 6; its native-production checkpoint is separately verified.
-All 53 bridges / 28 activations / transport have exact Stage 6 retirement conditions;
-frozen Stage 2/4 facts are preserved through validated successors. Globals 852, debts 24.
-262 obsolete utilities archived with exact byte recovery at stage5-tools-archive.
-src: 810 JS/JSON / 82,056 lines; utils: 216 / 46,647, below 70,358.
+Current verified progress (2026-10-05): Stage 5 A-F closed at 0.26.0; package G complete at 0.26.1.
+Native production remains 350 modules / 521 imports, zero DEV/transport reachability.
+Graph v8: 29 applied clusters / 102 historical targets; 31 preparations including cleanup 031.
+Original source 028 stays deferred to native DEV in Stage 6, output/verification null;
+its native-production checkpoint is separately verified. Frozen Stage 3/4/5 history is intact.
+Live classic DEV: 50 bridges / 26 activations, all due Stage 6; 380 retired / 5 inert.
+Historical globals 852; debts 19. Removed eight files, saveBuild's 104 lines, three bridges,
+two activations and five debts. Native horizontal scroll and actual UIUtils holders remain.
+src: 802 JS/JSON / 80,547 lines (-1,509); utils: 216 / 46,782 (+135), below 70,358.
+262 obsolete utilities: stage5-tools-archive. Exact removed source bytes: stage5-dead-code-archive.
 Quick 24/24, Architecture 32/32, uncached Full 64/64; identical game-cycle stdout.
-Codex native/DEV browser acceptance PASS: canonical identities, one loop, live flags,
-identical UI/saves/reload, zero console issues and cleanup; original saves restored.
-Closure: ../stage_5_closure.json; evidence: ../../archive/stage5_final_{acceptance,browser}.json.
-Boundary-tool decision and release projection: closure_projection_decision.md.
-English next-stage queue: ../stage_6_handoff.md. Next: separately verified work package G.
+Codex native/DEV browser acceptance PASS: identities, one loop, live flags, inventory,
+loadout ownership validation, identical save strings/reload, zero console issues and cleanup.
+Original saves restored; owned tabs/server/probes released. Evidence: ../../archive/stage5_post_closure_cleanup_{acceptance,browser}.json.
+Cleanup audit: post_closure_cleanup_audit.md; successor: preparations/031_post-closure-unused-inventory-and-profiles.json.
+Next implementation: ../stage_6_handoff.md. A-G recipes below are completed provenance; do not replay them.
 
 ## Objective and latest owner instructions
 
@@ -29,7 +31,7 @@ Continue autonomously within the existing authorized scope, including cohesive c
 
 ## Authority and documents to read
 
-Follow the latest human instructions and the current AGENTS.md/development rules. This document is the current next-chat queue. Use the existing continuation specification for detailed migration mechanics and historical provenance; its old pending-manual-play wording does not override the latest automatic-testing instruction.
+Follow the latest human instructions and the current AGENTS.md/development rules. This A-G queue is completed provenance; use ../stage_6_handoff.md for the next implementation. Use the existing continuation specification for detailed migration mechanics and historical provenance; its old pending-manual-play wording does not override the latest automatic-testing instruction.
 
 Read these sources once, then inspect actual code and consumers before structural changes:
 
@@ -42,7 +44,7 @@ Read these sources once, then inspect actual code and consumers before structura
 
 Earlier loader proposals are historical alternatives. Do not implement them. Local `CLAUDE.md` and `CODEX.md`, if present, are excluded resume notes and must never be committed. Agent coordination follows the current session instructions, not obsolete local no-delegation guidance.
 
-## Verified starting point
+## Historical starting point (superseded by the verified progress above)
 
 Check the branch, working tree, HEAD and origin/develop first. Preserve unrelated user changes. The handoff is based on these pushed commits; a later documentation-only handoff commit may follow them:
 
@@ -216,7 +218,7 @@ After A–E pass:
 
 Stage 5 is complete when native production and the architecture/retirement/release/budget contracts above are verified and recorded. Native DEV is a Stage 6 obligation. Owner manual play is not a gate under the latest instruction.
 
-## Work package G — separately verified dead-code cleanup after closure
+## Work package G — completed separately verified cleanup (0.26.1)
 
 The owner explicitly emphasizes unnecessary-code and bridge removal. After the immutable Stage 5 closure, continue that already authorized cleanup as small separate changes, preserving the closed release evidence and tracking the new cleanup checkpoint.
 
@@ -248,6 +250,6 @@ Preserve existing mixed CRLF/LF source bytes. Do not stash, mass-normalize, indi
 - [x] Boundary-tool decision and strict guard coverage are recorded.
 - [x] Stage 5 release projection, metadata, closure record/tags and English Stage 6 handoff agree.
 - [x] Game-cycle parity plus Quick/Architecture/uncached Full and built-in browser acceptance are performed automatically.
-- [ ] Post-closure dead-code cleanup is separately audited, applied where safe, tested and documented.
+- [x] Post-closure dead-code cleanup is separately audited, applied where safe, tested and documented.
 - [x] No gameplay/save/state/API/timing/performance redesign is hidden in migration or cleanup.
-- [ ] Clean pushed develop; no owned server, tab or temporary runtime fixture; truthful evidence and remaining work.
+- [x] Clean pushed develop; no owned server, tab or temporary runtime fixture; truthful evidence and remaining work.

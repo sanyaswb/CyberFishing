@@ -1,0 +1,922 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-5-preparation",
+  "id": "031",
+  "slug": "post-closure-unused-inventory-and-profiles",
+  "date": "2026-10-05",
+  "baseCommit": "1e398c00e4b5abdba5ffd1be40eeeeab396b10f7",
+  "reason": "Separately authorized package G after immutable stage5-closed: remove proven unreferenced legacy inventory UI/saveBuild, unread fish profiles and obsolete expose-only shims/selection policy. Preserve behavior, save format and historical ledgers through exact removal successors.",
+  "postClosureCleanup": {
+    "closureTag": "stage5-closed",
+    "archiveTag": "stage5-dead-code-archive",
+    "archiveCommit": "81ba1feaea248ebdccef5fb4bfdf433290f4a1a6",
+    "decision": "architecture/migration/stage_5/post_closure_cleanup_audit.md"
+  },
+  "removedModules": [
+    {
+      "path": "src/ui/ui.js",
+      "before": "5d168d23971b109fbb08113bd3717c3dde1868dfbd905bb576b8c12ce1ee886e",
+      "gitBlob": "27af1fbe87512a13130c5e7f034cb5d1ce2c541b",
+      "manifest": {
+        "currentPath": "src/ui/ui.js",
+        "currentArea": "ui",
+        "observed": {
+          "legacyLoadOrder": 228,
+          "providers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "InventoryUI",
+                "mechanism": "global-lexical",
+                "availability": "program-init"
+              }
+            ],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "HorizontalScrollController",
+                "mechanism": "identifier",
+                "accessRequirement": "required",
+                "executionPhase": "deferred"
+              },
+              {
+                "symbol": "InventoryEquipTargetSelectionPolicy",
+                "mechanism": "identifier",
+                "accessRequirement": "required",
+                "executionPhase": "deferred"
+              },
+              {
+                "symbol": "UIUtils",
+                "mechanism": "identifier",
+                "accessRequirement": "guarded",
+                "executionPhase": "deferred"
+              }
+            ],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "Array",
+              "Math",
+              "Number",
+              "Object",
+              "Set",
+              "String",
+              "parseInt",
+              "undefined"
+            ],
+            "browserApis": [
+              "clearTimeout",
+              "document",
+              "matchMedia",
+              "setTimeout",
+              "window"
+            ],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "classified",
+          "roles": [
+            "bootstrap"
+          ],
+          "targetBoundary": "bootstrap-production",
+          "targetPath": "src/bootstrap/production/legacy_inventory_ui.js",
+          "migrationWave": 7
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [
+              {
+                "symbol": "HorizontalScrollController",
+                "mechanism": "identifier",
+                "accessRequirement": "required",
+                "executionPhase": "deferred",
+                "target": "src/ui/interaction/horizontal_scroll_controller.js",
+                "resolution": "confirmed"
+              },
+              {
+                "symbol": "InventoryEquipTargetSelectionPolicy",
+                "mechanism": "identifier",
+                "accessRequirement": "required",
+                "executionPhase": "deferred",
+                "target": "src/core/inventory/equip_target_selection_policy.js",
+                "resolution": "confirmed"
+              },
+              {
+                "symbol": "UIUtils",
+                "mechanism": "identifier",
+                "accessRequirement": "guarded",
+                "executionPhase": "deferred",
+                "target": "src/ui/legacy/ui_event_shield.js",
+                "resolution": "confirmed"
+              }
+            ],
+            "items": [
+              {
+                "target": "src/core/inventory/equip_target_selection_policy.js",
+                "symbols": [
+                  "InventoryEquipTargetSelectionPolicy"
+                ],
+                "resolution": "confirmed"
+              },
+              {
+                "target": "src/ui/interaction/horizontal_scroll_controller.js",
+                "symbols": [
+                  "HorizontalScrollController"
+                ],
+                "resolution": "confirmed"
+              },
+              {
+                "target": "src/ui/legacy/ui_event_shield.js",
+                "symbols": [
+                  "UIUtils"
+                ],
+                "resolution": "confirmed"
+              }
+            ],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": [
+              "browser-api-coupling",
+              "dev-production-coupling",
+              "high-level-self-composition",
+              "legacy-global-contract",
+              "mixed-responsibility-requires-decomposition"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "path": "src/ui/interaction/horizontal_scroll_controller.js",
+      "before": "ab295b029f4893313063e536e896549f580920962dda174dae5d3b8d9ab9569f",
+      "gitBlob": "0471a70f9e1fef4f6350550551077eae4eb72c09",
+      "manifest": {
+        "currentPath": "src/ui/interaction/horizontal_scroll_controller.js",
+        "currentArea": "ui/interaction",
+        "observed": {
+          "legacyLoadOrder": 227,
+          "providers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "HorizontalScrollController",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                "mechanism": "global-this-property",
+                "accessRequirement": "required",
+                "executionPhase": "eager"
+              }
+            ],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "globalThis"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "classified",
+          "roles": [
+            "compatibility-bridge"
+          ],
+          "targetBoundary": "platform",
+          "targetPath": "src/platform/browser/dom/horizontal_scroll_controller.js",
+          "migrationWave": 5
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [
+              {
+                "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                "mechanism": "global-this-property",
+                "accessRequirement": "required",
+                "executionPhase": "eager",
+                "resolution": "unresolved"
+              }
+            ],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/core/inventory/equip_target_selection_policy.js",
+      "before": "cb952b9844350a33ef46f53ba1d546586a4f343f252a0ca6430ae6ac183fb3e1",
+      "gitBlob": "a32e2af499a3f4081afdedd5bee2a3d8a336f655",
+      "manifest": {
+        "currentPath": "src/core/inventory/equip_target_selection_policy.js",
+        "currentArea": "core/inventory",
+        "observed": {
+          "legacyLoadOrder": 86,
+          "providers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "InventoryEquipTargetSelectionPolicy",
+                "mechanism": "global-this-property",
+                "availability": "program-init"
+              }
+            ],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [
+              {
+                "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                "mechanism": "global-this-property",
+                "accessRequirement": "required",
+                "executionPhase": "eager"
+              }
+            ],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "globalThis"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "classified",
+          "roles": [
+            "compatibility-bridge"
+          ],
+          "targetBoundary": "game-domain",
+          "targetPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [
+              {
+                "symbol": "__CYBER_FISHING_COMPAT_RUNTIME__",
+                "mechanism": "global-this-property",
+                "accessRequirement": "required",
+                "executionPhase": "eager",
+                "resolution": "unresolved"
+              }
+            ],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "before": "fed756404d8fecced0601ce4dbcbf81577277be24f75b7a7a7fd30e61c3cc751",
+      "gitBlob": "7693f37a37e81ff28ee3e85860656e037fc8072e",
+      "manifest": {
+        "currentPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+        "currentArea": "game/domain/inventory",
+        "observed": {
+          "legacyLoadOrder": null,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "Set"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "verified",
+          "roles": [
+            "domain-behavior"
+          ],
+          "targetBoundary": "game-domain",
+          "targetPath": "src/game/domain/inventory/equip_target_selection_policy.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "before": "678a7f504c124b79c2f7facae5fabfa1cf9904174a594bfca12d9e54263085e1",
+      "gitBlob": "8f474c76beaf9add532f8dd8bc6551a7ebd552f2",
+      "manifest": {
+        "currentPath": "src/config/databases/fish/presets/fish_profile_factory.js",
+        "currentArea": "config/databases/fish/presets",
+        "observed": {
+          "legacyLoadOrder": 7,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "classified",
+          "roles": [
+            "compatibility-bridge"
+          ],
+          "targetBoundary": "game-config",
+          "targetPath": "src/game/config/factories/fish_profile_factory.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "before": "f6cef454af1029c8aee385e39409187ea1f9885341334b352e9f3e4d76e698b0",
+      "gitBlob": "b06372113d52ea29dc02c1db65589b9107aadf6d",
+      "manifest": {
+        "currentPath": "src/config/databases/fish/presets/fish_profile_presets.js",
+        "currentArea": "config/databases/fish/presets",
+        "observed": {
+          "legacyLoadOrder": 8,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "classified",
+          "roles": [
+            "compatibility-bridge"
+          ],
+          "targetBoundary": "game-config-raw",
+          "targetPath": "src/game/config/raw/fish/fish_profile_presets.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/game/config/factories/fish_profile_factory.js",
+      "before": "439458278bad59f47ad6abe124b3b947c450c14d797c6df18cba77e1f97a3eef",
+      "gitBlob": "eb6663bceb951345d139a4a9e7cf715b86f600ac",
+      "manifest": {
+        "currentPath": "src/game/config/factories/fish_profile_factory.js",
+        "currentArea": "game/config/factories",
+        "observed": {
+          "legacyLoadOrder": null,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "Array",
+              "Object",
+              "undefined"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "verified",
+          "roles": [
+            "config-factory"
+          ],
+          "targetBoundary": "game-config",
+          "targetPath": "src/game/config/factories/fish_profile_factory.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/game/config/raw/fish/fish_profile_presets.js",
+      "before": "1dd6adf2be15a41253d947248a40a5c71b8e551496f0f0f5bbfb9cfa22e464c9",
+      "gitBlob": "3ad547e6d994cd421322507090b2ab18037e7421",
+      "manifest": {
+        "currentPath": "src/game/config/raw/fish/fish_profile_presets.js",
+        "currentArea": "game/config/raw/fish",
+        "observed": {
+          "legacyLoadOrder": null,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "Object"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "verified",
+          "roles": [
+            "raw-config"
+          ],
+          "targetBoundary": "game-config-raw",
+          "targetPath": "src/game/config/raw/fish/fish_profile_presets.js",
+          "migrationWave": 1
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    }
+  ],
+  "removedBridges": [
+    {
+      "id": "bridge-4dc615f80537",
+      "bridge": "src/ui/interaction/horizontal_scroll_controller.js",
+      "owner": "stage-4.cluster-032-platform-horizontal-scroll",
+      "source": "src/ui/ui.js",
+      "target": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "reason": "Preserve the exact HorizontalScrollController consumer until its legacy symbol is removed. Retain HorizontalScrollController for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-4",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "HorizontalScrollController",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-8cc4c456e4c0",
+      "bridge": "src/ui/legacy/ui_event_shield.js",
+      "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
+      "source": "src/ui/ui.js",
+      "target": "src/platform/browser/dom/ui_event_shield.js",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed. Retain UIUtils for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "introducedStage": "stage-5",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "UIUtils",
+          "mechanism": "global-this-property"
+        }
+      ]
+    },
+    {
+      "id": "bridge-f880b0a474c6",
+      "bridge": "src/core/inventory/equip_target_selection_policy.js",
+      "source": "src/ui/ui.js",
+      "target": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "reason": "Preserve the exact synchronous UI consumer until presentation migration removes the legacy symbol. Retain InventoryEquipTargetSelectionPolicy for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "introducedStage": "stage-3",
+      "removalStage": "stage-6",
+      "globalProviders": [
+        {
+          "symbol": "InventoryEquipTargetSelectionPolicy",
+          "mechanism": "global-this-property"
+        }
+      ]
+    }
+  ],
+  "removedActivations": [
+    {
+      "id": "activation-5c6e63e8ffb9",
+      "owner": "stage-3.candidate-001-inventory-85f44b2e",
+      "sourceProvider": "src/core/inventory/equip_target_selection_policy.js",
+      "targetModule": "src/game/domain/inventory/equip_target_selection_policy.js",
+      "exportName": "InventoryEquipTargetSelectionPolicy",
+      "legacySymbol": "InventoryEquipTargetSelectionPolicy",
+      "legacyScriptIndex": 86,
+      "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    },
+    {
+      "exportName": "HorizontalScrollController",
+      "legacyScriptIndex": 227,
+      "legacySymbol": "HorizontalScrollController",
+      "shimFile": "activations/227_horizontalscrollcontroller.js",
+      "sourceProvider": "src/ui/interaction/horizontal_scroll_controller.js",
+      "targetModule": "src/platform/browser/dom/horizontal_scroll_controller.js",
+      "id": "activation-7956fbe2a8a1",
+      "owner": "stage-4.cluster-032-platform-horizontal-scroll",
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
+    }
+  ],
+  "removedInertModules": [
+    {
+      "owner": "stage-4.cluster-005-config-derived",
+      "sourceProvider": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "targetModule": "src/game/config/factories/fish_profile_factory.js"
+    },
+    {
+      "owner": "stage-4.cluster-003-fish-species",
+      "sourceProvider": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "targetModule": "src/game/config/raw/fish/fish_profile_presets.js"
+    }
+  ],
+  "removedSideEffectReviews": [
+    {
+      "decision": "approved-compatible",
+      "evidenceFingerprint": "3dc7964bc9462dbc0483d779cc8339ef082503ae306d060249f03a60b9918309",
+      "module": "src/game/config/raw/fish/fish_profile_presets.js",
+      "owner": "stage-4.cluster-003-fish-species",
+      "reason": "Module-level literal tables with no reader in src (export-only inert target, batch 028 precedent; Stage 7 task deletes the unread fish profile helpers); evaluation reads nothing external and writes no global."
+    }
+  ],
+  "resolvedDebts": [
+    "debt-browser-capability-1839f595e52b",
+    "debt-browser-capability-44deff2704b7",
+    "debt-browser-capability-864e160df78f",
+    "debt-browser-capability-9d08cc637712",
+    "debt-browser-capability-a05f7cf42bdf"
+  ],
+  "removedDebtRecords": [
+    {
+      "id": "debt-browser-capability-1839f595e52b",
+      "rule": "browser-capability",
+      "source": "src/ui/ui.js",
+      "target": "environment:viewport",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 6,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "1839f595e52b41d1c35822c800320439b7b872fffb7ec74d6da209b1c1cd0dbe",
+      "identity": {
+        "rule": "browser-capability",
+        "source": "src/ui/ui.js",
+        "target": "environment:viewport",
+        "identifier": "matchMedia"
+      }
+    },
+    {
+      "id": "debt-browser-capability-44deff2704b7",
+      "rule": "browser-capability",
+      "source": "src/ui/ui.js",
+      "target": "environment:timing",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 6,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "44deff2704b7cf360328f530af8f0783c7b16fc0141013037820f19015eb4ed5",
+      "identity": {
+        "rule": "browser-capability",
+        "source": "src/ui/ui.js",
+        "target": "environment:timing",
+        "identifier": "setTimeout"
+      }
+    },
+    {
+      "id": "debt-browser-capability-864e160df78f",
+      "rule": "browser-capability",
+      "source": "src/ui/ui.js",
+      "target": "environment:browser-runtime",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 6,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "864e160df78f348f8a7c817d547aa79a5de8c088fdc795baf5b12448cf00a270",
+      "identity": {
+        "rule": "browser-capability",
+        "source": "src/ui/ui.js",
+        "target": "environment:browser-runtime",
+        "identifier": "window"
+      }
+    },
+    {
+      "id": "debt-browser-capability-9d08cc637712",
+      "rule": "browser-capability",
+      "source": "src/ui/ui.js",
+      "target": "environment:timing",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 6,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "9d08cc6377126b41ecb823373849e638e7e9adafa005c277659ad45bd17f50bf",
+      "identity": {
+        "rule": "browser-capability",
+        "source": "src/ui/ui.js",
+        "target": "environment:timing",
+        "identifier": "clearTimeout"
+      }
+    },
+    {
+      "id": "debt-browser-capability-a05f7cf42bdf",
+      "rule": "browser-capability",
+      "source": "src/ui/ui.js",
+      "target": "environment:dom",
+      "reason": "Stage 1.7 baseline of reviewed v0.24.30 legacy browser-capability debt.",
+      "blockers": [
+        "browser-api-coupling",
+        "dev-production-coupling",
+        "high-level-self-composition",
+        "legacy-global-contract",
+        "mixed-responsibility-requires-decomposition"
+      ],
+      "owner": "architecture-team",
+      "migrationWave": 6,
+      "removalStage": "stage-2",
+      "evidenceFingerprint": "a05f7cf42bdf44b962324ee58844a5ba61730f9c9cce8cc5501b1b48d4bc437c",
+      "identity": {
+        "rule": "browser-capability",
+        "source": "src/ui/ui.js",
+        "target": "environment:dom",
+        "identifier": "document"
+      }
+    }
+  ],
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "files": [
+    {
+      "path": "src/game/application/inventory/legacy_inventory_system.js",
+      "before": "df3541fdec4029adae3b6624a93b6555be5c5ac8c85dc582fd05ea64784dedc9",
+      "after": "13ddfee4216c088beab3db4628757e2bbabe3d842d600b2f688fdd53bf651857"
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "status": "verified",
+    "performer": "codex-automated-acceptance",
+    "globalsBefore": 852,
+    "globalsAfter": 852,
+    "bridgesBefore": 53,
+    "bridgesAfter": 50,
+    "activationsBefore": 28,
+    "activationsAfter": 26,
+    "debtsBefore": 24,
+    "debtsAfter": 19,
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64 uncached"
+    },
+    "sourceCommit": "1e398c00e4b5abdba5ffd1be40eeeeab396b10f7",
+    "sourceSnapshot": "0da3f5e3915d119ec724545633cec3c4b44abaf12720a7717c627baedd6c647d",
+    "startedAt": "2026-10-05T11:32:32.358Z",
+    "finishedAt": "2026-10-05T11:33:07.748Z",
+    "acceptance": {
+      "report": "architecture/archive/stage5_post_closure_cleanup_acceptance.json",
+      "sha256": "09a9aee752ca78060195cf1b80544862bde4b0fdd0bb2f138b4e16de2538201b"
+    },
+    "browser": {
+      "report": "architecture/archive/stage5_post_closure_cleanup_browser.json",
+      "sha256": "a41c2245d82ba0f22fcc415a824b0cd91de39c701a444c63f875e96865dd25be"
+    },
+    "release": "architecture/migration/stage_5/releases/002_unused-code-cleanup.json",
+    "metrics": {
+      "src": {
+        "files": 802,
+        "lines": 80547
+      },
+      "utils": {
+        "files": 216,
+        "lines": 46782
+      }
+    }
+  },
+  "removedMethods": [
+    {
+      "path": "src/game/application/inventory/legacy_inventory_system.js",
+      "class": "InventoryManager",
+      "name": "saveBuild",
+      "before": "c89341a4c87a35e422b9124dd92e1ad50d523d24df2b34e125762cc928da46ce",
+      "lines": 104,
+      "onlyCaller": "removed src/ui/ui.js InventoryUI"
+    }
+  ],
+  "removedLegacySlots": [
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_factory.js",
+      "slot": 7
+    },
+    {
+      "path": "src/config/databases/fish/presets/fish_profile_presets.js",
+      "slot": 8
+    },
+    {
+      "path": "src/core/inventory/equip_target_selection_policy.js",
+      "slot": 86
+    },
+    {
+      "path": "src/ui/interaction/horizontal_scroll_controller.js",
+      "slot": 227
+    }
+  ],
+  "legacySlotSplit": {
+    "before": {
+      "slot": 228,
+      "members": [
+        "src/ui/legacy/engine_interface.js",
+        "src/ui/legacy/engine_interface_activation.js",
+        "src/ui/legacy/ui_event_shield.js",
+        "src/ui/legacy/draggable_button.js",
+        "src/ui/legacy/game_controls.js",
+        "src/ui/legacy/chum_controls.js",
+        "src/ui/ui.js",
+        "src/ui/legacy/depth_selector.js",
+        "src/ui/legacy/time_display.js",
+        "src/ui/legacy/hold_charges.js"
+      ],
+      "transition": "architecture/migration/stage_5/preparations/012_legacy-ui-browser-declarations.json"
+    },
+    "after": {
+      "slot": 228,
+      "members": [
+        "src/ui/legacy/engine_interface.js",
+        "src/ui/legacy/engine_interface_activation.js",
+        "src/ui/legacy/ui_event_shield.js",
+        "src/ui/legacy/draggable_button.js",
+        "src/ui/legacy/game_controls.js",
+        "src/ui/legacy/chum_controls.js",
+        "src/ui/legacy/depth_selector.js",
+        "src/ui/legacy/time_display.js",
+        "src/ui/legacy/hold_charges.js"
+      ],
+      "transition": "architecture/migration/stage_5/preparations/031_post-closure-unused-inventory-and-profiles.json"
+    }
+  }
+}

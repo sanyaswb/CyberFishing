@@ -1,19 +1,21 @@
 # Current owner decision: native production now; native DEV in Stage 6
 
-Current verified progress (2026-10-05): Stage 5 A-F complete; release 0.26.0.
-Native production: 350 modules / 521 imports, no DEV/transport reachability; graph v8,
-29 applied clusters / 102 targets, 30 preparations. Original source 028 stays deferred
-to native DEV in Stage 6; its native-production checkpoint is separately verified.
-All 53 bridges / 28 activations / transport have exact Stage 6 retirement conditions;
-frozen Stage 2/4 facts are preserved through validated successors. Globals 852, debts 24.
-262 obsolete utilities archived with exact byte recovery at stage5-tools-archive.
-src: 810 JS/JSON / 82,056 lines; utils: 216 / 46,647, below 70,358.
+Current verified progress (2026-10-05): Stage 5 A-F closed at 0.26.0; package G complete at 0.26.1.
+Native production remains 350 modules / 521 imports, zero DEV/transport reachability.
+Graph v8: 29 applied clusters / 102 historical targets; 31 preparations including cleanup 031.
+Original source 028 stays deferred to native DEV in Stage 6, output/verification null;
+its native-production checkpoint is separately verified. Frozen Stage 3/4/5 history is intact.
+Live classic DEV: 50 bridges / 26 activations, all due Stage 6; 380 retired / 5 inert.
+Historical globals 852; debts 19. Removed eight files, saveBuild's 104 lines, three bridges,
+two activations and five debts. Native horizontal scroll and actual UIUtils holders remain.
+src: 802 JS/JSON / 80,547 lines (-1,509); utils: 216 / 46,782 (+135), below 70,358.
+262 obsolete utilities: stage5-tools-archive. Exact removed source bytes: stage5-dead-code-archive.
 Quick 24/24, Architecture 32/32, uncached Full 64/64; identical game-cycle stdout.
-Codex native/DEV browser acceptance PASS: canonical identities, one loop, live flags,
-identical UI/saves/reload, zero console issues and cleanup; original saves restored.
-Closure: ../stage_5_closure.json; evidence: ../../archive/stage5_final_{acceptance,browser}.json.
-Boundary-tool decision and release projection: closure_projection_decision.md.
-English next-stage queue: ../stage_6_handoff.md. Next: separately verified work package G.
+Codex native/DEV browser acceptance PASS: identities, one loop, live flags, inventory,
+loadout ownership validation, identical save strings/reload, zero console issues and cleanup.
+Original saves restored; owned tabs/server/probes released. Evidence: ../../archive/stage5_post_closure_cleanup_{acceptance,browser}.json.
+Cleanup audit: post_closure_cleanup_audit.md; successor: preparations/031_post-closure-unused-inventory-and-profiles.json.
+Next implementation: ../stage_6_handoff.md. A-G recipes below are completed provenance; do not replay them.
 
 Current execution authority (2026-10-05): the owner requests autonomous completion under
 `stage5_next_chat_spec.md`, including verified post-closure cleanup. Re-observed develop
@@ -32,7 +34,7 @@ provenance. All architecture/save/state gates remain unchanged. See
 
 The current next-chat execution brief is [stage5_next_chat_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/stage5_next_chat_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
 
-# CyberFishing: Stage 5 continuation execution specification
+# Historical Stage 5 continuation specification (completed)
 
 Date: 2026-10-05. Language: English. Workspace: `D:\dev\code\cyber-fishing`.
 Implementation resumed from the historical handoff below. The owner has now explicitly
@@ -63,7 +65,7 @@ Preparations 027–029 complete substeps 028.1–028.5; Stage 5 closure is still
 handoff base `a66eee5dcf7e719ca7dde7e061047bce8c2267ce` and its lifecycle fixture
 remain historical provenance; do not use that base as the current implementation state.
 
-## Current continuation checkpoint: native production verified; Stage 5 closure pending
+## Historical continuation checkpoint: native production verified before closure
 
 Commit `aac62f6` delivers index.html -> game.entry -> Production Bootstrap with one
 canonical ESM graph/config/context and injected Fixed Catch/live GodMode dependencies.

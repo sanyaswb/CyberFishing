@@ -1,1 +1,0 @@
-// Migrated Stage 4 source src/config/databases/fish/presets/fish_profile_factory.js: cloneFishProfileValue, createFishFromPreset, createFishPhysicsProfile, mergeFishProfileValues served only through ESM imports of src/game/config/factories/fish_profile_factory.js.

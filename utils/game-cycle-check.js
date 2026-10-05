@@ -15,8 +15,6 @@ const LEGACY_FILES = [
   "src/core/items/quality/environmental_compensation_modifier.js",
   "src/core/math/vector2.js",
   "src/core/core.js",
-  "src/config/databases/fish/presets/fish_profile_factory.js",
-  "src/config/databases/fish/presets/fish_profile_presets.js",
   "src/config/databases/fish/species/peaceful_fish.js",
   "src/config/databases/fish/species/predator_fish.js",
   "src/config/databases/fish/species/rare_fish.js",

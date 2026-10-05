@@ -36,10 +36,9 @@ const COMMAND_SERVICE_FILE = path.join(
   "inventory",
   "inventory_v2_command_service.js",
 );
-const LEGACY_UI_FILE = path.join(ROOT, "src", "ui", "ui.js");
+const INVENTORY_COMPOSITION_FILE = path.join(ROOT, "src/bootstrap/production/inventory_ui_bootstrap.js");
 
 const UI_SCRIPT_ORDER = Object.freeze([
-  "../interaction/horizontal_scroll_controller.js",
   "inventory_v2_view_model.js",
   "inventory_v2_dom_factory.js",
   "inventory_v2_long_press_controller.js",
@@ -94,8 +93,8 @@ class InventoryV2SourceReader {
     return new SourceRuntime().readAuthoredSource(path.relative(ROOT, COMMAND_SERVICE_FILE).replaceAll("\\", "/"));
   }
 
-  readLegacyUi() {
-    return fs.readFileSync(LEGACY_UI_FILE, "utf8");
+  readInventoryComposition() {
+    return fs.readFileSync(INVENTORY_COMPOSITION_FILE, "utf8");
   }
 }
 
@@ -363,15 +362,16 @@ class InventoryV2StaticContractCheck {
   run() {
     const files = this.#reader.readJavaScriptFiles();
     const parameterConfig = this.#reader.readItemParameterConfig();
-    const combined = [parameterConfig, ...files.map((file) => file.source)].join("\n");
+    const scroll = fs.readFileSync(path.join(ROOT,"src/platform/browser/dom/horizontal_scroll_controller.js"),"utf8");
+    const combined = [scroll, parameterConfig, ...files.map((file) => file.source)].join("\n");
     const style = this.#reader.readStyle();
     const config = this.#reader.readConfig();
-    const legacyUi = this.#reader.readLegacyUi();
+    const composition = this.#reader.readInventoryComposition();
 
     this.#assertSafeTextRendering(combined);
     this.#assertClassExports([combined,...files.map(file=>file.legacySource)].join("\n"));
     this.#assertLongPressContract(combined, style);
-    this.#assertHorizontalScrollContract(combined, legacyUi, style);
+    this.#assertHorizontalScrollContract(combined, composition, style);
     this.#assertVisualContract(style);
     assert.match(
       config,
@@ -441,7 +441,7 @@ class InventoryV2StaticContractCheck {
     assert.match(style, /z-index:\s*30/);
   }
 
-  #assertHorizontalScrollContract(source, legacyUi, style) {
+  #assertHorizontalScrollContract(source, composition, style) {
     assert.ok(
       source.includes("class HorizontalScrollController") &&
         source.includes('addEventListener("wheel"') &&
@@ -451,9 +451,9 @@ class InventoryV2StaticContractCheck {
       "Inventory V2 must use one wheel and pointer horizontal-scroll controller",
     );
     assert.ok(
-      legacyUi.includes("new HorizontalScrollController().attach(element)") &&
-        !legacyUi.includes('element.addEventListener("mousedown"'),
-      "Legacy inventory must reuse the shared horizontal-scroll controller",
+      composition.includes("createHorizontalScrollController: () => new HorizontalScrollController()") &&
+        !composition.includes('element.addEventListener("mousedown"'),
+      "Canonical inventory composition must inject the shared horizontal-scroll controller",
     );
     assert.ok(
       style.includes(".inventory-v2-loadout-panel,") &&
@@ -935,6 +935,7 @@ class InventoryV2StaticContractCheck {
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });
+    runtime.run('globalThis.HorizontalScrollController = globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules["src/platform/browser/dom/horizontal_scroll_controller.js"].HorizontalScrollController;');
     const identities=runtime.run('(() => { let checked=0; for (const exports of Object.values(globalThis.__CYBER_FISHING_COMPAT_RUNTIME__.modules)) for (const [name,value] of Object.entries(exports)) if (Object.hasOwn(globalThis,name)) { if (globalThis[name] !== value) throw new Error("UI export identity changed: "+name); checked++; } return checked; })()');
     assert.ok(identities>0,"UI scenario must verify published ESM identities");
     sandbox.InventoryV2ItemParametersResolver = bindConstructorDefaults(sandbox.InventoryV2ItemParametersResolver,
