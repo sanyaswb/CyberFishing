@@ -216,9 +216,9 @@
       "owner": "stage-5.cluster-016-version-badge-composition",
       "source": "src/ui/version_badge.js",
       "target": "src/bootstrap/production/game_version_badge.js",
-      "reason": "Preserve the exact GameVersionBadge consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact GameVersionBadge consumer until its legacy symbol is removed. Retain GameVersionBadge for src/ui/version_badge.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "GameVersionBadge",
@@ -264,9 +264,9 @@
       "owner": "stage-4.cluster-032-platform-horizontal-scroll",
       "source": "src/ui/ui.js",
       "target": "src/platform/browser/dom/horizontal_scroll_controller.js",
-      "reason": "Preserve the exact HorizontalScrollController consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact HorizontalScrollController consumer until its legacy symbol is removed. Retain HorizontalScrollController for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "HorizontalScrollController",
@@ -280,9 +280,9 @@
       "owner": "stage-4.cluster-006-fight-physics-config-adapter",
       "source": "src/config/config.js",
       "target": "src/game/config/physics/fight_physics_config_adapter.js",
-      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader.",
+      "reason": "Preserve the exact FightPhysicsConfigAdapter consumer until its legacy symbol is removed. Closure audit: held by classic Bootstrap consumers; retire when their Stage 5 composition migration removes the last reader. Retain FightPhysicsConfigAdapter for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "FightPhysicsConfigAdapter",
@@ -296,9 +296,9 @@
       "owner": "stage-4.cluster-010-config-root",
       "source": "src/config/config.js",
       "target": "src/game/config/runtime/game_config.js",
-      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact CONFIG consumer until its legacy symbol is removed. Retain CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-4",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "CONFIG",
@@ -332,9 +332,9 @@
       "owner": "stage-5.cluster-015-presentation-version-catalog",
       "source": "src/config/project_version.js",
       "target": "src/game/presentation/version/project_version.js",
-      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact PROJECT_VERSION_CONFIG consumer until its legacy symbol is removed. Retain PROJECT_VERSION_CONFIG for src/config/project_version.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "PROJECT_VERSION_CONFIG",
@@ -348,9 +348,9 @@
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "source": "src/config/config.js",
       "target": "src/game/presentation/rarity/rarity_visual_config.js",
-      "reason": "Preserve the exact RARITY_VISUAL_CONFIG consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact RARITY_VISUAL_CONFIG consumer until its legacy symbol is removed. Retain RARITY_VISUAL_CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "RARITY_VISUAL_CONFIG",
@@ -428,9 +428,9 @@
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
       "source": "src/config/config.js",
       "target": "src/game/presentation/visual/degradation_color_config.js",
-      "reason": "Preserve the exact DEGRADATION_COLOR_CONFIG consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact DEGRADATION_COLOR_CONFIG consumer until its legacy symbol is removed. Retain DEGRADATION_COLOR_CONFIG for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "DEGRADATION_COLOR_CONFIG",
@@ -492,9 +492,9 @@
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "source": "src/ui/ui.js",
       "target": "src/platform/browser/dom/ui_event_shield.js",
-      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact UIUtils consumer until its legacy symbol is removed. Retain UIUtils for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "UIUtils",
@@ -539,10 +539,10 @@
       "bridge": "src/engine/compat/stage_2/event_lifecycle_legacy_bridge.js",
       "source": "src/app/script.js",
       "target": "src/engine/events/event_lifecycle.js",
-      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration.",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration. Retain EventLifecycle for src/app/script.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "owner": "stage-2.3-engine-event-primitives",
       "introducedStage": "stage-2",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "EventLifecycle",
@@ -555,10 +555,10 @@
       "bridge": "src/core/math/vector2.js",
       "source": "src/app/rendering/location_debug_render_frame_builder.js",
       "target": "src/engine/math/vector2.js",
-      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly.",
+      "reason": "Preserve the exact synchronous Vector2 consumer until it migrates and imports the Engine module directly. Retain Vector2 for src/app/rendering/location_debug_render_frame_builder.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "owner": "stage-3.22.prerequisite.vector2-extraction",
       "introducedStage": "stage-3",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "Vector2",
@@ -588,9 +588,9 @@
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
       "source": "src/ui/legacy/engine_interface_activation.js",
       "target": "src/platform/browser/dom/engine_interface.js",
-      "reason": "Preserve the exact initEngineInterface consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact initEngineInterface consumer until its legacy symbol is removed. Retain initEngineInterface for src/ui/legacy/engine_interface_activation.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "initEngineInterface",
@@ -651,10 +651,10 @@
       "bridge": "src/engine/compat/stage_2/event_bus_legacy_bridge.js",
       "source": "src/app/script.js",
       "target": "src/engine/events/event_bus.js",
-      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration.",
+      "reason": "Keep the reviewed classic script consumer synchronous until its Stage 5 bootstrap migration. Retain EventBus for src/app/script.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "owner": "stage-2.3-engine-event-primitives",
       "introducedStage": "stage-2",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "EventBus",
@@ -716,9 +716,9 @@
       "owner": "stage-5.cluster-014-config-context-composition",
       "source": "src/config/config.js",
       "target": "src/bootstrap/production/config_context.js",
-      "reason": "Preserve the exact createRuntimeConfigContext consumer until its legacy symbol is removed.",
+      "reason": "Preserve the exact createRuntimeConfigContext consumer until its legacy symbol is removed. Retain createRuntimeConfigContext for src/config/config.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "introducedStage": "stage-5",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "createRuntimeConfigContext",
@@ -843,10 +843,10 @@
       "bridge": "src/core/inventory/equip_target_selection_policy.js",
       "source": "src/ui/ui.js",
       "target": "src/game/domain/inventory/equip_target_selection_policy.js",
-      "reason": "Preserve the exact synchronous UI consumer until presentation migration removes the legacy symbol.",
+      "reason": "Preserve the exact synchronous UI consumer until presentation migration removes the legacy symbol. Retain InventoryEquipTargetSelectionPolicy for src/ui/ui.js in classic dev.html; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
       "owner": "stage-3.candidate-001-inventory-85f44b2e",
       "introducedStage": "stage-3",
-      "removalStage": "stage-5",
+      "removalStage": "stage-6",
       "globalProviders": [
         {
           "symbol": "InventoryEquipTargetSelectionPolicy",

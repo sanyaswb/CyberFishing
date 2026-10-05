@@ -13,6 +13,8 @@ const path = require("node:path");
 const espree = require("espree");
 const eslintScope = require("eslint-scope");
 const { StageFourClusterLedger, recordStage } = require("./stage_four/cluster_ledger");
+const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
+const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
 const { LANGUAGE_BUILTINS, StageFourEsmTargetProjector } = require("./stage_four/esm_target_projector");
 const { ActivationShimRenderer } = require("../build/compat_runtime/activation_shim");
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
@@ -22,7 +24,7 @@ const { PATHS, StageFourClusterApply, StageFourClusterPlan, resolveImportSource 
 const { StageFourTierAEvidence } = require("./stage_four/tier_a_evidence");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
 const { StageThreePatchReleaseTransition } = require("./domain_batches/stage_three_patch_release_transition");
-const { FILES: RELEASE_FILES, StageFourRelease } = require("./stage_four/release_path");
+const { FILES: RELEASE_FILES, StageFourRelease, releaseFiles } = require("./stage_four/release_path");
 
 const ROOT = path.resolve(__dirname, "../..");
 const read = (file) => fs.readFileSync(path.join(ROOT, file), "utf8");
@@ -106,6 +108,66 @@ assert.equal(assetPlanner.plan(assetGraphFixture).issues.length,1);
 assert.equal(assetPlanner.plan({...assetGraphFixture,retiredActivations:[{...assetActivation,id:"wrong"}]}).issues.length,1);
 const preparations = StageFourClusterLedger.cumulativePreparations(ROOT);
 const stageFourPreparations = StageFourClusterLedger.preparations(ROOT);
+const retirementPreparations = preparations.filter(record => record.retirementUpdates);
+const retirementUpdates = retirementPreparations.flatMap(record => record.retirementUpdates);
+assert.equal(new Set(retirementUpdates.map(update => update.id)).size, retirementUpdates.length, "duplicate retirement successor");
+if (retirementPreparations.length) {
+  const frozenPlan = json("architecture/migration/stage_2_approved_batches.json");
+  const stageTwoUpdates = retirementUpdates.filter(update => update.kind === "bridge" && update.before.owner.startsWith("stage-2."));
+  const projected = ledger.stageTwoPlan(frozenPlan);
+  for (const batch of projected.batches.filter(batch => stageTwoUpdates.some(update => update.before.owner === batch.id))) {
+    assert.equal(batch.bridgeStrategy.removalStage,"stage-6");
+    assert.equal(frozenPlan.batches.find(item => item.id === batch.id).bridgeStrategy.removalStage,"stage-5");
+  }
+  for (const updates of [stageTwoUpdates.slice(1), [...stageTwoUpdates,stageTwoUpdates[0]],
+    stageTwoUpdates.map(update => ({...update,before:{...update.before,removalStage:"stage-4"}})),
+    stageTwoUpdates.map(update => ({...update,before:{...update.before,globalProviders:[]}})),
+    stageTwoUpdates.map(update => ({...update,after:{...update.after,removalStage:"stage-7"}}))]) {
+    assert.throws(() => new StageFourClusterLedger(ledger.records,updates).stageTwoPlan(frozenPlan),/Stage 2 lifecycle/u);
+  }
+
+  const aliases = new StageTwoRuntimeScriptAliasResolver().loadProject(ROOT);
+  const classic = new Set(new LegacyScriptOrderReader(LegacyScriptOrderReader.sourcePath(ROOT,policy),
+    {scriptAliases:aliases}).read().map(script => script.currentPath));
+  const live = json("architecture/guards/migration_bridge_registry.json").bridges;
+  for (const bridge of live) {
+    assert(classic.has(bridge.source), `${bridge.id}: retained consumer must have a classic DEV slot`);
+    const ast = espree.parse(read(bridge.source), {ecmaVersion:"latest",sourceType:"script",range:true});
+    const external = new Set(eslintScope.analyze(ast,{ecmaVersion:2024,sourceType:"script"}).globalScope.through
+      .map(reference => reference.identifier.name));
+    assert(bridge.globalProviders.every(surface => external.has(surface.symbol)),
+      `${bridge.id}: retained consumer must actually read every registered surface`);
+  }
+  assert(contract.activationPositions.every(activation => live.some(bridge => bridge.target === activation.targetModule &&
+    bridge.globalProviders.some(surface => surface.symbol === activation.legacySymbol))),
+    "every retained activation requires an actual classic holder");
+}
+
+for (const record of retirementPreparations) {
+  StageFourClusterLedger.validatePreparationRetirements(record);
+  assert(policy.migrationManifest.browserStartup?.decision === record.retirementDecision &&
+    policy.migrationManifest.legacyLoadOrder.source === "dev.html", "retirement phase disagrees with reviewed startup");
+  assert.deepEqual(contract.transport, record.transportRetirement.after, "transport retirement metadata drift");
+  for (const update of record.retirementUpdates) {
+    const actual = (update.kind === "bridge" ? json("architecture/guards/migration_bridge_registry.json").bridges :
+      contract.activationPositions).find(item => item.id === update.id);
+    assert.deepEqual(actual, update.after, "current retirement metadata drift");
+  }
+  const update = record.retirementUpdates[0];
+  for (const change of [{owner:"wrong"}, {source:"src/other.js"}, {removalStage:"stage-7"}, {globalProviders:[]}])
+    assert.throws(() => StageFourClusterLedger.validatePreparationRetirements({...record, retirementUpdates:[{
+      ...update, after:{...update.after,...change}}]}), /retirement transition/u);
+  for (const change of [{retirementDecision:"unreviewed.md"}, {kind:"cyber-fishing-stage-4-preparation"},
+    {retirementUpdates:[update,update]}]) assert.throws(() =>
+      StageFourClusterLedger.validatePreparationRetirements({...record,...change}), /retirement/u);
+  assert.doesNotThrow(() => StageFourClusterLedger.validateRetirementSuccessor(update.before,update.after,[update]));
+  assert.throws(() => StageFourClusterLedger.validateRetirementSuccessor({...update.before,reason:"stale"},
+    update.after,[update]), /exact historical pin/u);
+  assert.throws(() => StageFourClusterLedger.validateRetirementSuccessor(update.before,{...update.after,owner:"wrong"},
+    [update]), /metadata drift/u);
+  assert.throws(() => StageFourClusterLedger.validateRetirementSuccessor(update.before,update.after,[update,update]),
+    /duplicate retirement successor/u);
+}
 // Exact preparation imports: reject an unrecorded source, implicit paths, duplicates or missing review.
 const preparationImport = {files:[{path:"src/app/bootstrap.js"}],importEdges:[{
   source:"src/app/bootstrap.js",target:"src/platform/browser/inventory/random_inventory_id.js",reason:"UUID port"}]};
@@ -412,10 +474,12 @@ stageCase(new MigratedSourcePlaceholder().render({ currentPath: "src/a.js", targ
 // (the Stage 3 release until the first one) and the CHANGELOG holds its entry. Fixtures: a release delta changes
 // only the version fields, the index query, the version statements and the new entry (plus a declared trim).
 const releases = StageFourRelease.records(ROOT);
-const latestRelease = releases.filter((record) => record.output).at(-1);
+const cumulativeReleases = StageFourRelease.cumulativeRecords(ROOT);
+const latestRelease = cumulativeReleases.filter((record) => record.output).at(-1);
 assert.equal(StageFourRelease.currentVersion(read, policy), latestRelease?.toRelease || state.releaseVersion, "version pins");
-for (const record of releases.filter((item) => item.output)) {
-  assert.deepEqual(record.output.files.map((file) => file.path).sort(), Object.values(RELEASE_FILES).sort(), record.file);
+for (const record of cumulativeReleases.filter((item) => item.output)) {
+  const stage = Number(/^cyber-fishing-stage-(4|5)-release$/u.exec(record.kind)[1]);
+  assert.deepEqual(record.output.files.map((file) => file.path).sort(), Object.values(releaseFiles(stage)).sort(), record.file);
   assert(record.output.files.every((file) => /^[0-9a-f]{64}$/u.test(file.before) && /^[0-9a-f]{64}$/u.test(file.after) &&
     file.edits.length > 0) && record.output.tag === `v${record.toRelease}`, `${record.file}: output`);
 }
@@ -502,6 +566,36 @@ assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, changelo
 assert.throws(() => StageFourRelease.validateInput({ ...releaseFixture, toRelease: "1.0.0" }), /newer/u);
 releaseCases += 2;
 
+// Stage 5 keeps the exported source, statement EOLs and distinct production/DEV page pins.
+const nativeReleaseTexts = releaseTexts("1.0.0");
+nativeReleaseTexts.set("dev.html",nativeReleaseTexts.get("index.html") + '<script src="keep.js?v=1.0.0"></script>');
+nativeReleaseTexts.set("index.html",'<script type="module" src="src/entrypoints/game.entry.js?v=1.0.0"></script>\r\n<link href="keep.css?v=1.0.0">');
+nativeReleaseTexts.set(releaseFiles(5).source,nativeReleaseTexts.get(RELEASE_FILES.source).replace("const CURRENT_PROJECT_VERSION","export const CURRENT_PROJECT_VERSION"));
+const nativeReleaseEdits = new StageFourRelease(ROOT,5).edits(releaseFixture,nativeReleaseTexts);
+assert.deepEqual([...nativeReleaseEdits.keys()].sort(),Object.values(releaseFiles(5)).sort());
+for (const [file,edits] of nativeReleaseEdits) {
+  const before = nativeReleaseTexts.get(file);
+  const after = edits.reduce((text,edit) => StageThreePatchReleaseTransition.replace(text,edit.from,edit.to,edit.count),before);
+  assert.doesNotThrow(() => StageFourRelease.validateDelta(releaseFixture,file,before,after,5));
+  assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,after + "x",5));
+  if (file === releaseFiles(5).source) {
+    assert(after.startsWith('export const CURRENT_PROJECT_VERSION = "1.1.0";\r\n'));
+    for (const changed of [after.replace("export const CURRENT_PROJECT_VERSION","const CURRENT_PROJECT_VERSION"),
+      after.replace('Object.freeze({','Object.seal({'),after.replace('    "note",\n','    "note",\r\n')])
+      assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,changed,5));
+  }
+  if (["index.html","dev.html"].includes(file)) {
+    assert(after.includes("keep."));
+    assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,after.replace("keep.","changed."),5));
+    assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,after.repeat(2),5));
+  }
+  releaseCases += 2;
+}
+assert.throws(() => new StageFourRelease(ROOT,6),/unsupported release stage/u);
+assert.throws(() => StageFourRelease.records(ROOT,6),/unsupported release stage/u);
+assert.equal(new StageFourRelease(ROOT).stage,4);
+releaseCases += 10;
+
 // Apply accepts an uncommitted Manifest only when it differs from HEAD by the record modules' classification.
 const reclassHead = { schemaVersion: 1, modules: [{ currentPath: "src/a.js", architecture: { targetBoundary: "platform" },
   observed: 1 }, { currentPath: "src/b.js", architecture: { targetBoundary: "platform" } }] };
@@ -551,6 +645,59 @@ assert.equal(StageFourTierAEvidence.onlyLosesImports([lookup("B")], [], imports)
 assert.equal(StageFourTierAEvidence.onlyLosesImports([], [lookup("A")], imports), false, "gained a lookup");
 
 // Closure uses the existing ledger gate: complete original scope and exact retirement metadata, no new check.
+// The same closure gate now has an explicit Stage 5 branch; historical Stage 4 defaults stay frozen.
+const stageFiveLedger = StageFourClusterLedger.read(ROOT,5);
+const stageFiveGraph = json("architecture/migration/stage_5/graph_review_v8.json");
+const stageFiveScope = stageFiveGraph.clusters.flatMap(record => record.sources).sort();
+const stageFiveModules = stageFiveLedger.records.flatMap(record => record.modules.map(module => ({
+  source:module.currentPath,target:module.targetPath,status:record.deferred ? "deferred" : "migrated",
+  ...(record.deferred ? record.deferred : {})})));
+const validateStageFiveClosure = (closure,entries,preparationRecords,liveBridges,runtime) => {
+  assert(closure.schemaVersion === 1 && closure.kind === "cyber-fishing-stage-5-closure" && closure.status === "closed",
+    "Stage 5 closure identity");
+  assert.deepEqual(closure.modules.map(item => item.source).sort(),stageFiveScope,"Stage 5 closure scope");
+  assert.deepEqual(closure.modules,stageFiveModules,"Stage 5 closure module or deferred review");
+  assert.deepEqual(closure.clusters,{applied:stageFiveLedger.applied.length,deferred:["028"]},"Stage 5 closure clusters");
+  const original = stageFiveLedger.records.find(record => record.id === "028");
+  assert(original.output === null && original.verification === null && original.nativeProduction.status === "verified",
+    "Stage 5 original 028 remains deferred");
+  assert.deepEqual(closure.nativeProduction,original.nativeProduction,"Stage 5 native checkpoint");
+  const startup = preparationRecords.find(record => record.id === "029");
+  assert.deepEqual(closure.startupModules,startup.introducedModules.map(module => module.currentPath),"Stage 5 startup additions");
+  for (const item of closure.modules.filter(item => item.status === "migrated"))
+    assert(entries.get(item.target)?.architecture.migrationStatus === "verified","Stage 5 closure ESM target");
+  assert(closure.graphReview.path === "architecture/migration/stage_5/graph_review_v8.json" && closure.graphReview.version === 8 &&
+    closure.graphReview.sha256 === require("node:crypto").createHash("sha256").update(read(closure.graphReview.path)).digest("hex"),
+    "Stage 5 graph review");
+  const transition = preparationRecords.find(record => record.id === "030");
+  assert.deepEqual(closure.retirementUpdates,transition.retirementUpdates,"Stage 5 retirement successors");
+  assert.deepEqual(runtime.transport,transition.transportRetirement.after,"Stage 5 transport retirement");
+  assert(liveBridges.every(item => item.removalStage === "stage-6") &&
+    runtime.activationPositions.every(item => item.removalStage === "stage-6"),"Stage 5 retirement remains");
+  assert.deepEqual(closure.retained,{bridges:liveBridges.length,activations:runtime.activationPositions.length,
+    globals:852,knownDebts:24},"Stage 5 retained identities");
+  assert.deepEqual(closure.nativeGraph,new StageFourRelease(ROOT,5).nativeGraph(),"Stage 5 native graph");
+  assert(closure.metrics.lines.utils <= 70358 && closure.metrics.lines.src === 82056,"Stage 5 closure budget");
+};
+const stageFiveFixture = {schemaVersion:1,kind:"cyber-fishing-stage-5-closure",status:"closed",modules:stageFiveModules,
+  clusters:{applied:29,deferred:["028"]},nativeProduction:stageFiveLedger.records.find(record => record.id === "028").nativeProduction,
+  startupModules:StageFourClusterLedger.preparations(ROOT,5).find(record => record.id === "029").introducedModules.map(module => module.currentPath),
+  graphReview:{path:"architecture/migration/stage_5/graph_review_v8.json",version:8,
+    sha256:require("node:crypto").createHash("sha256").update(read("architecture/migration/stage_5/graph_review_v8.json")).digest("hex")},
+  retirementUpdates,retained:{bridges:53,activations:28,globals:852,knownDebts:24},
+  nativeGraph:new StageFourRelease(ROOT,5).nativeGraph(),metrics:{lines:{utils:46324,src:82056}}};
+const liveClosureBridges = json("architecture/guards/migration_bridge_registry.json").bridges;
+assert.doesNotThrow(() => validateStageFiveClosure(stageFiveFixture,manifest,StageFourClusterLedger.preparations(ROOT,5),liveClosureBridges,contract));
+for (const change of [{kind:"cyber-fishing-stage-4-closure"},{modules:stageFiveModules.slice(1)},
+  {modules:stageFiveModules.map(item => item.status === "deferred" ? {...item,stage:"stage-7"} : item)},
+  {clusters:{applied:30,deferred:[]}},{startupModules:[]},{retirementUpdates:[]},{nativeGraph:{modules:0}},
+  {graphReview:{...stageFiveFixture.graphReview,version:7}},{metrics:{lines:{utils:70359,src:82056}}},
+  {retained:{...stageFiveFixture.retained,bridges:0}},{nativeProduction:{status:"applied"}}])
+  assert.throws(() => validateStageFiveClosure({...stageFiveFixture,...change},manifest,StageFourClusterLedger.preparations(ROOT,5),
+    liveClosureBridges,contract),/Stage 5/u);
+assert.throws(() => validateStageFiveClosure(stageFiveFixture,manifest,StageFourClusterLedger.preparations(ROOT,5),
+  [...liveClosureBridges,{removalStage:"stage-5"}],contract),/Stage 5 retirement remains/u);
+
 const validateClosure = (closure, baseline, entries, preparationRecords, liveBridges, runtime) => {
   assert(closure.schemaVersion === 1 && closure.kind === "cyber-fishing-stage-4-closure" && closure.status === "closed",
     "Stage 4 closure identity");
@@ -581,7 +728,7 @@ const validateClosure = (closure, baseline, entries, preparationRecords, liveBri
     assert.deepEqual(update.after, {...update.before, removalStage:update.after.removalStage, reason:update.after.reason},
       "Stage 4 retirement changed surface");
     const actual = (update.kind === "bridge" ? liveBridges : runtime.activationPositions).find(item=>item.id === update.id);
-    if (actual) assert.deepEqual(actual, update.after, "Stage 4 retirement metadata drift");
+    if (actual) StageFourClusterLedger.validateRetirementSuccessor(update.after, actual, retirementUpdates);
   }
 };
 const closureFile = "architecture/migration/stage_4_closure.json";
@@ -603,6 +750,27 @@ if (fs.existsSync(path.join(ROOT, closureFile))) {
     [...liveBridges,{removalStage:"stage-4"}],contract), /Stage 4 retirement remains/u);
 }
 
+const stageFiveClosureFile = "architecture/migration/stage_5_closure.json";
+if (fs.existsSync(path.join(ROOT,stageFiveClosureFile))) {
+  const closure = json(stageFiveClosureFile);
+  validateStageFiveClosure(closure,manifest,StageFourClusterLedger.preparations(ROOT,5),liveClosureBridges,contract);
+  assert(cumulativeReleases.some(record => record.kind === "cyber-fishing-stage-5-release" &&
+    record.output && record.toRelease === closure.release),"Stage 5 closure release");
+  const evidence = closure.verification.acceptance;
+  const reportText = read(evidence.report), report = JSON.parse(reportText);
+  assert.equal(require("node:crypto").createHash("sha256").update(reportText).digest("hex"),evidence.reportSha256,"Stage 5 evidence hash");
+  assert.deepEqual(report.source,evidence.source,"Stage 5 accepted source provenance");
+  assert(report.mode === "acceptance" && report.totals.executed === 64 && report.totals.passed === 64 &&
+    report.totals.cached === 0 && report.totals.failed === 0 && report.totals.isolationViolations === 0 &&
+    report.source.unchanged && report.source.before === report.source.after,"Stage 5 acceptance completeness");
+  assert.equal(new Set(report.checks.map(item => item.id)).size,64,"Stage 5 acceptance unique checks");
+  const browser = json(closure.verification.browser.report);
+  assert(browser.performer === "codex-automated-acceptance" && browser.status === "PASS" &&
+    browser.native.errors === 0 && browser.native.warnings === 0 && browser.dev.errors === 0 && browser.dev.warnings === 0 &&
+    browser.originalSavesRestored && browser.ownedTabsClosed && browser.ownedServerStopped && browser.ignoredFixturesRemoved,
+    "Stage 5 browser acceptance");
+}
+
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
   `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
-  `${releases.length} release record(s), version ${StageFourRelease.currentVersion(read, policy)}.`);
+  `${cumulativeReleases.length} release record(s), version ${StageFourRelease.currentVersion(read, policy)}.`);

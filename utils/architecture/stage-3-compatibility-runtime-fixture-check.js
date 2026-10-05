@@ -41,6 +41,8 @@ const BASE_CONTRACT = JSON.parse(fs.readFileSync(
 ));
 const FOUNDATION_CONTRACT = JSON.parse(JSON.stringify(BASE_CONTRACT));
 FOUNDATION_CONTRACT.status = "foundation-verified";
+FOUNDATION_CONTRACT.transport.removalStage = "stage-5";
+delete FOUNDATION_CONTRACT.transport.lifecycle;
 FOUNDATION_CONTRACT.previousRuntimeTransitions = [];
 FOUNDATION_CONTRACT.sideEffectReviews = [];
 FOUNDATION_CONTRACT.activationPositions = [];
@@ -199,6 +201,28 @@ class StageThreeCompatibilityRuntimeFixtureCheck {
       await callback();
       cases += 1;
     };
+
+    await count(async () => new CumulativeRuntimeContractValidator().validate(BASE_CONTRACT));
+    // Current approved phase and historical Stage 5 are separate positive controls.
+    for (const mutate of [
+      c => { delete c.transport.lifecycle; },
+      c => { c.transport.removalStage = "stage-5"; },
+      c => { c.transport.removalStage = "stage-7"; },
+      c => { c.transport.lifecycle.phase = "native-development"; },
+      c => { delete c.transport.lifecycle.decision; },
+      c => { c.transport.lifecycle.decision = "unreviewed.md"; },
+      c => { c.transport.lifecycle.productionSource = "dev.html"; },
+      c => { c.transport.lifecycle.developmentSource = "index.html"; },
+      c => { c.transport.lifecycle.nativeDevelopmentStage = "stage-7"; },
+      c => { c.transport.lifecycle.removalCondition = "production-is-native"; },
+      c => { c.transport.lifecycle.extra = true; },
+      c => { c.status = "foundation-verified"; },
+      c => { c.activationPositions[0].removalStage = "stage-5"; },
+    ]) await count(async () => {
+      const invalid = clone(BASE_CONTRACT); mutate(invalid);
+      assert.throws(() => new CumulativeRuntimeContractValidator().validate(invalid),
+        /historical removalStage|transport lifecycle|classic-DEV activations/u);
+    });
 
     await count(async () => {
       const contract = clone(BASE_CONTRACT);

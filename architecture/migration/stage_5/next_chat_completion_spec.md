@@ -1,5 +1,9 @@
 # Prior Stage 5 handoff — current execution queue link
 
+Stage 5 A-F is now verified closed at 0.26.0; this prior handoff is historical.
+Current cleanup queue: stage5_next_chat_spec.md package G; Stage 6: ../stage_6_handoff.md.
+
+
 The current authoritative queue is [stage5_next_chat_spec.md](stage5_next_chat_spec.md).
 The owner renewed autonomous execution on 2026-10-05. Current facts and progress are
 maintained in plan_v2.md and stage5_continuation_spec.md; the prior handoff below

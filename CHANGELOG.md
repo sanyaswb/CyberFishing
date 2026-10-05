@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.26.0 - Stage 5 Native Production
+
+### Changed
+
+- Native production uses one canonical ESM graph with injected config, Fixed Catch and optional diagnostics.
+- Classic DEV compatibility remains explicitly due in Stage 6; historical tooling is archived with exact byte recovery.
+
 ## v0.25.2 - Stage 4 Closure
 
 ### Changed

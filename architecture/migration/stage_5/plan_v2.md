@@ -1,19 +1,24 @@
 # Current owner decision: native production now; native DEV in Stage 6
 
-Current verified progress (2026-10-05): work package B tooling archival is complete.
-262 obsolete utilities / 25,470 lines and the unused three-line import were removed;
-utils now 216 JS/JSON files / 46,324 lines, src unchanged at 810 / 82,056.
-Quick 24/24, Architecture 32/32 and uncached Full 64/64 passed with identical
-game-cycle stdout; native and retained DEV browser acceptance passed, one loop,
-zero console issues, identical gameplay controls/saves/reload and complete cleanup.
-Exact working bytes are recoverable at pushed tag stage5-tools-archive.
-Evidence: tooling_archive_applied.json and ../../archive/stage5_tooling_archival_{acceptance,browser}.json.
-Next: packages A/C/D/E/F, then separately verified G; Stage 5 release/closure remains pending.
+Current verified progress (2026-10-05): Stage 5 A-F complete; release 0.26.0.
+Native production: 350 modules / 521 imports, no DEV/transport reachability; graph v8,
+29 applied clusters / 102 targets, 30 preparations. Original source 028 stays deferred
+to native DEV in Stage 6; its native-production checkpoint is separately verified.
+All 53 bridges / 28 activations / transport have exact Stage 6 retirement conditions;
+frozen Stage 2/4 facts are preserved through validated successors. Globals 852, debts 24.
+262 obsolete utilities archived with exact byte recovery at stage5-tools-archive.
+src: 810 JS/JSON / 82,056 lines; utils: 216 / 46,647, below 70,358.
+Quick 24/24, Architecture 32/32, uncached Full 64/64; identical game-cycle stdout.
+Codex native/DEV browser acceptance PASS: canonical identities, one loop, live flags,
+identical UI/saves/reload, zero console issues and cleanup; original saves restored.
+Closure: ../stage_5_closure.json; evidence: ../../archive/stage5_final_{acceptance,browser}.json.
+Boundary-tool decision and release projection: closure_projection_decision.md.
+English next-stage queue: ../stage_6_handoff.md. Next: separately verified work package G.
 
 Current execution authority (2026-10-05): the owner requests autonomous completion under
 `stage5_next_chat_spec.md`, including verified post-closure cleanup. Re-observed develop
 `a3e2551` matches origin/develop; native graph 350 modules / 521 imports; current
-utils 71,797 lines. These are read-only starting facts, not acceptance of future edits.
+initial utils 71,797 lines. These are historical starting facts; verified current metrics are above.
 
 Stage 5 delivers full index.html -> game.entry.js -> Production Bootstrap, with
 no DEV/compatibility runtime/legacy loader. dev.html retains exact classic/IIFE

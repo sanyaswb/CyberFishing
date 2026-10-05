@@ -7,9 +7,17 @@
     "owner": "stage-3.0.4-single-instance-compatibility-runtime",
     "reason": "Expose exact ESM module namespaces to reviewed classic activation shims without owning game state.",
     "introducedStage": "stage-3.0.4",
-    "removalStage": "stage-5",
+    "removalStage": "stage-6",
     "surface": "module-exports-only",
-    "ownsGameState": false
+    "ownsGameState": false,
+    "lifecycle": {
+      "phase": "native-production-classic-dev",
+      "decision": "architecture/migration/stage_5/native_production_owner_decision.md",
+      "productionSource": "index.html",
+      "developmentSource": "dev.html",
+      "nativeDevelopmentStage": "stage-6",
+      "removalCondition": "all-listed-classic-dev-consumers-migrated"
+    }
   },
   "topology": {
     "buildMode": "single-cumulative-iife",
@@ -648,8 +656,8 @@
       "targetModule": "src/game/presentation/version/project_version.js",
       "id": "activation-02f5a576e2e7",
       "owner": "stage-5.cluster-015-presentation-version-catalog",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/project_version.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "initEngineInterface",
@@ -660,8 +668,8 @@
       "targetModule": "src/platform/browser/dom/engine_interface.js",
       "id": "activation-069ceb6464c6",
       "owner": "stage-5.cluster-013-legacy-ui-browser-widgets",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/legacy/engine_interface_activation.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "FightPhysicsConfigAdapter",
@@ -696,8 +704,8 @@
       "legacySymbol": "Vector2",
       "legacyScriptIndex": 41,
       "shimFile": "activations/041_vector2.js",
-      "reason": "Expose the Engine Vector2 constructor to its unmigrated classic consumers through the shared cumulative runtime.",
-      "removalStage": "stage-5"
+      "reason": "Expose the Engine Vector2 constructor to its unmigrated classic consumers through the shared cumulative runtime. Classic DEV holders: src/app/rendering/location_debug_render_frame_builder.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "CanvasMetricsProvider",
@@ -720,8 +728,8 @@
       "targetModule": "src/bootstrap/production/config_context.js",
       "id": "activation-2b279430ded7",
       "owner": "stage-5.cluster-014-config-context-composition",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "GameLoop",
@@ -768,8 +776,8 @@
       "legacySymbol": "EventBus",
       "legacyScriptIndex": 391,
       "shimFile": "activations/391_eventbus.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
-      "removalStage": "stage-5"
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance. Classic DEV holders: src/app/script.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "MAP_DB",
@@ -792,8 +800,8 @@
       "targetModule": "src/game/presentation/visual/degradation_color_config.js",
       "id": "activation-5245732607c3",
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "CONFIG",
@@ -816,8 +824,8 @@
       "legacySymbol": "InventoryEquipTargetSelectionPolicy",
       "legacyScriptIndex": 86,
       "shimFile": "activations/086_inventoryequiptargetselectionpolicy.js",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "DevFlagsProvider",
@@ -840,8 +848,8 @@
       "targetModule": "src/platform/browser/dom/horizontal_scroll_controller.js",
       "id": "activation-7956fbe2a8a1",
       "owner": "stage-4.cluster-032-platform-horizontal-scroll",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/ui.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "FISH_DB",
@@ -876,8 +884,8 @@
       "targetModule": "src/game/presentation/rarity/rarity_visual_config.js",
       "id": "activation-8db5d02d700e",
       "owner": "stage-5.cluster-001-visual-and-inventory-catalogs",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/config/config.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "ITEM_DB",
@@ -900,8 +908,8 @@
       "targetModule": "src/bootstrap/production/game_version_badge.js",
       "id": "activation-a19e630e4037",
       "owner": "stage-5.cluster-016-version-badge-composition",
-      "reason": "Preserve the exact observed classic surface for unmigrated consumers.",
-      "removalStage": "stage-5"
+      "reason": "Preserve the exact observed classic surface for unmigrated consumers. Classic DEV holders: src/ui/version_badge.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "CacheManager",
@@ -936,8 +944,8 @@
       "legacySymbol": "EventLifecycle",
       "legacyScriptIndex": 392,
       "shimFile": "activations/392_eventlifecycle.js",
-      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance.",
-      "removalStage": "stage-5"
+      "reason": "Replace the isolated Stage 2 IIFE exposure with the shared cumulative module instance. Classic DEV holders: src/app/script.js; remove only after the last listed classic DEV consumer migrates to native DEV and no other live holder remains.",
+      "removalStage": "stage-6"
     },
     {
       "exportName": "GameCompositionRoot",

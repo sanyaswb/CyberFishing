@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
 const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_config");
+const { CanonicalActivationIdentity } = require("../../build/compat_runtime/cumulative_runtime_contract");
 
 const CLUSTER_DIRECTORY = "architecture/migration/stage_4/clusters";
 const RECORD_KIND = "cyber-fishing-stage-4-cluster";
@@ -30,9 +31,11 @@ const recordStage = (record) => {
 // the stage label to the package contract. An empty ledger leaves every Stage 3 reader unchanged.
 class StageFourClusterLedger {
   #records;
+  #retirementUpdates;
 
-  constructor(records) {
+  constructor(records, retirementUpdates = []) {
     this.#records = Object.freeze([...records]);
+    this.#retirementUpdates = Object.freeze([...retirementUpdates]);
   }
 
   static read(projectRoot, stage = 4) {
@@ -58,7 +61,8 @@ class StageFourClusterLedger {
   // Every stage's records in stage order: the runtime, guard corpus, package contract and Stage 2 plan consume
   // the cumulative applied facts; Stage 4 closure and release validation keep reading `read(root)` (Stage 4 only).
   static cumulative(projectRoot) {
-    return new StageFourClusterLedger(LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.read(projectRoot, stage).records));
+    return new StageFourClusterLedger(LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.read(projectRoot, stage).records),
+      StageFourClusterLedger.cumulativePreparations(projectRoot).flatMap(record => record.retirementUpdates || []));
   }
 
   // Preparation records describe exact provider relocations before a cluster. Their bridge pairs
@@ -74,6 +78,7 @@ class StageFourClusterLedger {
       assert(record.reason && /^[0-9a-f]{40}$/u.test(record.baseCommit));
       assert(record.gameCycle.identical && record.gameCycle.before === record.gameCycle.after);
       StageFourClusterLedger.validatePreparationImports(record);
+      StageFourClusterLedger.validatePreparationRetirements(record);
       for (const pair of record.replacedBridges || []) StageFourClusterLedger.validateBridgeRelocation(pair);
       for (const merge of record.mergedBridges || []) StageFourClusterLedger.validateBridgeMerge(merge);
       return record;
@@ -99,6 +104,43 @@ class StageFourClusterLedger {
       }
     }
     return [...edges.values()];
+  }
+
+  // Exact subsequent lifecycle metadata; historical owners, surfaces and introduction records stay immutable.
+  static validatePreparationRetirements(record) {
+    if (!record.retirementUpdates && !record.transportRetirement) return;
+    assert(record.kind === preparationKind(5) && record.retirementDecision ===
+      "architecture/migration/stage_5/native_production_owner_decision.md", "retirement requires the reviewed Stage 5 decision");
+    const ids = new Set();
+    for (const update of record.retirementUpdates || []) {
+      const { before, after, kind, id, reason } = update;
+      assert(["bridge", "activation"].includes(kind) && id === before?.id && id === after?.id &&
+        reason && !ids.has(id), "retirement transition identity");
+      ids.add(id);
+      assert(id === (kind === "bridge" ? CanonicalBridgeIdentity : CanonicalActivationIdentity).id(before),
+        "retirement transition canonical identity");
+      assert(before.removalStage === "stage-5" && after.removalStage === "stage-6" &&
+        after.reason.includes("last listed classic DEV consumer") && after.reason.startsWith(before.reason),
+        "retirement transition stage and consumer condition");
+      assert.deepEqual(after, { ...before, removalStage: "stage-6", reason: after.reason },
+        "retirement transition changed ownership or surface");
+    }
+    if (record.transportRetirement) {
+      const { before, after } = record.transportRetirement;
+      assert(before.removalStage === "stage-5" && after.removalStage === "stage-6" &&
+        after.lifecycle?.decision === record.retirementDecision, "transport retirement decision");
+      assert.deepEqual(after, { ...before, removalStage: "stage-6", lifecycle: after.lifecycle },
+        "transport retirement changed ownership or surface");
+    }
+  }
+
+  static validateRetirementSuccessor(frozen, current, updates) {
+    const matches = updates.filter(update => update.id === frozen.id);
+    assert(matches.length <= 1, "duplicate retirement successor");
+    if (matches.length) {
+      assert.deepEqual(matches[0].before, frozen, "retirement successor must extend the exact historical pin");
+      assert.deepEqual(current, matches[0].after, "retirement successor metadata drift");
+    } else assert.deepEqual(current, frozen, "historical retirement metadata drift");
   }
 
   static validateBridgeRelocation({ before, after }) {
@@ -164,17 +206,36 @@ class StageFourClusterLedger {
   // Keep the Stage 2 approval frozen while deriving its remaining classic consumers from exact
   // applied Stage 4 retirements. A missing/changed bridge identity never authorizes retirement.
   stageTwoPlan(plan) {
-    if (!this.applied.length) return plan;
+    if (!this.applied.length && !this.#retirementUpdates.length) return plan;
     const retired = new Map(this.applied.flatMap(record => (record.output.bridgesRetired || [])
       .map(id => [id, record])));
-    return { ...plan, batches: plan.batches.map(batch => ({ ...batch, bridgeStrategy: { ...batch.bridgeStrategy,
-      bridges: batch.bridgeStrategy.bridges.map(bridge => ({ ...bridge, legacyConsumers: bridge.legacyConsumers.filter(source => {
+    return { ...plan, batches: plan.batches.map(batch => {
+      const strategy = batch.bridgeStrategy;
+      const bridges = strategy.bridges.map(bridge => ({ ...bridge,
+        legacyConsumers: bridge.legacyConsumers.filter(source => {
+          const id = CanonicalBridgeIdentity.id({source,bridge:bridge.wrapperPath,target:bridge.targetModule,owner:batch.id});
+          const record = retired.get(id);
+          if (!record) return true;
+          assert(record.modules.some(module => module.currentPath === source), "Stage 2 retirement has no migrated consumer");
+          return false;
+        }) }));
+      const updates = this.#retirementUpdates.filter(update => update.kind === "bridge" && update.before.owner === batch.id);
+      if (!updates.length) return { ...batch, bridgeStrategy: { ...strategy, bridges } };
+      const consumed = new Set();
+      for (const bridge of bridges) for (const source of bridge.legacyConsumers) {
         const id = CanonicalBridgeIdentity.id({source,bridge:bridge.wrapperPath,target:bridge.targetModule,owner:batch.id});
-        const record = retired.get(id);
-        if (!record) return true;
-        assert(record.modules.some(module => module.currentPath === source), "Stage 2 retirement has no migrated consumer");
-        return false;
-      }) })) } })) };
+        const matches = updates.filter(update => update.id === id);
+        assert.equal(matches.length, 1, "Stage 2 lifecycle requires every exact live consumer once");
+        const update = matches[0];
+        assert.equal(update.before.removalStage, strategy.removalStage, "Stage 2 lifecycle must extend frozen removal stage");
+        assert.deepEqual(update.before.globalProviders, bridge.globalProviders.map(({symbol,mechanism}) => ({symbol,mechanism})),
+          "Stage 2 lifecycle changed frozen surface");
+        assert.equal(update.after.removalStage, "stage-6", "Stage 2 lifecycle requires native DEV retirement");
+        consumed.add(id);
+      }
+      assert.equal(consumed.size, updates.length, "Stage 2 lifecycle has an unrelated consumer");
+      return { ...batch, bridgeStrategy: { ...strategy, removalStage: "stage-6", bridges } };
+    }) };
   }
 
   // Stage S.N after N applied clusters of the latest stage with an applied record; the Stage 3 label until the first.

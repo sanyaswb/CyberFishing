@@ -97,7 +97,23 @@ class CumulativeRuntimeContractValidator {
     );
     require(this.#text(transport.reason), "transport.reason is required");
     require(transport.introducedStage === "stage-3.0.4", "introducedStage is invalid");
-    require(transport.removalStage === "stage-5", "removalStage must be stage-5");
+    // Historical contracts retain Stage 5; the reviewed native-production/classic-DEV phase alone defers transport.
+    const lifecycle = transport.lifecycle;
+    if (lifecycle === undefined) {
+      require(transport.removalStage === "stage-5", "historical removalStage must be stage-5");
+    } else {
+      const expected = { phase: "native-production-classic-dev",
+        decision: "architecture/migration/stage_5/native_production_owner_decision.md",
+        productionSource: "index.html", developmentSource: "dev.html", nativeDevelopmentStage: "stage-6",
+        removalCondition: "all-listed-classic-dev-consumers-migrated" };
+      require(lifecycle && this.#sameArray(Object.keys(lifecycle).sort(), Object.keys(expected).sort()) &&
+        Object.entries(expected).every(([key, value]) => lifecycle[key] === value),
+        "transport lifecycle requires the exact reviewed native-production/classic-DEV decision");
+      require(transport.removalStage === "stage-6" && contract.status !== "foundation-verified",
+        "transport lifecycle phase requires Stage 6 retirement and an activated migration");
+      require((contract.activationPositions || []).every(item => item.removalStage === "stage-6"),
+        "native-production/classic-DEV activations must retire in Stage 6");
+    }
     require(transport.surface === "module-exports-only", "transport surface is invalid");
     require(transport.ownsGameState === false, "transport must not own game state");
 
