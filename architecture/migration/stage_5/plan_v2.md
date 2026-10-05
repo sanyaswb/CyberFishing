@@ -1,5 +1,10 @@
 # Current owner decision: native production now; native DEV in Stage 6
 
+Current execution authority (2026-10-05): the owner requests autonomous completion under
+`stage5_next_chat_spec.md`, including verified post-closure cleanup. Re-observed develop
+`a3e2551` matches origin/develop; native graph 350 modules / 521 imports; current
+utils 71,797 lines. These are read-only starting facts, not acceptance of future edits.
+
 Stage 5 delivers full index.html -> game.entry.js -> Production Bootstrap, with
 no DEV/compatibility runtime/legacy loader. dev.html retains exact classic/IIFE
 startup until Stage 6 delivers dev.entry.js and retires its old transport.
@@ -10,7 +15,7 @@ and Fixed Catch prerequisite 030; prior graphs and completed evidence remain his
 provenance. All architecture/save/state gates remain unchanged. See
 `native_production_owner_decision.md`.
 
-The current next-chat execution brief is [next_chat_completion_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/next_chat_completion_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
+The current next-chat execution brief is [stage5_next_chat_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/stage5_next_chat_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
 
 # Stage 5 remaining execution plan v2
 
@@ -97,7 +102,7 @@ historical initial plan; its starting counts and pending preparations are supers
    Evaluate standard boundary tooling only after native game startup works.
 4. **Prepare Stage 5 closure.** Complete focused/evidence/Quick/Architecture/uncached Full
    and browser acceptance; reconcile plans, reviewed scope, metrics, release projection
-   and pending owner play. Meet the utils non-growth budget without weakening checks.
+   and automatic Codex acceptance; historical owner play is not a closure gate. Meet the utils non-growth budget without weakening checks.
    Review the stage-qualified release projection through the existing mechanism,
    preserving historical Stage 4 pins; no Stage 5 release record exists yet. Produce
    the reviewed release, closure record/tag and an English Stage 6 handoff.

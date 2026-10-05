@@ -1,5 +1,10 @@
 # Current owner decision: native production now; native DEV in Stage 6
 
+Current execution authority (2026-10-05): the owner requests autonomous completion under
+`stage5_next_chat_spec.md`, including verified post-closure cleanup. Re-observed develop
+`a3e2551` matches origin/develop; native graph 350 modules / 521 imports; current
+utils 71,797 lines. These are read-only starting facts, not acceptance of future edits.
+
 Stage 5 delivers full index.html -> game.entry.js -> Production Bootstrap, with
 no DEV/compatibility runtime/legacy loader. dev.html retains exact classic/IIFE
 startup until Stage 6 delivers dev.entry.js and retires its old transport.
@@ -10,7 +15,7 @@ and Fixed Catch prerequisite 030; prior graphs and completed evidence remain his
 provenance. All architecture/save/state gates remain unchanged. See
 `native_production_owner_decision.md`.
 
-The current next-chat execution brief is [next_chat_completion_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/next_chat_completion_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
+The current next-chat execution brief is [stage5_next_chat_spec.md](D:/dev/code/cyber-fishing/architecture/migration/stage_5/stage5_next_chat_spec.md). It details Stage 5 closure and subsequent proven cleanup. The owner's 2026-10-05 instruction requires autonomous game-cycle and built-in browser acceptance without owner participation; historical pending-manual-play statements are not new completion gates.
 
 # CyberFishing: Stage 5 continuation execution specification
 
@@ -358,7 +363,7 @@ fixtures; historical Stage 4 release pins remain immutable. No Stage 5 release r
 version bump or tag exists yet. Review the existing mechanism's stage-qualified release
 selection, native version source, both page queries and metrics before applying a release. Reconcile scope/metrics/plans, execute acceptance, create the
 reviewed release/closure/tag, and write an English Stage 6 handoff with remaining work
-and pending owner play. A release name/version must come from the reviewed record.
+and automatic Codex acceptance; historical owner play is not a closure gate. A release name/version must come from the reviewed record.
 
 After Stage 5 is completed, perform the owner's authorized dead-code/final cleanup as
 separate reviewable changes. Candidates to audit, not automatic deletion permission:
@@ -404,4 +409,4 @@ authoritative deliverables and must not be blindly rerun: several assume an obso
 contiguous numeric prefix or older config-fact counts. Reconstruct required harnesses
 from the current production/DEV documents, contract and committed evidence. Agent
 coordination follows the live session instructions; the former handoff's local
-no-delegation guidance is superseded by the current proactive delegation instruction.
+coordination notes do not override current session rules.

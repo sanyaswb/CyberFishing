@@ -1,10 +1,3 @@
-# Prior Stage 5 handoff — current execution queue link
-
-The current authoritative queue is [stage5_next_chat_spec.md](stage5_next_chat_spec.md).
-The owner renewed autonomous execution on 2026-10-05. Current facts and progress are
-maintained in plan_v2.md and stage5_continuation_spec.md; the prior handoff below
-preserves its recorded baseline and must not be mistaken for new acceptance.
-
 # CyberFishing — next-chat execution specification
 
 ## Objective and latest owner instructions
