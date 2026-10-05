@@ -12,7 +12,7 @@ provenance. All architecture/save/state gates remain unchanged. See
 
 # CyberFishing: Stage 5 continuation execution specification
 
-Date: 2026-10-04. Language: English. Workspace: `D:\dev\code\cyber-fishing`.
+Date: 2026-10-05. Language: English. Workspace: `D:\dev\code\cyber-fishing`.
 Implementation resumed from the historical handoff below. The owner has now explicitly
 chosen native production in Stage 5 and native DEV in Stage 6. Finish Stage 5, verify
 the overall architecture goal, then
@@ -25,8 +25,9 @@ from the older cluster-012 handoff and do not repeat completed migrations.
    Those local files are excluded from Git and must never be committed.
 2. `refactor_Task.txt`, this specification and `plan_v2.md`.
 3. Authoritative `graph_review_v8.json`, `native_production_owner_decision.md`, applied
-   Stage 5 cluster/preparation records and remaining 028. Clusters 027 and 030 are
-   complete; previous graph versions remain immutable provenance.
+   Stage 5 cluster/preparation records and 028 nativeProduction checkpoint. Clusters
+   027/030 and native production are complete; original DEV source 028 remains Stage 6.
+   Previous graph versions remain immutable provenance.
 4. The original acceptance requirements in `../stage_4/stage5_handoff.md`, architecture
    policy/Manifest, guard registries, `../stage_3_compatibility_runtime.json`, and the
    closed Stage 4 release/closure records. Do not reopen Stage 3/4 history.
@@ -35,12 +36,50 @@ from the older cluster-012 handoff and do not repeat completed migrations.
 
 Check `git status --short`, branch and HEAD, then compare with origin/develop. The
 committed production/migration checkpoint is
-`ee0457a7728cd48891d71b563db2efa63d29f468` (030, already pushed). Pending 028
-preparation is not a completed native cutover or an acceptance run. The original
+`aac62f615e1e709460680e7eab71b861871d9c1b` (native production cutover, already pushed).
+Preparations 027–029 complete substeps 028.1–028.5; Stage 5 closure is still pending. The original
 handoff base `a66eee5dcf7e719ca7dde7e061047bce8c2267ce` and its lifecycle fixture
 remain historical provenance; do not use that base as the current implementation state.
 
-## Current continuation checkpoint: 030 complete; 028 in preparation
+## Current continuation checkpoint: native production verified; Stage 5 closure pending
+
+Commit `aac62f6` delivers index.html -> game.entry -> Production Bootstrap with one
+canonical ESM graph/config/context and injected Fixed Catch/live GodMode dependencies.
+The former index.html is retained byte-for-byte as classic/IIFE dev.html; native DEV
+and retirement of its old transport remain Stage 6. Preparation 027 accepted gameplay
+overrides/optional diagnostic contracts; preparation 028 accepted dual-page tooling;
+preparation 029 records the native startup composition and browser cutover. The
+original Development Bootstrap source in cluster 028 remains deferred with null
+output/verification; nativeProduction is a separate verified checkpoint, not a body
+parity claim or an additional applied migration cluster.
+
+Quick 24/24, Architecture 32/32 and uncached Full 64/64 passed, zero cached/failures/
+isolation violations, with one unchanged frozen source snapshot:
+`98ed225a3598aa8e5a1ca10ad66cd9b34613efb84f09c6973e8faa93c153f86d`.
+Full ran 2026-10-05 03:24:06–03:24:42 UTC on HEAD `194da01` plus the pending native
+cutover; the report precedes archival, final preparation evidence and these informational
+checkpoint edits. Report: `../../archive/stage5_native_production_cutover_acceptance.json`.
+The semantic game-cycle digest remains
+`0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f`.
+
+Browser acceptance: Codex automated substitute checked actual native index and retained
+DEV separately. Production: 16 identity/config facts, no DEV globals or compatibility
+runtime, absent watchdog, one loop, zero duplicate starts/warnings/errors. DEV: nine
+identity/config facts, retained classic/IIFE, one loop, zero duplicate starts/warnings/
+errors. Native 50 gameplay button texts match DEV 52 after its two leading diagnostic
+controls are excluded; three save strings match between pages and after reload. The
+standard dev-server rebuild/start passed after a transient generated-directory lock
+was released. Tabs/server stopped and ignored fixtures removed; full owner play remains
+pending. This certifies startup/config/render/inventory/save smoke; gameplay effects
+also have focused fish-rarity/game-cycle coverage, not a claimed full manual session.
+
+Totals: 29 applied clusters / 102 recorded ESM targets, preparations 001–029, label
+5.29. Retained DEV runtime: 28 active / 380 retired / 7 inert, 53 bridges, 852 historical
+globals and 24 debts. Four native startup modules are preparation 029 additions;
+release remains 0.25.2. Next: exact retirement reconciliation, boundary-tool evaluation,
+utils budget, reviewed release projection/closure/tag and English Stage 6 handoff.
+
+## Historical continuation checkpoint: 030 complete; 028 in preparation
 
 Preparation 026 records the owner's native production / Stage 6 DEV decision under
 graph v8. Cluster 030 then moved the existing injected `FixedCatchFishFactory` intact
@@ -53,15 +92,15 @@ source. Report: `../../archive/stage5_030_fixed_catch_acceptance.json`.
 Browser 030: Codex automated substitute on the actual current classic DEV graph,
 five Game/Root/Fixed Catch/CONFIG/context identities, one loop, zero warnings/errors,
 64 currently visible button texts and three save strings identical after reload.
-This does not certify native production startup. Tab/server stopped and temporary
-fixture removed; owner play pending. Current committed totals: 29 applied clusters /
+This did not certify native production startup. Tab/server stopped and temporary
+fixture removed; owner play pending. Totals at that checkpoint: 29 applied clusters /
 102 ESM targets, preparations 001–026, label 5.29, 28 active / 380 retired / 7 inert,
 53 bridges, 852 historical globals and 24 debts; release remains 0.25.2.
 
-Work now prepares optional diagnostic contracts and policy-selected legacy tooling
-for 028, then implements the production entry and Bootstrap, preserves current DEV
-startup in `dev.html`, and certifies both pages separately. No new legacy loader.
-Stage 5 native production and Stage 6 native DEV are explicit completion obligations.
+The next step at that checkpoint was optional diagnostic contracts and policy-selected
+legacy tooling, followed by production entry/Bootstrap and separate native/retained DEV
+acceptance. Preparations 027–029 now complete that work. Stage 5 native production is
+verified; Stage 6 native DEV remains an explicit completion obligation.
 
 ## Historical continuation checkpoint: 027 complete
 
@@ -189,9 +228,10 @@ Read actual record/output before staging. Do not stage generated ignored dist fi
 listed in transition outputs. Run focused + Quick + Architecture + uncached Full and
 browser smoke, update checkpoint facts, commit and push this migration separately.
 
-## Native startup and canonical browser graph: approved scope, cutover pending
+## Native startup and canonical browser graph: implemented contract
 
-Implement the owner's two-page decision recorded in graph v8:
+Preparation 029 implements the owner's two-page decision recorded in graph v8.
+Preserve this contract through closure and Stage 6; do not repeat the cutover:
 
 ```text
 index.html -> game.entry -> Production Bootstrap -> Engine / Game / Platform
@@ -220,23 +260,25 @@ omission; do not create fake no-op diagnostics to conceal required gameplay effe
 Domain/Application continue to use injected config/ports and have no browser or DEV
 dependencies. DEV-only tools remain in the retained classic composition until Stage 6.
 
-Execute 028 in these bounded substeps, recording a reviewable result and checkpoint
-for each. These refine the cutover work and are not new migration clusters:
+028 completed through these bounded substeps and recorded acceptance. They refine
+the cutover work and are not new migration clusters:
 
 | Substep | Deliverable / completion condition | Status at this checkpoint |
 | --- | --- | --- |
-| 028.1 | Required injected gameplay dependencies: Fixed Catch and stateless GodMode reader; enabled effects and CONFIG identity preserved. | Fixed Catch 030 complete; GodMode reader preparation awaiting acceptance. |
-| 028.2 | Explicitly optional diagnostic contracts with malformed-input coverage, valid DEV equivalence and absence coverage. | Current preparation; acceptance pending. |
-| 028.3 | Policy-selected legacy document for build/VM order and separate native production graph/page validation, with meaningful negative fixtures. | Preparation in progress; acceptance pending. |
-| 028.4 | Coherent atomic production Bootstrap/entry/index cutover plus exact retained classic/IIFE dev.html. | Pending. |
-| 028.5 | Focused evidence, Architecture, Quick, uncached Full, native production and retained DEV browser acceptance, gameplay and save/reload checks. | Pending. |
+| 028.1 | Required injected gameplay dependencies: Fixed Catch and stateless GodMode reader; enabled effects and CONFIG identity preserved. | Complete: Fixed Catch 030 and preparation 027 accepted. |
+| 028.2 | Explicitly optional diagnostic contracts with malformed-input coverage, valid DEV equivalence and absence coverage. | Complete: preparation 027 accepted. |
+| 028.3 | Policy-selected legacy document for build/VM order and separate native production graph/page validation, with meaningful negative fixtures. | Complete: preparation 028 accepted. |
+| 028.4 | Coherent atomic production Bootstrap/entry/index cutover plus exact retained classic/IIFE dev.html. | Complete: preparation 029, commit aac62f6. |
+| 028.5 | Focused evidence, Architecture, Quick, uncached Full, native production and retained DEV browser acceptance, gameplay and save/reload checks. | Complete: preparation 029 acceptance; owner manual play pending. |
 
-028.1/028.2 may share one cohesive capability-preparation commit while their results
-remain distinct. Implement 028.4 atomically; do not add an intermediate runtime or
-loader. Mark a substep complete only after its relevant evidence passes.
+028.1/028.2 share accepted preparation 027 with distinct results; preparation 028
+accepted tooling and preparation 029 delivered the atomic cutover. Preserve the
+separate original DEV-source deferment, applied counts and absence of a new loader.
 
 The compatibility transport and exact surviving DEV bridges/activations must receive
-reviewed Stage 6 retirement conditions before Stage 5 closure. Preserve any separately
+reviewed Stage 6 retirement conditions before Stage 5 closure. Current metadata still
+assigns the retained transport, 14 bridges and 11 activations to Stage 5; reconcile
+actual holders and exact conditions without changing their export/global surfaces. Preserve any separately
 justified Stage 7 survivor with its exact consumer/removal condition. Retention for the
 DEV page does not make transport a production dependency. Remove the old DEV transport
 after Stage 6 migrates every listed consumer; do not erase it while classic DEV needs it.
@@ -300,8 +342,9 @@ No baseline/debt/whitelist expansion to make tests pass and no removal of live c
 
 At the saved visual-field audit checkpoint the utils budget was not satisfied:
 478 JS/JSON files, 71,303 newline-counted lines including the added visual-field
-scenarios, versus the Stage 4 M2 ceiling of 70,358 (+945). Pending 028 preparation
-must be remeasured; this historical count is not acceptance of the current tree.
+scenarios, versus the Stage 4 M2 ceiling of 70,358 (+945). Native-cutover tooling
+growth must be reconciled; this historical count is not acceptance of the current tree.
+At the native checkpoint: 478 JS/JSON files / 71,797 lines, 1,439 above the ceiling.
 Measured with the release metrics method (`git ls-files`, JS/JSON, newline count).
 The lifecycle fixture is already tracked; these new scenarios add 24 lines. Recheck
 after each milestone. Offset growth through proven unreachable tooling or justified
@@ -309,8 +352,9 @@ consolidation; preserve the 64 live checks and immutable evidence. Do not restor
 archived Stage 3 replay/planning checks. Stage 5 closure must meet the agreed budget.
 
 Update the current release projection through the existing mechanism with strict
-fixtures; historical Stage 4 release pins remain immutable. No version bump or tag
-exists for Stage 5 yet. Reconcile scope/metrics/plans, execute acceptance, create the
+fixtures; historical Stage 4 release pins remain immutable. No Stage 5 release record,
+version bump or tag exists yet. Review the existing mechanism's stage-qualified release
+selection, native version source, both page queries and metrics before applying a release. Reconcile scope/metrics/plans, execute acceptance, create the
 reviewed release/closure/tag, and write an English Stage 6 handoff with remaining work
 and pending owner play. A release name/version must come from the reviewed record.
 

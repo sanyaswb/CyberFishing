@@ -41,6 +41,22 @@
   "evidenceCommands": [],
   "output": null,
   "verification": null,
+  "nativeProduction": {
+    "status": "verified",
+    "preparation": "architecture/migration/stage_5/preparations/029_native-production-startup-cutover.json",
+    "decision": "architecture/migration/stage_5/native_production_owner_decision.md",
+    "implementationCommit": "aac62f615e1e709460680e7eab71b861871d9c1b",
+    "productionSource": "index.html",
+    "entrypoint": "src/entrypoints/game.entry.js",
+    "bootstrap": "src/bootstrap/production/game_startup.js",
+    "developmentSource": "dev.html",
+    "developmentRuntime": "classic-cumulative-iife",
+    "nativeDevelopmentStage": "stage-6",
+    "acceptanceReport": "architecture/archive/stage5_native_production_cutover_acceptance.json",
+    "acceptanceSourceCommit": "194da01a0bb54eb1a86d8d65718a04e3d4e6197e",
+    "acceptanceSourceSnapshot": "98ed225a3598aa8e5a1ca10ad66cd9b34613efb84f09c6973e8faa93c153f86d",
+    "provenance": "Acceptance ran on the recorded base commit plus pending native cutover before archival and informational checkpoint edits; original source migration remains deferred."
+  },
   "deferred": {
     "stage": "stage-6",
     "reason": "Original script.js is actual Development Bootstrap, with DEV factories and watchdog orchestration. Stage 5 separately must deliver native game.entry.js, production composition and one canonical browser graph before closure; this source deferment does not waive that required cutover."
