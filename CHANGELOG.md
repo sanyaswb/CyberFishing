@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.28.0 - Lean Repository
+
+### Changed
+
+- Archive all migration records, evidence and tooling at tag migration-final-archive; develop keeps the game, DEV tools, 33 behavior checks and one architecture guard (layers, cycles, globals, page entries).
+- Retire compatibility APIs (debuff name getters, LocationMap.getDebugRevision, getDebugData, repository id fallback), split the classic inventory file into one module per class and remove unreferenced production code.
+- Store text files with LF; the syntax check now detects invalid ES modules.
+
 ## v0.27.2 - Gameplay and Lifecycle Fixes
 
 ### Changed

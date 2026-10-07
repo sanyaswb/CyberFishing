@@ -1,3 +1,4 @@
+├── .gitattributes
 ├── .gitignore
 ├── assets
 │  ├── audio
@@ -60,7 +61,7 @@
 │  │  ├── development
 │  │  │  ├── debug_console_bootstrap.js
 │  │  │  ├── debug_overlay_bootstrap.js
-│  │  │  └── legacy_game_startup.js
+│  │  │  └── development_game_startup.js
 │  │  └── production
 │  │     ├── chum_feature_bootstrap.js
 │  │     ├── config_context.js
@@ -72,11 +73,6 @@
 │  │     ├── game_version_badge.js
 │  │     ├── inventory_composition_root.js
 │  │     └── inventory_ui_bootstrap.js
-│  ├── config
-│  │  └── metadata
-│  │     ├── dev_tool_parameter_descriptions.json
-│  │     ├── overlay_metric_descriptions.json
-│  │     └── parameter_labels.json
 │  ├── dev
 │  │  ├── core
 │  │  │  ├── debug_console.js
@@ -101,6 +97,10 @@
 │  │  │  ├── location_debug_data_provider.js
 │  │  │  ├── location_debug_map_builder.js
 │  │  │  └── location_debug_render_frame_builder.js
+│  │  ├── metadata
+│  │  │  ├── dev_tool_parameter_descriptions.json
+│  │  │  ├── overlay_metric_descriptions.json
+│  │  │  └── parameter_labels.json
 │  │  ├── modules
 │  │  │  ├── base_debug_module.js
 │  │  │  ├── bite_ticks_debug_module.js
@@ -241,35 +241,51 @@
 │  │  │  ├── inventory
 │  │  │  │  ├── apply_bait_exposure_service.js
 │  │  │  │  ├── auto_refill_coordinator.js
+│  │  │  │  ├── configured_inventory_seeder.js
+│  │  │  │  ├── display_stats_resolver.js
 │  │  │  │  ├── equipment_auto_refill_target_provider.js
 │  │  │  │  ├── equipment_read_model_factory.js
 │  │  │  │  ├── equipment_service.js
 │  │  │  │  ├── equipment_transition_executor.js
+│  │  │  │  ├── equipment_validator.js
 │  │  │  │  ├── freshest_refill_candidate_policy.js
+│  │  │  │  ├── inventory.js
 │  │  │  │  ├── inventory_command_service.js
 │  │  │  │  ├── inventory_context_item_filter.js
+│  │  │  │  ├── inventory_equipment.js
 │  │  │  │  ├── inventory_equipment_line_readiness_policy.js
 │  │  │  │  ├── inventory_equipment_transition_adapter.js
+│  │  │  │  ├── inventory_event_bridge.js
 │  │  │  │  ├── inventory_facade.js
 │  │  │  │  ├── inventory_gameplay_facade.js
 │  │  │  │  ├── inventory_item_factory.js
 │  │  │  │  ├── inventory_item_hydrator.js
 │  │  │  │  ├── inventory_line_allocation_service.js
 │  │  │  │  ├── inventory_loadout_adapter.js
+│  │  │  │  ├── inventory_manager.js
 │  │  │  │  ├── inventory_refill_adapters.js
+│  │  │  │  ├── inventory_runtime_config_provider.js
+│  │  │  │  ├── inventory_runtime_display_stats_resolver.js
 │  │  │  │  ├── inventory_transaction_coordinator.js
 │  │  │  │  ├── inventory_transaction_participants.js
-│  │  │  │  ├── legacy_inventory_system.js
+│  │  │  │  ├── item_database.js
 │  │  │  │  ├── legacy_inventory_unit_allocator.js
+│  │  │  │  ├── line_compatibility_rules.js
 │  │  │  │  ├── line_inventory_controller.js
+│  │  │  │  ├── line_runtime_display_stats_resolver.js
 │  │  │  │  ├── loadout_application_service.js
-│  │  │  │  └── persistence
-│  │  │  │     ├── inventory_item_snapshot_mapper.js
-│  │  │  │     ├── inventory_legacy_migration.js
-│  │  │  │     ├── inventory_snapshot_factory.js
-│  │  │  │     ├── inventory_snapshot_migration.js
-│  │  │  │     ├── inventory_state_store.js
-│  │  │  │     └── legacy_item_state_migration.js
+│  │  │  │  ├── persistence
+│  │  │  │  │  ├── equipment_state_migration_policy.js
+│  │  │  │  │  ├── inventory_item_id_migration_policy.js
+│  │  │  │  │  ├── inventory_item_snapshot_mapper.js
+│  │  │  │  │  ├── inventory_legacy_migration.js
+│  │  │  │  │  ├── inventory_snapshot_factory.js
+│  │  │  │  │  ├── inventory_snapshot_migration.js
+│  │  │  │  │  ├── inventory_state_store.js
+│  │  │  │  │  └── legacy_item_state_migration.js
+│  │  │  │  ├── reel_runtime_display_stats_resolver.js
+│  │  │  │  ├── runtime_display_stat_formatter.js
+│  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── state
 │  │  │  │  └── game_state_machine.js
 │  │  │  ├── viewport
@@ -569,8 +585,10 @@
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── hud_style_resolver.js
+│  │     │  ├── inventory_v2.css
 │  │     │  ├── outcome_style_resolver.js
-│  │     │  └── rarity_visual_resolver.js
+│  │     │  ├── rarity_visual_resolver.js
+│  │     │  └── style.css
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── visual
@@ -579,57 +597,53 @@
 │  │     └── world
 │  │        ├── boat_chum_renderer.js
 │  │        └── world_scene_renderer.js
-│  ├── platform
-│  │  └── browser
-│  │     ├── assets
-│  │     │  ├── asset_preload_coordinator.js
-│  │     │  └── image_asset_provider.js
-│  │     ├── canvas
-│  │     │  ├── canvas_2d_surface.js
-│  │     │  ├── canvas_primitives.js
-│  │     │  └── offscreen_canvas_factory.js
-│  │     ├── config
-│  │     │  └── deep_clone_config.js
-│  │     ├── diagnostics
-│  │     │  ├── console_logger.js
-│  │     │  └── event_logger.js
-│  │     ├── dom
-│  │     │  ├── draggable_button.js
-│  │     │  ├── engine_interface.js
-│  │     │  ├── horizontal_scroll_controller.js
-│  │     │  ├── inventory_v2_dom_factory.js
-│  │     │  ├── inventory_v2_long_press_controller.js
-│  │     │  ├── item_condition_dom_adapter.js
-│  │     │  ├── item_progression_dom_adapter.js
-│  │     │  ├── item_rarity_dom_adapter.js
-│  │     │  └── ui_event_shield.js
-│  │     ├── input
-│  │     │  └── input_manager.js
-│  │     ├── inventory
-│  │     │  └── random_inventory_id.js
-│  │     ├── location
-│  │     │  ├── depth_map_reader.js
-│  │     │  └── location_asset_loader.js
-│  │     ├── runtime
-│  │     │  ├── browser_game_lifecycle.js
-│  │     │  ├── browser_startup_environment.js
-│  │     │  ├── game_loop.js
-│  │     │  └── legacy_runtime_adapters.js
-│  │     ├── storage
-│  │     │  └── cache_manager.js
-│  │     ├── time
-│  │     │  ├── browser_timeout_scheduler.js
-│  │     │  └── game_clock.js
-│  │     └── ui
-│  │        ├── chum_controls.js
-│  │        ├── depth_selector.js
-│  │        ├── game_controls.js
-│  │        ├── hold_charges.js
-│  │        └── time_display.js
-│  └── ui
-│     └── styles
-│        ├── inventory_v2.css
-│        └── style.css
+│  └── platform
+│     └── browser
+│        ├── assets
+│        │  ├── asset_preload_coordinator.js
+│        │  └── image_asset_provider.js
+│        ├── canvas
+│        │  ├── canvas_2d_surface.js
+│        │  ├── canvas_primitives.js
+│        │  └── offscreen_canvas_factory.js
+│        ├── config
+│        │  └── deep_clone_config.js
+│        ├── diagnostics
+│        │  ├── console_logger.js
+│        │  └── event_logger.js
+│        ├── dom
+│        │  ├── draggable_button.js
+│        │  ├── engine_interface.js
+│        │  ├── horizontal_scroll_controller.js
+│        │  ├── inventory_v2_dom_factory.js
+│        │  ├── inventory_v2_long_press_controller.js
+│        │  ├── item_condition_dom_adapter.js
+│        │  ├── item_progression_dom_adapter.js
+│        │  ├── item_rarity_dom_adapter.js
+│        │  └── ui_event_shield.js
+│        ├── input
+│        │  └── input_manager.js
+│        ├── inventory
+│        │  └── random_inventory_id.js
+│        ├── location
+│        │  ├── depth_map_reader.js
+│        │  └── location_asset_loader.js
+│        ├── runtime
+│        │  ├── browser_game_lifecycle.js
+│        │  ├── browser_runtime_adapters.js
+│        │  ├── browser_startup_environment.js
+│        │  └── game_loop.js
+│        ├── storage
+│        │  └── cache_manager.js
+│        ├── time
+│        │  ├── browser_timeout_scheduler.js
+│        │  └── game_clock.js
+│        └── ui
+│           ├── chum_controls.js
+│           ├── depth_selector.js
+│           ├── game_controls.js
+│           ├── hold_charges.js
+│           └── time_display.js
 └── utils
    ├── architecture-check.js
    ├── bait-effectiveness-check.js
