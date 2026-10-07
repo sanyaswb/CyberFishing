@@ -1,13 +1,13 @@
 # Stage 7 structural hardening — handoff
 
-Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7 has not started.
+Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7.1 tooling audit is prepared; catalog archival awaits the exact owner decision.
 Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [stage_6/stage6_continuation_spec.md](stage_6/stage6_continuation_spec.md),
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md); requirements and the 96 mappings: [stage_6/stage6_spec.md](stage_6/stage6_spec.md).
 
 ## Resume facts
 
 - D1-D4 completed in three separate pushed commits: D1 `83bc8fe`, D2/D4 `ab96d35`, D3 `7d6614c`.
-- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Stage 7 tooling archive has not started.
+- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Release commit/tag: `e80d983` / `v0.27.2`, pushed. Stage 7.1 audit/specification prepared; implementation starts with native test-path preparation.
 - D1 original/current public traces match (167 updates, 24 recalculations, 44 revision reads); the template allocation is gone.
   Actual DevTools callbacks, set/reset/import, unrelated overrides and location replacement are covered.
 - D2 preserves natural spinner/wobbler/jig catches when the fixed fish has no sequence. D4 sets both production masters false;
@@ -24,8 +24,10 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
   one loop/no duplicate starts, identical save bytes/reload, zero final errors/warnings. DEV in-page restart releases listeners;
   production keeps its existing one-startup-per-realm policy and restarts by reload. Owned tabs/server/ignored fixtures cleaned.
 - Raw source recovery: `pre-stage7-fixes-archive` -> `643a8dbc` (parent decision baseline `ee53295`).
-- Next: the separate Stage 7 compatibility tooling/check archive. Audit the exact catalog removals and retained assertions first;
-  the owner decision on the exact catalog list is still required by this handoff. Historical evidence stays immutable.
+- Current Stage 7.1 specification: [tooling_archive_spec.md](stage_7/tooling_archive_spec.md), exact raw-byte/dependency
+  [inventory](stage_7/tooling_archive_inventory.json). Proposal archives only three Stage 3 runtime checks: Full 61 / Quick 22 /
+  Architecture 29 / gameplay 12. The exact catalog owner decision is pending; all 64 checks remain during independent preparations.
+  Eleven builder candidates have live consumers to decouple; retain native/provenance/evaluation assertions first. History stays immutable.
 
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.
@@ -181,7 +183,7 @@ D4 changes production defaults; the D2 regression remains required for DEV balan
 ### D4 — production GodMode / Fixed Catch defaults: off; balance controls belong to DEV
 
 Final owner answer (2026-10-07): **NO** to leaving GodMode and Fixed Catch enabled in production; they are only for balance testing during
-development. This resolves D2's open question and authorizes the scoped configuration behavior change. Runtime code has not yet changed.
+development. This resolves D2's open question and authorizes the scoped configuration behavior change. Implemented with D2 at `ab96d35`, released in 0.27.2; the following records the accepted requirements.
 
 - `index.html` / Production Bootstrap must start with `debug.godMode.enabled === false` and `debug.fixedCatch.enabled === false`.
   The current shared `src/game/config/runtime/game_config.js` has both `true`; changing just the diagnostic class or the production
