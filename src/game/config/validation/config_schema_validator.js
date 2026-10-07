@@ -143,7 +143,14 @@ export class ConfigSchemaValidator {
       return;
     }
 
+    const baseLeaves = new Map(
+      this.#collectLeaves(this.baseConfig?.physics, "physics").map((leaf) => [leaf.path, leaf.value]),
+    );
     for (const { path, value, parentPath } of this.#collectLeaves(physics, "physics")) {
+      const baseType = typeof baseLeaves.get(path);
+      if ((baseType === "number" || baseType === "boolean") && typeof value !== baseType) {
+        this.#error(path, `expected ${baseType} like the base config, got ${typeof value}`);
+      }
       if (typeof value === "number") {
         this.#requireFiniteNumber(path, value);
         this.#warnIfPhysicsNameIsTooVague(path);

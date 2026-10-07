@@ -1,6 +1,8 @@
 import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
+import { ConfigSchemaValidator } from "../../game/config/validation/config_schema_validator.js";
+import { ConfigValidationReporter } from "../../dev/diagnostics/config_validation_reporter.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
 import { DevFlagsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
@@ -59,6 +61,11 @@ async function startGame() {
   const godMode = new GodMode(CONFIG);
   const itemCatalog = createDevItemCatalog(ITEM_DB);
   const mapCatalog = CONFIG.locations.map;
+  const configValidation = new ConfigValidationReporter({
+    createValidator: parameterLabels => new ConfigSchemaValidator({config: configRuntime.runtimeConfig, fishDb: FISH_DB,
+      itemDb: itemCatalog, mapDb: mapCatalog, parameterLabels, baseConfig: configRuntime.baseConfig,
+      overrideStore: configRuntime.overrideStore, projectVersion: PROJECT_VERSION_CONFIG}),
+  });
   let consoleRuntime, overlayRuntime, probe, game, watchdog;
   let gameReady = false;
   let disposed = false;
@@ -93,7 +100,7 @@ async function startGame() {
       createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
       createDebugService: config => new DebugService(config, debugModulesSource),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
-      createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime,
+      createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();

@@ -15,6 +15,7 @@ export class DevTools {
   #activeFishKey = "";
   #activeFishShapeKey = "";
   #configRuntime = null;
+  #configValidation = null;
   #hookedFishProfileSynchronizer;
   #activeFishVisibilityPolicy;
   #locationSchema;
@@ -63,6 +64,7 @@ export class DevTools {
       itemProgressionDebugProvider = null,
       itemProgressionResolver = null,
       configRuntime = null,
+      configValidation = null,
       catalogs,
       settingsStore,
       debugModulesSource,
@@ -83,6 +85,7 @@ export class DevTools {
     this.#debugModulesSource = debugModulesSource;
     this.#hookedFishProfileSynchronizer = hookedFishProfileSynchronizer;
     this.#configRuntime = configRuntime;
+    this.#configValidation = configValidation;
     this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
     this.#locationSchema = new LocationDevToolsSchema();
     this.#parameterAliases = new DevToolsParameterAliasRegistry();
@@ -826,6 +829,7 @@ export class DevTools {
     if (path[0] === "CONFIG" && this.#configRuntime) {
       this.#configRuntime.set(path, newValue);
       this.#refreshFightPhysicsAdapter();
+      this.#configValidation?.report(`edit ${path.join(".")}`, { quietWhenValid: true });
     } else {
       let target = root;
       for (let i = 1; i < path.length - 1; i++) {
@@ -904,6 +908,7 @@ export class DevTools {
       );
       this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
       this.#populatePanel();
+      this.#configValidation?.report("reset all overrides");
     });
     this.#ui.createButtonRow("Export overrides", content, () => {
       const json = JSON.stringify(
@@ -934,10 +939,14 @@ export class DevTools {
         );
         this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
         this.#populatePanel();
+        this.#configValidation?.report("import overrides");
       } catch (error) {
         console.warn("[DevTools] Failed to import runtime overrides", error);
       }
     });
+    if (this.#configValidation) {
+      this.#ui.createButtonRow("Validate config", content, () => this.#configValidation.report("manual check"));
+    }
   }
 
   #resolveEditableRoot(rootName) {

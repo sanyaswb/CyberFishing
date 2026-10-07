@@ -168,7 +168,7 @@ function checkDevelopmentInputs() {
   lifecycle.clearPublishedHandles(replacementGame, replacementWatchdog);
   assert.equal(target.game, null); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, null);
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
-  const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {};
+  const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
   const godModeInstance = { enabled: true };
   const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
@@ -176,7 +176,7 @@ function checkDevelopmentInputs() {
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: godModeInstance, RenderAllocationDiagnostics: diagnostics,
-    CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
+    CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
@@ -216,6 +216,7 @@ function checkDevelopmentInputs() {
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);
   assert.equal(tools.options.configRuntime, configRuntime);
+  assert.equal(tools.options.configValidation, configValidation, "DEV tools validate the live config after edits");
   assert.equal(tools.options.itemProgressionResolver, progression);
 }
 checkDevelopmentInputs();

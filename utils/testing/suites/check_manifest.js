@@ -195,6 +195,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "config-schema",
+    title: "Configuration schema validation (production, DEV and DEV reporter)",
+    file: "utils/config-schema-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "config-runtime",
     title: "Live configuration and override runtime",
     file: "utils/config-runtime-check.js",
