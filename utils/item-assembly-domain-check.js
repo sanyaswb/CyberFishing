@@ -13,41 +13,41 @@ class AssemblyRuntimeLoader {
   load() {
     const loader = new NativeEsmTestLoader({ projectRoot: ROOT, context: this.#context });
     loader.load(
-      "src/config/inventory/item_assembly_profile_config.js",
+      "src/game/config/raw/inventory/item_assembly_profiles.js",
       ["ITEM_ASSEMBLY_PROFILE_IDS", "ITEM_ASSEMBLY_PROFILE_CONFIG"],
     );
-    loader.load("src/core/inventory/inventory_item_location.js", [
+    loader.load("src/game/domain/inventory/inventory_item_location.js", [
       "InventoryItemLocationKind",
       "InventoryItemLocation",
     ]);
-    loader.load("src/core/inventory/unlimited_assembly_capacity_policy.js", [
+    loader.load("src/game/domain/inventory/unlimited_assembly_capacity_policy.js", [
       "UnlimitedAssemblyCapacityPolicy",
     ]);
-    loader.load("src/core/inventory/item_assembly_stacking_policy.js", [
+    loader.load("src/game/domain/inventory/item_assembly_stacking_policy.js", [
       "ItemAssemblyStackingPolicy",
     ]);
-    loader.load("src/core/inventory/flat_inventory_item_repository.js", [
+    loader.load("src/game/domain/inventory/flat_inventory_item_repository.js", [
       "FlatInventoryItemRepository",
     ]);
-    loader.load("src/core/assemblies/assembly_state.js", [
+    loader.load("src/game/domain/assemblies/assembly_state.js", [
       "AssemblyPreparationStatus",
       "AssemblyState",
     ]);
-    loader.load("src/core/assemblies/assembly_state_repository.js", [
+    loader.load("src/game/domain/assemblies/assembly_state_repository.js", [
       "AssemblyStateRepository",
     ]);
-    loader.load("src/core/assemblies/assembly_profile_registry.js", [
+    loader.load("src/game/domain/assemblies/assembly_profile_registry.js", [
       "AssemblyProfileRegistry",
     ]);
     loader.load(
-      "src/core/assemblies/exact_assembly_refill_signature_policy.js",
+      "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
       ["ExactAssemblyRefillSignaturePolicy"],
     );
-    loader.load("src/core/assemblies/item_assembly_reader.js", [
+    loader.load("src/game/domain/assemblies/item_assembly_reader.js", [
       "ItemAssemblyPath",
       "ItemAssemblyReader",
     ]);
-    loader.load("src/core/assemblies/item_assembly_service.js", [
+    loader.load("src/game/domain/assemblies/item_assembly_service.js", [
       "ItemAssemblyDomainError",
       "ItemAssemblyService",
     ]);

@@ -8,22 +8,22 @@ class RuntimeLoader {
     const runtime = new SourceRuntime();
     this.#loadClass(
       runtime,
-      "src/core/float_tackle_line_budget_policy.js",
+      "src/game/domain/fishing/float_tackle_line_budget_policy.js",
       "FloatTackleLineBudgetPolicy",
     );
     this.#loadClass(
       runtime,
-      "src/core/distance_unit_converter.js",
+      "src/game/domain/casting/distance_unit_converter.js",
       "DistanceUnitConverter",
     );
     this.#loadClass(
       runtime,
-      "src/core/casting_distance.js",
+      "src/game/domain/casting/cast_distance_calculator.js",
       "CastDistanceCalculator",
     );
     this.#loadClass(
       runtime,
-      "src/core/fishing/rod_stroke_capacity_resolver.js",
+      "src/game/domain/fishing/rod_stroke_capacity_resolver.js",
       "RodStrokeCapacityResolver",
     );
     this.#loadRules(runtime);
@@ -35,7 +35,7 @@ class RuntimeLoader {
   }
 
   #loadRules(runtime) {
-    runtime.load("src/app/rules.js", { expose: ["EquipmentRules"] });
+    runtime.load("src/game/domain/rules/gameplay_rules.js", { expose: ["EquipmentRules"] });
   }
 }
 

@@ -11,33 +11,33 @@ class BaitEffectivenessCheck {
   constructor() {
     this.#sourceRuntime = new SourceRuntime();
     this.#sourceRuntime.loadMany([
-      "src/config/databases/item_db.js",
-      "src/config/databases/fish/species/peaceful_fish.js",
-      "src/config/databases/fish/species/predator_fish.js",
-      "src/config/databases/fish/species/rare_fish.js",
-      "src/config/databases/fish/species/event_fish.js",
-      "src/config/databases/fish/fish_categories.js",
-      "src/config/databases/fish_db.js",
-      "src/core/items/metrics/item_bounded_metric_resolver.js",
-      "src/core/items/freshness/item_freshness_descriptor.js",
-      "src/core/items/freshness/bait_freshness_decay_policy.js",
-      "src/core/items/freshness/bait_freshness_modifier.js",
-      "src/core/items/freshness/item_freshness_resolver.js",
-      "src/core/items/bait/bait_effectiveness_descriptor.js",
-      "src/core/items/bait/bait_effectiveness_match.js",
-      "src/core/items/bait/bait_effectiveness_grade_policy.js",
-      "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
-      "src/core/items/bait/bait_effectiveness_resolver.js",
-      "src/core/items/bait/bait_effectiveness_catalog_resolver.js",
-      "src/core/items/rarity/item_rarity_descriptor.js",
-      "src/core/items/rarity/item_rarity_strategy.js",
-      "src/core/items/rarity/authored_item_rarity_strategy.js",
-      "src/core/items/rarity/item_rarity_strategy_registry.js",
-      "src/core/items/rarity/item_rarity_resolver.js",
-      "src/core/items/rarity/effective_item_rarity_resolver.js",
-      "src/systems/inventory_item_view_factory.js",
-      "src/ui/inventory/inventory_v2_item_parameters_resolver.js",
-      "src/ui/inventory/inventory_v2_balance_parameter_resolver.js",
+      "src/game/config/raw/items/item_database.js",
+      "src/game/config/raw/fish/peaceful_fish.js",
+      "src/game/config/raw/fish/predator_fish.js",
+      "src/game/config/raw/fish/rare_fish.js",
+      "src/game/config/raw/fish/event_fish.js",
+      "src/game/config/databases/fish/fish_categories.js",
+      "src/game/config/databases/fish_database.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_modifier.js",
+      "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
+      "src/game/domain/items/bait/bait_effectiveness_match.js",
+      "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/bait_effectiveness_resolver.js",
+      "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
+      "src/game/domain/items/rarity/item_rarity_resolver.js",
+      "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
+      "src/game/presentation/inventory/inventory_item_view_factory.js",
+      "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
     ]).expose({
       ITEM_DATABASE: "ITEM_DB",
       FISH_DATABASE: "FISH_DB",
@@ -183,8 +183,8 @@ class BaitEffectivenessCheck {
   }
 
   #checkSingleGameplaySource() {
-    const itemSource = this.#sourceRuntime.read("src/config/databases/item_db.js");
-    const biteSource = this.#sourceRuntime.readAuthoredSource("src/systems/bite_system.js");
+    const itemSource = this.#sourceRuntime.read("src/game/config/raw/items/item_database.js");
+    const biteSource = this.#sourceRuntime.readAuthoredSource("src/game/application/fishing/bite_service.js");
     Assertion.that(
       !itemSource.includes("attractionPower") && !itemSource.includes("jigPower"),
       "fake global lure power stats are removed",

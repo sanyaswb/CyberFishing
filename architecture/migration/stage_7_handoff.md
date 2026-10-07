@@ -1,13 +1,13 @@
 # Stage 7 structural hardening — handoff
 
-Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7.1 tooling audit is prepared; catalog archival awaits the exact owner decision.
+Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7.1 native test-path preparation is accepted; catalog archival awaits the exact owner decision.
 Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [stage_6/stage6_continuation_spec.md](stage_6/stage6_continuation_spec.md),
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md); requirements and the 96 mappings: [stage_6/stage6_spec.md](stage_6/stage6_spec.md).
 
 ## Resume facts
 
 - D1-D4 completed in three separate pushed commits: D1 `83bc8fe`, D2/D4 `ab96d35`, D3 `7d6614c`.
-- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Release commit/tag: `e80d983` / `v0.27.2`, pushed. Stage 7.1 audit/specification prepared; implementation starts with native test-path preparation.
+- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Release commit/tag: `e80d983` / `v0.27.2`, pushed. Stage 7.1 native test-path preparation accepted; live builder-consumer decoupling follows.
 - D1 original/current public traces match (167 updates, 24 recalculations, 44 revision reads); the template allocation is gone.
   Actual DevTools callbacks, set/reset/import, unrelated overrides and location replacement are covered.
 - D2 preserves natural spinner/wobbler/jig catches when the fixed fish has no sequence. D4 sets both production masters false;
@@ -28,6 +28,10 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
   [inventory](stage_7/tooling_archive_inventory.json). Proposal archives only three Stage 3 runtime checks: Full 61 / Quick 22 /
   Architecture 29 / gameplay 12. The exact catalog owner decision is pending; all 64 checks remain during independent preparations.
   Eleven builder candidates have live consumers to decouple; retain native/provenance/evaluation assertions first. History stays immutable.
+- Stage 7.1 [preparation 001](stage_7/preparations/001_native-test-paths.json) accepted: canonical native test paths, explicit
+  config test composition, no metadata aliases or old loader wrapper. Quick 24/24, Architecture 32/32,
+  [uncached Full 64/64](../archive/stage7_native_paths_acceptance.json), game-cycle unchanged; no runtime/HTML/package change.
+  Exact raw tooling recovery: `stage7-compat-tools-archive` -> `aeb43037` (parent audited spec checkpoint `a33c7ca`).
 
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.

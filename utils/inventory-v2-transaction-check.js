@@ -1,12 +1,12 @@
 const path = require("node:path");
 const vm = require("node:vm");
-const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 // The coordinator is an ESM module since Stage 4 cluster 020: its classic path is an activation shim.
-new StageThreeCompatibilityTestLoader({ projectRoot: root, context })
-  .load("src/infrastructure/storage/inventory_v2_transaction_coordinator.js");
+new NativeEsmTestLoader({ projectRoot: root, context })
+  .load("src/game/application/inventory/inventory_transaction_coordinator.js");
 
 vm.runInContext(`(() => {
   const assert = (condition, message) => {

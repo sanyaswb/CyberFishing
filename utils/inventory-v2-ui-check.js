@@ -6,58 +6,33 @@ const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browse
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
-const UI_DIRECTORY = path.join(ROOT, "src", "ui", "inventory");
 const STYLE_FILE = path.join(ROOT, "src", "ui", "styles", "inventory_v2.css");
-const ITEM_PARAMETER_CONFIG_FILE = path.join(
-  ROOT,
-  "src",
-  "config",
-  "inventory",
-  "inventory_v2_item_parameter_config.js",
-);
-const VIEW_MODEL_FACTORY_FILE = path.join(
-  ROOT,
-  "src",
-  "application",
-  "inventory",
-  "inventory_v2_view_model_factory.js",
-);
-const ITEM_VIEW_FACTORY_FILE = path.join(
-  ROOT,
-  "src",
-  "application",
-  "inventory",
-  "inventory_v2_item_view_factory.js",
-);
-const COMMAND_SERVICE_FILE = path.join(
-  ROOT,
-  "src",
-  "application",
-  "inventory",
-  "inventory_v2_command_service.js",
-);
+const ITEM_PARAMETER_CONFIG_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_item_parameter_config.js");
+const VIEW_MODEL_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_view_model_factory.js");
+const ITEM_VIEW_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_v2_item_view_factory.js");
+const COMMAND_SERVICE_FILE = path.join(ROOT, "src/game/application/inventory/inventory_command_service.js");
 const INVENTORY_COMPOSITION_FILE = path.join(ROOT, "src/bootstrap/production/inventory_ui_bootstrap.js");
 
 const UI_SCRIPT_ORDER = Object.freeze([
-  "inventory_v2_view_model.js",
-  "inventory_v2_dom_factory.js",
-  "inventory_v2_long_press_controller.js",
-  "inventory_v2_attachment_badge_renderer.js",
-  "inventory_v2_balance_parameter_resolver.js",
-  "inventory_v2_tooltip_presenter.js",
-  "inventory_v2_resource_meter_resolver.js",
-  "inventory_v2_resource_meter_renderer.js",
-  "inventory_v2_item_parameters_resolver.js",
-  "inventory_v2_assembly_parameter_section_resolver.js",
-  "inventory_v2_item_parameters_renderer.js",
-  "inventory_v2_item_card_renderer.js",
-  "inventory_v2_header_renderer.js",
-  "inventory_v2_loadout_panel_renderer.js",
-  "inventory_v2_assembly_editor_renderer.js",
-  "inventory_v2_saved_loadout_preview_renderer.js",
-  "inventory_v2_inventory_grid_renderer.js",
-  "inventory_v2_ui.js",
-  "inventory_v2_bootstrap.js",
+  ["inventory_v2_view_model.js", "src/game/presentation/inventory/inventory_view_model.js"],
+  ["inventory_v2_dom_factory.js", "src/platform/browser/dom/inventory_v2_dom_factory.js"],
+  ["inventory_v2_long_press_controller.js", "src/platform/browser/dom/inventory_v2_long_press_controller.js"],
+  ["inventory_v2_attachment_badge_renderer.js", "src/game/presentation/inventory/inventory_attachment_badge_renderer.js"],
+  ["inventory_v2_balance_parameter_resolver.js", "src/game/presentation/inventory/inventory_balance_parameter_resolver.js"],
+  ["inventory_v2_tooltip_presenter.js", "src/game/presentation/inventory/inventory_tooltip_presenter.js"],
+  ["inventory_v2_resource_meter_resolver.js", "src/game/presentation/inventory/inventory_v2_resource_meter_resolver.js"],
+  ["inventory_v2_resource_meter_renderer.js", "src/game/presentation/inventory/inventory_resource_meter_renderer.js"],
+  ["inventory_v2_item_parameters_resolver.js", "src/game/presentation/inventory/inventory_item_parameters_resolver.js"],
+  ["inventory_v2_assembly_parameter_section_resolver.js", "src/game/presentation/inventory/inventory_assembly_parameter_section_resolver.js"],
+  ["inventory_v2_item_parameters_renderer.js", "src/game/presentation/inventory/inventory_item_parameters_renderer.js"],
+  ["inventory_v2_item_card_renderer.js", "src/game/presentation/inventory/inventory_item_card_renderer.js"],
+  ["inventory_v2_header_renderer.js", "src/game/presentation/inventory/inventory_header_renderer.js"],
+  ["inventory_v2_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js"],
+  ["inventory_v2_assembly_editor_renderer.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js"],
+  ["inventory_v2_saved_loadout_preview_renderer.js", "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js"],
+  ["inventory_v2_inventory_grid_renderer.js", "src/game/presentation/inventory/inventory_grid_renderer.js"],
+  ["inventory_v2_ui.js", "src/game/presentation/inventory/inventory_ui.js"],
+  ["inventory_v2_bootstrap.js", "src/bootstrap/production/inventory_ui_bootstrap.js"],
 ]);
 
 class InventoryV2SourceReader {
@@ -66,8 +41,7 @@ class InventoryV2SourceReader {
   }
 
   readJavaScriptFiles() {
-    return UI_SCRIPT_ORDER.map((name) => {
-      const relativePath=path.relative(ROOT,path.join(UI_DIRECTORY,name)).split(path.sep).join("/");
+    return UI_SCRIPT_ORDER.map(([name, relativePath]) => {
       return {name,relativePath,source:new SourceRuntime().readAuthoredSource(relativePath)};
     });
   }
@@ -77,7 +51,7 @@ class InventoryV2SourceReader {
   }
 
   readConfig() {
-    return new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
+    return new SourceRuntime().readAuthoredSource("src/game/config/runtime/game_config.js");
   }
 
   readApplicationFactory() {
@@ -833,7 +807,7 @@ class InventoryV2StaticContractCheck {
   #assertViewModelContract() {
     const sandbox = { console };
     sandbox.globalThis = sandbox;
-    new SourceRuntime({ globals: sandbox }).load("src/ui/inventory/inventory_v2_view_model.js");
+    new SourceRuntime({ globals: sandbox }).load("src/game/presentation/inventory/inventory_view_model.js");
     const Normalizer = sandbox.InventoryV2ViewModelNormalizer;
     const actions = sandbox.InventoryV2ActionType;
     const ActionContract = sandbox.InventoryV2ActionContract;
@@ -931,7 +905,7 @@ class InventoryV2StaticContractCheck {
     const runtime = new SourceRuntime({globals:sandbox});
     const context = runtime.context;
     sandbox = context;
-    runtime.load("src/config/inventory/inventory_v2_item_parameter_config.js", { expose: ["INVENTORY_V2_ITEM_PARAMETER_CONFIG", "INVENTORY_V2_ITEM_PARAMETER_ALIASES", "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG", "INVENTORY_V2_RARITY_NAMES"] });
+    runtime.load("src/game/presentation/inventory/inventory_item_parameter_config.js", { expose: ["INVENTORY_V2_ITEM_PARAMETER_CONFIG", "INVENTORY_V2_ITEM_PARAMETER_ALIASES", "INVENTORY_V2_BALANCE_TOOLTIP_CONFIG", "INVENTORY_V2_RARITY_NAMES"] });
     files.forEach((file) => {
       runtime.load(file.relativePath);
     });

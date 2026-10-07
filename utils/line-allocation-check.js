@@ -8,52 +8,52 @@ class LineRuntimeLoader {
     const runtime = new SourceRuntime();
     this.#loadConstant(
       runtime,
-      "src/config/physics/tackle_physics_config.js",
+      "src/game/config/raw/physics/tackle_physics.js",
       "TACKLE_PHYSICS_CONFIG",
     );
     this.#loadConstant(
       runtime,
-      "src/config/inventory/equipment_slot_presentation_config.js",
+      "src/game/presentation/inventory/equipment_slot_presentation.js",
       "EQUIPMENT_SLOT_PRESENTATION",
     );
     this.#loadConstant(
       runtime,
-      "src/config/inventory/inventory_rule_messages.js",
+      "src/game/presentation/inventory/inventory_rule_messages.js",
       "INVENTORY_RULE_MESSAGES",
     );
     this.#loadClass(
       runtime,
-      "src/core/line/line_allocation_policy.js",
+      "src/game/domain/line/line_allocation_policy.js",
       "LineAllocationPolicy",
     );
     this.#loadConstant(
       runtime,
-      "src/config/items/item_stat_override_config.js",
+      "src/game/config/raw/items/item_stat_overrides.js",
       "ITEM_STAT_OVERRIDE_CONFIG",
     );
     this.#loadClass(
       runtime,
-      "src/core/items/item_stat_override_policy.js",
+      "src/game/domain/items/item_stat_override_policy.js",
       "ItemStatOverridePolicy",
     );
     this.#loadClass(
       runtime,
-      "src/core/items/effective_item_stats_resolver.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
       "EffectiveItemStatsResolver",
     );
     this.#loadClass(
       runtime,
-      "src/core/distance_unit_converter.js",
+      "src/game/domain/casting/distance_unit_converter.js",
       "DistanceUnitConverter",
     );
     this.#loadClass(
       runtime,
-      "src/core/casting_distance.js",
+      "src/game/domain/casting/cast_distance_calculator.js",
       "CastDistanceCalculator",
     );
     this.#loadClass(
       runtime,
-      "src/core/line/line_inventory_controller.js",
+      "src/game/application/inventory/line_inventory_controller.js",
       "LineInventoryController",
     );
     return runtime.context;

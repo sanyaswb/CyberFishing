@@ -1071,91 +1071,91 @@ class FishRarityCheck {
 
 const runtime = new RuntimeLoader().loadClasses([
   {
-    relativePath: "src/core/fish/fish_rarity_resolver.js",
+    relativePath: "src/game/domain/fish/fish_rarity_resolver.js",
     classNames: ["FishRarityResolver"],
   },
   {
-    relativePath: "src/core/fish/fish_anomaly_variant_resolver.js",
+    relativePath: "src/game/domain/fish/fish_anomaly_variant_resolver.js",
     classNames: ["FishAnomalyVariantResolver"],
   },
   {
-    relativePath: "src/core/fish/fish_visual_variant_resolver.js",
+    relativePath: "src/game/presentation/fish/fish_visual_variant_resolver.js",
     classNames: ["FishVisualVariantResolver"],
   },
   {
-    relativePath: "src/core/items/bait/bait_effectiveness_descriptor.js",
+    relativePath: "src/game/presentation/inventory/bait_effectiveness_descriptor.js",
     classNames: ["BaitEffectivenessDescriptor"],
   },
   {
-    relativePath: "src/core/items/freshness/bait_freshness_modifier.js",
+    relativePath: "src/game/domain/items/freshness/bait_freshness_modifier.js",
     classNames: ["BaitFreshnessModifier"],
   },
   {
-    relativePath: "src/core/items/bait/bait_effectiveness_match.js",
+    relativePath: "src/game/domain/items/bait/bait_effectiveness_match.js",
     classNames: ["BaitEffectivenessMatch"],
   },
   {
-    relativePath: "src/core/items/bait/bait_effectiveness_grade_policy.js",
+    relativePath: "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
     classNames: ["BaitEffectivenessGradePolicy"],
   },
   {
-    relativePath: "src/core/items/bait/bait_effectiveness_knowledge_policy.js",
+    relativePath: "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
     classNames: [
       "BaitEffectivenessKnowledgePolicy",
       "AlwaysKnownBaitEffectivenessPolicy",
     ],
   },
   {
-    relativePath: "src/core/items/bait/bait_effectiveness_resolver.js",
+    relativePath: "src/game/domain/items/bait/bait_effectiveness_resolver.js",
     classNames: ["BaitEffectivenessResolver"],
   },
   {
     // Production loads the fish physics profile before the bite system; without it BiteSystem fell back to raw physics.
-    relativePath: "src/entities/fish.js",
+    relativePath: "src/game/domain/fish/fish.js",
     classNames: ["FishPhysicsProfile"],
   },
   {
-    relativePath: "src/systems/bite_system.js",
+    relativePath: "src/game/application/fishing/bite_service.js",
     classNames: ["BiteSystem"],
   },
   {
-    relativePath: "src/render/screens/rarity_animation_resolver.js",
+    relativePath: "src/game/presentation/screens/rarity_animation_resolver.js",
     classNames: ["RarityAnimationResolver"],
   },
   {
-    relativePath: "src/ui/styles/rarity_visual_resolver.js",
+    relativePath: "src/game/presentation/styles/rarity_visual_resolver.js",
     classNames: ["RarityVisualResolver"],
   },
   {
-    relativePath: "src/render/screens/victory_theme_resolver.js",
+    relativePath: "src/game/presentation/screens/victory_theme_resolver.js",
     classNames: ["VictoryThemeResolver"],
   },
   {
-    relativePath: "src/config/validation/item_rarity_config_validator.js",
+    relativePath: "src/game/config/validation/item_rarity_config_validator.js",
     classNames: ["ItemRarityConfigValidator"],
   },
   {
-    relativePath: "src/config/validation/rarity_config_validator.js",
+    relativePath: "src/game/config/validation/rarity_config_validator.js",
     classNames: ["RarityConfigValidator"],
   },
   {
-    relativePath: "src/render/core/image_asset_provider.js",
+    relativePath: "src/platform/browser/assets/image_asset_provider.js",
     classNames: ["ImageAssetProvider"],
   },
   {
-    relativePath: "src/render/core/render_frame_buffer.js",
+    relativePath: "src/game/presentation/rendering/render_frame_buffer.js",
     classNames: ["GameRenderFrame"],
   },
   {
-    relativePath: "src/app/rendering/outcome_render_frame_builder.js",
+    relativePath: "src/game/presentation/screens/outcome_render_frame_builder.js",
     classNames: ["OutcomeRenderFrameBuilder"],
   },
   {
-    relativePath: "src/app/fixed_catch_fish_factory.js",
+    relativePath: "src/game/application/fishing/fixed_catch_fish_factory.js",
     classNames: ["FixedCatchFishFactory"],
   },
   {
-    relativePath: "src/debug/services/hooked_fish_profile_synchronizer.js",
+    relativePath: "src/dev/fishing/hooked_fish_profile_synchronizer.js",
     classNames: ["HookedFishProfileSynchronizer"],
   },
 ]);

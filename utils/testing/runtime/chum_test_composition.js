@@ -6,9 +6,9 @@ function checkChumComposition() {
   const nodes=[];
   const document={createElement(){const node={style:{},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
   const runtime=new SourceRuntime({globals:{document,console:{log(){}}}});
-  runtime.load('src/ui/legacy/chum_controls.js',{expose:['ChumUI']});
+  runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumUI']});
   runtime.load('src/game/application/casting/cast_power_aim.js');
-  runtime.load('src/app/chum.js',{expose:['ChumController']});
+  runtime.load('src/bootstrap/production/chum_feature_bootstrap.js',{expose:['ChumController']});
   const bounds={left:0,right:800,top:0,bottom:600},clock={now:1000},boats=[],drops=[],consumed=[],warnings=[],invalid=[];
   const hand={id:'hand',instanceId:'hand-1',quantity:3};
   const equipped={handChum:hand,delivery:null,deliveryChums:[{id:'first'},null,{id:'second'}]};

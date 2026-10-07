@@ -48,17 +48,17 @@ class EquipmentHydrationRuntime {
       }
     };
 
-    load("src/core/inventory/inventory_item_location.js", ["InventoryItemLocationKind", "InventoryItemLocation"]);
-    load("src/core/inventory/flat_inventory_item_repository.js", ["FlatInventoryItemRepository"]);
-    load("src/core/items/effective_item_stats_resolver.js", ["EffectiveItemStatsResolver"]);
-    load("src/application/inventory/inventory_v2_item_hydrator.js", ["InventoryV2ItemHydrator"]);
-    load("src/core/assemblies/item_assembly_reader.js", ["ItemAssemblyReader"]);
-    load("src/application/inventory/equipment_read_model_factory.js", ["EquipmentReadModelFactory"]);
-    load("src/core/distance_unit_converter.js", ["DistanceUnitConverter"]);
-    load("src/core/casting_distance.js", ["CastDistanceCalculator"]);
-    load("src/core/line/line_spool_state.js", ["LineSpoolState"]);
-    load("src/systems/line_system.js", ["LineSystem"]);
-    load("src/app/fishing.js", ["FightSessionFactory"]);
+    load("src/game/domain/inventory/inventory_item_location.js", ["InventoryItemLocationKind", "InventoryItemLocation"]);
+    load("src/game/domain/inventory/flat_inventory_item_repository.js", ["FlatInventoryItemRepository"]);
+    load("src/game/domain/items/effective_item_stats_resolver.js", ["EffectiveItemStatsResolver"]);
+    load("src/game/application/inventory/inventory_item_hydrator.js", ["InventoryV2ItemHydrator"]);
+    load("src/game/domain/assemblies/item_assembly_reader.js", ["ItemAssemblyReader"]);
+    load("src/game/application/inventory/equipment_read_model_factory.js", ["EquipmentReadModelFactory"]);
+    load("src/game/domain/casting/distance_unit_converter.js", ["DistanceUnitConverter"]);
+    load("src/game/domain/casting/cast_distance_calculator.js", ["CastDistanceCalculator"]);
+    load("src/game/domain/fishing/line_spool_state.js", ["LineSpoolState"]);
+    load("src/game/domain/fishing/line_system.js", ["LineSystem"]);
+    load("src/game/application/fishing/fishing_runtime_services.js", ["FightSessionFactory"]);
   }
 }
 

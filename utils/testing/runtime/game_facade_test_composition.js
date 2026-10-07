@@ -4,7 +4,7 @@ const { SourceRuntime } = require("../core/source_runtime");
 
 async function checkGameFacadeComposition() {
   const runtime = new SourceRuntime();
-  runtime.load("src/app/game.js", { expose: ["Game"] });
+  runtime.load("src/bootstrap/production/game.js", { expose: ["Game"] });
   const Game = runtime.context.Game, calls = [];
   let resolveBuild, outcome = false;
   const app = {

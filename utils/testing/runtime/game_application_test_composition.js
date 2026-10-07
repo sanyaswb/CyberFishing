@@ -6,7 +6,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const errors=[],events=[],disposed=[],warnings=[];
   class FixedDate extends Date { constructor(...args){super(...(args.length?args:[Date.UTC(2026,9,4)]));} static now(){return Date.UTC(2026,9,4);} }
   const source=new SourceRuntime({globals:{Date:FixedDate,performance:{now:()=>0},console:{log(){},error(...args){errors.push(args);}}}});
-  source.load('src/core/math/vector2.js');
+  source.load('src/engine/math/vector2.js');
   source.importModule('src/bootstrap/production/game_application.js');
   source.importModule('src/platform/browser/diagnostics/console_logger.js');
   for(const name of ['BaitFactory','Net','ConfigProvider','EventLifecycle','FishingCastExposureResolver','GameClock','InventoryItemLocation','RodVisualOffsetSystem','ConsoleLogger']) {
@@ -14,8 +14,8 @@ async function checkGameApplicationComposition(diagnostics = true) {
     if(owners.length!==1)throw new Error('Expected one canonical export: '+name);
     source.context[name]=owners[0][name];
   }
-  source.load('src/config/databases/fish_db.js',{expose:['FISH_DB']});
-  source.load('src/app/application.js',{expose:['GameApplication','GameViewportFacade','GameDebugFacade','GameFishingFacade']});
+  source.load('src/game/config/databases/fish_database.js',{expose:['FISH_DB']});
+  source.load('src/bootstrap/production/game_application.js',{expose:['GameApplication','GameViewportFacade','GameDebugFacade','GameFishingFacade']});
   function target(){const handlers=new Map();return{handlers,addEventListener(type,fn){const list=handlers.get(type)||[];list.push(fn);handlers.set(type,list);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(item=>item!==fn));},emit(type,detail){for(const fn of handlers.get(type)||[])fn({detail});}};}
   const windowTarget=target(),documentTarget=target(),clock={now:1000},bounds={left:0,right:800,top:0,bottom:600};
   const config={ui:{rod:{x:'center'}},casting:{enabled:true},debug:{timeScale:2},locations:{lake:{enabled:true}},physics:{fight:{rodControl:{}}}};

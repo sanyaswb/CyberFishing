@@ -54,19 +54,19 @@ class RuntimeLoader {
         },
       },
     });
-    this.#run(runtime, "src/core/math/vector2.js", ["Vector2"]);
-    this.#run(runtime, "src/core/core.js", ["InputManager"]);
+    this.#run(runtime, "src/engine/math/vector2.js", ["Vector2"]);
+    this.#run(runtime, "src/platform/browser/input/input_manager.js", ["InputManager"]);
     this.#run(
       runtime,
-      "src/input/victory_action_gesture_resolver.js",
+      "src/game/presentation/input/victory_action_gesture_resolver.js",
       ["VictoryActionGestureResolver"],
     );
     this.#run(
       runtime,
-      "src/render/screens/victory_layout_resolver.js",
+      "src/game/presentation/screens/victory_layout_resolver.js",
       ["VictoryLayoutResolver"],
     );
-    this.#run(runtime, "src/app/states.js", ["VictoryState"]);
+    this.#run(runtime, "src/game/application/state/game_state_machine.js", ["VictoryState"]);
     return runtime.context;
   }
 
@@ -279,8 +279,8 @@ new VictoryInputCheck(new RuntimeLoader().load()).run();
 function checkFightInputFrames() {
   const assert=require("node:assert/strict");
   const runtime=new SourceRuntime({globals:{window:{}}});
-  runtime.load("src/core/input/fight_input_action_composer.js",{expose:["FightInputActionComposer"]});
-  runtime.load("src/input/pull_input_mapper.js",{expose:["PullInputMapper"]});
+  runtime.load("src/game/application/input/fight_input_action_composer.js",{expose:["FightInputActionComposer"]});
+  runtime.load("src/game/application/input/pull_input_mapper.js",{expose:["PullInputMapper"]});
   runtime.run('globalThis.inputFreezeCount=0; const originalInputFreeze=Object.freeze; Object.freeze=value=>{globalThis.inputFreezeCount++;return originalInputFreeze(value);};');
   const composer=new runtime.context.FightInputActionComposer(),mapper=new runtime.context.PullInputMapper();
   const before=runtime.run("globalThis.inputFreezeCount");

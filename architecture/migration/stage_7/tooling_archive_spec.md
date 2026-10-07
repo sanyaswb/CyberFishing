@@ -4,7 +4,11 @@ Written: 2026-10-07 (Europe/Kiev). Implementation baseline: pushed `v0.27.2`,
 `e80d983ba8b9c891c2e504115a1f39cbfe22ab70`. D1-D4 and the patch release are complete.
 This specification covers the first Stage 7 transition only; it does not reopen Stage 6.
 
-Status: audited proposal; the exact three-check catalog change awaits the owner's decision.
+Status: preparation 001 accepted; the exact three-check catalog change awaits the owner's decision.
+Canonical test paths/config composition: [001_native-test-paths.json](preparations/001_native-test-paths.json),
+[uncached Full 64/64](../../archive/stage7_native_paths_acceptance.json). Raw recovery tag
+`stage7-compat-tools-archive` -> `aeb43037f4d4963cc4b8ccabfcb2bc96b6ab1cd0`, parent `a33c7ca`.
+No runtime/HTML/package/catalog change; live builder consumers remain the next preparation.
 Inventory: [tooling_archive_inventory.json](tooling_archive_inventory.json). Current queue and
 owner rules: [stage_7_handoff.md](../stage_7_handoff.md). Accepted release evidence:
 [Full 64/64](../../archive/pre_stage7_0272_acceptance.json),

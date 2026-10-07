@@ -8,16 +8,16 @@ class ItemStateHardeningRuntimeLoader {
   load() {
     const runtime = new SourceRuntime();
     runtime.loadMany([
-      "src/config/items/item_stat_override_config.js",
-      "src/core/items/item_stat_override_policy.js",
-      "src/core/items/effective_item_stats_resolver.js",
-      "src/application/inventory/inventory_v2_item_hydrator.js",
-      "src/core/items/freshness/item_freshness_state_policy.js",
-      "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-      "src/infrastructure/storage/legacy_item_state_migration.js",
-      "src/infrastructure/storage/inventory_v2_state_store.js",
-      "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
-      "src/infrastructure/storage/inventory_v2_snapshot_factory.js",
+      "src/game/config/raw/items/item_stat_overrides.js",
+      "src/game/domain/items/item_stat_override_policy.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
+      "src/game/application/inventory/inventory_item_hydrator.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "src/game/application/inventory/persistence/inventory_state_store.js",
+      "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+      "src/game/application/inventory/persistence/inventory_snapshot_factory.js",
     ]).expose({
       OverridePolicy: "ItemStatOverridePolicy",
       EffectiveStatsResolver: "EffectiveItemStatsResolver",

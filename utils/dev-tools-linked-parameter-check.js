@@ -11,12 +11,12 @@ class RuntimeLoader {
     const runtime = new SourceRuntime({ globals: { window: {} } });
     this.#run(
       runtime,
-      "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "src/dev/services/dev_tools_parameter_alias_registry.js",
       ["DevToolsParameterAliasRegistry"],
     );
     this.#run(
       runtime,
-      "src/debug/services/dev_tools_control_binding_registry.js",
+      "src/dev/services/dev_tools_control_binding_registry.js",
       ["DevToolsControlBindingRegistry"],
     );
     return runtime.context;
@@ -112,7 +112,7 @@ class DevToolsLinkedParameterCheck {
   }
 
   #checksCanonicalConfigStorage() {
-    const source = new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
+    const source = new SourceRuntime().readAuthoredSource("src/game/config/runtime/game_config.js");
     const fixedCatchBlock = source.match(/fixedCatch:\s*\{([\s\S]*?)\n\s*\},/u);
     Assertion.that(fixedCatchBlock, "fixedCatch config block exists");
     Assertion.that(

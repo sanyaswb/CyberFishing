@@ -1,6 +1,6 @@
 const path = require("node:path");
 const vm = require("node:vm");
-const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({
@@ -28,16 +28,16 @@ const context = vm.createContext({
 // Migrated classic paths are activation shims (or retired ones): the loader runs the runtime first and renders
 // retired activations test-only, so the check keeps naming the same classes.
 const files = [
-  "src/core/equipment/auto_refill_policy.js",
-  "src/application/inventory/equipment_auto_refill_target_provider.js",
-  "src/app/inventory.js",
-  "src/app/fishing.js",
-  "src/app/chum.js",
-  "src/systems/chum_system.js",
-  "src/systems/bite_system.js",
+  "src/game/domain/equipment/auto_refill_policy.js",
+  "src/game/application/inventory/equipment_auto_refill_target_provider.js",
+  "src/game/application/inventory/equipment_service.js",
+  "src/game/application/fishing/fishing_runtime_services.js",
+  "src/bootstrap/production/chum_feature_bootstrap.js",
+  "src/game/application/chum/chum_service.js",
+  "src/game/application/fishing/bite_service.js",
 ];
 
-new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(files);
+new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
 
 vm.runInContext(
   `

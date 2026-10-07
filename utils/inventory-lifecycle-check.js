@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
@@ -54,7 +54,7 @@ class InventoryEventProbe {
 }
 
 class InventoryRuntimeLoader {
-  #compatibilityLoader;
+  #moduleLoader;
   load() {
     const context = vm.createContext({
       CacheManager: MemoryCacheManager,
@@ -66,95 +66,94 @@ class InventoryRuntimeLoader {
       console,
     });
 
-    this.#compatibilityLoader = new StageThreeCompatibilityTestLoader({projectRoot:ROOT,context});
-    this.#compatibilityLoader.loadRuntime();
+    this.#moduleLoader = new NativeEsmTestLoader({projectRoot:ROOT,context});
 
     this.#loadSlotConfig(context);
     this.#loadClass(
       context,
-      "src/core/line/line_allocation_policy.js",
+      "src/game/domain/line/line_allocation_policy.js",
       "LineAllocationPolicy",
     );
     this.#loadClass(
       context,
-      "src/core/line/line_inventory_controller.js",
+      "src/game/application/inventory/line_inventory_controller.js",
       "LineInventoryController",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/item_rarity_descriptor.js",
+      "src/game/domain/items/rarity/item_rarity_descriptor.js",
       "ItemRarityDescriptor",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/item_rarity_strategy.js",
+      "src/game/domain/items/rarity/item_rarity_strategy.js",
       "ItemRarityStrategy",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/authored_item_rarity_strategy.js",
+      "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
       "AuthoredItemRarityStrategy",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/item_rarity_strategy_registry.js",
+      "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
       "ItemRarityStrategyRegistry",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/item_rarity_resolver.js",
+      "src/game/domain/items/rarity/item_rarity_resolver.js",
       "ItemRarityResolver",
     );
     this.#loadClass(
       context,
-      "src/core/items/rarity/effective_item_rarity_resolver.js",
+      "src/game/domain/items/rarity/effective_item_rarity_resolver.js",
       "EffectiveItemRarityResolver",
     );
     this.#loadClass(
       context,
-      "src/core/inventory/inventory_item_stacking_policy.js",
+      "src/game/domain/inventory/inventory_item_stacking_policy.js",
       "InventoryItemStackingPolicy",
     );
     this.#loadSlotConfigFile(
       context,
-      "src/config/items/item_stat_override_config.js",
+      "src/game/config/raw/items/item_stat_overrides.js",
     );
     this.#loadClass(
       context,
-      "src/core/items/item_stat_override_policy.js",
+      "src/game/domain/items/item_stat_override_policy.js",
       "ItemStatOverridePolicy",
     );
     this.#loadClass(
       context,
-      "src/core/items/effective_item_stats_resolver.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
       "EffectiveItemStatsResolver",
     );
     this.#loadClass(
       context,
-      "src/systems/inventory_item_factory.js",
+      "src/game/application/inventory/inventory_item_factory.js",
       "InventoryItemFactory",
     );
-    this.#loadSlotConfigFile(context, "src/config/inventory/equipment_slot_presentation_config.js");
-    this.#loadSlotConfigFile(context, "src/config/inventory/inventory_rule_messages.js");
-    this.#compatibilityLoader.load("src/systems/inventory_system.js", ["InventoryManager", "LineCompatibilityRules", "InventoryEventBridge"]);
+    this.#loadSlotConfigFile(context, "src/game/presentation/inventory/equipment_slot_presentation.js");
+    this.#loadSlotConfigFile(context, "src/game/presentation/inventory/inventory_rule_messages.js");
+    this.#moduleLoader.load("src/game/application/inventory/legacy_inventory_system.js", ["InventoryManager", "LineCompatibilityRules", "InventoryEventBridge"]);
     vm.runInContext("globalThis.LineCompatibilityRules = LineCompatibilityRules;\n" +
       "globalThis.INVENTORY_RULE_MESSAGES = INVENTORY_RULE_MESSAGES;", context);
     return context;
   }
 
   #loadSlotConfig(context) {
-    const source = new SourceRuntime().readAuthoredSource("src/config/runtime/config_data.js");
+    const source = new SourceRuntime().readAuthoredSource("src/game/config/runtime/game_config.js");
     const match = source.match(/const SLOT_CONFIG = [\s\S]*?\n};/);
     Assertion.that(match, "SLOT_CONFIG can be loaded for integration checks");
     vm.runInContext(`${match[0]}\nglobalThis.SLOT_CONFIG = SLOT_CONFIG;`, context);
   }
 
   #loadSlotConfigFile(context, relativePath) {
-    this.#compatibilityLoader.load(relativePath);
+    this.#moduleLoader.load(relativePath);
   }
 
   #loadClass(context, relativePath, className) {
-    this.#compatibilityLoader.load(relativePath,[className]);
+    this.#moduleLoader.load(relativePath,[className]);
   }
 
   #read(relativePath) {

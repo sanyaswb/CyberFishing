@@ -1,40 +1,40 @@
 const path = require("node:path");
 const vm = require("node:vm");
 const {
-  StageThreeCompatibilityTestLoader,
-} = require("./testing/runtime/stage_three_compatibility_test_loader");
+  NativeEsmTestLoader,
+} = require("./testing/runtime/native_esm_test_loader");
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 const files = [
-  "src/config/inventory/item_assembly_profile_config.js",
-  "src/config/inventory/equipment_slot_config.js",
-  "src/config/items/item_stat_override_config.js",
-  "src/core/items/item_stat_override_policy.js",
-  "src/core/items/effective_item_stats_resolver.js",
-  "src/core/items/freshness/item_freshness_state_policy.js",
-  "src/infrastructure/storage/inventory_item_snapshot_mapper.js",
-  "src/infrastructure/storage/legacy_item_state_migration.js",
-  "src/core/inventory/inventory_item_location.js",
-  "src/core/inventory/flat_inventory_item_repository.js",
-  "src/core/inventory/item_assembly_stacking_policy.js",
-  "src/core/inventory/unlimited_assembly_capacity_policy.js",
-  "src/core/assemblies/assembly_state.js",
-  "src/core/assemblies/assembly_state_repository.js",
-  "src/core/assemblies/assembly_profile_registry.js",
-  "src/core/assemblies/item_assembly_reader.js",
-  "src/core/assemblies/exact_assembly_refill_signature_policy.js",
-  "src/core/assemblies/item_assembly_service.js",
-  "src/core/equipment/rod_capability_resolver.js",
-  "src/core/equipment/equipment_state.js",
-  "src/core/loadouts/equipment_loadout.js",
-  "src/core/loadouts/equipment_loadout_repository.js",
-  "src/infrastructure/storage/legacy_inventory_unit_allocator.js",
-  "src/infrastructure/storage/inventory_v2_snapshot_migration.js",
-  "src/infrastructure/storage/inventory_v2_state_store.js",
-  "src/infrastructure/storage/inventory_v2_legacy_migration.js",
+  "src/game/config/raw/inventory/item_assembly_profiles.js",
+  "src/game/domain/equipment/equipment_slot_catalog.js",
+  "src/game/config/raw/items/item_stat_overrides.js",
+  "src/game/domain/items/item_stat_override_policy.js",
+  "src/game/domain/items/effective_item_stats_resolver.js",
+  "src/game/domain/items/freshness/item_freshness_state_policy.js",
+  "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+  "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+  "src/game/domain/inventory/inventory_item_location.js",
+  "src/game/domain/inventory/flat_inventory_item_repository.js",
+  "src/game/domain/inventory/item_assembly_stacking_policy.js",
+  "src/game/domain/inventory/unlimited_assembly_capacity_policy.js",
+  "src/game/domain/assemblies/assembly_state.js",
+  "src/game/domain/assemblies/assembly_state_repository.js",
+  "src/game/domain/assemblies/assembly_profile_registry.js",
+  "src/game/domain/assemblies/item_assembly_reader.js",
+  "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
+  "src/game/domain/assemblies/item_assembly_service.js",
+  "src/game/domain/equipment/rod_capability_resolver.js",
+  "src/game/domain/equipment/equipment_state.js",
+  "src/game/domain/loadouts/equipment_loadout.js",
+  "src/game/domain/loadouts/equipment_loadout_repository.js",
+  "src/game/application/inventory/legacy_inventory_unit_allocator.js",
+  "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
+  "src/game/application/inventory/persistence/inventory_state_store.js",
+  "src/game/application/inventory/persistence/inventory_legacy_migration.js",
 ];
-new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll(files);
+new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
 
 vm.runInContext(
   `

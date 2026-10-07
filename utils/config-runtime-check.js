@@ -1,4 +1,5 @@
 "use strict";
+const { composeTestConfig } = require("./testing/runtime/config_test_composition");
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { NativeDevelopmentRetirement } = require("./architecture/stage_six/native_development_retirement");
@@ -10,17 +11,17 @@ function check(structured) {
   const runtime = new SourceRuntime({globals:{window:{},CONFIG:config,RARITY_VISUAL_CONFIG:visual,DEGRADATION_COLOR_CONFIG:degradation,
     ...(structured ? {structuredClone:value=>{cloneCalls++;return structuredClone(value);}} : {})}});
   for(const [file,expose] of [
-    ["src/infrastructure/config/deep_clone_config.js",["deepCloneConfig"]],
-    ["src/config/runtime/config_override_store.js",["ConfigOverrideStore"]],
-    ["src/config/runtime/resolved_config_provider.js",["ResolvedConfigProvider"]],
-    ["src/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
-    ["src/config/runtime/config_context_composition.js",["createRuntimeConfigContext"]],
-    ["src/config/config.js",["createRuntimeConfigContext","CONFIG_RUNTIME_CONTEXT","BASE_CONFIG","CONFIG_OVERRIDE_STORE","RESOLVED_CONFIG_PROVIDER"]],
-    ["src/app/bootstrap.js",["GameCompositionRoot"]],
-    ["src/app/adapters.js",["ConfigProvider"]],
-    ["src/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
-    ["src/debug/overlay/services/overlay_metric_resolver.js",["OverlayMetricResolver"]],
+    ["src/platform/browser/config/deep_clone_config.js",["deepCloneConfig"]],
+    ["src/game/config/runtime/config_override_store.js",["ConfigOverrideStore"]],
+    ["src/game/config/runtime/resolved_config_provider.js",["ResolvedConfigProvider"]],
+    ["src/game/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
+    ["src/bootstrap/production/config_context.js",["createRuntimeConfigContext"]],
+    ["src/bootstrap/production/game_composition_root.js",["GameCompositionRoot"]],
+    ["src/platform/browser/runtime/legacy_runtime_adapters.js",["ConfigProvider"]],
+    ["src/game/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
+    ["src/dev/overlay/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});
+  composeTestConfig(file => runtime.importModule(file), runtime.context);
   const {CONFIG_RUNTIME_CONTEXT:ctx,BASE_CONFIG:base,CONFIG_OVERRIDE_STORE:store,RESOLVED_CONFIG_PROVIDER:provider} = runtime.context;
   assert.equal(config.rarity.visual,visual);
   assert.equal(config.degradationColors,degradation);
@@ -223,9 +224,9 @@ checkDevelopmentInputs();
 function checkProductionOverrideReader() {
   const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
   const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
-  source.load("src/debug/god_mode.js", { expose: ["GodMode"] });
-  source.load("src/app/adapters.js", { expose: ["DevFlagsProvider"] });
-  source.load("src/app/bootstrap.js", { expose: ["GameCompositionRoot"] });
+  source.load("src/dev/god_mode.js", { expose: ["GodMode"] });
+  source.load("src/platform/browser/runtime/legacy_runtime_adapters.js", { expose: ["DevFlagsProvider"] });
+  source.load("src/bootstrap/production/game_composition_root.js", { expose: ["GameCompositionRoot"] });
   const reader = new GameplayOverrideReader(config), original = new source.context.GodMode(config);
   const names = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(original))).filter(([, value]) => value.get).map(([name]) => name);
   const flags = new source.context.DevFlagsProvider({ config, godModeSource: () => reader });

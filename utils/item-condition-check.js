@@ -12,20 +12,20 @@ class RuntimeLoader {
   load() {
     const runtime = new SourceRuntime();
     runtime.loadMany([
-      "src/config/items/item_progression_config.js",
-      "src/config/items/item_stat_override_config.js",
-      "src/config/databases/item_db.js",
-      "src/core/items/item_stat_override_policy.js",
-      "src/core/items/effective_item_stats_resolver.js",
-      "src/config/validation/item_progression_config_validator.js",
-      "src/core/items/metrics/item_bounded_metric_resolver.js",
-      "src/core/items/condition/item_condition_descriptor.js",
-      "src/core/items/condition/item_condition_resolver.js",
-      "src/core/items/freshness/item_freshness_descriptor.js",
-      "src/core/items/freshness/item_freshness_state_policy.js",
-      "src/core/items/freshness/bait_freshness_decay_policy.js",
-      "src/core/items/freshness/item_freshness_resolver.js",
-      "src/ui/condition/item_condition_dom_adapter.js",
+      "src/game/config/items/item_progression_config.js",
+      "src/game/config/raw/items/item_stat_overrides.js",
+      "src/game/config/raw/items/item_database.js",
+      "src/game/domain/items/item_stat_override_policy.js",
+      "src/game/domain/items/effective_item_stats_resolver.js",
+      "src/game/config/validation/item_progression_config_validator.js",
+      "src/game/domain/items/metrics/item_bounded_metric_resolver.js",
+      "src/game/presentation/inventory/item_condition_descriptor.js",
+      "src/game/domain/items/condition/item_condition_resolver.js",
+      "src/game/presentation/inventory/item_freshness_descriptor.js",
+      "src/game/domain/items/freshness/item_freshness_state_policy.js",
+      "src/game/domain/items/freshness/bait_freshness_decay_policy.js",
+      "src/game/domain/items/freshness/item_freshness_resolver.js",
+      "src/platform/browser/dom/item_condition_dom_adapter.js",
     ]).expose({
       CONFIGURATION: "ITEM_PROGRESSION_CONFIG",
       DB: "ITEM_DB",
@@ -238,7 +238,7 @@ class ItemConditionCheck {
 
   #checkLifecycleContract() {
     const factory = new SourceRuntime().readAuthoredSource(
-      "src/systems/inventory_item_view_factory.js",
+      "src/game/presentation/inventory/inventory_item_view_factory.js",
     );
     const inventoryFactory = fs.readFileSync(
       path.join(ROOT, "src/game/application/inventory/inventory_item_factory.js"),

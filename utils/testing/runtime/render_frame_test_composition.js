@@ -4,18 +4,18 @@ const { SourceRuntime } = require('../core/source_runtime');
 // Real render builders/coordinator with deterministic state, projection, clock and external ports.
 function checkRenderFrameComposition() {
   const runtime=new SourceRuntime();
-  runtime.load('src/core/math/vector2.js',{expose:['Vector2']});
+  runtime.load('src/engine/math/vector2.js',{expose:['Vector2']});
   runtime.load('src/engine/rendering/render_math.js');
-  runtime.load('src/render/core/image_asset_provider.js',{expose:['ImageAssetProvider']});
-  runtime.load('src/render/core/render_frame_buffer.js',{expose:['GameRenderFrame','RenderFrameBuffer']});
-  runtime.load('src/render/core/render_order.js',{expose:['RenderOrder']});
-  runtime.load('src/render/pipeline/game_render_pipeline.js',{expose:['GameRenderPipeline']});
-  const definitions=[['boat_chum_render_frame_builder','BoatChumRenderFrameBuilder'],['casting_render_frame_builder','CastingRenderFrameBuilder'],
-    ['fight_area_render_frame_builder','FightAreaRenderFrameBuilder'],['fight_hud_frame_builder','FightHudFrameBuilder'],
-    ['fishing_equipment_render_model_builder','FishingEquipmentRenderModelBuilder'],['fishing_render_frame_builder','FishingRenderFrameBuilder'],
-    ['game_render_frame_builder','GameRenderFrameBuilder'],['landing_area_render_frame_builder','LandingAreaRenderFrameBuilder'],
-    ['outcome_render_frame_builder','OutcomeRenderFrameBuilder'],['world_render_frame_builder','WorldRenderFrameBuilder'],['game_render_intent','GameRenderIntent'],['game_render_coordinator','GameRenderCoordinator']];
-  for(const [file,name]of definitions)runtime.load('src/app/rendering/'+file+'.js',{expose:[name]});
+  runtime.load('src/platform/browser/assets/image_asset_provider.js',{expose:['ImageAssetProvider']});
+  runtime.load('src/game/presentation/rendering/render_frame_buffer.js',{expose:['GameRenderFrame','RenderFrameBuffer']});
+  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['RenderOrder']});
+  runtime.load('src/game/presentation/rendering/game_render_pipeline.js',{expose:['GameRenderPipeline']});
+  const definitions=[["src/game/presentation/rendering/boat_chum_render_frame_builder.js",'BoatChumRenderFrameBuilder'],["src/game/presentation/rendering/casting_render_frame_builder.js",'CastingRenderFrameBuilder'],
+    ["src/game/presentation/rendering/fight_area_render_frame_builder.js",'FightAreaRenderFrameBuilder'],["src/game/presentation/hud/fight_hud_frame_builder.js",'FightHudFrameBuilder'],
+    ["src/game/presentation/fishing/fishing_equipment_render_model_builder.js",'FishingEquipmentRenderModelBuilder'],["src/game/presentation/rendering/fishing_render_frame_builder.js",'FishingRenderFrameBuilder'],
+    ["src/game/presentation/rendering/game_render_frame_builder.js",'GameRenderFrameBuilder'],["src/game/presentation/rendering/landing_area_render_frame_builder.js",'LandingAreaRenderFrameBuilder'],
+    ["src/game/presentation/screens/outcome_render_frame_builder.js",'OutcomeRenderFrameBuilder'],["src/game/presentation/rendering/world_render_frame_builder.js",'WorldRenderFrameBuilder'],["src/game/presentation/rendering/game_render_intent.js",'GameRenderIntent'],["src/game/presentation/rendering/game_render_coordinator.js",'GameRenderCoordinator']];
+  for(const [file,name]of definitions)runtime.load(file,{expose:[name]});
   const c=runtime.context,metrics={width:800,height:600},clock={now:1000,realNow:1000};
   const projector={getScale:()=>1,getPerspective:()=>({scale:1,squashY:0.5}),virtualToScreen(x,y,out){out.x=x;out.y=y;return out;},screenToVirtual(x,y,out){out.x=x;out.y=y;return out;}};
   const config={canvas:{backgroundColor:'#123'},ui:{rod:{x:'center',yOffset:0},line:{}},tension:{breakThreshold:100},casting:{enabled:true,aimLine:{}},

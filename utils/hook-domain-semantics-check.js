@@ -10,10 +10,10 @@ class HookDomainSemanticsCheck {
   constructor() {
     this.#sourceRuntime = new SourceRuntime();
     this.#sourceRuntime.loadMany([
-      "src/config/databases/item_db.js",
-      "src/core/items/quality/item_quality_grade_policy.js",
-      "src/core/items/quality/hook_quality_modifier.js",
-      "src/core/items/hook/hook_power_policy.js",
+      "src/game/config/raw/items/item_database.js",
+      "src/game/domain/items/quality/item_quality_grade_policy.js",
+      "src/game/domain/items/quality/hook_quality_modifier.js",
+      "src/game/domain/items/hook/hook_power_policy.js",
     ]).expose({
       DB: "ITEM_DB",
       PowerPolicy: "HookPowerPolicy",
@@ -41,9 +41,9 @@ class HookDomainSemanticsCheck {
 
     // Batch 040 migrated the gameplay rules; the classic path is now the activation shim.
     const rules = this.#sourceRuntime.read("src/game/domain/rules/gameplay_rules.js");
-    const states = this.#sourceRuntime.readAuthoredSource("src/app/states.js");
-    const debug = this.#sourceRuntime.read("src/app/debug.js");
-    const formatter = this.#sourceRuntime.read("src/debug/services/debug_formatters.js");
+    const states = this.#sourceRuntime.readAuthoredSource("src/game/application/state/game_state_machine.js");
+    const debug = this.#sourceRuntime.read("src/dev/runtime/debug_service.js");
+    const formatter = this.#sourceRuntime.read("src/dev/formatting/debug_formatters.js");
     Assertion.that(
       rules.includes("hookSizeGrade") &&
         states.includes("hookSizeGrade") &&

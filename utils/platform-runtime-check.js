@@ -8,16 +8,16 @@ const { SourceRuntime } = require("./testing/core/source_runtime");
 
 // Actual Canvas renderers and composites over reused visible/hidden models and deterministic draw commands.
 function checkCanvasScenes() {
-  const runtime=new SourceRuntime();runtime.load('src/ui/styles/degradation_color_resolver.js',{expose:['DegradationColorResolver']});
+  const runtime=new SourceRuntime();runtime.load('src/game/presentation/styles/degradation_color_resolver.js',{expose:['DegradationColorResolver']});
   for(const file of ['render_math','composite_renderer','render_pass'])runtime.load('src/engine/rendering/'+file+'.js');
-  const definitions=[['hud/hud_bar_renderer','HudBarRenderer'],['casting/cast_scene_renderer','CastSceneRenderer'],['fishing/fight_area_renderer','FightAreaRenderer'],
-    ['fishing/float_renderer','FloatRenderer'],['fishing/rod_line_renderer','RodLineRenderer'],['hud/fight_status_bars_renderer','FightStatusBarsRenderer'],
-    ['hud/hold_charges_renderer','HoldChargesRenderer'],['hud/player_pressure_fatigue_indicator_renderer','PlayerPressureFatigueIndicatorRenderer'],
-    ['screens/game_over_renderer','GameOverRenderer'],['screens/star_rating_renderer','StarRatingRenderer'],['screens/victory_renderer','VictoryRenderer'],
-    ['world/boat_chum_renderer','BoatChumRenderer'],['world/world_scene_renderer','WorldSceneRenderer'],['fishing/fishing_scene_renderer','FishingSceneRenderer'],
-    ['hud/fight_hud_renderer','FightHudRenderer'],['pipeline/casting_render_pass','CastingRenderPass'],['pipeline/fishing_render_pass','FishingRenderPass'],
-    ['pipeline/hud_render_pass','HudRenderPass'],['pipeline/outcome_render_pass','OutcomeRenderPass'],['pipeline/world_render_pass','WorldRenderPass']];
-  for(const [file,name]of definitions)runtime.load('src/render/'+file+'.js',{expose:[name]});
+  const definitions=[["src/game/presentation/hud/hud_bar_renderer.js",'HudBarRenderer'],["src/game/presentation/casting/cast_scene_renderer.js",'CastSceneRenderer'],["src/game/presentation/fishing/fight_area_renderer.js",'FightAreaRenderer'],
+    ["src/game/presentation/fishing/float_renderer.js",'FloatRenderer'],["src/game/presentation/fishing/rod_line_renderer.js",'RodLineRenderer'],["src/game/presentation/hud/fight_status_bars_renderer.js",'FightStatusBarsRenderer'],
+    ["src/game/presentation/hud/hold_charges_renderer.js",'HoldChargesRenderer'],["src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js",'PlayerPressureFatigueIndicatorRenderer'],
+    ["src/game/presentation/screens/game_over_renderer.js",'GameOverRenderer'],["src/game/presentation/screens/star_rating_renderer.js",'StarRatingRenderer'],["src/game/presentation/screens/victory_renderer.js",'VictoryRenderer'],
+    ["src/game/presentation/world/boat_chum_renderer.js",'BoatChumRenderer'],["src/game/presentation/world/world_scene_renderer.js",'WorldSceneRenderer'],["src/game/presentation/fishing/fishing_scene_renderer.js",'FishingSceneRenderer'],
+    ["src/game/presentation/hud/fight_hud_renderer.js",'FightHudRenderer'],["src/game/presentation/rendering/casting_render_pass.js",'CastingRenderPass'],["src/game/presentation/rendering/fishing_render_pass.js",'FishingRenderPass'],
+    ["src/game/presentation/rendering/hud_render_pass.js",'HudRenderPass'],["src/game/presentation/rendering/outcome_render_pass.js",'OutcomeRenderPass'],["src/game/presentation/rendering/world_render_pass.js",'WorldRenderPass']];
+  for(const [file,name]of definitions)runtime.load(file,{expose:[name]});
   const c=runtime.context,commands=[],stack=[],surface={globalAlpha:1};
   const drawMethods=['beginPath','closePath','moveTo','lineTo','arc','ellipse','quadraticCurveTo','rect','clip','fill','stroke','fillRect','strokeRect','fillText','translate','rotate','setLineDash','drawImage','drawCurrentSurface','clear'];
   for(const name of drawMethods)surface[name]=(...args)=>{for(const value of args)if(typeof value==='number')assert(Number.isFinite(value),name+' received a non-finite coordinate');commands.push([name,...args]);};
@@ -75,10 +75,10 @@ function checkCanvasScenes() {
 // Repeated render-frame storage and ordering checks; no drawing or gameplay state ownership.
 function checkRenderStorage() {
   const runtime=new SourceRuntime();
-  runtime.load('src/render/core/render_frame_buffer.js',{expose:['ReusableRenderList','GameRenderFrame','RenderFrameBuffer']});
-  runtime.load('src/render/core/render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE','NO_RENDER_EXPORT']});
+  runtime.load('src/game/presentation/rendering/render_frame_buffer.js',{expose:['ReusableRenderList','GameRenderFrame','RenderFrameBuffer']});
+  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE','NO_RENDER_EXPORT']});
   assert.equal(runtime.context.NO_RENDER_EXPORT,undefined,'unknown explicit names do not create exports');
-  runtime.load('src/app/rendering/game_render_intent.js',{expose:['GameRenderIntent']});
+  runtime.load('src/game/presentation/rendering/game_render_intent.js',{expose:['GameRenderIntent']});
   const c=runtime.context, growth=[],diagnostics={recordFrameCreated(){growth.push('frame');},recordBufferGrowth(id){growth.push(id);}};
   const buffer=new c.RenderFrameBuffer({diagnostics}),frame=buffer.current,intent=new c.GameRenderIntent();
   const names=['world.backgroundLayers','world.clipRegions','world.dynamicZones','world.chumZones','world.waypoints','world.boats','world.sensorRays',
@@ -173,9 +173,9 @@ function checkBrowserWidgets() {
   const runtime=new SourceRuntime({globals:{document,window:{innerWidth:300,innerHeight:200},console:{log(){},warn(){}},
     ...document.defaultView,
     setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
-  const definitions=[['engine_interface','UI_EXCEPTIONS','initEngineInterface'],['ui_event_shield','UIUtils'],['draggable_button','UIDraggableButton'],
-    ['game_controls','UIManager'],['chum_controls','ChumUI'],['depth_selector','DepthSelectorUI'],['time_display','TimeDisplayUI'],['hold_charges','HoldChargesUI']];
-  for(const [file,...expose]of definitions)runtime.load('src/ui/legacy/'+file+'.js',{expose});
+  const definitions=[["src/platform/browser/dom/engine_interface.js",'UI_EXCEPTIONS','initEngineInterface'],["src/platform/browser/dom/ui_event_shield.js",'UIUtils'],["src/platform/browser/dom/draggable_button.js",'UIDraggableButton'],
+    ["src/platform/browser/ui/game_controls.js",'UIManager'],["src/platform/browser/ui/chum_controls.js",'ChumUI'],["src/platform/browser/ui/depth_selector.js",'DepthSelectorUI'],["src/platform/browser/ui/time_display.js",'TimeDisplayUI'],["src/platform/browser/ui/hold_charges.js",'HoldChargesUI']];
+  for(const [file,...expose]of definitions)runtime.load(file,{expose});
   const c=runtime.context;c.initEngineInterface();assert.equal(document.head.children.length,1);
   let blocked=false;document.emit('contextmenu',{target:{tagName:'DIV',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(blocked);
   blocked=false;document.emit('contextmenu',{target:{tagName:'INPUT',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(!blocked);
@@ -249,18 +249,18 @@ function checkTimeoutScheduler() {
 // Presentation frame consumers share style caches and reused line/layout frames; invalidation reads live config.
 function checkVisualFrames() {
   const runtime=new SourceRuntime();
-  runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
+  runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/rendering/render_math.js',{expose:['RenderMath']});
   const definitions=[
-    ['src/ui/styles/fight_area_style_resolver.js','FightAreaStyleResolver'],
-    ['src/ui/styles/hud_style_resolver.js','HudStyleResolver'],
-    ['src/ui/styles/outcome_style_resolver.js','OutcomeStyleResolver'],
-    ['src/render/screens/rarity_animation_resolver.js','RarityAnimationResolver'],
-    ['src/ui/styles/rarity_visual_resolver.js','RarityVisualResolver'],
-    ['src/render/screens/victory_theme_resolver.js','VictoryThemeResolver'],
-    ['src/render/screens/victory_layout_resolver.js','VictoryLayoutResolver'],
-    ['src/render/fishing/line_visual_state_controller.js','LineVisualStateController'],
-    ['src/systems/rod_visual_offset_system.js','RodVisualOffsetSystem'],
+    ['src/game/presentation/styles/fight_area_style_resolver.js','FightAreaStyleResolver'],
+    ['src/game/presentation/styles/hud_style_resolver.js','HudStyleResolver'],
+    ['src/game/presentation/styles/outcome_style_resolver.js','OutcomeStyleResolver'],
+    ['src/game/presentation/screens/rarity_animation_resolver.js','RarityAnimationResolver'],
+    ['src/game/presentation/styles/rarity_visual_resolver.js','RarityVisualResolver'],
+    ['src/game/presentation/screens/victory_theme_resolver.js','VictoryThemeResolver'],
+    ['src/game/presentation/screens/victory_layout_resolver.js','VictoryLayoutResolver'],
+    ['src/game/presentation/fishing/line_visual_state_controller.js','LineVisualStateController'],
+    ['src/game/presentation/fishing/rod_visual_offset_system.js','RodVisualOffsetSystem'],
   ];
   for(const [path,name] of definitions) runtime.load(path,{expose:[name]});
   const c=runtime.context;
@@ -323,7 +323,7 @@ function checkLongPressFrames(usePerformance) {
     cancelAnimationFrame(id){frames.delete(id);},
   };
   const runtime=new SourceRuntime({globals});
-  runtime.load("src/ui/inventory/inventory_v2_long_press_controller.js",{expose:["InventoryV2LongPressController"]});
+  runtime.load("src/platform/browser/dom/inventory_v2_long_press_controller.js",{expose:["InventoryV2LongPressController"]});
   const controller=new runtime.context.InventoryV2LongPressController();
   const element={ownerDocument:document,dataset:{},classList:{add(){},remove(){}},appendChild(){},
     addEventListener(name,callback){listeners.set(name,callback);},
@@ -378,10 +378,10 @@ async function checkGameLoopAndAdapters() {
     console:{log(){},warn(){},error:error=>errors.push(error)},
     requestAnimationFrame(callback){frames.set(++nextFrame,callback);return nextFrame;},
     cancelAnimationFrame(id){cancelled.push(id);frames.delete(id);}}});
-  runtime.load("src/app/core/game_clock.js",{expose:["GameClock"]});
+  runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
-  runtime.load("src/app/core/game_loop.js",{expose:["GameLoop"]});
-  runtime.load("src/app/adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
+  runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
+  runtime.load("src/platform/browser/runtime/legacy_runtime_adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
     "BrowserEventTargetAdapter","CanvasMetricsProvider","ConfigProvider","DevFlagsProvider"]});
   // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
   const adapters=runtime.importModule('src/platform/browser/runtime/legacy_runtime_adapters.js')||{};
@@ -493,14 +493,14 @@ async function main() {
   const runtime = new SourceRuntime({globals:{Date:FixedDate,performance:{now(){performanceReads++;return 50;}},
     document:{createElement(type){assert.equal(type,"canvas");const canvas={getContext(){return context;}};canvases.push(canvas);return canvas;}}}});
   for(const [file,name] of [
-    ["src/render/core/canvas_2d_surface.js","Canvas2DSurface"],
-    ["src/infrastructure/location/offscreen_canvas_factory.js","OffscreenCanvasFactory"],
-    ["src/render/core/image_asset_provider.js","ImageAssetProvider"],
-    ["src/infrastructure/location/depth_map_reader.js","DepthMapReader"],
-    ["src/infrastructure/location/location_asset_loader.js","LocationAssetLoader"],
-    ["src/app/core/game_clock.js","GameClock"],
-    ["src/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
-    ["src/infrastructure/storage/cache_manager.js","CacheManager"],
+    ["src/platform/browser/canvas/canvas_2d_surface.js","Canvas2DSurface"],
+    ["src/platform/browser/canvas/offscreen_canvas_factory.js","OffscreenCanvasFactory"],
+    ["src/platform/browser/assets/image_asset_provider.js","ImageAssetProvider"],
+    ["src/platform/browser/location/depth_map_reader.js","DepthMapReader"],
+    ["src/platform/browser/location/location_asset_loader.js","LocationAssetLoader"],
+    ["src/platform/browser/time/game_clock.js","GameClock"],
+    ["src/platform/browser/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
+    ["src/platform/browser/storage/cache_manager.js","CacheManager"],
   ]) runtime.load(file,{expose:[name]});
   for (const module of ['src/engine/assets/asset_manifest.js','src/engine/assets/asset_load_result.js']) runtime.load(module);
   const {GameClock,ImageAssetProvider,OffscreenCanvasFactory,LocationAssetLoader} = runtime.context;

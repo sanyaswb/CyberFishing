@@ -10,9 +10,9 @@ class RuntimeLoader {
   load() {
     const runtime = new SourceRuntime();
     runtime.loadMany([
-      "src/config/visual/degradation_color_config.js",
-      "src/config/validation/degradation_color_config_validator.js",
-      "src/ui/styles/degradation_color_resolver.js",
+      "src/game/presentation/visual/degradation_color_config.js",
+      "src/game/presentation/visual/degradation_color_config_validator.js",
+      "src/game/presentation/styles/degradation_color_resolver.js",
     ]).expose({
       CONFIGURATION: "DEGRADATION_COLOR_CONFIG",
       Validator: "DegradationColorConfigValidator",
@@ -103,7 +103,7 @@ class DegradationColorCheck {
 
   #checkCapacityIntegration() {
     const source = new SourceRuntime().readAuthoredSource(
-      "src/ui/progression/item_progression_visual_resolver.js",
+      "src/game/presentation/inventory/item_progression_visual_resolver.js",
     );
     const css = fs.readFileSync(
       path.join(ROOT, "src/ui/styles/style.css"),

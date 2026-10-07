@@ -4,14 +4,14 @@ const vm = require("vm");
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
 // Explicit imports also load retired shims in this test realm.
-const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
-new StageThreeCompatibilityTestLoader({ projectRoot: root, context }).loadAll([
-  "src/config/inventory/equipment_slot_presentation_config.js",
-  "src/config/inventory/inventory_rule_messages.js",
-  "src/core/inventory/inventory_item_location.js",
-  "src/core/inventory/flat_inventory_item_repository.js",
-  "src/core/line/line_allocation_policy.js",
-  "src/application/inventory/inventory_v2_line_allocation_service.js"
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
+new NativeEsmTestLoader({ projectRoot: root, context }).loadAll([
+  "src/game/presentation/inventory/equipment_slot_presentation.js",
+  "src/game/presentation/inventory/inventory_rule_messages.js",
+  "src/game/domain/inventory/inventory_item_location.js",
+  "src/game/domain/inventory/flat_inventory_item_repository.js",
+  "src/game/domain/line/line_allocation_policy.js",
+  "src/game/application/inventory/inventory_line_allocation_service.js"
 ]);
 
 vm.runInContext(`(() => {

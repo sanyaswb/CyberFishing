@@ -351,9 +351,9 @@ class StateLifecycleCheck {
 
 class CompositionSeamCheck {
   run() {
-    const bootstrap = new SourceRuntime().readAuthoredSource("src/app/bootstrap.js");
-    const application = new SourceRuntime().readAuthoredSource("src/app/application.js");
-    const inventory = new SourceRuntime().readAuthoredSource("src/systems/inventory_system.js");
+    const bootstrap = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_composition_root.js");
+    const application = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_application.js");
+    const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/legacy_inventory_system.js");
 
     Assertion.that(
       bootstrap.includes("castReadinessEvaluator: (equipment) =>") &&
@@ -381,15 +381,15 @@ class CompositionSeamCheck {
 }
 
 const runtime = new InventoryV2SourceRuntime();
-runtime.load("src/application/inventory/equipment_read_model_factory.js");
-runtime.load("src/app/rules.js");
-runtime.load("src/app/fishing.js");
-runtime.load("src/core/math/vector2.js");
-runtime.load("src/core/fishing/fishing_cast_exposure_resolver.js");
-runtime.load("src/core/fishing/retrieve_policy.js");
-runtime.load("src/core/fishing/landing_policy.js");
-runtime.load("src/app/context.js");
-runtime.load("src/app/states.js");
+runtime.load("src/game/application/inventory/equipment_read_model_factory.js");
+runtime.load("src/game/domain/rules/gameplay_rules.js");
+runtime.load("src/game/application/fishing/fishing_runtime_services.js");
+runtime.load("src/engine/math/vector2.js");
+runtime.load("src/game/domain/fishing/fishing_cast_exposure_resolver.js");
+runtime.load("src/game/domain/fishing/retrieve_policy.js");
+runtime.load("src/game/domain/fishing/landing_policy.js");
+runtime.load("src/game/application/fishing/mutable_fight_frame_context.js");
+runtime.load("src/game/application/state/game_state_machine.js");
 
 function checkFixedCatchBaitCompatibility() {
   const assert = require('node:assert/strict');

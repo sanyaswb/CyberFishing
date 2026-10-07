@@ -2,30 +2,24 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const {
-  StageThreeCompatibilityTestLoader,
-} = require("../runtime/stage_three_compatibility_test_loader");
+  NativeEsmTestLoader,
+} = require("../runtime/native_esm_test_loader");
 
 const DEFAULT_ROOT = path.resolve(__dirname, "../../..");
 
 class SourceRuntime {
   #rootDir;
   #context;
-  #compatibilityLoader;
+  #moduleLoader;
 
   constructor({ rootDir = DEFAULT_ROOT, globals = {}, moduleStubs = {} } = {}) {
     this.#rootDir = rootDir;
     this.#context = vm.createContext({ console, ...globals });
-    const contractPath = path.join(
-      this.#rootDir,
-      "architecture/migration/stage_3_compatibility_runtime.json",
-    );
-    this.#compatibilityLoader = fs.existsSync(contractPath)
-      ? new StageThreeCompatibilityTestLoader({
-        projectRoot: this.#rootDir,
-        context: this.#context,
-        moduleStubs,
-      })
-      : null;
+    this.#moduleLoader = new NativeEsmTestLoader({
+      projectRoot: this.#rootDir,
+      context: this.#context,
+      moduleStubs,
+    });
   }
 
   get context() {
@@ -33,25 +27,22 @@ class SourceRuntime {
   }
 
   read(relativePath) {
-    const sourcePath = fs.existsSync(path.join(this.#rootDir, relativePath)) ? relativePath :
-      this.#compatibilityLoader?.resolveSource(relativePath) || relativePath;
-    return fs.readFileSync(path.join(this.#rootDir, sourcePath), "utf8");
+    return fs.readFileSync(path.join(this.#rootDir, relativePath), "utf8");
   }
 
   readAuthoredSource(relativePath) {
-    const sourcePath = this.#compatibilityLoader?.resolveSource(relativePath) || relativePath;
-    return this.read(sourcePath);
+    return this.read(relativePath);
   }
 
   importModule(relativePath) {
-    return this.#compatibilityLoader.getExports(relativePath);
+    return this.#moduleLoader.getExports(relativePath);
   }
 
-  get moduleNamespaces() { return this.#compatibilityLoader.namespaces; }
+  get moduleNamespaces() { return this.#moduleLoader.namespaces; }
 
   load(relativePath, { expose = [] } = {}) {
-    if (this.#compatibilityLoader?.hasActivation(relativePath)) {
-      this.#compatibilityLoader.load(relativePath, expose);
+    if (this.#moduleLoader.hasModule(relativePath)) {
+      this.#moduleLoader.load(relativePath, expose);
       return this;
     }
     const exports = expose

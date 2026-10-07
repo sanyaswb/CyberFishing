@@ -9,7 +9,7 @@ class ItemStatContractCheck {
 
   constructor() {
     this.#sourceRuntime = new SourceRuntime();
-    this.#sourceRuntime.load("src/config/databases/item_db.js");
+    this.#sourceRuntime.load("src/game/config/raw/items/item_database.js");
     this.#sourceRuntime.expose({
       DB: "ITEM_DB",
     });
@@ -47,14 +47,14 @@ class ItemStatContractCheck {
     }
 
     const registry = this.#sourceRuntime.read(
-      "src/core/assemblies/assembly_profile_registry.js",
+      "src/game/domain/assemblies/assembly_profile_registry.js",
     );
     const capabilities = this.#sourceRuntime.read(
-      "src/core/equipment/rod_capability_resolver.js",
+      "src/game/domain/equipment/rod_capability_resolver.js",
     );
-    const inventory = this.#sourceRuntime.readAuthoredSource("src/systems/inventory_system.js");
+    const inventory = this.#sourceRuntime.readAuthoredSource("src/game/application/inventory/legacy_inventory_system.js");
     const ordering = this.#sourceRuntime.read(
-      "src/application/inventory/inventory_v2_item_order_resolver.js",
+      "src/game/presentation/inventory/inventory_item_order_resolver.js",
     );
     const consumerSources = [registry, capabilities, inventory].join("\n");
     Assertion.that(
