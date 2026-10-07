@@ -5,8 +5,9 @@ closure work only; no gameplay, formula, save, API, timing or hot-loop change is
 
 ## 1. Resume state (verify first)
 
-- `git status` must show a clean tree (CODEX.md and CLAUDE.md are excluded locally). HEAD and `origin/develop` =
-  the commit that adds this file, on top of `65fa993` (release 0.27.0).
+- `git status` must show a clean tree (CODEX.md and CLAUDE.md are excluded locally). HEAD = the latest commit that
+  touches this file, on top of `65fa993` (release 0.27.0). On 2026-10-07 GitHub rejected the push of these
+  documentation commits with a server error: if `origin/develop` is behind HEAD, run `git push origin develop` first.
 - Tags on origin: `stage6-classic-runtime-archive` → peeled `95b872da68cf776fcee497cb2135fcc99f4489e8` (parent
   `4c0817a`), `v0.27.0` → `65fa993`. No `stage6-closed` tag exists yet.
 - Accepted: preparations 001–005 (`architecture/migration/stage_6/preparations/`), graph review v5, release
@@ -70,9 +71,31 @@ Model it on `architecture/migration/stage_5_closure.json` (same top-level shape 
 - `metrics`: copy of release 001 `output.metrics`.
 - `evidence`: game-cycle stdout SHA256 and the save SHA256 above (saved-byte and deterministic timing evidence).
 - `stage5SourceCluster028`: preserved with null output/verification; native DEV successor is this stage.
+- `clusters`: Stage 6 applied clusters (0 — Stage 6 worked through preparations) and `preparations: 5`;
+  `boundaryToolDecision` (expected `"retain-current-guards"` unless C2b finds otherwise); `toolingArchive` from C2b.
 - `verification`: `acceptance` / `quick` / `architecture` blocks exactly like Stage 5 (report path, `reportSha256`,
   `runId`, `source`, `catalog`, `totals`, timestamps) from the closure-snapshot runs of C4; `browser.report` → C1 file.
 - `nextStage`: `"stage-7"` and the handoff path from C3.
+
+### C2b — Utils closure analysis (refactor_Task §3, Stage 4 working rule 6)
+
+Rule 6 requires every milestone closure to delete utils files unreachable from live entry points and forbids utils
+growth across a milestone. Stage 6 grew utils from 216 files / 46,782 lines (v0.26.1) to 219 / 47,489 (HEAD
+65fa993): `native_development_archive.js`, `native_development_retirement.js` and one M0–M3a file, plus check edits.
+
+1. Compute reachability from the live entry points only: the 64-check catalog (`utils/testing/suites/check_manifest.js`),
+   `package.json` scripts and `utils/dev-server.js`, following `require` edges. Reuse the Stage 5 closure method
+   (`architecture/migration/stage_5/tooling_retirement_review.md`, `tooling_archive_candidates.json` /
+   `tooling_archive_applied.json`); do not write a second scanner if the Stage 5 one is recoverable from
+   `stage5-tools-archive`.
+2. Files that are unreachable after the native cutover (for example classic-only loaders/resolvers no live check
+   requires any more) are removed with exact-byte recovery under a new tag `stage6-tools-archive`, recorded in
+   `architecture/migration/stage_6/tooling_archive_applied.json` and the closure `toolingArchive` block.
+3. Reachable compatibility tooling that only validates history (builders, Stage 2/3 runtime fixtures) is NOT removed
+   here: deleting a live check changes the 64-check catalog and is an owner decision recorded for Stage 7 (C3).
+4. Report the net utils delta against v0.26.1. If it is still positive, record each added file with its reason and
+   uses (every one must have at least two uses) in the closure record and flag it to the owner in the session
+   summary; never delete reachable tooling or weaken a check to meet the budget.
 
 ### C3 — Stage 7 handoff `architecture/migration/stage_7_handoff.md`
 
@@ -112,9 +135,10 @@ continuation spec §9 and `refactor_Task.txt` §6, grouped as:
    `architecture/archive/stage6_closure_acceptance.json`, then write `verification` into the closure record (same
    provenance note as Stage 5: the run precedes report archival and the verification edit).
 3. Update docs: continuation spec §10 (all boxes), header status "Stage 6 closed"; `stage_6_handoff.md` pointer to
-   the Stage 7 handoff; `refactor_Task.txt` Stage 6 checkboxes (lines starting "Complete exact successor…" through
-   "Final release/native graph counts…") and one closure log line — the file is CRLF, keep CRLF; CLAUDE.md/CODEX.md
-   resume points (local, never committed).
+   the Stage 7 handoff; `refactor_Task.txt` (CRLF, keep CRLF): header bullets "Current Stage 6" → a
+   "Stage 6 status: CLOSED — v0.27.0, tag stage6-closed, …" bullet in the style of Stages 3–5, "Next-chat execution
+   brief" → the Stage 7 handoff, §5 status paragraph → CLOSED, the last Stage 6 checkbox "Final release/native graph
+   counts…" ticked, and one closure log line; CLAUDE.md/CODEX.md resume points (local, never committed).
 4. Commit the closure, push `develop`, create annotated `stage6-closed` on the closure commit
    (`git tag -a stage6-closed -m "CyberFishing Stage 6 closed - native development"`), push the tag.
 
@@ -135,6 +159,8 @@ continuation spec §9 and `refactor_Task.txt` §6, grouped as:
 
 - [ ] `architecture/archive/stage6_closure_browser.json` PASS on 0.27.0, saves unchanged.
 - [ ] `architecture/migration/stage_6_closure.json` complete and validated with negative fixtures.
+- [ ] Utils closure analysis done: unreachable files archived under `stage6-tools-archive` (if any), net delta vs
+      v0.26.1 recorded and any growth justified/flagged.
 - [ ] `architecture/migration/stage_7_handoff.md` written.
 - [ ] game-cycle hash unchanged; Quick 24/24, Architecture 32/32, uncached Full 64/64 on the closure snapshot.
 - [ ] Docs updated; closure commit and `stage6-closed` tag pushed.
