@@ -4,8 +4,8 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const { NativeDevelopmentArchive } = require("./native_development_archive");
-const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_config");
-const { CanonicalActivationIdentity } = require("../../build/compat_runtime/cumulative_runtime_contract");
+const { CanonicalBridgeIdentity } = require("../migration/canonical_bridge_identity");
+const { CanonicalActivationIdentity } = require("../migration/compatibility_runtime_contract");
 
 const PREPARATION = "architecture/migration/stage_6/preparations/005_native-development-cutover-and-compatibility-retirement.json";
 const DECISION = "architecture/migration/stage_6/stage6_spec.md";

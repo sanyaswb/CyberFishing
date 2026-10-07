@@ -1,7 +1,7 @@
 const { MigrationBatchPlanValidator } = require("./migration_batch_plan_validator");
 const {
   ActiveBridgePlanResolver,
-} = require("../../build/legacy_bridge_build_config");
+} = require("../migration/stage_two_bridge_plan");
 
 class ApprovedStageTwoBatchValidator {
   constructor({ architecturePolicy }) {

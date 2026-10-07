@@ -4,7 +4,7 @@ const { LegacyScriptOrderReader } = require("./legacy_script_order_reader");
 const { StageFourClusterLedger } = require("../stage_four/cluster_ledger");
 const {
   ActiveBridgePlanResolver,
-} = require("../../build/legacy_bridge_build_config");
+} = require("./stage_two_bridge_plan");
 const {
   StageThreeRuntimeScriptAliasResolver,
 } = require("./stage_three_runtime_script_alias_resolver");

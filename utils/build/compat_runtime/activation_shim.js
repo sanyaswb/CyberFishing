@@ -6,20 +6,7 @@ const {
   EXACT_TRANSPORT_GLOBAL,
 } = require("./cumulative_runtime_contract");
 
-class ActivationShimRenderer {
-  render(activation, transportSymbol = EXACT_TRANSPORT_GLOBAL) {
-    CanonicalActivationIdentity.object(activation);
-    if (transportSymbol !== EXACT_TRANSPORT_GLOBAL) {
-      throw new Error("Activation shim requires the exact compatibility transport global");
-    }
-    return (
-      `globalThis.${activation.legacySymbol} = ` +
-      `globalThis.${transportSymbol}.modules` +
-      `[${JSON.stringify(activation.targetModule)}]` +
-      `[${JSON.stringify(activation.exportName)}];\n`
-    );
-  }
-}
+const { ActivationShimRenderer } = require("../../architecture/migration/activation_shim_renderer");
 
 class ActivationShimContractValidator {
   validate({ code, activation, transportSymbol = EXACT_TRANSPORT_GLOBAL }) {

@@ -4,7 +4,7 @@ Written: 2026-10-07 (Europe/Kiev). Implementation baseline: pushed `v0.27.2`,
 `e80d983ba8b9c891c2e504115a1f39cbfe22ab70`. D1-D4 and the patch release are complete.
 This specification covers the first Stage 7 transition only; it does not reopen Stage 6.
 
-Status: preparations 001 and 002 accepted; the exact three-check catalog change awaits the owner's decision.
+Status: preparations 001-003 accepted; the exact three-check catalog change awaits the owner's decision.
 Canonical test paths/config composition: [001_native-test-paths.json](preparations/001_native-test-paths.json),
 [uncached Full 64/64](../../archive/stage7_native_paths_acceptance.json). Raw recovery tag
 `stage7-compat-tools-archive` -> `aeb43037f4d4963cc4b8ccabfcb2bc96b6ab1cd0`, parent `a33c7ca`.
@@ -12,8 +12,13 @@ Preparation 001 changed no runtime/HTML/package/catalog. Preparation 002 (2026-1
 [native server/fresh installer](preparations/002_native-server-and-fresh-install.json),
 [uncached Full 64/64](../../archive/stage7_native_server_acceptance.json),
 [direct native browser smoke](../../archive/stage7_native_server_browser.json). Server validates native retirement
-before listen; fresh install verifies native sources without classic dist/builders. Remaining live validator
-consumers are the next preparation; no check/tool archive or closure claimed.
+before listen; fresh install verifies native sources without classic dist/builders.
+Preparation 003 (2026-10-08): [native/provenance contracts](preparations/003_native-provenance-contracts.json),
+[uncached Full 64/64](../../archive/stage7_validator_contracts_acceptance.json). Thirteen class bodies moved
+exactly into eight architecture modules; current-native/evaluation/archive assertions are retained. Classic
+mutating cluster apply is explicitly retired before any workspace access; plan/record/game-cycle verification
+stays intact. Only the three proposed checks import builder modules now. Catalog/tool archival awaits the
+exact owner decision; no Stage 7 closure claimed.
 Inventory: [tooling_archive_inventory.json](tooling_archive_inventory.json). Current queue and
 owner rules: [stage_7_handoff.md](../stage_7_handoff.md). Accepted release evidence:
 [Full 64/64](../../archive/pre_stage7_0272_acceptance.json),
@@ -98,6 +103,18 @@ Preparation 002 resolved the fresh-install helper's historical dist-path read. I
 isolated raw recovery refs/objects for strict provenance guards, with no source checkout/filtering,
 shared writable Git directory or generated outputs. Native preflight and actual fresh npm ci/suites
 pass; the existing 0.27.2 release record stays immutable.
+
+Preparation 003 extracted canonical bridge identity, reviewed Stage 2 plan/state, compatibility metadata
+contract, historical activation rendering/retirement, cumulative graph provenance, recorded runtime slot
+and authored module-evaluation observation. Temporary old-check exports reference the same relocated classes.
+Exact class bodies, canonical serialization/IDs/errors and retained cluster verifier methods are unchanged.
+The original classic apply had one CLI caller and no check run() consumer; closed native sources cannot
+re-enter that migration path. It now fails before workspace reads/writes/subprocesses and points to the raw
+archive. Proxy-workspace regression proves this. Package/CLI definitions and the 64-check catalog stay unchanged.
+Current assertion transfers and remaining incoming edges are explicit in preparation 003; candidate tools
+are still present for the old checks. Prepared raw recovery is already verified: annotated
+`stage7-compat-tools-prepared-archive` -> `ef814939f7300882ad202853f6593bcd533eebd6`,
+parent `d7eebb3`, 230 exact utils files. This snapshot authorizes no deletion.
 
 ## 4. Assertions that must survive the three-check archive
 

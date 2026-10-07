@@ -1,13 +1,13 @@
 # Stage 7 structural hardening — handoff
 
-Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7.1 native test-path preparation is accepted; catalog archival awaits the exact owner decision.
+Written: 2026-10-07 (Europe/Kiev). Stage 6 is closed at release 0.27.0 with tag `stage6-closed`; Stage 7.1 native preparations 001-003 are accepted; catalog archival awaits the exact owner decision.
 Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [stage_6/stage6_continuation_spec.md](stage_6/stage6_continuation_spec.md),
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md); requirements and the 96 mappings: [stage_6/stage6_spec.md](stage_6/stage6_spec.md).
 
 ## Resume facts
 
 - D1-D4 completed in three separate pushed commits: D1 `83bc8fe`, D2/D4 `ab96d35`, D3 `7d6614c`.
-- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Release commit/tag: `e80d983` / `v0.27.2`, pushed. Stage 7.1 native test-path preparation accepted; live builder-consumer decoupling follows.
+- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Release commit/tag: `e80d983` / `v0.27.2`, pushed. Stage 7.1 native preparations 001-003 accepted; exact catalog/tool archival follows after the owner decision.
 - D1 original/current public traces match (167 updates, 24 recalculations, 44 revision reads); the template allocation is gone.
   Actual DevTools callbacks, set/reset/import, unrelated overrides and location replacement are covered.
 - D2 preserves natural spinner/wobbler/jig catches when the fixed fish has no sequence. D4 sets both production masters false;
@@ -37,7 +37,16 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
   with no classic build/dist reads. Fresh Architecture 32/32, Quick 24/24, Full 64/64; final workspace uncached
   [Full 64/64](../archive/stage7_native_server_acceptance.json), [browser/HTTP smoke](../archive/stage7_native_server_browser.json).
   Source/lock and game-cycle unchanged; caller Git index isolation checked; owned server/tabs closed. Runtime/HTML/package/catalog unchanged.
-  Next: move live identity/provenance/module-evaluation contracts out of build modules; exact catalog approval remains pending.
+  Contract extraction accepted in preparation 003 below; exact catalog approval remains pending.
+- Stage 7.1 [preparation 003](stage_7/preparations/003_native-provenance-contracts.json) accepted (2026-10-08): 13 unchanged class
+  bodies in eight architecture contracts; retained native HTML/retirement/archive/evaluation assertions, 21 module-evaluation cases.
+  Classic apply fails before workspace access; historical plan/records/game-cycle verification remains exact. Only the three proposed
+  checks still import build modules (nine incoming edges). Quick 24/24, Architecture 32/32,
+  [uncached Full 64/64](../archive/stage7_validator_contracts_acceptance.json), fresh npm ci and
+  [direct native smoke](../archive/stage7_validator_contracts_browser.json); game-cycle unchanged, console 0/0, no source drift.
+  Utils temporarily 228 JS/JSON / 47,858 lines while old checks/wrappers remain; final file reduction awaits archival.
+  Prepared raw recovery: `stage7-compat-tools-prepared-archive` -> `ef814939` (parent `d7eebb3`), 230 exact utils files.
+  Next: exact catalog decision, then approved archive and 61/22/29 acceptance. No catalog/check/tool deletion yet.
 
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.

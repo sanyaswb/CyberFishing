@@ -18,10 +18,11 @@ const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_ru
 const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
 const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 const { LANGUAGE_BUILTINS, StageFourEsmTargetProjector } = require("./stage_four/esm_target_projector");
-const { ActivationShimRenderer } = require("../build/compat_runtime/activation_shim");
+const { ActivationShimRenderer } = require("./migration/activation_shim_renderer");
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
-  require("../build/compat_runtime/activation_retirement");
-const { CanonicalActivationIdentity } = require("../build/compat_runtime/cumulative_runtime_contract");
+  require("./migration/activation_retirement_contract");
+const { CanonicalActivationIdentity, CumulativeRuntimeContractValidator } = require("./migration/compatibility_runtime_contract");
+const { ModuleEvaluationEffectObserver } = require("./guards/observation/module_evaluation_effect_observer");
 const { PATHS, StageFourClusterApply, StageFourClusterPlan, resolveImportSource } = require("./stage_four/cluster_path");
 const { StageFourTierAEvidence } = require("./stage_four/tier_a_evidence");
 const { StageThreeApprovedPlanSource } = require("./domain_batches/stage_three_approved_plan_source");
@@ -89,7 +90,7 @@ assert.throws(() => resolveImportSource({ ...aliasFacts, entries: new Map([[rawP
 
 const stageTwoPlanFixture = {batches:[{id:"stage-2.fixture",bridgeStrategy:{bridges:[{wrapperPath:stageTwoProvider.currentPath,
   targetModule:stageTwoTarget.currentPath,legacyConsumers:["src/test.js"]}]}}]};
-const { CanonicalBridgeIdentity } = require("../build/legacy_bridge_build_config");
+const { CanonicalBridgeIdentity } = require("./migration/canonical_bridge_identity");
 const stageTwoRetiredId = CanonicalBridgeIdentity.id({owner:"stage-2.fixture",bridge:stageTwoProvider.currentPath,
   target:stageTwoTarget.currentPath,source:"src/test.js"});
 const stageTwoRetirementFixture = {modules:[{currentPath:"src/test.js"}],output:{status:"applied",bridgesRetired:[stageTwoRetiredId]}};
@@ -97,7 +98,7 @@ assert.deepEqual(new StageFourClusterLedger([]).stageTwoPlan(stageTwoPlanFixture
 assert.deepEqual(new StageFourClusterLedger([stageTwoRetirementFixture]).stageTwoPlan(stageTwoPlanFixture)
   .batches[0].bridgeStrategy.bridges[0].legacyConsumers,[]);
 assert.throws(()=>new StageFourClusterLedger([{...stageTwoRetirementFixture,modules:[]}]).stageTwoPlan(stageTwoPlanFixture),/no migrated consumer/u);
-const { CumulativeGraphPlanner } = require("../build/compat_runtime/cumulative_graph_planner");
+const { CumulativeGraphPlanner } = require("./migration/cumulative_graph_provenance");
 const assetTransition = contract.previousRuntimeTransitions.find(item => item.module === "src/engine/assets/asset_manifest.js");
 const assetActivation = [...contract.activationPositions, ...contract.retiredActivations.map(item => item.activation)]
   .find(item => assetTransition.activationIds.includes(item.id));
@@ -224,6 +225,19 @@ for (const record of cleanupRecords) {
     assert.throws(() => StageFourClusterLedger.validateCleanupRecord({...record,...change}),/cleanup/u);
 }
 if (nativeRetirement) {
+  // Current native assertions formerly hosted by activation-retirement fixtures.
+  new CumulativeRuntimeContractValidator().validate(contract);
+  for (const field of ["activationPositions", "inertModules", "sideEffectReviews"]) assert.deepEqual(contract[field], []);
+  const archivedRuntime = nativeArchive.json("architecture/migration/stage_3_compatibility_runtime.json");
+  assert.deepEqual(contract.retiredActivations, archivedRuntime.retiredActivations, "native retirement keeps provenance");
+  assert(archivedRuntime.activationPositions.length > 0, "fixtures need the archived active contract");
+  const providers = new Set([...archivedRuntime.retiredActivations.map(record => record.activation.sourceProvider),
+    ...archivedRuntime.activationPositions.map(activation => activation.sourceProvider)].filter(file => file.startsWith("src/")));
+  for (const file of providers) {
+    assert(!fs.existsSync(path.join(ROOT, file)), `retired classic source still exists: ${file}`);
+    assert(nativeArchive.has(file), `retired classic source has no raw recovery: ${file}`);
+  }
+  assert.throws(() => nativeArchive.text("src/entrypoints/dev.entry.js"), /no recorded pin/u);
   // Raw recovery rejects altered bytes, a foreign blob, a missing tag and a wrong recovery commit or parent.
   const [first, second, ...rest] = nativeRetirement.removedModules;
   const cleanup = nativeRetirement.postClosureCleanup;
@@ -477,6 +491,10 @@ for (const entry of manifest.values()) {
   }
 }
 
+// Retired classic apply fails before any workspace read/write/subprocess; historical verification remains available.
+const unusedApplyWorkspace = new Proxy({}, { get() { throw new Error("retired apply touched the workspace"); } });
+assert.throws(() => new StageFourClusterApply(unusedApplyWorkspace, "unused-record.json").run(), /Classic cluster apply is retired/u);
+
 // Negative fixtures: the projector accepts only export tokens plus the import header.
 const projector = new StageFourEsmTargetProjector();
 const fixture = (source, extra = {}) => projector.project({ source, currentPath: "src/a.js",
@@ -505,6 +523,34 @@ assert.deepEqual(fixture("class A {}\nif (typeof window !== \"undefined\") {\n  
 assert.throws(() => fixture("const A = 1, B = 2;\n"), /exactly one top-level declaration/u);
 assert.equal(fixture("class A { b() { return new B(); } }\n", { imports: [{ symbol: "B", from: "src/game/config/b/b.js" }] })
   .targetSource, "import { B } from \"./b/b.js\";\n\nexport class A { b() { return new B(); } }\n");
+
+// Current native projection keeps the module-evaluation guard after classic bundle fixtures are archived.
+const effectObserver = new ModuleEvaluationEffectObserver();
+const effect = source => effectObserver.observe({ modulePath: "src/game/config/effects.js", source });
+for (const [source, classification] of [
+  ["export const A = 1;", "safe"],
+  ["export function A() { return new Map(); }", "safe"],
+  ["export class A { points = new Float32Array(10); }", "safe"],
+  ["export class A { static run() { return Math.random(); } }", "safe"],
+  ["export const A = {};", "needs-review"],
+  ["export const A = new Map();", "needs-review"],
+  ["export const A = Math.PI;", "needs-review"],
+  ["export const A = [Math.max(1, 2)];", "needs-review"],
+  ["export class A { static { this.ready = true; } }", "unsafe"],
+  ["export const A = (Math.flag = true);", "unsafe"],
+  ["export const A = [Math.flag++];", "unsafe"],
+  ["export class A {}\nMath.flag = true;", "unsafe"],
+  ["export default class A {}", "unsafe"],
+  ['export * from "./other.js";', "unsafe"],
+]) assert.equal(effect(source).classification, classification, source);
+assert.throws(() => effect("export const = ;"), /Cannot parse cumulative ESM module/u);
+const reviewedEffect = effect("export const A = {};");
+assert.deepEqual(effect("export const A = {};"), reviewedEffect, "identical evaluation evidence is deterministic");
+assert.notEqual(effect("\nexport const A = {};").evidenceFingerprint, reviewedEffect.evidenceFingerprint, "changed finding location invalidates review");
+assert.notEqual(effectObserver.observe({ modulePath: "src/game/config/other.js", source: "export const A = {};" }).evidenceFingerprint,
+  reviewedEffect.evidenceFingerprint, "a review cannot belong to another module");
+for (const source of ["class A { static { this.ready = true; } }\n", "const A = (Math.flag = true);\n", "const A = [Math.flag++];\n"])
+  assert.throws(() => fixture(source), /unsafe module evaluation/u);
 
 // Retirement uses the same Stage 3 projection: retire only when the last holding bridge disappears.
 const activation = (symbol) => {
@@ -1164,5 +1210,5 @@ if (fs.existsSync(path.join(ROOT,stageSixClosureFile))) {
 }
 
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases, ${stageSixClosureCases} Stage 6 closure fixtures; ` +
+  `${targets} ESM target(s) inside their boundaries; 16 projector, 21 module-evaluation, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases, ${stageSixClosureCases} Stage 6 closure fixtures; ` +
   `${cumulativeReleases.length} release record(s), version ${StageFourRelease.currentVersion(read, policy)}.`);

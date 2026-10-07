@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-7-browser-smoke",
+  "id": "003",
+  "sourceCommit": "d7eebb3cbfe2f73a51fe45c00a2efe72ce78b42d",
+  "pendingPreparation": "003_native-provenance-contracts",
+  "release": "0.27.2",
+  "method": "Direct IAB native pages through native server using relocated retirement/identity contracts; UI inventory open/close and reload, read-only DOM entrypoint inspection and captured console.",
+  "server": {
+    "port": 4191,
+    "pid": 3516,
+    "nativeOnly": true,
+    "distAbsent": true,
+    "ownedProcessStopped": true
+  },
+  "pages": {
+    "production": {
+      "url": "http://127.0.0.1:4191/index.html",
+      "canvasPresent": true,
+      "version": "v0.27.2 prototype",
+      "entry": {
+        "src": "src/entrypoints/game.entry.js?v=0.27.2",
+        "type": "module"
+      },
+      "onlyOneScript": true,
+      "inventoryOpenClose": true,
+      "reload": true,
+      "consoleErrors": 0,
+      "consoleWarnings": 0
+    },
+    "development": {
+      "url": "http://127.0.0.1:4191/dev.html",
+      "canvasPresent": true,
+      "version": "v0.27.2 prototype",
+      "entry": {
+        "src": "src/entrypoints/dev.entry.js?v=0.27.2",
+        "type": "module"
+      },
+      "onlyOneScript": true,
+      "inventoryOpenClose": true,
+      "reload": true,
+      "godModeEnabledCheckbox": true,
+      "fixedCatchEnabledCheckbox": true,
+      "consoleErrors": 0,
+      "consoleWarnings": 0
+    }
+  },
+  "cleanup": {
+    "ownedTabsClosed": [
+      "11",
+      "12"
+    ],
+    "ownedServerStopped": true,
+    "temporaryRuntimeHtmlFixturesCreated": false
+  },
+  "limits": "Serving/native UI/reload smoke only; no new internal save-byte or loop probe. Runtime/HTML/package unchanged; accepted 0.27.2 loop/save/restart evidence remains applicable and current config/game-cycle/platform regressions passed."
+}
