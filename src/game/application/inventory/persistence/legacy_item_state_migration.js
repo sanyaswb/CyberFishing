@@ -86,9 +86,7 @@ export class LegacyItemStateMigration {
 
   #migrateFreshnessState(source, definition, normalized, warnings) {
     const groupId = definition?.progressionProfile?.groupId;
-    const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
-      ? ITEM_PROGRESSION_CONFIG
-      : undefined;
+    const config = ITEM_PROGRESSION_CONFIG;
     const capability = config?.groups?.[groupId]?.freshness;
     if (!capability) {
       warnings?.push?.(

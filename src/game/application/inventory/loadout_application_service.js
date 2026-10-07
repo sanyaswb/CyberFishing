@@ -65,10 +65,7 @@ export class LoadoutApplicationService {
     this.#port = port;
     this.#capacityPolicy = capacityPolicy;
     this.#mainSlotIds = [
-      ...(mainSlotIds ||
-        (typeof EQUIPMENT_MAIN_SLOT_IDS !== "undefined"
-          ? EQUIPMENT_MAIN_SLOT_IDS
-          : ["rod", "reel", "terminalLine", "tackle", "float"])),
+      ...(mainSlotIds || EQUIPMENT_MAIN_SLOT_IDS),
     ];
     this.#transitionPlanner = transitionPlanner;
     this.#equipmentActivationValidator = equipmentActivationValidator;

@@ -806,7 +806,6 @@ export class GameApplication {
   }
 
   #handleFishDatabaseUpdate() {
-    if (typeof FISH_DB === "undefined") return;
     this.#bite?.setFishDatabase?.(FISH_DB);
   }
 

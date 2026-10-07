@@ -326,7 +326,7 @@ export const CONFIG = {
     lockZoneXToScreen: true,
     cameraFocusY: 0.7, // Позиція камери для поплавка на екрані (0.5 = центр, 0.7 = нижня третина)
 
-    map: typeof MAP_DB !== "undefined" ? MAP_DB : {},
+    map: MAP_DB,
   },
 
   wind: {
@@ -348,7 +348,7 @@ export const CONFIG = {
       evening: { startHour: 18, endHour: 23 },
       night: { startHour: 23, endHour: 4 },
     },
-    fishes: typeof FISH_DB !== "undefined" ? FISH_DB : [],
+    fishes: FISH_DB,
   },
 
   rarity: {
@@ -580,7 +580,7 @@ export const CONFIG = {
     },
   },
 
-  physics: typeof PHYSICS_CONFIG !== "undefined" ? PHYSICS_CONFIG : {},
+  physics: PHYSICS_CONFIG,
 
   tension: {
     kgSmoothPerSecond: 2.5,

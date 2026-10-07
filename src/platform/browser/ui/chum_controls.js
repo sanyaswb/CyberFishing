@@ -27,9 +27,7 @@ export class ChumUI {
       touchAction: "none",
     });
 
-    if (typeof UIUtils !== "undefined") {
-      UIUtils.makeSolid(this.button);
-    }
+    UIUtils.makeSolid(this.button);
 
     this.button.addEventListener("click", (e) => {
       console.log(

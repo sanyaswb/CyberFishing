@@ -306,15 +306,11 @@ export class DevToolsUI {
 
     UIUtils.makeSolid(this.#btn);
 
-    if (typeof UIDraggableButton !== "undefined") {
-      this.#dragButton = new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
-        id: "devtools_btn",
-        cache: typeof CacheManager !== "undefined" ? CacheManager : null,
-        noTransform: true,
-      });
-    } else {
-      this.#btn.addEventListener("click", this.#onToggleCallback);
-    }
+    this.#dragButton = new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
+      id: "devtools_btn",
+      cache: CacheManager,
+      noTransform: true,
+    });
 
     document.body.appendChild(this.#btn);
   }

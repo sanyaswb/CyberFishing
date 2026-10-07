@@ -52,6 +52,20 @@ class NativeDevelopmentRetirement {
     assert.deepEqual(record.legacySlotSplits.after,[],"cleanup no remaining classic split");
   }
 
+  // Modules removed after stage6-closed by a recorded post-closure cleanup (exact bytes in its recovery archive).
+  static laterRemovedTargets(projectRoot) {
+    const directory=path.join(projectRoot,"architecture/migration/stage_6/preparations");
+    return new Set(fs.readdirSync(directory).filter(name=>name.endsWith(".json"))
+      .map(name=>JSON.parse(fs.readFileSync(path.join(directory,name),"utf8")))
+      .filter(item=>item.postClosureCleanup?.phase === "post-closure-cleanup").flatMap(item=>item.removedModules.map(module=>module.path)));
+  }
+
+  // Every native successor exists, unless a later Stage 6 post-closure cleanup removed it with exact recovery bytes.
+  static validateReplacementTargets(record, isPresent, laterRemoved = new Set()) {
+    for (const item of record.nativeReplacements) for (const target of item.targets)
+      assert(isPresent(target) !== laterRemoved.has(target),"cleanup native successor is missing: " + target);
+  }
+
   static archive(projectRoot, record) {
     return new NativeDevelopmentArchive(projectRoot, record);
   }
@@ -92,7 +106,8 @@ class NativeDevelopmentRetirement {
     const manifest=json("architecture/migration/module_migration_manifest.json");
     const entries=new Map(manifest.modules.map(item=>[item.currentPath,item]));
     for (const item of record.removedModules) assert(!entries.has(item.path) && !fs.existsSync(path.join(projectRoot,item.path)),"cleanup classic source still exists: " + item.path);
-    for (const item of record.nativeReplacements) for (const target of item.targets) assert(entries.has(target) && fs.existsSync(path.join(projectRoot,target)),"cleanup native successor is missing: " + target);
+    this.validateReplacementTargets(record,target=>entries.has(target) && fs.existsSync(path.join(projectRoot,target)),
+      this.laterRemovedTargets(projectRoot));
     const inventory=json("architecture/migration/stage_6/stage6_module_inventory.json");
     for (const item of inventory.migrationModules) assert(record.nativeReplacements.some(replacement=>replacement.source === item.source &&
       replacement.targets.length === 1 && replacement.targets[0] === item.target),"cleanup lost exact Stage 6 mapping: " + item.source);

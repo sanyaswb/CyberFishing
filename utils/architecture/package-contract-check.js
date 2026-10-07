@@ -72,6 +72,7 @@ class PackageContractCheck {
     this.lockValidator.validate({ packageJson, packageLock, contract });
     this.#validateCanonicalJson(bytes, contract, packageJson, packageLock);
     this.#validateGitPolicy(bytes.get("gitignore").toString("utf8"), contract);
+    this.#validateScriptTargets(packageJson);
     this.#runFixtures({
       contract,
       packageJson,
@@ -81,7 +82,7 @@ class PackageContractCheck {
     });
     for (const [name, before] of bytes) assert(before.equals(fs.readFileSync(paths[name])), `Package contract check mutated ${name}`);
     const directCount = contract.dependencyPolicy.directSections.reduce((total, section) => total + Object.keys(packageJson[section]).length, 0);
-    console.log(`Root package contract passed: ${packageJson.name}@${packageJson.version}, ${directCount} direct dependencies, ${Object.keys(packageLock.packages).length - 1} locked packages, npm lockfile v${packageLock.lockfileVersion}; 12 fixtures; read-only.`);
+    console.log(`Root package contract passed: ${packageJson.name}@${packageJson.version}, ${directCount} direct dependencies, ${Object.keys(packageLock.packages).length - 1} locked packages, npm lockfile v${packageLock.lockfileVersion}; 14 fixtures; read-only.`);
   }
 
   #readProjectVersion(source) {
@@ -95,6 +96,12 @@ class PackageContractCheck {
     assert.equal(normalize(bytes.get("contract")), `${JSON.stringify(contract, null, 2)}\n`, "package contract JSON must be canonical");
     assert.equal(normalize(bytes.get("packageJson")), `${JSON.stringify(packageJson, null, 2)}\n`, "package.json must be canonical");
     assert.equal(normalize(bytes.get("packageLock")), `${JSON.stringify(packageLock, null, 2)}\n`, "package-lock.json must be canonical");
+  }
+
+  // A package script must never name a missing project file (owner 2026-10-07: scripts go before or with their targets).
+  #validateScriptTargets(packageJson) {
+    for (const [name, command] of Object.entries(packageJson.scripts || {})) for (const match of command.matchAll(/\bnode\s+(\S+\.js)\b/gu))
+      assert(fs.existsSync(path.join(PROJECT_ROOT, match[1])), `package script ${name} names a missing file: ${match[1]}`);
   }
 
   #validateGitPolicy(gitignore, contract) {
@@ -123,6 +130,9 @@ class PackageContractCheck {
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), version: "0.0.0" } }), /version differs/u);
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), type: "module" } }), /must not set type/u);
     assert.throws(() => this.packageValidator.validate({ ...actual, packageJson: { ...clone(actual.packageJson), dependencies: { ...actual.packageJson.dependencies, vite: "8.2.1" } } }), /production dependency/u);
+    if (actual.contract.stage.bridgeBuild.status === "retired-native-esm") assert.throws(() => this.packageValidator.validate({ ...actual,
+      packageJson: { ...clone(actual.packageJson), scripts: { ...actual.packageJson.scripts, "build:legacy-bridges": "node utils/build/build_legacy_bridges.js" } } }), /retired script build:legacy-bridges/u);
+    assert.throws(() => this.#validateScriptTargets({ scripts: { stale: "node utils/architecture/stage-1-closure-check.js" } }), /names a missing file/u);
     const staleRoot = clone(actual.packageLock); staleRoot.packages[""].devDependencies.espree = "^0.0.1";
     assert.throws(() => this.lockValidator.validate({ ...actual, packageLock: staleRoot }), /devDependencies differs/u);
     const missingPackage = clone(actual.packageLock); delete missingPackage.packages["node_modules/espree"];

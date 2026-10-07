@@ -131,13 +131,6 @@ export class RarityConfigValidator {
   }
 
   #validateItemEntries(itemDb) {
-    if (typeof ItemRarityConfigValidator === "undefined") {
-      this.#error(
-        "ITEM_DB",
-        "ItemRarityConfigValidator is not loaded",
-      );
-      return;
-    }
     const issues = new ItemRarityConfigValidator().validate({ itemDb });
     for (const issue of issues) this.#error(issue.path, issue.message);
   }

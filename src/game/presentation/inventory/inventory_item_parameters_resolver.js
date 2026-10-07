@@ -36,9 +36,9 @@ export class InventoryV2ItemParametersResolver {
     }
     this.#rarityVisualResolver = rarityVisualResolver;
     this.#parameterConfig =
-      parameterConfig || (typeof INVENTORY_V2_ITEM_PARAMETER_CONFIG !== "undefined" ? INVENTORY_V2_ITEM_PARAMETER_CONFIG : null) || {};
+      parameterConfig || INVENTORY_V2_ITEM_PARAMETER_CONFIG;
     this.#parameterAliases =
-      parameterAliases || (typeof INVENTORY_V2_ITEM_PARAMETER_ALIASES !== "undefined" ? INVENTORY_V2_ITEM_PARAMETER_ALIASES : null) || {};
+      parameterAliases || INVENTORY_V2_ITEM_PARAMETER_ALIASES;
   }
 
   resolve(item) {

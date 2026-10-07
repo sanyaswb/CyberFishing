@@ -158,6 +158,10 @@ class StageFourClusterLedger {
 
   static validateCleanupRecord(record) {
     if (!record.postClosureCleanup) return;
+    if (record.kind === preparationKind(6) && record.postClosureCleanup.phase === "post-closure-cleanup") {
+      StageFourClusterLedger.#validateStageSixPostClosureCleanup(record);
+      return;
+    }
     if (record.kind === preparationKind(6)) {
       require("../stage_six/native_development_retirement").NativeDevelopmentRetirement.validateRecord(record);
       return;
@@ -180,6 +184,31 @@ class StageFourClusterLedger {
         bridge.globalProviders.some(surface => surface.symbol === activation.legacySymbol)),"cleanup activation exact holder");
     assert.deepEqual(record.removedDebtRecords.map(item => item.id),record.resolvedDebts,"cleanup exact resolved debts");
     assert(record.removedDebtRecords.every(item => paths.has(item.source)),"cleanup debt owner still exists");
+  }
+
+  // Owner rule 2026-10-07: a separate cleanup after stageN-closed. It removes proven-unreferenced modules and records
+  // exact before/after file hashes; it retires no bridge, activation or debt (all are already zero after Stage 6).
+  static #validateStageSixPostClosureCleanup(record) {
+    const cleanup = record.postClosureCleanup;
+    assert(cleanup.closureTag === "stage6-closed" && cleanup.archiveTag === "stage6-dead-code-archive" &&
+      /^[0-9a-f]{40}$/u.test(cleanup.archiveCommit) &&
+      cleanup.decision === "architecture/migration/stage_6/post_closure_cleanup_audit.md",
+      "cleanup needs exact Stage 6 post-closure recovery and decision");
+    for (const field of ["removedBridges", "removedActivations", "removedInertModules", "removedSideEffectReviews",
+      "removedDebtRecords", "resolvedDebts", "removedMethods", "removedLegacySlots"])
+      assert(Array.isArray(record[field]) && record[field].length === 0, `cleanup Stage 6 post-closure retires no ${field}`);
+    const paths = new Set();
+    for (const item of record.removedModules) {
+      assert(/^src\/.+\.js$/u.test(item.path) && !item.path.includes("..") && !paths.has(item.path) &&
+        /^[0-9a-f]{64}$/u.test(item.before) && /^[0-9a-f]{40}$/u.test(item.gitBlob) &&
+        item.manifest?.currentPath === item.path,"cleanup module identity and recovery"); paths.add(item.path);
+    }
+    const files = new Set();
+    for (const item of record.files) {
+      assert(!files.has(item.path) && !paths.has(item.path) && !item.path.includes("..") && item.reason &&
+        /^[0-9a-f]{64}$/u.test(item.before) && /^[0-9a-f]{64}$/u.test(item.after) && item.before !== item.after,
+        "cleanup exact changed file"); files.add(item.path);
+    }
   }
 
   removedTargetModules() { return this.#removedModules.map(item => item.path); }

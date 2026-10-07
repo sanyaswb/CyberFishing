@@ -52,9 +52,7 @@ export class InventoryItemSnapshotMapper {
     this.#freshnessCapabilityProvider =
       freshnessCapabilityProvider || ((definition) => {
         const groupId = definition?.progressionProfile?.groupId;
-        const config = typeof ITEM_PROGRESSION_CONFIG !== "undefined"
-          ? ITEM_PROGRESSION_CONFIG
-          : undefined;
+        const config = ITEM_PROGRESSION_CONFIG;
         return config?.groups?.[groupId]?.freshness || null;
       });
   }

@@ -1,0 +1,148 @@
+{
+  "performer": "claude-automated-acceptance",
+  "performedBy": "automated",
+  "status": "PASS",
+  "date": "2026-10-07",
+  "version": "0.27.1",
+  "preparation": "architecture/migration/stage_6/preparations/006_post-closure-cleanup.json",
+  "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+  "build": "node utils/dev-server.js (launch config cyber-fishing-dev, port 4173); dist/ absent",
+  "urls": [
+    "http://localhost:4173/index.html",
+    "http://localhost:4173/dev.html"
+  ],
+  "fixtureMethod": "Actual pages only; transient in-page dynamic imports of the same module URLs plus real panel/inventory clicks; no fixture page, API or global added.",
+  "gameCycle": {
+    "command": "node utils/game-cycle-check.js",
+    "stdoutSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "cleanupFocus": "Startup config validators, version badge, inventory slot policy/view model, DevTools panel and drag button, overlay, chum/location diagnostics run without the removed import guards; the two removed DEV modules are never requested.",
+  "native": {
+    "scripts": [
+      [
+        "module",
+        "src/entrypoints/game.entry.js?v=0.27.1"
+      ]
+    ],
+    "badge": "v0.27.1 prototype",
+    "identities": {
+      "startupPromiseIdentity": true,
+      "gameIdentity": true,
+      "applicationIdentity": true,
+      "configContextIdentity": true,
+      "configOwner": true
+    },
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "devOrCompatibilityResources": [],
+    "devGlobals": [],
+    "gameplayOverrideReader": {
+      "isActive": true,
+      "noLineBreak": false,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "liveOverrides": {
+      "nestedSetReachesReader": true,
+      "reset": true,
+      "resetAll": true,
+      "importRoundTrip": true,
+      "finalOverrides": {}
+    },
+    "inventoryOpenClose": true,
+    "pagehide": {
+      "loops": 0,
+      "listeners": [
+        0,
+        0,
+        0
+      ],
+      "game": null,
+      "cleanupHandle": null
+    },
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "dev": {
+    "scripts": [
+      [
+        "module",
+        "src/entrypoints/dev.entry.js?v=0.27.1"
+      ]
+    ],
+    "badge": "v0.27.1 prototype",
+    "identities": {
+      "startupPromiseIdentity": true,
+      "gameIdentity": true,
+      "applicationIdentity": true,
+      "configContextIdentity": true,
+      "configOwner": true
+    },
+    "loops": {
+      "activeCount": 1,
+      "duplicateStartAttempts": 0
+    },
+    "compatibilityResources": [],
+    "removedModuleRequests": [],
+    "devModuleResources": 89,
+    "devGlobals": [],
+    "devToolsPanel": {
+      "opens": true,
+      "openedBy": "real click on the draggable panel button",
+      "editors": 1794,
+      "editorReachesOverrideStoreAndConfig": true,
+      "panelResetAllRestores": true,
+      "sectionStatePersistsThroughCacheManager": true
+    },
+    "locationDiagnostics": "[DEBUG:location] Location (scouting / enabled): Location id test, Test Waters",
+    "pagehide": {
+      "loops": 0,
+      "listeners": [
+        0,
+        0,
+        0
+      ],
+      "overlay": 0,
+      "devToolsPanels": 0,
+      "game": null
+    },
+    "restartAfterDisposal": {
+      "repeated": 2,
+      "newGameIdentity": true,
+      "loops": 1,
+      "duplicateStartAttempts": 0
+    },
+    "pagehideWhileStartupPending": {
+      "loops": 0,
+      "listeners": [
+        0,
+        0,
+        0
+      ],
+      "startupResolved": true,
+      "restartAfterwards": {
+        "loops": 1
+      }
+    },
+    "inventoryOpenClose": true,
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "gameplaySaveKeys": [
+    "fishing_game_player_inventory_v2"
+  ],
+  "saveSchemaVersion": 4,
+  "originalSaveSha256": "efe8e56bb73dd14df3d44eefccb90140c4ed581ab23603132a55e4423918f770",
+  "finalSaveSha256": "efe8e56bb73dd14df3d44eefccb90140c4ed581ab23603132a55e4423918f770",
+  "originalSavesRestored": true,
+  "savesRestoreNote": "The section-state probe created the DEV preference key fishing_game_dev_tools_sections_state; it was removed, leaving the original single key with identical bytes.",
+  "ownedTabsClosed": true,
+  "ownedServerStopped": true,
+  "ignoredFixturesRemoved": true,
+  "ignoredFixturesNote": "No fixture page or file was created."
+}

@@ -1,0 +1,406 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-preparation",
+  "id": "006",
+  "slug": "post-closure-cleanup",
+  "date": "2026-10-07",
+  "baseCommit": "f96c17b5e41f2d175159c71f779752dc57782d71",
+  "reason": "Owner rule 2026-10-07: a separate cleanup after stage6-closed. Remove the 73 dead typeof guards on ESM import bindings, the two unreachable DEV modules and the three inert package scripts (owner-approved); qualify the package, cleanup and native-successor gates with exact successors. Behavior, saves, APIs and timing are unchanged; the compatibility tooling archive and test-loader aliases stay for the first Stage 7 step (audit item 4 and owner decision). The 85 empty untracked src directories left by the classic retirement were removed from the filesystem (nothing to recover).",
+  "postClosureCleanup": {
+    "closureTag": "stage6-closed",
+    "archiveTag": "stage6-dead-code-archive",
+    "archiveCommit": "9c34026c3eabd0feee2febfdd75589d4bd52142c",
+    "decision": "architecture/migration/stage_6/post_closure_cleanup_audit.md",
+    "phase": "post-closure-cleanup"
+  },
+  "removedModules": [
+    {
+      "path": "src/dev/core/null_debug_runtime.js",
+      "before": "025bdb2c711e4898d7daf66c90376dee0781220a20adacb39bf62faba0bb90a5",
+      "gitBlob": "3fe380c19b4d033dd0ade0a189ecf16add32b1eb",
+      "manifest": {
+        "currentPath": "src/dev/core/null_debug_runtime.js",
+        "currentArea": "dev/core",
+        "observed": {
+          "legacyLoadOrder": null,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "verified",
+          "roles": [
+            "dev-tool"
+          ],
+          "targetBoundary": "dev",
+          "targetPath": "src/dev/core/null_debug_runtime.js",
+          "migrationWave": 7
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    },
+    {
+      "path": "src/dev/physics/physics_formula_map.js",
+      "before": "ff79c7fc509cdab32277fc41186f1f21a847cafa1a552db0342ecc496680bfec",
+      "gitBlob": "23d4762dadb39f0139dd08c9b6066a1491c93705",
+      "manifest": {
+        "currentPath": "src/dev/physics/physics_formula_map.js",
+        "currentArea": "dev/physics",
+        "observed": {
+          "legacyLoadOrder": null,
+          "providers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "consumers": {
+            "status": "verified",
+            "items": [],
+            "issues": []
+          },
+          "environment": {
+            "status": "verified",
+            "builtins": [
+              "Object"
+            ],
+            "browserApis": [],
+            "dynamicConstructs": [],
+            "issues": []
+          }
+        },
+        "architecture": {
+          "migrationStatus": "verified",
+          "roles": [
+            "dev-tool"
+          ],
+          "targetBoundary": "dev",
+          "targetPath": "src/dev/physics/physics_formula_map.js",
+          "migrationWave": 7
+        },
+        "analysis": {
+          "dependencies": {
+            "status": "verified",
+            "confirmed": [],
+            "items": [],
+            "unresolved": [],
+            "ambiguous": [],
+            "issues": []
+          },
+          "blockers": {
+            "status": "verified",
+            "items": []
+          }
+        }
+      }
+    }
+  ],
+  "removedBridges": [],
+  "removedActivations": [],
+  "removedInertModules": [],
+  "removedSideEffectReviews": [],
+  "removedDebtRecords": [],
+  "resolvedDebts": [],
+  "removedMethods": [],
+  "removedLegacySlots": [],
+  "reclassified": [],
+  "movedProviders": [],
+  "replacedBridges": [],
+  "files": [
+    {
+      "path": "architecture/migration/module_migration_manifest.json",
+      "before": "6e29f9866152da0bbc17a08d03762ba24ba576f97aad60cc241252db5bff0be7",
+      "after": "c7451867abde752926fce25bb684e25ec2ab654425856fbe655c48d7c8851d15",
+      "reason": "Remove the Manifest entries of the two unreachable DEV modules."
+    },
+    {
+      "path": "package.json",
+      "before": "7e30b7d88381b98ea7c9a83d6b74564585ba452a315d7e8e95947a85b2c64ad7",
+      "after": "4a0695084673cedbf2fbbfc30b3aeb3e0baa579f5e53b3b408d44faf38bb1eba",
+      "reason": "Owner 2026-10-07: remove the inert build:legacy-bridges / build:stage-3-compat-runtime scripts and the archived architecture:closure script."
+    },
+    {
+      "path": "src/bootstrap/production/game_application.js",
+      "before": "a4f09097669ebe8eb1b40bf847bb59dd213711dcc07ff812dc4c80a2697cf286",
+      "after": "8b2e255be4f424ef8d72377bbdfa2083e9be738badd9ea665f0b1d51b50317d4",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/bootstrap/production/game_composition_root.js",
+      "before": "adf5d0796c5a92d6b39922e00b228e2baf1aa1147a8c98a42a235309c0ec09fa",
+      "after": "3881c05492ac42e3b0ee576f96a514677627bf0b3995a01dfb7e623e8747aa9c",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/bootstrap/production/game_version_badge.js",
+      "before": "d63e415d833416a157cecf8363ddd3c961667cd0c65ad522e66f76ea66cb2797",
+      "after": "b30e2cc0934d325c1eb54d0f9b5097bb30a649b3df7621317a5e7c4cbd3e896f",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/bootstrap/production/inventory_composition_root.js",
+      "before": "404474de3576f20ec697ec3ca513b1e75cf7dec1b9617911dd430ff34e78d141",
+      "after": "e83349da0c2ad65c0a281120112af780110b40c235c2cafbc2f912f8385479fa",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/dev/fishing/active_fish_dev_tools_schema.js",
+      "before": "b90e54fb578060829234b7bead5d7c36ffcab7f4617ead5190a1423c7a9b477d",
+      "after": "80df08eac9bc27ae6a761bf64e2b9881677b30f4e0b1c523e60ac78b3b6c1eda",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/dev/overlay/dom/overlay_dom_adapter.js",
+      "before": "bd16cd5604b625d4a3e754034155e6806e075b30ac0470a3489eec00a6646db5",
+      "after": "435390d65a8de363f26f4b65b2b5be3da48ef164d2858829fd04379d8d2dd9f1",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/dev/overlay/dom/overlay_window_drag_controller.js",
+      "before": "94c398893d0eb1e9b79dbee3bd9540530cb2d20102620b9ed70afa0686cda80c",
+      "after": "1d9deca999dc0835cff89fefee093b3e27bd73e1fe29db2bf5accdea3d020bf6",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/dev/tools/dev_tools.js",
+      "before": "cae141df5a1907d528a10814d4555a6da5326cb2b6dab16536a67255f15fcfdf",
+      "after": "ba6b0cf9e8f553efad0b52d3a1846717a0b6b90f7b4ae0a0cee09cedba6d6561",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/dev/tools/dev_tools_ui.js",
+      "before": "d08e89a781aabb4c55b43e21d07eb1982abb94347a3922b98b68f4332ccb71b5",
+      "after": "ecc5fa9caab5fb6a8b7fa01c9a5322ce5898c8ec5a00663a4e346266d5591d4b",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/fishing/bite_service.js",
+      "before": "376e44f213a9507adc5f2e7fa114658e88e1d3d2a8230c595931034c2cbb9b3d",
+      "after": "5cda78d7d5d99edc78e48acb08d0a08fd5218af4ad0655c191e99bfe2e62f9b5",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/fishing/fight_physics_orchestrator.js",
+      "before": "76af8d48c707d10785d5135532a57ca850329262463c994d1834e8a6f8784a9d",
+      "after": "980450c09ccd4b38f1285e555f54bbdf36a58a5b2cdde89008e467ef81ac7207",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/fishing/fishing_runtime_services.js",
+      "before": "2b345e3f0ee5f2683260eb3e7c4dbb30f3e7e0bb0b6f25ab60c1e1b915889547",
+      "after": "16490258095ce13189b07df5fa1ea15a7f7b1d0b8a0f9103f9498b2190e3812e",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/inventory/legacy_inventory_system.js",
+      "before": "13ddfee4216c088beab3db4628757e2bbabe3d842d600b2f688fdd53bf651857",
+      "after": "4b84cadde435f4b15f592902a89102ca79156cddab2d55e9a2f429d889b6bcbe",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/inventory/loadout_application_service.js",
+      "before": "805a051f1a2cc358878bd23d9ee1f2786904b4cc29174b7cfcb8e0620f5bae67",
+      "after": "9242106a9441daeb2bc6e57d777507eef2d0bcbe5c5c8451483fd9416d7bc13e",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
+      "before": "3bb733f78388209f5e2eb64a066d4bbcc3f6ff3bb2651d93a44303f3f78d32a5",
+      "after": "1115b86dd25e0e012c5705c27909191663d4e465e668ad78a8b071e58efa75f9",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/application/inventory/persistence/legacy_item_state_migration.js",
+      "before": "fcca4262c5924df6e38e5c7cedab768425dd56500b2b10305943848832e53907",
+      "after": "d7d9b14ca258f4f19518c56d39488af24c33649cfbb2c7d108374a9ba735389a",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/config/databases/fish/fish_categories.js",
+      "before": "94889b8682ff34b228e0ad9e33ef38d85431dc10ce1a9fa5d6f2d4c1aa21693a",
+      "after": "2e8d1f6ca9684ad3b262b855b3ea3c495fa2187afe18ec5a5a98cfc8c5526a48",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/config/databases/fish_database.js",
+      "before": "627c387642df152b5349a99c776a9275de24c6721ca8d720eda4765b3d3b7343",
+      "after": "3243f8f879d63e1fa36b5b22324e30dff57f32884a8af5c4dab5c17129e39f37",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/config/runtime/game_config.js",
+      "before": "73d5b467bcb129d138017f55aa3831a18f255aa878bb773f1baaa8194efa4547",
+      "after": "20190899dbb1c3e525fda445a3d66cfa5affd7e4ba31415d6108825b06ef4dfe",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/config/validation/config_schema_validator.js",
+      "before": "0c82c19a988ebb06cd2f280b64980b93134f3762d167e9265f51dc4c0e23790b",
+      "after": "1f11b88bf22f49d04241fcde586ce1b2708bcdd4a15dfa9712849729b1208e4c",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/config/validation/rarity_config_validator.js",
+      "before": "4e34da4152475cac6273fbdb28898f5ec3a9eb4d2d7b97385525e7ec3689eb6b",
+      "after": "11df8c879021b04f1dcc0fb4e0557df6851399975f7a7412e90395fab4f71b23",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/equipment_slot_availability_policy.js",
+      "before": "92eda97a8d426aa23a0189cf306e8cb6e76f6f74f818d54d33e525ce80c110df",
+      "after": "84a67d8b6a19c346a31ee9701c4a0379e1d7638ce20a437aacd9e7072f81d448",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/inventory_balance_parameter_resolver.js",
+      "before": "081aca18b9c0eb885245ffa6587c2f9099a3d79891f15adfad130c92ff1629d7",
+      "after": "19f8d8ebf9a6c8a945d17ce06432e0e99bf29c79a7355a9fd4594af2f5ebd923",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/inventory_item_order_resolver.js",
+      "before": "8057109a86a40387b390c866f75a00c7096980d3308d68cb61c65a848d019636",
+      "after": "f685f7f12d17eec7c8b961e3d717b98121c04a0a90314c3cd4e5c6f79ebdae61",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
+      "before": "f96a6213b4233a7e343c96c8f418c9f9af8cb799e46a104a85de989ec76687d7",
+      "after": "22c609162002988f3072d8b7906c6612f676713a2addac6e1c19339aa7679e20",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/inventory_view_model.js",
+      "before": "81449c3fc032e4d83da53212d42bc9cc043ae2660d69305e39f60acc6d200bc1",
+      "after": "c89b53d11273b791fbfa4decda8992640fc6efff9411d28110c45ea70f464e7e",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/game/presentation/inventory/inventory_view_model_factory.js",
+      "before": "4483a1cc55882ee1e7880e93e316d2033a07a4458890ea22d10b7647835b7579",
+      "after": "92f88b08e87494332764975a1e4e71f899b47d4849acd41f029496fb10d433e3",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "src/platform/browser/ui/chum_controls.js",
+      "before": "f4b2e34fc9742b47f533bd3818a326271efe78f7a0526bcf1dff93fd8ed8d848",
+      "after": "2a60de4342bb5082ec475fa3422f2310dc4ed132dce291150ee28da5f557886e",
+      "reason": "Remove dead typeof guards on ESM import bindings (always defined classes or frozen constants); behavior unchanged."
+    },
+    {
+      "path": "utils/architecture/package-contract-check.js",
+      "before": "cef89d2b1497b22146f1e7137a54001f0f11993338e931f431d9812202717a1a",
+      "after": "40993f459e1115dcf34205f120bd8b6b55af84bf928a4a9691f64699e3e279fe",
+      "reason": "Package gate successor: retired scripts must be absent and every node script target must exist; negative fixtures."
+    },
+    {
+      "path": "utils/architecture/package_contract/root_package_validator.js",
+      "before": "75c75a7b9028a5e95d7cf244c14e96073b92caa7d17aba381e2717d72f15d370",
+      "after": "2ced8b94a3def44e34ea2c6920b9051c38a8afc9165670303605e427f294578f",
+      "reason": "Package gate successor: retired scripts must be absent and every node script target must exist; negative fixtures."
+    },
+    {
+      "path": "utils/architecture/stage-4-cluster-records-check.js",
+      "before": "f7ee80de4e935149efb024b46bbc8c109a431e35e817c6af6466f083e24791fd",
+      "after": "e461ff197b171564127b72edad04924b283662c9c2c24bd2f910e33496776e37",
+      "reason": "Post-closure branch: closed base, archive identity, changed-file recovery, exact successor chain for pinned bytes; closure keeps its own preparations."
+    },
+    {
+      "path": "utils/architecture/stage_four/cluster_ledger.js",
+      "before": "c9bf0213306d64b47642e56fc93cc74914e2e7b6f7cdb8d6c0031bbc28c043b9",
+      "after": "330d22e68f793e675fe30c9d033ef3f64b18f7fc04441b496df16edd4d2d1154",
+      "reason": "Validate the Stage 6 post-closure cleanup record (exact recovery, no retired surfaces, exact changed files)."
+    },
+    {
+      "path": "utils/architecture/stage_six/native_development_retirement.js",
+      "before": "a4db9e2171303e3e273295077f0cd0e6d886f135f23d9ed31510457084ed1038",
+      "after": "cd45e51df7d625d4bf226ff76b46d7bee5a202fab0db81ba39b7990c9150b42f",
+      "reason": "A native replacement target may be absent only with an exact later post-closure removal; fixtures."
+    },
+    {
+      "path": "utils/config-runtime-check.js",
+      "before": "ff7b7a19c794c7a84045e284fb818ea40a0496c26a7776dc91ee0a30ca74e406",
+      "after": "1d8e3b4f39e4c4bca4057d95961eb3f60aa09bbe6ddead1cf401ec7f8e90dce8",
+      "reason": "DEV display parity loads every inventory DEV target except exact recorded post-closure removals, and asserts they are gone."
+    }
+  ],
+  "gameCycle": {
+    "before": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "after": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "verification": {
+    "status": "accepted",
+    "performer": "claude-automated-acceptance",
+    "globalsBefore": 0,
+    "globalsAfter": 0,
+    "typeofGuards": {
+      "before": {
+        "total": 367,
+        "importBindings": 73
+      },
+      "after": {
+        "total": 294,
+        "importBindings": 0
+      },
+      "retainedGlobalCapabilityChecks": 24
+    },
+    "removedModules": 2,
+    "changedFiles": 36,
+    "removedEmptyDirectories": 85,
+    "manifest": {
+      "before": 456,
+      "after": 454
+    },
+    "graphs": "production 350/522 and DEV 446/692 unchanged (both removed modules were unreachable)",
+    "gameCycle": {
+      "stdoutSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64 uncached"
+    },
+    "acceptance": {
+      "report": "architecture/archive/stage6_006_post-closure-cleanup_acceptance.json",
+      "sha256": "29cfb5d1a7d7c3a5b1e4cf7eb147d210f4c10e49d8ce239680191714037abc59",
+      "sourceCommit": "f96c17b5e41f2d175159c71f779752dc57782d71",
+      "sourceSnapshot": "146f587b24891ddd2e6fc1867fcd7e809bd12d61d5445b7324d02a19da602442",
+      "startedAt": "2026-10-07T16:33:53.580Z",
+      "finishedAt": "2026-10-07T16:34:38.158Z",
+      "isolationViolations": 0
+    },
+    "browser": {
+      "report": "architecture/archive/stage6_006_post-closure-cleanup_browser.json",
+      "sha256": "4aa2db43ee5e2fd6c352bc7fd94aaff1140d322afda4e9bbe7f1e000b4a49771"
+    },
+    "note": "Quick, Architecture and the uncached Full ran on one snapshot (cleanup, guard successors, release 002 projection and browser report) before report archival and these verification edits."
+  }
+}

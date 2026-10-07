@@ -850,53 +850,6 @@
       }
     },
     {
-      "currentPath": "src/dev/core/null_debug_runtime.js",
-      "currentArea": "dev/core",
-      "observed": {
-        "legacyLoadOrder": null,
-        "providers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "verified",
-        "roles": [
-          "dev-tool"
-        ],
-        "targetBoundary": "dev",
-        "targetPath": "src/dev/core/null_debug_runtime.js",
-        "migrationWave": 7
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
       "currentPath": "src/dev/data/dev_item_catalog.js",
       "currentArea": "dev/data",
       "observed": {
@@ -4939,55 +4892,6 @@
         ],
         "targetBoundary": "dev",
         "targetPath": "src/dev/overlay/services/overlay_view_state_store.js",
-        "migrationWave": 7
-      },
-      "analysis": {
-        "dependencies": {
-          "status": "verified",
-          "confirmed": [],
-          "items": [],
-          "unresolved": [],
-          "ambiguous": [],
-          "issues": []
-        },
-        "blockers": {
-          "status": "verified",
-          "items": []
-        }
-      }
-    },
-    {
-      "currentPath": "src/dev/physics/physics_formula_map.js",
-      "currentArea": "dev/physics",
-      "observed": {
-        "legacyLoadOrder": null,
-        "providers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "consumers": {
-          "status": "verified",
-          "items": [],
-          "issues": []
-        },
-        "environment": {
-          "status": "verified",
-          "builtins": [
-            "Object"
-          ],
-          "browserApis": [],
-          "dynamicConstructs": [],
-          "issues": []
-        }
-      },
-      "architecture": {
-        "migrationStatus": "verified",
-        "roles": [
-          "dev-tool"
-        ],
-        "targetBoundary": "dev",
-        "targetPath": "src/dev/physics/physics_formula_map.js",
         "migrationWave": 7
       },
       "analysis": {

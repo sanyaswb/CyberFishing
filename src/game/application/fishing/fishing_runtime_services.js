@@ -377,9 +377,7 @@ export class FightSessionFactory {
     this.devFlags = devFlags;
     this.physicsConfig =
       config?.fightPhysicsConfig ||
-      (typeof FightPhysicsConfigAdapter !== "undefined"
-        ? new FightPhysicsConfigAdapter(config)
-        : null);
+      new FightPhysicsConfigAdapter(config);
     this.castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
@@ -704,9 +702,7 @@ export class CatchResolutionService {
   }) {
     const physicsConfig =
       config?.fightPhysicsConfig ||
-      (typeof FightPhysicsConfigAdapter !== "undefined"
-        ? new FightPhysicsConfigAdapter(config)
-        : null);
+      new FightPhysicsConfigAdapter(config);
     const cfg = physicsConfig?.getCatchZoneConfig?.() || {};
     const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
     const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({
@@ -965,9 +961,7 @@ export class FightService {
     this.#config = config;
     this.#physicsConfig =
       config?.fightPhysicsConfig ||
-      (typeof FightPhysicsConfigAdapter !== "undefined"
-        ? new FightPhysicsConfigAdapter(config)
-        : null);
+      new FightPhysicsConfigAdapter(config);
     this.#rng = rng;
     this.#devFlags = devFlags;
     this.#fightSessionFactory =

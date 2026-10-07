@@ -275,7 +275,7 @@ export class InventoryRuntimeConfigProvider {
   }
 
   #createPhysicsConfig(config) {
-    if (!config || typeof FightPhysicsConfigAdapter === "undefined") {
+    if (!config) {
       return null;
     }
     return new FightPhysicsConfigAdapter(config);

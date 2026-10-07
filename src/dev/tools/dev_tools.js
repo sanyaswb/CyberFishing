@@ -84,18 +84,9 @@ export class DevTools {
     this.#debugModulesSource = debugModulesSource;
     this.#hookedFishProfileSynchronizer = hookedFishProfileSynchronizer;
     this.#configRuntime = configRuntime;
-    this.#activeFishVisibilityPolicy =
-      typeof ActiveFishDevToolsVisibilityPolicy !== "undefined"
-        ? new ActiveFishDevToolsVisibilityPolicy()
-        : null;
-    this.#locationSchema =
-      typeof LocationDevToolsSchema !== "undefined"
-        ? new LocationDevToolsSchema()
-        : null;
-    this.#parameterAliases =
-      typeof DevToolsParameterAliasRegistry !== "undefined"
-        ? new DevToolsParameterAliasRegistry()
-        : null;
+    this.#activeFishVisibilityPolicy = new ActiveFishDevToolsVisibilityPolicy();
+    this.#locationSchema = new LocationDevToolsSchema();
+    this.#parameterAliases = new DevToolsParameterAliasRegistry();
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
@@ -165,11 +156,9 @@ export class DevTools {
         ["OVERLAY_MODULES"],
       );
       const renderedKeys = new Set();
-      const groups =
-        typeof OVERLAY_MODULE_GROUPS !== "undefined" &&
-        Array.isArray(OVERLAY_MODULE_GROUPS)
-          ? OVERLAY_MODULE_GROUPS
-          : [];
+      const groups = Array.isArray(OVERLAY_MODULE_GROUPS)
+        ? OVERLAY_MODULE_GROUPS
+        : [];
 
       const renderSwitcher = (key, parent) => {
         if (!overlayKeys.includes(key) || renderedKeys.has(key)) return;
@@ -491,10 +480,7 @@ export class DevTools {
   }
 
   #createSectionWithCache(labelStr, parentElement, path = null) {
-    let savedStates =
-      typeof CacheManager !== "undefined"
-        ? CacheManager.get("dev_tools_sections_state", {})
-        : {};
+    let savedStates = CacheManager.get("dev_tools_sections_state", {});
     let isExpanded = savedStates[labelStr] || false;
 
     return this.#ui.createSection(
@@ -502,11 +488,9 @@ export class DevTools {
       parentElement,
       isExpanded,
       (isNowExpanded) => {
-        if (typeof CacheManager !== "undefined") {
-          savedStates = CacheManager.get("dev_tools_sections_state", {});
-          savedStates[labelStr] = isNowExpanded;
-          CacheManager.set("dev_tools_sections_state", savedStates);
-        }
+        savedStates = CacheManager.get("dev_tools_sections_state", {});
+        savedStates[labelStr] = isNowExpanded;
+        CacheManager.set("dev_tools_sections_state", savedStates);
       },
       path,
     );
@@ -522,8 +506,7 @@ export class DevTools {
   }
 
   #getOverlayModuleLabel(key) {
-    const labels =
-      typeof OVERLAY_MODULE_LABELS !== "undefined" ? OVERLAY_MODULE_LABELS : {};
+    const labels = OVERLAY_MODULE_LABELS;
     return labels?.[key]?.label || key;
   }
 

@@ -11,12 +11,8 @@ export class InventoryV2ItemOrderResolver {
   #lastResolvedOrder = Object.freeze([]);
 
   constructor({
-    config = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
-      ? INVENTORY_V2_SORT_CONFIG
-      : null,
-    rarityVisualConfig = typeof RARITY_VISUAL_CONFIG !== "undefined"
-      ? RARITY_VISUAL_CONFIG
-      : null,
+    config = INVENTORY_V2_SORT_CONFIG,
+    rarityVisualConfig = RARITY_VISUAL_CONFIG,
   } = {}) {
     if (!config?.criteria || !config?.directions || !config?.typeOrder) {
       throw new TypeError("InventoryV2ItemOrderResolver requires sort config");

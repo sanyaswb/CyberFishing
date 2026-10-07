@@ -4,9 +4,7 @@ import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_
 export class GameVersionBadge {
   constructor({
     element = null,
-    versionConfig = typeof PROJECT_VERSION_CONFIG !== "undefined"
-      ? PROJECT_VERSION_CONFIG
-      : null,
+    versionConfig = PROJECT_VERSION_CONFIG,
   } = {}) {
     this.element = element;
     this.versionConfig = versionConfig;

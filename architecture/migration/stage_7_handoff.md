@@ -25,7 +25,12 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 - Historical evidence is immutable; new facts get new versioned evidence. Byte-preserving edits only until the EOL transition below lands.
 - A change to the check catalog, package scripts, globals or save format is an owner decision.
 
-## First: Stage 6 post-closure cleanup (closure spec C5, patch 0.27.1)
+## Stage 6 post-closure cleanup (closure spec C5, patch 0.27.1) — done 2026-10-07
+
+Done in preparation 006 / v0.27.1 (`stage6-dead-code-archive`): 73 dead import guards, the two unreachable DEV modules, the three package
+scripts and 85 empty directories removed; see [stage_6/post_closure_cleanup_audit.md](stage_6/post_closure_cleanup_audit.md).
+Still open from its list: the `LocationMap.currentDebugState` optimization (owner decision between the override-store flag and the
+allocation-free per-field comparison) and the test-loader aliases (first Stage 7 step). Original plan:
 
 Owner rule 2026-10-07: every stage closure is followed by a separate cleanup preparation and patch release. Run C5 of
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md) before any Stage 7 transition. Its candidates (audit first, exact-byte
@@ -85,7 +90,7 @@ at least two live uses (see `toolingArchive` in the closure record).
 ## Recommended order for the compatibility tooling and `build:*` scripts (owner question 2026-10-07)
 
 1. Not inside the Stage 6 closure: the closure Full must run on the same 64-check catalog the Stage 6 evidence uses.
-2. In C5 (0.27.1), with your approval of the exact list: remove only the inert package scripts `build:legacy-bridges` and
+2. Done in C5 (0.27.1), owner-approved: remove only the inert package scripts `build:legacy-bridges` and
    `build:stage-3-compat-runtime` through the package-contract transition (and decide `architecture:closure`, whose target is already
    missing). This keeps the catalog at 64 and the cleanup low-risk; the builder files stay until their checks go.
 3. Archive the tools and history-only checks as their own transition right after C5, as the first Stage 7 step: before the EOL

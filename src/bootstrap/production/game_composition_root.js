@@ -219,7 +219,7 @@ export class GameCompositionRoot {
   }
 
   printStorageUsage() {
-    if (typeof CacheManager !== "undefined" && CacheManager.printStorageUsage) CacheManager.printStorageUsage();
+    if (CacheManager.printStorageUsage) CacheManager.printStorageUsage();
   }
 
   getMemoryWatchdogConfig() {
@@ -650,9 +650,7 @@ export class GameCompositionRoot {
     const projector = new ViewportProjector(this.#config.locations, locId);
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
-      (typeof FightPhysicsConfigAdapter !== "undefined"
-        ? new FightPhysicsConfigAdapter(this.#config)
-        : null);
+      new FightPhysicsConfigAdapter(this.#config);
     const castDistanceCalculator = new CastDistanceCalculator(this.#config);
     const lineRules = new LineCompatibilityRules(
       physicsConfig?.getLineConfig?.() || {},
@@ -738,7 +736,7 @@ export class GameCompositionRoot {
       ),
       input: own(new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
-        fightInputActionComposer: typeof FightInputActionComposer !== "undefined" ? new FightInputActionComposer() : null,
+        fightInputActionComposer: new FightInputActionComposer(),
       })),
       ui: own(new UIManager(
         this.#config,
@@ -1248,9 +1246,6 @@ export class GameCompositionRoot {
   }
 
   #validateRarityConfiguration() {
-    if (typeof RarityConfigValidator === "undefined") {
-      throw new Error("RarityConfigValidator must be loaded before startup");
-    }
     new RarityConfigValidator().assertValid({
       rarityConfig: this.#config.rarity,
       fishDb: this.#config.spawns?.fishes || [],
@@ -1260,11 +1255,6 @@ export class GameCompositionRoot {
   }
 
   #validateItemProgressionConfiguration(effectiveStatsResolver) {
-    if (typeof ItemProgressionConfigValidator === "undefined") {
-      throw new Error(
-        "ItemProgressionConfigValidator must be loaded before startup",
-      );
-    }
     new ItemProgressionConfigValidator({ effectiveStatsResolver }).assertValid({
       progressionConfig: this.#config.itemProgression,
       itemDb: this.#itemDb || {},
@@ -1272,11 +1262,6 @@ export class GameCompositionRoot {
   }
 
   #validateDegradationColorConfiguration() {
-    if (typeof DegradationColorConfigValidator === "undefined") {
-      throw new Error(
-        "DegradationColorConfigValidator must be loaded before startup",
-      );
-    }
     new DegradationColorConfigValidator().assertValid(
       this.#config.degradationColors,
     );

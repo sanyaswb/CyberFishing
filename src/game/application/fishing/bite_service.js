@@ -85,10 +85,7 @@ export class BiteSystem {
 
   #resolvePhysicsConfig(runtimeConfig) {
     if (runtimeConfig?.fightPhysicsConfig) return runtimeConfig.fightPhysicsConfig;
-    if (typeof FightPhysicsConfigAdapter !== "undefined") {
-      return new FightPhysicsConfigAdapter(runtimeConfig);
-    }
-    return null;
+    return new FightPhysicsConfigAdapter(runtimeConfig);
   }
 
   reset() {
@@ -218,11 +215,9 @@ export class BiteSystem {
 
   #buildFishPhysics(fishPhysics, weightConfig, level) {
     const levelBasePower = this.#resolveLevelBasePower(weightConfig, level);
-    if (typeof FishPhysicsProfile !== "undefined") {
-      return FishPhysicsProfile.toRuntimeConfig(fishPhysics || {}, {
-        levelBasePower,
-      });
-    }
+    return FishPhysicsProfile.toRuntimeConfig(fishPhysics || {}, {
+      levelBasePower,
+    });
 
     return {
       ...(fishPhysics || {}),

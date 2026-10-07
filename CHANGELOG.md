@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.27.1 - Stage 6 Post-Closure Cleanup
+
+### Changed
+
+- Remove 73 dead typeof guards on ESM imports, two unreachable DEV modules and the inert build/closure package scripts.
+- Exact raw recovery at stage6-dead-code-archive; gameplay, saves and timing unchanged.
+
 ## v0.27.0 - Stage 6 Native Development
 
 ### Changed

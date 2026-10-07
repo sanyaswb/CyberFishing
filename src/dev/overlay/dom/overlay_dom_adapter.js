@@ -38,7 +38,7 @@ export class OverlayDomAdapter {
       touch-action: none; pointer-events: all;
     `;
 
-    if (typeof UIUtils !== "undefined" && UIUtils.makeSolid) {
+    if (UIUtils.makeSolid) {
       UIUtils.makeSolid(this.#container);
     }
 

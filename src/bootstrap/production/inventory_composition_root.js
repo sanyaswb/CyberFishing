@@ -103,7 +103,7 @@ export class InventoryV2CompositionRoot {
       new InventoryV2StateStore({
         cache:
           cache ||
-          (typeof CacheManager !== "undefined" ? CacheManager : null),
+          CacheManager,
         itemSnapshotMapper,
       });
 
@@ -512,7 +512,7 @@ export class InventoryV2CompositionRoot {
         ? legacyStateProvider() || {}
         : legacyStateProvider || {};
     const cacheAdapter =
-      cache || (typeof CacheManager !== "undefined" ? CacheManager : null);
+      cache || CacheManager;
     const sourceItems =
       legacyItems ||
       provided.legacyItems ||

@@ -336,10 +336,7 @@ export class InventoryV2ViewModelFactory {
     const rod = rodInstanceId
       ? this.#itemViews.create(rodInstanceId)
       : null;
-    const slotConfig =
-      typeof EQUIPMENT_SLOT_CONFIG !== "undefined"
-        ? EQUIPMENT_SLOT_CONFIG
-        : {};
+    const slotConfig = EQUIPMENT_SLOT_CONFIG;
     const itemType = this.#itemType(rootView);
     const candidateSlotIds = EQUIPMENT_ALL_SLOT_IDS.filter((slotId) =>
       (slotConfig[slotId]?.acceptTypes || []).includes(itemType),

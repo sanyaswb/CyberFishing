@@ -31,7 +31,7 @@ export class OverlayWindowDragController {
 
   attach() {
     if (!this.#element) return;
-    if (typeof UIUtils !== "undefined" && UIUtils.makeSolid) {
+    if (UIUtils.makeSolid) {
       UIUtils.makeSolid(this.#element);
     }
     this.#restorePosition();
@@ -152,7 +152,7 @@ export class OverlayWindowDragController {
   }
 
   #restorePosition() {
-    if (typeof CacheManager === "undefined" || !this.#element) return;
+    if (!this.#element) return;
     const savedPosition = CacheManager.get(`drag_pos_${this.#id}`);
     if (!savedPosition) return;
 
@@ -166,7 +166,7 @@ export class OverlayWindowDragController {
   }
 
   #savePosition() {
-    if (typeof CacheManager === "undefined" || !this.#element) return;
+    if (!this.#element) return;
     const rect = this.#element.getBoundingClientRect();
     CacheManager.set(`drag_pos_${this.#id}`, {
       left: `${Math.max(0, rect.left)}px`,

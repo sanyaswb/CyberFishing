@@ -20,7 +20,7 @@ export class InventoryV2BalanceParameterResolver {
     rarityVisualResolver = null,
   } = {}) {
     this.#config =
-      config || (typeof INVENTORY_V2_BALANCE_TOOLTIP_CONFIG !== "undefined" ? INVENTORY_V2_BALANCE_TOOLTIP_CONFIG : null) || {};
+      config || INVENTORY_V2_BALANCE_TOOLTIP_CONFIG;
     this.#physicsConfig = physicsConfig || {};
     this.#castDistanceCalculator = castDistanceCalculator || null;
     this.#retrieveSpeedCalculator =
@@ -670,7 +670,7 @@ export class InventoryV2BalanceParameterResolver {
     const rarityId = this.#rarityVisualResolver?.resolve(rarity)?.id ||
       rarity.id ||
       "";
-    return (typeof INVENTORY_V2_RARITY_NAMES !== "undefined" ? INVENTORY_V2_RARITY_NAMES : null)?.[rarityId] || rarityId;
+    return INVENTORY_V2_RARITY_NAMES[rarityId] || rarityId;
   }
 
   #humanize(value) {

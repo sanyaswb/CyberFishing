@@ -120,10 +120,7 @@ export class ActiveFishDevToolsVisibilityPolicy {
   }
 
   #normalizePhysics(physics) {
-    if (typeof FishPhysicsProfile !== "undefined") {
-      return FishPhysicsProfile.toRuntimeConfig(physics || {});
-    }
-    return physics || {};
+    return FishPhysicsProfile.toRuntimeConfig(physics || {});
   }
 
   #normalizePath(path) {

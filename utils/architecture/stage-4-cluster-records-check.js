@@ -117,7 +117,13 @@ const removedActivations = cleanupRecords.flatMap(record => record.removedActiva
 const archivedSources = new Map();
 // Stage 6 retired the Stage 5 tombstones and split with every classic file: earlier cleanup facts are read from the
 // hash-validated pre-retirement bytes, while the current native pages are validated independently below.
-const nativeRetirement = cleanupRecords.find(record => record.kind === "cyber-fishing-stage-6-preparation") || null;
+const nativeRetirement = cleanupRecords.find(record => record.kind === "cyber-fishing-stage-6-preparation" &&
+  record.postClosureCleanup.phase === "native-development-cutover") || null;
+const stageSixPostClosure = record => record.postClosureCleanup?.closureTag === "stage6-closed";
+// A later recorded cleanup may change a file whose bytes an earlier cleanup pinned: exact before/after chain only.
+const recordedSuccessorBytes = (file,expected,actual) => actual === expected || cleanupRecords.some(record => stageSixPostClosure(record) &&
+  record.files.some(item => item.path === file && item.before === require("node:crypto").createHash("sha256").update(expected).digest("hex") &&
+    item.after === require("node:crypto").createHash("sha256").update(actual).digest("hex")));
 const nativeArchive = nativeRetirement && NativeDevelopmentRetirement.archive(ROOT,nativeRetirement);
 if (nativeArchive) assert.equal(nativeArchive.verifyAll(),nativeRetirement.removedModules.length +
   nativeRetirement.historicalMetadata.length + 1,"cleanup exact Stage 6 raw recovery");
@@ -126,10 +132,18 @@ const git = (...args) => require("node:child_process").execFileSync("git",args,{
 for (const record of cleanupRecords) {
   StageFourClusterLedger.validateCleanupRecord(record);
   const native = record === nativeRetirement;
+  const postSix = stageSixPostClosure(record);
   if (native) {
     nativeArchive.verifyIdentity();
     assert.doesNotThrow(() => git("merge-base","--is-ancestor","stage5-closed^{}",record.baseCommit),"cleanup Stage 6 base follows closure");
     assert.doesNotThrow(() => git("merge-base","--is-ancestor",record.baseCommit,"HEAD"),"cleanup Stage 6 base is accepted history");
+  } else if (postSix) {
+    assert.equal(git("rev-parse","stage6-closed^{}").toString().trim(),record.baseCommit,"cleanup Stage 6 closed base");
+    assert.equal(git("rev-parse",record.postClosureCleanup.archiveTag+"^{}").toString().trim(),
+      record.postClosureCleanup.archiveCommit,"cleanup archive identity");
+    assert.equal(git("rev-parse",record.postClosureCleanup.archiveCommit+"^").toString().trim(),record.baseCommit,"cleanup archive parent");
+    for (const item of record.files) assert.equal(require("node:crypto").createHash("sha256").update(
+      git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+item.path)).digest("hex"),item.before,"cleanup exact changed-file recovery");
   } else {
     assert.equal(git("rev-parse","stage5-closed^{}").toString().trim(),record.baseCommit,"cleanup closed base");
     assert.equal(git("rev-parse",record.postClosureCleanup.archiveTag+"^{}").toString().trim(),
@@ -164,7 +178,7 @@ for (const record of cleanupRecords) {
       assert.deepEqual(scripts.map(script => [script.type,script.currentPath]),[["module",entry]],`cleanup ${page} is native`);
       assert(!/retired-legacy-slot/u.test(read(page)),`cleanup ${page} keeps a classic tombstone`);
     }
-  } else {
+  } else if (!postSix) {
     const approvedComments = record.removedLegacySlots.map(item => [String(item.slot),item.path]);
     const actualComments = [...beforeNative("dev.html").matchAll(/<!-- retired-legacy-slot ([1-9][0-9]*): (src\/[a-z0-9_/.]+\.js) -->/giu)]
       .map(match => [match[1],match[2]]);
@@ -179,7 +193,7 @@ for (const record of cleanupRecords) {
     const end = before.indexOf("\n",node.range[1])+1;
     assert.equal(require("node:crypto").createHash("sha256").update(before.slice(start,end)).digest("hex"),method.before,
       "cleanup exact removed method bytes");
-    assert.equal(read(method.path),before.slice(0,start)+before.slice(end),"cleanup may remove only its recorded method");
+    assert(recordedSuccessorBytes(method.path,before.slice(0,start)+before.slice(end),read(method.path)),"cleanup may remove only its recorded method");
     assert.equal(before.slice(start,end).split("\n").length-1,method.lines,"cleanup removed method lines");
   }
   for (const item of record.removedModules) {
@@ -193,7 +207,7 @@ for (const record of cleanupRecords) {
     !contract.activationPositions.some(active => active.id === item.id)),"cleanup surface still exists");
   assert(record.resolvedDebts.every(id => !json("architecture/guards/known_debt_registry.json").debts.some(item => item.id === id)),
     "cleanup debt still exists");
-  if (!native) {
+  if (!native && !postSix) {
     const split = JSON.parse(beforeNative("architecture/migration/legacy_slot_splits.json")).splits.find(item => item.slot === 228);
     assert.deepEqual(split,record.legacySlotSplit.after,"cleanup exact split successor");
     if (nativeRetirement) assert(nativeRetirement.legacySlotSplits.before.some(item =>
@@ -204,8 +218,9 @@ for (const record of cleanupRecords) {
   for (const change of [{postClosureCleanup:{...record.postClosureCleanup,closureTag:"stage4-closed"}},
     {removedModules:[...record.removedModules,record.removedModules[0]]},
     {removedModules:record.removedModules.map(item => ({...item,before:"unrecoverable"}))},
-    {removedBridges:record.removedBridges.map(item => ({...item,source:"src/app/script.js"}))},
-    {removedActivations:record.removedActivations.map(item => ({...item,targetModule:"src/other.js"}))}])
+    {removedBridges:record.removedBridges.length ? record.removedBridges.map(item => ({...item,source:"src/app/script.js"})) : [{source:"src/app/script.js"}]},
+    {removedActivations:record.removedActivations.length ? record.removedActivations.map(item => ({...item,targetModule:"src/other.js"})) : [{targetModule:"src/other.js"}]},
+    ...(postSix ? [{files:[...record.files,record.files[0]]},{files:record.files.map(item => ({...item,after:item.before}))}] : [])])
     assert.throws(() => StageFourClusterLedger.validateCleanupRecord({...record,...change}),/cleanup/u);
 }
 if (nativeRetirement) {
@@ -220,7 +235,13 @@ if (nativeRetirement) {
     [{postClosureCleanup:{...cleanup,archiveCommit:nativeRetirement.baseCommit}}, /archive peeled commit/u],
     [{baseCommit:git("rev-parse","stage5-closed^{}").toString().trim()}, /archive parent/u]])
     assert.throws(() => NativeDevelopmentRetirement.archive(ROOT,{...nativeRetirement,...change}).verifyAll(), pattern);
+  // A replacement target may be absent only with an exact later cleanup removal; a recorded removal must also hold.
+  const target = nativeRetirement.nativeReplacements[0].targets[0];
+  assert.throws(() => NativeDevelopmentRetirement.validateReplacementTargets(nativeRetirement,file => file !== target),/native successor/u);
+  assert.doesNotThrow(() => NativeDevelopmentRetirement.validateReplacementTargets(nativeRetirement,file => file !== target,new Set([target])));
+  assert.throws(() => NativeDevelopmentRetirement.validateReplacementTargets(nativeRetirement,() => true,new Set([target])),/native successor/u);
 }
+assert(!recordedSuccessorBytes("src/unrecorded.js","pinned","changed"),"cleanup successor needs an exact recorded change");
 const recordedSource = file => archivedSources.get(file) ?? read(file);
 const recordedEntry = file => manifest.get(file) ?? removedModules.get(file)?.manifest;
 
@@ -1003,7 +1024,8 @@ const sha256 = text => require("node:crypto").createHash("sha256").update(text).
 const stageSixInventory = json("architecture/migration/stage_6/stage6_module_inventory.json");
 const stageSixPreparationDirectory = "architecture/migration/stage_6/preparations";
 const stageSixPreparations = fs.readdirSync(path.join(ROOT,stageSixPreparationDirectory)).filter(name => name.endsWith(".json")).sort()
-  .map(name => ({file:`${stageSixPreparationDirectory}/${name}`,record:json(`${stageSixPreparationDirectory}/${name}`)}));
+  .map(name => ({file:`${stageSixPreparationDirectory}/${name}`,record:json(`${stageSixPreparationDirectory}/${name}`)}))
+  .filter(item => !stageSixPostClosure(item.record)); // the immutable closure knows only the preparations before stage6-closed
 const stageSixCutover = stageSixPreparations.find(item => item.record.id === "005");
 const stageSixRetirementDelta = (file,record) => ({record:file,bridges:0 - (record.removedBridges || []).length,
   activations:0 - (record.removedActivations || []).length,globals:0 - (record.removedGlobalProviders || []).length,

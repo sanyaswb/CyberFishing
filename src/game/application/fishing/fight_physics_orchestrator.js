@@ -37,22 +37,13 @@ export class FightPhysicsSystem {
   #recoverableLineCalculator = new RecoverableLineCalculator();
   #looseLineCalculator = new LooseLineCalculator();
   #rodStrokeTracker = new RodStrokeTracker();
-  #rodStrokeDistanceTracker =
-    typeof RodStrokeDistanceTracker !== "undefined"
-      ? new RodStrokeDistanceTracker()
-      : null;
+  #rodStrokeDistanceTracker = new RodStrokeDistanceTracker();
   #playerPullMotionSmoother = new PlayerPullMotionSmoother();
   #reelHoldRecoverySystem = new ReelHoldRecoverySystem();
-  #recoveryFishSlowdownPolicy =
-    typeof ReelRecoveryFishSlowdownPolicy !== "undefined"
-      ? new ReelRecoveryFishSlowdownPolicy()
-      : null;
+  #recoveryFishSlowdownPolicy = new ReelRecoveryFishSlowdownPolicy();
   #landingPolicyResolver = new LandingPolicyResolver();
   #landingLiftCalculator = new LandingLiftTensionCalculator();
-  #landingLiftReadinessPolicy =
-    typeof LandingLiftReadinessPolicy !== "undefined"
-      ? new LandingLiftReadinessPolicy()
-      : null;
+  #landingLiftReadinessPolicy = new LandingLiftReadinessPolicy();
   #lineConstraintStateResolver = new LineConstraintStateResolver();
   #lineConstrainedFishMotionResolver =
     new LineConstrainedFishMotionResolver();
@@ -62,50 +53,17 @@ export class FightPhysicsSystem {
   #modelFishVelocityScratch = { x: 0, y: 0 };
   #previewLineConstraintStateScratch = {};
   #rodControlMovementProjector = new RodControlMovementProjector();
-  #poleFightSectorConstraint =
-    typeof PoleFightSectorConstraint !== "undefined"
-      ? new PoleFightSectorConstraint()
-      : null;
-  #poleFightSectorAngleConstraint =
-    typeof PoleFightSectorAngleConstraint !== "undefined"
-      ? new PoleFightSectorAngleConstraint()
-      : null;
-  #fightInputActionComposer =
-    typeof FightInputActionComposer !== "undefined"
-      ? new FightInputActionComposer()
-      : null;
-  #playerForceBudgetAllocator =
-    typeof PlayerForceBudgetAllocator !== "undefined"
-      ? new PlayerForceBudgetAllocator()
-      : null;
-  #playerPressureGainResolver =
-    typeof PlayerPressureGainResolver !== "undefined"
-      ? new PlayerPressureGainResolver()
-      : null;
-  #playerTensionBuildRateResolver =
-    typeof PlayerTensionBuildRateResolver !== "undefined"
-      ? new PlayerTensionBuildRateResolver()
-      : null;
-  #playerPressureFatigueCalculator =
-    typeof PlayerPressureFatigueCalculator !== "undefined"
-      ? new PlayerPressureFatigueCalculator()
-      : null;
-  #playerPressureFatigueSourceResolver =
-    typeof PlayerPressureFatigueSourceResolver !== "undefined"
-      ? new PlayerPressureFatigueSourceResolver()
-      : null;
-  #playerPressureFatigueState =
-    typeof PlayerPressureFatigueState !== "undefined"
-      ? new PlayerPressureFatigueState()
-      : null;
-  #playerReelFatigueSession =
-    typeof PlayerReelFatigueSession !== "undefined"
-      ? new PlayerReelFatigueSession()
-      : null;
-  #staminaBalanceFrame =
-    typeof StaminaBalanceFrame !== "undefined"
-      ? new StaminaBalanceFrame()
-      : null;
+  #poleFightSectorConstraint = new PoleFightSectorConstraint();
+  #poleFightSectorAngleConstraint = new PoleFightSectorAngleConstraint();
+  #fightInputActionComposer = new FightInputActionComposer();
+  #playerForceBudgetAllocator = new PlayerForceBudgetAllocator();
+  #playerPressureGainResolver = new PlayerPressureGainResolver();
+  #playerTensionBuildRateResolver = new PlayerTensionBuildRateResolver();
+  #playerPressureFatigueCalculator = new PlayerPressureFatigueCalculator();
+  #playerPressureFatigueSourceResolver = new PlayerPressureFatigueSourceResolver();
+  #playerPressureFatigueState = new PlayerPressureFatigueState();
+  #playerReelFatigueSession = new PlayerReelFatigueSession();
+  #staminaBalanceFrame = new StaminaBalanceFrame();
   #composedInputScratch = {};
   #pipeline;
   #logger;
@@ -4724,10 +4682,7 @@ export class FightPhysicsSystem {
 
   #resolvePhysicsConfigAdapter(config) {
     if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
-    if (typeof FightPhysicsConfigAdapter !== "undefined") {
-      return new FightPhysicsConfigAdapter(config);
-    }
-    return null;
+    return new FightPhysicsConfigAdapter(config);
   }
 
   #getRuntimePhysicsConfig() {

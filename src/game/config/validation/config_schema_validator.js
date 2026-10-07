@@ -50,10 +50,7 @@ export class ConfigSchemaValidator {
     this.itemDb = itemDb || {};
     this.mapDb = mapDb || {};
     this.parameterLabels = parameterLabels || {};
-    this.namingConvention = namingConvention ||
-      (typeof PHYSICS_UNITS_AND_NAMING !== "undefined"
-        ? PHYSICS_UNITS_AND_NAMING
-        : null);
+    this.namingConvention = namingConvention || PHYSICS_UNITS_AND_NAMING;
     this.errors = [];
     this.warnings = [];
   }
@@ -105,10 +102,6 @@ export class ConfigSchemaValidator {
   }
 
   #validateFishCategories() {
-    if (typeof FISH_CATEGORIES === "undefined") {
-      this.#error("FISH_CATEGORIES", "missing fish category registry");
-      return;
-    }
     const seen = new Set();
     for (const [categoryName, fishList] of Object.entries(FISH_CATEGORIES)) {
       if (!Array.isArray(fishList)) {
@@ -443,13 +436,6 @@ export class ConfigSchemaValidator {
   }
 
   #validateRarityConfig() {
-    if (typeof RarityConfigValidator === "undefined") {
-      this.#error(
-        "CONFIG.rarity",
-        "RarityConfigValidator is not loaded",
-      );
-      return;
-    }
     const issues = new RarityConfigValidator().validate({
       rarityConfig: this.config.rarity,
       fishDb: this.fishDb,

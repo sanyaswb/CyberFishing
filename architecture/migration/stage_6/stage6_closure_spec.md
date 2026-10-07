@@ -201,8 +201,8 @@ Start only after the `stage6-closed` tag is pushed; the closure record stays imm
 - [ ] `architecture/migration/stage_7_handoff.md` written.
 - [ ] game-cycle hash unchanged; Quick 24/24, Architecture 32/32, uncached Full 64/64 on the closure snapshot.
 - [ ] Docs updated; closure commit and `stage6-closed` tag pushed.
-- [ ] Post-closure cleanup (C5): audit written, owner decisions asked, preparation 006 applied with
-      `stage6-dead-code-archive`, all suites/browser green, release v0.27.1 tagged and pushed.
+- [x] Post-closure cleanup (C5): audit written, owner decisions asked, preparation 006 applied with
+      `stage6-dead-code-archive`, all suites/browser green, release v0.27.1 tagged and pushed (LocationMap item awaits the owner).
 
 If the session runs short, stop after a pushed `stage6-closed` and leave C5 as the next session's first task —
 never start C5 before the closure tag exists.

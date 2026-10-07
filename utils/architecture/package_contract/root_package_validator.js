@@ -1,3 +1,5 @@
+const RETIRED_SCRIPTS = Object.freeze(["build:legacy-bridges", "build:stage-3-compat-runtime", "architecture:closure"]);
+
 class RootPackageValidator {
   validate({ packageJson, contract, projectVersion }) {
     const errors = [];
@@ -10,7 +12,12 @@ class RootPackageValidator {
     require(packageJson.packageManager === contract.runtime.packageManager, "package.json packageManager differs from package contract");
     require(packageJson.type === undefined, "root package.json must not set type while utils use CommonJS");
     require(packageJson.source === "index.html", "production source entrypoint must remain index.html");
-    require(packageJson.scripts?.["build:legacy-bridges"] === "node utils/build/build_legacy_bridges.js", "package.json requires the exact legacy bridge build script");
+    // Native retirement (Stage 6 preparation 006, owner 2026-10-07): the inert build scripts and the archived closure script are gone.
+    if (contract.stage?.bridgeBuild?.status === "retired-native-esm") {
+      for (const name of RETIRED_SCRIPTS) require(packageJson.scripts?.[name] === undefined, `package.json keeps the retired script ${name}`);
+    } else {
+      require(packageJson.scripts?.["build:legacy-bridges"] === "node utils/build/build_legacy_bridges.js", "package.json requires the exact legacy bridge build script");
+    }
     require(packageJson.dependencies?.vite === undefined, "Vite cannot be a production dependency");
     for (const section of contract.dependencyPolicy.directSections) {
       require(packageJson[section] && typeof packageJson[section] === "object", `package.json requires ${section}`);

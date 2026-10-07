@@ -28,13 +28,9 @@ export class EquipmentSlotAvailabilityPolicy {
     terminalLineResolver = null,
   } = {}) {
     this.#slotConfig =
-      slotConfig ||
-      (typeof EQUIPMENT_SLOT_CONFIG !== "undefined" ? EQUIPMENT_SLOT_CONFIG : {});
+      slotConfig || EQUIPMENT_SLOT_CONFIG;
     this.#slotPresentation =
-      slotPresentation ||
-      (typeof EQUIPMENT_SLOT_PRESENTATION !== "undefined"
-        ? EQUIPMENT_SLOT_PRESENTATION
-        : {});
+      slotPresentation || EQUIPMENT_SLOT_PRESENTATION;
     this.#visibilityPolicy =
       visibilityPolicy || null;
     this.#terminalLineResolver =
@@ -133,10 +129,7 @@ export class EquipmentSlotAvailabilityPolicy {
   }
 
   #resolveAcceptedTypes(slotId, config, rod) {
-    const terminalLineId =
-      typeof EquipmentSlotId !== "undefined"
-        ? EquipmentSlotId.TERMINAL_LINE
-        : "terminalLine";
+    const terminalLineId = EquipmentSlotId.TERMINAL_LINE;
     if (slotId === terminalLineId && this.#terminalLineResolver) {
       return [...this.#terminalLineResolver.resolve(rod).acceptTypes];
     }
@@ -156,10 +149,7 @@ export class EquipmentSlotAvailabilityPolicy {
     if (!Number.isFinite(quantity) || quantity <= 0) return false;
     if (item.parentInstanceId || item.loadoutId || item.buildId) return false;
     const location = item.location?.kind ?? item.location;
-    const inventoryKind =
-      typeof InventoryItemLocationKind !== "undefined"
-        ? InventoryItemLocationKind.INVENTORY
-        : "INVENTORY";
+    const inventoryKind = InventoryItemLocationKind.INVENTORY;
     return (
       !location ||
       location === inventoryKind ||

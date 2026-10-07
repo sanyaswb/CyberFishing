@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-release",
+  "id": "002",
+  "slug": "post-closure-cleanup",
+  "milestone": "M3",
+  "fromRelease": "0.27.0",
+  "toRelease": "0.27.1",
+  "title": "Stage 6 Post-Closure Cleanup",
+  "codename": "stage-6-post-closure-cleanup",
+  "updatedAt": "2026-10-07",
+  "notes": [
+    "Remove dead import guards, two unreachable DEV modules and three inert package scripts after closure",
+    "Preserve gameplay, DEV tools, saves and timing with exact recovery of removed bytes"
+  ],
+  "changelog": [
+    "Remove 73 dead typeof guards on ESM imports, two unreachable DEV modules and the inert build/closure package scripts.",
+    "Exact raw recovery at stage6-dead-code-archive; gameplay, saves and timing unchanged."
+  ],
+  "versionDecision": "architecture/migration/stage_6/post_closure_cleanup_audit.md",
+  "output": {
+    "status": "applied",
+    "tag": "v0.27.1",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "before": "c9b0164ce57b12d3428b2d2b6d765e32958d995ace52e93dbf81a01658210f24",
+        "after": "ac0e70771f907e563565fc508d687cd7371ac89045d9cff5149e2aea8c5237bd",
+        "edits": [
+          {
+            "from": "# CyberFishing changelog\n\n",
+            "to": "# CyberFishing changelog\n\n## v0.27.1 - Stage 6 Post-Closure Cleanup\n\n### Changed\n\n- Remove 73 dead typeof guards on ESM imports, two unreachable DEV modules and the inert build/closure package scripts.\n- Exact raw recovery at stage6-dead-code-archive; gameplay, saves and timing unchanged.\n\n",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "index.html",
+        "before": "e63eacbb61ad309cf45b4c4509d51df678b017fbad459a96b61304bb3e633819",
+        "after": "2d01087934f0822035d4e11cb71d891651ef38e48c1500c646f4309916240c4c",
+        "edits": [
+          {
+            "from": "src/entrypoints/game.entry.js?v=0.27.0\"",
+            "to": "src/entrypoints/game.entry.js?v=0.27.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "dev.html",
+        "before": "ce3c2a61dc8aa1ac13113b96de2db03cafcaaa9d8be39c2e690f1d770b7f638c",
+        "after": "17ab0e38fc270a797e875d71f636964e1094e3c04736cac8f3b2b777432fe1e8",
+        "edits": [
+          {
+            "from": "src/entrypoints/dev.entry.js?v=0.27.0\"",
+            "to": "src/entrypoints/dev.entry.js?v=0.27.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "package-lock.json",
+        "before": "f2faa4b625428e6d0b586eeafbf63e447a2e2fc7afdd73a3593f1710cf2ae5a5",
+        "after": "dc3461fa8223a56012dbe602d1c535d1c523d17af7c623ca3fcb3bdaa26611fa",
+        "edits": [
+          {
+            "from": "\"version\": \"0.27.0\"",
+            "to": "\"version\": \"0.27.1\"",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "path": "package.json",
+        "before": "4a0695084673cedbf2fbbfc30b3aeb3e0baa579f5e53b3b408d44faf38bb1eba",
+        "after": "da55281412fb2051e0511079323c02149b9a93786989a9c00ac66d440c629f76",
+        "edits": [
+          {
+            "from": "\"version\": \"0.27.0\"",
+            "to": "\"version\": \"0.27.1\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "src/game/presentation/version/project_version.js",
+        "before": "f412bc88e793e1f78d3a846e46eb64266dd4425db5a7d11dc882dd835faf49e2",
+        "after": "67629687c8a17de0df49bf18e47d65f3b32de1b87a1fa61391f7d230a9b89a43",
+        "edits": [
+          {
+            "from": "export const CURRENT_PROJECT_VERSION = \"0.27.0\";",
+            "to": "export const CURRENT_PROJECT_VERSION = \"0.27.1\";",
+            "count": 1
+          },
+          {
+            "from": "  codename: \"stage-6-native-development\",",
+            "to": "  codename: \"stage-6-post-closure-cleanup\",",
+            "count": 1
+          },
+          {
+            "from": "  notes: Object.freeze([\n    \"Both pages start from one native module entry; the classic DEV runtime is retired\",\n    \"Preserve gameplay, DEV tools, saves and timing with exact recovery of retired sources\",\n  ]),",
+            "to": "  notes: Object.freeze([\n    \"Remove dead import guards, two unreachable DEV modules and three inert package scripts after closure\",\n    \"Preserve gameplay, DEV tools, saves and timing with exact recovery of removed bytes\",\n  ]),",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "metrics": {
+      "stage": 6,
+      "nativeProduction": {
+        "entry": "src/entrypoints/game.entry.js",
+        "modules": 350,
+        "importEdges": 522,
+        "devOrCompatibility": 0,
+        "unresolved": 0
+      },
+      "nativeDevelopment": {
+        "entry": "src/entrypoints/dev.entry.js",
+        "modules": 446,
+        "importEdges": 692,
+        "compatibility": 0,
+        "unresolved": 0,
+        "dev": 95,
+        "developmentBootstrap": 3
+      },
+      "classicScriptTagsByPage": {
+        "index": 0,
+        "dev": 0
+      },
+      "files": {
+        "architecture": 499,
+        "src": 457,
+        "utils": 219
+      },
+      "lines": {
+        "src": 79899,
+        "utils": 47718,
+        "architecture": 846421
+      },
+      "classicScriptTags": 0,
+      "clusters": {
+        "applied": 0,
+        "pending": [],
+        "deferred": []
+      },
+      "activations": {
+        "active": 0,
+        "byRemovalStage": {},
+        "retired": 380,
+        "inert": 0
+      },
+      "bridges": {
+        "total": 0,
+        "byRemovalStage": {}
+      },
+      "knownDebts": 0,
+      "globalProviders": 0,
+      "nativeRetirement": {
+        "stage": 6,
+        "decision": "architecture/migration/stage_6/stage6_spec.md",
+        "preparation": "architecture/migration/stage_6/preparations/005_native-development-cutover-and-compatibility-retirement.json",
+        "productionEntrypoint": "src/entrypoints/game.entry.js",
+        "developmentEntrypoint": "src/entrypoints/dev.entry.js"
+      }
+    }
+  },
+  "verification": {
+    "status": "accepted",
+    "performer": "claude-automated-acceptance",
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64 uncached"
+    },
+    "acceptance": {
+      "report": "architecture/archive/stage6_006_post-closure-cleanup_acceptance.json",
+      "sha256": "29cfb5d1a7d7c3a5b1e4cf7eb147d210f4c10e49d8ce239680191714037abc59",
+      "sourceCommit": "f96c17b5e41f2d175159c71f779752dc57782d71",
+      "sourceSnapshot": "146f587b24891ddd2e6fc1867fcd7e809bd12d61d5445b7324d02a19da602442",
+      "startedAt": "2026-10-07T16:33:53.580Z",
+      "finishedAt": "2026-10-07T16:34:38.158Z",
+      "isolationViolations": 0
+    },
+    "gameCycle": {
+      "stdoutSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "browser": "architecture/archive/stage6_006_post-closure-cleanup_browser.json"
+  }
+}

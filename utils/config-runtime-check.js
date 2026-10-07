@@ -379,7 +379,9 @@ function checkNativeDevelopmentDisplays() {
   const root = path.resolve(__dirname,"..");
   const inventory = JSON.parse(fs.readFileSync(path.join(root,"architecture/migration/stage_6/stage6_module_inventory.json")));
   const globals = {};
-  for (const module of inventory.migrationModules.filter(module => module.boundary === "dev"))
+  const removed = NativeDevelopmentRetirement.laterRemovedTargets(root);
+  for (const target of removed) assert(!fs.existsSync(path.join(root,target)),"recorded post-closure removal still exists: " + target);
+  for (const module of inventory.migrationModules.filter(module => module.boundary === "dev" && !removed.has(module.target)))
     Object.assign(globals,require(path.join(root,module.target)));
   const config = require("../src/game/config/runtime/game_config.js").CONFIG;
   const settingsStore = new globals.OverlaySettingsStore(Object.fromEntries(Object.keys(globals.OVERLAY_MODULES).map(key=>[key,true])));

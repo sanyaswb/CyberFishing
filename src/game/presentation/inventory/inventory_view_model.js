@@ -167,9 +167,7 @@ export class InventoryV2ViewModelNormalizer {
   ]);
 
   constructor({
-    sortConfig = typeof INVENTORY_V2_SORT_CONFIG !== "undefined"
-      ? INVENTORY_V2_SORT_CONFIG
-      : null,
+    sortConfig = INVENTORY_V2_SORT_CONFIG,
   } = {}) {
     this.#sortDefaults = Object.freeze({
       criterionIds: Object.freeze([
