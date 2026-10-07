@@ -1,370 +1,29 @@
 ├── .gitignore
-├── architecture
-│  ├── archive
-│  │  ├── ARCHIVED_CHECKS.md
-│  │  ├── README.md
-│  │  └── stage3_final_acceptance.json
-│  ├── baselines
-│  │  └── v0.24.30.json
-│  ├── guards
-│  │  ├── global_provider_baseline.json
-│  │  ├── known_debt_registry.json
-│  │  └── migration_bridge_registry.json
-│  ├── migration
-│  │  ├── evidence
-│  │  │  ├── stage_3_batch_007_acceptance_capture.json
-│  │  │  └── stage_3_batch_007_equipment_hydration_repair.json
-│  │  ├── legacy_slot_splits.json
-│  │  ├── module_migration_manifest.json
-│  │  ├── stage_1_6_initial_batches.json
-│  │  ├── stage_2_approved_batches.json
-│  │  ├── stage_2_execution_state.json
-│  │  ├── stage_3_22
-│  │  │  ├── acceptance.json
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  ├── release_closure.json
-│  │  │  ├── release_transition.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_34_review_queue
-│  │  │  ├── collection_identity_evidence.json
-│  │  │  ├── freeze_extension.json
-│  │  │  └── hot_loop_evidence.json
-│  │  ├── stage_3_36_graph_review
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_40_graph_review
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_41_graph_review
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_42_graph_review
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_50_graph_review
-│  │  │  ├── approved_prefix.json
-│  │  │  ├── baseline.json
-│  │  │  ├── candidate_batches.json
-│  │  │  ├── domain_audit.json
-│  │  │  ├── graph_review.json
-│  │  │  ├── prerequisite_backlog.json
-│  │  │  └── review_evidence.json
-│  │  ├── stage_3_50_review_queue
-│  │  │  ├── freeze_extension.json
-│  │  │  └── hot_loop_evidence.json
-│  │  ├── stage_3_approved_batches.json
-│  │  ├── stage_3_batch_009_handoff.md
-│  │  ├── stage_3_batch_009_observation_handoff.md
-│  │  ├── stage_3_batch_009_prebuild_handoff.md
-│  │  ├── stage_3_batch_009_runtime_handoff.md
-│  │  ├── stage_3_batch_041_acceptance_pass.json
-│  │  ├── stage_3_batch_041_audit.json
-│  │  ├── stage_3_batch_041_automated_acceptance.json
-│  │  ├── stage_3_batch_041_browser_confirmation.json
-│  │  ├── stage_3_batch_041_execution_plan.json
-│  │  ├── stage_3_batch_041_live_runtime_validation.json
-│  │  ├── stage_3_batch_041_observation_reconciliation.json
-│  │  ├── stage_3_batch_041_prebuild_contract.json
-│  │  ├── stage_3_batch_041_release_closure.json
-│  │  ├── stage_3_batch_041_release_regression.json
-│  │  ├── stage_3_batch_041_release_transition.json
-│  │  ├── stage_3_batch_041_runtime_cutover.json
-│  │  ├── stage_3_batch_041_side_effect_review.json
-│  │  ├── stage_3_batch_041_source_build_validation.json
-│  │  ├── stage_3_batch_041_test_matrix.json
-│  │  ├── stage_3_batch_042_acceptance_pass.json
-│  │  ├── stage_3_batch_042_audit.json
-│  │  ├── stage_3_batch_042_automated_acceptance.json
-│  │  ├── stage_3_batch_042_browser_confirmation.json
-│  │  ├── stage_3_batch_042_execution_plan.json
-│  │  ├── stage_3_batch_042_live_runtime_validation.json
-│  │  ├── stage_3_batch_042_observation_reconciliation.json
-│  │  ├── stage_3_batch_042_prebuild_contract.json
-│  │  ├── stage_3_batch_042_release_closure.json
-│  │  ├── stage_3_batch_042_release_regression.json
-│  │  ├── stage_3_batch_042_release_transition.json
-│  │  ├── stage_3_batch_042_runtime_cutover.json
-│  │  ├── stage_3_batch_042_side_effect_review.json
-│  │  ├── stage_3_batch_042_source_build_validation.json
-│  │  ├── stage_3_batch_042_test_matrix.json
-│  │  ├── stage_3_batch_043_acceptance_pass.json
-│  │  ├── stage_3_batch_043_audit.json
-│  │  ├── stage_3_batch_043_automated_acceptance.json
-│  │  ├── stage_3_batch_043_browser_confirmation.json
-│  │  ├── stage_3_batch_043_execution_plan.json
-│  │  ├── stage_3_batch_043_live_runtime_validation.json
-│  │  ├── stage_3_batch_043_observation_reconciliation.json
-│  │  ├── stage_3_batch_043_prebuild_contract.json
-│  │  ├── stage_3_batch_043_release_closure.json
-│  │  ├── stage_3_batch_043_release_regression.json
-│  │  ├── stage_3_batch_043_release_transition.json
-│  │  ├── stage_3_batch_043_runtime_cutover.json
-│  │  ├── stage_3_batch_043_side_effect_review.json
-│  │  ├── stage_3_batch_043_source_build_validation.json
-│  │  ├── stage_3_batch_043_test_matrix.json
-│  │  ├── stage_3_batch_044_acceptance_pass.json
-│  │  ├── stage_3_batch_044_audit.json
-│  │  ├── stage_3_batch_044_automated_acceptance.json
-│  │  ├── stage_3_batch_044_browser_confirmation.json
-│  │  ├── stage_3_batch_044_execution_plan.json
-│  │  ├── stage_3_batch_044_live_runtime_validation.json
-│  │  ├── stage_3_batch_044_observation_reconciliation.json
-│  │  ├── stage_3_batch_044_prebuild_contract.json
-│  │  ├── stage_3_batch_044_release_closure.json
-│  │  ├── stage_3_batch_044_release_regression.json
-│  │  ├── stage_3_batch_044_release_transition.json
-│  │  ├── stage_3_batch_044_runtime_cutover.json
-│  │  ├── stage_3_batch_044_side_effect_review.json
-│  │  ├── stage_3_batch_044_source_build_validation.json
-│  │  ├── stage_3_batch_044_test_matrix.json
-│  │  ├── stage_3_batch_045_acceptance_pass.json
-│  │  ├── stage_3_batch_045_audit.json
-│  │  ├── stage_3_batch_045_automated_acceptance.json
-│  │  ├── stage_3_batch_045_browser_confirmation.json
-│  │  ├── stage_3_batch_045_execution_plan.json
-│  │  ├── stage_3_batch_045_live_runtime_validation.json
-│  │  ├── stage_3_batch_045_observation_reconciliation.json
-│  │  ├── stage_3_batch_045_prebuild_contract.json
-│  │  ├── stage_3_batch_045_release_closure.json
-│  │  ├── stage_3_batch_045_release_regression.json
-│  │  ├── stage_3_batch_045_release_transition.json
-│  │  ├── stage_3_batch_045_runtime_cutover.json
-│  │  ├── stage_3_batch_045_side_effect_review.json
-│  │  ├── stage_3_batch_045_source_build_validation.json
-│  │  ├── stage_3_batch_045_test_matrix.json
-│  │  ├── stage_3_batch_046_acceptance_pass.json
-│  │  ├── stage_3_batch_046_audit.json
-│  │  ├── stage_3_batch_046_automated_acceptance.json
-│  │  ├── stage_3_batch_046_browser_confirmation.json
-│  │  ├── stage_3_batch_046_execution_plan.json
-│  │  ├── stage_3_batch_046_live_runtime_validation.json
-│  │  ├── stage_3_batch_046_observation_reconciliation.json
-│  │  ├── stage_3_batch_046_prebuild_contract.json
-│  │  ├── stage_3_batch_046_release_closure.json
-│  │  ├── stage_3_batch_046_release_regression.json
-│  │  ├── stage_3_batch_046_release_transition.json
-│  │  ├── stage_3_batch_046_runtime_cutover.json
-│  │  ├── stage_3_batch_046_side_effect_review.json
-│  │  ├── stage_3_batch_046_source_build_validation.json
-│  │  ├── stage_3_batch_046_test_matrix.json
-│  │  ├── stage_3_batch_047_acceptance_pass.json
-│  │  ├── stage_3_batch_047_audit.json
-│  │  ├── stage_3_batch_047_automated_acceptance.json
-│  │  ├── stage_3_batch_047_browser_confirmation.json
-│  │  ├── stage_3_batch_047_execution_plan.json
-│  │  ├── stage_3_batch_047_live_runtime_validation.json
-│  │  ├── stage_3_batch_047_observation_reconciliation.json
-│  │  ├── stage_3_batch_047_prebuild_contract.json
-│  │  ├── stage_3_batch_047_release_closure.json
-│  │  ├── stage_3_batch_047_release_regression.json
-│  │  ├── stage_3_batch_047_release_transition.json
-│  │  ├── stage_3_batch_047_runtime_cutover.json
-│  │  ├── stage_3_batch_047_side_effect_review.json
-│  │  ├── stage_3_batch_047_source_build_validation.json
-│  │  ├── stage_3_batch_047_test_matrix.json
-│  │  ├── stage_3_batch_048_acceptance_pass.json
-│  │  ├── stage_3_batch_048_audit.json
-│  │  ├── stage_3_batch_048_automated_acceptance.json
-│  │  ├── stage_3_batch_048_browser_confirmation.json
-│  │  ├── stage_3_batch_048_execution_plan.json
-│  │  ├── stage_3_batch_048_live_runtime_validation.json
-│  │  ├── stage_3_batch_048_observation_reconciliation.json
-│  │  ├── stage_3_batch_048_prebuild_contract.json
-│  │  ├── stage_3_batch_048_release_closure.json
-│  │  ├── stage_3_batch_048_release_regression.json
-│  │  ├── stage_3_batch_048_release_transition.json
-│  │  ├── stage_3_batch_048_runtime_cutover.json
-│  │  ├── stage_3_batch_048_side_effect_review.json
-│  │  ├── stage_3_batch_048_source_build_validation.json
-│  │  ├── stage_3_batch_048_test_matrix.json
-│  │  ├── stage_3_batch_049_acceptance_pass.json
-│  │  ├── stage_3_batch_049_audit.json
-│  │  ├── stage_3_batch_049_automated_acceptance.json
-│  │  ├── stage_3_batch_049_browser_confirmation.json
-│  │  ├── stage_3_batch_049_execution_plan.json
-│  │  ├── stage_3_batch_049_live_runtime_validation.json
-│  │  ├── stage_3_batch_049_observation_reconciliation.json
-│  │  ├── stage_3_batch_049_prebuild_contract.json
-│  │  ├── stage_3_batch_049_release_closure.json
-│  │  ├── stage_3_batch_049_release_regression.json
-│  │  ├── stage_3_batch_049_release_transition.json
-│  │  ├── stage_3_batch_049_runtime_cutover.json
-│  │  ├── stage_3_batch_049_side_effect_review.json
-│  │  ├── stage_3_batch_049_source_build_validation.json
-│  │  ├── stage_3_batch_049_test_matrix.json
-│  │  ├── stage_3_batch_050_acceptance_pass.json
-│  │  ├── stage_3_batch_050_audit.json
-│  │  ├── stage_3_batch_050_automated_acceptance.json
-│  │  ├── stage_3_batch_050_browser_confirmation.json
-│  │  ├── stage_3_batch_050_execution_plan.json
-│  │  ├── stage_3_batch_050_live_runtime_validation.json
-│  │  ├── stage_3_batch_050_observation_reconciliation.json
-│  │  ├── stage_3_batch_050_prebuild_contract.json
-│  │  ├── stage_3_batch_050_release_closure.json
-│  │  ├── stage_3_batch_050_release_regression.json
-│  │  ├── stage_3_batch_050_release_transition.json
-│  │  ├── stage_3_batch_050_runtime_cutover.json
-│  │  ├── stage_3_batch_050_side_effect_review.json
-│  │  ├── stage_3_batch_050_source_build_validation.json
-│  │  ├── stage_3_batch_050_test_matrix.json
-│  │  ├── stage_3_batch_051_acceptance_pass.json
-│  │  ├── stage_3_batch_051_audit.json
-│  │  ├── stage_3_batch_051_automated_acceptance.json
-│  │  ├── stage_3_batch_051_browser_confirmation.json
-│  │  ├── stage_3_batch_051_execution_plan.json
-│  │  ├── stage_3_batch_051_live_runtime_validation.json
-│  │  ├── stage_3_batch_051_observation_reconciliation.json
-│  │  ├── stage_3_batch_051_prebuild_contract.json
-│  │  ├── stage_3_batch_051_release_closure.json
-│  │  ├── stage_3_batch_051_release_regression.json
-│  │  ├── stage_3_batch_051_release_transition.json
-│  │  ├── stage_3_batch_051_runtime_cutover.json
-│  │  ├── stage_3_batch_051_side_effect_review.json
-│  │  ├── stage_3_batch_051_source_build_validation.json
-│  │  ├── stage_3_batch_051_test_matrix.json
-│  │  ├── stage_3_candidate_batches.json
-│  │  ├── stage_3_candidate_policy.json
-│  │  ├── stage_3_closure.json
-│  │  ├── stage_3_compatibility_runtime.json
-│  │  ├── stage_3_domain_audit.json
-│  │  ├── stage_3_execution_state.json
-│  │  ├── stage_3_informational_documents_freeze.json
-│  │  ├── stage_3_owner_play_check_046_051.json
-│  │  ├── stage_3_prerequisites
-│  │  │  ├── 001_assembly-profile-registry-config-injection.json
-│  │  │  ├── 002_item-stat-override-policy-config-injection.json
-│  │  │  ├── 003_item-condition-descriptor-boundary.json
-│  │  │  ├── 004_item-freshness-descriptor-boundary.json
-│  │  │  ├── 005_bait-effectiveness-descriptor-boundary.json
-│  │  │  ├── 006_vector2-classic-extraction.json
-│  │  │  ├── 007_equipment-presentation-text-boundary.json
-│  │  │  ├── 008_equipment-slot-rule-reclassification.json
-│  │  │  ├── 009_inventory-rule-text-boundary.json
-│  │  │  ├── 010_loadout-transition-text-boundary.json
-│  │  │  ├── 011_item-capacity-text-boundary.json
-│  │  │  ├── 012_inventory-reviewed-reclassification.json
-│  │  │  ├── 013_loadout-reviewed-reclassification.json
-│  │  │  ├── 014_item-progression-logger-and-review.json
-│  │  │  ├── 015_fight-physics-config-fallback-removal.json
-│  │  │  ├── 016_stamina-buff-split-and-review.json
-│  │  │  ├── 017_distance-converter-split-and-review.json
-│  │  │  ├── 018_tackle-god-mode-hook.json
-│  │  │  ├── 019_equipment-rules-config-injection.json
-│  │  │  ├── 020_tackle-runtime-config-provider.json
-│  │  │  ├── 021_console-logger-generalization.json
-│  │  │  ├── 022_fish-diagnostics-logger-injection.json
-│  │  │  ├── 023_rod-kind-labels-injection.json
-│  │  │  ├── 024_gameplay-rules-self-composition-removal.json
-│  │  │  ├── 025_fish-tackle-reviewed-reclassification.json
-│  │  │  ├── 026_viewport-projector-split.json
-│  │  │  ├── 027_vector2-engine-activation.json
-│  │  │  ├── 028_normalize-distance-classic-extraction.json
-│  │  │  ├── 029_normalize-distance-engine-activation.json
-│  │  │  ├── 030_retrieve-policy-duplicate-helper-removal.json
-│  │  │  ├── 031_cumulative-runtime-before-earliest-domain-slot.json
-│  │  │  ├── 032_balance-resolver-dead-cast-distance-fallback.json
-│  │  │  └── 033_hot-loop-clock-injection-and-net-converter.json
-│  │  ├── stage_3_review_evidence.json
-│  │  ├── stage_4
-│  │  │  ├── clusters
-│  │  │  │  ├── 001_rarity-validators.json
-│  │  │  │  ├── 002_physics-raw-config.json
-│  │  │  │  ├── 003_fish-species.json
-│  │  │  │  ├── 004_config-data.json
-│  │  │  │  ├── 005_config-derived.json
-│  │  │  │  ├── 006_fight-physics-config-adapter.json
-│  │  │  │  ├── 007_config-runtime.json
-│  │  │  │  ├── 008_item-progression-validator.json
-│  │  │  │  ├── 009_project-version.json
-│  │  │  │  ├── 010_config-root.json
-│  │  │  │  ├── 011_config-schema-validator.json
-│  │  │  │  ├── 012_platform-canvas-assets.json
-│  │  │  │  ├── 013_platform-dom-adapters.json
-│  │  │  │  ├── 014_platform-diagnostics-clock.json
-│  │  │  │  ├── 015_asset-preload.json
-│  │  │  │  ├── 016_core-input-cache.json
-│  │  │  │  ├── 017_fight-input-composer.json
-│  │  │  │  ├── 018_storage.json
-│  │  │  │  ├── 019_game-loop-adapters-audio.json
-│  │  │  │  ├── 020_inventory-storage-application.json
-│  │  │  │  ├── 021_inventory-equipment-loadout.json
-│  │  │  │  ├── 022_inventory-refill.json
-│  │  │  │  ├── 023_inventory-lines.json
-│  │  │  │  ├── 024_inventory-command-service.json
-│  │  │  │  ├── 025_fight-systems-small.json
-│  │  │  │  ├── 026_world-and-casting.json
-│  │  │  │  ├── 027_bite-chum.json
-│  │  │  │  ├── 028_orchestrators.json
-│  │  │  │  ├── 029_inventory-system.json
-│  │  │  │  ├── 030_fight-physics-system.json
-│  │  │  │  ├── 031_platform-config-clone.json
-│  │  │  │  ├── 032_platform-horizontal-scroll.json
-│  │  │  │  ├── 033_platform-long-press.json
-│  │  │  │  ├── 034_pull-input-mapper.json
-│  │  │  │  ├── 035_platform-event-logger.json
-│  │  │  │  └── 036_platform-cache.json
-│  │  │  ├── graph_review_v1.json
-│  │  │  ├── graph_review_v2.json
-│  │  │  └── preparations
-│  │  │    ├── 001_config-composition.json
-│  │  │    ├── 002_live-config-readers.json
-│  │  │    ├── 003_project-version-presentation.json
-│  │  │    ├── 004_asset-diagnostics-composition.json
-│  │  │    └── 005_core-input-capabilities.json
-│  │  ├── stage_4_owner_decision_cluster_path.json
-│  │  └── stage_4_owner_decision_config_source.json
-│  ├── module_architecture.json
-│  └── stage_1_closure.json
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
 │  ├── fish
 │  │  └── crucian_stalker
-│  │    ├── standart
-│  │    │  ├── crucian_stalker--1.webp
-│  │    │  ├── crucian_stalker--2.webp
-│  │    │  ├── crucian_stalker--3.webp
-│  │    │  ├── crucian_stalker--4.webp
-│  │    │  ├── crucian_stalker--5.webp
-│  │    │  └── crucian_stalker--6.webp
-│  │    └── unique
-│  │      ├── crucian_stalker--1-uniq.webp
-│  │      ├── crucian_stalker--2-uniq.webp
-│  │      ├── crucian_stalker--3-uniq.webp
-│  │      ├── crucian_stalker--4-uniq.webp
-│  │      ├── crucian_stalker--5-uniq.webp
-│  │      └── crucian_stalker--6-uniq.webp
+│  │     ├── standart
+│  │     │  ├── crucian_stalker--1.webp
+│  │     │  ├── crucian_stalker--2.webp
+│  │     │  ├── crucian_stalker--3.webp
+│  │     │  ├── crucian_stalker--4.webp
+│  │     │  ├── crucian_stalker--5.webp
+│  │     │  └── crucian_stalker--6.webp
+│  │     └── unique
+│  │        ├── crucian_stalker--1-uniq.webp
+│  │        ├── crucian_stalker--2-uniq.webp
+│  │        ├── crucian_stalker--3-uniq.webp
+│  │        ├── crucian_stalker--4-uniq.webp
+│  │        ├── crucian_stalker--5-uniq.webp
+│  │        └── crucian_stalker--6-uniq.webp
 │  └── locations
-│    └── test
-│      ├── bg_test--day.webp
-│      ├── bg_test--evening.webp
-│      ├── bg_test--night.webp
-│      └── test-depth.webp
+│     └── test
+│        ├── bg_test--day.webp
+│        ├── bg_test--evening.webp
+│        ├── bg_test--night.webp
+│        └── test-depth.webp
 ├── backend
 │  ├── .gitignore
 │  ├── logs
@@ -373,20 +32,18 @@
 │  ├── package.json
 │  ├── server.js
 │  └── src
-│    ├── controllers
-│    │  └── eventController.js
-│    ├── routes
-│    │  └── eventRoutes.js
-│    └── services
-│      └── eventService.js
+│     ├── controllers
+│     │  └── eventController.js
+│     ├── routes
+│     │  └── eventRoutes.js
+│     └── services
+│        └── eventService.js
 ├── CHANGELOG.md
 ├── convert-images.js
+├── dev.html
+├── DEVELOPMENT_RULES.md
 ├── docs
-│  ├── architecture
-│  │  ├── esm_build_foundation.md
-│  │  ├── module_architecture.md
-│  │  ├── package_contract.md
-│  │  └── stage_1_closure_and_stage_2_freeze.md
+│  ├── architecture.md
 │  ├── balance_simulator.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
@@ -397,297 +54,53 @@
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── project-structure.txt
 ├── README.md
-├── refactor_Task.txt
 ├── src
-│  ├── .tmp.driveupload
-│  ├── app
-│  │  ├── adapters.js
-│  │  ├── application.js
-│  │  ├── bite.js
-│  │  ├── bootstrap.js
-│  │  ├── cast_power.js
-│  │  ├── chum.js
-│  │  ├── context.js
-│  │  ├── core
-│  │  │  ├── game_clock.js
-│  │  │  └── game_loop.js
-│  │  ├── debug.js
-│  │  ├── fishing.js
-│  │  ├── fixed_catch_fish_factory.js
-│  │  ├── game.js
-│  │  ├── inventory.js
-│  │  ├── rendering
-│  │  │  ├── boat_chum_render_frame_builder.js
-│  │  │  ├── casting_render_frame_builder.js
-│  │  │  ├── fight_area_render_frame_builder.js
-│  │  │  ├── fight_hud_frame_builder.js
-│  │  │  ├── fishing_equipment_render_model_builder.js
-│  │  │  ├── fishing_render_frame_builder.js
-│  │  │  ├── game_render_coordinator.js
-│  │  │  ├── game_render_frame_builder.js
-│  │  │  ├── game_render_intent.js
-│  │  │  ├── landing_area_render_frame_builder.js
-│  │  │  ├── location_debug_render_frame_builder.js
-│  │  │  ├── outcome_render_frame_builder.js
-│  │  │  └── world_render_frame_builder.js
-│  │  ├── rules.js
-│  │  ├── script.js
-│  │  ├── states.js
-│  │  ├── utils.js
-│  │  └── world.js
-│  ├── application
-│  │  └── inventory
-│  │    ├── apply_bait_exposure_service.js
-│  │    ├── auto_refill_coordinator.js
-│  │    ├── equipment_auto_refill_target_provider.js
-│  │    ├── equipment_read_model_factory.js
-│  │    ├── equipment_transition_executor.js
-│  │    ├── freshest_refill_candidate_policy.js
-│  │    ├── inventory_v2_command_service.js
-│  │    ├── inventory_v2_composition_root.js
-│  │    ├── inventory_v2_context_item_filter.js
-│  │    ├── inventory_v2_equipment_line_readiness_policy.js
-│  │    ├── inventory_v2_equipment_transition_port.js
-│  │    ├── inventory_v2_facade.js
-│  │    ├── inventory_v2_gameplay_bridge.js
-│  │    ├── inventory_v2_item_hydrator.js
-│  │    ├── inventory_v2_item_order_resolver.js
-│  │    ├── inventory_v2_item_view_factory.js
-│  │    ├── inventory_v2_line_allocation_service.js
-│  │    ├── inventory_v2_loadout_port.js
-│  │    ├── inventory_v2_refill_ports.js
-│  │    ├── inventory_v2_subfilter_resolver.js
-│  │    ├── inventory_v2_transaction_participants.js
-│  │    ├── inventory_v2_view_model_factory.js
-│  │    ├── loadout_application_service.js
-│  │    └── refill_compatible_signature_policy.js
-│  ├── assets
-│  │  └── asset_preload_coordinator.js
 │  ├── bootstrap
+│  │  ├── development
+│  │  │  ├── debug_console_bootstrap.js
+│  │  │  ├── debug_overlay_bootstrap.js
+│  │  │  └── legacy_game_startup.js
+│  │  └── production
+│  │     ├── chum_feature_bootstrap.js
+│  │     ├── config_context.js
+│  │     ├── game.js
+│  │     ├── game_application.js
+│  │     ├── game_composition_root.js
+│  │     ├── game_config_composition.js
+│  │     ├── game_startup.js
+│  │     ├── game_version_badge.js
+│  │     ├── inventory_composition_root.js
+│  │     └── inventory_ui_bootstrap.js
 │  ├── config
-│  │  ├── config.js
-│  │  ├── databases
-│  │  │  ├── fish
-│  │  │  │  ├── fish_categories.js
-│  │  │  │  ├── presets
-│  │  │  │  │  ├── fish_profile_factory.js
-│  │  │  │  │  └── fish_profile_presets.js
-│  │  │  │  └── species
-│  │  │  │    ├── event_fish.js
-│  │  │  │    ├── peaceful_fish.js
-│  │  │  │    ├── predator_fish.js
-│  │  │  │    └── rare_fish.js
-│  │  │  ├── fish_db.js
-│  │  │  ├── item_db.js
-│  │  │  └── map_db.js
-│  │  ├── inventory
-│  │  │  ├── equipment_slot_config.js
-│  │  │  ├── equipment_slot_presentation_config.js
-│  │  │  ├── inventory_rule_messages.js
-│  │  │  ├── inventory_v2_item_parameter_config.js
-│  │  │  ├── inventory_v2_sort_config.js
-│  │  │  └── item_assembly_profile_config.js
-│  │  ├── items
-│  │  │  ├── item_progression_config.js
-│  │  │  └── item_stat_override_config.js
-│  │  ├── metadata
-│  │  │  ├── dev_tool_parameter_descriptions.json
-│  │  │  ├── overlay_metric_descriptions.json
-│  │  │  └── parameter_labels.json
-│  │  ├── physics
-│  │  │  ├── environment_physics_config.js
-│  │  │  ├── fight_physics_config.js
-│  │  │  ├── physics_config_adapter.js
-│  │  │  ├── physics_config.js
-│  │  │  ├── physics_formula_map.js
-│  │  │  ├── physics_units_and_naming.js
-│  │  │  ├── retrieve_physics_config.js
-│  │  │  ├── tackle_physics_config.js
-│  │  │  └── tension_physics_config.js
-│  │  ├── project_version.js
-│  │  ├── rarity
-│  │  │  └── rarity_visual_config.js
-│  │  ├── runtime
-│  │  │  ├── config_data.js
-│  │  │  ├── config_override_store.js
-│  │  │  ├── immutable_config.js
-│  │  │  └── resolved_config_provider.js
-│  │  ├── validation
-│  │  │  ├── config_schema_validator.js
-│  │  │  ├── degradation_color_config_validator.js
-│  │  │  ├── item_progression_config_validator.js
-│  │  │  ├── item_rarity_config_validator.js
-│  │  │  └── rarity_config_validator.js
-│  │  └── visual
-│  │    └── degradation_color_config.js
-│  ├── core
-│  │  ├── assemblies
-│  │  │  ├── assembly_attachment_target_resolver.js
-│  │  │  ├── assembly_completion_policy.js
-│  │  │  ├── assembly_profile_registry.js
-│  │  │  ├── assembly_state_repository.js
-│  │  │  ├── assembly_state.js
-│  │  │  ├── exact_assembly_refill_signature_policy.js
-│  │  │  ├── item_assembly_reader.js
-│  │  │  └── item_assembly_service.js
-│  │  ├── casting_distance.js
-│  │  ├── core.js
-│  │  ├── distance_unit_converter.js
-│  │  ├── equipment
-│  │  │  ├── auto_refill_policy.js
-│  │  │  ├── equipment_compatibility_policy.js
-│  │  │  ├── equipment_slot_availability_policy.js
-│  │  │  ├── equipment_slot_visibility_policy.js
-│  │  │  ├── equipment_state.js
-│  │  │  ├── equipment_transition_planner.js
-│  │  │  ├── exact_item_signature_policy.js
-│  │  │  ├── fishing_readiness_policy.js
-│  │  │  ├── inventory_capacity_policy.js
-│  │  │  ├── rod_capability_resolver.js
-│  │  │  └── terminal_line_slot_resolver.js
-│  │  ├── fish
-│  │  │  ├── fish_anomaly_variant_resolver.js
-│  │  │  ├── fish_rarity_resolver.js
-│  │  │  └── fish_visual_variant_resolver.js
-│  │  ├── fishing
-│  │  │  ├── drag_force_calculator.js
-│  │  │  ├── endurance
-│  │  │  │  └── endurance_movement_debuff_calculator.js
-│  │  │  ├── fish_direction_intent_sampler.js
-│  │  │  ├── fish_fight_direction_resolver.js
-│  │  │  ├── fish_retrieve_result.js
-│  │  │  ├── fishing_cast_exposure_resolver.js
-│  │  │  ├── hold_opposition_resolver.js
-│  │  │  ├── landing_lift_readiness_policy.js
-│  │  │  ├── landing_lift_tension_calculator.js
-│  │  │  ├── landing_policy.js
-│  │  │  ├── line_constrained_fish_motion_resolver.js
-│  │  │  ├── line_constraint_state_resolver.js
-│  │  │  ├── line_radial_movement_splitter.js
-│  │  │  ├── line_tension_calculator.js
-│  │  │  ├── player_force_budget_allocator.js
-│  │  │  ├── player_pressure
-│  │  │  │  ├── player_pressure_fatigue_calculator.js
-│  │  │  │  ├── player_pressure_fatigue_source_resolver.js
-│  │  │  │  ├── player_pressure_fatigue_state.js
-│  │  │  │  ├── player_pressure_gain_resolver.js
-│  │  │  │  ├── player_reel_fatigue_session.js
-│  │  │  │  └── player_tension_build_rate_resolver.js
-│  │  │  ├── pole_fight_sector_angle_constraint.js
-│  │  │  ├── pole_fight_sector_constraint.js
-│  │  │  ├── pole_fight_sector_geometry.js
-│  │  │  ├── recoverable_line_calculator.js
-│  │  │  ├── reel_auto_recovery_calculator.js
-│  │  │  ├── reel_hold_load_policy.js
-│  │  │  ├── reel_hold_recovery_system.js
-│  │  │  ├── reel_recovery_fish_slowdown_policy.js
-│  │  │  ├── reel_retrieve_speed_calculator.js
-│  │  │  ├── retrieve_policy.js
-│  │  │  ├── rod_control_angle_resolver.js
-│  │  │  ├── rod_control_movement_projector.js
-│  │  │  ├── rod_control_tension_mode_resolver.js
-│  │  │  ├── rod_pull_calculator.js
-│  │  │  ├── rod_pull_state.js
-│  │  │  ├── rod_stroke_capacity_resolver.js
-│  │  │  ├── rod_stroke_distance_tracker.js
-│  │  │  ├── rod_stroke_state.js
-│  │  │  ├── rod_stroke_tracker.js
-│  │  │  ├── simple_fight_force_calculator.js
-│  │  │  ├── stamina
-│  │  │  │  ├── active_endurance_drain_calculator.js
-│  │  │  │  ├── passive_endurance_drain_calculator.js
-│  │  │  │  ├── stamina_balance_frame.js
-│  │  │  │  ├── stamina_drain_calculator.js
-│  │  │  │  ├── stamina_lateral_position_resolver.js
-│  │  │  │  ├── stamina_phase_machine.js
-│  │  │  │  ├── stamina_pressure_resolver.js
-│  │  │  │  ├── stamina_regen_calculator.js
-│  │  │  │  └── stamina_transition_resolver.js
-│  │  │  ├── tackle_failure_selector.js
-│  │  │  └── tackle_stress_accumulator.js
-│  │  ├── float_tackle_line_budget_policy.js
-│  │  ├── input
-│  │  │  └── fight_input_action_composer.js
-│  │  ├── inventory
-│  │  │  ├── equip_target_selection_policy.js
-│  │  │  ├── flat_inventory_item_repository.js
-│  │  │  ├── inventory_item_location.js
-│  │  │  ├── inventory_item_reservation_policy.js
-│  │  │  ├── inventory_item_stacking_policy.js
-│  │  │  ├── item_assembly_stacking_policy.js
-│  │  │  └── unlimited_assembly_capacity_policy.js
-│  │  ├── items
-│  │  │  ├── bait
-│  │  │  │  ├── bait_effectiveness_catalog_resolver.js
-│  │  │  │  ├── bait_effectiveness_descriptor.js
-│  │  │  │  ├── bait_effectiveness_grade_policy.js
-│  │  │  │  ├── bait_effectiveness_knowledge_policy.js
-│  │  │  │  ├── bait_effectiveness_match.js
-│  │  │  │  └── bait_effectiveness_resolver.js
-│  │  │  ├── condition
-│  │  │  │  ├── item_condition_descriptor.js
-│  │  │  │  └── item_condition_resolver.js
-│  │  │  ├── effective_item_stats_resolver.js
-│  │  │  ├── freshness
-│  │  │  │  ├── bait_freshness_decay_policy.js
-│  │  │  │  ├── bait_freshness_modifier.js
-│  │  │  │  ├── item_freshness_descriptor.js
-│  │  │  │  ├── item_freshness_resolver.js
-│  │  │  │  └── item_freshness_state_policy.js
-│  │  │  ├── hook
-│  │  │  │  └── hook_power_policy.js
-│  │  │  ├── item_stat_override_policy.js
-│  │  │  ├── metrics
-│  │  │  │  └── item_bounded_metric_resolver.js
-│  │  │  ├── progression
-│  │  │  │  ├── composite_metric_strategy.js
-│  │  │  │  ├── derived_stat_metric_strategy.js
-│  │  │  │  ├── item_capacity_resolver.js
-│  │  │  │  ├── item_catalog_baseline_registry.js
-│  │  │  │  ├── item_metric_strategy_registry.js
-│  │  │  │  ├── item_metric_strategy.js
-│  │  │  │  ├── item_progression_descriptor.js
-│  │  │  │  ├── item_progression_resolver.js
-│  │  │  │  ├── item_quality_resolver.js
-│  │  │  │  ├── item_rating_resolver.js
-│  │  │  │  ├── item_rating_tier_resolver.js
-│  │  │  │  ├── numeric_stat_metric_strategy.js
-│  │  │  │  └── target_range_metric_strategy.js
-│  │  │  ├── quality
-│  │  │  │  ├── environmental_compensation_modifier.js
-│  │  │  │  ├── hook_quality_modifier.js
-│  │  │  │  ├── item_quality_grade_policy.js
-│  │  │  │  └── net_quality_modifier.js
-│  │  │  └── rarity
-│  │  │    ├── authored_item_rarity_strategy.js
-│  │  │    ├── effective_item_rarity_resolver.js
-│  │  │    ├── item_rarity_descriptor.js
-│  │  │    ├── item_rarity_resolver.js
-│  │  │    ├── item_rarity_strategy_registry.js
-│  │  │    └── item_rarity_strategy.js
-│  │  ├── line
-│  │  │  ├── line_allocation_policy.js
-│  │  │  ├── line_inventory_controller.js
-│  │  │  └── line_spool_state.js
-│  │  ├── loadouts
-│  │  │  ├── equipment_loadout_repository.js
-│  │  │  ├── equipment_loadout.js
-│  │  │  └── loadout_equipment_transition_planner.js
-│  │  └── math
-│  │    ├── normalize_distance.js
-│  │    └── vector2.js
-│  ├── debug
+│  │  └── metadata
+│  │     ├── dev_tool_parameter_descriptions.json
+│  │     ├── overlay_metric_descriptions.json
+│  │     └── parameter_labels.json
+│  ├── dev
 │  │  ├── core
 │  │  │  ├── debug_console.js
 │  │  │  ├── debug_context.js
 │  │  │  ├── debug_event_binder.js
-│  │  │  ├── debug_module_registry.js
-│  │  │  └── null_debug_runtime.js
-│  │  ├── debug.js
-│  │  ├── dev_tools.js
+│  │  │  └── debug_module_registry.js
+│  │  ├── data
+│  │  │  └── dev_item_catalog.js
+│  │  ├── diagnostics
+│  │  │  └── render_allocation_diagnostics.js
+│  │  ├── fishing
+│  │  │  ├── active_fish_dev_tools_schema.js
+│  │  │  ├── hooked_fish_profile_synchronizer.js
+│  │  │  └── worst_case_force_debug_selector.js
+│  │  ├── formatting
+│  │  │  ├── debuff_name_formatter.js
+│  │  │  └── debug_formatters.js
 │  │  ├── god_mode.js
+│  │  ├── items
+│  │  │  └── item_progression_debug_snapshot_provider.js
+│  │  ├── location
+│  │  │  ├── location_debug_data_provider.js
+│  │  │  ├── location_debug_map_builder.js
+│  │  │  └── location_debug_render_frame_builder.js
 │  │  ├── modules
 │  │  │  ├── base_debug_module.js
 │  │  │  ├── bite_ticks_debug_module.js
@@ -709,7 +122,6 @@
 │  │  │  │  └── overlay_modules_config.js
 │  │  │  ├── core
 │  │  │  │  ├── overlay_controller.js
-│  │  │  │  ├── overlay_module_base.js
 │  │  │  │  ├── overlay_module_registry.js
 │  │  │  │  └── overlay_update_loop.js
 │  │  │  ├── dom
@@ -719,6 +131,33 @@
 │  │  │  │  ├── overlay_scale_controls.js
 │  │  │  │  ├── overlay_style_installer.js
 │  │  │  │  └── overlay_window_drag_controller.js
+│  │  │  ├── fight_physics
+│  │  │  │  ├── fight_auto_recovery_section.js
+│  │  │  │  ├── fight_drag_section.js
+│  │  │  │  ├── fight_fish_section.js
+│  │  │  │  ├── fight_line_section.js
+│  │  │  │  ├── fight_movement_section.js
+│  │  │  │  ├── fight_reel_hold_section.js
+│  │  │  │  ├── fight_rod_control_force_section.js
+│  │  │  │  ├── fight_rod_control_geometry_section.js
+│  │  │  │  ├── fight_rod_control_input_section.js
+│  │  │  │  ├── fight_rod_control_section.js
+│  │  │  │  ├── fight_rod_control_visual_section.js
+│  │  │  │  ├── fight_rod_hold_section.js
+│  │  │  │  ├── fight_rod_stroke_section.js
+│  │  │  │  ├── fight_section_base.js
+│  │  │  │  └── fight_tension_section.js
+│  │  │  ├── fight_summary
+│  │  │  │  ├── fight_summary_overlay_module.js
+│  │  │  │  ├── fish_movement_summary_overlay_module.js
+│  │  │  │  ├── line_and_drag_summary_overlay_module.js
+│  │  │  │  └── rod_control_summary_overlay_module.js
+│  │  │  ├── fish_balance
+│  │  │  │  ├── fish_current_force_overlay_module.js
+│  │  │  │  ├── fish_debuffs_summary_overlay_module.js
+│  │  │  │  ├── fish_live_force_summary_section.js
+│  │  │  │  ├── fish_state_force_preview_section.js
+│  │  │  │  └── fish_summary_overlay_module.js
 │  │  │  ├── modules
 │  │  │  │  ├── behavior_overlay_module.js
 │  │  │  │  ├── chances_detail_overlay_module.js
@@ -726,106 +165,125 @@
 │  │  │  │  ├── debuffs_overlay_module.js
 │  │  │  │  ├── echo_overlay_module.js
 │  │  │  │  ├── fight_physics
-│  │  │  │  │  ├── fight_auto_recovery_section.js
-│  │  │  │  │  ├── fight_drag_section.js
-│  │  │  │  │  ├── fight_fish_section.js
-│  │  │  │  │  ├── fight_line_section.js
-│  │  │  │  │  ├── fight_movement_section.js
-│  │  │  │  │  ├── fight_physics_overlay_module.js
-│  │  │  │  │  ├── fight_reel_hold_section.js
-│  │  │  │  │  ├── fight_rod_control_force_section.js
-│  │  │  │  │  ├── fight_rod_control_geometry_section.js
-│  │  │  │  │  ├── fight_rod_control_input_section.js
-│  │  │  │  │  ├── fight_rod_control_section.js
-│  │  │  │  │  ├── fight_rod_control_visual_section.js
-│  │  │  │  │  ├── fight_rod_hold_section.js
-│  │  │  │  │  ├── fight_rod_stroke_section.js
-│  │  │  │  │  ├── fight_section_base.js
-│  │  │  │  │  └── fight_tension_section.js
-│  │  │  │  ├── fight_summary
-│  │  │  │  │  ├── fight_summary_overlay_module.js
-│  │  │  │  │  ├── fish_movement_summary_overlay_module.js
-│  │  │  │  │  ├── line_and_drag_summary_overlay_module.js
-│  │  │  │  │  └── rod_control_summary_overlay_module.js
-│  │  │  │  ├── fish_balance
-│  │  │  │  │  ├── fish_current_force_overlay_module.js
-│  │  │  │  │  ├── fish_debuffs_summary_overlay_module.js
-│  │  │  │  │  ├── fish_live_force_summary_section.js
-│  │  │  │  │  ├── fish_state_force_preview_section.js
-│  │  │  │  │  └── fish_summary_overlay_module.js
+│  │  │  │  │  └── fight_physics_overlay_module.js
 │  │  │  │  ├── fish_balance_overlay_module.js
 │  │  │  │  ├── fish_power_overlay_module.js
 │  │  │  │  ├── live_forces_overlay_module.js
 │  │  │  │  ├── player_max_overlay_module.js
 │  │  │  │  ├── stamina_balance_overlay_module.js
 │  │  │  │  └── worst_case_overlay_module.js
-│  │  │  ├── overlay_bootstrap.js
+│  │  │  ├── overlay_console_metric_inspector.js
+│  │  │  ├── overlay_metric_resolver.js
+│  │  │  ├── overlay_module.js
+│  │  │  ├── overlay_settings_store.js
 │  │  │  └── services
-│  │  │    ├── overlay_console_metric_inspector.js
-│  │  │    ├── overlay_html_builder.js
-│  │  │    ├── overlay_metric_catalog.js
-│  │  │    ├── overlay_metric_resolver.js
-│  │  │    ├── overlay_settings_store.js
-│  │  │    ├── overlay_value_formatter.js
-│  │  │    ├── overlay_view_state_store.js
-│  │  │    └── worst_case_force_debug_selector.js
-│  │  └── services
-│  │    ├── active_fish_dev_tools_schema.js
-│  │    ├── debug_data_selectors.js
-│  │    ├── debug_formatters.js
-│  │    ├── dev_tools_control_binding_registry.js
-│  │    ├── dev_tools_parameter_alias_registry.js
-│  │    ├── hooked_fish_profile_synchronizer.js
-│  │    ├── item_progression_debug_snapshot_provider.js
-│  │    ├── location_debug_data_provider.js
-│  │    ├── location_dev_tools_schema.js
-│  │    └── memory_leak_watchdog.js
+│  │  │     ├── overlay_html_builder.js
+│  │  │     ├── overlay_metric_catalog.js
+│  │  │     ├── overlay_value_formatter.js
+│  │  │     └── overlay_view_state_store.js
+│  │  ├── rendering
+│  │  │  └── world_debug_renderer.js
+│  │  ├── runtime
+│  │  │  └── debug_service.js
+│  │  ├── services
+│  │  │  ├── debug_data_selectors.js
+│  │  │  ├── dev_tools_control_binding_registry.js
+│  │  │  ├── dev_tools_parameter_alias_registry.js
+│  │  │  ├── location_dev_tools_schema.js
+│  │  │  └── memory_leak_watchdog.js
+│  │  └── tools
+│  │     ├── dev_tools.js
+│  │     ├── dev_tools_parameter_tooltip_provider.js
+│  │     └── dev_tools_ui.js
 │  ├── engine
 │  │  ├── assets
 │  │  │  ├── asset_load_result.js
 │  │  │  └── asset_manifest.js
-│  │  ├── compat
-│  │  │  └── stage_2
-│  │  │    ├── asset_load_result_legacy_bridge.js
-│  │  │    ├── asset_manifest_legacy_bridge.js
-│  │  │    ├── composite_renderer_legacy_bridge.js
-│  │  │    ├── dependency_contract_validator_legacy_bridge.js
-│  │  │    ├── event_bus_legacy_bridge.js
-│  │  │    ├── event_lifecycle_legacy_bridge.js
-│  │  │    ├── render_component_legacy_bridge.js
-│  │  │    ├── render_math_legacy_bridge.js
-│  │  │    └── render_pass_legacy_bridge.js
-│  │  ├── contracts
 │  │  ├── di
 │  │  │  └── dependency_contract_validator.js
 │  │  ├── events
 │  │  │  ├── event_bus.js
 │  │  │  └── event_lifecycle.js
-│  │  ├── loop
 │  │  ├── math
 │  │  │  ├── normalize_distance.js
 │  │  │  └── vector2.js
-│  │  ├── rendering
-│  │  │  ├── composite_renderer.js
-│  │  │  ├── render_component.js
-│  │  │  ├── render_math.js
-│  │  │  └── render_pass.js
-│  │  └── time
-│  ├── entities
-│  │  ├── fish.js
-│  │  └── tackle.js
+│  │  ├── random
+│  │  │  └── seeded_rng.js
+│  │  └── rendering
+│  │     ├── composite_renderer.js
+│  │     ├── render_component.js
+│  │     ├── render_math.js
+│  │     └── render_pass.js
+│  ├── entrypoints
+│  │  ├── dev.entry.js
+│  │  └── game.entry.js
 │  ├── game
 │  │  ├── application
-│  │  │  └── input
-│  │  │    ├── fight_input_action_composer.js
-│  │  │    └── pull_input_mapper.js
+│  │  │  ├── casting
+│  │  │  │  └── cast_power_aim.js
+│  │  │  ├── chum
+│  │  │  │  └── chum_service.js
+│  │  │  ├── fishing
+│  │  │  │  ├── bite_environment_service.js
+│  │  │  │  ├── bite_service.js
+│  │  │  │  ├── drag_control_service.js
+│  │  │  │  ├── fight_physics_orchestrator.js
+│  │  │  │  ├── fight_physics_pipeline.js
+│  │  │  │  ├── fishing_runtime_services.js
+│  │  │  │  ├── fixed_catch_fish_factory.js
+│  │  │  │  ├── gameplay_override_reader.js
+│  │  │  │  ├── mutable_fight_frame_context.js
+│  │  │  │  ├── reel_service.js
+│  │  │  │  └── tension_service.js
+│  │  │  ├── input
+│  │  │  │  ├── fight_input_action_composer.js
+│  │  │  │  └── pull_input_mapper.js
+│  │  │  ├── inventory
+│  │  │  │  ├── apply_bait_exposure_service.js
+│  │  │  │  ├── auto_refill_coordinator.js
+│  │  │  │  ├── equipment_auto_refill_target_provider.js
+│  │  │  │  ├── equipment_read_model_factory.js
+│  │  │  │  ├── equipment_service.js
+│  │  │  │  ├── equipment_transition_executor.js
+│  │  │  │  ├── freshest_refill_candidate_policy.js
+│  │  │  │  ├── inventory_command_service.js
+│  │  │  │  ├── inventory_context_item_filter.js
+│  │  │  │  ├── inventory_equipment_line_readiness_policy.js
+│  │  │  │  ├── inventory_equipment_transition_adapter.js
+│  │  │  │  ├── inventory_facade.js
+│  │  │  │  ├── inventory_gameplay_facade.js
+│  │  │  │  ├── inventory_item_factory.js
+│  │  │  │  ├── inventory_item_hydrator.js
+│  │  │  │  ├── inventory_line_allocation_service.js
+│  │  │  │  ├── inventory_loadout_adapter.js
+│  │  │  │  ├── inventory_refill_adapters.js
+│  │  │  │  ├── inventory_transaction_coordinator.js
+│  │  │  │  ├── inventory_transaction_participants.js
+│  │  │  │  ├── legacy_inventory_system.js
+│  │  │  │  ├── legacy_inventory_unit_allocator.js
+│  │  │  │  ├── line_inventory_controller.js
+│  │  │  │  ├── loadout_application_service.js
+│  │  │  │  └── persistence
+│  │  │  │     ├── inventory_item_snapshot_mapper.js
+│  │  │  │     ├── inventory_legacy_migration.js
+│  │  │  │     ├── inventory_snapshot_factory.js
+│  │  │  │     ├── inventory_snapshot_migration.js
+│  │  │  │     ├── inventory_state_store.js
+│  │  │  │     └── legacy_item_state_migration.js
+│  │  │  ├── state
+│  │  │  │  └── game_state_machine.js
+│  │  │  ├── viewport
+│  │  │  │  └── viewport_projector.js
+│  │  │  └── world
+│  │  │     └── game_world_service.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish
 │  │  │  │  │  └── fish_categories.js
-│  │  │  │  └── fish_database.js
-│  │  │  ├── factories
-│  │  │  │  └── fish_profile_factory.js
+│  │  │  │  ├── fish_database.js
+│  │  │  │  └── item_catalog.js
+│  │  │  ├── inventory
+│  │  │  │  └── inventory_composition_config.js
 │  │  │  ├── items
 │  │  │  │  └── item_progression_config.js
 │  │  │  ├── physics
@@ -834,7 +292,6 @@
 │  │  │  ├── raw
 │  │  │  │  ├── fish
 │  │  │  │  │  ├── event_fish.js
-│  │  │  │  │  ├── fish_profile_presets.js
 │  │  │  │  │  ├── peaceful_fish.js
 │  │  │  │  │  ├── predator_fish.js
 │  │  │  │  │  └── rare_fish.js
@@ -846,855 +303,384 @@
 │  │  │  │  ├── locations
 │  │  │  │  │  └── location_database.js
 │  │  │  │  └── physics
-│  │  │  │    ├── environment_physics.js
-│  │  │  │    ├── fight_physics.js
-│  │  │  │    ├── physics_units_and_naming.js
-│  │  │  │    ├── retrieve_physics.js
-│  │  │  │    ├── tackle_physics.js
-│  │  │  │    └── tension_physics.js
+│  │  │  │     ├── environment_physics.js
+│  │  │  │     ├── fight_physics.js
+│  │  │  │     ├── physics_units_and_naming.js
+│  │  │  │     ├── retrieve_physics.js
+│  │  │  │     ├── tackle_physics.js
+│  │  │  │     └── tension_physics.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
 │  │  │  │  ├── game_config.js
 │  │  │  │  ├── immutable_config.js
 │  │  │  │  └── resolved_config_provider.js
 │  │  │  └── validation
-│  │  │    ├── config_schema_validator.js
-│  │  │    ├── item_progression_config_validator.js
-│  │  │    ├── item_rarity_config_validator.js
-│  │  │    └── rarity_config_validator.js
-│  │  └── domain
-│  │    ├── assemblies
-│  │    │  ├── assembly_attachment_target_resolver.js
-│  │    │  ├── assembly_completion_policy.js
-│  │    │  ├── assembly_profile_registry.js
-│  │    │  ├── assembly_state_repository.js
-│  │    │  ├── assembly_state.js
-│  │    │  ├── exact_assembly_refill_signature_policy.js
-│  │    │  ├── item_assembly_reader.js
-│  │    │  ├── item_assembly_service.js
-│  │    │  └── refill_compatible_signature_policy.js
-│  │    ├── casting
-│  │    │  ├── cast_distance_calculator.js
-│  │    │  └── distance_unit_converter.js
-│  │    ├── equipment
-│  │    │  ├── auto_refill_policy.js
-│  │    │  ├── equipment_compatibility_policy.js
-│  │    │  ├── equipment_slot_catalog.js
-│  │    │  ├── equipment_slot_visibility_policy.js
-│  │    │  ├── equipment_state.js
-│  │    │  ├── equipment_transition_planner.js
-│  │    │  ├── exact_item_signature_policy.js
-│  │    │  ├── fishing_readiness_policy.js
-│  │    │  ├── rod_capability_resolver.js
-│  │    │  └── terminal_line_slot_resolver.js
-│  │    ├── fish
-│  │    │  ├── fish_anomaly_variant_resolver.js
-│  │    │  ├── fish_rarity_resolver.js
-│  │    │  └── fish.js
-│  │    ├── fishing
-│  │    │  ├── buff_manager.js
-│  │    │  ├── drag_force_calculator.js
-│  │    │  ├── endurance
-│  │    │  │  └── endurance_movement_debuff_calculator.js
-│  │    │  ├── fish_direction_intent_sampler.js
-│  │    │  ├── fish_fight_direction_resolver.js
-│  │    │  ├── fish_force_system.js
-│  │    │  ├── fish_retrieve_result.js
-│  │    │  ├── fish_retrieve_system.js
-│  │    │  ├── fishing_cast_exposure_resolver.js
-│  │    │  ├── float_tackle_line_budget_policy.js
-│  │    │  ├── hold_opposition_resolver.js
-│  │    │  ├── landing_lift_readiness_policy.js
-│  │    │  ├── landing_lift_tension_calculator.js
-│  │    │  ├── landing_policy.js
-│  │    │  ├── line_constrained_fish_motion_resolver.js
-│  │    │  ├── line_constraint_state_resolver.js
-│  │    │  ├── line_radial_movement_splitter.js
-│  │    │  ├── line_spool_state.js
-│  │    │  ├── line_system.js
-│  │    │  ├── line_tension_calculator.js
-│  │    │  ├── player_force_budget_allocator.js
-│  │    │  ├── player_force_system.js
-│  │    │  ├── player_pressure
-│  │    │  │  ├── player_pressure_fatigue_calculator.js
-│  │    │  │  ├── player_pressure_fatigue_source_resolver.js
-│  │    │  │  ├── player_pressure_fatigue_state.js
-│  │    │  │  ├── player_pressure_gain_resolver.js
-│  │    │  │  ├── player_reel_fatigue_session.js
-│  │    │  │  └── player_tension_build_rate_resolver.js
-│  │    │  ├── player_pull_motion_smoother.js
-│  │    │  ├── pole_fight_sector_angle_constraint.js
-│  │    │  ├── pole_fight_sector_constraint.js
-│  │    │  ├── pole_fight_sector_geometry.js
-│  │    │  ├── recoverable_line_calculator.js
-│  │    │  ├── reel_auto_recovery_calculator.js
-│  │    │  ├── reel_hold_load_policy.js
-│  │    │  ├── reel_hold_recovery_system.js
-│  │    │  ├── reel_recovery_fish_slowdown_policy.js
-│  │    │  ├── reel_retrieve_speed_calculator.js
-│  │    │  ├── retrieve_policy.js
-│  │    │  ├── rod_control_angle_resolver.js
-│  │    │  ├── rod_control_movement_projector.js
-│  │    │  ├── rod_control_tension_mode_resolver.js
-│  │    │  ├── rod_lateral_control_system.js
-│  │    │  ├── rod_pull_calculator.js
-│  │    │  ├── rod_pull_state.js
-│  │    │  ├── rod_pull_system.js
-│  │    │  ├── rod_stroke_capacity_resolver.js
-│  │    │  ├── rod_stroke_distance_tracker.js
-│  │    │  ├── rod_stroke_state.js
-│  │    │  ├── rod_stroke_tracker.js
-│  │    │  ├── simple_fight_force_calculator.js
-│  │    │  ├── stamina
-│  │    │  │  ├── active_endurance_drain_calculator.js
-│  │    │  │  ├── passive_endurance_drain_calculator.js
-│  │    │  │  ├── stamina_balance_frame.js
-│  │    │  │  ├── stamina_drain_calculator.js
-│  │    │  │  ├── stamina_lateral_position_resolver.js
-│  │    │  │  ├── stamina_phase_machine.js
-│  │    │  │  ├── stamina_pressure_resolver.js
-│  │    │  │  ├── stamina_regen_calculator.js
-│  │    │  │  └── stamina_transition_resolver.js
-│  │    │  ├── stamina_system.js
-│  │    │  ├── tackle_failure_selector.js
-│  │    │  ├── tackle_stress_accumulator.js
-│  │    │  ├── tackle_stress_system.js
-│  │    │  └── weakest_tackle_limit_resolver.js
-│  │    ├── inventory
-│  │    │  ├── equip_target_selection_policy.js
-│  │    │  ├── flat_inventory_item_repository.js
-│  │    │  ├── inventory_capacity_policy.js
-│  │    │  ├── inventory_item_location.js
-│  │    │  ├── inventory_item_reservation_policy.js
-│  │    │  ├── inventory_item_stacking_policy.js
-│  │    │  ├── item_assembly_stacking_policy.js
-│  │    │  └── unlimited_assembly_capacity_policy.js
-│  │    ├── items
-│  │    │  ├── bait
-│  │    │  │  ├── bait_effectiveness_grade_policy.js
-│  │    │  │  ├── bait_effectiveness_knowledge_policy.js
-│  │    │  │  ├── bait_effectiveness_match.js
-│  │    │  │  └── bait_effectiveness_resolver.js
-│  │    │  ├── condition
-│  │    │  │  └── item_condition_resolver.js
-│  │    │  ├── effective_item_stats_resolver.js
-│  │    │  ├── freshness
-│  │    │  │  ├── bait_freshness_decay_policy.js
-│  │    │  │  ├── bait_freshness_modifier.js
-│  │    │  │  ├── item_freshness_resolver.js
-│  │    │  │  └── item_freshness_state_policy.js
-│  │    │  ├── hook
-│  │    │  │  └── hook_power_policy.js
-│  │    │  ├── item_stat_override_policy.js
-│  │    │  ├── metrics
-│  │    │  │  └── item_bounded_metric_resolver.js
-│  │    │  ├── progression
-│  │    │  │  ├── composite_metric_strategy.js
-│  │    │  │  ├── derived_stat_metric_strategy.js
-│  │    │  │  ├── item_capacity_resolver.js
-│  │    │  │  ├── item_catalog_baseline_registry.js
-│  │    │  │  ├── item_metric_strategy_registry.js
-│  │    │  │  ├── item_metric_strategy.js
-│  │    │  │  ├── item_progression_descriptor.js
-│  │    │  │  ├── item_progression_resolver.js
-│  │    │  │  ├── item_rating_resolver.js
-│  │    │  │  ├── item_rating_tier_resolver.js
-│  │    │  │  ├── numeric_stat_metric_strategy.js
-│  │    │  │  └── target_range_metric_strategy.js
-│  │    │  ├── quality
-│  │    │  │  ├── environmental_compensation_modifier.js
-│  │    │  │  ├── hook_quality_modifier.js
-│  │    │  │  ├── item_quality_grade_policy.js
-│  │    │  │  └── net_quality_modifier.js
-│  │    │  └── rarity
-│  │    │    ├── authored_item_rarity_strategy.js
-│  │    │    ├── effective_item_rarity_resolver.js
-│  │    │    ├── item_rarity_descriptor.js
-│  │    │    ├── item_rarity_resolver.js
-│  │    │    ├── item_rarity_strategy_registry.js
-│  │    │    └── item_rarity_strategy.js
-│  │    ├── line
-│  │    │  └── line_allocation_policy.js
-│  │    ├── loadouts
-│  │    │  ├── equipment_loadout_repository.js
-│  │    │  ├── equipment_loadout.js
-│  │    │  └── loadout_equipment_transition_planner.js
-│  │    ├── locations
-│  │    │  └── location_world.js
-│  │    ├── rules
-│  │    │  └── gameplay_rules.js
-│  │    └── tackle
-│  │      └── tackle.js
-│  ├── infrastructure
-│  │  ├── config
-│  │  │  └── deep_clone_config.js
-│  │  ├── diagnostics
-│  │  │  ├── console_logger.js
-│  │  │  └── event_logger.js
-│  │  ├── location
-│  │  │  ├── depth_map_reader.js
-│  │  │  ├── location_asset_loader.js
-│  │  │  └── offscreen_canvas_factory.js
-│  │  └── storage
-│  │    ├── cache_manager.js
-│  │    ├── inventory_item_snapshot_mapper.js
-│  │    ├── inventory_v2_legacy_migration.js
-│  │    ├── inventory_v2_snapshot_factory.js
-│  │    ├── inventory_v2_snapshot_migration.js
-│  │    ├── inventory_v2_state_store.js
-│  │    ├── inventory_v2_transaction_coordinator.js
-│  │    ├── legacy_inventory_unit_allocator.js
-│  │    └── legacy_item_state_migration.js
-│  ├── input
-│  │  ├── pull_input_mapper.js
-│  │  └── victory_action_gesture_resolver.js
+│  │  │     ├── config_schema_validator.js
+│  │  │     ├── item_progression_config_validator.js
+│  │  │     ├── item_rarity_config_validator.js
+│  │  │     └── rarity_config_validator.js
+│  │  ├── domain
+│  │  │  ├── assemblies
+│  │  │  │  ├── assembly_attachment_target_resolver.js
+│  │  │  │  ├── assembly_completion_policy.js
+│  │  │  │  ├── assembly_profile_registry.js
+│  │  │  │  ├── assembly_state.js
+│  │  │  │  ├── assembly_state_repository.js
+│  │  │  │  ├── exact_assembly_refill_signature_policy.js
+│  │  │  │  ├── item_assembly_reader.js
+│  │  │  │  ├── item_assembly_service.js
+│  │  │  │  └── refill_compatible_signature_policy.js
+│  │  │  ├── casting
+│  │  │  │  ├── cast_distance_calculator.js
+│  │  │  │  └── distance_unit_converter.js
+│  │  │  ├── equipment
+│  │  │  │  ├── auto_refill_policy.js
+│  │  │  │  ├── equipment_compatibility_policy.js
+│  │  │  │  ├── equipment_slot_catalog.js
+│  │  │  │  ├── equipment_slot_visibility_policy.js
+│  │  │  │  ├── equipment_state.js
+│  │  │  │  ├── equipment_transition_planner.js
+│  │  │  │  ├── exact_item_signature_policy.js
+│  │  │  │  ├── fishing_readiness_policy.js
+│  │  │  │  ├── rod_capability_resolver.js
+│  │  │  │  └── terminal_line_slot_resolver.js
+│  │  │  ├── fish
+│  │  │  │  ├── fish.js
+│  │  │  │  ├── fish_anomaly_variant_resolver.js
+│  │  │  │  └── fish_rarity_resolver.js
+│  │  │  ├── fishing
+│  │  │  │  ├── buff_manager.js
+│  │  │  │  ├── drag_force_calculator.js
+│  │  │  │  ├── endurance
+│  │  │  │  │  └── endurance_movement_debuff_calculator.js
+│  │  │  │  ├── fish_direction_intent_sampler.js
+│  │  │  │  ├── fish_fight_direction_resolver.js
+│  │  │  │  ├── fish_force_system.js
+│  │  │  │  ├── fish_retrieve_result.js
+│  │  │  │  ├── fish_retrieve_system.js
+│  │  │  │  ├── fishing_cast_exposure_resolver.js
+│  │  │  │  ├── float_tackle_line_budget_policy.js
+│  │  │  │  ├── hold_opposition_resolver.js
+│  │  │  │  ├── landing_lift_readiness_policy.js
+│  │  │  │  ├── landing_lift_tension_calculator.js
+│  │  │  │  ├── landing_policy.js
+│  │  │  │  ├── line_constrained_fish_motion_resolver.js
+│  │  │  │  ├── line_constraint_state_resolver.js
+│  │  │  │  ├── line_radial_movement_splitter.js
+│  │  │  │  ├── line_spool_state.js
+│  │  │  │  ├── line_system.js
+│  │  │  │  ├── line_tension_calculator.js
+│  │  │  │  ├── player_force_budget_allocator.js
+│  │  │  │  ├── player_force_system.js
+│  │  │  │  ├── player_pressure
+│  │  │  │  │  ├── player_pressure_fatigue_calculator.js
+│  │  │  │  │  ├── player_pressure_fatigue_source_resolver.js
+│  │  │  │  │  ├── player_pressure_fatigue_state.js
+│  │  │  │  │  ├── player_pressure_gain_resolver.js
+│  │  │  │  │  ├── player_reel_fatigue_session.js
+│  │  │  │  │  └── player_tension_build_rate_resolver.js
+│  │  │  │  ├── player_pull_motion_smoother.js
+│  │  │  │  ├── pole_fight_sector_angle_constraint.js
+│  │  │  │  ├── pole_fight_sector_constraint.js
+│  │  │  │  ├── pole_fight_sector_geometry.js
+│  │  │  │  ├── recoverable_line_calculator.js
+│  │  │  │  ├── reel_auto_recovery_calculator.js
+│  │  │  │  ├── reel_hold_load_policy.js
+│  │  │  │  ├── reel_hold_recovery_system.js
+│  │  │  │  ├── reel_recovery_fish_slowdown_policy.js
+│  │  │  │  ├── reel_retrieve_speed_calculator.js
+│  │  │  │  ├── retrieve_policy.js
+│  │  │  │  ├── rod_control_angle_resolver.js
+│  │  │  │  ├── rod_control_movement_projector.js
+│  │  │  │  ├── rod_control_tension_mode_resolver.js
+│  │  │  │  ├── rod_lateral_control_system.js
+│  │  │  │  ├── rod_pull_calculator.js
+│  │  │  │  ├── rod_pull_state.js
+│  │  │  │  ├── rod_pull_system.js
+│  │  │  │  ├── rod_stroke_capacity_resolver.js
+│  │  │  │  ├── rod_stroke_distance_tracker.js
+│  │  │  │  ├── rod_stroke_state.js
+│  │  │  │  ├── rod_stroke_tracker.js
+│  │  │  │  ├── simple_fight_force_calculator.js
+│  │  │  │  ├── stamina
+│  │  │  │  │  ├── active_endurance_drain_calculator.js
+│  │  │  │  │  ├── passive_endurance_drain_calculator.js
+│  │  │  │  │  ├── stamina_balance_frame.js
+│  │  │  │  │  ├── stamina_drain_calculator.js
+│  │  │  │  │  ├── stamina_lateral_position_resolver.js
+│  │  │  │  │  ├── stamina_phase_machine.js
+│  │  │  │  │  ├── stamina_pressure_resolver.js
+│  │  │  │  │  ├── stamina_regen_calculator.js
+│  │  │  │  │  └── stamina_transition_resolver.js
+│  │  │  │  ├── stamina_system.js
+│  │  │  │  ├── tackle_failure_selector.js
+│  │  │  │  ├── tackle_stress_accumulator.js
+│  │  │  │  ├── tackle_stress_system.js
+│  │  │  │  └── weakest_tackle_limit_resolver.js
+│  │  │  ├── inventory
+│  │  │  │  ├── flat_inventory_item_repository.js
+│  │  │  │  ├── inventory_capacity_policy.js
+│  │  │  │  ├── inventory_item_location.js
+│  │  │  │  ├── inventory_item_reservation_policy.js
+│  │  │  │  ├── inventory_item_stacking_policy.js
+│  │  │  │  ├── item_assembly_stacking_policy.js
+│  │  │  │  └── unlimited_assembly_capacity_policy.js
+│  │  │  ├── items
+│  │  │  │  ├── bait
+│  │  │  │  │  ├── bait_effectiveness_grade_policy.js
+│  │  │  │  │  ├── bait_effectiveness_knowledge_policy.js
+│  │  │  │  │  ├── bait_effectiveness_match.js
+│  │  │  │  │  └── bait_effectiveness_resolver.js
+│  │  │  │  ├── condition
+│  │  │  │  │  └── item_condition_resolver.js
+│  │  │  │  ├── effective_item_stats_resolver.js
+│  │  │  │  ├── freshness
+│  │  │  │  │  ├── bait_freshness_decay_policy.js
+│  │  │  │  │  ├── bait_freshness_modifier.js
+│  │  │  │  │  ├── item_freshness_resolver.js
+│  │  │  │  │  └── item_freshness_state_policy.js
+│  │  │  │  ├── hook
+│  │  │  │  │  └── hook_power_policy.js
+│  │  │  │  ├── item_stat_override_policy.js
+│  │  │  │  ├── metrics
+│  │  │  │  │  └── item_bounded_metric_resolver.js
+│  │  │  │  ├── progression
+│  │  │  │  │  ├── composite_metric_strategy.js
+│  │  │  │  │  ├── derived_stat_metric_strategy.js
+│  │  │  │  │  ├── item_capacity_resolver.js
+│  │  │  │  │  ├── item_catalog_baseline_registry.js
+│  │  │  │  │  ├── item_metric_strategy.js
+│  │  │  │  │  ├── item_metric_strategy_registry.js
+│  │  │  │  │  ├── item_progression_descriptor.js
+│  │  │  │  │  ├── item_progression_resolver.js
+│  │  │  │  │  ├── item_rating_resolver.js
+│  │  │  │  │  ├── item_rating_tier_resolver.js
+│  │  │  │  │  ├── numeric_stat_metric_strategy.js
+│  │  │  │  │  └── target_range_metric_strategy.js
+│  │  │  │  ├── quality
+│  │  │  │  │  ├── environmental_compensation_modifier.js
+│  │  │  │  │  ├── hook_quality_modifier.js
+│  │  │  │  │  ├── item_quality_grade_policy.js
+│  │  │  │  │  └── net_quality_modifier.js
+│  │  │  │  └── rarity
+│  │  │  │     ├── authored_item_rarity_strategy.js
+│  │  │  │     ├── effective_item_rarity_resolver.js
+│  │  │  │     ├── item_rarity_descriptor.js
+│  │  │  │     ├── item_rarity_resolver.js
+│  │  │  │     ├── item_rarity_strategy.js
+│  │  │  │     └── item_rarity_strategy_registry.js
+│  │  │  ├── line
+│  │  │  │  └── line_allocation_policy.js
+│  │  │  ├── loadouts
+│  │  │  │  ├── equipment_loadout.js
+│  │  │  │  ├── equipment_loadout_repository.js
+│  │  │  │  └── loadout_equipment_transition_planner.js
+│  │  │  ├── locations
+│  │  │  │  └── location_world.js
+│  │  │  ├── rules
+│  │  │  │  └── gameplay_rules.js
+│  │  │  └── tackle
+│  │  │     └── tackle.js
+│  │  └── presentation
+│  │     ├── casting
+│  │     │  └── cast_scene_renderer.js
+│  │     ├── fish
+│  │     │  └── fish_visual_variant_resolver.js
+│  │     ├── fishing
+│  │     │  ├── fight_area_renderer.js
+│  │     │  ├── fishing_equipment_render_model_builder.js
+│  │     │  ├── fishing_scene_renderer.js
+│  │     │  ├── float_renderer.js
+│  │     │  ├── line_visual_state_controller.js
+│  │     │  ├── rod_line_renderer.js
+│  │     │  └── rod_visual_offset_system.js
+│  │     ├── hud
+│  │     │  ├── fight_hud_frame_builder.js
+│  │     │  ├── fight_hud_renderer.js
+│  │     │  ├── fight_status_bars_renderer.js
+│  │     │  ├── hold_charges_renderer.js
+│  │     │  ├── hud_bar_renderer.js
+│  │     │  └── player_pressure_fatigue_indicator_renderer.js
+│  │     ├── input
+│  │     │  └── victory_action_gesture_resolver.js
+│  │     ├── inventory
+│  │     │  ├── bait_effectiveness_catalog_resolver.js
+│  │     │  ├── bait_effectiveness_descriptor.js
+│  │     │  ├── equipment_slot_availability_policy.js
+│  │     │  ├── equipment_slot_presentation.js
+│  │     │  ├── inventory_assembly_editor_renderer.js
+│  │     │  ├── inventory_assembly_parameter_section_resolver.js
+│  │     │  ├── inventory_attachment_badge_renderer.js
+│  │     │  ├── inventory_balance_parameter_resolver.js
+│  │     │  ├── inventory_grid_renderer.js
+│  │     │  ├── inventory_header_renderer.js
+│  │     │  ├── inventory_item_card_renderer.js
+│  │     │  ├── inventory_item_order_resolver.js
+│  │     │  ├── inventory_item_parameter_config.js
+│  │     │  ├── inventory_item_parameters_renderer.js
+│  │     │  ├── inventory_item_parameters_resolver.js
+│  │     │  ├── inventory_item_view_factory.js
+│  │     │  ├── inventory_loadout_panel_renderer.js
+│  │     │  ├── inventory_resource_meter_renderer.js
+│  │     │  ├── inventory_rule_messages.js
+│  │     │  ├── inventory_saved_loadout_preview_renderer.js
+│  │     │  ├── inventory_sort_config.js
+│  │     │  ├── inventory_subfilter_resolver.js
+│  │     │  ├── inventory_tooltip_presenter.js
+│  │     │  ├── inventory_ui.js
+│  │     │  ├── inventory_v2_item_view_factory.js
+│  │     │  ├── inventory_v2_resource_meter_resolver.js
+│  │     │  ├── inventory_view_model.js
+│  │     │  ├── inventory_view_model_factory.js
+│  │     │  ├── item_condition_descriptor.js
+│  │     │  ├── item_freshness_descriptor.js
+│  │     │  ├── item_progression_visual_resolver.js
+│  │     │  ├── item_quality_resolver.js
+│  │     │  └── terminal_line_slot_label_resolver.js
+│  │     ├── rarity
+│  │     │  └── rarity_visual_config.js
+│  │     ├── rendering
+│  │     │  ├── boat_chum_render_frame_builder.js
+│  │     │  ├── casting_render_frame_builder.js
+│  │     │  ├── casting_render_pass.js
+│  │     │  ├── fight_area_render_frame_builder.js
+│  │     │  ├── fishing_render_frame_builder.js
+│  │     │  ├── fishing_render_pass.js
+│  │     │  ├── game_render_coordinator.js
+│  │     │  ├── game_render_frame_builder.js
+│  │     │  ├── game_render_intent.js
+│  │     │  ├── game_render_order.js
+│  │     │  ├── game_render_pipeline.js
+│  │     │  ├── hud_render_pass.js
+│  │     │  ├── landing_area_render_frame_builder.js
+│  │     │  ├── outcome_render_pass.js
+│  │     │  ├── render_frame_buffer.js
+│  │     │  ├── world_render_frame_builder.js
+│  │     │  └── world_render_pass.js
+│  │     ├── screens
+│  │     │  ├── game_over_renderer.js
+│  │     │  ├── outcome_render_frame_builder.js
+│  │     │  ├── rarity_animation_resolver.js
+│  │     │  ├── star_rating_renderer.js
+│  │     │  ├── victory_layout_resolver.js
+│  │     │  ├── victory_renderer.js
+│  │     │  └── victory_theme_resolver.js
+│  │     ├── styles
+│  │     │  ├── degradation_color_resolver.js
+│  │     │  ├── fight_area_style_resolver.js
+│  │     │  ├── hud_style_resolver.js
+│  │     │  ├── outcome_style_resolver.js
+│  │     │  └── rarity_visual_resolver.js
+│  │     ├── version
+│  │     │  └── project_version.js
+│  │     ├── visual
+│  │     │  ├── degradation_color_config.js
+│  │     │  └── degradation_color_config_validator.js
+│  │     └── world
+│  │        ├── boat_chum_renderer.js
+│  │        └── world_scene_renderer.js
 │  ├── platform
 │  │  └── browser
-│  │    ├── assets
-│  │    │  ├── asset_preload_coordinator.js
-│  │    │  └── image_asset_provider.js
-│  │    ├── canvas
-│  │    │  ├── canvas_2d_surface.js
-│  │    │  ├── canvas_primitives.js
-│  │    │  └── offscreen_canvas_factory.js
-│  │    ├── config
-│  │    │  └── deep_clone_config.js
-│  │    ├── diagnostics
-│  │    │  ├── console_logger.js
-│  │    │  └── event_logger.js
-│  │    ├── dom
-│  │    │  ├── horizontal_scroll_controller.js
-│  │    │  ├── inventory_v2_dom_factory.js
-│  │    │  ├── inventory_v2_long_press_controller.js
-│  │    │  ├── item_condition_dom_adapter.js
-│  │    │  ├── item_progression_dom_adapter.js
-│  │    │  └── item_rarity_dom_adapter.js
-│  │    ├── input
-│  │    │  └── input_manager.js
-│  │    ├── location
-│  │    │  ├── depth_map_reader.js
-│  │    │  └── location_asset_loader.js
-│  │    ├── loop
-│  │    ├── storage
-│  │    │  └── cache_manager.js
-│  │    └── time
-│  │      └── game_clock.js
-│  ├── render
-│  │  ├── casting
-│  │  │  └── cast_scene_renderer.js
-│  │  ├── core
-│  │  │  ├── canvas_2d_surface.js
-│  │  │  ├── canvas_primitives.js
-│  │  │  ├── image_asset_provider.js
-│  │  │  ├── render_allocation_diagnostics.js
-│  │  │  ├── render_frame_buffer.js
-│  │  │  └── render_order.js
-│  │  ├── fishing
-│  │  │  ├── fight_area_renderer.js
-│  │  │  ├── fishing_scene_renderer.js
-│  │  │  ├── float_renderer.js
-│  │  │  ├── line_visual_state_controller.js
-│  │  │  └── rod_line_renderer.js
-│  │  ├── hud
-│  │  │  ├── fight_hud_renderer.js
-│  │  │  ├── fight_status_bars_renderer.js
-│  │  │  ├── hold_charges_renderer.js
-│  │  │  ├── hud_bar_renderer.js
-│  │  │  └── player_pressure_fatigue_indicator_renderer.js
-│  │  ├── pipeline
-│  │  │  ├── casting_render_pass.js
-│  │  │  ├── fishing_render_pass.js
-│  │  │  ├── game_render_pipeline.js
-│  │  │  ├── hud_render_pass.js
-│  │  │  ├── outcome_render_pass.js
-│  │  │  └── world_render_pass.js
-│  │  ├── screens
-│  │  │  ├── game_over_renderer.js
-│  │  │  ├── rarity_animation_resolver.js
-│  │  │  ├── star_rating_renderer.js
-│  │  │  ├── victory_layout_resolver.js
-│  │  │  ├── victory_renderer.js
-│  │  │  └── victory_theme_resolver.js
-│  │  └── world
-│  │    ├── boat_chum_renderer.js
-│  │    ├── location_debug_map_builder.js
-│  │    ├── world_debug_renderer.js
-│  │    └── world_scene_renderer.js
-│  ├── services
-│  │  └── weakest_tackle_limit_resolver.js
-│  ├── systems
-│  │  ├── bite_system.js
-│  │  ├── buff_manager.js
-│  │  ├── chum_system.js
-│  │  ├── drag_system.js
-│  │  ├── fight_physics_pipeline.js
-│  │  ├── fight_physics_system.js
-│  │  ├── fish_force_system.js
-│  │  ├── fish_retrieve_system.js
-│  │  ├── inventory_item_factory.js
-│  │  ├── inventory_item_view_factory.js
-│  │  ├── inventory_system.js
-│  │  ├── line_system.js
-│  │  ├── player_force_system.js
-│  │  ├── player_pull_motion_smoother.js
-│  │  ├── reel_system.js
-│  │  ├── rod_lateral_control_system.js
-│  │  ├── rod_pull_system.js
-│  │  ├── rod_visual_offset_system.js
-│  │  ├── stamina_system.js
-│  │  ├── tackle_stress_system.js
-│  │  └── tension_system.js
-│  ├── ui
-│  │  ├── condition
-│  │  │  └── item_condition_dom_adapter.js
-│  │  ├── interaction
-│  │  │  └── horizontal_scroll_controller.js
-│  │  ├── inventory
-│  │  │  ├── inventory_v2_assembly_editor_renderer.js
-│  │  │  ├── inventory_v2_assembly_parameter_section_resolver.js
-│  │  │  ├── inventory_v2_attachment_badge_renderer.js
-│  │  │  ├── inventory_v2_balance_parameter_resolver.js
-│  │  │  ├── inventory_v2_bootstrap.js
-│  │  │  ├── inventory_v2_dom_factory.js
-│  │  │  ├── inventory_v2_header_renderer.js
-│  │  │  ├── inventory_v2_inventory_grid_renderer.js
-│  │  │  ├── inventory_v2_item_card_renderer.js
-│  │  │  ├── inventory_v2_item_parameters_renderer.js
-│  │  │  ├── inventory_v2_item_parameters_resolver.js
-│  │  │  ├── inventory_v2_loadout_panel_renderer.js
-│  │  │  ├── inventory_v2_long_press_controller.js
-│  │  │  ├── inventory_v2_resource_meter_renderer.js
-│  │  │  ├── inventory_v2_resource_meter_resolver.js
-│  │  │  ├── inventory_v2_saved_loadout_preview_renderer.js
-│  │  │  ├── inventory_v2_tooltip_presenter.js
-│  │  │  ├── inventory_v2_ui.js
-│  │  │  ├── inventory_v2_view_model.js
-│  │  │  └── terminal_line_slot_label_resolver.js
-│  │  ├── progression
-│  │  │  ├── item_progression_dom_adapter.js
-│  │  │  └── item_progression_visual_resolver.js
-│  │  ├── rarity
-│  │  │  └── item_rarity_dom_adapter.js
-│  │  ├── styles
-│  │  │  ├── degradation_color_resolver.js
-│  │  │  ├── fight_area_style_resolver.js
-│  │  │  ├── hud_style_resolver.js
-│  │  │  ├── inventory_v2.css
-│  │  │  ├── outcome_style_resolver.js
-│  │  │  ├── rarity_visual_resolver.js
-│  │  │  └── style.css
-│  │  ├── ui.js
-│  │  └── version_badge.js
-│  └── world
-│    ├── viewport_projector.js
-│    └── world.js
+│  │     ├── assets
+│  │     │  ├── asset_preload_coordinator.js
+│  │     │  └── image_asset_provider.js
+│  │     ├── canvas
+│  │     │  ├── canvas_2d_surface.js
+│  │     │  ├── canvas_primitives.js
+│  │     │  └── offscreen_canvas_factory.js
+│  │     ├── config
+│  │     │  └── deep_clone_config.js
+│  │     ├── diagnostics
+│  │     │  ├── console_logger.js
+│  │     │  └── event_logger.js
+│  │     ├── dom
+│  │     │  ├── draggable_button.js
+│  │     │  ├── engine_interface.js
+│  │     │  ├── horizontal_scroll_controller.js
+│  │     │  ├── inventory_v2_dom_factory.js
+│  │     │  ├── inventory_v2_long_press_controller.js
+│  │     │  ├── item_condition_dom_adapter.js
+│  │     │  ├── item_progression_dom_adapter.js
+│  │     │  ├── item_rarity_dom_adapter.js
+│  │     │  └── ui_event_shield.js
+│  │     ├── input
+│  │     │  └── input_manager.js
+│  │     ├── inventory
+│  │     │  └── random_inventory_id.js
+│  │     ├── location
+│  │     │  ├── depth_map_reader.js
+│  │     │  └── location_asset_loader.js
+│  │     ├── runtime
+│  │     │  ├── browser_game_lifecycle.js
+│  │     │  ├── browser_startup_environment.js
+│  │     │  ├── game_loop.js
+│  │     │  └── legacy_runtime_adapters.js
+│  │     ├── storage
+│  │     │  └── cache_manager.js
+│  │     ├── time
+│  │     │  ├── browser_timeout_scheduler.js
+│  │     │  └── game_clock.js
+│  │     └── ui
+│  │        ├── chum_controls.js
+│  │        ├── depth_selector.js
+│  │        ├── game_controls.js
+│  │        ├── hold_charges.js
+│  │        └── time_display.js
+│  └── ui
+│     └── styles
+│        ├── inventory_v2.css
+│        └── style.css
 └── utils
-  ├── architecture
-  │  ├── approved-stage-2-batch-freeze-check.js
-  │  ├── architecture-documentation-check.js
-  │  ├── architecture-guard-corpus-check.js
-  │  ├── architecture-guard-fixture-check.js
-  │  ├── architecture-policy-check.js
-  │  ├── classification
-  │  │  ├── approved_stage_two_batch_validator.js
-  │  │  ├── classification_completion_validator.js
-  │  │  ├── classification_evidence_builder.js
-  │  │  ├── conservative_leaf_candidate_ranker.js
-  │  │  └── migration_batch_plan_validator.js
-  │  ├── classification-evidence-corpus-check.js
-  │  ├── classification-evidence-fixture-check.js
-  │  ├── closure
-  │  │  └── stage_one_closure_validator.js
-  │  ├── collect-global-provider-baseline.js
-  │  ├── collect-known-architecture-debt.js
-  │  ├── core
-  │  │  ├── architecture_document_renderer.js
-  │  │  └── architecture_policy.js
-  │  ├── domain_batches
-  │  │  ├── controlled_metadata_transaction.js
-  │  │  ├── stage_three_approved_plan_source.js
-  │  │  ├── stage_three_batch_006_execution_profile.js
-  │  │  ├── stage_three_batch_007_execution_profile.js
-  │  │  ├── stage_three_batch_007_manifest_transition.js
-  │  │  ├── stage_three_batch_008_behavior_cases.js
-  │  │  ├── stage_three_batch_008_candidate_build.js
-  │  │  ├── stage_three_batch_008_cutover_history.js
-  │  │  ├── stage_three_batch_008_cutover.js
-  │  │  ├── stage_three_batch_008_execution_profile.js
-  │  │  ├── stage_three_batch_008_observation_transition.js
-  │  │  ├── stage_three_batch_008_release_transition.js
-  │  │  ├── stage_three_batch_008_source_build.js
-  │  │  ├── stage_three_batch_009_cutover_history.js
-  │  │  ├── stage_three_batch_009_evaluation_gate.js
-  │  │  ├── stage_three_batch_009_execution_profile.js
-  │  │  ├── stage_three_batch_009_observation_transition.js
-  │  │  ├── stage_three_batch_009_prebuild_history.js
-  │  │  ├── stage_three_batch_009_release_transition.js
-  │  │  ├── stage_three_batch_010_behavior_cases.js
-  │  │  ├── stage_three_batch_010_candidate_validation.js
-  │  │  ├── stage_three_batch_010_candidate_workspace.js
-  │  │  ├── stage_three_batch_010_cutover_history.js
-  │  │  ├── stage_three_batch_010_cutover.js
-  │  │  ├── stage_three_batch_010_focused_test_catalog.js
-  │  │  ├── stage_three_batch_010_historical_workspace.js
-  │  │  ├── stage_three_batch_010_history.js
-  │  │  ├── stage_three_batch_010_observation_transition.js
-  │  │  ├── stage_three_batch_010_planning.js
-  │  │  ├── stage_three_batch_010_prebuild.js
-  │  │  ├── stage_three_batch_010_preflight_profile.js
-  │  │  ├── stage_three_batch_010_preflight.js
-  │  │  ├── stage_three_batch_010_release_transition.js
-  │  │  ├── stage_three_batch_010_source_build.js
-  │  │  ├── stage_three_batch_011_behavior_cases.js
-  │  │  ├── stage_three_batch_011_candidate_validation.js
-  │  │  ├── stage_three_batch_011_candidate_workspace.js
-  │  │  ├── stage_three_batch_011_cutover_history.js
-  │  │  ├── stage_three_batch_011_cutover.js
-  │  │  ├── stage_three_batch_011_focused_test_catalog.js
-  │  │  ├── stage_three_batch_011_historical_workspace.js
-  │  │  ├── stage_three_batch_011_history.js
-  │  │  ├── stage_three_batch_011_observation_transition.js
-  │  │  ├── stage_three_batch_011_planning.js
-  │  │  ├── stage_three_batch_011_prebuild.js
-  │  │  ├── stage_three_batch_011_preflight_profile.js
-  │  │  ├── stage_three_batch_011_release_transition.js
-  │  │  ├── stage_three_batch_011_source_build.js
-  │  │  ├── stage_three_batch_012_behavior_cases.js
-  │  │  ├── stage_three_batch_012_candidate_validation.js
-  │  │  ├── stage_three_batch_012_candidate_workspace.js
-  │  │  ├── stage_three_batch_012_cutover_history.js
-  │  │  ├── stage_three_batch_012_cutover.js
-  │  │  ├── stage_three_batch_012_focused_test_catalog.js
-  │  │  ├── stage_three_batch_012_historical_workspace.js
-  │  │  ├── stage_three_batch_012_history.js
-  │  │  ├── stage_three_batch_012_observation_transition.js
-  │  │  ├── stage_three_batch_012_planning.js
-  │  │  ├── stage_three_batch_012_prebuild.js
-  │  │  ├── stage_three_batch_012_preflight_profile.js
-  │  │  ├── stage_three_batch_012_release_transition.js
-  │  │  ├── stage_three_batch_012_source_build.js
-  │  │  ├── stage_three_batch_013_behavior_cases.js
-  │  │  ├── stage_three_batch_013_candidate_validation.js
-  │  │  ├── stage_three_batch_013_candidate_workspace.js
-  │  │  ├── stage_three_batch_013_cutover_history.js
-  │  │  ├── stage_three_batch_013_cutover.js
-  │  │  ├── stage_three_batch_013_focused_test_catalog.js
-  │  │  ├── stage_three_batch_013_historical_workspace.js
-  │  │  ├── stage_three_batch_013_history.js
-  │  │  ├── stage_three_batch_013_observation_transition.js
-  │  │  ├── stage_three_batch_013_planning.js
-  │  │  ├── stage_three_batch_013_prebuild.js
-  │  │  ├── stage_three_batch_013_preflight_profile.js
-  │  │  ├── stage_three_batch_013_release_transition.js
-  │  │  ├── stage_three_batch_013_source_build.js
-  │  │  ├── stage_three_batch_014_behavior_cases.js
-  │  │  ├── stage_three_batch_014_candidate_validation.js
-  │  │  ├── stage_three_batch_014_candidate_workspace.js
-  │  │  ├── stage_three_batch_014_cutover_history.js
-  │  │  ├── stage_three_batch_014_cutover.js
-  │  │  ├── stage_three_batch_014_focused_test_catalog.js
-  │  │  ├── stage_three_batch_014_historical_workspace.js
-  │  │  ├── stage_three_batch_014_history.js
-  │  │  ├── stage_three_batch_014_observation_transition.js
-  │  │  ├── stage_three_batch_014_planning.js
-  │  │  ├── stage_three_batch_014_prebuild.js
-  │  │  ├── stage_three_batch_014_preflight_profile.js
-  │  │  ├── stage_three_batch_014_release_transition.js
-  │  │  ├── stage_three_batch_014_source_build.js
-  │  │  ├── stage_three_batch_015_behavior_cases.js
-  │  │  ├── stage_three_batch_015_candidate_validation.js
-  │  │  ├── stage_three_batch_015_candidate_workspace.js
-  │  │  ├── stage_three_batch_015_cutover_history.js
-  │  │  ├── stage_three_batch_015_cutover.js
-  │  │  ├── stage_three_batch_015_focused_test_catalog.js
-  │  │  ├── stage_three_batch_015_historical_workspace.js
-  │  │  ├── stage_three_batch_015_history.js
-  │  │  ├── stage_three_batch_015_observation_transition.js
-  │  │  ├── stage_three_batch_015_planning.js
-  │  │  ├── stage_three_batch_015_prebuild.js
-  │  │  ├── stage_three_batch_015_preflight_profile.js
-  │  │  ├── stage_three_batch_015_release_transition.js
-  │  │  ├── stage_three_batch_015_source_build.js
-  │  │  ├── stage_three_batch_016_behavior_cases.js
-  │  │  ├── stage_three_batch_016_candidate_validation.js
-  │  │  ├── stage_three_batch_016_candidate_workspace.js
-  │  │  ├── stage_three_batch_016_cutover_history.js
-  │  │  ├── stage_three_batch_016_cutover.js
-  │  │  ├── stage_three_batch_016_focused_test_catalog.js
-  │  │  ├── stage_three_batch_016_historical_workspace.js
-  │  │  ├── stage_three_batch_016_history.js
-  │  │  ├── stage_three_batch_016_observation_transition.js
-  │  │  ├── stage_three_batch_016_planning.js
-  │  │  ├── stage_three_batch_016_prebuild.js
-  │  │  ├── stage_three_batch_016_preflight_profile.js
-  │  │  ├── stage_three_batch_016_release_transition.js
-  │  │  ├── stage_three_batch_016_source_build.js
-  │  │  ├── stage_three_batch_017_behavior_cases.js
-  │  │  ├── stage_three_batch_017_candidate_validation.js
-  │  │  ├── stage_three_batch_017_candidate_workspace.js
-  │  │  ├── stage_three_batch_017_cutover_history.js
-  │  │  ├── stage_three_batch_017_cutover.js
-  │  │  ├── stage_three_batch_017_focused_test_catalog.js
-  │  │  ├── stage_three_batch_017_historical_workspace.js
-  │  │  ├── stage_three_batch_017_history.js
-  │  │  ├── stage_three_batch_017_observation_transition.js
-  │  │  ├── stage_three_batch_017_planning.js
-  │  │  ├── stage_three_batch_017_prebuild.js
-  │  │  ├── stage_three_batch_017_preflight_profile.js
-  │  │  ├── stage_three_batch_017_release_transition.js
-  │  │  ├── stage_three_batch_017_source_build.js
-  │  │  ├── stage_three_batch_018_behavior_cases.js
-  │  │  ├── stage_three_batch_018_candidate_validation.js
-  │  │  ├── stage_three_batch_018_candidate_workspace.js
-  │  │  ├── stage_three_batch_018_cutover_history.js
-  │  │  ├── stage_three_batch_018_cutover.js
-  │  │  ├── stage_three_batch_018_focused_test_catalog.js
-  │  │  ├── stage_three_batch_018_historical_workspace.js
-  │  │  ├── stage_three_batch_018_history.js
-  │  │  ├── stage_three_batch_018_observation_transition.js
-  │  │  ├── stage_three_batch_018_planning.js
-  │  │  ├── stage_three_batch_018_prebuild.js
-  │  │  ├── stage_three_batch_018_preflight_profile.js
-  │  │  ├── stage_three_batch_018_release_transition.js
-  │  │  ├── stage_three_batch_018_source_build.js
-  │  │  ├── stage_three_batch_019_behavior_cases.js
-  │  │  ├── stage_three_batch_019_candidate_validation.js
-  │  │  ├── stage_three_batch_019_candidate_workspace.js
-  │  │  ├── stage_three_batch_019_cutover_history.js
-  │  │  ├── stage_three_batch_019_cutover.js
-  │  │  ├── stage_three_batch_019_focused_test_catalog.js
-  │  │  ├── stage_three_batch_019_historical_workspace.js
-  │  │  ├── stage_three_batch_019_history.js
-  │  │  ├── stage_three_batch_019_observation_transition.js
-  │  │  ├── stage_three_batch_019_planning.js
-  │  │  ├── stage_three_batch_019_prebuild.js
-  │  │  ├── stage_three_batch_019_preflight_profile.js
-  │  │  ├── stage_three_batch_019_release_transition.js
-  │  │  ├── stage_three_batch_019_source_build.js
-  │  │  ├── stage_three_batch_020_behavior_cases.js
-  │  │  ├── stage_three_batch_020_candidate_validation.js
-  │  │  ├── stage_three_batch_020_candidate_workspace.js
-  │  │  ├── stage_three_batch_020_cutover_history.js
-  │  │  ├── stage_three_batch_020_cutover.js
-  │  │  ├── stage_three_batch_020_focused_test_catalog.js
-  │  │  ├── stage_three_batch_020_historical_workspace.js
-  │  │  ├── stage_three_batch_020_history.js
-  │  │  ├── stage_three_batch_020_observation_transition.js
-  │  │  ├── stage_three_batch_020_planning.js
-  │  │  ├── stage_three_batch_020_prebuild.js
-  │  │  ├── stage_three_batch_020_preflight_profile.js
-  │  │  ├── stage_three_batch_020_release_transition.js
-  │  │  ├── stage_three_batch_020_source_build.js
-  │  │  ├── stage_three_batch_021_behavior_cases.js
-  │  │  ├── stage_three_batch_021_candidate_validation.js
-  │  │  ├── stage_three_batch_021_candidate_workspace.js
-  │  │  ├── stage_three_batch_021_cutover_history.js
-  │  │  ├── stage_three_batch_021_cutover.js
-  │  │  ├── stage_three_batch_021_focused_test_catalog.js
-  │  │  ├── stage_three_batch_021_historical_workspace.js
-  │  │  ├── stage_three_batch_021_history.js
-  │  │  ├── stage_three_batch_021_observation_transition.js
-  │  │  ├── stage_three_batch_021_planning.js
-  │  │  ├── stage_three_batch_021_prebuild.js
-  │  │  ├── stage_three_batch_021_preflight_profile.js
-  │  │  ├── stage_three_batch_021_release_transition.js
-  │  │  ├── stage_three_batch_021_source_build.js
-  │  │  ├── stage_three_batch_022_behavior_cases.js
-  │  │  ├── stage_three_batch_022_candidate_validation.js
-  │  │  ├── stage_three_batch_022_candidate_workspace.js
-  │  │  ├── stage_three_batch_022_cutover_history.js
-  │  │  ├── stage_three_batch_022_cutover.js
-  │  │  ├── stage_three_batch_022_focused_test_catalog.js
-  │  │  ├── stage_three_batch_022_historical_workspace.js
-  │  │  ├── stage_three_batch_022_history.js
-  │  │  ├── stage_three_batch_022_observation_transition.js
-  │  │  ├── stage_three_batch_022_planning.js
-  │  │  ├── stage_three_batch_022_prebuild.js
-  │  │  ├── stage_three_batch_022_preflight_profile.js
-  │  │  ├── stage_three_batch_022_release_transition.js
-  │  │  ├── stage_three_batch_022_source_build.js
-  │  │  ├── stage_three_batch_023_behavior_cases.js
-  │  │  ├── stage_three_batch_023_candidate_validation.js
-  │  │  ├── stage_three_batch_023_candidate_workspace.js
-  │  │  ├── stage_three_batch_023_cutover_history.js
-  │  │  ├── stage_three_batch_023_cutover.js
-  │  │  ├── stage_three_batch_023_focused_test_catalog.js
-  │  │  ├── stage_three_batch_023_historical_workspace.js
-  │  │  ├── stage_three_batch_023_history.js
-  │  │  ├── stage_three_batch_023_observation_transition.js
-  │  │  ├── stage_three_batch_023_planning.js
-  │  │  ├── stage_three_batch_023_prebuild.js
-  │  │  ├── stage_three_batch_023_preflight_profile.js
-  │  │  ├── stage_three_batch_023_release_transition.js
-  │  │  ├── stage_three_batch_023_source_build.js
-  │  │  ├── stage_three_batch_024_behavior_cases.js
-  │  │  ├── stage_three_batch_024_candidate_validation.js
-  │  │  ├── stage_three_batch_024_candidate_workspace.js
-  │  │  ├── stage_three_batch_024_cutover_history.js
-  │  │  ├── stage_three_batch_024_cutover.js
-  │  │  ├── stage_three_batch_024_focused_test_catalog.js
-  │  │  ├── stage_three_batch_024_historical_workspace.js
-  │  │  ├── stage_three_batch_024_history.js
-  │  │  ├── stage_three_batch_024_observation_transition.js
-  │  │  ├── stage_three_batch_024_planning.js
-  │  │  ├── stage_three_batch_024_prebuild.js
-  │  │  ├── stage_three_batch_024_preflight_profile.js
-  │  │  ├── stage_three_batch_024_release_transition.js
-  │  │  ├── stage_three_batch_024_source_build.js
-  │  │  ├── stage_three_batch_025_behavior_cases.js
-  │  │  ├── stage_three_batch_025_candidate_validation.js
-  │  │  ├── stage_three_batch_025_candidate_workspace.js
-  │  │  ├── stage_three_batch_025_cutover_history.js
-  │  │  ├── stage_three_batch_025_cutover.js
-  │  │  ├── stage_three_batch_025_focused_test_catalog.js
-  │  │  ├── stage_three_batch_025_historical_workspace.js
-  │  │  ├── stage_three_batch_025_history.js
-  │  │  ├── stage_three_batch_025_observation_transition.js
-  │  │  ├── stage_three_batch_025_planning.js
-  │  │  ├── stage_three_batch_025_prebuild.js
-  │  │  ├── stage_three_batch_025_preflight_profile.js
-  │  │  ├── stage_three_batch_025_release_transition.js
-  │  │  ├── stage_three_batch_025_source_build.js
-  │  │  ├── stage_three_batch_candidate_build.js
-  │  │  ├── stage_three_batch_execution_plan_projector.js
-  │  │  ├── stage_three_batch_execution_plan.js
-  │  │  ├── stage_three_batch_execution_profile.js
-  │  │  ├── stage_three_batch_focused_harness.js
-  │  │  ├── stage_three_batch_focused_test_matrix.js
-  │  │  ├── stage_three_batch_prebuild_contract.js
-  │  │  ├── stage_three_batch_prebuild_profile.js
-  │  │  ├── stage_three_batch_prebuild_projector.js
-  │  │  ├── stage_three_batch_preflight_audit.js
-  │  │  ├── stage_three_batch_preflight_profile.js
-  │  │  ├── stage_three_batch_source_observer.js
-  │  │  ├── stage_three_candidate_output_manager.js
-  │  │  ├── stage_three_composition_identity_review.js
-  │  │  ├── stage_three_global_exposure_review.js
-  │  │  ├── stage_three_inert_literal.js
-  │  │  ├── stage_three_live_preflight.js
-  │  │  ├── stage_three_local_composition_review.js
-  │  │  ├── stage_three_observation_manifest_transition.js
-  │  │  ├── stage_three_patch_release_transition.js
-  │  │  ├── stage_three_pending_target_manifest.js
-  │  │  ├── stage_three_representation_target.js
-  │  │  ├── stage_three_reviewed_evaluation_effect.js
-  │  │  ├── stage_three_reviewed_frozen_data_constants.js
-  │  │  ├── stage_three_reviewed_literal_constants.js
-  │  │  ├── stage_three_reviewed_representation_target.js
-  │  │  ├── stage_three_reviewed_top_level_functions.js
-  │  │  └── stage_three_state_identity_review.js
-  │  ├── domain-boundary-check.js
-  │  ├── esm_infrastructure
-  │  │  ├── esm_fixture_graph_inspector.js
-  │  │  ├── repository_content_snapshot.js
-  │  │  └── vite_fixture_contract_validator.js
-  │  ├── esm-fixtures
-  │  │  ├── fixture-entry.js
-  │  │  ├── modules
-  │  │  │  ├── dynamic-value.js
-  │  │  │  └── static-math.js
-  │  │  └── package.json
-  │  ├── guards
-  │  │  ├── architecture_guard_engine.js
-  │  │  ├── contracts
-  │  │  │  ├── architecture_guard_policy_validator.js
-  │  │  │  └── guard_artifact_repository.js
-  │  │  ├── core
-  │  │  │  ├── canonical_json.js
-  │  │  │  ├── guard_models.js
-  │  │  │  ├── guard_outcome_classifier.js
-  │  │  │  └── guard_report_formatter.js
-  │  │  ├── corpus
-  │  │  │  └── architecture_guard_snapshot_builder.js
-  │  │  ├── graph
-  │  │  │  ├── tarjan_scc.js
-  │  │  │  └── unified_dependency_graph.js
-  │  │  ├── observation
-  │  │  │  └── esm_dependency_observer.js
-  │  │  └── rules
-  │  │    ├── boundary_guard.js
-  │  │    ├── bridge_registry_guard.js
-  │  │    ├── browser_capability_guard.js
-  │  │    ├── dev_leakage_guard.js
-  │  │    ├── esm_convention_guard.js
-  │  │    ├── global_namespace_guard.js
-  │  │    ├── physical_target_path_guard.js
-  │  │    └── scc_cycle_guard.js
-  │  ├── informational_documents.js
-  │  ├── legacy-external-consumer-corpus-check.js
-  │  ├── legacy-external-consumer-scanner-fixture-check.js
-  │  ├── legacy-slot-split-check.js
-  │  ├── legacy-symbol-provider-corpus-check.js
-  │  ├── legacy-symbol-provider-scanner-fixture-check.js
-  │  ├── migration
-  │  │  ├── canonical_module_path.js
-  │  │  ├── current_area_resolver.js
-  │  │  ├── legacy_script_order_reader.js
-  │  │  ├── legacy_slot_split_registry.js
-  │  │  ├── manifest_entry_factory.js
-  │  │  ├── migration_manifest_reconciler.js
-  │  │  ├── migration_manifest_repository.js
-  │  │  ├── migration_manifest_schema_migrator.js
-  │  │  ├── migration_manifest_validator.js
-  │  │  ├── migration_observation_reconciler.js
-  │  │  ├── persist_migration_observations_command.js
-  │  │  ├── source_file_scanner.js
-  │  │  ├── stage_three_runtime_script_alias_resolver.js
-  │  │  └── stage_two_runtime_script_alias_resolver.js
-  │  ├── migration-manifest-integrity-check.js
-  │  ├── migration-manifest-reconciler-check.js
-  │  ├── migration-manifest-schema-migration-check.js
-  │  ├── migration-manifest-validator-check.js
-  │  ├── migration-observation-persistence-fixture-check.js
-  │  ├── native-esm-fixture-check.js
-  │  ├── observation
-  │  │  ├── consumers
-  │  │  │  ├── consumer_access_requirement_resolver.js
-  │  │  │  ├── consumer_environment_classifier.js
-  │  │  │  ├── consumer_execution_phase_resolver.js
-  │  │  │  ├── consumer_observation_assembler.js
-  │  │  │  ├── external_identifier_candidate_detector.js
-  │  │  │  ├── legacy_external_consumer_scanner.js
-  │  │  │  ├── member_read_classifier.js
-  │  │  │  ├── static_global_property_candidate_detector.js
-  │  │  │  └── unsupported_consumer_construct_detector.js
-  │  │  ├── integrity
-  │  │  │  ├── derived_reverse_consumer_index.js
-  │  │  │  ├── observation_graph_integrity_validator.js
-  │  │  │  └── persisted_dependency_graph.js
-  │  │  ├── parsing
-  │  │  │  └── legacy_source_parser.js
-  │  │  ├── persistence
-  │  │  │  ├── live_observation_snapshot.js
-  │  │  │  ├── manifest_dependency_projector.js
-  │  │  │  ├── migration_observation_snapshot_builder.js
-  │  │  │  └── observation_manifest_projector.js
-  │  │  ├── providers
-  │  │  │  ├── global_property_provider_detector.js
-  │  │  │  ├── global_scope_provider_detector.js
-  │  │  │  ├── implicit_global_provider_detector.js
-  │  │  │  ├── legacy_symbol_provider_scanner.js
-  │  │  │  ├── provider_availability_resolver.js
-  │  │  │  ├── provider_observation_assembler.js
-  │  │  │  └── unsupported_provider_construct_detector.js
-  │  │  ├── resolution
-  │  │  │  ├── in_memory_dependency_graph_builder.js
-  │  │  │  ├── legacy_dependency_graph_analyzer.js
-  │  │  │  ├── legacy_load_order_index.js
-  │  │  │  ├── provider_candidate_index.js
-  │  │  │  ├── provider_resolution_contract.js
-  │  │  │  └── provider_resolution_engine.js
-  │  │  ├── scope
-  │  │  │  ├── ast_node_context_index.js
-  │  │  │  └── eslint_scope_analysis.js
-  │  │  └── shared
-  │  │    └── assignment_target_reader.js
-  │  ├── observation-graph-integrity-fixture-check.js
-  │  ├── package_contract
-  │  │  ├── package_contract_validator.js
-  │  │  ├── package_lock_validator.js
-  │  │  └── root_package_validator.js
-  │  ├── package-contract-check.js
-  │  ├── persist-migration-observations.js
-  │  ├── post_freeze
-  │  │  ├── post_freeze_historical_workspace.js
-  │  │  ├── post_freeze_paths.js
-  │  │  ├── post_freeze_release_transition.js
-  │  │  ├── post_freeze_review_profile.js
-  │  │  └── post_freeze_workspace.js
-  │  ├── provider-resolution-contract-check.js
-  │  ├── provider-resolution-corpus-check.js
-  │  ├── provider-resolution-engine-fixture-check.js
-  │  ├── reconcile-migration-manifest.js
-  │  ├── render-architecture-doc.js
-  │  ├── review_queue
-  │  │  ├── game_cycle_trace_probe.js
-  │  │  ├── game_cycle_trace.js
-  │  │  ├── hot_loop_evidence.js
-  │  │  ├── hot_loop_source_review.js
-  │  │  └── review_queue_paths.js
-  │  ├── stage_four
-  │  │  ├── cluster_ledger.js
-  │  │  ├── cluster_path.js
-  │  │  └── esm_target_projector.js
-  │  ├── stage_three_batches
-  │  │  ├── core
-  │  │  │  ├── batch_context.js
-  │  │  │  └── batch_definition.js
-  │  │  └── lifecycle
-  │  │    ├── cutover_history.js
-  │  │    ├── historical_workspace.js
-  │  │    ├── history.js
-  │  │    ├── observation_transition.js
-  │  │    ├── planning.js
-  │  │    └── release_transition.js
-  │  ├── stage_three_prerequisites
-  │  │  └── core
-  │  │    └── prerequisite_ledger.js
-  │  ├── stage-1-6-migration-batch-plan-check.js
-  │  ├── stage-1-closure-check.js
-  │  ├── stage-3-activation-retirement-fixtures-check.js
-  │  ├── stage-3-batch-010-planning-check.js
-  │  ├── stage-3-changelog-trim-fixtures-check.js
-  │  ├── stage-3-closure-check.js
-  │  ├── stage-3-compatibility-runtime-fixture-check.js
-  │  ├── stage-3-runtime-load-order-check.js
-  │  ├── stage-4-cluster-records-check.js
-  │  ├── stage-4-cluster.js
-  │  ├── verify-fresh-package-install.js
-  │  └── vite-fixture-build-check.js
-  ├── bait-effectiveness-check.js
-  ├── check-cache-regression-check.js
-  ├── check-js.js
-  ├── config-runtime-check.js
-  ├── consumable-event-identity-check.js
-  ├── create-version-copy.js
-  ├── degradation-color-check.js
-  ├── dev-server.js
-  ├── dev-tools-linked-parameter-check.js
-  ├── fish-rarity-check.js
-  ├── float-depth-cast-check.js
-  ├── game-cycle-check.js
-  ├── git-version-copy.js
-  ├── hook-domain-semantics-check.js
-  ├── inventory-lifecycle-check.js
-  ├── inventory-v2-cast-and-lure-check.js
-  ├── inventory-v2-equipment-check.js
-  ├── inventory-v2-equipment-hydration-check.js
-  ├── inventory-v2-integration-check.js
-  ├── inventory-v2-line-allocation-check.js
-  ├── inventory-v2-migration-check.js
-  ├── inventory-v2-transaction-check.js
-  ├── inventory-v2-ui-check.js
-  ├── item-assembly-domain-check.js
-  ├── item-condition-check.js
-  ├── item-freshness-gameplay-check.js
-  ├── item-progression-check.js
-  ├── item-rarity-check.js
-  ├── item-rarity-roundtrip-check.js
-  ├── item-stat-contract-check.js
-  ├── item-state-hardening-check.js
-  ├── line-allocation-check.js
-  ├── platform-runtime-check.js
-  ├── rarity-production-check.js
-  ├── run-checks.js
-  ├── testing
-  │  ├── CHECKS.md
-  │  ├── core
-  │  │  ├── check_assertion.js
-  │  │  ├── check_catalog.js
-  │  │  ├── check_input_tracer.js
-  │  │  ├── check_report.js
-  │  │  ├── check_runner.js
-  │  │  ├── check_seal.js
-  │  │  ├── history_base.js
-  │  │  └── source_runtime.js
-  │  ├── README.md
-  │  ├── runtime
-  │  │  ├── constructor_defaults.js
-  │  │  ├── item_stat_test_composition.js
-  │  │  └── stage_three_compatibility_test_loader.js
-  │  └── suites
-  │    ├── check_manifest.js
-  │    └── check_policies.js
-  └── victory-input-check.js
+   ├── architecture-check.js
+   ├── bait-effectiveness-check.js
+   ├── check-js.js
+   ├── config-runtime-check.js
+   ├── consumable-event-identity-check.js
+   ├── create-version-copy.js
+   ├── degradation-color-check.js
+   ├── dev-server.js
+   ├── dev-tools-linked-parameter-check.js
+   ├── fish-rarity-check.js
+   ├── float-depth-cast-check.js
+   ├── game-cycle-check.js
+   ├── git-version-copy.js
+   ├── hook-domain-semantics-check.js
+   ├── inventory-lifecycle-check.js
+   ├── inventory-save-round-trip-check.js
+   ├── inventory-v2-cast-and-lure-check.js
+   ├── inventory-v2-equipment-check.js
+   ├── inventory-v2-equipment-hydration-check.js
+   ├── inventory-v2-integration-check.js
+   ├── inventory-v2-line-allocation-check.js
+   ├── inventory-v2-migration-check.js
+   ├── inventory-v2-transaction-check.js
+   ├── inventory-v2-ui-check.js
+   ├── item-assembly-domain-check.js
+   ├── item-condition-check.js
+   ├── item-freshness-gameplay-check.js
+   ├── item-progression-check.js
+   ├── item-rarity-check.js
+   ├── item-rarity-roundtrip-check.js
+   ├── item-stat-contract-check.js
+   ├── item-state-hardening-check.js
+   ├── line-allocation-check.js
+   ├── platform-runtime-check.js
+   ├── rarity-production-check.js
+   ├── run-checks.js
+   ├── testing
+   │  ├── core
+   │  │  ├── check_assertion.js
+   │  │  └── source_runtime.js
+   │  ├── README.md
+   │  ├── runtime
+   │  │  ├── chum_test_composition.js
+   │  │  ├── config_test_composition.js
+   │  │  ├── constructor_defaults.js
+   │  │  ├── game_application_test_composition.js
+   │  │  ├── game_facade_test_composition.js
+   │  │  ├── item_stat_test_composition.js
+   │  │  ├── native_esm_test_loader.js
+   │  │  └── render_frame_test_composition.js
+   │  └── suites
+   │     └── check_manifest.js
+   └── victory-input-check.js

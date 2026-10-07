@@ -9,7 +9,7 @@ DEV may depend on production layers; production must not depend on DEV.
 Boundaries:
 - engine: reusable mechanisms only; must not know CyberFishing domain.
 - game/domain: gameplay rules/state; may depend only on domain + engine.
-- game/application: orchestration/use cases; depends on domain, engine and application ports.
+- game/application: orchestration/use cases; depends on domain, engine and game config.
 - platform: browser implementations such as DOM, Canvas, localStorage, audio, input, scheduling.
 - presentation: rendering/UI/HUD/screens.
 - dev: overlay, GodMode, diagnostics and balance tools.
@@ -19,9 +19,9 @@ Domain/Application must not directly depend on DOM, Canvas, localStorage, Audio 
 
 Single Source of Truth does NOT mean one giant GameState. Each mutable fact must have one authoritative owner. Do not duplicate writable state or let UI/debug/render become gameplay state owners.
 
-Architecture migration must not be mixed with gameplay refactoring. During legacy → ESM migration preserve behavior, formulas, APIs, state semantics, save format, timing and performance. Do not opportunistically rebalance, rename APIs or redesign state unless explicitly requested.
+Structural refactoring must not be mixed with gameplay changes. Preserve behavior, formulas, APIs, state semantics, save format, timing and performance (the game-cycle output must stay identical). Do not opportunistically rebalance, rename APIs or redesign state unless explicitly requested.
 
-Compatibility bridges are temporary only. They may expose existing ESM exports to legacy consumers, but must not own business logic, state, config or new permanent APIs. New code must not depend on the compatibility transport or new globals.
+The runtime is native ESM: every page loads one module entry. Do not add globals, compatibility bridges or classic scripts.
 
 Modules:
 - one logical responsibility per file;
@@ -42,15 +42,15 @@ Performance:
 
 For large structural changes: first inspect actual dependencies/consumers, define target boundary and folder structure, then implement. For small changes, do not redesign unrelated architecture.
 
-Do not weaken architecture guards, baselines or whitelists just to make tests green. Validate relevant changes with focused tests + Architecture + Quick + Full + browser smoke when required.
+Layer rules are enforced by `utils/architecture-check.js` (see `docs/architecture.md`). Do not weaken it just to make tests green. Validate relevant changes with focused checks + `npm run check` + browser smoke of `index.html` and `dev.html` when the change is visible in the game.
 
 Avoid overengineering. Every abstraction must solve a real problem in ownership, dependency direction, substitution, platform isolation, lifecycle, state isolation, testability or extension.
 
 If information is missing, state safe engineering assumptions and continue. Never invent architecture-critical facts that should be verified from the code.
 
-After every migration stage is closed, run a separate post-closure cleanup before starting the next stage: remove code, tooling, guards, aliases and files that are no longer needed (prove unreachability and review every consumer; keep exact-byte recovery), and optimize only with evidence (hot-loop allocation/call traces, unchanged game-cycle and save bytes). Behavior, formulas, saves, timing and public APIs stay unchanged; removing a live check or renaming an API is an explicit owner decision. The cleanup is its own preparation and patch release.
+Remove code and files that are no longer needed (prove unreachability and review every consumer), and optimize only with evidence (unchanged game-cycle output and save bytes). Removing a live check or renaming a public API is an explicit owner decision.
 
-For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, compatibility safety, performance, tests and migration removability. Use P0/P1/P2/P3 only when useful.
+For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, performance and tests. Use P0/P1/P2/P3 only when useful.
 
 Priority:
 correct behavior → clear ownership → valid dependency direction → maintainability → testability → performance → extensibility → minimal necessary complexity.

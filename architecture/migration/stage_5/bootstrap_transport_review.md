@@ -1,3 +1,0 @@
-# Stage 5 Bootstrap transport classification
-
-The approved Stage 5 transition uses the same generated compatibility transport for Bootstrap and the game entrypoint as earlier boundaries. Manifest role compatibility omitted these two boundaries, preventing a verified pure activation shim from being represented. Permit the existing compatibility-bridge metadata role for these two boundaries only. Preserve all dependency rules, globals, debts and baselines. Require every such source to belong to an applied exact cluster record; the shared gate already validates every byte as a generated activation, inert or retirement placeholder. Arbitrary Bootstrap code cannot claim this role. Native targets remain ordinary Bootstrap/entrypoint modules and cannot import transport.

@@ -2,14 +2,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 const readline = require("node:readline/promises");
 
-const { StageFourRelease } = require("./architecture/stage_four/release_path");
-
 const ROOT_DIR = path.resolve(__dirname, "..");
 
 const VERSION_COPY_CONFIG = Object.freeze({
   versionsDir: "D:\\dev\\cyber fishing\\versions",
   folderPrefix: "scr_v",
-  versionFile: "src/config/project_version.js",
+  versionFile: "src/game/presentation/version/project_version.js",
   entries: Object.freeze([
     "src",
     "utils",
@@ -37,9 +35,7 @@ class CliArguments {
 
 class ProjectVersionReader {
   constructor({ rootDir, versionFile }) {
-    this.versionPath = path.join(rootDir, versionFile === VERSION_COPY_CONFIG.versionFile
-      ? StageFourRelease.versionSource(file => fs.readFileSync(path.join(rootDir, file), "utf8"))
-      : versionFile);
+    this.versionPath = path.join(rootDir, versionFile);
   }
 
   read() {

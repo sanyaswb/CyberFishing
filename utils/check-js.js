@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("node:vm");
-const { spawnSync } = require("node:child_process");
+const acorn = require("acorn");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const IGNORED_DIRS = new Set([
@@ -37,24 +37,21 @@ class JavaScriptFileFinder {
   }
 }
 
+// A file passes when it parses as a classic script or as an ES module. `node --check` is not used:
+// with module detection it exits 0 for a `.js` file whose ES module syntax is invalid.
 class JavaScriptSyntaxChecker {
-  constructor(nodePath = process.execPath) {
-    this.nodePath = nodePath;
-  }
-
   check(filePath) {
+    const source = fs.readFileSync(filePath, "utf8");
     try {
-      new vm.Script(fs.readFileSync(filePath, "utf8"), { filename: filePath });
+      new vm.Script(source, { filename: filePath });
       return null;
-    } catch (error) {
-      const moduleFallback = spawnSync(this.nodePath, ["--check", filePath], {
-        encoding: "utf8",
-        stdio: "pipe",
-      });
-      if (moduleFallback.status === 0) return null;
-      return {
-        stack: moduleFallback.stderr || moduleFallback.stdout || error.stack,
-      };
+    } catch (scriptError) {
+      try {
+        acorn.parse(source, { ecmaVersion: "latest", sourceType: "module" });
+        return null;
+      } catch (moduleError) {
+        return { stack: `${filePath}: ${moduleError.message}\n(as a script: ${scriptError.message})` };
+      }
     }
   }
 }

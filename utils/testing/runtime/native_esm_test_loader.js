@@ -80,8 +80,6 @@ class NativeEsmTestLoader {
       const publish=exports.map(([name,local])=>`Object.defineProperty(__exports,${JSON.stringify(name)},{enumerable:true,get:()=>${local}});`).join("\n");
       const factory=vm.runInContext(`(function(__imports,__dynamic,__exports){"use strict";\n${bindings.join("\n")}\n${body}\n${publish}\n})`,this.#context,{filename:target});
       factory(imports,dependency=>Promise.resolve().then(()=>this.getExports(dependency)),namespace);
-      if (process.env.CYBER_CLASS_TRACE_OUTPUT)
-        require("../../architecture/stage_four/class_trace_probe").registerNativeNamespace(this.#context,namespace);
       Object.freeze(namespace);
       this.#modules.set(target,namespace);
       return namespace;

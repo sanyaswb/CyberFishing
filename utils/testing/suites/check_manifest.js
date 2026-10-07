@@ -1,3 +1,6 @@
+"use strict";
+
+// Single registry of checks and suite membership; every utils/*-check.js file appears exactly once.
 const CHECK_DEFINITIONS = Object.freeze([
   {
     id: "syntax",
@@ -6,191 +9,11 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick"],
   },
   {
-    id: "architecture-policy",
-    title: "Architecture policy",
-    file: "utils/architecture/architecture-policy-check.js",
+    id: "architecture",
+    title: "Layer boundaries, import graph and host globals",
+    file: "utils/architecture-check.js",
     suites: ["quick", "architecture"],
   },
-  {
-    id: "architecture-documentation",
-    title: "Architecture documentation sync",
-    file: "utils/architecture/architecture-documentation-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "migration-manifest-integrity",
-    title: "Migration manifest integrity",
-    file: "utils/architecture/migration-manifest-integrity-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "migration-manifest-reconciler",
-    title: "Migration manifest reconciliation",
-    file: "utils/architecture/migration-manifest-reconciler-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "migration-manifest-schema-migration",
-    title: "Migration manifest schema migration",
-    file: "utils/architecture/migration-manifest-schema-migration-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "migration-manifest-validator",
-    title: "Migration manifest validator scenarios",
-    file: "utils/architecture/migration-manifest-validator-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "legacy-symbol-provider-fixtures",
-    title: "Legacy symbol provider scanner fixtures",
-    file: "utils/architecture/legacy-symbol-provider-scanner-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "legacy-symbol-provider-corpus",
-    title: "Legacy symbol provider read-only corpus scan",
-    file: "utils/architecture/legacy-symbol-provider-corpus-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "legacy-external-consumer-fixtures",
-    title: "Legacy external consumer scanner fixtures",
-    file: "utils/architecture/legacy-external-consumer-scanner-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "legacy-external-consumer-corpus",
-    title: "Legacy external consumer read-only corpus scan",
-    file: "utils/architecture/legacy-external-consumer-corpus-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "provider-resolution-contract",
-    title: "Provider resolution executable contract",
-    file: "utils/architecture/provider-resolution-contract-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "provider-resolution-fixtures",
-    title: "Provider resolution engine fixtures",
-    file: "utils/architecture/provider-resolution-engine-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "provider-resolution-corpus",
-    title: "Provider resolution read-only corpus graph",
-    file: "utils/architecture/provider-resolution-corpus-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "migration-observation-persistence-fixtures",
-    title: "Migration observation persistence fixtures",
-    file: "utils/architecture/migration-observation-persistence-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "observation-graph-integrity-fixtures",
-    title: "Observation graph integrity fixtures",
-    file: "utils/architecture/observation-graph-integrity-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "classification-evidence-fixtures",
-    title: "Architecture classification evidence fixtures",
-    file: "utils/architecture/classification-evidence-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "classification-evidence-corpus",
-    title: "Architecture classification read-only evidence corpus",
-    file: "utils/architecture/classification-evidence-corpus-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "stage-1-6-migration-batch-plan",
-    title: "Stage 1.6 concrete migration batch plan",
-    file: "utils/architecture/stage-1-6-migration-batch-plan-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "approved-stage-2-batch-freeze",
-    title: "Approved Stage 2 migration batch freeze",
-    file: "utils/architecture/approved-stage-2-batch-freeze-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "architecture-guard-fixtures",
-    title: "Architecture guard shared fixture matrix",
-    file: "utils/architecture/architecture-guard-fixture-check.js",
-    suites: ["architecture"],
-  },
-  {
-    id: "architecture-guard-corpus",
-    title: "Unified architecture guard corpus",
-    file: "utils/architecture/architecture-guard-corpus-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "root-package-contract",
-    title: "Reproducible root package and lockfile contract",
-    file: "utils/architecture/package-contract-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "native-esm-fixture",
-    title: "Isolated native ESM fixture runtime",
-    file: "utils/architecture/native-esm-fixture-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "vite-fixture-build",
-    title: "Vite synthetic fixture build boundary",
-    file: "utils/architecture/vite-fixture-build-check.js",
-    suites: ["quick", "architecture"],
-  },
-  {
-    id: "stage-3-compatibility-runtime-fixtures",
-    title: "Stage 3.0.4 cumulative compatibility runtime fixtures",
-    file: "utils/architecture/stage-3-compatibility-runtime-fixture-check.js",
-    suites: ["architecture"],
-  },
-    {
-      id: "legacy-slot-split",
-      title: "Split legacy slots match the reviewed registry and bad split metadata is rejected",
-      file: "utils/architecture/legacy-slot-split-check.js",
-      suites: ["quick", "architecture"],
-    },
-    {
-      id: "stage-3-runtime-load-order",
-      title: "The cumulative runtime loads before every published and approved-plan activation, with negative fixtures",
-      file: "utils/architecture/stage-3-runtime-load-order-check.js",
-      suites: ["quick", "architecture"],
-    },
-    {
-      id: "stage-3-activation-retirement-fixtures",
-      title: "Stage 3 activation retirement negative, placeholder and rollback fixtures",
-      file: "utils/architecture/stage-3-activation-retirement-fixtures-check.js",
-      suites: ["quick", "architecture"],
-    },
-    {
-      id: "stage-3-changelog-trim-fixtures",
-      title: "Stage 3 reviewed changelog trim release fixtures",
-      file: "utils/architecture/stage-3-changelog-trim-fixtures-check.js",
-      suites: ["quick", "architecture"],
-    },
-    {
-      id: "domain-boundary",
-      title: "Live Domain boundary: Domain/Engine imports only, no browser/DEV/config/transport globals, one implementation, bridge removal paths",
-      file: "utils/architecture/domain-boundary-check.js",
-      suites: ["quick", "architecture"],
-    },
-    {
-      id: "stage-4-cluster-records",
-      title: "Stage 4 cluster records: ESM targets inside their boundaries, recorded shims, activations and bridges",
-      file: "utils/architecture/stage-4-cluster-records-check.js",
-      suites: ["quick", "architecture"],
-    },
   {
     id: "line-allocation",
     title: "Line allocation domain",
@@ -225,7 +48,7 @@ const CHECK_DEFINITIONS = Object.freeze([
     id: "inventory-v2-equipment-hydration",
     title: "Inventory V2 production-shaped equipment hydration",
     file: "utils/inventory-v2-equipment-hydration-check.js",
-    suites: ["quick", "architecture", "inventory", "inventory-v2", "gameplay"],
+    suites: ["quick", "inventory", "inventory-v2", "gameplay"],
   },
   {
     id: "inventory-v2-transaction",
@@ -364,12 +187,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     title: "DevTools linked parameters",
     file: "utils/dev-tools-linked-parameter-check.js",
     suites: ["tools"],
-  },
-  {
-    id: "check-cache-regression",
-    title: "Check cache v2 regression scenarios",
-    file: "utils/check-cache-regression-check.js",
-    suites: ["quick"],
   },
   {
     id: "platform-runtime",

@@ -1,11 +1,7 @@
-const crypto = require("node:crypto");
-const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
 const vm = require("node:vm");
-const { StageFourClusterLedger } = require("./architecture/stage_four/cluster_ledger");
-const { NativeDevelopmentRetirement } = require("./architecture/stage_six/native_development_retirement");
 
 const Assertion = CheckAssertion.create(
   "Inventory-v2 production-shaped equipment hydration check",
@@ -270,7 +266,6 @@ class ProductionShapedEquipmentHydrationCheck {
 
     this.#checkCanonicalIdentityIsPreserved(equipment.rod);
     this.#checkFailClosedBoundary();
-    this.#checkEvidence();
   }
 
   #checkCanonicalIdentityIsPreserved(canonicalRod) {
@@ -310,53 +305,6 @@ class ProductionShapedEquipmentHydrationCheck {
       item.effectiveStats && typeof item.effectiveStats === "object",
       `${label} is canonically hydrated`,
     );
-  }
-
-  #checkEvidence() {
-    const root = path.resolve(__dirname, "..");
-    const evidence = JSON.parse(
-      fs.readFileSync(
-        path.join(
-          root,
-          "architecture/migration/evidence/stage_3_batch_007_equipment_hydration_repair.json",
-        ),
-        "utf8",
-      ),
-    );
-    // A boundary retired by the Stage 6 native cutover is hashed from its raw archived bytes and must be absent.
-    const retirement = NativeDevelopmentRetirement.read(root);
-    const archive = retirement && NativeDevelopmentRetirement.archive(root, retirement);
-    const sha256 = (relativePath) => {
-      const retired = archive?.has(relativePath) === true;
-      Assertion.equal(fs.existsSync(path.join(root, relativePath)), !retired, "retired boundary source is absent");
-      const bytes = retired ? archive.bytes(relativePath) : fs.readFileSync(path.join(root, relativePath));
-      return crypto.createHash("sha256").update(bytes).digest("hex");
-    };
-    Assertion.equal(evidence.status, "verified", "repair evidence is reviewed");
-    Assertion.equal(
-      evidence.rootCause.classification,
-      "raw-assembly-child-hydration-bypass",
-      "evidence records the exact root cause",
-    );
-    // Stage 4 may change the reviewed file only through recorded steps (preparation or cluster before/after hashes).
-    const boundary = evidence.rootCause.normalizationBoundary;
-    const steps = [...StageFourClusterLedger.cumulativePreparations(root).flatMap((record) => record.files || []),
-      ...StageFourClusterLedger.cumulative(root).applied.flatMap((record) => record.output.files || [])]
-      .filter((file) => file.path === boundary && file.before !== file.after);
-    let expected = evidence.evidence.normalizationBoundaryAfterSha256;
-    for (const seen = new Set([expected]); ;) {
-      const step = steps.find((file) => file.before === expected && !seen.has(file.after));
-      if (!step) break;
-      expected = step.after;
-      seen.add(expected);
-    }
-    Assertion.equal(
-      sha256(boundary),
-      expected,
-      "normalization boundary matches reviewed repair evidence or its recorded Stage 4 successor",
-    );
-    // The batch 007 historical manifest reconstruction is archived (owner decision 2026-10-01,
-    // tag stage3-evidence-archive); the behaviour and repair evidence above stay checked.
   }
 }
 
