@@ -27,5 +27,5 @@ of its size. SC-002's "~400 lines" target therefore does not apply to it.
 
 ## Phase C — Acceptance and closure
 - [x] C0 Drop the "V2" naming (owner request); the save key `fishing_game_player_inventory_v2` stays.
-- [ ] C1 Full checks, digest, guard, fresh clone + `npm ci`, browser smoke of both pages.
-- [ ] C2 Release 0.29.0, tags `v0.29.0` and `stage7-closed`.
+- [x] C1 Full checks (36/36), digest, guard, fresh clone + `npm ci`, browser smoke of both pages.
+- [x] C2 Release 0.29.0 (`88576a4`), tags `v0.29.0` and `stage7-closed`.
