@@ -42,11 +42,6 @@ export class EquipmentService {
     }
   }
 
-  consumeHook(index) {
-    if (!Number.isInteger(index) || index < 0) return false;
-    return this.#inventory.consumeEquipped(`hooks_${index}`, 1);
-  }
-
   consumeFloat(eq = this.getEquipped()) {
     if (!eq?.float) return false;
     return this.#inventory.consumeEquipped("float", 1);

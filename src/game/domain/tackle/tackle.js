@@ -56,14 +56,6 @@ export class Rod extends Equipment {
       Rod.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
-  getCompensation() {
-    return this.#compensation;
-  }
-
-  getVariant() {
-    return this.#variant;
-  }
-
   getMaxDistance() {
     return this.#maxDistance;
   }
@@ -82,10 +74,6 @@ export class Rod extends Equipment {
 
   getMaxLoadKg() {
     return this.#maxLoadKg;
-  }
-
-  getDurabilityMaxLoadLossPerPercent() {
-    return this.#durabilityMaxLoadLossPerPercent;
   }
 
   getEffectiveMaxLoadKg() {
@@ -160,33 +148,6 @@ export class Reel extends Equipment {
       Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
-  // Метод для перевірки, чи взагалі доступна механіка утримання
-  hasHoldMechanic() {
-    return false;
-  }
-
-  // Зручний геттер, який збирає всі потрібні дані для поточного рівня утримання
-  getHoldStats() {
-    if (!this.hasHoldMechanic()) return null;
-
-    const lvl = this.#holdConfig.activeLevel;
-    const stats = this.#holdConfig.levels[lvl];
-
-    if (!stats) return null;
-
-    return {
-      level: lvl,
-      swipeThreshold: this.#holdConfig.swipeThresholdPx,
-      manualCooldownMs: this.#holdConfig.manualCooldownMs,
-      maxCharges: stats.charges,
-      restoreTimeMs: stats.restoreTimeMs,
-      holdPower: stats.holdPower,
-      tensionMultiplier:
-        stats.tensionMultiplier !== undefined ? stats.tensionMultiplier : 1.0,
-      totalHoldForce: this.getPower() + stats.holdPower,
-    };
-  }
-
   hasReel() {
     return this.getPower() > 0 || this.#lineCapacityMeters > 0;
   }
@@ -200,22 +161,6 @@ export class Reel extends Equipment {
       (100 - Math.max(0, Math.min(100, this.#durability))) *
       this.#durabilityMaxLoadLossPerPercent;
     return this.#maxLoadKg * Math.max(0.1, 1 - loss);
-  }
-
-  getLineCapacityMeters() {
-    return this.#lineCapacityMeters;
-  }
-
-  getBaseRetrieveSpeedMetersPerSec() {
-    return this.#baseRetrieveSpeedMetersPerSec;
-  }
-
-  getBearingCount() {
-    return this.#bearingCount;
-  }
-
-  getBearingRetrieveSpeedBonusMetersPerSec() {
-    return this.#bearingRetrieveSpeedBonusMetersPerSec;
   }
 
   getRetrieveSpeedMetersPerSec() {
@@ -579,10 +524,6 @@ export class WaterEntity {
     return this._velocity;
   }
 
-  setVelocity(x, y) {
-    this._velocity.set(x, y);
-  }
-
   getCurrentHookDepth() {
     return this._currentHookDepth;
   }
@@ -610,7 +551,6 @@ export class WaterEntity {
   setHookDepth(depth) {
     this._currentHookDepth = depth;
   }
-
 
   applyHookedFightMovement({
     boundsRect,
@@ -763,7 +703,6 @@ export class WaterEntity {
       -Math.log(Math.max(0.001, Math.min(0.999, this._velocityDamping))) * 60;
     return Math.exp(-Math.max(0, dampingPerSecond) * dtSec);
   }
-
 
   _calculateEnvironmentDrift(dtSec, environment) {
     if (!environment?.current) return { x: 0, y: 0 };

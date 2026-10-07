@@ -7,10 +7,6 @@ export class FightPhysicsConfigAdapter {
     return this.#number(this.#physics().simulation?.pixelsPerMeter, 50);
   }
 
-  getFixedDtMs() {
-    return this.#number(this.#physics().simulation?.fixedDtMs, 16.666);
-  }
-
   getMaxDtMs() {
     return this.#number(this.#physics().simulation?.maxDtMs, 50);
   }

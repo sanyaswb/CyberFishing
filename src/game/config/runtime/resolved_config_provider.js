@@ -20,9 +20,7 @@ export class ResolvedConfigProvider {
     const result = this.#readPath(this.baseConfig,this.#parts(path));
     return result.found ? result.value : fallbackValue;
   }
-  getOverride(path) { return this.overrideStore.get(path); }
   hasOverride(path) { return this.overrideStore.has(path); }
-  setOverride(path,value) { this.overrideStore.set(path,value); }
   resetOverride(path) { this.overrideStore.restore(path,this.getBase(path)); }
   resetAllOverrides() { for (const [path] of this.overrideStore.entries()) this.resetOverride(path); }
   exportOverrides() { return this.overrideStore.toJSON(); }

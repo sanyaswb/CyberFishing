@@ -109,14 +109,6 @@ export class TackleStressAccumulator {
     this.#lastOverloadKg = 0;
   }
 
-  setStressValue(value) {
-    this.#stressValue = Math.max(0, Number(value) || 0);
-  }
-
-  getStressValue() {
-    return this.#stressValue;
-  }
-
   getStressRatio(capacity = 1) {
     return this.#clamp(this.#stressValue / this.#positive(capacity, 1), 0, 1);
   }

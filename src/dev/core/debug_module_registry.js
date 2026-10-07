@@ -15,16 +15,4 @@ export class DebugModuleRegistry {
   keys() {
     return Array.from(this.#modules.keys());
   }
-
-  toLegacyMap() {
-    const map = {};
-    for (const key of this.keys()) {
-      const module = this.get(key);
-      map[key] = {
-        title: module.title,
-        render: (context) => module.render(context),
-      };
-    }
-    return map;
-  }
 }

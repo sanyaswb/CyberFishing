@@ -1,7 +1,6 @@
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_schema.js";
 import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
-import { FightPhysicsConfigAdapter } from "../../game/config/physics/fight_physics_config_adapter.js";
 import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
 

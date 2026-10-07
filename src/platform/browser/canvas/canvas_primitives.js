@@ -37,12 +37,6 @@ export class CanvasPrimitives {
     this.#surface.quadraticCurveTo(x, y, x + safeRadius, y);
   }
 
-  withClip(rects, draw) {
-    const clipped = this.beginClip(rects);
-    draw();
-    this.endClip(clipped);
-  }
-
   beginClip(rects) {
     const isReusableList =
       rects &&

@@ -53,10 +53,6 @@ export class InventoryV2Facade {
     return viewModel;
   }
 
-  getLegacyBridge() {
-    return this.#gameplayBridge;
-  }
-
   handleRodRetrieved(context = {}) {
     return this.#gameplayBridge?.handleRodRetrieved?.(context);
   }
@@ -67,10 +63,6 @@ export class InventoryV2Facade {
 
   handleBoatReturned(context = {}) {
     return this.#gameplayBridge?.handleBoatReturned?.(context);
-  }
-
-  getMigrationWarnings() {
-    return [...this.#migrationWarnings];
   }
 
   setBoatChargeProvider(provider) {

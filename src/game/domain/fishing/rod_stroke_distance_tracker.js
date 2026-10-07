@@ -53,47 +53,6 @@ export class RodStrokeDistanceTracker {
     });
   }
 
-  calculateFromPositions({
-    previousFishPosition,
-    currentFishPosition,
-    rodTipPosition,
-    pixelsPerMeter,
-    epsilonMeters,
-    reasonPrefix,
-  } = {}) {
-    const scale = Math.max(1, Number(pixelsPerMeter) || 50);
-    return this.calculate({
-      previousDistanceMeters: this.#distanceMeters({
-        fishPosition: previousFishPosition,
-        rodTipPosition,
-        scale,
-      }),
-      currentDistanceMeters: this.#distanceMeters({
-        fishPosition: currentFishPosition,
-        rodTipPosition,
-        scale,
-      }),
-      epsilonMeters,
-      reasonPrefix,
-    });
-  }
-
-  #distanceMeters({ fishPosition, rodTipPosition, scale }) {
-    const fishX = Number(fishPosition?.x);
-    const fishY = Number(fishPosition?.y);
-    const rodX = Number(rodTipPosition?.x);
-    const rodY = Number(rodTipPosition?.y);
-    if (
-      !Number.isFinite(fishX) ||
-      !Number.isFinite(fishY) ||
-      !Number.isFinite(rodX) ||
-      !Number.isFinite(rodY)
-    ) {
-      return 0;
-    }
-    return Math.hypot(fishX - rodX, fishY - rodY) / scale;
-  }
-
   #positive(value) {
     const number = Number(value);
     if (!Number.isFinite(number)) return NaN;

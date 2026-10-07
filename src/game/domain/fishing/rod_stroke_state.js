@@ -15,11 +15,6 @@ export class RodStrokeState {
     this.#syncSnapshot();
   }
 
-  startCycle(capacityMeters) {
-    // Compatibility name: a new hold cycle must not erase unrecovered stroke.
-    this.setCapacity(capacityMeters);
-  }
-
   addWonDistance(meters) {
     const added = Math.min(
       Math.max(0, Number(meters) || 0),
@@ -44,10 +39,6 @@ export class RodStrokeState {
 
   recoverWonDistance(meters) {
     return this.loseWonDistance(meters);
-  }
-
-  addPullDistance(meters) {
-    return this.addWonDistance(meters);
   }
 
   recover(meters) {

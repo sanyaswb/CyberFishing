@@ -229,10 +229,6 @@ export class BiteSystem {
     return this.#rng.next();
   }
 
-  #chance(probability) {
-    return this.#rollChance(probability).success;
-  }
-
   #rollChance(probability) {
     const normalized = this.#clamp01(probability);
     const roll = this.#next();

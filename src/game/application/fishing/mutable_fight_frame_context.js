@@ -23,10 +23,6 @@ export class MutableFightFrameContext {
     this.rodControlCastAnchor = null;
   }
 
-  setInput(input) {
-    this.input = input;
-  }
-
   setBounds(bounds) {
     this.bounds = bounds;
   }

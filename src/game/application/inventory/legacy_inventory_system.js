@@ -401,13 +401,6 @@ export class Inventory {
   getAll() {
     return Array.from(this.#items.values());
   }
-
-  hasItem(itemId) {
-    for (const item of this.#items.values()) {
-      if (item.itemId === itemId) return true;
-    }
-    return false;
-  }
 }
 
 export class InventoryItemIdMigrationPolicy {
@@ -1145,7 +1138,6 @@ export class InventoryManager {
     return `${prefix}_${this.#now()}_${InventoryManager.#fallbackId}`;
   }
 
-
   disassembleBuild(buildId) {
     if (this.#inventoryV2Facade) {
       return this.dispatchInventoryV2Action({
@@ -1364,10 +1356,6 @@ export class InventoryManager {
     return this.#isLocked;
   }
 
-  getTotalPower() {
-    return this.getMaxTackleLoadKg();
-  }
-
   getMaxTackleLoadKg() {
     const eq = this.getEquipped();
     const values = [];
@@ -1396,44 +1384,6 @@ export class InventoryManager {
 
     if (values.length === 0) return 0;
     return Math.min(...values);
-  }
-
-  autoEquipItem(instanceId) {
-    if (this.#inventoryV2Facade) {
-      const result = this.dispatchInventoryV2Action({
-        type: this.#actions.INVENTORY_ITEM_ACTIVATE,
-        instanceId,
-      });
-      return {
-        ...result,
-        reason: result.warning || null,
-      };
-    }
-    const itemData = this._hydrateInstance(instanceId);
-    if (!itemData) return { success: false, reason: "Предмет не знайдено" };
-
-    const validation = this.validateEquip(itemData);
-    if (!validation.isValid)
-      return { success: false, reason: validation.reason };
-
-    const targetSlotPath = this.#findTargetSlotPath(itemData);
-    if (!targetSlotPath && itemData.itemType === "bait") {
-      return {
-        success: false,
-        reason: "Немає вільного гачка для наживки.",
-      };
-    }
-
-    if (!targetSlotPath)
-      return {
-        success: false,
-        reason: `Невідомий тип предмета: ${itemData.name}`,
-      };
-
-    const equipped = this.equipItem(targetSlotPath, instanceId);
-    return equipped
-      ? { success: true }
-      : { success: false, reason: "Помилка екіпірування" };
   }
 
   #findTargetSlotPath(itemData) {

@@ -357,27 +357,6 @@ export class Fish {
     return this.#weight * this.getLevelMultiplier() * Math.max(0, basePower);
   }
 
-  getStaticPowerKg() {
-    const basePower = this.#fishConfig?.forceProfile?.basePower ?? 1.0;
-    return this.#weight * this.getLevelMultiplier() * basePower;
-  }
-
-  getCurrentStaticPowerKg() {
-    const base = this.getStaticPowerKg();
-    const initial = Math.max(0.001, this.getInitialPower());
-    const currentRatio = this.getPower() / initial;
-    return base * Math.max(0, currentRatio);
-  }
-
-  getMaxSpeedPxPerSec(pixelsPerMeter = 50) {
-    const baseSpeed = Number(this.#fishConfig?.movementProfile?.baseSpeed);
-    return Math.max(0, Number.isFinite(baseSpeed) ? baseSpeed : 1) * pixelsPerMeter;
-  }
-
-  getBaseSpeedPxPerSec(pixelsPerMeter = 50) {
-    return this.getMaxSpeedPxPerSec(pixelsPerMeter);
-  }
-
   getPower() {
     const initial = this.getInitialPower();
     const current = Math.max(0, initial - this.#powerDebuff);
@@ -413,28 +392,6 @@ export class Fish {
 
   get hasActiveDebuff() {
     return this.#hasActiveDebuff;
-  }
-
-  applyPowerDebuff(amount, minBasePowerRatio = 0) {
-    this.#powerDebuff = this.#clampPowerDebuff(
-      this.#powerDebuff + amount,
-      minBasePowerRatio,
-    );
-  }
-
-  setPowerDebuffByExhaustionRatio(
-    exhaustionRatio,
-    maxPowerDropPerSec,
-    maxDurationSec,
-    minBasePowerRatio = 0.2,
-  ) {
-    const ratio = Math.max(0, Math.min(1, Number(exhaustionRatio) || 0));
-    const maxPossibleDebuff = maxPowerDropPerSec * maxDurationSec;
-
-    this.#powerDebuff = this.#clampPowerDebuff(
-      maxPossibleDebuff * (1.0 - ratio),
-      minBasePowerRatio,
-    );
   }
 
   setPowerRatioByEnduranceRatio(

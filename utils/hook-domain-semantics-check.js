@@ -39,14 +39,11 @@ class HookDomainSemanticsCheck {
       "hook power preserves the previous numeric balance",
     );
 
-    // Batch 040 migrated the gameplay rules; the classic path is now the activation shim.
-    const rules = this.#sourceRuntime.read("src/game/domain/rules/gameplay_rules.js");
     const states = this.#sourceRuntime.readAuthoredSource("src/game/application/state/game_state_machine.js");
     const debug = this.#sourceRuntime.read("src/dev/runtime/debug_service.js");
     const formatter = this.#sourceRuntime.read("src/dev/formatting/debug_formatters.js");
     Assertion.that(
-      rules.includes("hookSizeGrade") &&
-        states.includes("hookSizeGrade") &&
+      states.includes("hookSizeGrade") &&
         debug.includes("hookSizeGrade"),
       "all hook-size consumers use the domain-specific field",
     );

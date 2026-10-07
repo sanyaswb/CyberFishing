@@ -29,15 +29,6 @@ export class LegacyInventoryUnitAllocator {
     return unit.instanceId;
   }
 
-  reuseOrAllocate(legacyInstanceId, occurrenceIndex = 0) {
-    const existing = this.getAllocated(legacyInstanceId, occurrenceIndex);
-    return existing || this.allocate(legacyInstanceId);
-  }
-
-  getAllocated(legacyInstanceId, occurrenceIndex = 0) {
-    return this.#allocations.get(legacyInstanceId)?.[occurrenceIndex] || null;
-  }
-
   getAllocations(legacyInstanceId) {
     return [...(this.#allocations.get(legacyInstanceId) || [])];
   }

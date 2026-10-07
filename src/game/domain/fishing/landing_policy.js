@@ -2,16 +2,6 @@ export class LandingPolicy {
   getLandingDistanceMeters(_context = {}) {
     throw new Error("LandingPolicy.getLandingDistanceMeters() must be implemented");
   }
-
-  isInLandingZone(context = {}) {
-    const rawDistanceMeters = Number(
-      context.shoreLandingDistanceMeters ?? context.lineDistanceMeters,
-    );
-    const distanceMeters = Number.isFinite(rawDistanceMeters)
-      ? Math.max(0, rawDistanceMeters)
-      : Infinity;
-    return distanceMeters <= this.getLandingDistanceMeters(context);
-  }
 }
 
 export class ReelLandingPolicy extends LandingPolicy {

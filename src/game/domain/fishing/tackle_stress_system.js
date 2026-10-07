@@ -240,28 +240,12 @@ export class TackleStressSystem {
     return this.#tensionPercent;
   }
 
-  getStressTension() {
-    return Math.max(0, Math.min(100, (this.#stressDebug?.stressRatio || 0) * 100));
-  }
-
   getStressRatio() {
     return Math.max(0, Math.min(1, this.#stressDebug?.stressRatio || 0));
   }
 
   getTensionKg() {
     return this.#currentTensionKg;
-  }
-
-  getCurrentColor() {
-    return this.#currentColor;
-  }
-
-  getCurrentStatusLabel() {
-    return this.#currentStatusLabel;
-  }
-
-  getCurrentStatusColor() {
-    return this.#currentStatusColor;
   }
 
   getLineBreakProgress() {
@@ -278,10 +262,6 @@ export class TackleStressSystem {
 
   getBreakInfo() {
     return this.#breakInfo || { reason: this.#breakReason };
-  }
-
-  getBreakResult() {
-    return this.#breakInfo?.result || null;
   }
 
   getBreakTargetReason() {
@@ -301,10 +281,6 @@ export class TackleStressSystem {
       (tensionConfig?.pulseMagnitude ?? 0.5) +
       Math.sin(this.#pulsePhase) * (tensionConfig?.pulseMagnitude ?? 0.5)
     );
-  }
-
-  getDragRatio() {
-    return this.#debug.dragRatio || 0;
   }
 
   reset() {

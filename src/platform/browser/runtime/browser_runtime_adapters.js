@@ -198,15 +198,6 @@ export class BrowserEventTargetAdapter {
 }
 
 export class CanvasMetricsProvider {
-  // Cold composition captures the browser document; callers inject that same target.
-  static getDocumentTarget() {
-    return window.document;
-  }
-
-  static hasDocumentTarget() {
-    return typeof window !== "undefined" && !!window.document;
-  }
-
   #canvas;
   #viewport;
 

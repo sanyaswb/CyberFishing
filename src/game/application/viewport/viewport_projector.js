@@ -193,10 +193,4 @@ export class ViewportProjector {
   getCanvasWidth() {
     return this.#canvasWidth;
   }
-  getCanvasHeight() {
-    return this.#canvasHeight;
-  }
-  getMaxScrollX() {
-    return this.#maxScrollX;
-  }
 }

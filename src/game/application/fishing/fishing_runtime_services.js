@@ -14,7 +14,6 @@ import { RodPullSystem } from "../../domain/fishing/rod_pull_system.js";
 import { StaminaController } from "../../domain/fishing/stamina_system.js";
 import { TackleStressSystem } from "../../domain/fishing/tackle_stress_system.js";
 import { TensionSystem } from "./tension_service.js";
-import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class FishingController {
   #inventory;
@@ -611,10 +610,6 @@ export class FightSessionFactory {
 
 export class FishingForceService {
   #config;
-  #fishForceApplied = new Vector2(0, 0);
-  #playerForce = new Vector2(0, 0);
-  #playerForceApplied = new Vector2(0, 0);
-  #pullDirection = new Vector2(0, 0);
   #upDirection = { x: 0, y: 1 };
   #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
 
@@ -761,10 +756,6 @@ export class CatchResolutionService {
       landingPolicy: landingPolicy.constructor?.name || "LandingPolicy",
       transition,
     };
-  }
-
-  getLandingRollProgress(_config) {
-    return 1;
   }
 
   resolveNetAttempt(net, fishWeight, rng, fishData) {

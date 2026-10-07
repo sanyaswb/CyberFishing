@@ -197,13 +197,6 @@ export class RodPullSystem {
     this.#result.playerForceBudgetReason = budget.reason || "none";
   }
 
-  recordAppliedStroke({ movedMeters }) {
-    return this.recordDistanceMovement({
-      gainedMeters: movedMeters,
-      reason: "applied_stroke_distance",
-    });
-  }
-
   recordDistanceMovement({
     gainedMeters = 0,
     lostMeters = 0,

@@ -70,10 +70,6 @@ export class EquipmentState {
     return this.#select(this.#mainSlotIds);
   }
 
-  getAuxiliaryRootInstanceIds() {
-    return this.#select(this.#auxiliarySlotIds);
-  }
-
   getSlotIds() {
     return [...this.#slotIds];
   }

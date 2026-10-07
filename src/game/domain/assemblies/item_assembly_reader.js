@@ -55,14 +55,6 @@ export class ItemAssemblyReader {
       : 0;
   }
 
-  readSlot(parentInstanceId, slotId, slotIndex = 0) {
-    return this.getChild(parentInstanceId, slotId, slotIndex);
-  }
-
-  readChildren(parentInstanceId, slotId = null) {
-    return this.getChildren(parentInstanceId, slotId);
-  }
-
   readPath(rootInstanceId, path) {
     this.#repository.require(rootInstanceId);
     let current = this.#repository.get(rootInstanceId);

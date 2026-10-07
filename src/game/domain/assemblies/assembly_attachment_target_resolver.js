@@ -127,13 +127,6 @@ export class AssemblyAttachmentTargetResolver {
     return Object.freeze(empty.length > 0 ? empty : [...compatible]);
   }
 
-  hasCompatibleTarget(rootInstanceId, candidate) {
-    if (!candidate || candidate.instanceId === rootInstanceId) return false;
-    return this.listTargets(rootInstanceId).some((target) =>
-      this.accepts(target, candidate),
-    );
-  }
-
   filterCompatibleCandidates(rootInstanceId, candidates = []) {
     const targets = this.listTargets(rootInstanceId);
     if (!targets.length) return Object.freeze([]);

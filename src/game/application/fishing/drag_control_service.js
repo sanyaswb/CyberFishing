@@ -41,34 +41,12 @@ export class DragSystem {
     return this.#value;
   }
 
-  applySwipe(deltaY, thresholdPx = 80) {
-    // Backward-compatible fallback for older callers. The main path now uses
-    // update(input, dtSec) and pointerStart / pointerCurrent, exactly like cast power.
-    if (!deltaY || Math.abs(deltaY) < thresholdPx) return false;
-
-    const swipePx = this.#swipePx();
-    const normalizedDelta = -Number(deltaY) / swipePx;
-    this.#targetValue = this.#clamp(this.#targetValue + normalizedDelta);
-    this.#value = this.#targetValue;
-    return true;
-  }
-
-  setValue(value) {
-    this.#targetValue = this.#clamp(value);
-    this.#value = this.#targetValue;
-    this.#resetGesture();
-  }
-
   get value() {
     return this.#value;
   }
 
   get targetValue() {
     return this.#targetValue;
-  }
-
-  isSupported() {
-    return this.#dragSupported;
   }
 
   getDiagnostics() {

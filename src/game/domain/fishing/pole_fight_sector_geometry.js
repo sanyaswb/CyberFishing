@@ -163,14 +163,6 @@ export class PoleFightSectorGeometry {
     };
   }
 
-  pointAt(geometry, angleDeg, radiusPx, target = {}) {
-    const angleRad = Number(angleDeg) * Math.PI / 180;
-    const radius = Math.max(0, Number(radiusPx) || 0);
-    target.x = (Number(geometry?.originX) || 0) + Math.sin(angleRad) * radius;
-    target.y = (Number(geometry?.originY) || 0) - Math.cos(angleRad) * radius;
-    return target;
-  }
-
   #createFrame() {
     return {
       enabled: false,

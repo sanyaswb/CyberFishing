@@ -67,11 +67,6 @@ export class InventoryItemFactory {
     };
   }
 
-  createMany(sources = []) {
-    if (!Array.isArray(sources)) return [];
-    return sources.map((source) => this.create(source));
-  }
-
   #withoutDerivedProgression(source) {
     const canonical = {};
     for (const [key, value] of Object.entries(source)) {

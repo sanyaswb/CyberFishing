@@ -260,18 +260,6 @@ export class LineSystem {
     return recovered;
   }
 
-  applyRetrieve(args) {
-    return this.recoverLineCredit({
-      hasReel: args?.hasReel,
-      inputRecover: args?.inputRecover ?? args?.inputRetrieve,
-      reel: args?.reel,
-      tensionKg: args?.tensionKg,
-      dtSec: args?.dtSec,
-      loadLimitKg: args?.loadLimitKg,
-      maxRecoverMeters: args?.maxRecoverMeters,
-    });
-  }
-
   constrainPosition(position, velocity, rodTipPosition) {
     const maxDistancePx = this.#releasedMeters * this.#pixelsPerMeter;
     if (maxDistancePx <= 0) return this.#setConstraintResult();

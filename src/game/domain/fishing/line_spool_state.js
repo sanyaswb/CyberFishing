@@ -31,14 +31,6 @@ export class LineSpoolState {
     return !this.lineHasReserve;
   }
 
-  setTotalLineMeters(totalLineMeters) {
-    this.#totalLineMeters = this.#positive(totalLineMeters);
-    this.#releasedLineMeters = Math.min(
-      this.#releasedLineMeters,
-      this.#totalLineMeters,
-    );
-  }
-
   setReleasedLineMeters(releasedLineMeters) {
     this.#releasedLineMeters = this.#clamp(
       releasedLineMeters,

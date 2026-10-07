@@ -129,12 +129,6 @@ export class EquipmentRules {
     );
   }
 
-  #clamp01(value) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 0;
-    return Math.max(0, Math.min(1, parsed));
-  }
-
   getMaxHookDepth(equipment, config) {
     const firstBait = equipment?.baits?.[0];
     if (this.isSpinning(equipment) && firstBait?.variant === "jig") {
@@ -210,14 +204,6 @@ export class BiteRules {
     this.baitRules = baitRules;
   }
 
-  getHookSize(equipment) {
-    return (
-      equipment?.hooks?.[0]?.effectiveStats?.hookSizeGrade ||
-      equipment?.baits?.[0]?.effectiveStats?.hookSizeGrade ||
-      1
-    );
-  }
-
   selectBiteSequence(fishTemplate, baitTypes) {
     if (!fishTemplate?.biteMechanics) return null;
     return this.baitRules.hasActiveLureType(baitTypes)
@@ -227,53 +213,11 @@ export class BiteRules {
 }
 
 export class ChumRules {
-  getDeliveryMethod(equipment) {
-    return equipment?.delivery ? "boat" : "hand";
-  }
-
-  hasLoadedDeliveryChum(equipment) {
-    const chums = equipment?.deliveryChums || [];
-    for (let i = 0; i < chums.length; i++) {
-      if (chums[i]) return true;
-    }
-    return false;
-  }
-
-  getDeliverySections(deliveryItem) {
-    return deliveryItem?.effectiveStats?.sections ?? 1;
-  }
 }
 
 export class BoatRules {
   isManual(boatItem) {
     return boatItem?.effectiveStats?.manualControl ?? true;
-  }
-
-  isBusy(boat) {
-    return !!boat && boat.state !== "idle";
-  }
-
-  canBeRemovedNearShore(boat, bounds) {
-    return !!boat && boat.pos.y > bounds.bottom - 200;
-  }
-
-  canAcceptManualTarget(boat) {
-    return !!boat && boat.state !== "returning";
-  }
-
-  canDropManualChum(boat, boatItem) {
-    return (
-      this.isManual(boatItem) &&
-      !!boat &&
-      boat.state === "waiting" &&
-      boat.remainingSections > 0
-    );
-  }
-
-  canAutoReturn(boatItem) {
-    return (
-      boatItem?.effectiveStats?.hasAutoReturn ?? false
-    );
   }
 
   canPlayerCastWithBoat(boat, boatItem) {

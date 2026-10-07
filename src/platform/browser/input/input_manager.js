@@ -123,10 +123,6 @@ export class InputManager {
     this.#bindEvents();
   }
 
-  setAnchorX(x) {
-    this.#anchorX = x;
-  }
-
   setDragControlEnabled(enabled) {
     this.#dragControlEnabled = enabled !== false;
     if (!this.#dragControlEnabled) {

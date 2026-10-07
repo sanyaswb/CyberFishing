@@ -82,7 +82,6 @@ export class ConfigSchemaValidator {
     });
   }
 
-
   #validateImmutableBaseConfig() {
     const BASE_CONFIG = this.baseConfig;
     const CONFIG_OVERRIDE_STORE = this.overrideStore;
@@ -957,10 +956,6 @@ export class ConfigSchemaValidator {
     if (/^[a-z]+$/u.test(key) && ["force", "speed", "resistance", "distance", "power"].includes(key)) {
       this.#warn(path, "physics parameter name is too vague; add unit/context suffix");
     }
-  }
-
-  #isAllowedOpenEndedNumber(_path, _value) {
-    return false;
   }
 
   #countItemRecords(itemDb) {

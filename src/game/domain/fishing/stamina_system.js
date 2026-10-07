@@ -20,10 +20,6 @@ export class StaminaController {
     return this.#isMasteryActive;
   }
 
-  getLastStaminaBalanceFrame() {
-    return this.#lastStaminaBalanceFrame;
-  }
-
   restoreFullStamina() {
     this.#condition.restoreFull?.();
     this.#masteryTimer = 0;

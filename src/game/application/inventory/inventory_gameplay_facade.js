@@ -57,14 +57,6 @@ export class InventoryV2GameplayBridge {
     return this.listItems();
   }
 
-  listAllItems({ hydrated = true } = {}) {
-    return this.listItems({
-      includeAttached: true,
-      includeLoadout: true,
-      hydrated,
-    });
-  }
-
   getItem(instanceId, { hydrated = true } = {}) {
     const item = this.#repository.get(instanceId);
     if (!item || !hydrated) return item;
@@ -155,10 +147,6 @@ export class InventoryV2GameplayBridge {
     this.#itemViews?.setBoatChargeProvider?.(provider);
     this.#afterMutation?.();
     return this;
-  }
-
-  getLastResult() {
-    return this.#lastResult;
   }
 
   #matchesType(item, type) {

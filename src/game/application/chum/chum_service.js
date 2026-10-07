@@ -138,10 +138,6 @@ export class ChumManager {
     this.#configEvents?.addEventListener("config-updated", this.#onConfigUpdateBind);
   }
 
-  useHandBait() {
-    return true;
-  }
-
   // Метод для оновлення існуючих зон у реальному часі
   #onConfigUpdate({ path, value }) {
     // Тепер ми шукаємо в "chums", а не в "baits", оскільки в ITEM_DB це категорія "chums"
@@ -168,13 +164,6 @@ export class ChumManager {
     return this.#boatEnergy;
   }
 
-  hasDriftingBoat() {
-    for (let i = 0; i < this.#boats.length; i++) {
-      if (this.#boats[i].state === "drifting") return true;
-    }
-    return false;
-  }
-
   spawnIdleBoat(startX, startY, boatItem = {}) {
     // Енергія та характеристики тепер беруться з екіпірованого предмета (boatItem)
     const currentEnergy = boatItem.maxEnergy || 100;
@@ -192,7 +181,6 @@ export class ChumManager {
       const baitConfig = this.#chumConfig.baits[z.baitId];
       if (!baitConfig) continue;
 
-      // ЗМІНА: Прибрано this.#locationSquash
       this.#zones.push(
         new ChumZone(
           z.id,
@@ -331,61 +319,11 @@ export class ChumManager {
     if (needsSave) this.saveToStorage();
   }
 
-  isBoatMoving() {
-    for (let i = 0; i < this.#boats.length; i++) {
-      const state = this.#boats[i].state;
-      if (state === "deploying" || state === "returning") return true;
-    }
-    return false;
-  }
-
   dispose() {
     if (this.#onConfigUpdateBind) {
       this.#configEvents?.removeEventListener("config-updated", this.#onConfigUpdateBind);
       this.#onConfigUpdateBind = null;
     }
-  }
-
-  getWaitingBoat() {
-    return this.#boats.find((b) => b.state === "waiting" && b.zoneId !== null);
-  }
-
-  activateWaitingBoat() {
-    const boat = this.getWaitingBoat();
-    if (boat) {
-      boat.isBaitDropped = true;
-
-      // Беремо налаштування ручного контролю з конфігу самого кораблика
-      const isManual = boat.config?.manualControl ?? true;
-
-      if (!isManual) {
-        boat.state = "returning";
-      } else {
-        boat.state = "waiting";
-      }
-    }
-  }
-
-  getMultiplier(floatX, floatY, fishId) {
-    let activeMultiplier = 1.0;
-
-    for (const zone of this.#zones) {
-      const zoneMult = zone.getMultiplierAt(
-        floatX,
-        floatY,
-        fishId,
-        this.#projector,
-      );
-      if (zoneMult > activeMultiplier) {
-        activeMultiplier = zoneMult;
-      }
-    }
-
-    const gridX = Math.floor(floatX / 100) * 100;
-    const gridY = Math.floor(floatY / 100) * 100;
-    const memoryBonus = this.#memoryGrid[`${gridX}_${gridY}`] || 0;
-
-    return activeMultiplier + memoryBonus;
   }
 
   getChumDataAt(floatX, floatY) {
@@ -411,24 +349,6 @@ export class ChumManager {
     }
 
     return { bonus: bestBonus, targets: bestTargets };
-  }
-
-  getActiveChumTargets(floatX, floatY) {
-    const bonus = this.getMultiplier(floatX, floatY, null);
-
-    if (bonus > 1.0) {
-      for (const zone of this.#zones) {
-        if (!zone.isDelivered) continue;
-
-        if (zone.getMultiplierAt(floatX, floatY, null, this.#projector) > 1.0) {
-          const baitConfig = this.#chumConfig.baits[zone.baitId];
-          if (baitConfig && baitConfig.targetFishes) {
-            return baitConfig.targetFishes;
-          }
-        }
-      }
-    }
-    return null;
   }
 
   getZones() {
@@ -508,17 +428,6 @@ export class BaitBoat {
     this.target = new Vector2(targetX, targetY);
     if (zoneId !== null) this.zoneId = zoneId;
     this.state = isReturn ? "returning" : "deploying";
-  }
-
-  getVisualWaypoints() {
-    const points = [];
-    if (this.state === "deploying" && this.target) {
-      points.push({ x: this.target.x, y: this.target.y });
-    }
-    for (const wp of this.waypoints) {
-      points.push({ x: wp.x, y: wp.y });
-    }
-    return points;
   }
 
   update(dt, checkPhysics, checkSensor, cellSize, env) {
