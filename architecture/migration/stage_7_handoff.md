@@ -6,26 +6,27 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 ## Resume facts
 
-- D3 implemented after D2/D4: all scheduled DepthSelector frames retain their IDs, remove completed IDs and cancel pending IDs on
-  idempotent dispose. Late callbacks/events/public calls are inert; disposal inside onChange cannot schedule another frame.
-  The owning document's cached window handles both scheduling and cancellation. Original-source regression fails; fixed-source
-  focused check passes; game-cycle unchanged, Quick 24/24, Architecture 32/32 and uncached Full 64/64.
-  Evidence: [pre_stage7_d3_evidence.json](../archive/pre_stage7_d3_evidence.json),
-  [pre_stage7_d3_acceptance.json](../archive/pre_stage7_d3_acceptance.json). Next: one patch release 0.27.2 and both-page browser smoke.
-- D2/D4 implemented after D1: unsupported Fixed Catch bait retains the natural fish; the real production config starts with both
-  masters false. Development Bootstrap initializes its own base before freezing the single context, so reset restores DEV defaults
-  and restart preserves live overrides. Enabled/disabled/no-bite gameplay, both compositions, reset/import/export and realm isolation
-  pass. The regression fails on the original source. Game-cycle unchanged; Quick 24/24, Architecture 32/32, uncached Full 64/64.
-  Evidence: [pre_stage7_d2_evidence.json](../archive/pre_stage7_d2_evidence.json),
-  [pre_stage7_d2_acceptance.json](../archive/pre_stage7_d2_acceptance.json). Next: D3, then release 0.27.2 and browser acceptance.
-- D1 implemented in the current checkpoint: seven comparisons plus initialization; original and updated traces are identical
-  (167 updates, 24 recalculations, 44 revision reads). The update template allocation is gone. Actual DevTools callbacks, context
-  set/reset/import, unrelated overrides and config replacement are covered. Game-cycle unchanged; uncached Full 64/64.
-  Evidence: [pre_stage7_d1_evidence.json](../archive/pre_stage7_d1_evidence.json),
-  [pre_stage7_d1_acceptance.json](../archive/pre_stage7_d1_acceptance.json). Raw recovery: `pre-stage7-fixes-archive` → `643a8dbc`.
-  D3 and patch 0.27.2 remain before the Stage 7 tooling archive.
-- Accepted HEAD/origin `develop`: `ee53295` (D1–D3 decisions; runtime code unchanged). Current release is `0.27.1` (`f2cf1e0`).
-  Final owner answer in this session: GodMode and Fixed Catch are for development balance testing only; production defaults must be off (D4 below).
+- D1-D4 completed in three separate pushed commits: D1 `83bc8fe`, D2/D4 `ab96d35`, D3 `7d6614c`.
+- Patch `0.27.2`: release record [003_pre-stage7-fixes.json](stage_6/releases/003_pre-stage7-fixes.json). Stage 7 tooling archive has not started.
+- D1 original/current public traces match (167 updates, 24 recalculations, 44 revision reads); the template allocation is gone.
+  Actual DevTools callbacks, set/reset/import, unrelated overrides and location replacement are covered.
+- D2 preserves natural spinner/wobbler/jig catches when the fixed fish has no sequence. D4 sets both production masters false;
+  Development Bootstrap initializes its base defaults true before freezing the same single context/store. Reset restores DEV defaults;
+  restart preserves overrides. No formula/API/save change. Both D2 and D3 regression cases fail on the original archived source.
+- D3 tracks every frame ID, removes completed IDs, cancels pending IDs and ignores late callbacks/events/public operations.
+  Scheduling and cancellation use the cached owning document window; disposal inside onChange prevents further scheduling.
+- Each step passed focused checks and uncached Full 64/64; release Quick 24/24, Architecture 32/32, uncached Full 64/64.
+  Reports: [D1 evidence](../archive/pre_stage7_d1_evidence.json), [D1 Full](../archive/pre_stage7_d1_acceptance.json),
+  [D2 evidence](../archive/pre_stage7_d2_evidence.json), [D2 Full](../archive/pre_stage7_d2_acceptance.json),
+  [D3 evidence](../archive/pre_stage7_d3_evidence.json), [D3 Full](../archive/pre_stage7_d3_acceptance.json),
+  [release Full](../archive/pre_stage7_0272_acceptance.json), [browser](../archive/pre_stage7_0272_browser.json).
+- Direct native pages and deterministic real-tackle browser probes pass: production masters off, DEV controls toggle/reset,
+  one loop/no duplicate starts, identical save bytes/reload, zero final errors/warnings. DEV in-page restart releases listeners;
+  production keeps its existing one-startup-per-realm policy and restarts by reload. Owned tabs/server/ignored fixtures cleaned.
+- Raw source recovery: `pre-stage7-fixes-archive` -> `643a8dbc` (parent decision baseline `ee53295`).
+- Next: the separate Stage 7 compatibility tooling/check archive. Audit the exact catalog removals and retained assertions first;
+  the owner decision on the exact catalog list is still required by this handoff. Historical evidence stays immutable.
+
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.
 - Authored import graphs: production 350 modules / 522 edges, DEV 446 / 692 (95 `src/dev`, 3 Development Bootstrap); zero unresolved,
@@ -49,8 +50,7 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 Done in preparation 006 / v0.27.1 (`stage6-dead-code-archive`): 73 dead import guards, the two unreachable DEV modules, the three package
 scripts and 85 empty directories removed; see [stage_6/post_closure_cleanup_audit.md](stage_6/post_closure_cleanup_audit.md).
-Still open from its list: the `LocationMap.currentDebugState` optimization (decided 2026-10-07: per-field comparison, see
-"Owner decisions 2026-10-07" below) and the test-loader aliases (first Stage 7 step). Original plan:
+The LocationMap allocation is resolved by D1 / 0.27.2. Test-loader aliases and the history-only tooling archive remain the first Stage 7 transition. Original plan:
 
 Owner rule 2026-10-07: every stage closure is followed by a separate cleanup preparation and patch release. Run C5 of
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md) before any Stage 7 transition. Its candidates (audit first, exact-byte
@@ -73,7 +73,7 @@ at least two live uses (see `toolingArchive` in the closure record).
 - Remove the `FlatInventoryItemRepository` optional id fallback after proving every caller injects the factory and clock.
 - Split `ViewportProjector` world-perspective facts from camera state, with hot-loop evidence (allocation sites, call counts, frame traces).
 - Rename `LocationMap.getDebugRevision` → `getRevision` (owned source-data revision).
-- Replace the per-frame `currentDebugState` string in `LocationMap.update()` by the per-field comparison decided 2026-10-07 (below).
+- Done before Stage 7 (D1 / 0.27.2): replace the LocationMap per-frame string by seven private-field comparisons; evidence above.
 - Rename the production "debug" diagnostic snapshots in `FishForceSystem` / `TackleStressSystem` to diagnostics.
 - Coverage/API review of `BuffManager`, `InventoryV2GameplayBridge.evaluateBiteReadiness` / `evaluateChumBonus` and
   `FishingReadinessPolicy.evaluateChumBonus`; keep the contracts until equivalent coverage or an explicit obsolete-API decision.

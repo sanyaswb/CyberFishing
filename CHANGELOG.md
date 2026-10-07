@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.27.2 - Gameplay and Lifecycle Fixes
+
+### Changed
+
+- Compare seven LocationMap flags without a per-frame string allocation; recalculation and revision traces remain identical.
+- Preserve natural lure catches when Fixed Catch has no compatible bite sequence. GodMode and Fixed Catch default to off in production; Development Bootstrap explicitly enables its balance defaults.
+- Cancel pending depth-selector animation frames on disposal and ignore late callbacks and events.
+
 ## v0.27.1 - Stage 6 Post-Closure Cleanup
 
 ### Changed

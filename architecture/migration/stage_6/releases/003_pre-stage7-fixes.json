@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-release",
+  "id": "003",
+  "slug": "pre-stage7-fixes",
+  "milestone": "M3",
+  "fromRelease": "0.27.1",
+  "toRelease": "0.27.2",
+  "title": "Gameplay and Lifecycle Fixes",
+  "codename": "pre-stage-7-fixes",
+  "updatedAt": "2026-10-07",
+  "notes": [
+    "Remove the per-frame LocationMap flag string while preserving recalculations and revisions",
+    "Keep natural lure catches when Fixed Catch has no compatible sequence; disable production balance overrides",
+    "Cancel every pending depth-selector frame on disposal"
+  ],
+  "changelog": [
+    "Compare seven LocationMap flags without a per-frame string allocation; recalculation and revision traces remain identical.",
+    "Preserve natural lure catches when Fixed Catch has no compatible bite sequence. GodMode and Fixed Catch default to off in production; Development Bootstrap explicitly enables its balance defaults.",
+    "Cancel pending depth-selector animation frames on disposal and ignore late callbacks and events."
+  ],
+  "versionDecision": "architecture/migration/stage_7_handoff.md",
+  "output": {
+    "status": "applied",
+    "tag": "v0.27.2",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "before": "ac0e70771f907e563565fc508d687cd7371ac89045d9cff5149e2aea8c5237bd",
+        "after": "d17f297f1ee0511557e27e2316d881e605f2564c5af536542b5740adc57620e0",
+        "edits": [
+          {
+            "from": "# CyberFishing changelog\n\n",
+            "to": "# CyberFishing changelog\n\n## v0.27.2 - Gameplay and Lifecycle Fixes\n\n### Changed\n\n- Compare seven LocationMap flags without a per-frame string allocation; recalculation and revision traces remain identical.\n- Preserve natural lure catches when Fixed Catch has no compatible bite sequence. GodMode and Fixed Catch default to off in production; Development Bootstrap explicitly enables its balance defaults.\n- Cancel pending depth-selector animation frames on disposal and ignore late callbacks and events.\n\n",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "index.html",
+        "before": "2d01087934f0822035d4e11cb71d891651ef38e48c1500c646f4309916240c4c",
+        "after": "bbfc7dc5f9ed193d7c61dbac9bcd40c5a469748b5447bf93ad7638e808a9f9d0",
+        "edits": [
+          {
+            "from": "src/entrypoints/game.entry.js?v=0.27.1\"",
+            "to": "src/entrypoints/game.entry.js?v=0.27.2\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "dev.html",
+        "before": "17ab0e38fc270a797e875d71f636964e1094e3c04736cac8f3b2b777432fe1e8",
+        "after": "3521eb8fb3644f8b6ae6305c2759bce0581add0b82ee030810b6193bfd67815d",
+        "edits": [
+          {
+            "from": "src/entrypoints/dev.entry.js?v=0.27.1\"",
+            "to": "src/entrypoints/dev.entry.js?v=0.27.2\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "package-lock.json",
+        "before": "dc3461fa8223a56012dbe602d1c535d1c523d17af7c623ca3fcb3bdaa26611fa",
+        "after": "6f525839f2b135b90baca9ce7c0ce74a2d59eed425d027e3e1bb2065171860a6",
+        "edits": [
+          {
+            "from": "\"version\": \"0.27.1\"",
+            "to": "\"version\": \"0.27.2\"",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "path": "package.json",
+        "before": "da55281412fb2051e0511079323c02149b9a93786989a9c00ac66d440c629f76",
+        "after": "a131401efe84a9d7744f3c1914c95593a7046fd5b4ee8ca73b99216376265e6b",
+        "edits": [
+          {
+            "from": "\"version\": \"0.27.1\"",
+            "to": "\"version\": \"0.27.2\"",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "path": "src/game/presentation/version/project_version.js",
+        "before": "67629687c8a17de0df49bf18e47d65f3b32de1b87a1fa61391f7d230a9b89a43",
+        "after": "a1e35d43d46b1b548010b4bc34f71b7f6d03931a98055a73cade1d3b529c565f",
+        "edits": [
+          {
+            "from": "export const CURRENT_PROJECT_VERSION = \"0.27.1\";",
+            "to": "export const CURRENT_PROJECT_VERSION = \"0.27.2\";",
+            "count": 1
+          },
+          {
+            "from": "  codename: \"stage-6-post-closure-cleanup\",",
+            "to": "  codename: \"pre-stage-7-fixes\",",
+            "count": 1
+          },
+          {
+            "from": "  notes: Object.freeze([\n    \"Remove dead import guards, two unreachable DEV modules and three inert package scripts after closure\",\n    \"Preserve gameplay, DEV tools, saves and timing with exact recovery of removed bytes\",\n  ]),",
+            "to": "  notes: Object.freeze([\n    \"Remove the per-frame LocationMap flag string while preserving recalculations and revisions\",\n    \"Keep natural lure catches when Fixed Catch has no compatible sequence; disable production balance overrides\",\n    \"Cancel every pending depth-selector frame on disposal\",\n  ]),",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "metrics": {
+      "stage": 6,
+      "nativeProduction": {
+        "entry": "src/entrypoints/game.entry.js",
+        "modules": 350,
+        "importEdges": 522,
+        "devOrCompatibility": 0,
+        "unresolved": 0
+      },
+      "nativeDevelopment": {
+        "entry": "src/entrypoints/dev.entry.js",
+        "modules": 446,
+        "importEdges": 692,
+        "compatibility": 0,
+        "unresolved": 0,
+        "dev": 95,
+        "developmentBootstrap": 3
+      },
+      "classicScriptTagsByPage": {
+        "index": 0,
+        "dev": 0
+      },
+      "files": {
+        "architecture": 508,
+        "src": 457,
+        "utils": 219
+      },
+      "lines": {
+        "src": 79955,
+        "utils": 47868,
+        "architecture": 851265
+      },
+      "classicScriptTags": 0,
+      "clusters": {
+        "applied": 0,
+        "pending": [],
+        "deferred": []
+      },
+      "activations": {
+        "active": 0,
+        "byRemovalStage": {},
+        "retired": 380,
+        "inert": 0
+      },
+      "bridges": {
+        "total": 0,
+        "byRemovalStage": {}
+      },
+      "knownDebts": 0,
+      "globalProviders": 0,
+      "nativeRetirement": {
+        "stage": 6,
+        "decision": "architecture/migration/stage_6/stage6_spec.md",
+        "preparation": "architecture/migration/stage_6/preparations/005_native-development-cutover-and-compatibility-retirement.json",
+        "productionEntrypoint": "src/entrypoints/game.entry.js",
+        "developmentEntrypoint": "src/entrypoints/dev.entry.js"
+      }
+    }
+  },
+  "verification": {
+    "status": "accepted",
+    "performer": "codex-automated-acceptance",
+    "suites": {
+      "quick": "24/24",
+      "architecture": "32/32",
+      "full": "64/64 uncached"
+    },
+    "acceptance": {
+      "report": "architecture/archive/pre_stage7_0272_acceptance.json",
+      "sha256": "15497b9f05a074acb3f5cb0067f06fbde506920200c4101cedb0f40ba3d5afe2",
+      "sourceCommit": "7d6614cbcd9f30146c4ef9f13ca8ee83979f0013",
+      "sourceSnapshot": "62b191148bda0e4475db452d3f85a8afb3959c01dbef87ea6828a8521a18219b",
+      "startedAt": "2026-10-07T19:40:53.211Z",
+      "finishedAt": "2026-10-07T19:42:13.820Z",
+      "isolationViolations": 0
+    },
+    "gameCycle": {
+      "stdoutSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+      "identical": true
+    },
+    "browser": "architecture/archive/pre_stage7_0272_browser.json"
+  }
+}
