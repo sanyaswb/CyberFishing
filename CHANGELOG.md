@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.27.0 - Stage 6 Native Development
+
+### Changed
+
+- Run DEV from one native module entry with explicit development composition, authoritative base+override config and isolated DEV data.
+- Retire 444 classic sources and wrappers, all bridges, activations, debts and providers with exact raw recovery; preserve gameplay and saves.
+
 ## v0.26.1 - Verified Unused Code Cleanup
 
 ### Changed

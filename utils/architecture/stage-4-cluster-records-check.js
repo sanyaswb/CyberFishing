@@ -790,6 +790,24 @@ for (const [file,edits] of nativeReleaseEdits) {
   }
   releaseCases += 2;
 }
+// Stage 6 pins both native module entries; the classic version script query is no longer a release pin.
+const nativeDevReleaseTexts = new Map(nativeReleaseTexts);
+nativeDevReleaseTexts.set("dev.html",'<script type="module" src="src/entrypoints/dev.entry.js?v=1.0.0"></script>\r\n<link href="keep.css?v=1.0.0">');
+const nativeDevReleaseEdits = new StageFourRelease(ROOT,6).edits(releaseFixture,nativeDevReleaseTexts);
+assert.deepEqual([...nativeDevReleaseEdits.keys()].sort(),Object.values(releaseFiles(6)).sort());
+for (const [file,edits] of nativeDevReleaseEdits) {
+  const before = nativeDevReleaseTexts.get(file);
+  const after = edits.reduce((text,edit) => StageThreePatchReleaseTransition.replace(text,edit.from,edit.to,edit.count),before);
+  assert.doesNotThrow(() => StageFourRelease.validateDelta(releaseFixture,file,before,after,6));
+  assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,after + "x",6));
+  if (file === "dev.html") {
+    assert(after.startsWith('<script type="module" src="src/entrypoints/dev.entry.js?v=1.1.0"></script>') && after.includes("keep.css?v=1.0.0"));
+    assert.throws(() => StageFourRelease.validateDelta(releaseFixture,file,before,after.replace("keep.css?v=1.0.0","keep.css?v=1.1.0"),6));
+    assert.throws(() => new StageFourRelease(ROOT,6).edits(releaseFixture,new Map([...nativeDevReleaseTexts,["dev.html",nativeReleaseTexts.get("dev.html")]]))
+      .get("dev.html").reduce((text,edit) => StageThreePatchReleaseTransition.replace(text,edit.from,edit.to,edit.count),nativeReleaseTexts.get("dev.html")));
+  }
+  releaseCases += 2;
+}
 assert.throws(() => new StageFourRelease(ROOT,7),/unsupported release stage/u);
 assert.throws(() => StageFourRelease.records(ROOT,7),/unsupported release stage/u);
 assert.equal(new StageFourRelease(ROOT).stage,4);

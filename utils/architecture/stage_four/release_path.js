@@ -8,6 +8,7 @@ const path = require("node:path");
 const { StageThreePatchReleaseTransition } = require("../domain_batches/stage_three_patch_release_transition");
 const { LEDGER_STAGES, StageFourClusterLedger } = require("./cluster_ledger");
 const { EsmDependencyObserver } = require("../guards/observation/esm_dependency_observer");
+const { NativeDevelopmentRetirement } = require("../stage_six/native_development_retirement");
 
 const RELEASE_DIRECTORY = "architecture/migration/stage_4/releases";
 const RELEASE_KIND = "cyber-fishing-stage-4-release";
@@ -20,6 +21,10 @@ const releaseDirectory = stage => { assert(LEDGER_STAGES.includes(stage), "unsup
 const releaseKind = stage => `cyber-fishing-stage-${stage}-release`;
 const releaseFiles = (stage = 4) => { releaseDirectory(stage); return stage === 4 ? FILES :
   Object.freeze({...FILES, dev:"dev.html", source:"src/game/presentation/version/project_version.js"}); };
+// The versioned page query a stage release rewrites: classic version script, native production entry (Stage 5+)
+// and native DEV entry (Stage 6).
+const pageVersionQuery = (stage, dev) => stage >= 6 && dev ? "src/entrypoints/dev.entry.js" :
+  stage >= 5 && !dev ? "src/entrypoints/game.entry.js" : "src/config/project_version.js";
 const CHANGELOG_HEADER = "# CyberFishing changelog";
 const sha256 = (value) => crypto.createHash("sha256").update(value).digest("hex");
 const canonical = (value) => `${JSON.stringify(value, null, 2)}\n`;
@@ -50,8 +55,8 @@ class StageFourRelease {
     if (!fs.existsSync(directory)) return [];
     const previousRelease = stage === 4 ? JSON.parse(fs.readFileSync(path.join(root,
       "architecture/migration/stage_3_execution_state.json"), "utf8")).releaseVersion :
-      StageFourRelease.records(root, 4).filter(record => record.output).at(-1)?.toRelease;
-    assert(previousRelease, "Stage 5 release needs the historical Stage 4 release");
+      StageFourRelease.records(root, stage - 1).filter(record => record.output).at(-1)?.toRelease;
+    assert(previousRelease, `Stage ${stage} release needs the historical Stage ${stage - 1} release`);
     const records = fs.readdirSync(directory).filter((name) => name.endsWith(".json")).sort().map((name, index) => {
       const match = RELEASE_NAME.exec(name);
       assert(match && Number(match[1]) === index + 1, `Stage ${stage} release record name is not canonical: ${name}`);
@@ -140,18 +145,19 @@ class StageFourRelease {
       changelogEdits.push({ from: lastLine + changelog.slice(trimmed.length), to: lastLine, count: 1 });
     }
     const source = texts.get(files.source);
+    const native = this.stage >= 5;
     // Each statement keeps its own line endings (the file mixes CRLF and LF).
     const statement = (pattern, index) => {
-      const qualified = index === 0 && this.stage === 5 ? /^export const CURRENT_PROJECT_VERSION = "[^"\r\n]*";(?=\r?$)/mu : pattern;
+      const qualified = index === 0 && native ? /^export const CURRENT_PROJECT_VERSION = "[^"\r\n]*";(?=\r?$)/mu : pattern;
       const from = qualified.exec(source)?.[0];
-      return { from, to: (index === 0 && this.stage === 5 ? "export " : "") + StageFourRelease.sourceBlock(record, eolOf(from || ""))[index], count: 1 };
+      return { from, to: (index === 0 && native ? "export " : "") + StageFourRelease.sourceBlock(record, eolOf(from || ""))[index], count: 1 };
     };
+    const indexQuery = pageVersionQuery(this.stage, false), devQuery = pageVersionQuery(this.stage, true);
     return new Map([
       [files.changelog, changelogEdits],
-      [files.index, [{ from: `${this.stage === 5 ? "src/entrypoints/game.entry.js" : "src/config/project_version.js"}?v=${record.fromRelease}"`,
-        to: `${this.stage === 5 ? "src/entrypoints/game.entry.js" : "src/config/project_version.js"}?v=${record.toRelease}"`, count: 1 }]],
-      ...(this.stage === 5 ? [[files.dev, [{ from: `src/config/project_version.js?v=${record.fromRelease}"`,
-        to: `src/config/project_version.js?v=${record.toRelease}"`, count: 1 }]]] : []),
+      [files.index, [{ from: `${indexQuery}?v=${record.fromRelease}"`, to: `${indexQuery}?v=${record.toRelease}"`, count: 1 }]],
+      ...(native ? [[files.dev, [{ from: `${devQuery}?v=${record.fromRelease}"`,
+        to: `${devQuery}?v=${record.toRelease}"`, count: 1 }]]] : []),
       [files.lock, [{ from: `"version": "${record.fromRelease}"`, to: `"version": "${record.toRelease}"`, count: 2 }]],
       [files.package, [{ from: `"version": "${record.fromRelease}"`, to: `"version": "${record.toRelease}"`, count: 1 }]],
       [files.source, SOURCE_STATEMENTS.map(statement).filter((edit) => edit.from !== edit.to)],
@@ -175,7 +181,7 @@ class StageFourRelease {
       assert.equal(after.replace(`"version": "${record.toRelease}"`, `"version": "${record.fromRelease}"`)
         .replace(`"version": "${record.toRelease}"`, `"version": "${record.fromRelease}"`), before, `${file}: bytes`);
     } else if (file === files.index || file === files.dev) {
-      const query = stage === 5 && file === files.index ? "src/entrypoints/game.entry.js" : "src/config/project_version.js";
+      const query = pageVersionQuery(stage, file === files.dev);
       assert.equal(replace(after, `${query}?v=${record.toRelease}"`, `${query}?v=${record.fromRelease}"`,
         1), before, `${file}: release changed more than the version query`);
     } else if (file === files.changelog) {
@@ -186,7 +192,7 @@ class StageFourRelease {
       assert.equal(after, header + StageFourRelease.changelogEntry(record, eol) + kept.slice(header.length),
         "Historical changelog changed");
     } else if (file === files.source) {
-      const patterns = SOURCE_STATEMENTS.map((pattern,index) => stage === 5 && index === 0 ?
+      const patterns = SOURCE_STATEMENTS.map((pattern,index) => stage >= 5 && index === 0 ?
         /^export const CURRENT_PROJECT_VERSION = "[^"\r\n]*";(?=\r?$)/mu : pattern);
       const blank = (text) => patterns.reduce((value, pattern) => {
         assert.equal(value.match(new RegExp(pattern.source, "gmu"))?.length, 1, `${file}: version statement`);
@@ -195,7 +201,7 @@ class StageFourRelease {
       assert.equal(blank(after), blank(before), `${file}: release changed more than the version statements`);
       const notes = SOURCE_STATEMENTS[3];
       assert.equal(eolOf(notes.exec(after)[0]), eolOf(notes.exec(before)[0]), `${file}: notes line endings changed`);
-      assert(after.includes((stage === 5 ? "export " : "") + StageFourRelease.sourceBlock(record, eolOf(after))[0]), `${file}: version`);
+      assert(after.includes((stage >= 5 ? "export " : "") + StageFourRelease.sourceBlock(record, eolOf(after))[0]), `${file}: version`);
     } else {
       throw new Error(`Not a release file: ${file}`);
     }
@@ -206,13 +212,15 @@ class StageFourRelease {
     assert.equal(record.kind,releaseKind(this.stage), "release stage identity");
     const selected = StageFourRelease.records(this.root,this.stage).find(item => item.file === record.file);
     assert(selected && JSON.stringify({...record,file:undefined}) === JSON.stringify({...selected,file:undefined}), "release differs from reviewed input");
-    const policy = this.stage === 5 ? JSON.parse(this.read("architecture/module_architecture.json")) : null;
-    assert(this.stage !== 5 || (policy.migrationManifest.browserStartup?.decision ===
+    const policy = this.stage >= 5 ? JSON.parse(this.read("architecture/module_architecture.json")) : null;
+    assert(this.stage < 5 || (policy.migrationManifest.browserStartup?.decision ===
       "architecture/migration/stage_5/native_production_owner_decision.md" &&
-      policy.migrationManifest.legacyLoadOrder.source === "dev.html"), "Stage 5 release needs reviewed native topology");
+      policy.migrationManifest.legacyLoadOrder.source === "dev.html"), `Stage ${this.stage} release needs reviewed native topology`);
+    // Stage 6 releases only the exact native DEV retirement (both pages one module entry, zero compatibility records).
+    assert(this.stage !== 6 || NativeDevelopmentRetirement.read(this.root) !== null, "Stage 6 release needs exact native DEV retirement");
     assert.equal(record.output, null, `${record.file}: release already applied`);
     assert.equal(StageFourRelease.currentVersion((file) => this.read(file),policy), record.fromRelease, "current version");
-    assert(this.stage !== 5 || StageFourRelease.versionSource(file => this.read(file)) === this.files.source, "Stage 5 canonical version source");
+    assert(this.stage < 5 || StageFourRelease.versionSource(file => this.read(file)) === this.files.source, `Stage ${this.stage} canonical version source`);
     const texts = new Map(Object.values(this.files).map((file) => [file, this.read(file)]));
     const files = [...this.edits(record, texts)].map(([file, edits]) => {
       const before = texts.get(file);
@@ -229,7 +237,7 @@ class StageFourRelease {
     const originals = new Map([[recordFile, this.read(recordFile)], ...files.map((file) => [file.path, this.read(file.path)])]);
     try {
       for (const file of files) fs.writeFileSync(path.join(this.root, file.path), file.text);
-      assert.equal(StageFourRelease.currentVersion((file) => this.read(file), this.stage === 5 ?
+      assert.equal(StageFourRelease.currentVersion((file) => this.read(file), this.stage >= 5 ?
         JSON.parse(this.read("architecture/module_architecture.json")) : null), record.toRelease);
       const { file, ...input } = record;
       const output = { status: "applied", tag: `v${record.toRelease}`,
@@ -257,12 +265,14 @@ class StageFourRelease {
   }
 
   // Reuse the guard observer for the authored production import closure; no second graph catalog.
-  nativeGraph() {
+  nativeGraph(entry = "src/entrypoints/game.entry.js") {
     const observer = new EsmDependencyObserver({projectRoot:this.root});
-    const queue = ["src/entrypoints/game.entry.js"], seen = new Set(), edges = [];
+    const development = entry === "src/entrypoints/dev.entry.js";
+    const queue = [entry], seen = new Set(), edges = [];
     while (queue.length) {
       const source = queue.pop(); if (seen.has(source)) continue; seen.add(source);
-      assert(!["/dev/","/compat/","/bootstrap/development/"].some(part => source.includes(part)), "production reaches DEV or compatibility");
+      assert(!source.includes("/compat/") && (development || !["/dev/","/bootstrap/development/"].some(part => source.includes(part))),
+        development ? "native DEV reaches compatibility" : "production reaches DEV or compatibility");
       const result = observer.observeFile(source);
       assert(result.status === "verified" && result.hasEsmSyntax, "production module is not verified ESM");
       for (const edge of result.observations) {
@@ -270,6 +280,9 @@ class StageFourRelease {
         edges.push(edge); queue.push(edge.resolvedTarget);
       }
     }
+    if (development) return {entry,modules:seen.size,importEdges:edges.length,compatibility:0,unresolved:0,
+      dev:[...seen].filter(file => file.startsWith("src/dev/")).length,
+      developmentBootstrap:[...seen].filter(file => file.startsWith("src/bootstrap/development/")).length};
     return {entry:"src/entrypoints/game.entry.js",modules:seen.size,importEdges:edges.length,devOrCompatibility:0,unresolved:0};
   }
 
@@ -296,6 +309,10 @@ class StageFourRelease {
     const activations4 = contract.activationPositions.filter((item) => item.removalStage === "stage-4");
     const retireInStageFour = activations4.filter((item) => holders(item).every((bridge) => clusterOf(bridge.source)));
     return {
+      ...(this.stage === 6 ? {stage:6, nativeProduction:this.nativeGraph(), nativeDevelopment:this.nativeGraph("src/entrypoints/dev.entry.js"),
+        classicScriptTagsByPage:{index:(this.read(FILES.index).match(/<script\b(?![^>]*type="module")[^>]*src=/gu) || []).length,
+          dev:(this.read(this.files.dev).match(/<script\b(?![^>]*type="module")[^>]*src=/gu) || []).length},
+        files:count(tracked.filter(file => fs.existsSync(path.join(this.root,file))),file => file.split("/")[0])} : {}),
       ...(this.stage === 5 ? {stage:5, nativeProduction:this.nativeGraph(),
         classicDevScriptTags:(this.read(this.files.dev).match(/<script src="src\//gu) || []).length,
         files:count(tracked.filter(file => fs.existsSync(path.join(this.root,file))),file => file.split("/")[0]),
@@ -315,8 +332,8 @@ class StageFourRelease {
         bridgesByPendingCluster: path4,
         activationsRetiringWithPendingClusters: retireInStageFour.length,
         activationsHeldBeyondPendingClusters: activations4.length - retireInStageFour.length,
-      }} : {stageFiveRetirementPath:{nativeDevelopmentStage:"stage-6",transport:contract.transport.removalStage,
-        condition:contract.transport.lifecycle.removalCondition}}),
+      }} : this.stage === 5 ? {stageFiveRetirementPath:{nativeDevelopmentStage:"stage-6",transport:contract.transport.removalStage,
+        condition:contract.transport.lifecycle.removalCondition}} : {nativeRetirement:contract.nativeRetirement}),
     };
   }
 }

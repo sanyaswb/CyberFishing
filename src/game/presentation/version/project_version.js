@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.26.1";
+export const CURRENT_PROJECT_VERSION = "0.27.0";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,11 +13,11 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "stage-5-unused-code-cleanup",
-  updatedAt: "2026-10-05",
+  codename: "stage-6-native-development",
+  updatedAt: "2026-10-07",
   notes: Object.freeze([
-    "Remove unused InventoryUI and fish profile helpers after closure",
-    "Preserve native and classic DEV gameplay, inventory and save behavior",
+    "Both pages start from one native module entry; the classic DEV runtime is retired",
+    "Preserve gameplay, DEV tools, saves and timing with exact recovery of retired sources",
   ]),
 });
 
