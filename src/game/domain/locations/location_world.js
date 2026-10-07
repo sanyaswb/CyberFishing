@@ -123,7 +123,7 @@ export class LocationMap {
   #lastEnableSnags;
   #lastEnableDynamicZones;
   #lastProjector = null;
-  #debugRevision = 0;
+  #revision = 0;
   #castableBounds = { left: 0, right: 0, top: 0, bottom: 0 };
   #backgroundRenderData = {
     loaded: false,
@@ -424,7 +424,7 @@ export class LocationMap {
       this.#lastEnableSnags = locCfg.enableSnags;
       this.#lastEnableDynamicZones = locCfg.enableDynamicZones;
       this.#debugStateInitialized = true;
-      this.#debugRevision += 1;
+      this.#revision += 1;
       this.recalculateZones(null, locCfg.cellSize);
     }
 
@@ -501,8 +501,8 @@ export class LocationMap {
     return this.#config.zones || {};
   }
 
-  getDebugRevision() {
-    return this.#debugRevision;
+  getRevision() {
+    return this.#revision;
   }
 
   #applyLocationResources(resources, cellSize) {
@@ -511,6 +511,6 @@ export class LocationMap {
     this.#bgAssetIds = background.assetIds || {};
     this.#bgLoaded = resources.loaded !== false;
     this.#processDepthMap(resources.depthReader || null, cellSize);
-    this.#debugRevision += 1;
+    this.#revision += 1;
   }
 }

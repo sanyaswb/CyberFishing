@@ -138,7 +138,6 @@ export class InventoryV2CompositionRoot {
       items: snapshot.items,
       instanceIdFactory,
       reservationPolicy,
-      now,
     });
     const assemblyStates = new AssemblyStateRepository({
       states: snapshot.assemblies,

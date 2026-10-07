@@ -126,7 +126,7 @@ export class TackleStressAccumulator {
     return this.#clamp((Number(ratio) || 0) * this.#nonNegative(chanceScale, 1), 0, 1);
   }
 
-  getDebugData({
+  getDiagnostics({
     capacity = 1,
     recoveryPerSecond = 0.35,
     intervalMs = 500,
@@ -160,7 +160,7 @@ export class TackleStressAccumulator {
     return {
       failureTriggered,
       guaranteed,
-      ...this.getDebugData({ capacity, recoveryPerSecond, intervalMs }),
+      ...this.getDiagnostics({ capacity, recoveryPerSecond, intervalMs }),
     };
   }
 

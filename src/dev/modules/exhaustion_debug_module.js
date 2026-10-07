@@ -28,7 +28,7 @@ export class ExhaustionDebugModule extends ConsoleTableDebugModule {
         config.masteryPowerMultiplier,
         3,
       ),
-      "Active debuff": formatDebuffName(live.debuffState,live.activeDebuffName || "n/a"),
+      "Active debuff": formatDebuffName(live.debuffState),
     });
   }
 }

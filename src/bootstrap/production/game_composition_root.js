@@ -12,7 +12,7 @@ import { BiteSystem, CastManager } from "../../game/application/fishing/bite_ser
 import { BitingState, FailedState, PlayingState, ScoutingState, StateDepsFactory, StateMachine, VictoryState, WaitingState } from "../../game/application/state/game_state_machine.js";
 import { BoatChumRenderer } from "../../game/presentation/world/boat_chum_renderer.js";
 import { BoatChumRenderFrameBuilder } from "../../game/presentation/rendering/boat_chum_render_frame_builder.js";
-import { BrowserAudioAdapter, BrowserDebugAdapter, CanvasMetricsProvider } from "../../platform/browser/runtime/legacy_runtime_adapters.js";
+import { BrowserAudioAdapter, BrowserDebugAdapter, CanvasMetricsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
 import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
 import { CanvasPrimitives } from "../../platform/browser/canvas/canvas_primitives.js";

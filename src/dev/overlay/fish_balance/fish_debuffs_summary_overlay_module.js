@@ -15,7 +15,7 @@ export class FishDebuffsSummaryOverlayModule extends OverlayModule {
 
   render(data) {
     const f = this.#formatter;
-    const randomDebuff = formatDebuffName(data.debuffState,data.activeDebuffName || "none");
+    const randomDebuff = formatDebuffName(data.debuffState);
     const movementActive = !!data.enduranceMovementDebuffActive;
     const progress = this.#resolveFirstFinite(
       data.enduranceMovementDebuffProgress,

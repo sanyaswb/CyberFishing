@@ -30,7 +30,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const chumController={isAiming:false,activeBoat:null,ui:{},setAiming(value){this.isAiming=value;},updateUI(){events.push('chum-ui');},refreshActiveHandChum(){events.push('hand-refresh');},handleGlobalBoatControl(value){assert.equal(value,input);events.push('boat');},handleAiming(value,area,dt){assert.equal(value,input);assert.equal(area,bounds);assert.equal(dt,16);events.push('chum-aim');},handleClick(){this.isAiming=true;},toggleAim(){this.isAiming=!this.isAiming;},dispose(){disposed.push('controller');}};
   const loop={start:()=>true,stop(){disposed.push('loop');}};
   const renderCoordinator={render(){events.push('draw');},invalidateStyles(){events.push('styles');}};
-  const fightService={tensionMeter:{getDebugData:()=>fightDebug},syncEquipment(value){assert.equal(value,equipment);events.push('equipment');},syncFishRuntime(value){events.push(['fish-runtime',value]);}};
+  const fightService={tensionMeter:{getDiagnostics:()=>fightDebug},syncEquipment(value){assert.equal(value,equipment);events.push('equipment');},syncFishRuntime(value){events.push(['fish-runtime',value]);}};
   const assetPreloadCoordinator={preloadFishingAssets:()=>Promise.resolve(),preloadVictoryAssets:()=>victoryFails?Promise.reject(new Error('victory unavailable')):Promise.resolve(),preloadLocation:()=>locationFails?Promise.reject(new Error('location unavailable')):Promise.resolve()};
   const locationResources={map:'same-resource'};
   const runtime={location:{id:'lake',chumCastDistance:300,config:{}},rng,projector,map:{},net,inventory,

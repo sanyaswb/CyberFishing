@@ -1,3 +1,3 @@
-import { startDevelopmentGame } from "../bootstrap/development/legacy_game_startup.js";
+import { startDevelopmentGame } from "../bootstrap/development/development_game_startup.js";
 
 startDevelopmentGame();

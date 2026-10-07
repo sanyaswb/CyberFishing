@@ -14,7 +14,7 @@ export class DebuffsModule extends OverlayModule {
     let html = this.formatHeader("☠️ АКТИВНІ ДЕБАФИ", "#ff00ff");
 
     // Секція рандомних дебафів
-    const debuffName = formatDebuffName(d.debuffState,d.activeDebuffName);
+    const debuffName = formatDebuffName(d.debuffState);
     let debuffDesc = '<span style="color: #8a9bac;">фаза 2 ще ціла</span>';
 
     if (debuffName !== "Немає") {

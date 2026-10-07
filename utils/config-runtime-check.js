@@ -16,7 +16,7 @@ function check(structured) {
     ["src/game/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
     ["src/bootstrap/production/config_context.js",["createRuntimeConfigContext"]],
     ["src/bootstrap/production/game_composition_root.js",["GameCompositionRoot"]],
-    ["src/platform/browser/runtime/legacy_runtime_adapters.js",["ConfigProvider"]],
+    ["src/platform/browser/runtime/browser_runtime_adapters.js",["ConfigProvider"]],
     ["src/game/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
     ["src/dev/overlay/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});
@@ -119,7 +119,7 @@ check(true);
 check(false);
 function checkDevelopmentInputs() {
   const fs = require("node:fs"), acorn = require("acorn");
-  const source = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/development/legacy_game_startup.js"), "utf8");
+  const source = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/development/development_game_startup.js"), "utf8");
   const tree = acorn.parse(source, { ecmaVersion: "latest", sourceType: "module" });
   let options;
   function visit(node) {
@@ -137,7 +137,7 @@ function checkDevelopmentInputs() {
   assert.equal(options?.type, "ObjectExpression");
   // Preserve each original serial await; only its importer moves to Development Bootstrap.
   const rootSource = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/production/game_composition_root.js"), "utf8");
-  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/legacy_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
+  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/browser_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
     const property = options.properties.find(item => item.key.name === name);
     assert.equal(property.value.type, "ArrowFunctionExpression");
     assert.equal(property.value.body.type, "ImportExpression");
@@ -224,7 +224,7 @@ function checkProductionOverrideReader() {
   const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
   const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
   source.load("src/dev/god_mode.js", { expose: ["GodMode"] });
-  source.load("src/platform/browser/runtime/legacy_runtime_adapters.js", { expose: ["DevFlagsProvider"] });
+  source.load("src/platform/browser/runtime/browser_runtime_adapters.js", { expose: ["DevFlagsProvider"] });
   source.load("src/bootstrap/production/game_composition_root.js", { expose: ["GameCompositionRoot"] });
   const reader = new GameplayOverrideReader(config), original = new source.context.GodMode(config);
   const names = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(original))).filter(([, value]) => value.get).map(([name]) => name);
@@ -294,14 +294,14 @@ async function checkNativeProductionStartup() {
       evaluated = evaluated.slice(0, start) + replacement + evaluated.slice(end);
     return new SourceRuntime({ globals: bindings }).run("(function(){\n" + evaluated + "\nreturn {" + names.join(",") + "};})()", file);
   }
-  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/legacy_runtime_adapters.js", ["DevFlagsProvider"], { EventBus });
+  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/browser_runtime_adapters.js", ["DevFlagsProvider"], { EventBus });
   const { createRuntimeConfigContext } = evaluate("src/bootstrap/production/config_context.js", ["createRuntimeConfigContext"], {
     ...require("../src/game/config/runtime/config_override_store.js"), ...require("../src/game/config/runtime/resolved_config_provider.js"),
     ...require("../src/platform/browser/config/deep_clone_config.js"), ...require("../src/game/config/runtime/immutable_config.js"),
   });
   const loaders = {
     loadRandomInventoryId: "../../platform/browser/inventory/random_inventory_id.js",
-    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/legacy_runtime_adapters.js",
+    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/browser_runtime_adapters.js",
     loadBrowserTimeoutScheduler: "../../platform/browser/time/browser_timeout_scheduler.js",
     loadInventoryAssemblyProfileConfig: "../../game/config/inventory/inventory_composition_config.js",
   };
@@ -403,7 +403,7 @@ function checkNativeDevelopmentDisplays() {
   assert.equal(captured.length,19,"all original main overlays are composed exactly once");
   const data = {gameState:"playing",hookedFish:{id:"fish",name:"Fish",physics:{behaviors:{swim:{forceMultiplier:1,speedMultiplier:1,weight:1}}}},
     fishState:"swim",fishBasePower:1,fishInitialPower:1,fishBaseForceCurrentKg:1,fishCurrentStateMaxForceKg:1,
-    fishPassiveKg:1,fishOppositionKg:1,activeDebuffName:"Немає",fishConditionPhase:"stamina",currentStamina:1,fishConditionMaxStamina:2,
+    fishPassiveKg:1,fishOppositionKg:1,fishConditionPhase:"stamina",currentStamina:1,fishConditionMaxStamina:2,
     liveChances:[],chumZones:[],baits:[],equipment:{},bottomDepth:2,hookDepth:1,lineLength:3};
   let comparisons = 0;
   for (const record of captured) {
@@ -437,7 +437,7 @@ function checkNativeDevelopmentDisplays() {
   const {Fish,FishPhysicsProfile} = require("../src/game/domain/fish/fish.js");
   const fish = new Fish(1,1,{behaviors:{swim:{forceMultiplier:1}}});
   const facts = fish.getDebuffState();assert(Object.isFrozen(facts));assert.equal(facts,fish.getDebuffState());
-  assert.equal(facts.active,false);assert.equal(formatDebuffName(facts),fish.activeDebuffName);
+  assert.equal(facts.active,false);assert.equal(formatDebuffName(facts),"Немає");assert.equal(formatDebuffName(null),"Немає");
   console.log("Native DEV displays: 19 overlays, "+comparisons+" active renders, exact no-active/unknown/type labels, isolated catalog and stable Domain facts.");
 }
 
@@ -459,7 +459,7 @@ function checkLocationMapConfigChanges() {
   map.recalculateZones = function(...args) {calls++;return recalculate.apply(this,args);};
   const verify = (expectedCalls,expectedRevision) => {
     assert.equal(calls,expectedCalls,'only location flag changes recalculate zones');
-    assert.equal(map.getDebugRevision(),expectedRevision,'revision preserves the original update order');
+    assert.equal(map.getRevision(),expectedRevision,'revision preserves the original update order');
   };
   verify(0,1);map.update(16,12);verify(1,2);
   for(let frame=0;frame<128;frame++) map.update(16,12);
@@ -506,8 +506,8 @@ function checkLocationMapConfigChanges() {
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];
   const first = new LocationMap(locationId,missingFlags,{next:()=>0.5},resources);
-  first.update(16,12);assert.equal(first.getDebugRevision(),2,'first update recalculates even with missing flags');
-  first.update(16,12);assert.equal(first.getDebugRevision(),2);
+  first.update(16,12);assert.equal(first.getRevision(),2,'first update recalculates even with missing flags');
+  first.update(16,12);assert.equal(first.getRevision(),2);
 }
 
 async function checkNativeDevelopmentLifecycle() {
@@ -532,7 +532,7 @@ async function checkNativeDevelopmentLifecycle() {
     'src/dev/modules/reel_hold_gate_live_probe.js':{ReelHoldGateLiveProbe:class{dispose(){counts.probeDispose++;}}},
     'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
   }});
-  const startup=source.importModule('src/bootstrap/development/legacy_game_startup.js');
+  const startup=source.importModule('src/bootstrap/development/development_game_startup.js');
   assert.equal(source.context.__CYBER_FISHING_COMPAT_RUNTIME__,undefined,'native harness never publishes a transport');
   const Game=source.importModule('src/bootstrap/production/game.js').Game;
   assert.equal(Game,source.importModule('src/bootstrap/production/game.js').Game,'one native class per VM context');

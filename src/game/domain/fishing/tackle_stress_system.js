@@ -123,7 +123,7 @@ export class TackleStressSystem {
         this.#preventedBreakReason = null;
       }
     } else {
-      this.#stressDebug = this.#accumulator.getDebugData(
+      this.#stressDebug = this.#accumulator.getDiagnostics(
         this.#stressDebugDefaults(stressConfig),
       );
       this.#lastBreakProgress = 0;
@@ -133,11 +133,11 @@ export class TackleStressSystem {
     return this.#frameResult();
   }
 
-  setDebugData(data) {
+  setDiagnostics(data) {
     this.#debug = data || {};
   }
 
-  getDebugData() {
+  getDiagnostics() {
     const stressConfig = this.#resolveTackleStressConfig(this.#config);
     const selected = this.#selectedFailureComponent || this.#selectFailureComponent();
     const weakestLimit = this.getWeakestTackleLimitFrame();
@@ -324,7 +324,7 @@ export class TackleStressSystem {
   resetStress() {
     this.#accumulator?.reset?.();
     const stressConfig = this.#resolveTackleStressConfig(this.#config);
-    this.#stressDebug = this.#accumulator?.getDebugData?.(
+    this.#stressDebug = this.#accumulator?.getDiagnostics?.(
       this.#stressDebugDefaults(stressConfig),
     ) || {};
     this.#lastBreakProgress = 0;
@@ -479,7 +479,7 @@ export class TackleStressSystem {
   #stressDebugWithDefaults(stressConfig) {
     const defaults = this.#stressDebugDefaults(stressConfig);
     return {
-      ...this.#accumulator.getDebugData(defaults),
+      ...this.#accumulator.getDiagnostics(defaults),
       ...this.#stressDebug,
     };
   }

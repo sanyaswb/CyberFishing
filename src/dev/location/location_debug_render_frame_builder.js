@@ -55,7 +55,7 @@ export class LocationDebugRenderFrameBuilder {
 
   #getDebugCanvas(locations) {
     const key = [
-      this.#map.getDebugRevision?.() || 0,
+      this.#map.getRevision(),
       locations.debugGrid,
       locations.debugDepthText,
       locations.debugZones,

@@ -394,14 +394,6 @@ export class Fish {
 
   getDebuffState() { return this.#debuffState; }
 
-  // Retained public diagnostic projection. Stage 7 may retire it after the API transition;
-  // native DEV displays use the read-only facts above and own their labels.
-  get activeDebuffName() {
-    return this.#hasActiveDebuff
-      ? this.#lastDebuffName || "Невідомий"
-      : "Немає";
-  }
-
   getMasteryMultiplier() {
     return this.#masteryPowerMult;
   }
@@ -487,8 +479,8 @@ export class Fish {
     this.#behavior.handleFightEvent(event);
   }
 
-  getLastDashDebugData() {
-    return this.#behavior.getLastDashDebugData();
+  getLastDashDiagnostics() {
+    return this.#behavior.getLastDashDiagnostics();
   }
 
   reactToWall(wallSide) {
@@ -1070,7 +1062,7 @@ export class FishBehavior {
     return typeof this.#rng.next === "function" ? this.#rng.next() : Math.random();
   }
 
-  getLastDashDebugData() {
+  getLastDashDiagnostics() {
     return this.#lastDashDebug || {};
   }
 

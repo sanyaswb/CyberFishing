@@ -5,18 +5,14 @@ export class FlatInventoryItemRepository {
   #childrenByParent = new Map();
   #instanceIdFactory;
   #reservationPolicy;
-  #fallbackSequence = 0;
-  #now;
 
-  // The wall clock of the fallback instance id is injected by composition.
+  // instanceIdFactory(source) creates the id of a split-off item; composition injects it.
   constructor({
     items = [],
     instanceIdFactory = null,
     reservationPolicy = null,
-    now = null,
   } = {}) {
     this.#instanceIdFactory = instanceIdFactory;
-    this.#now = now;
     this.#reservationPolicy = reservationPolicy;
     for (const item of items || []) {
       const normalized = this.#normalizeItem(item);
@@ -319,14 +315,7 @@ export class FlatInventoryItemRepository {
   #nextInstanceId(source) {
     let candidate = null;
     do {
-      if (typeof this.#instanceIdFactory === "function") {
-        candidate = this.#instanceIdFactory(source);
-      } else if (this.#instanceIdFactory?.create) {
-        candidate = this.#instanceIdFactory.create(source);
-      } else {
-        this.#fallbackSequence++;
-        candidate = `${source.instanceId}~${this.#now().toString(36)}-${this.#fallbackSequence}`;
-      }
+      candidate = this.#instanceIdFactory(source);
     } while (!candidate || this.#items.has(candidate));
     return String(candidate);
   }

@@ -1078,7 +1078,7 @@ export class FightService {
       buffs: null,
     });
     this.#forces = forceData.forces;
-    const fightDebug = this.#tensionMeter.getDebugData?.() || {};
+    const fightDebug = this.#tensionMeter.getDiagnostics?.() || {};
     const staminaFrame = forceData.fightFrame?.stamina || {};
     if (this.#isFishStaminaLocked()) {
       this.#syncGodModeStamina();
@@ -1142,16 +1142,15 @@ export class FightService {
         y: this.#tensionMeter?.getEffectiveMaxTackleLoadKg?.() || 0,
       }),
       getCurrentState: () =>
-        this.#tensionMeter?.getDebugData?.().fishState || "idle",
+        this.#tensionMeter?.getDiagnostics?.().fishState || "idle",
       getFishBasePower: () =>
-        this.#tensionMeter?.getDebugData?.().fishBasePower || 0,
+        this.#tensionMeter?.getDiagnostics?.().fishBasePower || 0,
       getFishInitialPower: () =>
-        this.#tensionMeter?.getDebugData?.().fishInitialPower || 0,
+        this.#tensionMeter?.getDiagnostics?.().fishInitialPower || 0,
       getPullMultiplier: () =>
-        this.#tensionMeter?.getDebugData?.().pullMult || 0,
+        this.#tensionMeter?.getDiagnostics?.().pullMult || 0,
       getMoveMultiplier: () =>
-        this.#tensionMeter?.getDebugData?.().moveMult || 0,
-      getActiveDebuffName: () => this.#fish?.activeDebuffName || "Немає",
+        this.#tensionMeter?.getDiagnostics?.().moveMult || 0,
       getDebuffState: () => this.#fish?.getDebuffState?.() || null,
       getMasteryMultiplier: () => this.#fish?.getMasteryMultiplier?.() || 1.0,
     };
@@ -1161,7 +1160,7 @@ export class FightService {
    * Pure data context — no Game/facade dependency.
    * @param {{ floatEntity: object, boundaries: object, rodPos: Vector2, screenOffset: number, equipment: object }} ctx
    */
-  getDebugData({ floatEntity, boundaries, rodPos, screenOffset, equipment }) {
+  getDiagnostics({ floatEntity, boundaries, rodPos, screenOffset, equipment }) {
     const fs = this.#fishingSystem;
     const sc = this.#staminaController;
     const floatPos = floatEntity.getPosition();
@@ -1202,7 +1201,7 @@ export class FightService {
       fishInitialPower: fs?.getFishInitialPower?.() || 0,
       tension: this.#tensionMeter?.getTension?.() || 0,
       lineBreakProgress: this.#tensionMeter?.getLineBreakProgress?.() || 0,
-      ...(this.#tensionMeter?.getDebugData?.() || {}),
+      ...(this.#tensionMeter?.getDiagnostics?.() || {}),
       fishConditionPhase: this.#fishCondition?.phase || "n/a",
       fishConditionMaxStamina: this.#fishCondition?.maxStamina || 0,
       fishConditionMaxEndurance: this.#fishCondition?.maxEndurance || 0,
@@ -1211,7 +1210,6 @@ export class FightService {
       currentExhaustion: this.#fishCondition?.currentExhaustion || 0,
       pullMult: fs?.getPullMultiplier?.() || 0,
       moveMult: fs?.getMoveMultiplier?.() || 0,
-      activeDebuffName: fs?.getActiveDebuffName?.() || "Немає",
       debuffState: fs?.getDebuffState?.() || null,
       masteryCurrentMult: fs?.getMasteryMultiplier?.() || 1.0,
       masteryTimerMs: sc?.getMasteryTimer?.() || 0,

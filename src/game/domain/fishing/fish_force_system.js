@@ -81,7 +81,7 @@ export class FishForceSystem {
     const behavior = this.#fish.getBehavior(dtMs, enduranceMovementDebuff);
     const enduranceMovementDebug =
       this.#enduranceMovementDebugFields(enduranceMovementDebuff, behavior);
-    const lastDashDebug = this.#fish.getLastDashDebugData?.() || {};
+    const lastDashDebug = this.#fish.getLastDashDiagnostics?.() || {};
 
     const behaviorPullValue = this.#numberOrDefault(
       behavior.forceMultiplier ?? behavior.pullMult,
@@ -579,7 +579,7 @@ export class FishForceSystem {
     });
   }
 
-  getDebugData() {
+  getDiagnostics() {
     return this.#debug;
   }
 

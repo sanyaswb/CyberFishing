@@ -531,7 +531,7 @@ export class FightPhysicsSystem {
     }),
     );
     this.#debug.fightPipeline = pipelineFrame.toDebugData();
-    stressSystem.setDebugData(this.#debug);
+    stressSystem.setDiagnostics(this.#debug);
 
     return {
       consumedSwipe: false,
@@ -2869,7 +2869,7 @@ export class FightPhysicsSystem {
       frameDtSec > 0 ? appliedRodControlMoveMeters / frameDtSec : 0;
     const reelHoldAppliedSpeedMps =
       frameDtSec > 0 ? appliedReelHoldMoveMeters / frameDtSec : 0;
-    const playerPullMotion = this.#playerPullMotionSmoother.getDebugData();
+    const playerPullMotion = this.#playerPullMotionSmoother.getDiagnostics();
     const totalAppliedPullSpeedMps =
       frameDtSec > 0 ? totalAppliedPullMoveMeters / frameDtSec : 0;
     const playerPullMovementMode = this.#resolvePlayerPullMovementMode({
@@ -3017,7 +3017,7 @@ export class FightPhysicsSystem {
 
     return {
       ...forceData.debug,
-      ...dragSystem.getDebugData(),
+      ...dragSystem.getDiagnostics(),
       dragSupported: !!dragContext.dragSupported,
       lineDebug,
       lineTotalMeters: lineState.totalLineMeters ?? lineState.totalLengthMeters,
@@ -4676,7 +4676,7 @@ export class FightPhysicsSystem {
     };
   }
 
-  getDebugData() {
+  getDiagnostics() {
     return this.#debug;
   }
 

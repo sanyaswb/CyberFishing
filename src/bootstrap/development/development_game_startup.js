@@ -2,7 +2,7 @@ import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
-import { DevFlagsProvider } from "../../platform/browser/runtime/legacy_runtime_adapters.js";
+import { DevFlagsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
 import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
 import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
@@ -82,7 +82,7 @@ async function startGame() {
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
-      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/legacy_runtime_adapters.js"),
+      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_runtime_adapters.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
       documentTarget, windowTarget,

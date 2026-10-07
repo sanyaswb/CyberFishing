@@ -475,10 +475,11 @@
     ]
   },
   "fishBalance.randomDebuff": {
-    "formula": "activeDebuffName",
+    "formula": "debuffState.active ? debuffState.type : none",
     "description": "Поточний random debuff після повного виснаження, якщо він є.",
     "paths": [
-      "DEBUG_DATA.activeDebuffName"
+      "DEBUG_DATA.debuffState.active",
+      "DEBUG_DATA.debuffState.type"
     ]
   },
   "fishBalance.mastery": {

@@ -98,7 +98,7 @@ const GAMEPLAY_FILES = [
   "src/game/domain/tackle/tackle.js",
   "src/game/domain/fish/fish.js",
   "src/game/domain/rules/gameplay_rules.js",
-  "src/platform/browser/runtime/legacy_runtime_adapters.js",
+  "src/platform/browser/runtime/browser_runtime_adapters.js",
   "src/game/application/input/pull_input_mapper.js",
   "src/game/application/fishing/drag_control_service.js",
   "src/game/domain/fishing/line_system.js",
@@ -604,7 +604,7 @@ function runTouchHoldControlBuildCheck() {
     getRodVirtualPos: () => cast.rodVirtualPos,
     checkWater: () => true,
   });
-  const debug = fight.getDebugData({
+  const debug = fight.getDiagnostics({
     floatEntity: cast.floatEntity,
     boundaries: cast.bounds,
     rodPos: cast.rodVirtualPos,
@@ -1355,7 +1355,7 @@ function runReelHoldPostStrokeOrderCheck() {
       getRodVirtualPos: () => cast.rodVirtualPos,
       checkWater: () => true,
     });
-    const debug = fight.getDebugData({
+    const debug = fight.getDiagnostics({
       floatEntity: cast.floatEntity,
       boundaries: cast.bounds,
       rodPos: cast.rodVirtualPos,
@@ -1482,7 +1482,7 @@ function runFightScenario({
       checkWater,
     });
 
-    lastDebug = fight.getDebugData({
+    lastDebug = fight.getDiagnostics({
       floatEntity: cast.floatEntity,
       boundaries: cast.bounds,
       rodPos: cast.rodVirtualPos,
@@ -1699,7 +1699,7 @@ function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters,
       getRodVirtualPos: () => cast.rodVirtualPos,
       checkWater,
     });
-    lastDebug = fight.getDebugData({
+    lastDebug = fight.getDiagnostics({
       floatEntity: cast.floatEntity,
       boundaries: cast.bounds,
       rodPos: cast.rodVirtualPos,

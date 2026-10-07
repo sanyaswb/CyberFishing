@@ -1,5 +1,5 @@
 import { BaitFactory, Net } from "../../game/domain/tackle/tackle.js";
-import { ConfigProvider } from "../../platform/browser/runtime/legacy_runtime_adapters.js";
+import { ConfigProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
 import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
 import { FishingCastExposureResolver } from "../../game/domain/fishing/fishing_cast_exposure_resolver.js";
@@ -676,8 +676,8 @@ export class GameApplication {
         this.#chum?.getChumDataAt?.(vx, vy) || { bonus: 1, targets: [] },
       getStateDebugData: () => {
         const state = this.#stateMachine?.currentState;
-        return typeof state?.getDebugData === "function"
-          ? state.getDebugData()
+        return typeof state?.getDiagnostics === "function"
+          ? state.getDiagnostics()
           : null;
       },
     };
@@ -1080,7 +1080,7 @@ export class GameApplication {
 
   #updateRodVisualOffset(dt, input, bounds) {
     const stateName = this.#stateMachine?.currentName || this.#gameStateName;
-    const fightDebug = this.#fightService?.tensionMeter?.getDebugData?.() || {};
+    const fightDebug = this.#fightService?.tensionMeter?.getDiagnostics?.() || {};
     this.#viewportFacade.updateRodVisualOffset({
       dtMs: dt,
       input,

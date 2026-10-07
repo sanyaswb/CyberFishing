@@ -70,7 +70,6 @@ export class InventoryV2LegacyMigration {
     const repository = new FlatInventoryItemRepository({
       items: repositoryItems,
       instanceIdFactory: this.#instanceIdFactory,
-      now: this.#now,
     });
     const assemblyStates = new AssemblyStateRepository();
     const profileRegistry = new AssemblyProfileRegistry(

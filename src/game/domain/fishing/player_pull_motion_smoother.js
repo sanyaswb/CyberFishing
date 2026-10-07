@@ -102,7 +102,7 @@ export class PlayerPullMotionSmoother {
     this.#debug.velocityY = velocity;
   }
 
-  getDebugData() {
+  getDiagnostics() {
     return this.#debug;
   }
 

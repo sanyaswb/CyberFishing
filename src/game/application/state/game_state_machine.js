@@ -1700,13 +1700,13 @@ export class PlayingState extends GameState {
     target.fishing.fishCondition = this.deps.fight.fishCondition;
   }
 
-  getDebugData() {
+  getDiagnostics() {
     const bounds = this.deps.world.getDynamicBounds();
     const floatEntity = this.deps.float;
     const floatPos = floatEntity.getPosition();
 
     return {
-      ...this.deps.fight.getDebugData({
+      ...this.deps.fight.getDiagnostics({
         floatEntity,
         boundaries: bounds,
         rodPos: this.deps.world.getRodVirtualPos(bounds),

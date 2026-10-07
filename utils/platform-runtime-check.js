@@ -381,10 +381,10 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
-  runtime.load("src/platform/browser/runtime/legacy_runtime_adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
+  runtime.load("src/platform/browser/runtime/browser_runtime_adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
     "BrowserEventTargetAdapter","CanvasMetricsProvider","ConfigProvider","DevFlagsProvider"]});
   // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
-  const adapters=runtime.importModule('src/platform/browser/runtime/legacy_runtime_adapters.js')||{};
+  const adapters=runtime.importModule('src/platform/browser/runtime/browser_runtime_adapters.js')||{};
   const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter}=runtime.context;
   const BrowserEventTargetAdapter=runtime.context.BrowserEventTargetAdapter||adapters.BrowserEventTargetAdapter;
   const json=value=>JSON.stringify(value);

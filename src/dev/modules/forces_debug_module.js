@@ -41,7 +41,7 @@ export class ForcesDebugModule extends ConsoleTableDebugModule {
       ),
       "Pull multiplier live": DebugFormatters.number(live.pullMult, 3),
       "Move multiplier live": DebugFormatters.number(live.moveMult, 3),
-      "Active debuff": formatDebuffName(live.debuffState,live.activeDebuffName || "n/a"),
+      "Active debuff": formatDebuffName(live.debuffState),
     });
   }
 }

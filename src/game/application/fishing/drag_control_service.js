@@ -71,7 +71,7 @@ export class DragSystem {
     return this.#dragSupported;
   }
 
-  getDebugData() {
+  getDiagnostics() {
     return {
       dragSupported: this.#dragSupported,
       dragRatio: this.#value,
