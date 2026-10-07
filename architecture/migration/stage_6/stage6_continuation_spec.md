@@ -1,6 +1,6 @@
 # Stage 6 — current completion specification
 
-Updated: 2026-10-07 (Europe/Kiev). Status: M3b retirement qualification (R1), native test consumers (R2) and direct browser acceptance of both actual pages (R3) are complete in the working tree; Quick 24/24 and Architecture 32/32 pass and game-cycle stays byte-identical. Uncached Full 64/64 passed (architecture/archive/stage6_005_native-cutover_acceptance.json) and preparation 005 is accepted (commit b2e8818, pushed with the raw recovery tag). Stage 6 release 001 (0.27.0, §8.1) is applied; Stage 6 closure record/tag and Stage 7 handoff remain. Stage 6 is not closed.
+Updated: 2026-10-07 (Europe/Kiev). Status: **Stage 6 closed** (release 0.27.0, tag `stage6-closed`, [../stage_6_closure.json](../stage_6_closure.json); next: [../stage_7_handoff.md](../stage_7_handoff.md)). History: M3b retirement qualification (R1), native test consumers (R2) and direct browser acceptance of both actual pages (R3) are complete in the working tree; Quick 24/24 and Architecture 32/32 pass and game-cycle stays byte-identical. Uncached Full 64/64 passed (architecture/archive/stage6_005_native-cutover_acceptance.json) and preparation 005 is accepted (commit b2e8818, pushed with the raw recovery tag). Stage 6 release 001 (0.27.0, §8.1) is applied; the closure record, closure-snapshot Full 64/64, browser acceptance on 0.27.0 and Stage 7 handoff are complete.
 
 This is the current execution queue. [stage6_spec.md](stage6_spec.md) retains the complete requirements and all 96 historical source-to-target mappings. [stage6_module_inventory.json](stage6_module_inventory.json) is the immutable 0.26.1 planning baseline, not the live graph. [../stage_6_handoff.md](../stage_6_handoff.md) is the short resume brief. Do not replay the accepted M0–M3a implementations or rewrite Stage 3/4/5 history.
 
@@ -175,6 +175,6 @@ Keep out of Stage 6: removal/rename of compatible debuff APIs, FlatInventoryItem
 - [x] Exact successor guard/ledger/build/history qualifications and all native test consumers accepted (preparation 005).
 - [x] Quick 24/24, Architecture 32/32, uncached Full 64/64 on the M3b snapshot (source e2f49ba7…, 2026-10-07T07:19Z); direct game-cycle byte-identical. Repeat on the final release snapshot.
 - [x] Actual native production and DEV browser acceptance, saved-byte/reload/live-override/effect/resource proofs recorded (architecture/archive/stage6_005_native-cutover_browser.json).
-- [ ] Final release, closure record/tag, pushed raw recovery and Stage 7 handoff complete.
+- [x] Final release, closure record/tag, pushed raw recovery and Stage 7 handoff complete (stage_6_closure.json, stage6-closed, stage_7_handoff.md).
 
 Stage 6 may be marked closed only when every unchecked criterion is satisfied.

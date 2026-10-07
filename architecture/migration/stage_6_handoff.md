@@ -1,5 +1,7 @@
 # Stage 6 native DEV — current handoff
 
+**Stage 6 is closed (2026-10-07, release 0.27.0, tag `stage6-closed`).** Closure record: [stage_6_closure.json](stage_6_closure.json). Continue with [stage_7_handoff.md](stage_7_handoff.md); the text below is history.
+
 Updated: 2026-10-06 (Europe/Kiev). Stage 6 is in progress, not closed. Current release remains 0.26.1. Stage 5 closure and original deferred source cluster 028 remain immutable.
 
 Read [stage6_continuation_spec.md](stage_6/stage6_continuation_spec.md) for the current implementation queue. [stage6_spec.md](stage_6/stage6_spec.md) retains all behavior/ownership requirements and the 96 historical source-to-target mappings. [stage6_module_inventory.json](stage_6/stage6_module_inventory.json) pins the original 0.26.1 planning input; its classic graphs/counts are historical, not the live tree.

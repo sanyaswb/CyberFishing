@@ -997,6 +997,150 @@ if (fs.existsSync(path.join(ROOT,stageFiveClosureFile))) {
     "Stage 5 browser acceptance");
 }
 
+// Stage 6 closure: exact native successor scope, accepted preparations, zero live retirement surface and both graphs.
+// Verification is written after the closure-snapshot Full (as for Stage 5); before that the closure tag must not exist.
+const sha256 = text => require("node:crypto").createHash("sha256").update(text).digest("hex");
+const stageSixInventory = json("architecture/migration/stage_6/stage6_module_inventory.json");
+const stageSixPreparationDirectory = "architecture/migration/stage_6/preparations";
+const stageSixPreparations = fs.readdirSync(path.join(ROOT,stageSixPreparationDirectory)).filter(name => name.endsWith(".json")).sort()
+  .map(name => ({file:`${stageSixPreparationDirectory}/${name}`,record:json(`${stageSixPreparationDirectory}/${name}`)}));
+const stageSixCutover = stageSixPreparations.find(item => item.record.id === "005");
+const stageSixRetirementDelta = (file,record) => ({record:file,bridges:0 - (record.removedBridges || []).length,
+  activations:0 - (record.removedActivations || []).length,globals:0 - (record.removedGlobalProviders || []).length,
+  knownDebts:0 - (record.resolvedDebts || []).length});
+const validateStageSixAcceptance = (verification,load = json,text = read) => {
+  const evidence = verification.acceptance, reportText = text(evidence.report), report = load(evidence.report);
+  assert.equal(sha256(reportText),evidence.reportSha256,"Stage 6 evidence hash");
+  assert.deepEqual(report.source,evidence.source,"Stage 6 accepted source provenance");
+  assert.deepEqual({runId:report.runId,catalog:report.catalog,totals:report.totals,startedAt:report.startedAt,finishedAt:report.finishedAt},
+    {runId:evidence.runId,catalog:evidence.catalog,totals:evidence.totals,startedAt:evidence.startedAt,finishedAt:evidence.finishedAt},
+    "Stage 6 acceptance identity");
+  assert(report.mode === "acceptance" && report.catalog.checks === 64 && report.totals.executed === 64 && report.totals.passed === 64 &&
+    report.totals.cached === 0 && report.totals.failed === 0 && report.totals.isolationViolations === 0 &&
+    report.source.unchanged && report.source.before === report.source.after &&
+    new Set(report.checks.map(item => item.id)).size === 64,"Stage 6 acceptance completeness");
+  const browser = load(verification.browser.report);
+  assert.equal(sha256(text(verification.browser.report)),verification.browser.reportSha256,"Stage 6 browser evidence hash");
+  assert(browser.performer === verification.browser.performer && browser.performedBy === "automated" && browser.status === "PASS" &&
+    verification.browser.status === "PASS" && browser.version === verification.release &&
+    browser.native.errors === 0 && browser.native.warnings === 0 && browser.dev.errors === 0 && browser.dev.warnings === 0 &&
+    browser.originalSavesRestored === true && browser.ownedTabsClosed === true && browser.ownedServerStopped === true &&
+    browser.ignoredFixturesRemoved === true,"Stage 6 browser acceptance");
+};
+const validateStageSixClosure = (closure,liveBridges,runtime) => {
+  assert(closure.schemaVersion === 1 && closure.kind === "cyber-fishing-stage-6-closure" && closure.status === "closed" &&
+    closure.tag === "stage6-closed" && closure.decision === "architecture/migration/stage_6/stage6_spec.md","Stage 6 closure identity");
+  const mappings = stageSixInventory.migrationModules.map(item => ({source:item.source,target:item.target,status:"migrated"}));
+  assert(mappings.length === 96 && stageSixCutover.record.nativeReplacements.length === 100,"Stage 6 closure scope size");
+  assert.deepEqual(closure.modules,mappings,"Stage 6 closure mappings");
+  assert.deepEqual(closure.nativeReplacements,stageSixCutover.record.nativeReplacements,"Stage 6 closure native replacements");
+  for (const item of closure.modules) assert(closure.nativeReplacements.some(replacement => replacement.source === item.source &&
+    replacement.targets.length === 1 && replacement.targets[0] === item.target),"Stage 6 closure mapping successor");
+  assert.deepEqual(closure.preparations,stageSixPreparations.map(({file,record}) => ({id:record.id,path:file,
+    verificationStatus:record.verification.status ?? null,acceptance:record.verification.status === undefined ? record.verification.report : null})),
+    "Stage 6 closure preparations");
+  assert.deepEqual(closure.preparations.map(item => item.id),["001","002","003","004","005"],"Stage 6 closure preparation ids");
+  for (const item of closure.preparations) {
+    if (item.verificationStatus === null) {
+      const report = json(item.acceptance);
+      assert(report.mode === "acceptance" && report.totals.executed === 64 && report.totals.passed === 64 && report.totals.failed === 0,
+        "Stage 6 closure preparation acceptance");
+    } else assert(["accepted","prepared-target-checkpoint-accepted"].includes(item.verificationStatus),"Stage 6 closure preparation acceptance");
+  }
+  const release = cumulativeReleases.find(record => record.kind === "cyber-fishing-stage-6-release" && record.toRelease === closure.release);
+  assert(release?.output?.status === "applied" && release.verification?.status === "accepted","Stage 6 closure release");
+  assert.deepEqual(closure.metrics,release.output.metrics,"Stage 6 closure metrics");
+  assert(closure.graphReview.path === "architecture/migration/stage_6/graph_review_v5.json" && closure.graphReview.version === 5 &&
+    closure.graphReview.sha256 === sha256(read(closure.graphReview.path)),"Stage 6 graph review");
+  const nativeDevelopment = closure.nativeDevelopment, raw = nativeDevelopment.rawArchive;
+  assert(nativeDevelopment.status === "verified" && nativeDevelopment.entrypoint === "src/entrypoints/dev.entry.js" &&
+    nativeDevelopment.bootstrap === "src/bootstrap/development/legacy_game_startup.js" && nativeDevelopment.developmentSource === "dev.html" &&
+    nativeDevelopment.productionSource === "index.html" && nativeDevelopment.productionEntrypoint === "src/entrypoints/game.entry.js" &&
+    nativeDevelopment.preparation === stageSixCutover.file &&
+    nativeDevelopment.implementationCommit === git("log","--format=%H","--diff-filter=A","--",nativeDevelopment.entrypoint).toString().trim(),
+    "Stage 6 native development checkpoint");
+  const cleanup = stageSixCutover.record.postClosureCleanup;
+  assert(raw.tag === cleanup.archiveTag && raw.peeledCommit === cleanup.archiveCommit && raw.parent === stageSixCutover.record.baseCommit &&
+    git("rev-parse",raw.tag).toString().trim() === raw.tagObject,"Stage 6 raw archive identity");
+  NativeDevelopmentRetirement.archive(ROOT,{...stageSixCutover.record,baseCommit:raw.parent,
+    postClosureCleanup:{...cleanup,archiveTag:raw.tag,archiveCommit:raw.peeledCommit}}).verifyIdentity();
+  assert.deepEqual(closure.addedFiles.map(item => item.path),["src/entrypoints/dev.entry.js",
+    "utils/architecture/stage_six/native_development_archive.js","utils/architecture/stage_six/native_development_retirement.js"],
+    "Stage 6 added files");
+  for (const item of closure.addedFiles) assert(item.reason && fs.existsSync(path.join(ROOT,item.path)),"Stage 6 added file");
+  const active = {bridges:liveBridges.length,activations:runtime.activationPositions.length,inertModules:(runtime.inertModules || []).length,
+    sideEffectReviews:(runtime.sideEffectReviews || []).length,globals:json("architecture/guards/global_provider_baseline.json").providers.length,
+    knownDebts:json("architecture/guards/known_debt_registry.json").debts.length};
+  assert.deepEqual(active,{bridges:0,activations:0,inertModules:0,sideEffectReviews:0,globals:0,knownDebts:0},"Stage 6 retirement remains");
+  const cleanupFile = "architecture/migration/stage_5/preparations/031_post-closure-unused-inventory-and-profiles.json";
+  assert.deepEqual(closure.retained,{stage5Closure:json(stageFiveClosureFile).retained,
+    deltas:[stageSixRetirementDelta(cleanupFile,json(cleanupFile)),stageSixRetirementDelta(stageSixCutover.file,stageSixCutover.record)],
+    active,retiredActivationProvenance:runtime.retiredActivations.length},"Stage 6 retained identities");
+  for (const key of ["bridges","activations","globals","knownDebts"]) assert.equal(closure.retained.stage5Closure[key] +
+    closure.retained.deltas.reduce((sum,item) => sum + item[key],0),0,"Stage 6 retained deltas");
+  const stageSixRelease = new StageFourRelease(ROOT,6);
+  assert.deepEqual(closure.nativeGraph,stageSixRelease.nativeGraph(),"Stage 6 native graph");
+  assert.deepEqual(closure.nativeDevelopmentGraph,stageSixRelease.nativeGraph("src/entrypoints/dev.entry.js"),"Stage 6 native development graph");
+  assert(closure.evidence.gameCycle.stdoutSha256 === stageSixCutover.record.gameCycle.after &&
+    closure.evidence.gameCycle.stdoutSha256 === release.verification.gameCycle.stdoutSha256,"Stage 6 game-cycle evidence");
+  const cluster = json(closure.stage5SourceCluster028.record);
+  assert(cluster.id === "028" && cluster.output === null && cluster.verification === null && closure.stage5SourceCluster028.output === null &&
+    closure.stage5SourceCluster028.verification === null && cluster.deferred.stage === "stage-6" &&
+    closure.nativeReplacements.some(item => item.source === closure.stage5SourceCluster028.successor.source &&
+      item.targets[0] === closure.stage5SourceCluster028.successor.target),"Stage 6 preserved source cluster 028");
+  assert(closure.nextStage === "stage-7" && closure.handoff === "architecture/migration/stage_7_handoff.md","Stage 6 next stage");
+  assert.deepEqual(closure.clusters,{applied:StageFourClusterLedger.read(ROOT,6).applied.length,deferred:[],preparations:stageSixPreparations.length},
+    "Stage 6 closure clusters");
+  assert.equal(closure.boundaryToolDecision,"retain-current-guards","Stage 6 boundary tool decision");
+  const tooling = closure.toolingArchive, utils = tooling.utilsDelta;
+  assert((tooling.unreachableFiles.length === 0) === (tooling.archiveTag === null) && tooling.catalogChecks === 64 &&
+    utils.from.release === "0.26.1" && utils.files === utils.to.files - utils.from.files && utils.lines === utils.to.lines - utils.from.lines &&
+    utils.to.lines <= utils.ceiling && utils.ceiling === 70358 && tooling.reachedFiles + tooling.unreachableFiles.length === utils.to.files &&
+    tooling.addedFiles.length === Math.max(0,utils.files) &&
+    tooling.addedFiles.every(item => item.reason && item.uses.length >= 2 && fs.existsSync(path.join(ROOT,item.path))),
+    "Stage 6 tooling archive");
+  if (closure.verification === undefined) {
+    assert.equal(git("tag","--list",closure.tag).toString().trim(),"","Stage 6 closure tag needs verification");
+    return;
+  }
+  assert(closure.verification.acceptance.report === "architecture/archive/stage6_closure_acceptance.json" &&
+    closure.verification.browser.report === "architecture/archive/stage6_closure_browser.json" &&
+    closure.verification.release === closure.release,"Stage 6 closure verification evidence");
+  assert(closure.evidence.save.sha256 === json(closure.verification.browser.report).finalSaveSha256 &&
+    closure.verification.gameCycle.after === closure.evidence.gameCycle.stdoutSha256,"Stage 6 saved-byte and timing evidence");
+  validateStageSixAcceptance(closure.verification);
+};
+const stageSixClosureFile = "architecture/migration/stage_6_closure.json";
+let stageSixClosureCases = 0;
+if (fs.existsSync(path.join(ROOT,stageSixClosureFile))) {
+  const closure = json(stageSixClosureFile);
+  validateStageSixClosure(closure,liveClosureBridges,contract);
+  for (const [change,pattern] of [[{modules:closure.modules.slice(1)},/Stage 6 closure mappings/u],
+    [{release:"0.26.1"},/Stage 6 closure release/u],
+    [{toolingArchive:{...closure.toolingArchive,unreachableFiles:[{path:"utils/unreachable.js"}]}},/Stage 6 tooling archive/u],
+    [{nativeDevelopment:{...closure.nativeDevelopment,rawArchive:{...closure.nativeDevelopment.rawArchive,
+      peeledCommit:closure.nativeDevelopment.rawArchive.parent}}},/Stage 6 raw archive identity/u]]) {
+    assert.throws(() => validateStageSixClosure({...closure,...change},liveClosureBridges,contract),pattern);
+    stageSixClosureCases += 1;
+  }
+  assert.throws(() => validateStageSixClosure(closure,[{removalStage:"stage-7"}],contract),/Stage 6 retirement remains/u);
+  assert.throws(() => validateStageSixClosure(closure,liveClosureBridges,{...contract,activationPositions:[{removalStage:"stage-7"}]}),
+    /Stage 6 retirement remains/u);
+  stageSixClosureCases += 2;
+  // Evidence fixtures use the real archived release acceptance; only the hash and the browser error count are altered.
+  const releaseReport = "architecture/archive/stage6_release_001_acceptance.json", released = json(releaseReport);
+  const browserReport = "architecture/archive/stage6_closure_browser.json", browser = json(browserReport);
+  const evidence = {release:closure.release,acceptance:{report:releaseReport,reportSha256:sha256(read(releaseReport)),runId:released.runId,
+    source:released.source,catalog:released.catalog,totals:released.totals,startedAt:released.startedAt,finishedAt:released.finishedAt},
+    browser:{report:browserReport,reportSha256:sha256(read(browserReport)),performer:browser.performer,status:"PASS"}};
+  assert.doesNotThrow(() => validateStageSixAcceptance(evidence));
+  assert.throws(() => validateStageSixAcceptance({...evidence,acceptance:{...evidence.acceptance,reportSha256:"0".repeat(64)}}),
+    /Stage 6 evidence hash/u);
+  assert.throws(() => validateStageSixAcceptance(evidence,file => file === browserReport ?
+    {...browser,dev:{...browser.dev,errors:1}} : json(file)),/Stage 6 browser acceptance/u);
+  stageSixClosureCases += 3;
+}
+
 console.log(`Stage 4 cluster records passed: ${ledger.records.length} record(s), ${ledger.applied.length} applied, ` +
-  `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases; ` +
+  `${targets} ESM target(s) inside their boundaries; 16 projector, 15 retirement, 2 preparation relocation, 4 reclassification, 3 evidence, 4 static-trace and ${releaseCases} release fixtures, ${stageCases} stage-identity cases, ${stageSixClosureCases} Stage 6 closure fixtures; ` +
   `${cumulativeReleases.length} release record(s), version ${StageFourRelease.currentVersion(read, policy)}.`);

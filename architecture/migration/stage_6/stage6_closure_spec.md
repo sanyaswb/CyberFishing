@@ -1,4 +1,4 @@
-# Stage 6 — closure specification (next session)
+# Stage 6 — closure specification (C1–C4 executed 2026-10-07: Stage 6 closed, see ../stage_6_closure.json; C5 pending)
 
 Written: 2026-10-07 (Europe/Kiev). Goal of the session: close Stage 6 in full, run the post-closure cleanup (C5) and hand off to Stage 7. Everything below is
 closure (C1–C4) and cleanup (C5) work only: no gameplay, formula, save, public API or timing change; hot-loop changes only as C5 evidence-backed, behavior-identical optimizations.
