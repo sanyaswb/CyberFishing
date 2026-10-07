@@ -27,6 +27,9 @@ import { InventoryItemReservationPolicy } from "../../game/domain/inventory/inve
 import { InventoryItemSnapshotMapper } from "../../game/application/inventory/persistence/inventory_item_snapshot_mapper.js";
 import { InventoryV2ActionType } from "../../game/presentation/inventory/inventory_view_model.js";
 import { InventoryV2CommandService } from "../../game/application/inventory/inventory_command_service.js";
+import { InventoryV2GameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
+import { InventoryItemRemovalService } from "../../game/application/inventory/inventory_item_removal_service.js";
+import { InventoryV2UiState } from "../../game/application/inventory/inventory_ui_state.js";
 import { InventoryV2EquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
 import { InventoryV2EquipmentTransitionPort } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
 import { InventoryV2Facade } from "../../game/application/inventory/inventory_facade.js";
@@ -366,6 +369,15 @@ export class InventoryV2CompositionRoot {
       settings,
       loadValueProvider,
     });
+    const itemRemoval = new InventoryItemRemovalService({
+      repository,
+      assemblyReader,
+      assemblyService,
+      assemblyStates,
+      equipmentState,
+      loadouts,
+      now,
+    });
     const commands = new InventoryV2CommandService({
       repository,
       assemblyStates,
@@ -382,7 +394,6 @@ export class InventoryV2CompositionRoot {
       settings,
       refillMemory,
       signaturePolicy,
-      autoRefillCoordinator,
       hydrator,
       lineAllocationService,
       equipmentLineReadinessPolicy,
@@ -392,6 +403,17 @@ export class InventoryV2CompositionRoot {
       sortConfig: INVENTORY_V2_SORT_CONFIG,
       actionTypes: InventoryV2ActionType,
       now,
+      uiState: new InventoryV2UiState({ sortConfig: INVENTORY_V2_SORT_CONFIG }),
+      itemRemoval,
+    });
+    const gameplayCommands = new InventoryV2GameplayCommands({
+      transaction,
+      itemRemoval,
+      repository,
+      assemblyReader,
+      equipmentState,
+      lineAllocationService,
+      autoRefillCoordinator,
       baitExposureService: itemFreshnessResolver
         ? new ApplyBaitExposureService({
             repository,
@@ -399,6 +421,7 @@ export class InventoryV2CompositionRoot {
             freshnessResolver: itemFreshnessResolver,
           })
         : null,
+      hydrator,
     });
     const gameplayBridge = new InventoryV2GameplayBridge({
       repository,
@@ -406,7 +429,7 @@ export class InventoryV2CompositionRoot {
       equipmentState,
       equipmentReadModelFactory,
       readinessPolicy,
-      commands,
+      gameplayCommands,
       itemViews,
     });
     const facade = new InventoryV2Facade({
@@ -420,6 +443,7 @@ export class InventoryV2CompositionRoot {
       facade,
       gameplayBridge,
       commands,
+      gameplayCommands,
       repository,
       assemblyStates,
       profileRegistry,

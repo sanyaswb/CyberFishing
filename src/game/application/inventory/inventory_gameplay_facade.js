@@ -6,7 +6,7 @@ export class InventoryV2GameplayBridge {
   #equipmentState;
   #equipmentReadModelFactory;
   #readinessPolicy;
-  #commands;
+  #gameplayCommands;
   #itemViews;
   #afterMutation = null;
   #lastResult = null;
@@ -17,7 +17,7 @@ export class InventoryV2GameplayBridge {
     equipmentState,
     equipmentReadModelFactory,
     readinessPolicy,
-    commands,
+    gameplayCommands,
     itemViews = null,
   } = {}) {
     this.#repository = repository;
@@ -25,7 +25,7 @@ export class InventoryV2GameplayBridge {
     this.#equipmentState = equipmentState;
     this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#readinessPolicy = readinessPolicy;
-    this.#commands = commands;
+    this.#gameplayCommands = gameplayCommands;
     this.#itemViews = itemViews;
   }
 
@@ -69,13 +69,13 @@ export class InventoryV2GameplayBridge {
 
   consumeItem(instanceId, amount = 1) {
     return this.#booleanMutation(
-      this.#commands.consumeItem(instanceId, amount),
+      this.#gameplayCommands.consumeItem(instanceId, amount),
     );
   }
 
   consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
     return this.#booleanMutation(
-      this.#commands.consumeEquipped(
+      this.#gameplayCommands.consumeEquipped(
         slotPath,
         amount,
         unequipAfterConsume,
@@ -85,12 +85,12 @@ export class InventoryV2GameplayBridge {
 
   breakEquippedLine(lossMeters) {
     return this.#booleanMutation(
-      this.#commands.breakEquippedLine(lossMeters),
+      this.#gameplayCommands.breakEquippedLine(lossMeters),
     );
   }
 
   rodRetrieved(context = {}) {
-    return this.#reportMutation(this.#commands.rodRetrieved(context));
+    return this.#reportMutation(this.#gameplayCommands.rodRetrieved(context));
   }
 
   handleRodRetrieved(context = {}) {
@@ -98,7 +98,7 @@ export class InventoryV2GameplayBridge {
   }
 
   handChumUsed(context = {}) {
-    return this.#reportMutation(this.#commands.handChumUsed(context));
+    return this.#reportMutation(this.#gameplayCommands.handChumUsed(context));
   }
 
   handleHandChumUsed(context = {}) {
@@ -106,7 +106,7 @@ export class InventoryV2GameplayBridge {
   }
 
   boatReturned(context = {}) {
-    return this.#reportMutation(this.#commands.boatReturned(context));
+    return this.#reportMutation(this.#gameplayCommands.boatReturned(context));
   }
 
   handleBoatReturned(context = {}) {

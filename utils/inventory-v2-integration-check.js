@@ -1411,9 +1411,9 @@ vm.runInContext(
     );
   }
   assertIntegration(
-    flow.commands.consumeItem(springDraft, 1).success === true &&
+    flow.gameplayCommands.consumeItem(springDraft, 1).success === true &&
       flow.loadouts.has(saved.loadoutId) &&
-      flow.commands.consumeItem(remainingLoadoutRod, 1).success === true &&
+      flow.gameplayCommands.consumeItem(remainingLoadoutRod, 1).success === true &&
       !flow.loadouts.has(saved.loadoutId),
     "consuming every loadout root removes the empty loadout card",
   );
@@ -2082,12 +2082,12 @@ vm.runInContext(
 
   for (let index = 0; index < 3; index += 1) {
     assertIntegration(
-      refill.commands.consumeEquipped("baits_" + index, 1).success === true,
+      refill.gameplayCommands.consumeEquipped("baits_" + index, 1).success === true,
       "bait " + index + " is consumed",
     );
   }
   assertIntegration(
-    refill.commands.consumeEquipped("feederChum", 1).success === true,
+    refill.gameplayCommands.consumeEquipped("feederChum", 1).success === true,
     "feeder chum is consumed",
   );
   const refillReport = refill.gameplayBridge.rodRetrieved();
@@ -2130,7 +2130,7 @@ vm.runInContext(
   assertIntegration(handEquip.success === true, "hand chum equips");
   const firstHandChumId = refill.equipmentState.getRootInstanceId("handChum");
   assertIntegration(
-    refill.commands.consumeEquipped("handChum", 1).success === true &&
+    refill.gameplayCommands.consumeEquipped("handChum", 1).success === true &&
       refill.equipmentState.getRootInstanceId("handChum") === null,
     "used hand chum leaves its equipment slot empty",
   );
@@ -2156,7 +2156,7 @@ vm.runInContext(
   refill.equipmentState.setRootInstanceId("delivery", refillBoat);
   for (let index = 0; index < 3; index += 1) {
     assertIntegration(
-      refill.commands.consumeEquipped("deliveryChums_" + index, 1).success ===
+      refill.gameplayCommands.consumeEquipped("deliveryChums_" + index, 1).success ===
         true,
       "boat section " + index + " is consumed",
     );
@@ -2294,7 +2294,7 @@ vm.runInContext(
     "detached chum merges only into a safe loose stack, never active hand chum",
   );
   assertIntegration(
-    custody.commands.consumeEquipped("handChum", 1).success === true &&
+    custody.gameplayCommands.consumeEquipped("handChum", 1).success === true &&
       custody.equipmentState.getRootInstanceId("handChum") === null,
     "reserved hand chum still consumes normally",
   );
@@ -2462,7 +2462,7 @@ vm.runInContext(
   assertIntegration(createdClockKit.createdAt === new Date(loadoutTime).toISOString(),
     "composition passes the same clock through createFromEquipment");
   loadoutTime += 1000;
-  const consumedClockHook = clockFlow.commands.consumeItem("clock-hook", 1);
+  const consumedClockHook = clockFlow.gameplayCommands.consumeItem("clock-hook", 1);
   const reconstructedClockKit = clockFlow.loadouts.require(clockSaved.loadoutId);
   assertIntegration(consumedClockHook.success && reconstructedClockKit.createdAt === createdClockKit.createdAt &&
     reconstructedClockKit.updatedAt === new Date(loadoutTime).toISOString(),

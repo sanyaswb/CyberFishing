@@ -1,7 +1,6 @@
-import { AutoRefillTrigger } from "../../domain/equipment/auto_refill_policy.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_catalog.js";
-import { EquipmentLoadout } from "../../domain/loadouts/equipment_loadout.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
+import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
 
 export class InventoryV2ApplicationError extends Error {
   constructor(code, message, details = {}) {
@@ -28,32 +27,18 @@ export class InventoryV2CommandService {
   #settings;
   #refillMemory;
   #signaturePolicy;
-  #autoRefillCoordinator;
   #hydrator;
   #instanceIdFactory;
   #lineAllocationService;
   #equipmentLineReadinessPolicy;
   #stackingPolicy;
   #reservationPolicy;
-  #baitExposureService;
   #sortConfig;
   #actionTypes;
   #now;
   #fallbackSequence = 0;
-  #uiState = {
-    isOpen: false,
-    activeCategoryId: "all",
-    activeSubfilterIds: [],
-    sortCriterionIds: [],
-    sortDirectionId: null,
-    activeRarityFilterIds: [],
-    placementOrderKey: null,
-    selectedInstanceId: null,
-    highlightedEquipmentSlotId: null,
-    panelMode: "loadout",
-    editingRootInstanceId: null,
-    viewingLoadoutId: null,
-  };
+  #uiState;
+  #itemRemoval;
 
   constructor({
     repository,
@@ -71,17 +56,17 @@ export class InventoryV2CommandService {
     settings,
     refillMemory,
     signaturePolicy,
-    autoRefillCoordinator,
     hydrator,
     lineAllocationService,
     equipmentLineReadinessPolicy = null,
     stackingPolicy = null,
     reservationPolicy = null,
-    baitExposureService = null,
     instanceIdFactory = null,
     sortConfig,
     actionTypes,
     now = null,
+    uiState,
+    itemRemoval,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
@@ -98,37 +83,22 @@ export class InventoryV2CommandService {
     this.#settings = settings;
     this.#refillMemory = refillMemory;
     this.#signaturePolicy = signaturePolicy;
-    this.#autoRefillCoordinator = autoRefillCoordinator;
     this.#hydrator = hydrator;
     this.#lineAllocationService = lineAllocationService;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
     this.#stackingPolicy = stackingPolicy;
     this.#reservationPolicy = reservationPolicy;
-    this.#baitExposureService = baitExposureService;
     this.#instanceIdFactory = instanceIdFactory;
     this.#sortConfig = sortConfig;
     this.#actionTypes = actionTypes;
     this.#now = now;
-    this.#uiState.sortCriterionIds = [
-      ...(sortConfig?.defaults?.criterionIds || []),
-    ];
-    this.#uiState.sortDirectionId = sortConfig?.defaults?.directionId || null;
+    this.#uiState = uiState;
+    this.#itemRemoval = itemRemoval;
     this.#assertDependencies();
   }
 
   getUiState() {
-    return Object.freeze({
-      ...this.#uiState,
-      activeSubfilterIds: Object.freeze([
-        ...this.#uiState.activeSubfilterIds,
-      ]),
-      sortCriterionIds: Object.freeze([
-        ...this.#uiState.sortCriterionIds,
-      ]),
-      activeRarityFilterIds: Object.freeze([
-        ...this.#uiState.activeRarityFilterIds,
-      ]),
-    });
+    return this.#uiState.snapshot();
   }
 
   dispatch(action = {}) {
@@ -139,119 +109,18 @@ export class InventoryV2CommandService {
     }
   }
 
-  consumeItem(instanceId, amount = 1) {
-    try {
-      const consumed = this.#transaction.runAtomic(() =>
-        this.#consumeItemWithinTransaction(instanceId, amount),
-      );
-      return consumed
-        ? this.#success({ consumed: true })
-        : this.#failure("Предмет не знайдено або його кількості недостатньо.");
-    } catch (error) {
-      return this.#failure(error.message, error);
-    }
-  }
-
-  consumeEquipped(slotPath, amount = 1, unequipAfterConsume = true) {
-    try {
-      const consumed = this.#transaction.runAtomic(() => {
-        const target = this.#resolveLegacyEquippedTarget(slotPath);
-        if (!target?.item?.instanceId) return false;
-        const success = this.#consumeItemWithinTransaction(
-          target.item.instanceId,
-          amount,
-        );
-        if (success && unequipAfterConsume && this.#repository.has(target.item.instanceId)) {
-          this.#clearEquipmentRootReference(target.rootInstanceId);
-        }
-        return success;
-      });
-      return consumed
-        ? this.#success({ consumed: true })
-        : this.#failure("У вказаній комірці немає предмета для витрати.");
-    } catch (error) {
-      return this.#failure(error.message, error);
-    }
-  }
-
-  breakEquippedLine(lossMeters) {
-    const loss = Math.max(0, Number(lossMeters) || 0);
-    try {
-      const result = this.#transaction.runAtomic(() => {
-        const target = this.#resolveLegacyEquippedTarget("line");
-        if (!target?.item?.instanceId) return null;
-        const breakResult = this.#lineAllocationService.break(
-          target.item.instanceId,
-          loss,
-        );
-        if (breakResult.success && breakResult.depleted) {
-          this.#clearEquipmentRootReference(target.item.instanceId);
-        }
-        return breakResult;
-      });
-      return result?.success
-        ? this.#success({ broken: true, breakResult: result })
-        : this.#failure("Спорядженої ліски немає.");
-    } catch (error) {
-      return this.#failure(error.message, error);
-    }
-  }
-
-  rodRetrieved(context = {}) {
-    try {
-      const result = this.#transaction.runAtomic(() => {
-        const freshness = this.#baitExposureService?.apply?.({
-          instanceIds: context.baitInstanceIds || [],
-          exposureMs: context.exposureMs || 0,
-          exposureToken: context.exposureToken || null,
-        }) || [];
-        const report = this.#autoRefillCoordinator.handle(
-          AutoRefillTrigger.ROD_RETRIEVED,
-          context,
-        );
-        return { report, freshness };
-      });
-      this.#baitExposureService?.confirm?.({
-        instanceIds: context.baitInstanceIds || [],
-        exposureToken: context.exposureToken || null,
-      });
-      return this.#success({
-        report: result.report,
-        freshness: result.freshness,
-        warning: result.report.warning,
-      });
-    } catch (error) {
-      return this.#failure(error.message, error);
-    }
-  }
-
-  handChumUsed(context = {}) {
-    return this.#runAutoRefill(AutoRefillTrigger.HAND_CHUM_USED, context);
-  }
-
-  boatReturned(context = {}) {
-    return this.#runAutoRefill(AutoRefillTrigger.BOAT_RETURNED, context);
-  }
-
   #dispatch(action) {
     // The UI action vocabulary is presentation-owned and injected by the composition root.
     const InventoryV2ActionType = this.#actionTypes;
     switch (action.type) {
       case InventoryV2ActionType.OPEN:
-        this.#uiState.isOpen = true;
-        this.#uiState.highlightedEquipmentSlotId = null;
+        this.#uiState.open();
         return this.#success();
       case InventoryV2ActionType.CLOSE:
-        this.#uiState.isOpen = false;
-        this.#uiState.highlightedEquipmentSlotId = null;
-        this.#clearPlacementOrder();
+        this.#uiState.close();
         return this.#success();
       case InventoryV2ActionType.CATEGORY_SELECT:
-        this.#uiState.activeCategoryId = action.categoryId || "all";
-        this.#uiState.activeSubfilterIds = [];
-        this.#uiState.selectedInstanceId = null;
-        this.#uiState.highlightedEquipmentSlotId = null;
-        this.#clearPlacementOrder();
+        this.#uiState.selectCategory(action.categoryId);
         return this.#success();
       case InventoryV2ActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
@@ -278,7 +147,7 @@ export class InventoryV2CommandService {
       case InventoryV2ActionType.ASSEMBLY_DISASSEMBLE:
         return this.#disassembleAssembly(action.rootInstanceId);
       case InventoryV2ActionType.ASSEMBLY_BACK:
-        this.#showLoadoutPanel();
+        this.#uiState.showLoadoutPanel();
         return this.#success();
       case InventoryV2ActionType.LOADOUT_SAVE:
         return this.#saveLoadout(action.name);
@@ -289,7 +158,7 @@ export class InventoryV2CommandService {
       case InventoryV2ActionType.LOADOUT_DISASSEMBLE:
         return this.#disassembleLoadout(action.loadoutId);
       case InventoryV2ActionType.LOADOUT_PREVIEW_BACK:
-        this.#showLoadoutPanel();
+        this.#uiState.showLoadoutPanel();
         return this.#success({ loadoutId: action.loadoutId });
       case InventoryV2ActionType.AUTO_BAIT_CHANGE:
         return this.#changeSetting("autoBait", action.enabled);
@@ -302,7 +171,7 @@ export class InventoryV2CommandService {
 
   #activateInventoryItem(instanceId) {
     if (this.#loadouts.has(instanceId)) {
-      this.#showSavedLoadoutPreview(instanceId);
+      this.#uiState.showSavedLoadoutPreview(instanceId);
       return this.#success({ loadoutId: instanceId });
     }
 
@@ -324,15 +193,15 @@ export class InventoryV2CommandService {
         return this.#fillAssemblyTarget(rootInstanceId, source, targets[0]);
       }
       if (targets.length > 1) {
-        this.#uiState.selectedInstanceId = source.instanceId;
-        this.#uiState.placementOrderKey = targets.some(
+        this.#uiState.select(source.instanceId);
+        this.#uiState.setPlacementOrder(targets.some(
           (target) => !target.occupied,
         )
           ? this.#placementOrderKey(rootInstanceId, source.instanceId)
-          : null;
+          : null);
         return this.#success({ requiresSocketChoice: true });
       }
-      this.#uiState.selectedInstanceId = null;
+      this.#uiState.clearSelection();
       return this.#failure(
         "Предмет не підходить до доступних комірок цієї збірки.",
       );
@@ -348,7 +217,7 @@ export class InventoryV2CommandService {
         highlightedAssemblyState &&
         this.#hasEmptyAssemblySockets(source.instanceId)
       ) {
-        this.#showAssemblyEditor(source.instanceId);
+        this.#uiState.showAssemblyEditor(source.instanceId);
         return this.#success({ rootInstanceId: source.instanceId });
       }
       if (
@@ -358,7 +227,7 @@ export class InventoryV2CommandService {
           source.instanceId,
         ).isValid === false
       ) {
-        this.#showAssemblyEditor(source.instanceId);
+        this.#uiState.showAssemblyEditor(source.instanceId);
         return this.#success({ rootInstanceId: source.instanceId });
       }
       if (highlightedAssemblyState?.isPrepared) {
@@ -371,7 +240,7 @@ export class InventoryV2CommandService {
         const rootInstanceId = this.#transaction.runAtomic(() =>
           this.#assemblyService.startAssembly(source.instanceId),
         );
-        this.#showAssemblyEditor(rootInstanceId);
+        this.#uiState.showAssemblyEditor(rootInstanceId);
         return this.#success({ rootInstanceId });
       }
       return this.#equipLooseRoot(source.instanceId, highlightedSlotId);
@@ -388,7 +257,7 @@ export class InventoryV2CommandService {
         !slotId ||
         activation.isValid === false
       ) {
-        this.#showAssemblyEditor(source.instanceId);
+        this.#uiState.showAssemblyEditor(source.instanceId);
         return this.#success({ rootInstanceId: source.instanceId });
       }
       return assemblyState.isPrepared
@@ -400,13 +269,13 @@ export class InventoryV2CommandService {
       const rootInstanceId = this.#transaction.runAtomic(() =>
         this.#assemblyService.startAssembly(source.instanceId),
       );
-      this.#showAssemblyEditor(rootInstanceId);
+      this.#uiState.showAssemblyEditor(rootInstanceId);
       return this.#success({ rootInstanceId });
     }
 
     const slotId = this.#findEquipmentSlot(source);
     if (!slotId) {
-      this.#showAssemblyEditor(source.instanceId);
+      this.#uiState.showAssemblyEditor(source.instanceId);
       return this.#success({ rootInstanceId: source.instanceId });
     }
     return this.#equipLooseRoot(source.instanceId, slotId);
@@ -425,16 +294,14 @@ export class InventoryV2CommandService {
   #activateEquipmentSlot(slotId) {
     const equippedId = this.#equipmentState.getRootInstanceId(slotId);
     if (equippedId) {
-      this.#uiState.highlightedEquipmentSlotId = null;
-      this.#showAssemblyEditor(equippedId);
+      this.#uiState.clearHighlightedSlot();
+      this.#uiState.showAssemblyEditor(equippedId);
       return this.#success({ rootInstanceId: equippedId });
     }
 
     const selectedId = this.#uiState.selectedInstanceId;
     if (!selectedId || !this.#repository.has(selectedId)) {
-      this.#uiState.highlightedEquipmentSlotId =
-        this.#uiState.highlightedEquipmentSlotId === slotId ? null : slotId;
-      return this.#success({ highlightedSlotId: this.#uiState.highlightedEquipmentSlotId });
+      return this.#success({ highlightedSlotId: this.#uiState.toggleHighlightedSlot(slotId) });
     }
     return this.#equipLooseRoot(selectedId, slotId);
   }
@@ -459,8 +326,8 @@ export class InventoryV2CommandService {
           this.#settleUnequippedRoot(currentId, slotId) || currentId;
       }
     });
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
+    this.#uiState.clearSelection();
+    this.#uiState.clearHighlightedSlot();
     return this.#success({ unequippedInstanceId });
   }
 
@@ -516,14 +383,14 @@ export class InventoryV2CommandService {
     }
     if (!this.#assemblyStates.has(rootInstanceId)) {
       const result = this.#equipLooseRoot(rootInstanceId, slotId);
-      if (result.success) this.#showLoadoutPanel();
+      if (result.success) this.#uiState.showLoadoutPanel();
       return result;
     }
     this.#transaction.runAtomic(() => {
       this.#assemblyService.prepare(rootInstanceId);
       this.#equipRootWithinTransaction(rootInstanceId, slotId);
     });
-    this.#showLoadoutPanel();
+    this.#uiState.showLoadoutPanel();
     return this.#equipmentSuccess({ equippedInstanceId: rootInstanceId, slotId });
   }
 
@@ -540,7 +407,7 @@ export class InventoryV2CommandService {
     this.#transaction.runAtomic(() =>
       this.#equipRootWithinTransaction(rootInstanceId, slotId),
     );
-    this.#showLoadoutPanel();
+    this.#uiState.showLoadoutPanel();
     return this.#equipmentSuccess({ equippedInstanceId: rootInstanceId, slotId });
   }
 
@@ -549,7 +416,7 @@ export class InventoryV2CommandService {
     const slotId = this.#findActiveSlot(rootInstanceId);
     if (!slotId) return this.#failure("Збірка не споряджена.");
     const result = this.#unequipSlot(slotId);
-    if (result.success) this.#showLoadoutPanel();
+    if (result.success) this.#uiState.showLoadoutPanel();
     return result;
   }
 
@@ -563,7 +430,7 @@ export class InventoryV2CommandService {
       );
     }
     const result = this.#transaction.runAtomic(() => {
-      this.#releaseRootFromLoadout(rootInstanceId);
+      this.#itemRemoval.releaseRootFromLoadout(rootInstanceId);
       const releasedLineIds = this.#collectAssemblyLineIds(rootInstanceId);
       const disassembled = this.#assemblyService.disassemble(rootInstanceId);
       for (const lineInstanceId of releasedLineIds) {
@@ -573,7 +440,7 @@ export class InventoryV2CommandService {
       }
       return disassembled;
     });
-    this.#showLoadoutPanel();
+    this.#uiState.showLoadoutPanel();
     return this.#success({
       disassembled: true,
       result,
@@ -602,7 +469,7 @@ export class InventoryV2CommandService {
       equipmentState: this.#equipmentState,
     });
     if (!result.success) return this.#failure(result.warning);
-    this.#showLoadoutPanel();
+    this.#uiState.showLoadoutPanel();
     return this.#equipmentSuccess({ loadoutId, equippedAll: true });
   }
 
@@ -631,7 +498,7 @@ export class InventoryV2CommandService {
     this.#transaction.runAtomic(() => {
       this.#equipRootWithinTransaction(rootInstanceId, slotId);
     });
-    this.#showSavedLoadoutPreview(loadoutId);
+    this.#uiState.showSavedLoadoutPreview(loadoutId);
     return this.#equipmentSuccess({
       loadoutId,
       slotId,
@@ -649,7 +516,7 @@ export class InventoryV2CommandService {
     });
     if (!result.success) return this.#failure(result.warning);
     if (this.#uiState.viewingLoadoutId === loadoutId) {
-      this.#showLoadoutPanel();
+      this.#uiState.showLoadoutPanel();
     }
     return this.#success({ loadoutId, disassembled: true });
   }
@@ -663,14 +530,8 @@ export class InventoryV2CommandService {
   }
 
   #toggleSubfilter(filterId, enabled) {
-    const selected = new Set(this.#uiState.activeSubfilterIds);
-    if (enabled === true) selected.add(filterId);
-    else selected.delete(filterId);
-    this.#uiState.activeSubfilterIds = [...selected];
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
-    this.#clearPlacementOrder();
-    return this.#success({ activeSubfilterIds: [...selected] });
+    const activeSubfilterIds = this.#uiState.toggleSubfilter(filterId, enabled);
+    return this.#success({ activeSubfilterIds });
   }
 
   #selectSortCriterion(criterionId) {
@@ -679,12 +540,8 @@ export class InventoryV2CommandService {
       (criterion) => criterion.id === candidate,
     );
     if (!available) return this.#failure("Невідомий критерій сортування.");
-    const selected = this.#uiState.sortCriterionIds;
-    this.#uiState.sortCriterionIds = selected.includes(candidate)
-      ? selected.filter((id) => id !== candidate)
-      : [...selected, candidate];
     return this.#success({
-      sortCriterionIds: [...this.#uiState.sortCriterionIds],
+      sortCriterionIds: this.#uiState.toggleSortCriterion(candidate),
     });
   }
 
@@ -694,7 +551,7 @@ export class InventoryV2CommandService {
       (direction) => direction.id === candidate,
     );
     if (!available) return this.#failure("Невідомий напрямок сортування.");
-    this.#uiState.sortDirectionId = candidate;
+    this.#uiState.selectSortDirection(candidate);
     return this.#success({ sortDirectionId: candidate });
   }
 
@@ -705,11 +562,8 @@ export class InventoryV2CommandService {
       candidate,
     );
     if (!available) return this.#failure("Невідома рідкість предмета.");
-    const selected = new Set(this.#uiState.activeRarityFilterIds);
-    if (enabled === true) selected.add(candidate);
-    else selected.delete(candidate);
-    this.#uiState.activeRarityFilterIds = [...selected];
-    return this.#success({ activeRarityFilterIds: [...selected] });
+    const activeRarityFilterIds = this.#uiState.toggleRarityFilter(candidate, enabled);
+    return this.#success({ activeRarityFilterIds });
   }
 
   #equipLooseRoot(instanceId, slotId) {
@@ -728,8 +582,8 @@ export class InventoryV2CommandService {
       equippedInstanceId = root.instanceId;
       this.#equipRootWithinTransaction(root.instanceId, slotId);
     });
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
+    this.#uiState.clearSelection();
+    this.#uiState.clearHighlightedSlot();
     return this.#equipmentSuccess({ equippedInstanceId, slotId });
   }
 
@@ -840,7 +694,7 @@ export class InventoryV2CommandService {
         });
       }
     });
-    this.#uiState.selectedInstanceId = null;
+    this.#uiState.clearSelection();
     this.#settlePlacementOrder(rootInstanceId, source.instanceId);
     return this.#success({ attached: true });
   }
@@ -851,7 +705,7 @@ export class InventoryV2CommandService {
       sourceInstanceId,
     );
     if (this.#uiState.placementOrderKey !== expectedKey) {
-      this.#clearPlacementOrder();
+      this.#uiState.clearPlacementOrder();
       return;
     }
     const source = this.#repository.get(sourceInstanceId);
@@ -861,90 +715,11 @@ export class InventoryV2CommandService {
       this.#attachmentTargetResolver
         .findCompatibleTargets(rootInstanceId, source)
         .some((target) => !target.occupied);
-    if (!hasEmptyCompatibleTarget) this.#clearPlacementOrder();
+    if (!hasEmptyCompatibleTarget) this.#uiState.clearPlacementOrder();
   }
 
   #placementOrderKey(rootInstanceId, sourceInstanceId) {
     return `${String(rootInstanceId || "")}:${String(sourceInstanceId || "")}`;
-  }
-
-  #clearPlacementOrder() {
-    this.#uiState.placementOrderKey = null;
-  }
-
-  #consumeItemWithinTransaction(instanceId, amount) {
-    const item = this.#repository.get(instanceId);
-    const quantity = Number(item?.quantity || 0);
-    const requested = Number(amount);
-    if (!item || !Number.isInteger(requested) || requested < 1 || quantity < requested) {
-      return false;
-    }
-    if (quantity > requested) {
-      this.#repository.update(instanceId, { quantity: quantity - requested });
-      return true;
-    }
-
-    if (InventoryItemLocation.isAttached(item.location)) {
-      if (this.#repository.getChildren(item.instanceId).length === 0) {
-        const rootInstanceId = this.#assemblyReader.getRootInstanceId(
-          item.instanceId,
-        );
-        this.#assemblyService.consume({
-          rootInstanceId,
-          parentInstanceId: item.location.parentInstanceId,
-          slotId: item.location.slotId,
-          slotIndex: item.location.slotIndex,
-        });
-        return true;
-      }
-      const rootInstanceId = this.#assemblyReader.getRootInstanceId(item.instanceId);
-      const path = this.#assemblyReader.getPathToItem(rootInstanceId, item.instanceId);
-      this.#assemblyService.clearRefillPreference(rootInstanceId, path);
-      this.#removeSubtree(item.instanceId);
-      return true;
-    }
-
-    this.#clearEquipmentRootReference(item.instanceId);
-    this.#releaseRootFromLoadout(item.instanceId);
-    this.#removeSubtree(item.instanceId);
-    return true;
-  }
-
-  #removeSubtree(instanceId) {
-    const descendants = this.#repository
-      .listDescendants(instanceId)
-      .sort((left, right) => right.depth - left.depth);
-    for (const entry of descendants) {
-      if (this.#repository.has(entry.item.instanceId)) {
-        this.#repository.remove(entry.item.instanceId);
-      }
-    }
-    if (this.#assemblyStates.has(instanceId)) {
-      this.#assemblyStates.remove(instanceId);
-    }
-    if (this.#repository.has(instanceId)) this.#repository.remove(instanceId);
-  }
-
-  #releaseRootFromLoadout(instanceId) {
-    const item = this.#repository.get(instanceId);
-    if (!InventoryItemLocation.isLoadout(item?.location)) return;
-    const location = item.location;
-    const loadout = this.#loadouts.require(location.loadoutId);
-    const roots = { ...loadout.getRootInstanceIds(), [location.slotId]: null };
-    this.#loadouts.remove(loadout.loadoutId);
-    if (Object.values(roots).some(Boolean)) {
-      this.#loadouts.add(
-        new EquipmentLoadout({
-          loadoutId: loadout.loadoutId,
-          name: loadout.name,
-          rootInstanceIds: roots,
-          createdAt: loadout.createdAt,
-          updatedAt: (this.#now ? new Date(this.#now()) : new Date()).toISOString(),
-          now: this.#now,
-        }),
-      );
-    }
-    this.#repository.setLocation(instanceId, InventoryItemLocation.inventory());
   }
 
   #prepareLooseLineForEquipment(source, slotId) {
@@ -1062,90 +837,6 @@ export class InventoryV2CommandService {
       .map((item) => item.instanceId);
   }
 
-  #resolveLegacyEquippedTarget(slotPath) {
-    const match = /^(hooks|baits|deliveryChums)_(\d+)$/.exec(slotPath || "");
-    const index = match ? Number(match[2]) : 0;
-    const tackleRootId = this.#equipmentState.getRootInstanceId("tackle");
-    const deliveryRootId = this.#equipmentState.getRootInstanceId("delivery");
-    const reelRootId = this.#equipmentState.getRootInstanceId("reel");
-    const terminalRootId = this.#equipmentState.getRootInstanceId("terminalLine");
-
-    let item = null;
-    let rootInstanceId = null;
-    if (slotPath === "line") {
-      item = reelRootId
-        ? this.#assemblyReader.getChild(reelRootId, "line", 0)
-        : this.#repository.get(terminalRootId);
-      rootInstanceId = reelRootId || terminalRootId;
-    } else if (slotPath === "leader") {
-      item = this.#repository.get(terminalRootId);
-      rootInstanceId = terminalRootId;
-    } else if (slotPath === "feederRig") {
-      item = this.#repository.get(tackleRootId);
-      rootInstanceId = tackleRootId;
-    } else if (slotPath === "feederChum") {
-      item = this.#assemblyReader.getChild(tackleRootId, "chum", 0);
-      rootInstanceId = tackleRootId;
-    } else if (match?.[1] === "hooks") {
-      const root = this.#repository.get(tackleRootId);
-      item = this.#type(root) === "hook" && index === 0
-        ? root
-        : this.#assemblyReader.getChild(tackleRootId, "hook", index);
-      rootInstanceId = tackleRootId;
-    } else if (match?.[1] === "baits") {
-      const root = this.#repository.get(tackleRootId);
-      if (["lure", "spinner", "wobbler", "jig"].includes(this.#type(root))) {
-        item = index === 0 ? root : null;
-      } else {
-        const hook = this.#type(root) === "hook" && index === 0
-          ? root
-          : this.#assemblyReader.getChild(tackleRootId, "hook", index);
-        item = hook
-          ? this.#assemblyReader.getChild(hook.instanceId, "bait", 0)
-          : null;
-      }
-      rootInstanceId = tackleRootId;
-    } else if (match?.[1] === "deliveryChums") {
-      item = this.#assemblyReader.getChild(deliveryRootId, "cargo", index);
-      rootInstanceId = deliveryRootId;
-    } else {
-      const slotMap = {
-        rod: "rod",
-        reel: "reel",
-        float: "float",
-        net: "net",
-        delivery: "delivery",
-        handChum: "handChum",
-      };
-      const equipmentSlotId = slotMap[slotPath];
-      rootInstanceId = equipmentSlotId
-        ? this.#equipmentState.getRootInstanceId(equipmentSlotId)
-        : null;
-      item = this.#repository.get(rootInstanceId);
-    }
-    return item ? { item, rootInstanceId } : null;
-  }
-
-  #runAutoRefill(trigger, context) {
-    try {
-      const report = this.#transaction.runAtomic(() =>
-        this.#autoRefillCoordinator.handle(trigger, context),
-      );
-      return this.#success({ report, warning: report.warning });
-    } catch (error) {
-      return this.#failure(error.message, error);
-    }
-  }
-
-  #clearEquipmentRootReference(instanceId) {
-    if (!instanceId) return;
-    for (const slotId of this.#equipmentState.getSlotIds()) {
-      if (this.#equipmentState.getRootInstanceId(slotId) === instanceId) {
-        this.#equipmentState.clear(slotId);
-      }
-    }
-  }
-
   #findActiveSlot(instanceId) {
     return this.#equipmentState
       .getSlotIds()
@@ -1171,33 +862,6 @@ export class InventoryV2CommandService {
     return this.#hydrate(rawItem)?.itemType || null;
   }
 
-  #showAssemblyEditor(rootInstanceId) {
-    this.#uiState.panelMode = "assembly";
-    this.#uiState.editingRootInstanceId = rootInstanceId;
-    this.#uiState.viewingLoadoutId = null;
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
-    this.#clearPlacementOrder();
-  }
-
-  #showLoadoutPanel() {
-    this.#uiState.panelMode = "loadout";
-    this.#uiState.editingRootInstanceId = null;
-    this.#uiState.viewingLoadoutId = null;
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
-    this.#clearPlacementOrder();
-  }
-
-  #showSavedLoadoutPreview(loadoutId) {
-    this.#uiState.panelMode = "loadout";
-    this.#uiState.editingRootInstanceId = null;
-    this.#uiState.viewingLoadoutId = loadoutId;
-    this.#uiState.selectedInstanceId = null;
-    this.#uiState.highlightedEquipmentSlotId = null;
-    this.#clearPlacementOrder();
-  }
-
   #assertAllowedPlan(plan) {
     if (plan?.allowed !== true) {
       throw new InventoryV2ApplicationError(
@@ -1219,23 +883,16 @@ export class InventoryV2CommandService {
   }
 
   #success(extra = {}) {
-    return Object.freeze({ success: true, warning: null, refresh: true, ...extra });
+    return inventoryCommandSuccess(extra);
   }
 
   #equipmentSuccess(extra = {}) {
-    this.#uiState.activeCategoryId = "compatible";
-    this.#uiState.activeSubfilterIds = [];
-    this.#clearPlacementOrder();
+    this.#uiState.focusCompatibleCategory();
     return this.#success(extra);
   }
 
   #failure(warning, error = null) {
-    return Object.freeze({
-      success: false,
-      warning: warning || "Не вдалося виконати дію.",
-      refresh: true,
-      error,
-    });
+    return inventoryCommandFailure(warning, error);
   }
 
   #assertDependencies() {
@@ -1255,11 +912,12 @@ export class InventoryV2CommandService {
       [this.#settings, "settings"],
       [this.#refillMemory, "refillMemory"],
       [this.#signaturePolicy, "signaturePolicy"],
-      [this.#autoRefillCoordinator, "autoRefillCoordinator"],
       [this.#hydrator, "hydrator"],
       [this.#lineAllocationService, "lineAllocationService"],
       [this.#equipmentLineReadinessPolicy, "equipmentLineReadinessPolicy"],
       [this.#sortConfig, "sortConfig"],
+      [this.#uiState, "uiState"],
+      [this.#itemRemoval, "itemRemoval"],
     ];
     for (const [dependency, name] of dependencies) {
       if (!dependency) throw new TypeError(`InventoryV2CommandService requires ${name}`);
