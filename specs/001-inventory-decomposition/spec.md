@@ -1,6 +1,6 @@
 # Feature Specification: Inventory decomposition (Stage 7 final step)
 
-**Feature Branch**: `develop` · **Created**: 2026-10-08 · **Status**: Approved by owner (chat, 2026-10-08)
+**Feature Branch**: `develop` · **Created**: 2026-10-08 · **Status**: Implemented (see tasks.md); class names below predate the removal of the "V2" marker
 **Input**: "Розподіл InventoryManager (~1400 рядків: сховище предметів, екіпірування і форматування характеристик
 для показу) та InventoryCommandService (~1300) — останній великий крок перед релізом і тегом закриття Stage 7."
 

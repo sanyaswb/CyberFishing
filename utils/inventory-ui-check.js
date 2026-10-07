@@ -367,11 +367,11 @@ class InventoryStaticContractCheck {
     const expected = [
       "InventoryActionContract",
       "InventoryUI",
-      "InventoryBootstrap",
+      "InventoryUiBootstrap",
       "InventoryLongPressController",
       "InventoryLoadoutPanelRenderer",
       "InventoryAssemblyEditorRenderer",
-      "InventoryInventoryGridRenderer",
+      "InventoryGridRenderer",
       "InventoryAttachmentBadgeRenderer",
       "InventoryTooltipPresenter",
       "InventorySavedLoadoutPreviewRenderer",
@@ -448,7 +448,7 @@ class InventoryStaticContractCheck {
       ".inventory-loadout-panel__auxiliary",
       ".inventory-assembly-editor__workspace",
       ".inventory-saved-loadout-preview__slots",
-      ".inventory-inventory-grid",
+      ".inventory-list-grid",
       ".inventory-attachments--reel-line",
       ".inventory-attachments--hook",
       ".inventory-attachments--boat-cargo",
@@ -477,7 +477,7 @@ class InventoryStaticContractCheck {
       ".inventory-sort-options__button",
       ".inventory-sort-options__criterion.is-active::before",
       ".inventory-sort-options__rarity",
-      ".inventory-inventory-item.is-compatible:not(.is-selected)",
+      ".inventory-list-item.is-compatible:not(.is-selected)",
       ".inventory-tooltip",
       ".inventory-balance-tooltip__row",
       ".inventory-balance-tooltip__identity",
@@ -933,7 +933,7 @@ class InventoryStaticContractCheck {
         return { refresh: false };
       },
     };
-    const ui = sandbox.InventoryBootstrap.create({
+    const ui = sandbox.InventoryUiBootstrap.create({
       facade,
       documentRef: document,
       mountNode: document.body,
@@ -1417,7 +1417,7 @@ class InventoryStaticContractCheck {
     );
     const scrollableInventory = this.#findByClass(
       ui.rootNode,
-      "inventory-inventory-grid",
+      "inventory-list-grid",
     );
     scrollableLoadout.scrollTop = 37;
     scrollableInventory.scrollTop = 91;
@@ -2581,7 +2581,7 @@ class InventoryStaticContractCheck {
   #inventoryCard(root, instanceId) {
     const wrapper = this.#walk(root).find(
       (node) =>
-        node.classList.contains("inventory-inventory-item") &&
+        node.classList.contains("inventory-list-item") &&
         node.dataset.instanceId === instanceId,
     );
     assert.ok(wrapper, `Missing inventory item ${instanceId}`);

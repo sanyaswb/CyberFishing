@@ -6,7 +6,7 @@ import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/invent
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
-import { InventoryInventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
+import { InventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
 import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inventory_item_card_renderer.js";
 import { InventoryItemParametersRenderer } from "../../game/presentation/inventory/inventory_item_parameters_renderer.js";
 import { InventoryItemParametersResolver } from "../../game/presentation/inventory/inventory_item_parameters_resolver.js";
@@ -18,14 +18,14 @@ import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/in
 import { InventoryTooltipPresenter } from "../../game/presentation/inventory/inventory_tooltip_presenter.js";
 import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
 
-export class InventoryBootstrap {
+export class InventoryUiBootstrap {
   static create({ autoMount = true, autoOpen = false, ...options } = {}) {
     const ui = new InventoryUI({
       ...options,
       facadeContract: InventoryFacadeContract,
       actionContract: InventoryActionContract,
       actionTypes: InventoryActionType,
-      createPresentation: (presentationOptions) => InventoryBootstrap.#createPresentation(presentationOptions),
+      createPresentation: (presentationOptions) => InventoryUiBootstrap.#createPresentation(presentationOptions),
     });
     if (autoMount) ui.mount();
     if (autoOpen) ui.open();
@@ -131,7 +131,7 @@ export class InventoryBootstrap {
       });
     const resolvedInventoryRenderer =
       inventoryRenderer ||
-      new InventoryInventoryGridRenderer({
+      new InventoryGridRenderer({
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController(),

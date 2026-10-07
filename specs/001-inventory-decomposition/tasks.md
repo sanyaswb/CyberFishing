@@ -1,23 +1,31 @@
 # Tasks: Inventory decomposition
 
 Each task: implement → focused check → `npm run check` → game-cycle digest → guard → commit.
+Names below are the final ones (the "V2" marker was dropped afterwards, commit `4af3e8f`).
 
-## Phase A — InventoryManager
-- [ ] A1 `TackleLoadLimitPolicy` (domain) with the exact `getMaxTackleLoadKg` formula; manager delegates.
-- [ ] A2 `RodCastDisplayStatsWriter` + `ROD_CAST_DISPLAY_LABELS` (presentation), injected by bootstrap.
-- [ ] A3 `LegacyInventorySaveSource`: legacy cache keys, id/equipment migration, configured seeding.
-- [ ] A4 `InventoryItemViewContext`: reel config, line-capacity context (legacy snapshot, preserved), freshness.
-- [ ] A5 `PlayerInventory` composed in bootstrap; delete `InventoryManager` and V1-only classes; migrate tests
-      (`inventory-lifecycle` legacy-save scenario via V2, `cast-and-lure`/`freshness` source assertions).
-- [ ] A6 Browser smoke (inventory open/equip/reload) and commit.
+## Phase A — InventoryManager (commit `4c7bb50`)
+- [x] A1 `TackleLoadLimitPolicy` (domain) with the exact `getMaxTackleLoadKg` formula.
+- [x] A2 `RodCastDisplayStatsWriter` + `ROD_CAST_DISPLAY_LABELS` (presentation), injected by bootstrap.
+- [x] A3 `LegacyInventorySaveSource` (+ `LegacyInventoryItems`): legacy keys, id/equipment migration, seeding.
+- [x] A4 `InventoryItemViewContext`: reel config, line-capacity context (legacy snapshot, preserved), freshness.
+- [x] A5 `PlayerInventory` composed in `bootstrap/production/player_inventory_composition.js`; `InventoryManager`,
+      `InventoryEquipment`, `EquipmentValidator`, `LineInventoryController`, `InventoryItemStackingPolicy`
+      deleted; `player-inventory` check added; `inventory-lifecycle` replaced by `game-application-composition`.
+- [x] A6 Differential run old vs new (72 steps × 2 scenarios, identical); browser smoke.
 
-## Phase B — InventoryV2CommandService
-- [ ] B1 `inventoryCommandSuccess/Failure` shared builders.
-- [ ] B2 `InventoryItemRemovalService` (consume within transaction, subtree removal, loadout release, root clear).
-- [ ] B3 `InventoryV2GameplayCommands` (consume*, breakEquippedLine, rodRetrieved, handChumUsed, boatReturned);
-      gameplay bridge uses it.
-- [ ] B4 `InventoryV2UiState` owns navigation state; command service uses it.
+## Phase B — command service (commit `4778135`)
+- [x] B1 `inventoryCommandSuccess/Failure`.
+- [x] B2 `InventoryItemRemovalService`.
+- [x] B3 `InventoryGameplayCommands`; the gameplay bridge depends on it.
+- [x] B4 `InventoryUiState`; `InventoryCommandService` 1,294 → 952 lines.
+- [x] Differential run against the previous commit in a worktree (144/152 steps, identical).
+
+Decision (rule 9 of the owner's decomposition framework): the remaining `InventoryCommandService` interprets
+player inventory actions into equipment, assembly and loadout transactions that share one core
+(`#equipRootWithinTransaction`, `#validateEquipment`, `#findEquipmentSlot`); it is not split further only because
+of its size. SC-002's "~400 lines" target therefore does not apply to it.
 
 ## Phase C — Acceptance and closure
+- [x] C0 Drop the "V2" naming (owner request); the save key `fishing_game_player_inventory_v2` stays.
 - [ ] C1 Full checks, digest, guard, fresh clone + `npm ci`, browser smoke of both pages.
-- [ ] C2 Release 0.29.0 (CHANGELOG, version pins), tag `v0.29.0` and `stage7-closed`, update docs/architecture.md.
+- [ ] C2 Release 0.29.0, tags `v0.29.0` and `stage7-closed`.

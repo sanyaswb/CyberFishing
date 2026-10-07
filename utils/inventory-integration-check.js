@@ -75,7 +75,7 @@ const files = [
   "src/game/application/inventory/inventory_equipment_line_readiness_policy.js",
   "src/game/presentation/inventory/inventory_view_model.js",
   "src/game/application/inventory/inventory_command_service.js",
-  "src/game/application/inventory/inventory_gameplay_facade.js",
+  "src/game/application/inventory/inventory_gameplay_bridge.js",
   "src/game/application/inventory/inventory_facade.js",
   "src/bootstrap/production/inventory_composition_root.js",
 ];

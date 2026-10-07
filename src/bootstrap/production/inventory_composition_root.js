@@ -33,7 +33,7 @@ import { InventoryUiState } from "../../game/application/inventory/inventory_ui_
 import { InventoryEquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
 import { InventoryEquipmentTransitionPort } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
 import { InventoryFacade } from "../../game/application/inventory/inventory_facade.js";
-import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_facade.js";
+import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_bridge.js";
 import { InventoryItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
 import { InventoryItemOrderResolver } from "../../game/presentation/inventory/inventory_item_order_resolver.js";
 import { InventoryItemTreeViewFactory } from "../../game/presentation/inventory/inventory_item_tree_view_factory.js";

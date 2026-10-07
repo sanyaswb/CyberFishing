@@ -118,7 +118,7 @@ export class InventoryItemCardRenderer {
   ) {
     const wrapper = this.#dom.element(
       "div",
-      "inventory-inventory-item",
+      "inventory-list-item",
     );
     wrapper.classList.toggle("is-selected", selected);
     wrapper.classList.toggle("is-compatible", compatible);

@@ -69,7 +69,7 @@ import { InventoryRuntimeConfigProvider } from "../../game/application/inventory
 import { ItemDatabase } from "../../game/application/inventory/item_database.js";
 import { LineCompatibilityRules } from "../../game/application/inventory/line_compatibility_rules.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
-import { InventoryBootstrap } from "./inventory_ui_bootstrap.js";
+import { InventoryUiBootstrap } from "./inventory_ui_bootstrap.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
@@ -779,7 +779,7 @@ export class GameCompositionRoot {
     if (!inventoryFacade) {
       throw new Error("Inventory composition is required");
     }
-    systems.inventoryUI = own(InventoryBootstrap.create({
+    systems.inventoryUI = own(InventoryUiBootstrap.create({
       facade: inventoryFacade,
       documentRef: this.#documentTarget,
       mountNode: this.#documentTarget?.body,

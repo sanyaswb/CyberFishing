@@ -31,6 +31,21 @@ Production GodMode and Fixed Catch are off; DEV composition switches them on for
 
 Styles live in `src/game/presentation/styles/`; DEV metric/parameter descriptions in `src/dev/metadata/`.
 
+## Inventory
+
+`bootstrap/production/player_inventory_composition.js` composes the player's inventory once per page:
+
+- `LegacyInventorySaveSource` reads the classic save keys (`player_inventory`, `player_equipment`), migrates and
+  seeds them; the inventory uses the result only when its own save (`fishing_game_player_inventory_v2`, schema 4)
+  does not exist yet.
+- `InventoryCompositionRoot` builds the repository, assemblies, equipment state, loadouts, transactions and:
+  `InventoryCommandService` (player actions from the UI), `InventoryUiState` (navigation state),
+  `InventoryGameplayCommands` (consumption, line breaks, auto-refill), `InventoryItemRemovalService`,
+  `InventoryGameplayBridge` (read models and readiness for gameplay) and `InventoryFacade` (view model + dispatch).
+- `PlayerInventory` is what the game uses: lock while tackle is in the water, cached equipment with the rod's cast
+  display stats (`RodCastDisplayStatsWriter`, labels from presentation), tackle load limit (`TackleLoadLimitPolicy`),
+  change events, consumption and gameplay events.
+
 ## Guard
 
 `utils/architecture-check.js` (Quick and Architecture suites) parses every `src/**/*.js` module and fails on:

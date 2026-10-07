@@ -1,4 +1,4 @@
-export class InventoryInventoryGridRenderer {
+export class InventoryGridRenderer {
   #dom;
   #itemRenderer;
   #horizontalScrollController;
@@ -31,7 +31,7 @@ export class InventoryInventoryGridRenderer {
   ) {
     const panel = this.#dom.element(
       "section",
-      "inventory-inventory-panel",
+      "inventory-list-panel",
     );
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
@@ -247,12 +247,12 @@ export class InventoryInventoryGridRenderer {
   }
 
   #renderItems(model, { onItemActivate, onItemLongPress }) {
-    const grid = this.#dom.element("div", "inventory-inventory-grid");
+    const grid = this.#dom.element("div", "inventory-list-grid");
     if (!model.items.length) {
       grid.appendChild(
         this.#dom.element(
           "p",
-          "inventory-inventory-grid__empty",
+          "inventory-list-grid__empty",
           model.emptyMessage,
         ),
       );
