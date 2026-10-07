@@ -31,6 +31,12 @@ class StageThreeCompatibilityBuildApplication {
   }
 
   async run() {
+    const native = require("../architecture/stage_six/native_development_retirement").NativeDevelopmentRetirement.read(this.projectRoot);
+    if (native) {
+      new (require("./compat_runtime/cumulative_runtime_output_manager").CumulativeRuntimeOutputManager)(this.projectRoot,
+        this.#json("architecture/migration/stage_3_compatibility_runtime.json").output).cleanupInactiveOutput();
+      return Object.freeze({status:"retired-native-esm",moduleCount:0,activationCount:0,outputs:Object.freeze([])});
+    }
     const statePath = this.#path(
       "architecture/migration/stage_3_execution_state.json",
     );

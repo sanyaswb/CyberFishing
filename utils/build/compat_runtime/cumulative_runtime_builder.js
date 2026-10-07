@@ -211,6 +211,12 @@ class CumulativeRuntimeBuildApplication {
   }
 
   async run() {
+    if (this.contract.nativeRetirement) {
+      const record = require("../../architecture/stage_six/native_development_retirement").NativeDevelopmentRetirement.read(this.projectRoot);
+      if (!record) throw new Error("Unreviewed native runtime retirement");
+      this.outputManager.cleanupInactiveOutput();
+      return Object.freeze({status:"retired-native-esm",moduleCount:0,activationCount:0,outputs:Object.freeze([])});
+    }
     const contract = new CumulativeRuntimeContractValidator().validate(this.contract);
     const selection = new StageThreeTargetSelector().select({
       approvedPlan: this.approvedPlan,

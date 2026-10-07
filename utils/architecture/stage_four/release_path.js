@@ -86,10 +86,11 @@ class StageFourRelease {
   // Reviewed representations of the unchanged logical version source anchor (Stage 5).
   static versionSource(read) {
     const literal = /^(?:export )?const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu;
-    if (literal.test(read(FILES.source))) return FILES.source;
-    const prepared = "src/config/project_version_catalog.js";
-    if (literal.test(read(prepared))) return prepared;
-    return "src/game/presentation/version/project_version.js";
+    for (const file of [FILES.source,"src/config/project_version_catalog.js","src/game/presentation/version/project_version.js"]) {
+      try { if (literal.test(read(file))) return file; }
+      catch (error) { if (error.code !== "ENOENT") throw error; }
+    }
+    throw new Error("Canonical project version source is missing");
   }
 
   // Version pins of a tree; all of them must agree.
@@ -99,7 +100,12 @@ class StageFourRelease {
     const source = /^(?:export )?const CURRENT_PROJECT_VERSION = "([^"]+)";(?=\r?$)/mu.exec(read(StageFourRelease.versionSource(read)))?.[1];
     const legacySource = policy === null ? FILES.index : policy.migrationManifest?.legacyLoadOrder?.source;
     assert(["index.html", "dev.html"].includes(legacySource), "Unreviewed legacy version source");
-    const queries = [...read(legacySource).matchAll(/src\/config\/project_version\.js\?v=([0-9.]+)"/gu)].map((m) => m[1]);
+    const classicQueries = [...read(legacySource).matchAll(/src\/config\/project_version\.js\?v=([0-9.]+)"/gu)].map((m) => m[1]);
+    // Stage 6 native DEV: the DEV page pins its single module entry instead of the classic version script, never both.
+    const devEntryQueries = legacySource === "dev.html"
+      ? [...read(legacySource).matchAll(/src\/entrypoints\/dev\.entry\.js\?v=([0-9.]+)"/gu)].map(m => m[1]) : [];
+    assert(classicQueries.length === 0 || devEntryQueries.length === 0, "DEV page mixes classic and native version pins");
+    const queries = [...classicQueries, ...devEntryQueries];
     const nativeQueries = legacySource === "dev.html"
       ? [...read(FILES.index).matchAll(/src\/entrypoints\/game\.entry\.js\?v=([0-9.]+)"/gu)].map(m => m[1]) : [];
     assert(legacySource !== "dev.html" || nativeQueries.length === 1, "native production version query must occur exactly once");

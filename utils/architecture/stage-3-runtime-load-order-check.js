@@ -25,9 +25,12 @@ function violations(load, positions) {
     (item.legacyScriptIndex === load.slot && !load.precedesWholeSlot));
 }
 
-const contract = json("architecture/migration/stage_3_compatibility_runtime.json");
+const retirement=require("./stage_six/native_development_retirement").NativeDevelopmentRetirement.read(ROOT);
+const archive=file=>require("node:child_process").execFileSync("git",["cat-file","blob",retirement.postClosureCleanup.archiveCommit+":"+file],{cwd:ROOT,maxBuffer:30e6}).toString("utf8");
+const contract = retirement ? JSON.parse(archive("architecture/migration/stage_3_compatibility_runtime.json")) : json("architecture/migration/stage_3_compatibility_runtime.json");
+if(retirement) { const tags=[...read("dev.html").toString().matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/giu)];assert.equal(tags.length,1);assert(tags[0][1].includes('type="module"')&&tags[0][1].includes("src/entrypoints/dev.entry.js?v="));assert.equal(tags[0][2].trim(),""); }
 const runtimePath = contract.output.directory + contract.output.runtimeFile;
-const load = CumulativeRuntimeLoadSlot.read({ html: fs.readFileSync(LegacyScriptOrderReader.sourcePath(ROOT), "utf8"),
+const load = CumulativeRuntimeLoadSlot.read({ html: retirement ? archive("dev.html") : fs.readFileSync(LegacyScriptOrderReader.sourcePath(ROOT), "utf8"),
   aliases: new StageThreeRuntimeScriptAliasResolver().resolve(contract), runtimePath });
 const state = json("architecture/migration/stage_3_execution_state.json");
 const plan = new StageThreeApprovedPlanSource({ read }).load(state).document;

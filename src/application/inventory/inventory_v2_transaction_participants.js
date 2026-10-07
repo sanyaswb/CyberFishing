@@ -1,2 +1,0 @@
-// Retired Stage 4 activation activation-22a1f6f4a0bb: InventoryV2SettingsTransactionParticipant is served only through ESM imports of src/game/application/inventory/inventory_transaction_participants.js.
-// Retired Stage 4 activation activation-243fc2640274: InventoryV2RefillMemoryTransactionParticipant is served only through ESM imports of src/game/application/inventory/inventory_transaction_participants.js.

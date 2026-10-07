@@ -12,6 +12,7 @@ const { ControlledMetadataTransaction } = require("./domain_batches/controlled_m
 const { StageThreeLivePreflight } = require("./domain_batches/stage_three_live_preflight");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 
 const ROOT = path.resolve(__dirname, "../..");
 const CONTRACT = "architecture/migration/stage_3_compatibility_runtime.json";
@@ -21,12 +22,29 @@ const CONTRACT = "architecture/migration/stage_3_compatibility_runtime.json";
 class ActivationRetirementFixtures {
   constructor(root = ROOT) {
     this.root = root;
-    this.runtime = JSON.parse(fs.readFileSync(path.join(root, CONTRACT)));
+    this.live = JSON.parse(fs.readFileSync(path.join(root, CONTRACT)));
+    const retirement = NativeDevelopmentRetirement.read(root);
+    this.archive = retirement && NativeDevelopmentRetirement.archive(root, retirement);
+    // After the Stage 6 native retirement the fixtures exercise the exact archived pre-retirement contract and
+    // placeholder bytes; the live zero-activation contract is checked separately by nativeRetirement().
+    this.runtime = this.archive ? this.archive.json(CONTRACT) : this.live;
     this.retired = this.runtime.retiredActivations || [];
+    // A generated Stage 2 provider was built from its frozen wrapper; after retirement neither output nor wrapper is live.
+    this.generatedFrom = new Map(JSON.parse(fs.readFileSync(path.join(root, "architecture/migration/stage_2_approved_batches.json")))
+      .batches.flatMap(batch => batch.bridgeStrategy?.bridges || []).map(bridge => [bridge.outputPath, bridge.wrapperPath]));
+  }
+
+  source(file) {
+    if (!this.archive) return fs.readFileSync(path.join(this.root, file), "utf8");
+    const archived = this.archive.has(file) ? file : this.generatedFrom.get(file);
+    assert(archived && this.archive.has(archived), `retired placeholder has no raw recovery: ${file}`);
+    assert(!fs.existsSync(path.join(this.root, file)), `retired placeholder output still exists: ${file}`);
+    return this.archive.text(archived);
   }
 
   run() {
     const results = [
+      this.nativeRetirement(),
       this.ledgerContract(),
       this.projection(),
       this.placeholder(),
@@ -36,6 +54,25 @@ class ActivationRetirementFixtures {
       this.inertModules(),
     ];
     return results.reduce((count, value) => count + value, 0);
+  }
+
+  // Live native topology: zero active runtime records, unchanged retirement provenance, every historical
+  // placeholder source removed from the tree and recoverable only from the hash-validated archive.
+  nativeRetirement() {
+    if (!this.archive) return 0;
+    const validator = new CumulativeRuntimeContractValidator();
+    validator.validate(this.live);
+    for (const field of ["activationPositions", "inertModules", "sideEffectReviews"]) assert.deepEqual(this.live[field], []);
+    assert.deepEqual(this.live.retiredActivations, this.runtime.retiredActivations, "native retirement keeps provenance");
+    assert(this.runtime.activationPositions.length > 0, "fixtures need the archived active contract");
+    const providers = new Set([...this.retired.map(record => record.activation.sourceProvider),
+      ...this.runtime.activationPositions.map(activation => activation.sourceProvider)].filter(file => file.startsWith("src/")));
+    for (const file of providers) {
+      assert(!fs.existsSync(path.join(this.root, file)), `retired classic source still exists: ${file}`);
+      assert(this.archive.has(file), `retired classic source has no raw recovery: ${file}`);
+    }
+    assert.throws(() => this.archive.text("src/entrypoints/dev.entry.js"), /no recorded pin/u);
+    return 2 + providers.size;
   }
 
   ledgerContract() {
@@ -81,10 +118,10 @@ class ActivationRetirementFixtures {
     // retirement (batch 045) leaves the source as the shim of its still-active activations instead.
     const inert = this.retired.filter(record => record.placeholder === "inert-classic-position");
     for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(inert.map(item => item.activation))) {
-      placeholder.validateProvider({ code: fs.readFileSync(path.join(this.root, sourceProvider), "utf8"), activations });
+      placeholder.validateProvider({ code: this.source(sourceProvider), activations });
     }
     for (const record of this.retired.filter(item => item.placeholder === "shared-source-line-removed")) {
-      const code = fs.readFileSync(path.join(this.root, record.activation.sourceProvider), "utf8");
+      const code = this.source(record.activation.sourceProvider);
       assert(!code.includes(`globalThis.${record.activation.legacySymbol} =`), `shared source still publishes ${record.activation.id}`);
       assert(this.runtime.activationPositions.some(item => item.sourceProvider === record.activation.sourceProvider));
     }

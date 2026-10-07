@@ -10,6 +10,7 @@ const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 const { StageFourRelease } = require("./stage_four/release_path");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const paths = {
   packageJson: path.join(PROJECT_ROOT, "package.json"),
@@ -48,15 +49,17 @@ class PackageContractCheck {
     const stageThreeRuntime = JSON.parse(
       bytes.get("stageThreeRuntime").toString("utf8"),
     );
+    const nativeDevelopment=NativeDevelopmentRetirement.read(PROJECT_ROOT)!==null;
     const expectedStage = {
+      nativeDevelopment,
       nativeProduction: JSON.parse(bytes.get("policy").toString("utf8")).migrationManifest.legacyLoadOrder.source === "dev.html",
       // Stage 4.N after N applied cluster records; the Stage 3 label until the first one.
-      current: StageFourClusterLedger.cumulative(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
+      current: nativeDevelopment ? "6.0" : StageFourClusterLedger.cumulative(PROJECT_ROOT).stageLabel(new StageThreeApprovedPlanSource({
         read: (file) => fs.readFileSync(path.join(PROJECT_ROOT, file)),
       }).currentStage(stageThreeState)),
       // A retired activation's ESM module stays in the cumulative graph for its importers.
       // Inert modules (batch 050) are graph modules without an activation.
-      runtimeInputs: new Set([...[
+      runtimeInputs: nativeDevelopment ? 0 : new Set([...[
         ...stageThreeRuntime.activationPositions,
         ...(stageThreeRuntime.retiredActivations || []).map((record) => record.activation),
       ].map((activation) => activation.targetModule),

@@ -1,1 +1,0 @@
-// Retired Stage 4 activation activation-2af009b4d5ac: InventoryV2EquipmentTransitionPort is served only through ESM imports of src/game/application/inventory/inventory_equipment_transition_adapter.js.

@@ -37,13 +37,22 @@ class ViteFixtureContractValidator {
   }
 
   validateRuntimeTopology({ legacySource, indexHtml, legacyHtml, version, runtimePath,
-    gameEntrypointExists, devEntrypointExists }) {
+    gameEntrypointExists, devEntrypointExists, nativeDevelopment = false }) {
     const scripts = html => [...html.replace(/<!--[\s\S]*?-->/gu, "")
       .matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/giu)];
     const source = script => /\bsrc\s*=\s*["']([^"']+)["']/iu.exec(script[1])?.[1];
     const module = script => /\btype\s*=\s*["']module["']/iu.test(script[1]);
     const require = (condition, message) => { if (!condition) throw new Error("Runtime entrypoint topology: " + message); };
     require(["index.html", "dev.html"].includes(legacySource), "unreviewed legacy source");
+    if (nativeDevelopment) {
+      require(legacySource === "dev.html" && gameEntrypointExists && devEntrypointExists,"both native entries are required");
+      for (const [html,entry] of [[indexHtml,"game"],[legacyHtml,"dev"]]) {
+        const tags=scripts(html);
+        require(tags.length === 1 && module(tags[0]) && !tags[0][2].trim() &&
+          source(tags[0]) === `src/entrypoints/${entry}.entry.js?v=${version}`,"native page must contain only its exact native entrypoint");
+      }
+      return;
+    }
     require(!devEntrypointExists, "native DEV entrypoint is reserved for Stage 6");
     const classic = scripts(legacyHtml);
     require(classic.every(script => source(script) && !script[2].trim() && !module(script)), "legacy document must remain external classic scripts");
@@ -90,6 +99,44 @@ class ViteFixtureContractValidator {
         entries.get(observed.observations[0].resolvedTarget)?.architecture.targetBoundary !== "bootstrap-production"))
         throw new Error("Native game entry must import only Production Bootstrap");
     }
+    return [...visited].sort();
+  }
+
+  validateDevelopmentGraph({ manifest }) {
+    const observer=new EsmDependencyObserver({projectRoot:this.projectRoot});
+    const entries=new Map(manifest.modules.map(item=>[item.currentPath,item]));
+    const allowed=new Set(["engine","game-config-raw","game-config","game-domain","game-application-ports",
+      "game-application","game-presentation","platform","bootstrap-production","dev","bootstrap-development","entrypoint-dev"]);
+    const entry="src/entrypoints/dev.entry.js",visited=new Set(),active=new Set();
+    const visit=file=>{
+      if (active.has(file)) throw new Error("Native DEV graph contains an import cycle: " + file);
+      if (visited.has(file)) return;
+      active.add(file);
+      const ownership=entries.get(file)?.architecture;
+      if (!allowed.has(ownership?.targetBoundary) || !["esm","verified"].includes(ownership?.migrationStatus) ||
+        ownership.roles.includes("compatibility-bridge") || file.startsWith("src/engine/compat/") ||
+        file === "src/bootstrap/production/game_startup.js") throw new Error("Native DEV graph reaches forbidden ownership: " + file);
+      const source=fs.readFileSync(path.join(this.projectRoot,file),"utf8");
+      if (source.includes("__CYBER_FISHING_COMPAT_RUNTIME__")) throw new Error("Native DEV graph reads compatibility transport: " + file);
+      const tree=require("espree").parse(source,{ecmaVersion:"latest",sourceType:"module"});
+      if (!tree.body.some(node=>node.type === "ExportNamedDeclaration" || node.type === "ImportDeclaration") ||
+        tree.body.some(node=>["ExportAllDeclaration","ExportDefaultDeclaration"].includes(node.type)))
+        throw new Error("Native DEV graph requires authored named ESM: " + file);
+      const observed=observer.observeFile(file,source);
+      if (observed.status !== "verified") throw new Error("Native DEV graph contains invalid syntax: " + file);
+      if (observed.externalIdentifiers.some(name=>["CONFIG","BASE_CONFIG","DEBUG_MODULES","GodMode","DevTools"].includes(name)))
+        throw new Error("Native DEV graph reads an unbound config/DEV global: " + file);
+      for (const dependency of observed.observations) {
+        if (dependency.resolutionStatus !== "confirmed-project" || !dependency.hasExplicitJsExtension)
+          throw new Error("Native DEV graph contains an unapproved import: " + file + " -> " + dependency.specifier);
+        visit(dependency.resolvedTarget);
+      }
+      if (file === entry && (observed.observations.length !== 1 || observed.observations[0].mechanism !== "static-import" ||
+        entries.get(observed.observations[0].resolvedTarget)?.architecture.targetBoundary !== "bootstrap-development"))
+        throw new Error("Native DEV entry must import only Development Bootstrap");
+      active.delete(file);visited.add(file);
+    };
+    visit(entry);
     return [...visited].sort();
   }
 

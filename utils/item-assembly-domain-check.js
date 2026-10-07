@@ -1,4 +1,3 @@
-const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const { CheckAssertion } = require("./testing/core/check_assertion");
@@ -6,72 +5,53 @@ const { CheckAssertion } = require("./testing/core/check_assertion");
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item assembly check");
 
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
+
 class AssemblyRuntimeLoader {
   #context = vm.createContext({ console });
 
   load() {
-    this.#load("dist/stage-3-compat-runtime/compat_runtime.iife.js", []);
-    this.#load(
+    const loader = new NativeEsmTestLoader({ projectRoot: ROOT, context: this.#context });
+    loader.load(
       "src/config/inventory/item_assembly_profile_config.js",
       ["ITEM_ASSEMBLY_PROFILE_IDS", "ITEM_ASSEMBLY_PROFILE_CONFIG"],
     );
-    this.#load("src/core/inventory/inventory_item_location.js", [
+    loader.load("src/core/inventory/inventory_item_location.js", [
       "InventoryItemLocationKind",
       "InventoryItemLocation",
     ]);
-    this.#load("src/core/inventory/unlimited_assembly_capacity_policy.js", [
+    loader.load("src/core/inventory/unlimited_assembly_capacity_policy.js", [
       "UnlimitedAssemblyCapacityPolicy",
     ]);
-    this.#load("src/core/inventory/item_assembly_stacking_policy.js", [
+    loader.load("src/core/inventory/item_assembly_stacking_policy.js", [
       "ItemAssemblyStackingPolicy",
     ]);
-    this.#load("src/core/inventory/flat_inventory_item_repository.js", [
+    loader.load("src/core/inventory/flat_inventory_item_repository.js", [
       "FlatInventoryItemRepository",
     ]);
-    this.#load("src/core/assemblies/assembly_state.js", [
+    loader.load("src/core/assemblies/assembly_state.js", [
       "AssemblyPreparationStatus",
       "AssemblyState",
     ]);
-    this.#load("src/core/assemblies/assembly_state_repository.js", [
+    loader.load("src/core/assemblies/assembly_state_repository.js", [
       "AssemblyStateRepository",
     ]);
-    this.#load("src/core/assemblies/assembly_profile_registry.js", [
+    loader.load("src/core/assemblies/assembly_profile_registry.js", [
       "AssemblyProfileRegistry",
     ]);
-    this.#load(
+    loader.load(
       "src/core/assemblies/exact_assembly_refill_signature_policy.js",
       ["ExactAssemblyRefillSignaturePolicy"],
     );
-    this.#load("src/core/assemblies/item_assembly_reader.js", [
+    loader.load("src/core/assemblies/item_assembly_reader.js", [
       "ItemAssemblyPath",
       "ItemAssemblyReader",
     ]);
-    this.#load("src/core/assemblies/item_assembly_service.js", [
+    loader.load("src/core/assemblies/item_assembly_service.js", [
       "ItemAssemblyDomainError",
       "ItemAssemblyService",
     ]);
     return this.#context;
-  }
-
-  #load(relativePath, globalNames) {
-    const source = fs.readFileSync(path.join(ROOT, relativePath), "utf8");
-    // A migrated provider's exports without an activation (no classic consumer) are read test-only
-    // from its ESM module in the cumulative runtime.
-    const contract = JSON.parse(fs.readFileSync(
-      path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
-    // A retired activation's placeholder publishes nothing; its exports are read the same way.
-    const target = [...contract.activationPositions,
-      ...(contract.retiredActivations || []).map((record) => record.activation)]
-      .find((item) => item.sourceProvider === relativePath)?.targetModule;
-    const expose = globalNames
-      .map((name) => target
-        ? `globalThis.${name} = typeof ${name} !== "undefined" ? ${name} : ` +
-          `globalThis.${contract.transport.symbol}.modules[${JSON.stringify(target)}][${JSON.stringify(name)}];`
-        : `globalThis.${name} = ${name};`)
-      .join("\n");
-    vm.runInContext(`${source}\n${expose}`, this.#context, {
-      filename: relativePath,
-    });
   }
 }
 

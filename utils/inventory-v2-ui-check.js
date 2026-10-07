@@ -62,13 +62,13 @@ const UI_SCRIPT_ORDER = Object.freeze([
 
 class InventoryV2SourceReader {
   readItemParameterConfig() {
-    return fs.readFileSync(ITEM_PARAMETER_CONFIG_FILE, "utf8");
+    return new SourceRuntime().readAuthoredSource(path.relative(ROOT, ITEM_PARAMETER_CONFIG_FILE).split(path.sep).join("/"));
   }
 
   readJavaScriptFiles() {
     return UI_SCRIPT_ORDER.map((name) => {
       const relativePath=path.relative(ROOT,path.join(UI_DIRECTORY,name)).split(path.sep).join("/");
-      return {name,relativePath,legacySource:fs.readFileSync(path.join(ROOT,relativePath),"utf8"),source:new SourceRuntime().readAuthoredSource(relativePath)};
+      return {name,relativePath,source:new SourceRuntime().readAuthoredSource(relativePath)};
     });
   }
 
@@ -369,7 +369,7 @@ class InventoryV2StaticContractCheck {
     const composition = this.#reader.readInventoryComposition();
 
     this.#assertSafeTextRendering(combined);
-    this.#assertClassExports([combined,...files.map(file=>file.legacySource)].join("\n"));
+    this.#assertClassExports(combined);
     this.#assertLongPressContract(combined, style);
     this.#assertHorizontalScrollContract(combined, composition, style);
     this.#assertVisualContract(style);

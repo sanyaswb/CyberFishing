@@ -2,88 +2,63 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
-const { SourceRuntime } = require("./testing/core/source_runtime");
+const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
+const vm = require("node:vm");
 const { StageFourClusterLedger } = require("./architecture/stage_four/cluster_ledger");
+const { NativeDevelopmentRetirement } = require("./architecture/stage_six/native_development_retirement");
 
 const Assertion = CheckAssertion.create(
   "Inventory-v2 production-shaped equipment hydration check",
 );
 
-class EquipmentHydrationRuntime extends SourceRuntime {
+class EquipmentHydrationRuntime {
   constructor() {
-    super({
-      globals: {
-        Rod: class Rod {
-          constructor(
-            _level,
-            _power,
-            _compensation,
-            _type,
-            _distance,
-            _hasReel,
-            options = {},
-          ) {
-            this.lengthMeters = Number(options.lengthMeters) || 2;
-          }
+    this.context = vm.createContext({
+      console,
+      Rod: class Rod {
+        constructor(
+          _level,
+          _power,
+          _compensation,
+          _type,
+          _distance,
+          _hasReel,
+          options = {},
+        ) {
+          this.lengthMeters = Number(options.lengthMeters) || 2;
+        }
 
-          getLengthMeters() {
-            return this.lengthMeters;
-          }
-        },
-        Reel: class Reel {
-          hasReel() {
-            return true;
-          }
-        },
-        Hook: class Hook {},
+        getLengthMeters() {
+          return this.lengthMeters;
+        }
       },
+      Reel: class Reel {
+        hasReel() {
+          return true;
+        }
+      },
+      Hook: class Hook {},
     });
-    this.loadMany([
-      {
-        path: "src/core/inventory/inventory_item_location.js",
-        expose: ["InventoryItemLocationKind", "InventoryItemLocation"],
-      },
-      {
-        path: "src/core/inventory/flat_inventory_item_repository.js",
-        expose: ["FlatInventoryItemRepository"],
-      },
-      {
-        path: "src/core/items/effective_item_stats_resolver.js",
-        expose: ["EffectiveItemStatsResolver"],
-      },
-      {
-        path: "src/application/inventory/inventory_v2_item_hydrator.js",
-        expose: ["InventoryV2ItemHydrator"],
-      },
-      {
-        path: "src/core/assemblies/item_assembly_reader.js",
-        expose: ["ItemAssemblyReader"],
-      },
-      {
-        path: "src/application/inventory/equipment_read_model_factory.js",
-        expose: ["EquipmentReadModelFactory"],
-      },
-      {
-        path: "src/core/distance_unit_converter.js",
-        expose: ["DistanceUnitConverter"],
-      },
-      {
-        path: "src/core/casting_distance.js",
-        expose: ["CastDistanceCalculator"],
-      },
-      {
-        path: "src/core/line/line_spool_state.js",
-        expose: ["LineSpoolState"],
-      },
-      {
-        path: "src/systems/line_system.js",
-        expose: ["LineSystem"],
-      },
-      {
-        path: "src/app/fishing.js",
-        expose: ["FightSessionFactory"],
-      },
-    ]);
+    this.loader = new NativeEsmTestLoader({ projectRoot: path.resolve(__dirname, ".."), context: this.context });
+
+    const load = (file, names) => {
+      this.loader.load(file, names);
+      for (const name of names) {
+        this[name] = this.context[name];
+      }
+    };
+
+    load("src/core/inventory/inventory_item_location.js", ["InventoryItemLocationKind", "InventoryItemLocation"]);
+    load("src/core/inventory/flat_inventory_item_repository.js", ["FlatInventoryItemRepository"]);
+    load("src/core/items/effective_item_stats_resolver.js", ["EffectiveItemStatsResolver"]);
+    load("src/application/inventory/inventory_v2_item_hydrator.js", ["InventoryV2ItemHydrator"]);
+    load("src/core/assemblies/item_assembly_reader.js", ["ItemAssemblyReader"]);
+    load("src/application/inventory/equipment_read_model_factory.js", ["EquipmentReadModelFactory"]);
+    load("src/core/distance_unit_converter.js", ["DistanceUnitConverter"]);
+    load("src/core/casting_distance.js", ["CastDistanceCalculator"]);
+    load("src/core/line/line_spool_state.js", ["LineSpoolState"]);
+    load("src/systems/line_system.js", ["LineSystem"]);
+    load("src/app/fishing.js", ["FightSessionFactory"]);
   }
 }
 
@@ -348,11 +323,15 @@ class ProductionShapedEquipmentHydrationCheck {
         "utf8",
       ),
     );
-    const sha256 = (relativePath) =>
-      crypto
-        .createHash("sha256")
-        .update(fs.readFileSync(path.join(root, relativePath)))
-        .digest("hex");
+    // A boundary retired by the Stage 6 native cutover is hashed from its raw archived bytes and must be absent.
+    const retirement = NativeDevelopmentRetirement.read(root);
+    const archive = retirement && NativeDevelopmentRetirement.archive(root, retirement);
+    const sha256 = (relativePath) => {
+      const retired = archive?.has(relativePath) === true;
+      Assertion.equal(fs.existsSync(path.join(root, relativePath)), !retired, "retired boundary source is absent");
+      const bytes = retired ? archive.bytes(relativePath) : fs.readFileSync(path.join(root, relativePath));
+      return crypto.createHash("sha256").update(bytes).digest("hex");
+    };
     Assertion.equal(evidence.status, "verified", "repair evidence is reviewed");
     Assertion.equal(
       evidence.rootCause.classification,

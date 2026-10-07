@@ -1,10 +1,22 @@
 # Stage 6 - Native Development / Production Split
 
-Status: implementation specification; Stage 6 has not been applied.
-Date: 2026-10-05. Baseline: release 0.26.1, commit `6ece75794c1f103e0bace13ad4f8a7e2b7064a11`.
+Status: implementation in progress; M0–M3a accepted, M3b cutover in the working tree, final acceptance/release/closure pending.
+Updated: 2026-10-06. Original baseline date: 2026-10-05. Baseline: release 0.26.1, commit `6ece75794c1f103e0bace13ad4f8a7e2b7064a11`.
 Owner: Codex autonomous implementation and automated acceptance under the project owner's rules.
 
 This specification expands `../stage_6_handoff.md` and `refactor_Task.txt` section 5. It does not reopen Stage 5. Read the immutable Stage 3/4/5 closure records, Stage 5 graph v8 and preparations 027-031 before implementation. The inventory is a measured planning baseline, not evidence that any Stage 6 module has migrated.
+
+## Current implementation state (2026-10-06)
+
+The current execution queue is [stage6_continuation_spec.md](stage6_continuation_spec.md). The sections below retain the complete behavior/ownership requirements and original 96-path mapping; their starting counts and classic source paths are historical input facts, not current outstanding migration work. Do not migrate the production graph or accepted native targets again.
+
+M0–M3a are accepted and pushed: preparations 001–004, graph review v4, HEAD/origin develop `4c0817a`. Native DEV composition, authoritative base + override config, isolated DEV catalogs/debuff display, authored-ESM tests and startup resource lifecycle are implemented. The last accepted uncached Full is 64/64 in `architecture/archive/stage6_004_native-harness-and-lifecycle_acceptance.json`.
+
+M3b is applied only in the unaccepted working tree: graph review v5 / preparation 005, one actual `dev.entry.js` tag, 444 deliberate source/wrapper deletions, zero active bridges/activations/debts/provider entries. Raw mixed-EOL recovery is at the local `stage6-classic-runtime-archive` tag, peeled commit `95b872da68cf776fcee497cb2135fcc99f4489e8`; it has not been pushed. Retain exact historical provenance and canonical test-used targets.
+
+Measured authored graphs now have production **350 modules / 522 import edges** and DEV **446 / 692**, with no unresolved/compatibility imports and no DEV import in production. The Manifest has 456 canonical JS files, including 97 DEV files (95 reachable), three Development Bootstrap files and one DEV entry. Do not treat source inventory and reachable graph totals as interchangeable.
+
+Current uncached Full audit: **53/64 passed, 11 failed**, no cache/isolation/source drift, recorded in `architecture/archive/stage6_005_cutover_resume_audit.json`. Its snapshot predates these informational document updates. Remaining work is exact retirement qualification, native test source consumers, direct browser acceptance of both actual native HTML pages, release and closure; the continuation spec lists every observed failure and its acceptance contract. Direct game-cycle child stdout still has SHA256 `0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f`.
 
 ## Outcome
 
@@ -40,7 +52,7 @@ The 446 HTML tags are transport/load surfaces, not 446 modules to migrate. Many 
 
 The Manifest's historical `migrationWave: 7` for DEV is a wave classification, not an instruction to postpone native DEV to Stage 7. Stage assignment is governed by the current owner scope, handoff and exact retirement records.
 
-Current shared production graph breakdown:
+Original 0.26.1 shared production graph breakdown (before the accepted M2 import successor):
 
 | Layer | Modules |
 | --- | ---: |
@@ -75,18 +87,18 @@ Retain one Game, GameApplication, GameCompositionRoot, runtime-config context, o
 
 Each mutable fact retains its current authoritative owner. Fish owns debuff state, LocationMap owns map revision, inventory owns item/equipment records, config owns resolved runtime values, DEV owns overlay settings and diagnostic toggles. Overlay/render/debug tools must not acquire gameplay state ownership. Any existing platform-published game/config/version handle needs a concrete reader and lifecycle review; removing compatibility does not mean every browser property can be deleted safely. Add no new permanent global API.
 
-## Work package A - Freeze the execution graph and actual holders
+## Work package A - Freeze the execution graph and actual holders — accepted M0 audit; final holder qualifications pending
 
 1. Verify the pinned baseline and a clean tree. Inventory every static/global/property/dynamic reader and writer in production, DEV, tests, builders and evidence dispatch. Record exact target imports, evaluation order, runtime identity and state owner per module.
 2. Review the 96 target mappings below against current code; they are Manifest candidates, not a license to move a mixed class blindly. `dev_tools.js`, the reel live probe, location debug provider and existing bootstrap side effects require explicit responsibility/lifecycle review.
 3. Build the actual dependency order. Constants/value helpers first, then base classes/registries, modules/sections, services/tools, explicit bootstrap factories, native entry cutover. Resolve the current debug cycle through injection: console/event binder/debug bootstrap/bite ticks cannot import an eagerly constructed singleton from each other.
 4. Pin every allowed side effect. Convert eager construction/publication in `debug.js`, `overlay_bootstrap.js`, settings stores and probe activation into explicit bootstrap calls. Importing a DEV class must not start listeners, a loop, DOM construction or a watchdog by accident.
-5. Publish a reviewed Stage 6 graph/cluster plan using the existing ledger/evidence mechanisms. Extend their current Stage 4/5 qualification narrowly for Stage 6, with meaningful positive/negative fixtures. The current tools do not yet support Stage 6: merely passing `--stage 6` today is not a valid recipe.
+5. Publish a reviewed Stage 6 graph/cluster plan using the existing ledger/evidence mechanisms. Extend their current Stage 4/5 qualification narrowly for Stage 6, with meaningful positive/negative fixtures. M0 has qualified the existing tooling for Stage 6. Final native retirement/release projection remains the continuation queue; do not replay M0 or assume that `--stage 6` alone verifies the final topology.
 6. Keep all frozen records byte-exact. Original Stage 5 source cluster 028 remains deferred with null output/verification. Record its Stage 6 successor and reference the separately verified native-production obligation; never mark the old source applied retroactively.
 
 Acceptance: every source, bridge reader, startup side effect and state owner has a concrete destination/retirement trigger; no unresolved architecture-critical dependency is guessed.
 
-## Work package B - Migrate the 93 DEV modules to authored ESM
+## Work package B - Migrate the 93 DEV modules to authored ESM — accepted M1
 
 Convert the exact module inventory in cohesive dependency-ordered clusters. Preserve class/method behavior, public diagnostics, event names, UI text, settings keys, sorting and update cadence. Add imports/exports and inject the already-needed dependencies; do not rename APIs or rebalance formulas.
 
@@ -107,7 +119,7 @@ Overlay DOM helpers may retain their reviewed DEV responsibilities. Inject brows
 
 Acceptance per cluster: actual imports resolve, exports and consumer identities match, focused API/event/UI parity passes, exact bridge removals are justified and deterministic game-cycle stdout remains unchanged.
 
-## Work package C - Native Development Bootstrap and HTML cutover
+## Work package C - Native Development Bootstrap and HTML cutover — composition/lifecycle accepted; final cutover acceptance pending
 
 Migrate the three existing composition sources:
 
@@ -131,11 +143,11 @@ Dispose binder, overlay controller/metric bridge, probe, tools, watchdog, callba
 
 Acceptance: native production and native DEV work independently, canonical identities match inside each realm, duplicate startup does not construct a second game, production never imports DEV, and all old external script surfaces are absent from live HTML.
 
-## Work package D - One base + override runtime-config source
+## Work package D - One base + override runtime-config source — accepted M2
 
-Execute this as a separate reviewed transition after native composition parity. Current `createRuntimeConfigContext()` owns a frozen base and one store/provider but also writes the mutable `CONFIG` through set/reset/import; Root exposes a live facade over that raw owner. Target: immutable base plus one override store is the authoritative source, RuntimeConfig reads the resolved values, and DEV config writes go through that store/context only.
+Execute this as a separate reviewed transition after native composition parity. At the original baseline, `createRuntimeConfigContext()` owned a frozen base and one store/provider but also wrote mutable `CONFIG` through set/reset/import, with Root exposing a live facade over that owner. Accepted preparation 003 implements the base + override successor; the following requirements describe its required parity, not a second pending redesign. Target: immutable base plus one override store is the authoritative source, RuntimeConfig reads the resolved values, and DEV config writes go through that store/context only.
 
-Before implementation, inventory every read/write and define exact resolution semantics. Existing `ResolvedConfigProvider.get()` only checks an exact override key. It is not yet a complete drop-in replacement for the nested mutable runtime object. Existing store reads clone values, and the immutable clone excludes the non-enumerable physics adapter. Address these facts explicitly rather than adding a Proxy or rebuilding a whole config object on each frame.
+At the original baseline, `ResolvedConfigProvider.get()` checked only an exact override key, store reads cloned values, and the immutable clone excluded the non-enumerable physics adapter. Preparation 003 has addressed the reviewed nested resolution, identity and invalidation semantics without a Proxy or per-frame config rebuild. Preserve the accepted implementation and the parity cases below.
 
 Required parity cases:
 
@@ -151,9 +163,9 @@ Do not interpret 'DEV writes only to the override store' as permission to change
 
 Acceptance: all tested runtime values and live consumers match before/after; no direct CONFIG-global dependency, duplicate config owner, new hot-loop clone/path allocation or stale adapter is introduced. Record exact production graph changes if configuration composition changes.
 
-## Work package E - DEV-only templates and debuff presentation
+## Work package E - DEV-only templates and debuff presentation — accepted M2
 
-1. Move `ITEM_DB.builds.debug_float_build` and `debug_feeder_build` into a DEV data overlay composed only by Development Bootstrap. These are currently two objects embedded in `src/game/config/raw/items/item_database.js`; they are data relocation, not two already-existing source modules in the 96 count.
+1. Move `ITEM_DB.builds.debug_float_build` and `debug_feeder_build` into a DEV data overlay composed only by Development Bootstrap. At the baseline these were two objects embedded in `src/game/config/raw/items/item_database.js`; preparation 003 has relocated them to DEV data. They are not two already-existing source modules in the 96 count.
 2. Audit all catalog/template readers, enumerations, initialization, validators, fixtures and save compatibility before removal from the production shape. Preserve template IDs/content and access through the DEV-composed catalog view. Normal production builds/items retain order/values/behavior, and old saves referring to those IDs remain supported. Do not mutate a shared production catalog to attach the templates in DEV.
 3. Move DEV label/format responsibility for `Fish.activeDebuffName` to the DEV display path. Today Domain returns labels and Application forwards `getActiveDebuffName()`/debug payload to four DEV readers (exhaustion, forces, debuffs overlay and fish-debuff summary). Fish remains the debuff-state owner; DEV receives read-only facts and formats them.
 4. Do not rename/remove the Domain getter or Application API during this migration. Resolve the display move through compatible existing data/injection seams, with exact label and no-active/unknown-debuff parity. If a new semantic DTO/API is unavoidable, record the precise Stage 7 API transition; the safe Stage 6 display responsibility must still be explicit.
@@ -203,13 +215,16 @@ Use cohesive normal-history `develop` checkpoints and reviewed release transitio
 
 Codex automated acceptance is the performer. No owner manual-play requirement and no claim that the owner played. Full/browser smoke evidence must distinguish real browser scenarios from deterministic game-cycle coverage.
 
-## Suggested implementation milestones
+## Implemented milestones and remaining acceptance
 
 | Milestone | Deliverable | Closure facts |
 | --- | --- | --- |
-| M1 | Reviewed dependency graph, 93 native DEV targets, three native bootstrap targets, dev entry and direct native DEV startup | Native production/DEV parity; one owner/loop; exact last classic holders resolved |
-| M2 | Separate config source transition, DEV template overlay and debuff display ownership | Live overrides/adapter identity, old saves, template IDs and displays preserved |
-| M3 | Exact compatibility/slot/tooling retirement, final guards/evidence/release/closure | 0 active bridges/activations/classic script tags/transport readers; accepted exact graph/metrics |
+| M0 | Existing Stage 6 tooling/ledger qualification and actual dependency audit | Accepted preparation 001 / `bb5481e` |
+| M1 | 93 native DEV targets, three Bootstrap targets and two justified DEV tool splits; native composition smoke | Accepted preparation 002 / `7e849ff`; actual HTML entry belongs to M3b |
+| M2 | Separate config source transition, DEV template overlay and debuff display ownership | Accepted preparation 003 / `a2f270e`; live semantics/data/display parity preserved |
+| M3a | Authored-ESM test harness and startup/resource lifecycle | Accepted preparation 004 / `4c0817a`; uncached Full 64/64 |
+| M3b | Actual native DEV entry and exact compatibility/slot retirement | Applied preparation 005 / graph v5; unaccepted current audit 53/64; exact guards/tests/browser remain |
+| Closure | Final accepted graph/metrics, release, closure and Stage 7 handoff | Pending; use `stage6_continuation_spec.md` |
 
 Each cluster is independently reviewable and reversible. Do not implement D/E inside a mechanical B migration commit. If the dependency audit requires smaller checkpoints or different ordering, update the graph plan with concrete reasons before applying it; no hard dates or speculative duration are part of this specification.
 
@@ -221,9 +236,9 @@ Keep separately reviewed structural/API work: FlatInventoryItemRepository ID fal
 
 - [ ] All 96 source mappings and the new entry are accounted for by verified native targets/replacements; all extra split/data/composition files have reviewed reasons and exact counts.
 - [ ] Both HTML surfaces use one native entry each; production graph has no DEV/compatibility, DEV uses canonical authored production identities.
-- [ ] Runtime config has one base + override owner and live adapter/value semantics verified; DEV has no raw global config dependency.
+- [x] Runtime config has one base + override owner and live adapter/value semantics verified; DEV has no raw global config dependency (accepted preparation 003).
 - [ ] DEV tools/console/overlay/probe/watchdog and all enabled gameplay override effects retain behavior and cleanup.
-- [ ] Both DEV test templates and debuff display ownership are migrated with exact data/API/save compatibility.
+- [x] Both DEV test templates and debuff display ownership are migrated with exact data/API/save compatibility (accepted preparation 003).
 - [ ] 50 starting bridges and 26 activations retire through exact successor evidence; no active transport or classic startup/placeholder surface remains.
 - [ ] Actual test/build/evidence consumers survive migration; 64-check catalog and historical guards/pins are preserved; exact debts are resolved/accounted for without new exceptions.
 - [ ] Focused + game-cycle + Quick + Architecture + uncached Full + direct native/DEV browser acceptance pass; original saves restored.
@@ -248,7 +263,7 @@ Keep separately reviewed structural/API work: FlatInventoryItemRepository ID fal
 | dev-services-schemas-watchdog | 10 |
 | **Total** | **96** |
 
-Every path below is an inventory target already recorded in the Manifest; implementation must review actual consumers/blockers before applying it. Counts are source files, not classes. Full raw source pins, production closure and exact bridge/activation IDs are in `stage6_module_inventory.json`.
+Every path below is a historical input-to-canonical-target mapping from the frozen inventory. Preparations 002–004 have implemented and accepted its native targets; preparation 005 removes the old inputs in the current working tree. Do not replay these moves. Counts are source files, not classes. Full raw source pins, production closure and exact bridge/activation IDs are in `stage6_module_inventory.json`.
 
 | Current source | Planned authored ESM target |
 | --- | --- |

@@ -113,21 +113,33 @@ function checkRenderStorage() {
 
 // Version API and original eager mounting phase, including live document replacement and errors.
 function checkVersionBadge() {
-  const fs=require('node:fs');
   const expectedVersion=require('../package.json').version;
-  const declaration=fs.existsSync('src/ui/version/game_version_badge.js')?'src/ui/version/game_version_badge.js':'src/ui/version_badge.js';
+  const declaration='src/bootstrap/production/game_version_badge.js';
   for(const readyState of ['loading','complete']) {
-    const listeners=[],queries=[],node={dataset:{},textContent:'',title:''};
-    const document={readyState,createElement(){throw Error('badge must not create DOM nodes');},
-      getElementById(id){queries.push(id);return id==='missing'?null:node;},addEventListener(type,callback,options){listeners.push({type,callback,options});}};
+    const listeners=[],removed=[],queries=[],styles=[],node={dataset:{},textContent:'',title:''};
+    const document={readyState,head:{appendChild(child){styles.push(child);}},
+      createElement(tag){assert.equal(tag,'style','badge must not create DOM nodes');return {removed:0,remove(){this.removed+=1;}};},
+      getElementById(id){queries.push(id);return id==='missing'?null:node;},addEventListener(type,callback,options){listeners.push({type,callback,options});},
+      removeEventListener(type,callback){removed.push({type,callback});}};
     const runtime=new SourceRuntime({globals:{document}});
-    runtime.load('src/config/project_version_catalog.js',{expose:['PROJECT_VERSION_CONFIG']});
-    runtime.load('src/ui/inventory/inventory_v2_dom_factory.js',{expose:['InventoryV2DomFactory']});
+    runtime.load('src/game/presentation/version/project_version.js',{expose:['PROJECT_VERSION_CONFIG']});
+    runtime.load('src/platform/browser/dom/inventory_v2_dom_factory.js',{expose:['InventoryV2DomFactory']});
     runtime.load(declaration,{expose:['GameVersionBadge']});
-    if(declaration!=='src/ui/version_badge.js')runtime.load('src/ui/version_badge.js');
-    if(readyState==='loading'){assert.equal(queries.length,0);assert.equal(listeners.length,1);assert.equal(listeners[0].type,'DOMContentLoaded');assert.equal(listeners[0].options.once,true);listeners[0].callback();}
-    assert.equal(queries.length,1);assert.equal(node.textContent,`v${expectedVersion} prototype`);assert.equal(node.dataset.version,expectedVersion);
-    const Badge=runtime.context.GameVersionBadge, mounted=Badge.mountById('custom');assert.equal(mounted.element,node);assert.equal(queries.at(-1),'custom');
+    runtime.load('src/platform/browser/runtime/browser_startup_environment.js',{expose:['activateBrowserStartupInterface']});
+    const Badge=runtime.context.GameVersionBadge, mount=()=>Badge.mountById();
+    // Native startup activation (both pages): mounting waits for DOMContentLoaded once while the document loads.
+    assert.equal(queries.length,0);
+    const dispose=runtime.context.activateBrowserStartupInterface(document,mount);
+    const loaded=listeners.filter(item=>item.type==='DOMContentLoaded');
+    if(readyState==='loading'){assert.equal(queries.length,0);assert.equal(loaded.length,1);assert.equal(loaded[0].callback,mount);assert.equal(loaded[0].options.once,true);loaded[0].callback();}
+    else assert.equal(loaded.length,0);
+    assert.deepEqual(queries,['gameVersionBadge']);assert.equal(node.textContent,`v${expectedVersion} prototype`);assert.equal(node.dataset.version,expectedVersion);
+    assert.equal(styles.length,1,'only the engine interface style is created');
+    dispose();
+    assert.deepEqual(removed.map(item=>item.type).sort(),['DOMContentLoaded','contextmenu','touchstart']);
+    assert.equal(removed.find(item=>item.type==='DOMContentLoaded').callback,mount);assert.equal(styles[0].removed,1);
+    const mounted=Badge.mountById('custom');
+    assert.equal(mounted.element,node);assert.equal(queries.at(-1),'custom');
     assert.equal(Badge.mountById('missing').element,null);
     const noElement=new Badge();noElement.render();assert.equal(noElement.element,null);
     const noConfig=new Badge({element:node,versionConfig:null});noConfig.render();assert.equal(node.dataset.version,expectedVersion);

@@ -33,11 +33,13 @@ class StageFourClusterLedger {
   #records;
   #retirementUpdates;
   #removedModules;
+  #stageTwoProviderSuccessors;
 
-  constructor(records, retirementUpdates = [], removedModules = []) {
+  constructor(records, retirementUpdates = [], removedModules = [], stageTwoProviderSuccessors = []) {
     this.#records = Object.freeze([...records]);
     this.#retirementUpdates = Object.freeze([...retirementUpdates]);
     this.#removedModules = Object.freeze([...removedModules]);
+    this.#stageTwoProviderSuccessors = Object.freeze([...stageTwoProviderSuccessors]);
   }
 
   static read(projectRoot, stage = 4) {
@@ -63,9 +65,11 @@ class StageFourClusterLedger {
   // Every stage's records in stage order: the runtime, guard corpus, package contract and Stage 2 plan consume
   // the cumulative applied facts; Stage 4 closure and release validation keep reading `read(root)` (Stage 4 only).
   static cumulative(projectRoot) {
+    const preps = StageFourClusterLedger.cumulativePreparations(projectRoot);
     return new StageFourClusterLedger(LEDGER_STAGES.flatMap((stage) => StageFourClusterLedger.read(projectRoot, stage).records),
-      StageFourClusterLedger.cumulativePreparations(projectRoot).flatMap(record => record.retirementUpdates || []),
-      StageFourClusterLedger.cleanupRecords(projectRoot).flatMap(record => record.removedModules));
+      preps.flatMap(record => record.retirementUpdates || []),
+      StageFourClusterLedger.cleanupRecords(projectRoot).flatMap(record => record.removedModules),
+      preps.flatMap(record => record.stageTwoProviderSuccessors || []));
   }
 
   // Preparation records describe exact provider relocations before a cluster. Their bridge pairs
@@ -154,6 +158,10 @@ class StageFourClusterLedger {
 
   static validateCleanupRecord(record) {
     if (!record.postClosureCleanup) return;
+    if (record.kind === preparationKind(6)) {
+      require("../stage_six/native_development_retirement").NativeDevelopmentRetirement.validateRecord(record);
+      return;
+    }
     assert(record.kind === preparationKind(5) && record.postClosureCleanup.closureTag === "stage5-closed" &&
       record.postClosureCleanup.archiveTag === "stage5-dead-code-archive" &&
       /^[0-9a-f]{40}$/u.test(record.postClosureCleanup.archiveCommit) &&
@@ -265,12 +273,13 @@ class StageFourClusterLedger {
   // Keep the Stage 2 approval frozen while deriving its remaining classic consumers from exact
   // applied Stage 4 retirements. A missing/changed bridge identity never authorizes retirement.
   stageTwoPlan(plan) {
-    if (!this.applied.length && !this.#retirementUpdates.length) return plan;
+    if (!this.applied.length && !this.#retirementUpdates.length && !this.#removedModules.length) return plan;
     const retired = new Map(this.applied.flatMap(record => (record.output.bridgesRetired || [])
       .map(id => [id, record])));
+    const removedPaths = this.removedTargetModules();
     return { ...plan, batches: plan.batches.map(batch => {
       const strategy = batch.bridgeStrategy;
-      const bridges = strategy.bridges.map(bridge => ({ ...bridge,
+      const stage5Bridges = strategy.bridges.map(bridge => ({ ...bridge,
         legacyConsumers: bridge.legacyConsumers.filter(source => {
           const id = CanonicalBridgeIdentity.id({source,bridge:bridge.wrapperPath,target:bridge.targetModule,owner:batch.id});
           const record = retired.get(id);
@@ -278,10 +287,13 @@ class StageFourClusterLedger {
           assert(record.modules.some(module => module.currentPath === source), "Stage 2 retirement has no migrated consumer");
           return false;
         }) }));
+      const bridges = stage5Bridges.map(bridge => ({ ...bridge,
+        legacyConsumers: bridge.legacyConsumers.filter(source => !removedPaths.includes(source))
+      }));
       const updates = this.#retirementUpdates.filter(update => update.kind === "bridge" && update.before.owner === batch.id);
       if (!updates.length) return { ...batch, bridgeStrategy: { ...strategy, bridges } };
       const consumed = new Set();
-      for (const bridge of bridges) for (const source of bridge.legacyConsumers) {
+      for (const bridge of stage5Bridges) for (const source of bridge.legacyConsumers) {
         const id = CanonicalBridgeIdentity.id({source,bridge:bridge.wrapperPath,target:bridge.targetModule,owner:batch.id});
         const matches = updates.filter(update => update.id === id);
         assert.equal(matches.length, 1, "Stage 2 lifecycle requires every exact live consumer once");

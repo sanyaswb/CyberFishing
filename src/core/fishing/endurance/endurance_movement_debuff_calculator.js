@@ -1,1 +1,0 @@
-// Retired Stage 3 activation activation-fa95b209e285: EnduranceMovementDebuffCalculator is served only through ESM imports of src/game/domain/fishing/endurance/endurance_movement_debuff_calculator.js.

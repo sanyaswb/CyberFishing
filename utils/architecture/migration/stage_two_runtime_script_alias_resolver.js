@@ -23,6 +23,8 @@ class StageTwoRuntimeScriptAliasResolver {
   }
 
   loadProject(projectRoot) {
+    const retirement=require("../stage_six/native_development_retirement").NativeDevelopmentRetirement.read(projectRoot);
+    if(retirement) return new Map(); // No generated paths exist in either reviewed native page.
     const readJson = (relativePath) => JSON.parse(
       fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
     );

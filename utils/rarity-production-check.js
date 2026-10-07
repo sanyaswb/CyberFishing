@@ -1,28 +1,14 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const vm = require("node:vm");
 const assert = require("node:assert/strict");
 const { spawnSync } = require("node:child_process");
 const { pathToFileURL } = require("node:url");
-const { LegacyScriptOrderReader } = require("./architecture/migration/legacy_script_order_reader");
-const { StageThreeCompatibilityTestLoader } = require("./testing/runtime/stage_three_compatibility_test_loader");
-const {
-  StageThreeRuntimeScriptAliasResolver,
-} = require("./architecture/migration/stage_three_runtime_script_alias_resolver");
 
 const ROOT = path.resolve(__dirname, "..");
-const VALIDATOR_SCRIPT = "src/config/validation/rarity_config_validator.js";
 
 class ProductionRarityConfigLoader {
   load() {
-    const legacy = this.#loadLegacy();
-    new legacy.Validator().assertValid(legacy);
-    if (path.basename(LegacyScriptOrderReader.sourcePath(ROOT)) === "index.html") return legacy;
-    const native = this.#loadNative();
-    for (const key of ["runtimeConfig", "degradationColors", "rarityConfig", "fishDb", "itemDb", "mapDb"]) {
-      assert.deepEqual(native[key], JSON.parse(JSON.stringify(legacy[key])), "native/DEV config parity: " + key);
-    }
-    return native;
+    return this.#loadNative();
   }
 
   #loadNative() {
@@ -64,61 +50,6 @@ class ProductionRarityConfigLoader {
       { cwd: ROOT, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
     assert.equal(result.status, 0, "Native rarity configuration failed:\n" + result.stderr);
     return JSON.parse(result.stdout);
-  }
-
-  #loadLegacy() {
-    const contract = JSON.parse(fs.readFileSync(path.join(ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
-    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(contract);
-    const scripts = this.#readConfigScriptPaths(aliases);
-    const context = vm.createContext({ console, structuredClone });
-    const loader = new StageThreeCompatibilityTestLoader({ projectRoot: ROOT, context });
-    for (const browserPath of scripts) {
-      const relativePath = this.#toFilePath(browserPath);
-      if (relativePath === contract.output.directory + contract.output.runtimeFile) loader.loadRuntime();
-      else {
-        const provider = aliases.get(relativePath) ?? relativePath;
-        loader.load(provider, provider === VALIDATOR_SCRIPT ? ["RarityConfigValidator"] : []);
-      }
-    }
-    vm.runInContext(
-      [
-        "globalThis.__RUNTIME_CONFIG__ = CONFIG;",
-        "globalThis.__RARITY_CONFIG__ = CONFIG.rarity;",
-        "globalThis.__FISH_DB__ = FISH_DB;",
-        "globalThis.__ITEM_DB__ = ITEM_DB;",
-        "globalThis.__MAP_DB__ = MAP_DB;",
-        "globalThis.__RARITY_VALIDATOR__ = RarityConfigValidator;",
-      ].join("\n"),
-      context,
-    );
-    return {
-      runtimeConfig: context.__RUNTIME_CONFIG__,
-      degradationColors: context.__RUNTIME_CONFIG__.degradationColors,
-      rarityConfig: context.__RARITY_CONFIG__,
-      fishDb: context.__FISH_DB__,
-      itemDb: context.__ITEM_DB__,
-      mapDb: context.__MAP_DB__,
-      Validator: context.__RARITY_VALIDATOR__,
-    };
-  }
-
-  #readConfigScriptPaths(aliases) {
-    const html = fs.readFileSync(LegacyScriptOrderReader.sourcePath(ROOT), "utf8");
-    // Preserve the selected classic prefix; aliases resolve to the same authored provider.
-    const scripts = [];
-    const pattern = /<script\b[^>]*\bsrc="([^"]+)"[^>]*><\/script>/gu;
-    let match = pattern.exec(html);
-    while (match) {
-      scripts.push(match[1]);
-      const filePath = this.#toFilePath(match[1]);
-      if ((aliases.get(filePath) ?? filePath) === VALIDATOR_SCRIPT) return scripts;
-      match = pattern.exec(html);
-    }
-    throw new Error(`${VALIDATOR_SCRIPT} is not loaded by the selected legacy document`);
-  }
-
-  #toFilePath(browserPath) {
-    return String(browserPath || "").split(/[?#]/u, 1)[0];
   }
 }
 

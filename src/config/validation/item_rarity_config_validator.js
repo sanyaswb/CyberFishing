@@ -1,1 +1,0 @@
-// Migrated Stage 4 source src/config/validation/item_rarity_config_validator.js: ItemRarityConfigValidator served only through ESM imports of src/game/config/validation/item_rarity_config_validator.js.

@@ -47,15 +47,22 @@ const reviewedImportEdges = stageThreePlan.batches.filter((batch) => selectedBat
   .flatMap((batch) => StageThreeApprovedPlanSource.resolvedImportRecords(stageThreePlan, batch)
     .map((item) => `${batch.modules.find((module) => module.currentPath === item.consumer).targetPath}->${item.from}`));
 // Stage 4: plus the reviewed imports of applied cluster records.
+const ledger = StageFourClusterLedger.cumulative(PROJECT_ROOT);
+// Exact removed importers (validated cleanup records): their approved edges retire with the absent file only.
+const removedModules = ledger.removedTargetModules();
+for (const file of removedModules) if (fs.existsSync(path.join(PROJECT_ROOT, file))) throw new Error(`Removed importer still exists: ${file}`);
 const approvedEsmEdges = [...new Set([
   ...bridgeRegistry.bridges
     .filter((item) => item.introducedStage === "stage-2")
     .map((item) => `${item.bridge}->${item.target}`),
   ...reviewedImportEdges,
-  ...StageFourClusterLedger.cumulative(PROJECT_ROOT).reviewedImportEdges(),
+  ...ledger.reviewedImportEdges(),
   ...StageFourClusterLedger.reviewedPreparationImportEdges(PROJECT_ROOT)
     .map(edge => `${edge.source}->${edge.target}`),
-])].sort();
+])].filter(edge => {
+  const [source] = edge.split("->");
+  return !removedModules.includes(source);
+}).sort();
 if (JSON.stringify(actualEsmEdges) !== JSON.stringify(approvedEsmEdges)) {
   throw new Error(`Live ESM edges must equal exact approved bridge edges: expected ${approvedEsmEdges.join(", ") || "none"}; received ${actualEsmEdges.join(", ") || "none"}`);
 }

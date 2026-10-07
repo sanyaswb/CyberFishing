@@ -33,13 +33,20 @@ const {
 const {
   StageThreeRuntimeScriptAliasResolver,
 } = require("./migration/stage_three_runtime_script_alias_resolver");
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const BASE_CONTRACT = JSON.parse(fs.readFileSync(
   path.join(PROJECT_ROOT, "architecture/migration/stage_3_compatibility_runtime.json"),
   "utf8",
 ));
+// After the Stage 6 native retirement, active-activation cases use the exact hash-validated archived contract.
+const NATIVE_RETIREMENT = NativeDevelopmentRetirement.read(PROJECT_ROOT);
+const ACTIVE_CONTRACT = NATIVE_RETIREMENT
+  ? NativeDevelopmentRetirement.archive(PROJECT_ROOT, NATIVE_RETIREMENT).json("architecture/migration/stage_3_compatibility_runtime.json")
+  : BASE_CONTRACT;
 const FOUNDATION_CONTRACT = JSON.parse(JSON.stringify(BASE_CONTRACT));
+delete FOUNDATION_CONTRACT.nativeRetirement;
 FOUNDATION_CONTRACT.status = "foundation-verified";
 FOUNDATION_CONTRACT.transport.removalStage = "stage-5";
 delete FOUNDATION_CONTRACT.transport.lifecycle;
@@ -203,6 +210,13 @@ class StageThreeCompatibilityRuntimeFixtureCheck {
     };
 
     await count(async () => new CumulativeRuntimeContractValidator().validate(BASE_CONTRACT));
+    await count(async () => new CumulativeRuntimeContractValidator().validate(ACTIVE_CONTRACT));
+    // Native DEV: a stale archived activation cannot return under a historical removal stage.
+    await count(async () => {
+      const invalid = clone(BASE_CONTRACT);
+      invalid.activationPositions.push({ ...clone(ACTIVE_CONTRACT.activationPositions[0]), removalStage: "stage-5" });
+      assert.throws(() => new CumulativeRuntimeContractValidator().validate(invalid), /classic-DEV activations/u);
+    });
     // Current approved phase and historical Stage 5 are separate positive controls.
     for (const mutate of [
       c => { delete c.transport.lifecycle; },
@@ -219,7 +233,7 @@ class StageThreeCompatibilityRuntimeFixtureCheck {
       c => { c.status = "foundation-verified"; },
       c => { c.activationPositions[0].removalStage = "stage-5"; },
     ]) await count(async () => {
-      const invalid = clone(BASE_CONTRACT); mutate(invalid);
+      const invalid = clone(ACTIVE_CONTRACT); mutate(invalid);
       assert.throws(() => new CumulativeRuntimeContractValidator().validate(invalid),
         /historical removalStage|transport lifecycle|classic-DEV activations/u);
     });

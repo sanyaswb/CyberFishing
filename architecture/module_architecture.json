@@ -70,19 +70,27 @@
   "targetBoundaries": [
     {
       "id": "engine",
-      "pathPrefixes": ["src/engine/"],
+      "pathPrefixes": [
+        "src/engine/"
+      ],
       "description": "Reusable runtime mechanisms and contracts without CyberFishing or browser knowledge.",
-      "allowedDependencies": ["engine"]
+      "allowedDependencies": [
+        "engine"
+      ]
     },
     {
       "id": "game-config-raw",
-      "pathPrefixes": ["src/game/config/raw/"],
+      "pathPrefixes": [
+        "src/game/config/raw/"
+      ],
       "description": "Dependency-free authored production data; domain concepts must not be disguised as constants.",
       "allowedDependencies": []
     },
     {
       "id": "game-config",
-      "pathPrefixes": ["src/game/config/"],
+      "pathPrefixes": [
+        "src/game/config/"
+      ],
       "description": "External configuration factories and assembly outside domain behavior.",
       "allowedDependencies": [
         "engine",
@@ -93,13 +101,20 @@
     },
     {
       "id": "game-domain",
-      "pathPrefixes": ["src/game/domain/"],
+      "pathPrefixes": [
+        "src/game/domain/"
+      ],
       "description": "Pure CyberFishing rules, entities, policies, and value objects.",
-      "allowedDependencies": ["engine", "game-domain"]
+      "allowedDependencies": [
+        "engine",
+        "game-domain"
+      ]
     },
     {
       "id": "game-application-ports",
-      "pathPrefixes": ["src/game/application/ports/"],
+      "pathPrefixes": [
+        "src/game/application/ports/"
+      ],
       "description": "Contracts through which application services communicate with external implementations.",
       "allowedDependencies": [
         "engine",
@@ -109,7 +124,9 @@
     },
     {
       "id": "game-application",
-      "pathPrefixes": ["src/game/application/"],
+      "pathPrefixes": [
+        "src/game/application/"
+      ],
       "description": "CyberFishing use cases and orchestration over domain abstractions.",
       "allowedDependencies": [
         "engine",
@@ -121,7 +138,9 @@
     },
     {
       "id": "game-presentation",
-      "pathPrefixes": ["src/game/presentation/"],
+      "pathPrefixes": [
+        "src/game/presentation/"
+      ],
       "description": "Read models and presentation coordination without concrete DOM or Canvas APIs.",
       "allowedDependencies": [
         "engine",
@@ -133,7 +152,9 @@
     },
     {
       "id": "platform",
-      "pathPrefixes": ["src/platform/"],
+      "pathPrefixes": [
+        "src/platform/"
+      ],
       "description": "Browser implementations for engine contracts and game application ports.",
       "allowedDependencies": [
         "engine",
@@ -143,7 +164,9 @@
     },
     {
       "id": "dev",
-      "pathPrefixes": ["src/dev/"],
+      "pathPrefixes": [
+        "src/dev/"
+      ],
       "description": "Development-only diagnostics, overlays, probes, schemas, and tooling runtime.",
       "allowedDependencies": [
         "engine",
@@ -158,7 +181,9 @@
     },
     {
       "id": "bootstrap-production",
-      "pathPrefixes": ["src/bootstrap/production/"],
+      "pathPrefixes": [
+        "src/bootstrap/production/"
+      ],
       "description": "Production composition of concrete engine, game, and platform implementations.",
       "allowedDependencies": [
         "engine",
@@ -173,7 +198,9 @@
     },
     {
       "id": "bootstrap-development",
-      "pathPrefixes": ["src/bootstrap/development/"],
+      "pathPrefixes": [
+        "src/bootstrap/development/"
+      ],
       "description": "Development composition that extends production composition with dev implementations.",
       "allowedDependencies": [
         "engine",
@@ -195,7 +222,9 @@
         "src/entrypoints/game/"
       ],
       "description": "Production entrypoint that delegates exclusively to production bootstrap.",
-      "allowedDependencies": ["bootstrap-production"]
+      "allowedDependencies": [
+        "bootstrap-production"
+      ]
     },
     {
       "id": "entrypoint-dev",
@@ -204,7 +233,9 @@
         "src/entrypoints/dev/"
       ],
       "description": "Development entrypoint that delegates exclusively to development bootstrap.",
-      "allowedDependencies": ["bootstrap-development"]
+      "allowedDependencies": [
+        "bootstrap-development"
+      ]
     }
   ],
   "qualifiedDependencies": [
@@ -212,7 +243,10 @@
       "id": "game-config-stable-domain-types-only",
       "sourceBoundary": "game-config",
       "targetBoundary": "game-domain",
-      "allowedTargetModuleRoles": ["domain-contract", "value-object"],
+      "allowedTargetModuleRoles": [
+        "domain-contract",
+        "value-object"
+      ],
       "description": "Configuration may use only stable domain contracts/value objects; arbitrary domain behavior is forbidden."
     }
   ],
@@ -234,37 +268,56 @@
       {
         "id": "legacy",
         "description": "Tracked classic-script module that has not been classified.",
-        "allowedTransitions": ["classified"]
+        "allowedTransitions": [
+          "classified"
+        ]
       },
       {
         "id": "classified",
         "description": "Ownership, target boundary, dependencies, and migration wave are known.",
-        "allowedTransitions": ["blocked", "ready"]
+        "allowedTransitions": [
+          "blocked",
+          "ready"
+        ]
       },
       {
         "id": "blocked",
         "description": "Migration cannot start until explicit blockers are resolved.",
-        "allowedTransitions": ["classified", "ready"]
+        "allowedTransitions": [
+          "classified",
+          "ready"
+        ]
       },
       {
         "id": "ready",
         "description": "Dependencies and consumers allow the migration batch to start.",
-        "allowedTransitions": ["blocked", "migrating"]
+        "allowedTransitions": [
+          "blocked",
+          "migrating"
+        ]
       },
       {
         "id": "migrating",
         "description": "The module is actively moving to ESM in an approved dependency cluster.",
-        "allowedTransitions": ["blocked", "esm"]
+        "allowedTransitions": [
+          "blocked",
+          "esm"
+        ]
       },
       {
         "id": "esm",
         "description": "The module uses explicit ESM imports and named exports.",
-        "allowedTransitions": ["migrating", "verified"]
+        "allowedTransitions": [
+          "migrating",
+          "verified"
+        ]
       },
       {
         "id": "verified",
         "description": "Architecture, feature, regression, and runtime checks passed after migration.",
-        "allowedTransitions": ["migrating"]
+        "allowedTransitions": [
+          "migrating"
+        ]
       }
     ],
     "waves": [
@@ -289,7 +342,9 @@
         "order": 2,
         "id": "engine-core",
         "description": "Engine runtime, math, contracts, lifecycle, events, and rendering abstractions.",
-        "targetBoundaries": ["engine"]
+        "targetBoundaries": [
+          "engine"
+        ]
       },
       {
         "order": 3,
@@ -314,13 +369,17 @@
         "order": 5,
         "id": "platform",
         "description": "Browser adapters for storage, audio, input, assets, timing, DOM, and Canvas.",
-        "targetBoundaries": ["platform"]
+        "targetBoundaries": [
+          "platform"
+        ]
       },
       {
         "order": 6,
         "id": "presentation",
         "description": "Presentation read models, frame builders, UI, HUD, screens, and render pipeline.",
-        "targetBoundaries": ["game-presentation"]
+        "targetBoundaries": [
+          "game-presentation"
+        ]
       },
       {
         "order": 7,
@@ -473,9 +532,16 @@
           "issues": "required"
         }
       ],
-      "issueFields": ["code", "message"],
+      "issueFields": [
+        "code",
+        "message"
+      ],
       "providerModel": {
-        "requiredFields": ["symbol", "mechanism", "availability"],
+        "requiredFields": [
+          "symbol",
+          "mechanism",
+          "availability"
+        ],
         "mechanisms": [
           "global-lexical",
           "global-var",
@@ -484,13 +550,19 @@
           "global-this-property",
           "implicit-global"
         ],
-        "availabilities": ["program-init", "conditional", "deferred"],
+        "availabilities": [
+          "program-init",
+          "conditional",
+          "deferred"
+        ],
         "availabilityPrecedence": [
           "program-init",
           "conditional",
           "deferred"
         ],
-        "confirmedWithoutControlFlow": ["program-init"]
+        "confirmedWithoutControlFlow": [
+          "program-init"
+        ]
       },
       "consumerModel": {
         "requiredFields": [
@@ -504,13 +576,28 @@
           "window-property",
           "global-this-property"
         ],
-        "accessRequirements": ["required", "guarded"],
-        "executionPhases": ["eager", "conditional", "deferred"],
-        "executionPhasePrecedence": ["eager", "conditional", "deferred"],
+        "accessRequirements": [
+          "required",
+          "guarded"
+        ],
+        "executionPhases": [
+          "eager",
+          "conditional",
+          "deferred"
+        ],
+        "executionPhasePrecedence": [
+          "eager",
+          "conditional",
+          "deferred"
+        ],
         "classification": "project-symbol-candidate"
       },
       "resolutionModel": {
-        "kinds": ["confirmed", "unresolved", "ambiguous"],
+        "kinds": [
+          "confirmed",
+          "unresolved",
+          "ambiguous"
+        ],
         "resolutionUnit": {
           "kind": "consumer-observation",
           "keyFields": [
@@ -536,7 +623,11 @@
           "target",
           "resolution"
         ],
-        "confirmedDependencyFields": ["target", "symbols", "resolution"],
+        "confirmedDependencyFields": [
+          "target",
+          "symbols",
+          "resolution"
+        ],
         "unresolvedSymbolFields": [
           "symbol",
           "mechanism",
@@ -559,7 +650,9 @@
         "pathHeuristics": "forbidden",
         "reverseConsumers": "derived-only",
         "availabilityCompatibility": {
-          "trustworthyProviderAvailabilities": ["program-init"],
+          "trustworthyProviderAvailabilities": [
+            "program-init"
+          ],
           "providerAvailabilityWithoutControlFlow": {
             "program-init": "eligible",
             "conditional": "ineligible",
@@ -592,14 +685,20 @@
           "edgeCreation": "confirmed-inter-file-only",
           "speculativeEdges": "forbidden",
           "selfEdges": "forbidden",
-          "edgeAggregationKey": ["source", "target"],
+          "edgeAggregationKey": [
+            "source",
+            "target"
+          ],
           "symbolAggregation": "sorted-unique",
           "observationMutation": "forbidden",
           "architectureClassification": "forbidden"
         },
         "transientResultModel": {
           "lifecycle": "in-memory-only",
-          "rootFields": ["sources", "graph"],
+          "rootFields": [
+            "sources",
+            "graph"
+          ],
           "sourceFields": [
             "currentPath",
             "status",
@@ -608,22 +707,38 @@
             "ambiguous",
             "issues"
           ],
-          "sourceStatuses": ["verified", "partial", "failed"],
+          "sourceStatuses": [
+            "verified",
+            "partial",
+            "failed"
+          ],
           "statusSemantics": {
             "verified": "complete-for-observed-consumers",
             "partial": "results-with-issues",
             "failed": "no-resolution-results"
           },
-          "issueFields": ["code", "message"],
-          "graphFields": ["nodes", "edges"],
-          "graphEdgeFields": ["source", "target", "symbols"],
+          "issueFields": [
+            "code",
+            "message"
+          ],
+          "graphFields": [
+            "nodes",
+            "edges"
+          ],
+          "graphEdgeFields": [
+            "source",
+            "target",
+            "symbols"
+          ],
           "pending": "forbidden",
           "providerCorpusIncomplete": "suppress-single-provider-confirmation"
         },
         "classicScriptCompatibility": {
           "environment": "browser-classic-script",
           "providerToConsumerMechanisms": {
-            "global-lexical": ["identifier"],
+            "global-lexical": [
+              "identifier"
+            ],
             "global-var": [
               "identifier",
               "window-property",
@@ -683,11 +798,27 @@
         "reverseConsumers": "derived-only",
         "reversePersistence": "forbidden",
         "graphNodeIdentity": "currentPath",
-        "persistedEdgeFields": ["source", "target", "symbols"],
-        "reverseEntryFields": ["currentPath", "consumers"],
-        "reverseConsumerFields": ["source", "symbols"],
-        "graphInputs": ["confirmed-inter-file"],
-        "graphExcluded": ["unresolved", "ambiguous", "self-resolution"],
+        "persistedEdgeFields": [
+          "source",
+          "target",
+          "symbols"
+        ],
+        "reverseEntryFields": [
+          "currentPath",
+          "consumers"
+        ],
+        "reverseConsumerFields": [
+          "source",
+          "symbols"
+        ],
+        "graphInputs": [
+          "confirmed-inter-file"
+        ],
+        "graphExcluded": [
+          "unresolved",
+          "ambiguous",
+          "self-resolution"
+        ],
         "consumerResolutionCardinality": "exactly-one",
         "edgeProvenance": "fact-level-confirmed",
         "edgeAggregation": "source-target-sorted-unique-symbols",
@@ -831,7 +962,10 @@
         "range"
       ]
     },
-    "blockerStatuses": ["pending", "verified"],
+    "blockerStatuses": [
+      "pending",
+      "verified"
+    ],
     "classificationContract": {
       "stage": "1.6",
       "decisionMode": "reviewed-explicit",
@@ -1088,9 +1222,11 @@
       "productionEntrypoint": "src/entrypoints/game.entry.js",
       "productionRuntime": "native-esm",
       "developmentSource": "dev.html",
-      "developmentRuntime": "classic-cumulative-iife",
+      "developmentRuntime": "native-esm",
       "nativeDevelopmentStage": "stage-6",
-      "decision": "architecture/migration/stage_5/native_production_owner_decision.md"
+      "decision": "architecture/migration/stage_5/native_production_owner_decision.md",
+      "developmentEntrypoint": "src/entrypoints/dev.entry.js",
+      "nativeDevelopmentDecision": "architecture/migration/stage_6/stage6_spec.md"
     }
   },
   "architectureGuards": {
@@ -1103,7 +1239,11 @@
       "re-export",
       "approved-bridge"
     ],
-    "statuses": ["PASS", "KNOWN-DEBT", "FAIL"],
+    "statuses": [
+      "PASS",
+      "KNOWN-DEBT",
+      "FAIL"
+    ],
     "statusSemantics": {
       "PASS": "The rule is satisfied or an exact audited policy exception applies.",
       "KNOWN-DEBT": "An exact legacy violation matches the reviewed debt registry.",
@@ -1113,9 +1253,18 @@
     "physicalPathValidation": "esm-and-verified-only",
     "cycleAlgorithm": "tarjan-scc",
     "cycleIdentity": "sorted-scc-members-and-internal-edges",
-    "diagnosticOrder": ["status", "rule", "source", "target", "location", "message"],
+    "diagnosticOrder": [
+      "status",
+      "rule",
+      "source",
+      "target",
+      "location",
+      "message"
+    ],
     "exceptionScope": "exact-current-path-rule-target-or-subject",
-    "developmentOnlyRoles": ["dev-tool"],
+    "developmentOnlyRoles": [
+      "dev-tool"
+    ],
     "artifacts": {
       "knownDebt": "architecture/guards/known_debt_registry.json",
       "migrationBridges": "architecture/guards/migration_bridge_registry.json",
@@ -1131,31 +1280,126 @@
     ],
     "browserCapabilities": {
       "catalog": {
-        "dom": ["document", "HTMLElement", "MutationObserver", "ResizeObserver", "getComputedStyle", "prompt"],
-        "canvas": ["CanvasRenderingContext2D", "OffscreenCanvas"],
-        "storage": ["localStorage", "sessionStorage"],
-        "audio": ["Audio", "AudioContext", "webkitAudioContext"],
-        "timing": ["performance", "requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "clearTimeout", "setInterval", "clearInterval"],
-        "browser-events": ["Event", "CustomEvent", "InputEvent", "KeyboardEvent", "MouseEvent", "PointerEvent", "TouchEvent", "addEventListener", "removeEventListener", "dispatchEvent"],
-        "image-loading": ["Image"],
-        "viewport": ["innerWidth", "innerHeight", "matchMedia"],
-        "location": ["location", "URL", "URLSearchParams"],
-        "network": ["fetch", "WebSocket"],
-        "file-io": ["Blob", "File", "FileReader"],
-        "browser-runtime": ["window", "navigator", "structuredClone"],
-        "cryptography": ["crypto"],
-        "diagnostics": ["console"]
+        "dom": [
+          "document",
+          "HTMLElement",
+          "MutationObserver",
+          "ResizeObserver",
+          "getComputedStyle",
+          "prompt"
+        ],
+        "canvas": [
+          "CanvasRenderingContext2D",
+          "OffscreenCanvas"
+        ],
+        "storage": [
+          "localStorage",
+          "sessionStorage"
+        ],
+        "audio": [
+          "Audio",
+          "AudioContext",
+          "webkitAudioContext"
+        ],
+        "timing": [
+          "performance",
+          "requestAnimationFrame",
+          "cancelAnimationFrame",
+          "setTimeout",
+          "clearTimeout",
+          "setInterval",
+          "clearInterval"
+        ],
+        "browser-events": [
+          "Event",
+          "CustomEvent",
+          "InputEvent",
+          "KeyboardEvent",
+          "MouseEvent",
+          "PointerEvent",
+          "TouchEvent",
+          "addEventListener",
+          "removeEventListener",
+          "dispatchEvent"
+        ],
+        "image-loading": [
+          "Image"
+        ],
+        "viewport": [
+          "innerWidth",
+          "innerHeight",
+          "matchMedia"
+        ],
+        "location": [
+          "location",
+          "URL",
+          "URLSearchParams"
+        ],
+        "network": [
+          "fetch",
+          "WebSocket"
+        ],
+        "file-io": [
+          "Blob",
+          "File",
+          "FileReader"
+        ],
+        "browser-runtime": [
+          "window",
+          "navigator",
+          "structuredClone"
+        ],
+        "cryptography": [
+          "crypto"
+        ],
+        "diagnostics": [
+          "console"
+        ]
       },
       "allowedBoundaries": {
-        "platform": ["dom", "canvas", "storage", "audio", "timing", "browser-events", "image-loading", "viewport", "location", "network", "file-io", "browser-runtime", "cryptography", "diagnostics"],
-        "dev": ["dom", "canvas", "storage", "audio", "timing", "browser-events", "image-loading", "viewport", "location", "network", "file-io", "browser-runtime", "cryptography", "diagnostics"]
+        "platform": [
+          "dom",
+          "canvas",
+          "storage",
+          "audio",
+          "timing",
+          "browser-events",
+          "image-loading",
+          "viewport",
+          "location",
+          "network",
+          "file-io",
+          "browser-runtime",
+          "cryptography",
+          "diagnostics"
+        ],
+        "dev": [
+          "dom",
+          "canvas",
+          "storage",
+          "audio",
+          "timing",
+          "browser-events",
+          "image-loading",
+          "viewport",
+          "location",
+          "network",
+          "file-io",
+          "browser-runtime",
+          "cryptography",
+          "diagnostics"
+        ]
       },
       "forbiddenBoundaryDefault": "none",
       "unknownBrowserPropertyCapability": "browser-runtime"
     }
   },
   "moduleConventions": {
-    "appliesToStatuses": ["migrating", "esm", "verified"],
+    "appliesToStatuses": [
+      "migrating",
+      "esm",
+      "verified"
+    ],
     "exports": {
       "preferredMode": "named",
       "defaultExports": "forbidden-with-exception"
@@ -1221,7 +1465,12 @@
       "stage-6",
       "stage-7"
     ],
-    "identityFields": ["currentPath", "rule", "target", "subject"],
+    "identityFields": [
+      "currentPath",
+      "rule",
+      "target",
+      "subject"
+    ],
     "matching": "exact-only",
     "entries": []
   }

@@ -462,8 +462,9 @@ class MigrationManifestPolicyValidator {
           JSON.stringify(manifest.browserStartup) === JSON.stringify({
             productionSource: "index.html", productionEntrypoint: "src/entrypoints/game.entry.js",
             productionRuntime: "native-esm", developmentSource: "dev.html",
-            developmentRuntime: "classic-cumulative-iife", nativeDevelopmentStage: "stage-6",
+            developmentRuntime: manifest.browserStartup?.developmentRuntime === "native-esm" ? "native-esm" : "classic-cumulative-iife", nativeDevelopmentStage: "stage-6",
             decision: "architecture/migration/stage_5/native_production_owner_decision.md",
+            ...(manifest.browserStartup?.developmentRuntime === "native-esm" ? {developmentEntrypoint:"src/entrypoints/dev.entry.js",nativeDevelopmentDecision:"architecture/migration/stage_6/stage6_spec.md"} : {}),
           }))) &&
         manifest.legacyLoadOrder?.firstValue === 1 &&
         manifest.legacyLoadOrder?.outsideLegacyGraph === null,
@@ -1418,6 +1419,9 @@ class ArchitecturePolicyValidationSuite {
 }
 
 const policy = ArchitecturePolicy.load(POLICY_PATH);
+if(policy.definition.migrationManifest.browserStartup?.developmentRuntime === "native-esm") {
+  require("node:assert/strict")(require("./stage_six/native_development_retirement").NativeDevelopmentRetirement.read(require("node:path").resolve(__dirname,"../..")),"native development requires exact retirement evidence");
+}
 new ArchitectureGuardPolicyValidator().validate(policy.definition);
 new ArchitecturePolicyValidationSuite([
   new BoundaryPolicyValidator(),

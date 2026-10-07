@@ -47,6 +47,8 @@ class NativeEsmTestLoader {
     for (const record of this.#cleanupRecords()) for (const item of record.removedModules || []) {
       if (item.manifest.architecture.roles.includes("compatibility-bridge")) add(item.path,item.manifest.architecture.targetPath);
     }
+    for (const record of this.#cleanupRecords()) for (const item of record.nativeReplacements || [])
+      if (item.source !== "src/config/config.js") add(item.source,item.targets[0]);
   }
 
   #cleanupRecords() {

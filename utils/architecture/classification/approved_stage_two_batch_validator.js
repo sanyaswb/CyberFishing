@@ -19,6 +19,7 @@ class ApprovedStageTwoBatchValidator {
     executionState = null,
     runtimeFacts = null,
     effectiveBridgePlan = approvedPlan,
+    retiredWrappers = [],
   }) {
     const errors = [];
     const migrationStarted = executionState?.esmRuntimeIntegrationStarted === true;
@@ -113,7 +114,7 @@ class ApprovedStageTwoBatchValidator {
         errors.push(error.message);
       }
       if (migrationStarted) {
-        this.#validateLifecycleManifest({ approvedPlan, manifest, executionState, errors });
+        this.#validateLifecycleManifest({ approvedPlan, manifest, executionState, retiredWrappers, errors });
       }
     } else {
       this.#require(
@@ -141,7 +142,7 @@ class ApprovedStageTwoBatchValidator {
     });
   }
 
-  #validateLifecycleManifest({ approvedPlan, manifest, executionState, errors }) {
+  #validateLifecycleManifest({ approvedPlan, manifest, executionState, retiredWrappers, errors }) {
     this.#require(
       approvedPlan?.approvedAtVersion === executionState?.sourceClosureVersion,
       "Execution state must originate from the frozen approved plan",
@@ -177,7 +178,14 @@ class ApprovedStageTwoBatchValidator {
         }
       }
       for (const bridge of batch.bridgeStrategy?.bridges || []) {
-        const wrapper = entries.get(bridge.wrapperPath);
+        // A wrapper leaves the Manifest only through an exact reviewed native retirement of its recorded entry.
+        const retired = (retiredWrappers || []).filter((item) => item.path === bridge.wrapperPath);
+        const wrapper = entries.get(bridge.wrapperPath) ?? (retired.length === 1 ? retired[0].manifest : undefined);
+        this.#require(
+          retired.length === 0 || !entries.has(bridge.wrapperPath),
+          `${bridge.wrapperPath} is both retired and live`,
+          errors,
+        );
         this.#require(
           allowed.has(batch.id)
             ? ["migrating", "esm", "verified"].includes(wrapper?.architecture?.migrationStatus)

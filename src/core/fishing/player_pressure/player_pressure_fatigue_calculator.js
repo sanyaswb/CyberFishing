@@ -1,1 +1,0 @@
-// Retired Stage 3 activation activation-a44add7fda39: PlayerPressureFatigueCalculator is served only through ESM imports of src/game/domain/fishing/player_pressure/player_pressure_fatigue_calculator.js.

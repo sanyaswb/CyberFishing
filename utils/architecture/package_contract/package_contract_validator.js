@@ -6,7 +6,7 @@ class PackageContractValidator {
     require(contract?.kind === "cyber-fishing-root-package-contract", "package contract kind is invalid");
     require(contract?.package?.name === "cyber-fishing", "package name contract must be cyber-fishing");
     require(contract?.package?.private === true, "root package must remain private");
-    require(contract?.package?.versionSource === "src/config/project_version.js", "versionSource must remain project_version.js");
+    require(contract?.package?.versionSource === (expectedStage?.nativeDevelopment ? "src/game/presentation/version/project_version.js" : "src/config/project_version.js"), "versionSource must remain project_version.js");
     require(contract?.package?.moduleTypePolicy === "root-type-field-absent-commonjs-tooling-preserved", "root module type policy must preserve CommonJS tooling");
     require(typeof contract?.runtime?.node === "string" && contract.runtime.node.length > 0, "Node range is required");
     require(typeof contract?.runtime?.npm === "string" && contract.runtime.npm.length > 0, "npm range is required");
@@ -21,19 +21,20 @@ class PackageContractValidator {
       contract?.stage?.current === expectedStage?.current,
       `package contract must record Stage ${expectedStage?.current}`,
     );
-    require(contract?.stage?.vite === "fixture-bridge-and-cumulative-runtime-infrastructure", "Vite usage must be limited to fixtures and approved compatibility infrastructure");
+    require(contract?.stage?.vite === (expectedStage?.nativeDevelopment ? "synthetic-fixture-build-only" : "fixture-bridge-and-cumulative-runtime-infrastructure"), "Vite usage must be limited to fixtures and approved compatibility infrastructure");
     const nativeProduction = expectedStage?.nativeProduction === true;
     require(contract?.stage?.productionEntrypoint === (nativeProduction ? "native-index-html-game-entry" : "unchanged-index-html"),
       "production entrypoint differs from the reviewed stage topology");
-    require(contract?.stage?.sourceRuntime === (nativeProduction ? "native-production-and-classic-dev-cumulative-iife" : "classic-scripts-with-cumulative-iife-runtime"),
+    require(contract?.stage?.sourceRuntime === (expectedStage?.nativeDevelopment ? "native-production-and-native-development" : nativeProduction ? "native-production-and-classic-dev-cumulative-iife" : "classic-scripts-with-cumulative-iife-runtime"),
       "source runtime differs from the reviewed stage topology");
+    if(expectedStage?.nativeDevelopment) require(contract?.stage?.developmentEntrypoint === "native-dev-html-dev-entry", "development entrypoint differs from the reviewed stage topology");
     require(contract?.stage?.commonJsTooling === "preserved", "CommonJS tooling must remain preserved");
-    require(contract?.stage?.bridgeBuild?.status === "transitioned-to-cumulative-runtime", "isolated legacy bridge runtime must be transitioned");
+    require(contract?.stage?.bridgeBuild?.status === (expectedStage?.nativeDevelopment ? "retired-native-esm" : "transitioned-to-cumulative-runtime"), "isolated legacy bridge runtime must be transitioned");
     require(contract?.stage?.bridgeBuild?.registry === "architecture/guards/migration_bridge_registry.json", "legacy bridge registry path is invalid");
     require(contract?.stage?.bridgeBuild?.inputs === "stage-2-bridges-exposed-through-stage-3-cumulative-runtime", "legacy bridge transition inputs are invalid");
     require(contract?.stage?.bridgeBuild?.output === "dist/legacy-bridges/", "legacy bridge output path is invalid");
     require(contract?.stage?.bridgeBuild?.runtimeInputs === 0, "isolated bridge runtime must have zero active inputs");
-    require(contract?.stage?.cumulativeRuntimeBuild?.status === "runtime-integration-active", "cumulative runtime integration must be active");
+    require(contract?.stage?.cumulativeRuntimeBuild?.status === (expectedStage?.nativeDevelopment ? "retired-native-esm" : "runtime-integration-active"), "cumulative runtime integration must be active");
     require(contract?.stage?.cumulativeRuntimeBuild?.contract === "architecture/migration/stage_3_compatibility_runtime.json", "cumulative runtime contract path is invalid");
     require(contract?.stage?.cumulativeRuntimeBuild?.executionState === "architecture/migration/stage_3_execution_state.json", "Stage 3 execution state path is invalid");
     require(contract?.stage?.cumulativeRuntimeBuild?.output === "dist/stage-3-compat-runtime/", "cumulative runtime output path is invalid");

@@ -15,6 +15,8 @@ const eslintScope = require("eslint-scope");
 const { StageFourClusterLedger, recordStage } = require("./stage_four/cluster_ledger");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
+const { StageThreeRuntimeScriptAliasResolver } = require("./migration/stage_three_runtime_script_alias_resolver");
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 const { LANGUAGE_BUILTINS, StageFourEsmTargetProjector } = require("./stage_four/esm_target_projector");
 const { ActivationShimRenderer } = require("../build/compat_runtime/activation_shim");
 const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
@@ -113,14 +115,28 @@ const removedModules = new Map(cleanupRecords.flatMap(record => record.removedMo
 const removedBridges = cleanupRecords.flatMap(record => record.removedBridges);
 const removedActivations = cleanupRecords.flatMap(record => record.removedActivations);
 const archivedSources = new Map();
+// Stage 6 retired the Stage 5 tombstones and split with every classic file: earlier cleanup facts are read from the
+// hash-validated pre-retirement bytes, while the current native pages are validated independently below.
+const nativeRetirement = cleanupRecords.find(record => record.kind === "cyber-fishing-stage-6-preparation") || null;
+const nativeArchive = nativeRetirement && NativeDevelopmentRetirement.archive(ROOT,nativeRetirement);
+if (nativeArchive) assert.equal(nativeArchive.verifyAll(),nativeRetirement.removedModules.length +
+  nativeRetirement.historicalMetadata.length + 1,"cleanup exact Stage 6 raw recovery");
+const beforeNative = file => nativeArchive?.has(file) ? nativeArchive.text(file) : read(file);
+const git = (...args) => require("node:child_process").execFileSync("git",args,{cwd:ROOT,maxBuffer:30e6});
 for (const record of cleanupRecords) {
   StageFourClusterLedger.validateCleanupRecord(record);
-  const git = (...args) => require("node:child_process").execFileSync("git",args,{cwd:ROOT,maxBuffer:30e6});
-  assert.equal(git("rev-parse","stage5-closed^{}").toString().trim(),record.baseCommit,"cleanup closed base");
-  assert.equal(git("rev-parse",record.postClosureCleanup.archiveTag+"^{}").toString().trim(),
-    record.postClosureCleanup.archiveCommit,"cleanup archive identity");
-  const historical = JSON.parse(git("show",record.baseCommit+":architecture/migration/module_migration_manifest.json"));
-  const historicJson = file => JSON.parse(git("show",record.baseCommit+":"+file));
+  const native = record === nativeRetirement;
+  if (native) {
+    nativeArchive.verifyIdentity();
+    assert.doesNotThrow(() => git("merge-base","--is-ancestor","stage5-closed^{}",record.baseCommit),"cleanup Stage 6 base follows closure");
+    assert.doesNotThrow(() => git("merge-base","--is-ancestor",record.baseCommit,"HEAD"),"cleanup Stage 6 base is accepted history");
+  } else {
+    assert.equal(git("rev-parse","stage5-closed^{}").toString().trim(),record.baseCommit,"cleanup closed base");
+    assert.equal(git("rev-parse",record.postClosureCleanup.archiveTag+"^{}").toString().trim(),
+      record.postClosureCleanup.archiveCommit,"cleanup archive identity");
+  }
+  const historicJson = file => native ? nativeArchive.json(file) : JSON.parse(git("show",record.baseCommit+":"+file));
+  const historical = historicJson("architecture/migration/module_migration_manifest.json");
   const historicRuntime = historicJson("architecture/migration/stage_3_compatibility_runtime.json");
   for (const [removed,original] of [[record.removedBridges,historicJson("architecture/guards/migration_bridge_registry.json").bridges],
     [record.removedActivations,historicRuntime.activationPositions], [record.removedInertModules,historicRuntime.inertModules],
@@ -128,10 +144,32 @@ for (const record of cleanupRecords) {
     [record.removedDebtRecords,historicJson("architecture/guards/known_debt_registry.json").debts]])
     for (const item of removed) assert(original.some(candidate => JSON.stringify(candidate) === JSON.stringify(item)),
       "cleanup must remove an exact historical record");
-  const approvedComments = record.removedLegacySlots.map(item => [String(item.slot),item.path]);
-  const actualComments = [...read("dev.html").matchAll(/<!-- retired-legacy-slot ([1-9][0-9]*): (src\/[a-z0-9_/.]+\.js) -->/giu)]
-    .map(match => [match[1],match[2]]);
-  assert.deepEqual(actualComments,approvedComments,"cleanup cannot hide unreviewed legacy slots");
+  if (native) {
+    // Every remaining logical slot (members, split order, sources) is the exact archived classic page projection.
+    const aliases = new StageThreeRuntimeScriptAliasResolver().resolve(historicRuntime);
+    const slots = new Map();
+    for (const script of new LegacyScriptOrderReader(null,{scriptAliases:aliases}).parse(nativeArchive.text("dev.html"))) {
+      if (script.type !== "classic" || script.legacyLoadOrder === null) continue;
+      const slot = script.slotMember ? script.slotMember.slot : script.legacyLoadOrder;
+      if (!slots.has(slot)) slots.set(slot,{slot,path:script.currentPath,members:[]});
+      slots.get(slot).members.push({path:script.currentPath,source:script.source});
+    }
+    assert.deepEqual([...slots.values()],record.removedLegacySlots,"cleanup exact archived logical slots");
+    assert.deepEqual(record.legacySlotSplits.before,historicJson("architecture/migration/legacy_slot_splits.json").splits,
+      "cleanup exact archived splits");
+    assert.deepEqual(json("architecture/migration/legacy_slot_splits.json").splits,record.legacySlotSplits.after,"cleanup split successor");
+    // Current pages: one versioned native module entry each, no classic script or historical tombstone.
+    for (const [page,entry] of [["index.html","src/entrypoints/game.entry.js"],["dev.html","src/entrypoints/dev.entry.js"]]) {
+      const scripts = new LegacyScriptOrderReader(null).parse(read(page));
+      assert.deepEqual(scripts.map(script => [script.type,script.currentPath]),[["module",entry]],`cleanup ${page} is native`);
+      assert(!/retired-legacy-slot/u.test(read(page)),`cleanup ${page} keeps a classic tombstone`);
+    }
+  } else {
+    const approvedComments = record.removedLegacySlots.map(item => [String(item.slot),item.path]);
+    const actualComments = [...beforeNative("dev.html").matchAll(/<!-- retired-legacy-slot ([1-9][0-9]*): (src\/[a-z0-9_/.]+\.js) -->/giu)]
+      .map(match => [match[1],match[2]]);
+    assert.deepEqual(actualComments,approvedComments,"cleanup cannot hide unreviewed legacy slots");
+  }
   for (const method of record.removedMethods) {
     const before = git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+method.path).toString("utf8");
     const tree = espree.parse(before,{ecmaVersion:"latest",sourceType:"module",range:true});
@@ -145,7 +183,7 @@ for (const record of cleanupRecords) {
     assert.equal(before.slice(start,end).split("\n").length-1,method.lines,"cleanup removed method lines");
   }
   for (const item of record.removedModules) {
-    const bytes = git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+item.path);
+    const bytes = native ? nativeArchive.bytes(item.path) : git("cat-file","blob",record.postClosureCleanup.archiveCommit+":"+item.path);
     assert.equal(require("node:crypto").createHash("sha256").update(bytes).digest("hex"),item.before,"cleanup exact recovery bytes");
     assert.deepEqual(item.manifest,historical.modules.find(module => module.currentPath === item.path),"cleanup frozen module identity");
     assert(!fs.existsSync(path.join(ROOT,item.path)) && !manifest.has(item.path),"cleanup module still exists");
@@ -155,16 +193,33 @@ for (const record of cleanupRecords) {
     !contract.activationPositions.some(active => active.id === item.id)),"cleanup surface still exists");
   assert(record.resolvedDebts.every(id => !json("architecture/guards/known_debt_registry.json").debts.some(item => item.id === id)),
     "cleanup debt still exists");
-  assert.deepEqual(json("architecture/migration/legacy_slot_splits.json").splits.find(item => item.slot === 228),
-    record.legacySlotSplit.after,"cleanup exact split successor");
-  for (const item of record.removedLegacySlots) assert(read("dev.html").includes(
-    '<!-- retired-legacy-slot '+item.slot+': '+item.path+' -->'),"cleanup historical slot tombstone");
+  if (!native) {
+    const split = JSON.parse(beforeNative("architecture/migration/legacy_slot_splits.json")).splits.find(item => item.slot === 228);
+    assert.deepEqual(split,record.legacySlotSplit.after,"cleanup exact split successor");
+    if (nativeRetirement) assert(nativeRetirement.legacySlotSplits.before.some(item =>
+      JSON.stringify(item) === JSON.stringify(split)),"cleanup split has no exact Stage 6 successor");
+    for (const item of record.removedLegacySlots) assert(beforeNative("dev.html").includes(
+      '<!-- retired-legacy-slot '+item.slot+': '+item.path+' -->'),"cleanup historical slot tombstone");
+  }
   for (const change of [{postClosureCleanup:{...record.postClosureCleanup,closureTag:"stage4-closed"}},
     {removedModules:[...record.removedModules,record.removedModules[0]]},
     {removedModules:record.removedModules.map(item => ({...item,before:"unrecoverable"}))},
     {removedBridges:record.removedBridges.map(item => ({...item,source:"src/app/script.js"}))},
     {removedActivations:record.removedActivations.map(item => ({...item,targetModule:"src/other.js"}))}])
     assert.throws(() => StageFourClusterLedger.validateCleanupRecord({...record,...change}),/cleanup/u);
+}
+if (nativeRetirement) {
+  // Raw recovery rejects altered bytes, a foreign blob, a missing tag and a wrong recovery commit or parent.
+  const [first, second, ...rest] = nativeRetirement.removedModules;
+  const cleanup = nativeRetirement.postClosureCleanup;
+  for (const [change, pattern] of [
+    [{removedModules:[{...first,before:"0".repeat(64)},second,...rest]}, /archive recovery hash/u],
+    [{removedModules:[{...first,gitBlob:second.gitBlob},second,...rest]}, /archive tree blob/u],
+    [{historicalHtml:{...nativeRetirement.historicalHtml,before:"0".repeat(64)}}, /archive recovery hash/u],
+    [{postClosureCleanup:{...cleanup,archiveTag:"stage6-missing-recovery-fixture"}}, /stage6-missing-recovery-fixture/u],
+    [{postClosureCleanup:{...cleanup,archiveCommit:nativeRetirement.baseCommit}}, /archive peeled commit/u],
+    [{baseCommit:git("rev-parse","stage5-closed^{}").toString().trim()}, /archive parent/u]])
+    assert.throws(() => NativeDevelopmentRetirement.archive(ROOT,{...nativeRetirement,...change}).verifyAll(), pattern);
 }
 const recordedSource = file => archivedSources.get(file) ?? read(file);
 const recordedEntry = file => manifest.get(file) ?? removedModules.get(file)?.manifest;
@@ -284,7 +339,13 @@ for (const preparation of preparations) {
   }
   for (const id of preparation.resolvedDebts) assert(!json("architecture/guards/known_debt_registry.json").debts.some(debt=>debt.id===id),
     `preparation ${preparation.id}: resolved debt remains ${id}`);
-  assert.equal(preparation.verification.globalsBefore, preparation.verification.globalsAfter, "provider relocation cannot add globals");
+  if (preparation === nativeRetirement) {
+    // The only qualified baseline reduction: exactly the archived frozen providers, none remaining.
+    assert.equal(preparation.verification.globalsBefore, preparation.removedGlobalProviders.length, "native retirement exact provider baseline");
+    assert.equal(preparation.verification.globalsAfter, json("architecture/guards/global_provider_baseline.json").providers.length,
+      "native retirement provider baseline drift");
+    assert.equal(preparation.verification.globalsAfter, 0, "native retirement leaves a provider");
+  } else assert.equal(preparation.verification.globalsBefore, preparation.verification.globalsAfter, "provider relocation cannot add globals");
   for (const pair of preparation.replacedBridges || []) {
     assert(ledger.applied.some(record=>record.output.bridgesAdded.includes(pair.before.id)), "original bridge has no applied owner record");
     assert(!bridges.has(pair.before.id), "original consumer bridge remains active");
@@ -319,7 +380,7 @@ ledger.records.forEach((record, index) => {
     assert(wrapper.file.startsWith("src/engine/compat/stage_2/"), "retired wrapper outside Stage 2");
     assert(wrapper.activationIds.every(id => record.output.activationsRetired.includes(id)), "wrapper has no exact retirement");
     const activations = contract.retiredActivations.filter(item => wrapper.activationIds.includes(item.activation.id)).map(item => item.activation);
-    assert.equal(read(wrapper.file), new RetiredActivationPlaceholder().renderProvider(activations));
+    assert.equal(recordedSource(wrapper.file), new RetiredActivationPlaceholder().renderProvider(activations));
   }
   for (const module of record.modules) {
     targets += 1;
@@ -450,7 +511,7 @@ const retirementPlan = (held, propertyReader = false, stage = 4) => {
     text: (file) => file === PATHS.index
       ? '<script src="dist/fixture/runtime.js"></script>\n<script src="dist/fixture/activations/001_b1.js"></script>\n' +
         '<script src="dist/fixture/activations/001_b2.js"></script>\n<script src="src/a.js"></script>\n'
-      : propertyReader && file === "src/config/project_version.js" ? "globalThis.B1;\n"
+      : propertyReader && file === "src/game/presentation/version/project_version.js" ? "globalThis.B1;\n"
         : "class A { read() { return B1; } }\n" };
   return new StageFourClusterPlan(workspace, { kind: `cyber-fishing-stage-${stage}-cluster`, id: "003", slug: "fixture",
     boundary: "game-config", modules: [{
@@ -674,6 +735,18 @@ assert.throws(() => StageFourRelease.currentVersion(file => nativeVersionTexts.g
 assert.throws(() => StageFourRelease.currentVersion(file => nativeVersionTexts.get(file),
   { migrationManifest: { legacyLoadOrder: { source: "other.html" } } }), /Unreviewed/u);
 releaseCases += 3;
+// Stage 6 native DEV page: exactly one module entry pin, never mixed with a classic version script.
+const nativeDevEntry = '<script type="module" src="src/entrypoints/dev.entry.js?v=1.0.0"></script>';
+const nativeDevTexts = new Map(nativeVersionTexts); nativeDevTexts.set("dev.html", nativeDevEntry);
+assert.equal(StageFourRelease.currentVersion(file => nativeDevTexts.get(file), nativeVersionPolicy), "1.0.0");
+for (const [value, pattern] of [[nativeDevEntry.replace("1.0.0", "9.9.9"), /version pins disagree/u],
+  [nativeDevEntry.repeat(2), /version pins disagree/u],
+  [nativeDevEntry + nativeVersionTexts.get("dev.html"), /mixes classic and native/u]]) {
+  const texts = new Map(nativeDevTexts); texts.set("dev.html", value);
+  assert.throws(() => StageFourRelease.currentVersion(name => texts.get(name), nativeVersionPolicy), pattern);
+  releaseCases += 1;
+}
+releaseCases += 1;
 const rejectsRelease = (file, after, pattern) => {
   assert.throws(releaseDelta(releaseFixture, file, oldTexts.get(file), after), pattern, file);
   releaseCases += 1;

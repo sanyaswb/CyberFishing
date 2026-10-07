@@ -1,1 +1,0 @@
-// Retired Stage 5 activation activation-40c46058b093: InventoryV2SavedLoadoutPreviewRenderer is served only through ESM imports of src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js.

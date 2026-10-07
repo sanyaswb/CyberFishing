@@ -1,6 +1,7 @@
 "use strict";
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { NativeDevelopmentRetirement } = require("./architecture/stage_six/native_development_retirement");
 
 function check(structured) {
   let cloneCalls = 0;
@@ -118,8 +119,8 @@ check(true);
 check(false);
 function checkDevelopmentInputs() {
   const fs = require("node:fs"), acorn = require("acorn");
-  const source = fs.readFileSync(require("node:path").join(__dirname, "../src/app/script.js"), "utf8");
-  const tree = acorn.parse(source, { ecmaVersion: "latest" });
+  const source = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/development/legacy_game_startup.js"), "utf8");
+  const tree = acorn.parse(source, { ecmaVersion: "latest", sourceType: "module" });
   let options;
   function visit(node) {
     if (!node || typeof node !== "object") return;
@@ -135,8 +136,8 @@ function checkDevelopmentInputs() {
   visit(tree);
   assert.equal(options?.type, "ObjectExpression");
   // Preserve each original serial await; only its importer moves to Development Bootstrap.
-  const rootSource = new SourceRuntime().readAuthoredSource("src/app/bootstrap.js");
-  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../platform/browser/runtime/legacy_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../game/config/inventory/inventory_composition_config.js"]]) {
+  const rootSource = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/production/game_composition_root.js"), "utf8");
+  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/legacy_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
     const property = options.properties.find(item => item.key.name === name);
     assert.equal(property.value.type, "ArrowFunctionExpression");
     assert.equal(property.value.body.type, "ImportExpression");
@@ -168,14 +169,19 @@ function checkDevelopmentInputs() {
   assert.equal(target.game, null); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, null);
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {};
+  const godModeInstance = { enabled: true };
+  const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
-    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: { enabled: true }, RenderAllocationDiagnostics: diagnostics,
-    CONFIG_RUNTIME_CONTEXT: configRuntime, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
-    FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer } });
-  runtime.load("src/app/adapters.js", { expose: ["CanvasMetricsProvider"] });
+    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: godModeInstance, RenderAllocationDiagnostics: diagnostics,
+    CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
+    FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
+    itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, debugModulesSource: () => debugModules, debugModules,
+    DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
+    documentTarget: document, windowTarget: window, godMode: godModeInstance } });
+
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
   assert.equal(ports.documentTarget, document);
@@ -183,14 +189,16 @@ function checkDevelopmentInputs() {
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.GodMode);
-  assert.equal(flags.options.debugModulesSource(), window.DEBUG_MODULES);
-  window.DEBUG_MODULES = { catchResolution: false };
-  assert.equal(flags.options.debugModulesSource(), window.DEBUG_MODULES, "flag source stays live");
+  assert.equal(flags.options.debugModulesSource(), runtime.context.debugModules);
+  runtime.context.debugModules.catchResolution = false;
+  assert.equal(flags.options.debugModulesSource().catchResolution, false, "flag source stays live");
   assert.equal(ports.isCatchResolutionLogEnabled(), false);
-  window.DEBUG_MODULES.catchResolution = true;
+  runtime.context.debugModules.catchResolution = true;
   assert.equal(ports.isCatchResolutionLogEnabled(), true);
-  window.document = null;
-  assert.equal(ports.isCatchResolutionLogEnabled(), false);
+  // Native DEV toggles have one injected owner: unrelated window/document globals no longer drive them.
+  window.DEBUG_MODULES = { catchResolution: false }; window.document = null;
+  assert.equal(ports.isCatchResolutionLogEnabled(), true, "window globals do not own native DEV toggles");
+  assert.equal(flags.options.debugModulesSource(), runtime.context.debugModules);
   window.document = document;
   assert.equal(ports.getRenderDiagnostics(), diagnostics);
   const replacement = {};
@@ -398,8 +406,13 @@ function checkNativeDevelopmentDisplays() {
     fishPassiveKg:1,fishOppositionKg:1,activeDebuffName:"Немає",fishConditionPhase:"stamina",currentStamina:1,fishConditionMaxStamina:2,
     liveChances:[],chumZones:[],baits:[],equipment:{},bottomDepth:2,hookDepth:1,lineLength:3};
   let comparisons = 0;
+  // Parity reference: the original classic overlay declaration (hash-validated raw archive after the Stage 6 cutover).
+  const retirement = NativeDevelopmentRetirement.read(root);
+  const archive = retirement && NativeDevelopmentRetirement.archive(root,retirement);
   for (const record of captured) {
-    const original = fs.readFileSync(path.join(root,record.module.source),"utf8");
+    assert.notEqual(record.module.source,record.module.target,"parity needs the original classic declaration");
+    const original = archive?.has(record.module.source) ? archive.text(record.module.source)
+      : fs.readFileSync(path.join(root,record.module.source),"utf8");
     const parsed = acorn.parse(original,{ecmaVersion:"latest"});
     const declarations = parsed.body.filter(node => ["ClassDeclaration","FunctionDeclaration","VariableDeclaration"].includes(node.type))
       .map(node => original.slice(node.start,node.end)).join("\n");

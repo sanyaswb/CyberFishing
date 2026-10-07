@@ -7,6 +7,7 @@ const { RepositoryContentSnapshot } = require("./esm_infrastructure/repository_c
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
 const { StageTwoRuntimeScriptAliasResolver } = require("./migration/stage_two_runtime_script_alias_resolver");
 
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 const CONTRACT_PATH = path.join(PROJECT_ROOT, "architecture/build/vite_fixture_contract.json");
 const FIXTURE_ROOT = path.join(__dirname, "esm-fixtures");
@@ -26,8 +27,9 @@ class ViteFixtureBuildCheck {
     const legacyBefore = fs.readFileSync(legacyPath, "utf8");
     const runtime = JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT, "architecture/migration/stage_3_compatibility_runtime.json"), "utf8"));
     const runtimePath = runtime.output.directory + runtime.output.runtimeFile;
+    const nativeDevelopment=NativeDevelopmentRetirement.read(PROJECT_ROOT)!==null;
     const topologyValidator = new ViteFixtureContractValidator(PROJECT_ROOT);
-    topologyValidator.validateRuntimeTopology({ legacySource: policy.migrationManifest.legacyLoadOrder.source,
+    topologyValidator.validateRuntimeTopology({ nativeDevelopment, legacySource: policy.migrationManifest.legacyLoadOrder.source,
       indexHtml: indexBefore, legacyHtml: legacyBefore, version: packageJson.version, runtimePath,
       gameEntrypointExists: fs.existsSync(path.join(PROJECT_ROOT, "src/entrypoints/game.entry.js")),
       devEntrypointExists: fs.existsSync(path.join(PROJECT_ROOT, "src/entrypoints/dev.entry.js")) });
@@ -35,10 +37,11 @@ class ViteFixtureBuildCheck {
     const nativeGraph = policy.migrationManifest.legacyLoadOrder.source === "dev.html"
       ? topologyValidator.validateProductionGraph({ manifest: JSON.parse(fs.readFileSync(
         path.join(PROJECT_ROOT, "architecture/migration/module_migration_manifest.json"), "utf8")) }) : [];
+    if(nativeDevelopment) topologyValidator.validateDevelopmentGraph({manifest:JSON.parse(fs.readFileSync(path.join(PROJECT_ROOT,"architecture/migration/module_migration_manifest.json"),"utf8"))});
     const scriptAliases = new StageTwoRuntimeScriptAliasResolver().loadProject(PROJECT_ROOT);
     const logicalScripts = new LegacyScriptOrderReader(legacyPath, { scriptAliases }).read();
     assert.equal(LegacyScriptOrderReader.logicalSlotCount(logicalScripts) + require("./stage_four/cluster_ledger").StageFourClusterLedger.cleanupRecords(PROJECT_ROOT).flatMap(record => record.removedLegacySlots).length, 424, "Vite fixture infrastructure must preserve the 424-position logical legacy runtime");
-    assert.equal(logicalScripts.filter((script) => script.type === "module").length, 0, "Vite fixture infrastructure must not activate module scripts");
+    assert.equal(logicalScripts.filter((script) => script.type === "module").length, nativeDevelopment ? 1 : 0, "Vite fixture infrastructure must not activate module scripts");
     if (nativeGraph.length === 0) for (const forbidden of contract.forbiddenEntrypoints)
       assert(!fs.existsSync(path.resolve(PROJECT_ROOT, forbidden)), `Classic runtime cannot create ${forbidden}`);
     const repositorySnapshot = new RepositoryContentSnapshot(PROJECT_ROOT);

@@ -1,0 +1,736 @@
+{
+  "schemaVersion": 1,
+  "kind": "cyber-fishing-stage-6-graph-review",
+  "version": 5,
+  "status": "reviewed-final-native-cutover",
+  "baseCommit": "4c0817a9ef877b69f40606fc9c7bcd42f15fabfd",
+  "archiveCommit": "95b872da68cf776fcee497cb2135fcc99f4489e8",
+  "reason": "Both native graphs use canonical authored modules and the live VM checks no longer require transport. Retire every remaining classic reader/source/placeholder and all nine obsolete Stage 2 runtime wrapper modules through exact raw-byte recovery, retaining prior closure/retirement records unchanged. Production remains DEV-independent.",
+  "accountedSources": 100,
+  "existingMigrationSources": 96,
+  "newEntrypoint": "src/entrypoints/dev.entry.js",
+  "removals": {
+    "modules": 444,
+    "classicAuthoredSources": 435,
+    "obsoleteStageTwoWrappers": 9,
+    "logicalSlots": 420,
+    "bridges": 50,
+    "activations": 26,
+    "debts": 19,
+    "globalProviderFacts": 852
+  },
+  "nativeReplacements": [
+    {
+      "source": "src/app/debug.js",
+      "targets": [
+        "src/dev/runtime/debug_service.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/app/rendering/location_debug_render_frame_builder.js",
+      "targets": [
+        "src/dev/location/location_debug_render_frame_builder.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/app/script.js",
+      "targets": [
+        "src/bootstrap/development/legacy_game_startup.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/config/physics/physics_formula_map.js",
+      "targets": [
+        "src/dev/physics/physics_formula_map.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/core/debug_console.js",
+      "targets": [
+        "src/dev/core/debug_console.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/core/debug_context.js",
+      "targets": [
+        "src/dev/core/debug_context.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/core/debug_event_binder.js",
+      "targets": [
+        "src/dev/core/debug_event_binder.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/core/debug_module_registry.js",
+      "targets": [
+        "src/dev/core/debug_module_registry.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/core/null_debug_runtime.js",
+      "targets": [
+        "src/dev/core/null_debug_runtime.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/debug.js",
+      "targets": [
+        "src/bootstrap/development/debug_console_bootstrap.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/dev_tools.js",
+      "targets": [
+        "src/dev/tools/dev_tools.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/god_mode.js",
+      "targets": [
+        "src/dev/god_mode.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/base_debug_module.js",
+      "targets": [
+        "src/dev/modules/base_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/bite_ticks_debug_module.js",
+      "targets": [
+        "src/dev/modules/bite_ticks_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/catch_time_debug_module.js",
+      "targets": [
+        "src/dev/modules/catch_time_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/deviations_debug_module.js",
+      "targets": [
+        "src/dev/modules/deviations_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/exhaustion_debug_module.js",
+      "targets": [
+        "src/dev/modules/exhaustion_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/forces_debug_module.js",
+      "targets": [
+        "src/dev/modules/forces_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/location_debug_module.js",
+      "targets": [
+        "src/dev/modules/location_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/map_debug_module.js",
+      "targets": [
+        "src/dev/modules/map_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/net_debug_module.js",
+      "targets": [
+        "src/dev/modules/net_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/prediction_debug_module.js",
+      "targets": [
+        "src/dev/modules/prediction_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/reel_hold_gate_debug_module.js",
+      "targets": [
+        "src/dev/modules/reel_hold_gate_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/reel_hold_gate_live_probe.js",
+      "targets": [
+        "src/dev/modules/reel_hold_gate_live_probe.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/rod_stroke_debug_module.js",
+      "targets": [
+        "src/dev/modules/rod_stroke_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/stamina_debug_module.js",
+      "targets": [
+        "src/dev/modules/stamina_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/modules/tension_debug_module.js",
+      "targets": [
+        "src/dev/modules/tension_debug_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/config/overlay_modules_config.js",
+      "targets": [
+        "src/dev/overlay/config/overlay_modules_config.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_controller.js",
+      "targets": [
+        "src/dev/overlay/core/overlay_controller.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_module_base.js",
+      "targets": [
+        "src/dev/overlay/overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_module_registry.js",
+      "targets": [
+        "src/dev/overlay/core/overlay_module_registry.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/core/overlay_update_loop.js",
+      "targets": [
+        "src/dev/overlay/core/overlay_update_loop.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_dom_adapter.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_dom_adapter.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_interaction_bridge.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_interaction_bridge.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_metric_info_bridge.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_metric_info_bridge.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_scale_controls.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_scale_controls.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_style_installer.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_style_installer.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/dom/overlay_window_drag_controller.js",
+      "targets": [
+        "src/dev/overlay/dom/overlay_window_drag_controller.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/behavior_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/behavior_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/chances_detail_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/chances_detail_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/chum_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/chum_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/debuffs_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/debuffs_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/echo_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/echo_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_auto_recovery_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_auto_recovery_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_drag_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_drag_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_fish_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_fish_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_line_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_line_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_movement_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_movement_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_physics_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/fight_physics/fight_physics_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_reel_hold_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_reel_hold_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_force_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_control_force_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_geometry_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_control_geometry_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_input_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_control_input_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_control_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_control_visual_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_control_visual_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_hold_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_hold_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_rod_stroke_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_rod_stroke_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_section_base.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_section_base.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_physics/fight_tension_section.js",
+      "targets": [
+        "src/dev/overlay/fight_physics/fight_tension_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/fight_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fight_summary/fight_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/fish_movement_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fight_summary/fish_movement_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/line_and_drag_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fight_summary/line_and_drag_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fight_summary/rod_control_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fight_summary/rod_control_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/fish_balance_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_current_force_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fish_balance/fish_current_force_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_debuffs_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fish_balance/fish_debuffs_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_live_force_summary_section.js",
+      "targets": [
+        "src/dev/overlay/fish_balance/fish_live_force_summary_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_state_force_preview_section.js",
+      "targets": [
+        "src/dev/overlay/fish_balance/fish_state_force_preview_section.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_balance/fish_summary_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/fish_balance/fish_summary_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/fish_power_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/fish_power_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/live_forces_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/live_forces_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/player_max_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/player_max_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/stamina_balance_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/stamina_balance_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/modules/worst_case_overlay_module.js",
+      "targets": [
+        "src/dev/overlay/modules/worst_case_overlay_module.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/overlay_bootstrap.js",
+      "targets": [
+        "src/bootstrap/development/debug_overlay_bootstrap.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_console_metric_inspector.js",
+      "targets": [
+        "src/dev/overlay/overlay_console_metric_inspector.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_html_builder.js",
+      "targets": [
+        "src/dev/overlay/services/overlay_html_builder.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_metric_catalog.js",
+      "targets": [
+        "src/dev/overlay/services/overlay_metric_catalog.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_metric_resolver.js",
+      "targets": [
+        "src/dev/overlay/overlay_metric_resolver.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_settings_store.js",
+      "targets": [
+        "src/dev/overlay/overlay_settings_store.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_value_formatter.js",
+      "targets": [
+        "src/dev/overlay/services/overlay_value_formatter.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/overlay_view_state_store.js",
+      "targets": [
+        "src/dev/overlay/services/overlay_view_state_store.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/overlay/services/worst_case_force_debug_selector.js",
+      "targets": [
+        "src/dev/fishing/worst_case_force_debug_selector.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/active_fish_dev_tools_schema.js",
+      "targets": [
+        "src/dev/fishing/active_fish_dev_tools_schema.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/debug_data_selectors.js",
+      "targets": [
+        "src/dev/services/debug_data_selectors.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/debug_formatters.js",
+      "targets": [
+        "src/dev/formatting/debug_formatters.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/dev_tools_control_binding_registry.js",
+      "targets": [
+        "src/dev/services/dev_tools_control_binding_registry.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/dev_tools_parameter_alias_registry.js",
+      "targets": [
+        "src/dev/services/dev_tools_parameter_alias_registry.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/hooked_fish_profile_synchronizer.js",
+      "targets": [
+        "src/dev/fishing/hooked_fish_profile_synchronizer.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/item_progression_debug_snapshot_provider.js",
+      "targets": [
+        "src/dev/items/item_progression_debug_snapshot_provider.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/location_debug_data_provider.js",
+      "targets": [
+        "src/dev/location/location_debug_data_provider.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/location_dev_tools_schema.js",
+      "targets": [
+        "src/dev/services/location_dev_tools_schema.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/debug/services/memory_leak_watchdog.js",
+      "targets": [
+        "src/dev/services/memory_leak_watchdog.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/render/core/render_allocation_diagnostics.js",
+      "targets": [
+        "src/dev/diagnostics/render_allocation_diagnostics.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/render/world/location_debug_map_builder.js",
+      "targets": [
+        "src/dev/location/location_debug_map_builder.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/render/world/world_debug_renderer.js",
+      "targets": [
+        "src/dev/rendering/world_debug_renderer.js"
+      ],
+      "reason": "Exact Stage 6 source mapping; prepared native class and explicit composition accepted in preparations 002-004"
+    },
+    {
+      "source": "src/config/config.js",
+      "targets": [
+        "src/bootstrap/production/game_config_composition.js",
+        "src/bootstrap/production/config_context.js"
+      ],
+      "reason": "Same native config composition, one authoritative context; old wrapper has no remaining reader"
+    },
+    {
+      "source": "src/config/project_version.js",
+      "targets": [
+        "src/game/presentation/version/project_version.js",
+        "src/bootstrap/production/game_version_badge.js",
+        "src/platform/browser/runtime/browser_startup_environment.js"
+      ],
+      "reason": "Canonical version data, badge mounting and platform publication are composed explicitly"
+    },
+    {
+      "source": "src/ui/version_badge.js",
+      "targets": [
+        "src/bootstrap/production/game_version_badge.js"
+      ],
+      "reason": "Native badge composition accepted in Stage 5 and reused by Development Bootstrap"
+    },
+    {
+      "source": "src/ui/legacy/engine_interface_activation.js",
+      "targets": [
+        "src/platform/browser/runtime/browser_startup_environment.js"
+      ],
+      "reason": "Engine interface activation and cleanup explicitly owned by each native startup"
+    }
+  ],
+  "retainedCanonicalInertModules": [
+    "src/game/config/validation/config_schema_validator.js",
+    "src/game/config/validation/item_rarity_config_validator.js",
+    "src/game/domain/fishing/buff_manager.js",
+    "src/platform/browser/diagnostics/event_logger.js",
+    "src/platform/browser/location/depth_map_reader.js"
+  ],
+  "testEvidence": "All 64 checks run authored ESM in independent VM contexts. Native evidence probe verifies BuffManager (3 methods / 62 calls) and LocationMap (13 methods / 616 calls); retain canonical test consumers.",
+  "finalCounts": "Measure actual authored imports after entry creation; historical production starts at 350 modules/522 edges after the separately accepted config successor. Canonical source inventory will be measured independently from reachable graph counts."
+}

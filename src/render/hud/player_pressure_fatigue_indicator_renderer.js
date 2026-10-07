@@ -1,1 +1,0 @@
-// Retired Stage 5 activation activation-6c0af8a52aee: PlayerPressureFatigueIndicatorRenderer is served only through ESM imports of src/game/presentation/hud/player_pressure_fatigue_indicator_renderer.js.

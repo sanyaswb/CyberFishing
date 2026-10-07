@@ -1,1 +1,0 @@
-// Retired Stage 5 activation activation-4fe38f3b85f5: FishingEquipmentRenderModelBuilder is served only through ESM imports of src/game/presentation/fishing/fishing_equipment_render_model_builder.js.

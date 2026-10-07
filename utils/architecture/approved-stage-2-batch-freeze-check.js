@@ -4,6 +4,7 @@ const path = require("node:path");
 const { StageFourClusterLedger } = require("./stage_four/cluster_ledger");
 const { ArchitecturePolicy } = require("./core/architecture_policy");
 const { LegacyScriptOrderReader } = require("./migration/legacy_script_order_reader");
+const { NativeDevelopmentRetirement } = require("./stage_six/native_development_retirement");
 const {
   ApprovedStageTwoBatchValidator,
 } = require("./classification/approved_stage_two_batch_validator");
@@ -53,6 +54,7 @@ class ApprovedStageTwoBatchFreezeCheck {
     const before = this.#readBytes();
     const values = this.#readValues();
     values.effectiveBridgePlan = StageFourClusterLedger.cumulative(this.projectRoot).stageTwoPlan(values.approvedPlan);
+    values.retiredWrappers = this.#retiredWrappers(values.approvedPlan);
     const validator = new ApprovedStageTwoBatchValidator({
       architecturePolicy: ArchitecturePolicy.load(this.paths.policy),
     });
@@ -70,6 +72,7 @@ class ApprovedStageTwoBatchFreezeCheck {
     this.#assertAsyncBridgeFails(validator, values);
     this.#assertStaleConsumerFails(validator, values);
     this.#assertUnapprovedBridgeFails(validator, values);
+    this.#assertUnretiredWrapperFails(validator, values);
 
     console.log(
       "Stage 2 batch freeze passed: " +
@@ -138,6 +141,32 @@ class ApprovedStageTwoBatchFreezeCheck {
       () => validator.validate(fixture),
       /non-contract fields|registry consumer set differs|does not belong to an allowed batch/,
     );
+  }
+
+  // Stage 6 native retirement: the frozen wrappers it removed, each with its exact recorded Manifest entry.
+  #retiredWrappers(approvedPlan) {
+    const retirement = NativeDevelopmentRetirement.read(this.projectRoot);
+    if (!retirement) return [];
+    const wrappers = new Set(approvedPlan.batches.flatMap((batch) =>
+      (batch.bridgeStrategy?.bridges || []).map((bridge) => bridge.wrapperPath)));
+    const retired = retirement.removedModules.filter((item) => wrappers.has(item.path))
+      .map((item) => ({ path: item.path, manifest: item.manifest }));
+    assert.equal(retired.length, wrappers.size, "native retirement must remove every frozen Stage 2 wrapper exactly");
+    return retired;
+  }
+
+  // A wrapper missing from the Manifest without its exact retirement record, or retired while live, is rejected.
+  #assertUnretiredWrapperFails(validator, values) {
+    if (values.retiredWrappers.length === 0) return;
+    const missing = this.#clone(values);
+    missing.retiredWrappers.shift();
+    assert.throws(() => validator.validate(missing), /lifecycle does not match its batch/);
+    const live = this.#clone(values);
+    live.manifest.modules.push(live.retiredWrappers[0].manifest);
+    assert.throws(() => validator.validate(live), /is both retired and live/);
+    const status = this.#clone(values);
+    status.retiredWrappers[0].manifest.architecture.migrationStatus = "classified";
+    assert.throws(() => validator.validate(status), /lifecycle does not match its batch/);
   }
 
   #runtimeFacts(indexHtml) {

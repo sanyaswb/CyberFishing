@@ -1,0 +1,93 @@
+{
+  "performer": "claude-automated-acceptance",
+  "performedBy": "automated",
+  "status": "PASS",
+  "date": "2026-10-07",
+  "version": "0.26.1",
+  "authorization": "якщо game-cycle-check.js проходить дозволяю пропустити візуальну перевірку і в PASS написати данні з перевірки якщо game-cycle-check.js  якщо треба можеш додати деякі сценарії які критично важливі",
+  "build": "node utils/dev-server.js (launch config cyber-fishing-dev, port 4173); both builders report retired-native-esm with 0 outputs and dist/ absent",
+  "urls": [
+    "http://localhost:4173/index.html",
+    "http://localhost:4173/dev.html"
+  ],
+  "fixtureMethod": "Actual pages only. Probes were transient in-page dynamic imports of the same module URLs (shared module instances); no fixture page, no permanent API, no global added.",
+  "gameCycle": {
+    "command": "node utils/game-cycle-check.js",
+    "stdoutSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f",
+    "identical": true
+  },
+  "native": {
+    "scripts": [["module", "src/entrypoints/game.entry.js?v=0.26.1"]],
+    "identities": {
+      "startupPromiseIdentity": true,
+      "gameIdentity": true,
+      "applicationIdentity": true,
+      "configContextIdentity": true,
+      "configOwner": true
+    },
+    "loops": { "activeCount": 1, "duplicateStartAttempts": 0 },
+    "devOrCompatibilityResources": [],
+    "devGlobals": [],
+    "watchdog": "absent",
+    "badge": "v0.26.1 prototype",
+    "gameplayOverrideReader": {
+      "isActive": true,
+      "noLineBreak": false,
+      "noEquipmentLoss": true,
+      "fixedBiteChanceEnabled": true,
+      "fixedBiteChancePercent": 100,
+      "biteSequenceMode": "guaranteed"
+    },
+    "liveOverrides": {
+      "nestedSetReachesReader": true,
+      "stableConfigView": true,
+      "reset": true,
+      "resetAll": true,
+      "export": { "debug.godMode.noLineBreak": true },
+      "importRoundTrip": { "debug.godMode.biteSequenceMode": "normal", "debug.godMode.fixedBiteChancePercent": 37 },
+      "baseFrozen": true,
+      "finalOverrides": {}
+    },
+    "inventoryOpenClose": true,
+    "pagehide": { "loops": 0, "listeners": [0, 0, 0], "game": null, "cleanupHandle": null },
+    "singleShotRestartAfterPagehide": "returns the original completed startup promise (accepted M3a production semantics); no new loop",
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "dev": {
+    "scripts": [["module", "src/entrypoints/dev.entry.js?v=0.26.1"]],
+    "identities": {
+      "startupPromiseIdentity": true,
+      "gameIdentity": true,
+      "applicationIdentity": true,
+      "configContextIdentity": true,
+      "configOwner": true
+    },
+    "loops": { "activeCount": 1, "duplicateStartAttempts": 0 },
+    "compatibilityResources": [],
+    "devGlobals": [],
+    "watchdog": "absent (memory watchdog disabled by config)",
+    "devToolsPanel": { "opens": true, "editors": 1794, "editorReachesConfigOwner": { "debug.godMode.noLineBreak": true }, "resetAllRestores": true },
+    "overlay": { "debugOverlayNodes": 1 },
+    "productionCatalogHasNoDevBuilds": true,
+    "pagehide": { "loops": 0, "listeners": [0, 0, 0], "overlay": 0, "devToolsPanels": 0, "game": null, "cleanupHandle": null },
+    "restartAfterDisposal": { "repeated": 2, "newGameIdentity": true, "loops": 1, "duplicateStartAttempts": 0 },
+    "pagehideWhileStartupPending": { "loops": 0, "listeners": 0, "overlay": 0, "devToolsPanels": 0, "game": null, "restartAfterwards": true },
+    "styleElements": "devtools-styles and debug-overlay-styles stay installed once by id; not duplicated across restarts",
+    "savesEqualProduction": true,
+    "reloadSavesIdentical": true,
+    "warnings": 0,
+    "errors": 0
+  },
+  "gameplaySaveKeys": ["fishing_game_player_inventory_v2"],
+  "saveSchemaVersion": 4,
+  "originalSaveSha256": "efe8e56bb73dd14df3d44eefccb90140c4ed581ab23603132a55e4423918f770",
+  "finalSaveSha256": "efe8e56bb73dd14df3d44eefccb90140c4ed581ab23603132a55e4423918f770",
+  "originalSavesRestored": "unchanged; byte-identical to the pre-probe backup, temporary session key removed",
+  "notCoveredInBrowser": [
+    "Build rejection after real resource construction: covered by config-runtime/platform-runtime focused checks (accepted M3a mechanism), not injected in the live page",
+    "Fish/location diagnostics text and reel-hold probe cadence: covered by config-runtime native DEV display parity (19 overlays, 18 HTML comparisons against archived classic sources)"
+  ],
+  "serverAndTabsClosed": true
+}

@@ -40,11 +40,13 @@ function build(root = ROOT) {
   const domainFiles = fs.readdirSync(path.join(root, DOMAIN), { recursive: true }).map(String)
     .filter(file => file.endsWith(".js")).map(file => DOMAIN + file.split(path.sep).join("/")).sort(compare);
   const manifest = json("architecture/migration/module_migration_manifest.json");
-  const sources = manifest.modules.filter(module => domainFiles.includes(module.architecture?.targetPath) &&
+  const retirement=require("./stage_six/native_development_retirement").NativeDevelopmentRetirement.read(root);
+  const historical=retirement ? retirement.removedModules.map(item=>item.manifest) : [];
+  const sources = [...manifest.modules,...historical].filter(module => domainFiles.includes(module.architecture?.targetPath) &&
     module.currentPath !== module.architecture.targetPath);
   assert.deepEqual(sources.map(module => module.architecture.targetPath).sort(compare), domainFiles,
     "every Domain target has exactly one classic source");
-  const classicWithCode = sources.filter(module => /^\s*(class|function)\s/mu.test(read(module.currentPath)))
+  const classicWithCode = sources.filter(module => fs.existsSync(path.join(root,module.currentPath)) && /^\s*(class|function)\s/mu.test(read(module.currentPath)))
     .map(module => module.currentPath);
   assert.deepEqual(classicWithCode, [], "a classic source still holds an implementation");
   const imports = [];

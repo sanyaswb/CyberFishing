@@ -3,7 +3,7 @@
   "kind": "cyber-fishing-root-package-contract",
   "package": {
     "name": "cyber-fishing",
-    "versionSource": "src/config/project_version.js",
+    "versionSource": "src/game/presentation/version/project_version.js",
     "private": true,
     "moduleTypePolicy": "root-type-field-absent-commonjs-tooling-preserved"
   },
@@ -29,25 +29,26 @@
     ]
   },
   "stage": {
-    "current": "5.29",
-    "vite": "fixture-bridge-and-cumulative-runtime-infrastructure",
+    "current": "6.0",
+    "vite": "synthetic-fixture-build-only",
     "productionEntrypoint": "native-index-html-game-entry",
-    "sourceRuntime": "native-production-and-classic-dev-cumulative-iife",
+    "sourceRuntime": "native-production-and-native-development",
     "commonJsTooling": "preserved",
     "bridgeBuild": {
-      "status": "transitioned-to-cumulative-runtime",
+      "status": "retired-native-esm",
       "registry": "architecture/guards/migration_bridge_registry.json",
       "inputs": "stage-2-bridges-exposed-through-stage-3-cumulative-runtime",
       "output": "dist/legacy-bridges/",
       "runtimeInputs": 0
     },
     "cumulativeRuntimeBuild": {
-      "status": "runtime-integration-active",
+      "status": "retired-native-esm",
       "contract": "architecture/migration/stage_3_compatibility_runtime.json",
       "executionState": "architecture/migration/stage_3_execution_state.json",
       "output": "dist/stage-3-compat-runtime/",
-      "runtimeInputs": 344,
-      "activationInputs": 26
-    }
+      "runtimeInputs": 0,
+      "activationInputs": 0
+    },
+    "developmentEntrypoint": "native-dev-html-dev-entry"
   }
 }

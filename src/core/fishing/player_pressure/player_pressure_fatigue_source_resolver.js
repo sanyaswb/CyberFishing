@@ -1,1 +1,0 @@
-// Retired Stage 3 activation activation-a0ef26ab86ac: PlayerPressureFatigueSourceResolver is served only through ESM imports of src/game/domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js.

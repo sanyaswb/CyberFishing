@@ -1,1 +1,0 @@
-// Retired Stage 5 activation activation-f37fcbb136c2: InventoryV2BalanceParameterResolver is served only through ESM imports of src/game/presentation/inventory/inventory_balance_parameter_resolver.js.

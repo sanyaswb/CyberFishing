@@ -218,6 +218,12 @@ class LegacyBridgeBuildApplication {
   }
 
   async run() {
+    const runtimeContractPath = path.join(this.projectRoot,"architecture/migration/stage_3_compatibility_runtime.json");
+    if (fs.existsSync(runtimeContractPath) && require("../architecture/stage_six/native_development_retirement")
+      .NativeDevelopmentRetirement.read(this.projectRoot)) {
+      this.outputManager.cleanupInactiveOutput();
+      return Object.freeze({status:"retired-native-esm",bridgeCount:0,outputs:Object.freeze([])});
+    }
     if (this.#stageThreeCompatibilityActivated()) {
       this.outputManager.cleanupInactiveOutput();
       return this.#report("transitioned-to-cumulative-runtime", []);
