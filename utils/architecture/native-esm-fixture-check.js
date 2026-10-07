@@ -21,6 +21,7 @@ class NativeEsmFixtureRunner {
     const graph = new EsmFixtureGraphInspector({ fixtureRoot: FIXTURE_ROOT }).inspect(ENTRY_PATH);
     await this.#checkTestAdapter();
     await this.#checkNativeServer();
+    this.#checkNativePages();
     const globalsBefore = this.#globalIdentitySet();
     const fixtureModule = await import(`${pathToFileURL(ENTRY_PATH).href}?native-esm-check=1`);
     assert.equal(typeof fixtureModule.runEsmFixture, "function", "Named ESM runner export is missing");
@@ -117,6 +118,23 @@ class NativeEsmFixtureRunner {
       runtimeValidator: () => { throw new Error("unaccepted native retirement"); }, logger: { log() {} } });
     await assert.rejects(failed.start(), /unaccepted native retirement/);
     assert.deepEqual(failedCalls, [], "failed native validation never opens the listener");
+  }
+
+  #checkNativePages() {
+    const verify = (html, entry) => {
+      const tags = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/giu)];
+      assert.equal(tags.length, 1, "native page requires exactly one script");
+      assert(/\btype\s*=\s*["']module["']/u.test(tags[0][1]), "native script must be a module");
+      const source = /\bsrc\s*=\s*["']([^"']+)["']/u.exec(tags[0][1]);
+      assert(source && source[1].split("?")[0] === entry, "native page requires its exact entrypoint");
+      assert.equal(tags[0][2].trim(), "", "native entry has no executable inline startup");
+    };
+    for (const [page, entry] of [["index.html", "src/entrypoints/game.entry.js"], ["dev.html", "src/entrypoints/dev.entry.js"]]) {
+      verify(fs.readFileSync(path.join(PROJECT_ROOT, page), "utf8"), entry);
+      const tag = `<script type="module" src="${entry}?v=0.27.2"></script>`;
+      for (const html of ["", tag + tag, tag.replace('type="module"', ""), tag.replace(entry, "dist/compat/runtime.js"),
+        tag.replace("</script>", "startGame();</script>"), tag.replace(`src="${entry}?v=0.27.2"`, "")]) assert.throws(() => verify(html, entry));
+    }
   }
 
   #globalIdentitySet() {

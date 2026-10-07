@@ -4,7 +4,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const espree = require("espree");
 const eslintScope = require("eslint-scope");
-const { ModuleEvaluationEffectObserver } = require("../../build/compat_runtime/cumulative_side_effect_gate");
+const { ModuleEvaluationEffectObserver } = require("../guards/observation/module_evaluation_effect_observer");
 
 const LANGUAGE_BUILTINS = Object.freeze(["Array", "Boolean", "Date", "Error", "Float32Array", "Infinity", "JSON", "Map", "Math",
   "NaN", "Number", "Object", "Promise", "RangeError", "Reflect", "Set", "String", "Symbol", "TypeError", "WeakMap",

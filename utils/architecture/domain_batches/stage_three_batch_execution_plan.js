@@ -6,7 +6,7 @@ const crypto = require("node:crypto");
 const path = require("node:path");
 const {
   CanonicalBridgeIdentity,
-} = require("../../build/legacy_bridge_build_config");
+} = require("../migration/canonical_bridge_identity");
 const { immutableRecord } = require("../guards/core/guard_models");
 const {
   StageThreeBatchExecutionProfile,

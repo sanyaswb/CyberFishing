@@ -8,20 +8,12 @@ const path = require("node:path");
 const espree = require("espree");
 const { RECORD_KIND, StageFourClusterLedger, recordStage, stageDirectories } = require("./cluster_ledger");
 const { StageFourEsmTargetProjector } = require("./esm_target_projector");
-const { ActivationShimRenderer } = require("../../build/compat_runtime/activation_shim");
-const { ActivationRetirementProjection, MigratedSourcePlaceholder, RetiredActivationPlaceholder } =
-  require("../../build/compat_runtime/activation_retirement");
-const { CanonicalActivationIdentity, CumulativeRuntimeContractValidator } =
-  require("../../build/compat_runtime/cumulative_runtime_contract");
-const { CumulativeRuntimeLoadSlot } = require("../../build/compat_runtime/cumulative_runtime_load_slot");
-const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_config");
-const { MigrationBridgeRegistryValidator } = require("../guards/contracts/guard_artifact_repository");
-const { ManifestEntryFactory } = require("../migration/manifest_entry_factory");
-const { CurrentAreaResolver } = require("../migration/current_area_resolver");
+const { CanonicalActivationIdentity } =
+  require("../migration/compatibility_runtime_contract");
+const { CumulativeRuntimeLoadSlot } = require("../migration/recorded_runtime_load_slot");
+const { CanonicalBridgeIdentity } = require("../migration/canonical_bridge_identity");
 const { LegacyScriptOrderReader } = require("../migration/legacy_script_order_reader");
 const { StageThreeRuntimeScriptAliasResolver } = require("../migration/stage_three_runtime_script_alias_resolver");
-const { ArchitectureGuardSnapshotBuilder } = require("../guards/corpus/architecture_guard_snapshot_builder");
-const { ArchitectureGuardEngine } = require("../guards/architecture_guard_engine");
 
 const PATHS = Object.freeze({
   manifest: "architecture/migration/module_migration_manifest.json",
@@ -304,8 +296,7 @@ class StageFourClusterPlan {
   }
 }
 
-// Step 2: writes the planned facts, refreshes Manifest observations, rebuilds the runtime and records the
-// before/after hashes. Rollback is `git revert` of the cluster commit, so touched files must be clean.
+// Classic apply is retired; historical reclassification and game-cycle verification remain.
 class StageFourClusterApply {
   constructor(workspace, recordFile) {
     this.workspace = workspace;
@@ -313,145 +304,7 @@ class StageFourClusterApply {
   }
 
   run() {
-    const { workspace } = this;
-    const record = workspace.json(this.recordFile);
-    assert.equal(record.output, null, "cluster record is already applied");
-    const plan = new StageFourClusterPlan(workspace, record).build();
-    const touched = [...new Set([...Object.values(PATHS).filter((file) => file !== PATHS.policy).map(file => file === PATHS.index ? plan.legacyDocument : file),
-      ...plan.targets.flatMap((target) => [target.module.currentPath, target.module.targetPath]),
-      ...plan.retiredActivations.map((item) => item.sourceProvider), ...plan.retiredStageTwoWrappers.map(item => item.file)])].sort();
-    const dirty = workspace.git(["status", "--porcelain", "--", ...touched]).trim();
-    // Exception: the Manifest may differ from HEAD only by the classification of this cluster's own modules, when it
-    // cannot land earlier without a guard failure (018: a consumer bridge that retires only on apply).
-    const reclassifiesOnly = dirty === `M ${PATHS.manifest}` && StageFourClusterApply.onlyReclassifies(
-      JSON.parse(workspace.git(["show", `HEAD:${PATHS.manifest}`])), workspace.json(PATHS.manifest), record);
-    assert(dirty === "" || reclassifiesOnly, `touched files must be committed before apply:\n${dirty}`);
-    const before = new Map(touched.map((file) => [file, workspace.hash(file)]));
-    const gameCycleBefore = this.#gameCycle("before", record.id, recordStage(record));
-    // Every write is computed first; a failure after the first write restores the exact original bytes.
-    const contract = workspace.json(PATHS.contract);
-    const shim = new ActivationShimRenderer();
-    const writes = new Map();
-    let index = workspace.text(plan.legacyDocument);
-    for (const target of plan.targets) {
-      const { currentPath, targetPath, exports } = target.module;
-      writes.set(targetPath, target.targetSource);
-      const activations = plan.activations.filter((item) => item.sourceProvider === currentPath);
-      writes.set(currentPath, activations.length > 0
-        ? activations.map((item) => shim.render(item, contract.transport.symbol)).join("")
-        : new MigratedSourcePlaceholder().render({ currentPath, targetPath, exports, stage: `Stage ${plan.stage}` }));
-      if (activations.length === 0) continue;
-      const tag = new RegExp(`<script src="${currentPath.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}(?:\\?[^"]*)?"` +
-        `( data-legacy-slot="\\d+")?></script>`, "gu");
-      const matches = [...index.matchAll(tag)];
-      assert.equal(matches.length, 1, `${currentPath}: expected one classic tag`);
-      index = index.replace(tag, activations.map((item) =>
-        `<script src="${contract.output.directory}${item.shimFile}"${matches[0][1] || ""}></script>`).join("\n"));
-    }
-    const retirement = new ActivationRetirementProjection();
-    const future = retirement.contract({ ...contract,
-      activationPositions: [...contract.activationPositions, ...plan.activations].sort(byId),
-      inertModules: [...(contract.inertModules || []), ...plan.inert]
-        .sort((left, right) => left.targetModule.localeCompare(right.targetModule)),
-      sideEffectReviews: [...contract.sideEffectReviews, ...plan.targets.map((target) => target.review).filter(Boolean)] },
-    plan.retiredActivations, plan.owner);
-    // A retired source keeps its legacy position: an inert placeholder, or the shims of its still-active activations.
-    const shared = ActivationRetirementProjection.sharedSources({ activationPositions: contract.activationPositions },
-      plan.retiredActivations);
-    for (const { sourceProvider, activations } of RetiredActivationPlaceholder.byProvider(plan.retiredActivations)) {
-      writes.set(sourceProvider, shared.has(sourceProvider)
-        ? future.activationPositions.filter((item) => item.sourceProvider === sourceProvider)
-          .map((item) => shim.render(item, contract.transport.symbol)).join("")
-        : new RetiredActivationPlaceholder().renderProvider(future.retiredActivations
-          .filter(item => item.activation.sourceProvider === sourceProvider).map(item => item.activation)));
-    }
-    writes.set(plan.legacyDocument, retirement.index(index, contract.output.directory, plan.retiredActivations, shared));
-    for (const wrapper of plan.retiredStageTwoWrappers) writes.set(wrapper.file,
-      new RetiredActivationPlaceholder().renderProvider(plan.retiredActivations.filter(item => wrapper.activationIds.includes(item.id))));
-    new CumulativeRuntimeContractValidator().validate(future);
-    writes.set(PATHS.contract, canonical(future));
-    const registry = workspace.json(PATHS.registry);
-    const retired = new Set(plan.bridgesRetired);
-    const nextRegistry = { ...registry, bridges: [...registry.bridges.filter((bridge) => !retired.has(bridge.id)),
-      ...plan.bridgesAdded].sort(byId) };
-    new MigrationBridgeRegistryValidator().validate(nextRegistry);
-    writes.set(PATHS.registry, canonical(nextRegistry));
-    writes.set(PATHS.manifest, canonical(this.#manifest(plan)));
-    writes.set(PATHS.packageContract, this.#packageContract(future, plan.stage));
-    writes.set(PATHS.debtRegistry, workspace.text(PATHS.debtRegistry));
-    const applied = { ...record, output: { status: "applied", owner: plan.owner, runtimeSlot: plan.runtimeSlot,
-      targets: plan.targets.map((target) => ({ currentPath: target.module.currentPath, targetPath: target.module.targetPath,
-        sourceSha256: target.sourceSha256, targetSha256: target.targetSha256 })),
-      activations: plan.activations.map((item) => item.id), inertModules: plan.inert.map((item) => item.targetModule),
-      sideEffectReviews: plan.targets.filter((target) => target.review).map((target) => target.module.targetPath),
-      activationsRetired: plan.retiredActivations.map((item) => item.id),
-      retiredStageTwoWrappers: plan.retiredStageTwoWrappers,
-      bridgesAdded: plan.bridgesAdded.map((item) => item.id), bridgesRetired: plan.bridgesRetired,
-      importEdges: plan.importEdges, gameCycleBefore, files: [] } };
-    writes.set(this.recordFile, canonical(applied));
-    const originals = new Map([...writes.keys()].map((file) =>
-      [file, workspace.exists(file) ? fs.readFileSync(workspace.path(file)) : null]));
-    try {
-      for (const [file, text] of writes) workspace.write(file, text);
-      for (const [script, label] of [["utils/architecture/persist-migration-observations.js", "observe"],
-        ["utils/build/build_stage_3_compat_runtime.js", "runtime build"]]) {
-        const result = workspace.node(script);
-        assert.equal(result.status, 0, `${label} failed:\n${result.stderr || result.stdout}`);
-      }
-      const debtRegistry = workspace.json(PATHS.debtRegistry);
-      const snapshot = new ArchitectureGuardSnapshotBuilder({projectRoot:workspace.root,
-        policy:workspace.json(PATHS.policy,{strict:false}),manifest:workspace.json(PATHS.manifest),
-        bridgeRegistry:workspace.json(PATHS.registry),globalBaseline:workspace.json("architecture/guards/global_provider_baseline.json"),
-        debtRegistry}).build();
-      const report = new ArchitectureGuardEngine({projectRoot:workspace.root}).run(snapshot);
-      assert.deepEqual(report.diagnostics.filter(item => item.status === "FAIL" && item.rule !== "stale-known-debt"), [],
-        "migration introduced an architecture failure");
-      const resolved = debtRegistry.debts.filter(debt => report.diagnostics.some(item =>
-        item.rule === "stale-known-debt" && item.message.endsWith(debt.id)));
-      assert(resolved.every(debt => plan.targets.some(target => target.module.currentPath === debt.source)),
-        "stale debt outside the migrating source requires a separate preparation");
-      applied.output.resolvedDebts = resolved.map(debt => debt.id);
-      workspace.write(PATHS.debtRegistry, canonical({...debtRegistry,debts:debtRegistry.debts.filter(debt => !resolved.includes(debt))}));
-    } catch (error) {
-      for (const [file, bytes] of originals) {
-        if (bytes === null) fs.rmSync(workspace.path(file), { force: true });
-        else fs.writeFileSync(workspace.path(file), bytes);
-      }
-      throw new Error(`apply restored every written file: ${error.message}`);
-    }
-    applied.output.files = touched.map((file) => ({ path: file, before: before.get(file), after: workspace.hash(file) }));
-    workspace.write(this.recordFile, canonical(applied));
-    return { record: applied, plan };
-  }
-
-  #manifest(plan) {
-    const { workspace } = this;
-    const manifest = workspace.json(PATHS.manifest);
-    const policy = workspace.json(PATHS.policy, { strict: false });
-    const factory = new ManifestEntryFactory({ manifestPolicy: policy.migrationManifest,
-      currentAreaResolver: new CurrentAreaResolver({ rootValue: policy.migrationManifest.currentArea.rootValue }) });
-    for (const target of plan.targets) {
-      const entry = factory.create({ currentPath: target.module.targetPath }, null);
-      entry.architecture = { migrationStatus: "verified", roles: [...target.roles],
-        targetBoundary: target.entry.architecture.targetBoundary, targetPath: target.module.targetPath, migrationWave: target.entry.architecture.migrationWave };
-      entry.analysis.blockers = { status: "verified", items: [] };
-      manifest.modules.push(entry);
-      manifest.modules.find((item) => item.currentPath === target.module.currentPath).architecture.roles =
-        ["compatibility-bridge"];
-    }
-    manifest.modules.sort((left, right) => (left.currentPath < right.currentPath ? -1 : 1));
-    return manifest;
-  }
-
-  // The package contract mirrors the live runtime: Stage S.N once this is the Nth applied cluster of stage S.
-  #packageContract(contract, stage) {
-    const packageContract = this.workspace.json(PATHS.packageContract);
-    packageContract.stage.current = `${stage}.${StageFourClusterLedger.read(this.workspace.root, stage).applied.length + 1}`;
-    packageContract.stage.cumulativeRuntimeBuild.runtimeInputs = new Set([...[...contract.activationPositions,
-      ...(contract.retiredActivations || []).map((item) => item.activation)].map((item) => item.targetModule),
-    ...(contract.inertModules || []).map((item) => item.targetModule)]).size;
-    packageContract.stage.cumulativeRuntimeBuild.activationInputs = contract.activationPositions.length;
-    return canonical(packageContract);
+    throw new Error("Classic cluster apply is retired after native closure; recover its historical tooling from stage7-compat-tools-archive.");
   }
 
   // True when `current` equals `head` except for the architecture classification of the record's modules.

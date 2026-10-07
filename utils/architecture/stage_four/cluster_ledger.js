@@ -3,8 +3,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const assert = require("node:assert/strict");
-const { CanonicalBridgeIdentity } = require("../../build/legacy_bridge_build_config");
-const { CanonicalActivationIdentity } = require("../../build/compat_runtime/cumulative_runtime_contract");
+const { CanonicalBridgeIdentity } = require("../migration/canonical_bridge_identity");
+const { CanonicalActivationIdentity } = require("../migration/compatibility_runtime_contract");
 
 const CLUSTER_DIRECTORY = "architecture/migration/stage_4/clusters";
 const RECORD_KIND = "cyber-fishing-stage-4-cluster";
