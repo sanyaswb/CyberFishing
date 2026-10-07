@@ -67,18 +67,6 @@ export class InventoryV2GameplayBridge {
     return this.#itemViews?.create?.(instanceId) || this.getItem(instanceId);
   }
 
-  findFirstItemByType(type) {
-    return this.listItems().find((item) => this.#matchesType(item, type)) || null;
-  }
-
-  findItemsByType(type, out = []) {
-    out.length = 0;
-    for (const item of this.listItems()) {
-      if (this.#matchesType(item, type)) out.push(item);
-    }
-    return out;
-  }
-
   consumeItem(instanceId, amount = 1) {
     return this.#booleanMutation(
       this.#commands.consumeItem(instanceId, amount),
@@ -147,10 +135,6 @@ export class InventoryV2GameplayBridge {
     this.#itemViews?.setBoatChargeProvider?.(provider);
     this.#afterMutation?.();
     return this;
-  }
-
-  #matchesType(item, type) {
-    return item?.itemType === type || item?.variant === type;
   }
 
   #booleanMutation(result) {

@@ -27,10 +27,16 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
-    id: "inventory-lifecycle",
-    title: "Inventory compatibility lifecycle",
-    file: "utils/inventory-lifecycle-check.js",
-    suites: ["inventory"],
+    id: "game-application-composition",
+    title: "Game application and facade composition",
+    file: "utils/game-application-composition-check.js",
+    suites: ["gameplay"],
+  },
+  {
+    id: "player-inventory",
+    title: "Player inventory composition over Inventory V2",
+    file: "utils/player-inventory-check.js",
+    suites: ["quick", "inventory", "inventory-v2"],
   },
   {
     id: "assembly-domain",

@@ -19,33 +19,7 @@ export class LineCompatibilityRules {
     return this.#lineConfig;
   }
 
-  validateLine(lineItem, equippedHydrated) {
-    return this.#policy.resolve({ lineItem, equipment: equippedHydrated });
-  }
-
-  validateLeader(_leaderItem, equippedHydrated) {
-    if (!equippedHydrated?.line) {
-      return {
-        isValid: false,
-        reason: "Поводок можна спорядити тільки після ліски.",
-      };
-    }
-    return { isValid: true };
-  }
-
-  getLineLengthMeters(lineItem) {
-    return this.#policy.getLineLengthMeters(lineItem);
-  }
-
   getMinimumLineLengthMeters(rod) {
     return this.#policy.getMinimumLineLengthMeters(rod);
-  }
-
-  getMaximumLineLengthMeters(rod, reel = null) {
-    return this.#policy.getMaximumLineLengthMeters({ rod, reel });
-  }
-
-  rodRequiresReel(rod) {
-    return this.#policy.rodRequiresReel(rod);
   }
 }

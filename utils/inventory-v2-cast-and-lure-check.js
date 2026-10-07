@@ -353,12 +353,12 @@ class CompositionSeamCheck {
   run() {
     const bootstrap = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_composition_root.js");
     const application = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_application.js");
-    const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/inventory_manager.js");
+    const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/player_inventory.js");
 
     Assertion.that(
       bootstrap.includes("castReadinessEvaluator: (equipment) =>") &&
         bootstrap.includes("runtime.inventory.evaluateCastReadiness?.(equipment)"),
-      "bootstrap must inject InventoryManager readiness into CastService",
+      "bootstrap must inject PlayerInventory readiness into CastService",
     );
     Assertion.that(
       bootstrap.includes(
@@ -372,10 +372,10 @@ class CompositionSeamCheck {
       "the definitive cast result must open Inventory-v2 for a missing line",
     );
     Assertion.that(
-      /evaluateCastReadiness\(equipment = null\)[\s\S]*?#inventoryV2Bridge\?\.evaluateCastReadiness/.test(
+      /evaluateCastReadiness\(\)[\s\S]*?#gameplayBridge\.evaluateCastReadiness/.test(
         inventory,
       ),
-      "InventoryManager must delegate readiness to the Inventory-v2 bridge",
+      "PlayerInventory must delegate readiness to the Inventory-v2 bridge",
     );
   }
 }

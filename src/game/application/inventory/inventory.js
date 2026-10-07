@@ -1,3 +1,4 @@
+// Item list of the classic (pre-V2) save while it is migrated and seeded at startup.
 export class Inventory {
   #items;
   #itemFactory;
@@ -20,18 +21,6 @@ export class Inventory {
 
   getInstance(instanceId) {
     return this.#items.get(instanceId) || null;
-  }
-
-  consume(instanceId, amount = 1) {
-    const item = this.#items.get(instanceId);
-    if (!item) return false;
-
-    item.quantity = (item.quantity || 1) - amount;
-
-    if (item.quantity <= 0) {
-      this.#items.delete(instanceId);
-    }
-    return true;
   }
 
   remove(instanceId) {

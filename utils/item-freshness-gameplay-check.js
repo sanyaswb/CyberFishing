@@ -73,10 +73,11 @@ class ItemFreshnessGameplayCheck {
   }
 
   #checkProductionWiring() {
-    const source = new SourceRuntime().readAuthoredSource("src/game/application/inventory/inventory_manager.js");
+    const source = new SourceRuntime().readAuthoredSource("src/bootstrap/production/player_inventory_composition.js");
     Assertion.that(
-      source.includes("itemFreshnessResolver: this.#itemFreshnessResolver"),
-      "InventoryManager forwards its stored Freshness dependency to Inventory V2",
+      /InventoryV2CompositionRoot\.compose\(\{[\s\S]*?\n    itemFreshnessResolver,\n/u.test(source) &&
+        /new InventoryItemViewFactory\(\{[\s\S]*?freshnessResolver: itemFreshnessResolver,/u.test(source),
+      "PlayerInventory composition forwards the Freshness dependency to Inventory V2 and item views",
     );
   }
 

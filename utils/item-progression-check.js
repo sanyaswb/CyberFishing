@@ -41,7 +41,6 @@ class RuntimeLoader {
       "src/game/domain/items/quality/hook_quality_modifier.js",
       "src/game/domain/items/quality/net_quality_modifier.js",
       "src/game/domain/items/quality/environmental_compensation_modifier.js",
-      "src/game/domain/inventory/inventory_item_stacking_policy.js",
       "src/game/domain/items/rarity/item_rarity_descriptor.js",
       "src/game/domain/items/rarity/item_rarity_strategy.js",
       "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
@@ -80,7 +79,6 @@ class RuntimeLoader {
       NetQuality: "NetQualityModifier",
       EnvironmentalQuality: "EnvironmentalCompensationModifier",
       SemanticMigration: "LegacyItemStateMigration",
-      Stacking: "InventoryItemStackingPolicy",
       RawFactory: "InventoryItemFactory",
       ViewFactory: "InventoryItemViewFactory",
       RarityAnimation: "RarityAnimationResolver",
@@ -741,20 +739,6 @@ class ItemProgressionCheck {
       activeView.progression.capacity.percent,
       75,
       "hydrated equipped line exposes active reel capacity",
-    );
-
-    const stacking = new this.#runtime.Stacking();
-    const base = { itemId: "hook_basic", quality: 7, rarity: { tier: 1 } };
-    Assertion.that(
-      stacking.canStack(
-        { ...base, progression: { object: 1 } },
-        { ...base, progression: { object: 2 } },
-      ),
-      "derived descriptors do not affect stacking",
-    );
-    Assertion.that(
-      !stacking.canStack(base, { ...base, quality: 8 }),
-      "different canonical quality blocks stacking",
     );
   }
 

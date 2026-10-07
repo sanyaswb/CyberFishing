@@ -20,7 +20,6 @@ class ItemRarityRuntimeLoader {
       "src/game/domain/items/rarity/authored_item_rarity_strategy.js",
       "src/game/domain/items/rarity/item_rarity_strategy_registry.js",
       "src/game/domain/items/rarity/item_rarity_resolver.js",
-      "src/game/domain/inventory/inventory_item_stacking_policy.js",
       "src/game/domain/items/effective_item_stats_resolver.js",
       "src/game/application/inventory/inventory_item_factory.js",
       "src/game/presentation/styles/rarity_visual_resolver.js",
@@ -31,7 +30,6 @@ class ItemRarityRuntimeLoader {
       __VISUAL_CONFIG__: "RARITY_VISUAL_CONFIG",
       __ITEM_VALIDATOR__: "ItemRarityConfigValidator",
       __ITEM_RESOLVER__: "ItemRarityResolver",
-      __STACKING_POLICY__: "InventoryItemStackingPolicy",
       __ITEM_FACTORY__: "InventoryItemFactory",
       __VISUAL_RESOLVER__: "RarityVisualResolver",
       __DOM_ADAPTER__: "ItemRarityDomAdapter",
@@ -93,7 +91,6 @@ class ItemRarityCheck {
     this.#checkDomainResolution();
     this.#checkVisualScale();
     this.#checkFactoryLifecycle();
-    this.#checkStackingPolicy();
     this.#checkDomAdapter();
     this.#checkCssLayering();
     this.#checkInvalidProfiles();
@@ -283,42 +280,6 @@ class ItemRarityCheck {
     });
     Assertion.equal(preserved.rarity.tier, 4, "existing instance rarity is preserved");
     Assertion.that(Object.isFrozen(preserved.rarity), "migrated rarity is immutable");
-  }
-
-  #checkStackingPolicy() {
-    const policy = new this.#runtime.__STACKING_POLICY__();
-    const common = this.#domainResolver.resolve({
-      mode: "authored",
-      tier: 1,
-      maxTier: 5,
-      isUnique: false,
-    });
-    const rare = this.#domainResolver.resolve({
-      mode: "authored",
-      tier: 3,
-      maxTier: 5,
-      isUnique: false,
-    });
-    const unique = this.#domainResolver.resolve({
-      mode: "authored",
-      tier: 5,
-      maxTier: 5,
-      isUnique: true,
-      uniqueId: "stack_unique",
-    });
-    const base = { instanceId: "a", itemId: "bait", quantity: 1 };
-    Assertion.that(
-      policy.canStack({ ...base, rarity: common }, { ...base, rarity: common }),
-      "identical rarity can stack",
-    );
-    Assertion.that(
-      !policy.canStack({ ...base, rarity: common }, { ...base, rarity: rare }),
-      "different ordinary rarity cannot stack",
-    );
-    Assertion.that(
-      !policy.canStack({ ...base, rarity: common }, { ...base, rarity: unique }),
-      "unique item cannot stack with ordinary item",
-    );
   }
 
   #checkDomAdapter() {

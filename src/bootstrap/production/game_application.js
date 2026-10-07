@@ -1210,9 +1210,6 @@ export class GameApplication {
   isDebugEnabled() {
     return this.#debugFacade.isDebugEnabled();
   }
-  addLifecycleListener(target, type, handler, options) {
-    return this.#listeners.add(target, type, handler, options);
-  }
   subscribeConfigUpdated(handler) {
     return this.#debugFacade.subscribeConfigUpdated(handler);
   }

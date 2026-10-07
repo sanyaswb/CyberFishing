@@ -65,16 +65,11 @@ import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_pr
 import { InputManager } from "../../platform/browser/input/input_manager.js";
 import { INVENTORY_RULE_MESSAGES } from "../../game/presentation/inventory/inventory_rule_messages.js";
 import { InventoryEventBridge } from "../../game/application/inventory/inventory_event_bridge.js";
-import { InventoryItemStackingPolicy } from "../../game/domain/inventory/inventory_item_stacking_policy.js";
-import { InventoryManager } from "../../game/application/inventory/inventory_manager.js";
 import { InventoryRuntimeConfigProvider } from "../../game/application/inventory/inventory_runtime_config_provider.js";
 import { ItemDatabase } from "../../game/application/inventory/item_database.js";
 import { LineCompatibilityRules } from "../../game/application/inventory/line_compatibility_rules.js";
-import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
-import { InventoryV2ActionType } from "../../game/presentation/inventory/inventory_view_model.js";
 import { InventoryV2BalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryV2Bootstrap } from "./inventory_ui_bootstrap.js";
-import { InventoryV2CompositionRoot } from "./inventory_composition_root.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
@@ -107,6 +102,7 @@ import { OutcomeRenderFrameBuilder } from "../../game/presentation/screens/outco
 import { OutcomeRenderPass } from "../../game/presentation/rendering/outcome_render_pass.js";
 import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_style_resolver.js";
 import { PlayerPressureFatigueIndicatorRenderer } from "../../game/presentation/hud/player_pressure_fatigue_indicator_renderer.js";
+import { createPlayerInventory } from "./player_inventory_composition.js";
 import { PoleFightSectorGeometry } from "../../game/domain/fishing/pole_fight_sector_geometry.js";
 import { RarityAnimationResolver } from "../../game/presentation/screens/rarity_animation_resolver.js";
 import { RarityConfigValidator } from "../../game/config/validation/rarity_config_validator.js";
@@ -117,7 +113,6 @@ import { RenderFrameBuffer } from "../../game/presentation/rendering/render_fram
 import { RenderOrder } from "../../game/presentation/rendering/game_render_order.js";
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
-import { SLOT_CONFIG } from "../../game/config/runtime/game_config.js";
 import { StarRatingRenderer } from "../../game/presentation/screens/star_rating_renderer.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { TimeDisplayUI } from "../../platform/browser/ui/time_display.js";
@@ -669,35 +664,25 @@ export class GameCompositionRoot {
     const { BrowserEventTargetAdapter } = await this.#loadBrowserEventTargetAdapter();
     const { BrowserTimeoutScheduler } = await this.#loadBrowserTimeoutScheduler();
     const { getInventoryAssemblyProfileConfig } = await this.#loadInventoryAssemblyProfileConfig();
-    const inventory = own(new InventoryManager(
-      this.#itemDb,
-      this.#config.player,
-      new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
+    const inventory = own(createPlayerInventory({
+      itemDB: this.#itemDb,
+      playerConfig: this.#config.player,
+      events: new InventoryEventBridge(new BrowserEventTargetAdapter(this.#documentTarget)),
       castDistanceCalculator,
       lineRules,
       runtimeConfigProvider,
       itemRarityResolver,
-      new InventoryItemStackingPolicy(),
       itemProgressionResolver,
-      undefined,
       itemConditionResolver,
       itemFreshnessResolver,
       baitEffectivenessCatalogResolver,
-      effectiveItemStatsResolver,
+      effectiveStatsResolver: effectiveItemStatsResolver,
       itemStatOverridePolicy,
-      CacheManager,
-      {
-        slotConfig: SLOT_CONFIG,
-        createItemViewFactory: (options) => new InventoryItemViewFactory(options),
-        composeInventoryV2: (options) => InventoryV2CompositionRoot.compose({
-          ...options,
-          assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
-        }),
-        actions: InventoryV2ActionType,
-        makeRandomId: createRandomInventoryId,
-        now: () => Date.now(),
-      },
-    ));
+      cache: CacheManager,
+      assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
+      makeRandomId: createRandomInventoryId,
+      now: () => Date.now(),
+    }));
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     const bootstrapItemDatabase = new ItemDatabase(this.#itemDb);
