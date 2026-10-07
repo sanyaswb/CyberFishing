@@ -37,7 +37,6 @@ const files = [
   "src/game/presentation/inventory/equipment_slot_availability_policy.js",
   "src/game/domain/inventory/inventory_capacity_policy.js",
   "src/game/domain/equipment/equipment_transition_planner.js",
-  "src/game/domain/equipment/exact_item_signature_policy.js",
   "src/game/domain/equipment/auto_refill_policy.js",
   "src/game/domain/equipment/fishing_readiness_policy.js",
   "src/game/domain/equipment/equipment_compatibility_policy.js",

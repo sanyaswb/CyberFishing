@@ -82,9 +82,6 @@ class RuntimeLoader {
       "LoadoutApplicationPort",
       "LoadoutApplicationService",
     ]);
-    loader.load("src/game/domain/equipment/exact_item_signature_policy.js", [
-      "ExactItemSignaturePolicy",
-    ]);
     loader.load("src/game/domain/assemblies/exact_assembly_refill_signature_policy.js", [
       "ExactAssemblyRefillSignaturePolicy",
     ]);
@@ -463,14 +460,13 @@ class InventoryV2EquipmentCheck {
 
   #checkExactAutoRefill() {
     const r = this.#runtime;
-    const signaturePolicy = new r.ExactItemSignaturePolicy();
+    // Production auto-refill and assemblies share the exact refill signature policy.
+    const signaturePolicy = new r.ExactAssemblyRefillSignaturePolicy();
     const baitA1 = { instanceId: "a1", itemId: "worm", itemType: "bait", rarityProfile: { tier: 2 }, effectiveStats: { size: 1 }, quantity: 1, location: "inventory" };
     const baitA2 = { ...baitA1, instanceId: "a2" };
     const baitB = { ...baitA1, instanceId: "b", rarityProfile: { tier: 3 } };
     const signatureA = signaturePolicy.create(baitA1);
     const signatureB = signaturePolicy.create(baitB);
-    const assemblySignature = new r.ExactAssemblyRefillSignaturePolicy().create(baitA1);
-    Assertion.equal(JSON.stringify(signatureA), JSON.stringify(assemblySignature), "auto-refill and assembly readers share one exact signature format");
     Assertion.equal(signaturePolicy.matches(baitA2, signatureA), true, "instance id and quantity do not change exact variant signature");
     Assertion.equal(signaturePolicy.matches(baitB, signatureA), false, "rarity difference is never substituted");
 

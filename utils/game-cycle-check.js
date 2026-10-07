@@ -120,7 +120,6 @@ const GAMEPLAY_FILES = [
   "src/game/application/fishing/fishing_runtime_services.js",
   "src/game/domain/inventory/inventory_item_location.js",
   "src/game/domain/inventory/flat_inventory_item_repository.js",
-  "src/game/domain/fishing/buff_manager.js",
   "src/game/domain/locations/location_world.js",
   "src/game/application/viewport/viewport_projector.js",
   "src/game/application/world/game_world_service.js",
@@ -1932,17 +1931,6 @@ assert(duplicateRestore === "RangeError" && orphanRestore === "Error" &&
 inventory.restoreSnapshot(inventorySnapshot.filter(item => item.instanceId !== "inv_line"));
 assert(inventory.size === 3 && inventory.getChildren("inv_reel").length === 0,
   "inventory repository restores a snapshot and rebuilds its child index");
-
-const Buffs = domainClass("BuffManager", "src/game/domain/fishing/buff_manager.js");
-const buffs = new Buffs();
-buffs.addBuff(1.5, 300);
-buffs.addBuff(2, 1000);
-const buffMultipliers = [];
-for (let frame = 0; frame < 30; frame++) {
-  buffs.update(1000 / 60);
-  buffMultipliers.push(buffs.getTotalMultiplier());
-}
-assert(buffMultipliers[0] === 3 && buffMultipliers[29] === 2, "buff manager expires buffs by deltaTime");
 
 const WorldMap = domainClass("LocationMap", "src/game/domain/locations/location_world.js");
 const worldConfig = {
