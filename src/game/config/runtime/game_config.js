@@ -238,7 +238,7 @@ export const CONFIG = {
     },
 
     godMode: {
-      enabled: true, // Гoловний рубильник (якщо false, інші ігноруються)
+      enabled: false, // Гoловний рубильник (якщо false, інші ігноруються)
       infiniteResources: false, // 1. Нескінченна наживка/снасті
       noEquipmentLoss: true,
       noHookEscape: false, // 2. Риба ніколи не зривається з гачка
@@ -296,7 +296,7 @@ export const CONFIG = {
     },
 
     fixedCatch: {
-      enabled: true,
+      enabled: false,
       fishId: "crucian_stalker", // Можна вписати 'perch_radioactive'
       weight: 0.8,
     },

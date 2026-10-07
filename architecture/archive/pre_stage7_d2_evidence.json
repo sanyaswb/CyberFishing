@@ -1,0 +1,8 @@
+{
+  "decision": "architecture/migration/stage_7_handoff.md#d2",
+  "beforeSha256": "2fc46656ea48418eed8f61e541b2bcb676a2c6928e4b8a21a16d80430df1faac",
+  "afterSha256": "fed54bedb1b7d00eb38144f3ab4757005ba32ab4dcd6bdddfb00787f1afa3b27",
+  "negativeRegression": "node:internal/assert/utils:77\r\n    throw err;\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: bite sequence must exist\r\n    at Object.startBite (D:\\dev\\code\\cyber-fishing\\utils\\inventory-v2-cast-and-lure-check.js:413:78)\r\n    at WaitingState.update (src/game/application/state/game_state_machine.js:1037:23)\r\n    at checkFixedCatchBaitCompatibility (D:\\dev\\code\\cyber-fishing\\utils\\inventory-v2-cast-and-lure-check.js:418:11)\r\n    at Object.<anonymous> (D:\\dev\\code\\cyber-fishing\\utils\\inventory-v2-cast-and-lure-check.js:427:1)\r\n    at Module._compile (node:internal/modules/cjs/loader:1761:14)\r\n    at Object..js (node:internal/modules/cjs/loader:1893:10)\r\n    at Module.load (node:internal/modules/cjs/loader:1481:32)\r\n    at Module._load (node:internal/modules/cjs/loader:1300:12)\r\n    at TracingChannel.traceSync (node:diagnostics_channel:328:14)\r\n    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24) {\r\n  generatedMessage: false,\r\n  code: 'ERR_ASSERTION',\r\n  actual: undefined,\r\n  expected: true,\r\n  operator: '==',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v24.13.0\r\n",
+  "passingOutput": "Inventory-v2 cast/lure check passed.\n",
+  "gameCycleSha256": "0db62de21427af5589fa5294b53dd833522298356d1d6b7a6ce0a009f2782c6f"
+}

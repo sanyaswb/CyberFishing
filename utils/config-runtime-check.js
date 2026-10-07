@@ -527,8 +527,10 @@ function checkLocationMapConfigChanges() {
 async function checkNativeDevelopmentLifecycle() {
   const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,probeDispose:0,watchdogDispose:0};
   const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
-  const config={locations:{map:{}},debug:{consoleModules:{},memoryWatchdog:{enabled:true}}};
-  const configRuntime={runtimeConfig:config};
+  const config={rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
+  const composition = new SourceRuntime({moduleStubs:{'src/game/config/runtime/game_config.js':{CONFIG:config}}})
+    .importModule('src/bootstrap/production/game_config_composition.js');
+  let configRuntime;
   let resolveBuild,rejectBuild,buildReady;
   const resetBuild=()=>{buildReady=new Promise((resolve,reject)=>{resolveBuild=resolve;rejectBuild=reject;});};
   const app={start(){counts.start++;return true;},dispose(){counts.gameDispose++;}};
@@ -537,7 +539,7 @@ async function checkNativeDevelopmentLifecycle() {
   const source=new SourceRuntime({moduleStubs:{
     'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget:{}}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
-    'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext:()=>configRuntime},
+    'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
     'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
     'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
@@ -551,10 +553,22 @@ async function checkNativeDevelopmentLifecycle() {
   assert.notEqual(Game,new SourceRuntime().importModule('src/bootstrap/production/game.js').Game,'different VM realms retain isolated module identity');
   resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
   const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);assert.equal(listeners.size,1);
+  assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
+  assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
+  const {GameplayOverrideReader} = source.importModule('src/game/application/fishing/gameplay_override_reader.js');
+  const reader = new GameplayOverrideReader(config);
+  assert.equal(reader.noEquipmentLoss,true);
+  configRuntime.set('debug.godMode.enabled',false);configRuntime.set('debug.fixedCatch.enabled',false);
+  assert.equal(reader.noEquipmentLoss,false);assert.equal(config.debug.fixedCatch.enabled,false);
+  const saved = JSON.parse(JSON.stringify(configRuntime.exportOverrides()));
+  configRuntime.resetAll();assert.equal(reader.noEquipmentLoss,true);assert.equal(config.debug.fixedCatch.enabled,true);
+  configRuntime.importOverrides(saved);assert.equal(reader.noEquipmentLoss,false);assert.equal(config.debug.fixedCatch.enabled,false);
   const cleanup=windowTarget.CYBER_FISHING_GAME_CLEANUP;cleanup();cleanup();
   assert.equal(counts.gameDispose,1);assert.equal(counts.watchdogDispose,1);assert.equal(listeners.size,0);
   assert.equal(windowTarget.game,null);assert.equal(windowTarget.CYBER_FISHING_GAME_CLEANUP,null);assert.equal(windowTarget.getCyberFishingMemoryReport,null);
   resetBuild();const second=startup.startDevelopmentGame();assert.notEqual(second,first);resolveBuild(app);await second;windowTarget.CYBER_FISHING_GAME_CLEANUP();
+  assert.equal(config.debug.godMode.enabled,false,'restart preserves the live override instead of reapplying DEV defaults');
+  assert.equal(config.debug.fixedCatch.enabled,false);
   assert.equal(counts.root,2);assert.equal(counts.start,2);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
   assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);assert.equal(counts.probeDispose,3);
@@ -566,5 +580,16 @@ async function checkNativeDevelopmentLifecycle() {
 checkNativeProductionStartup().then(checkNativeDevelopmentLifecycle).then(() => {
 checkNativeDevelopmentDisplays();
 checkLocationMapConfigChanges();
+for(let reload=0;reload<2;reload++) {
+  const production = new SourceRuntime();
+  const {createProductionConfigContext} = production.importModule('src/bootstrap/production/game_config_composition.js');
+  const context = createProductionConfigContext();
+  const {GameplayOverrideReader} = production.importModule('src/game/application/fishing/gameplay_override_reader.js');
+  assert.equal(context.runtimeConfig.debug.godMode.enabled,false,'actual production composition has safe defaults on startup/reload');
+  assert.equal(context.runtimeConfig.debug.fixedCatch.enabled,false);
+  assert.equal(new GameplayOverrideReader(context.runtimeConfig).noEquipmentLoss,false);
+  assert.equal(context.overrideStore.entries().length,0,'DEV settings never leak into the production realm');
+  assert.equal(createProductionConfigContext(),context,'one config context');
+}
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
 }).catch(error => { console.error(error);process.exitCode = 1; });

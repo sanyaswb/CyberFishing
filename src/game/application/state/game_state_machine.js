@@ -1013,17 +1013,19 @@ export class WaitingState extends GameState {
         template,
         baitCandidates.map((bait) => bait.variant || bait.itemType),
       );
-      hooked = this.deps.fixedCatchFishFactory.create({
-        template,
-        weightKg: fixed.weight,
-        biteSequence: chosenSequence,
-        anomalyChanceOverride: this.deps.services.devFlags.isEnabled(
-          "forceAnomalyChance",
-        )
-          ? 1
-          : null,
-        locationId: biteEnv?.locationId || "",
-      });
+      if (chosenSequence != null) {
+        hooked = this.deps.fixedCatchFishFactory.create({
+          template,
+          weightKg: fixed.weight,
+          biteSequence: chosenSequence,
+          anomalyChanceOverride: this.deps.services.devFlags.isEnabled(
+            "forceAnomalyChance",
+          )
+            ? 1
+            : null,
+          locationId: biteEnv?.locationId || "",
+        });
+      }
     }
 
     if (hooked) {

@@ -391,6 +391,40 @@ runtime.load("src/core/fishing/landing_policy.js");
 runtime.load("src/app/context.js");
 runtime.load("src/app/states.js");
 
+function checkFixedCatchBaitCompatibility() {
+  const assert = require('node:assert/strict');
+  const source = new SourceRuntime();
+  const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
+  const {WaitingState} = source.importModule('src/game/application/state/game_state_machine.js');
+  const {BiteRules,BaitRules} = source.importModule('src/game/domain/rules/gameplay_rules.js');
+  const {FixedCatchFishFactory} = source.importModule('src/game/application/fishing/fixed_catch_fish_factory.js');
+  const template = CONFIG.spawns.fishes.find(fish=>fish.id==='crucian_stalker');
+  const rules = new BiteRules(new BaitRules());
+  const natural = {id:'natural-perch',biteSequence:{active:true}};
+  for(const [bait,enabled,hooked] of [['spinner',true,natural],['wobbler',true,natural],['jig',true,natural],
+    ['worm',true,natural],['worm',false,natural],['spinner',true,null]]) {
+    let created=0,biting=null,sequence=null;
+    const factory = new FixedCatchFishFactory({fishRarityResolver:{resolve(){created++;return {level:1,maxLevel:1};}},
+      fishAnomalyVariantResolver:{resolve(){return {}; }},fishVisualVariantResolver:{resolveImagePath:()=>''}});
+    const eq={rod:{variant:bait==='worm'?'float':'spinning'},reel:{effectiveStats:{basePower:1}}};
+    const config={debug:{fixedCatch:{enabled,fishId:template.id,weight:0.8}},spawns:{fishes:[template]}};
+    const state = new WaitingState({config,rng:{next:()=>0.5},getViewportSize:()=>({width:100,height:100}),
+      projector:{focusOnVirtualPos(){}},commands:{panViewport(){},setState(name,data){assert.equal(name,'biting');biting=data.fish;}},
+      float:{getPosition:()=>({x:0,y:0}),update(){},startBite(pulling,value){assert(value,'bite sequence must exist');sequence=value;}},
+      inventory:{getEquipped:()=>eq},input:{getState:()=>({isPulling:false})},world:{getRodVirtualPos:()=>({x:0,y:1000}),getBiteEnv:()=>({locationId:'lake'})},
+      rules:{equipment:{isSpinning:()=>bait!=='worm'},bite:rules},fishing:{collectAvailableBaits(eq,eaten,target){target.push({itemType:'bait',variant:bait});}},
+      clock:{now:1000},getCastStartTime:()=>0,eatenBaits:[],biteSystem:{evaluateBite:()=>hooked},fixedCatchFishFactory:factory,
+      services:{devFlags:{isEnabled:()=>false}}});
+    state.update(16,{bottom:1000},{input:{isPulling:false},env:{}});
+    const compatible = enabled && hooked && bait==='worm';
+    assert.equal(created,compatible?1:0,'fixed factory only runs for supported bait: '+bait);
+    if(!hooked) {assert.equal(biting,null);continue;}
+    if(compatible) {assert.equal(biting.id,template.id);assert.equal(biting.weight,0.8);assert.equal(sequence,template.biteMechanics.passive);}
+    else {assert.equal(biting,natural,'unsupported or disabled fixed catch preserves the naturally hooked fish');assert.equal(sequence,natural.biteSequence);}
+  }
+}
+
+checkFixedCatchBaitCompatibility();
 new LureProjectionAndBiteCheck().run(runtime);
 new DefinitiveCastReadinessCheck().run(runtime);
 new ScoutingCastWarningCheck().run(runtime);

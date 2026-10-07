@@ -45,7 +45,10 @@ export function startDevelopmentGame() {
 
 async function startGame() {
   const {windowTarget, documentTarget} = getBrowserStartupEnvironment();
-  const configRuntime = createProductionConfigContext();
+  const configRuntime = createProductionConfigContext(config => {
+    config.debug.godMode.enabled = true;
+    config.debug.fixedCatch.enabled = true;
+  });
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);

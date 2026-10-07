@@ -6,12 +6,18 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 ## Resume facts
 
+- D2/D4 implemented after D1: unsupported Fixed Catch bait retains the natural fish; the real production config starts with both
+  masters false. Development Bootstrap initializes its own base before freezing the single context, so reset restores DEV defaults
+  and restart preserves live overrides. Enabled/disabled/no-bite gameplay, both compositions, reset/import/export and realm isolation
+  pass. The regression fails on the original source. Game-cycle unchanged; Quick 24/24, Architecture 32/32, uncached Full 64/64.
+  Evidence: [pre_stage7_d2_evidence.json](../archive/pre_stage7_d2_evidence.json),
+  [pre_stage7_d2_acceptance.json](../archive/pre_stage7_d2_acceptance.json). Next: D3, then release 0.27.2 and browser acceptance.
 - D1 implemented in the current checkpoint: seven comparisons plus initialization; original and updated traces are identical
   (167 updates, 24 recalculations, 44 revision reads). The update template allocation is gone. Actual DevTools callbacks, context
   set/reset/import, unrelated overrides and config replacement are covered. Game-cycle unchanged; uncached Full 64/64.
   Evidence: [pre_stage7_d1_evidence.json](../archive/pre_stage7_d1_evidence.json),
   [pre_stage7_d1_acceptance.json](../archive/pre_stage7_d1_acceptance.json). Raw recovery: `pre-stage7-fixes-archive` → `643a8dbc`.
-  D2/D4, D3 and patch 0.27.2 remain before the Stage 7 tooling archive.
+  D3 and patch 0.27.2 remain before the Stage 7 tooling archive.
 - Accepted HEAD/origin `develop`: `ee53295` (D1–D3 decisions; runtime code unchanged). Current release is `0.27.1` (`f2cf1e0`).
   Final owner answer in this session: GodMode and Fixed Catch are for development balance testing only; production defaults must be off (D4 below).
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →

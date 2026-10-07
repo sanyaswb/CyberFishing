@@ -6,8 +6,9 @@ import { createRuntimeConfigContext } from "./config_context.js";
 
 let configRuntime;
 
-export function createProductionConfigContext() {
+export function createProductionConfigContext(initializeBase = null) {
   if (configRuntime) return configRuntime;
+  initializeBase?.(CONFIG);
   CONFIG.rarity.visual = RARITY_VISUAL_CONFIG;
   CONFIG.degradationColors = DEGRADATION_COLOR_CONFIG;
   Object.defineProperty(CONFIG, "fightPhysicsConfig", {
