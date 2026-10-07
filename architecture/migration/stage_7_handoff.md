@@ -6,6 +6,12 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 ## Resume facts
 
+- D3 implemented after D2/D4: all scheduled DepthSelector frames retain their IDs, remove completed IDs and cancel pending IDs on
+  idempotent dispose. Late callbacks/events/public calls are inert; disposal inside onChange cannot schedule another frame.
+  The owning document's cached window handles both scheduling and cancellation. Original-source regression fails; fixed-source
+  focused check passes; game-cycle unchanged, Quick 24/24, Architecture 32/32 and uncached Full 64/64.
+  Evidence: [pre_stage7_d3_evidence.json](../archive/pre_stage7_d3_evidence.json),
+  [pre_stage7_d3_acceptance.json](../archive/pre_stage7_d3_acceptance.json). Next: one patch release 0.27.2 and both-page browser smoke.
 - D2/D4 implemented after D1: unsupported Fixed Catch bait retains the natural fish; the real production config starts with both
   masters false. Development Bootstrap initializes its own base before freezing the single context, so reset restores DEV defaults
   and restart preserves live overrides. Enabled/disabled/no-bite gameplay, both compositions, reset/import/export and realm isolation

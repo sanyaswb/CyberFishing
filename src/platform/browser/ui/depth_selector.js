@@ -1,5 +1,10 @@
 export class DepthSelectorUI {
+  #pendingFrames = new Set();
+  #disposed = false;
+  #animationFrameHost;
+
   constructor() {
+    this.#animationFrameHost = document.defaultView;
     this.container = document.createElement("div");
     this.container.innerHTML = `
             <style>
@@ -101,6 +106,7 @@ export class DepthSelectorUI {
 
   #bindEvents() {
     this.slider.addEventListener("input", (e) => {
+      if (this.#disposed) return;
       const val = parseFloat(e.target.value);
       this.input.value = val.toFixed(2);
       this.#updateInputPosition();
@@ -108,6 +114,7 @@ export class DepthSelectorUI {
     });
 
     this.input.addEventListener("input", (e) => {
+      if (this.#disposed) return;
       let val = e.target.value.replace(",", ".").replace(/[^0-9.]/g, "");
       if ((val.match(/\./g) || []).length > 1) {
         val = val.substring(0, val.lastIndexOf("."));
@@ -116,6 +123,7 @@ export class DepthSelectorUI {
     });
 
     this.input.addEventListener("change", (e) => {
+      if (this.#disposed) return;
       let val = parseFloat(e.target.value);
       if (isNaN(val)) val = 0.1;
       val = Math.max(0.1, Math.min(parseFloat(this.slider.max), val));
@@ -127,6 +135,7 @@ export class DepthSelectorUI {
   }
 
   #updateInputPosition() {
+    if (this.#disposed) return;
     const min = parseFloat(this.slider.min);
     const max = parseFloat(this.slider.max);
     const val = parseFloat(this.slider.value);
@@ -140,6 +149,7 @@ export class DepthSelectorUI {
   }
 
   show(maxDepth, currentDepth, changeCallback) {
+    if (this.#disposed) return;
     this.isActive = true;
     this.onChange = changeCallback;
 
@@ -151,10 +161,11 @@ export class DepthSelectorUI {
 
     this.mainContainer.style.display = "flex";
 
-    requestAnimationFrame(() => this.#updateInputPosition());
+    this.#scheduleInputPosition();
   }
 
   updateMax(maxDepth) {
+    if (this.#disposed) return;
     if (!this.isActive || parseFloat(this.slider.max) === maxDepth) return;
 
     this.slider.max = maxDepth;
@@ -169,10 +180,20 @@ export class DepthSelectorUI {
       if (this.onChange) this.onChange(val);
     }
 
-    requestAnimationFrame(() => this.#updateInputPosition());
+    this.#scheduleInputPosition();
+  }
+
+  #scheduleInputPosition() {
+    if (this.#disposed) return;
+    const frameId = this.#animationFrameHost.requestAnimationFrame(() => {
+      this.#pendingFrames.delete(frameId);
+      this.#updateInputPosition();
+    });
+    this.#pendingFrames.add(frameId);
   }
 
   updateCastDistance({ availableMeters, maximumMeters, visible = true } = {}) {
+    if (this.#disposed) return;
     this.distancePanel.style.display = visible ? "block" : "none";
     if (!visible) return;
 
@@ -197,11 +218,18 @@ export class DepthSelectorUI {
   }
 
   hide() {
+    if (this.#disposed) return;
     this.isActive = false;
     this.mainContainer.style.display = "none";
   }
 
   dispose() {
+    if (this.#disposed) return;
+    this.#disposed = true;
+    this.isActive = false;
+    for (const frameId of this.#pendingFrames) this.#animationFrameHost.cancelAnimationFrame(frameId);
+    this.#pendingFrames.clear();
+    this.#animationFrameHost = null;
     this.onChange = null;
     this.container?.remove();
     this.container = null;

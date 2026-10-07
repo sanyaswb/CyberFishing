@@ -154,7 +154,8 @@ function checkVersionBadge() {
 
 // Exercise original browser widgets over repeated frames and real interaction/disposal paths.
 function checkBrowserWidgets() {
-  const ids=new Map(),frames=[],timers=new Map(),saved=new Map();let nextTimer=0,clicks=0,disposed=0,queries=0;
+  const ids=new Map(),frames=new Map(),cancelled=[],timers=new Map(),saved=new Map();let nextFrame=0,nextTimer=0,clicks=0,disposed=0,queries=0;
+  const drainFrames=()=>{while(frames.size){const [id,fn]=frames.entries().next().value;frames.delete(id);fn();}};
   const makeNode=()=>({style:{},children:[],listeners:new Map(),attrs:{},value:'1',min:'0.1',max:'20',clientHeight:120,
     classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},toggle(v,on){if(on)this.add(v);else this.remove(v);}},
     set innerHTML(value){this.html=value;for(const match of value.matchAll(/id="([^"]+)"/g))if(!ids.has(match[1]))ids.set(match[1],makeNode());},
@@ -167,8 +168,11 @@ function checkBrowserWidgets() {
   document.getElementById=id=>{queries++;assert(ids.has(id),id);return ids.get(id);};
   document.documentElement={requestFullscreen(){document.fullscreenElement={};return Promise.resolve();}};
   document.exitFullscreen=()=>{document.fullscreenElement=null;};
+  document.defaultView={requestAnimationFrame:fn=>{frames.set(++nextFrame,fn);return nextFrame;},
+    cancelAnimationFrame:id=>{cancelled.push(id);frames.delete(id);}};
   const runtime=new SourceRuntime({globals:{document,window:{innerWidth:300,innerHeight:200},console:{log(){},warn(){}},
-    requestAnimationFrame:fn=>{frames.push(fn);return frames.length;},setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
+    ...document.defaultView,
+    setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
   const definitions=[['engine_interface','UI_EXCEPTIONS','initEngineInterface'],['ui_event_shield','UIUtils'],['draggable_button','UIDraggableButton'],
     ['game_controls','UIManager'],['chum_controls','ChumUI'],['depth_selector','DepthSelectorUI'],['time_display','TimeDisplayUI'],['hold_charges','HoldChargesUI']];
   for(const [file,...expose]of definitions)runtime.load('src/ui/legacy/'+file+'.js',{expose});
@@ -194,13 +198,30 @@ function checkBrowserWidgets() {
     hold.update({hasHold:true,max:frame<60?3:4,current:1,isActive:frame%2===0,restoring:[0.5],restoreMaxTime:1});
     if(frame===1)circle=hold.circles[0];if(frame>1&&frame<60)assert.equal(hold.circles[0],circle,'stable capacity reuses DOM circles');
     const state=['disabled','empty','moving','ready','idle','aiming'][frame%6];chum.setState(state,frame%2?'boat':'hand',4);chum.button.emit('click');
-    while(frames.length)frames.shift()();
+    drainFrames();
   }
   assert.equal(queries,initialQueries,'updates use cached DOM references');assert.equal(depth.lastChange,2);assert.equal(time.emojiSpan.innerText,'🌇');
   assert.equal(clicks,61,'only enabled chum states dispatch clicks');assert.equal(hold.circles.length,4);
-  controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);while(frames.length)frames.shift()();
+  controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);drainFrames();
   controls.hideNetButton();depth.hide();hold.update(null);assert.equal(hold.container.style.display,'none');
-  controls.dispose();controls.dispose();depth.dispose();time.dispose();hold.dispose();chum.dispose();assert.equal(disposed,1);assert.equal(timers.size,0);
+  controls.dispose();controls.dispose();time.dispose();hold.dispose();chum.dispose();assert.equal(disposed,1);assert.equal(timers.size,0);
+  let positions=0;
+  Object.defineProperty(depth.inputContainer.style,'top',{set(){positions++;},configurable:true});
+  depth.show(10,1,()=>{});depth.updateMax(9);depth.updateMax(8);
+  assert.equal(frames.size,3,'all normal callbacks remain scheduled');drainFrames();assert.equal(positions,3);
+  depth.show(10,1,()=>{});depth.updateMax(9);depth.updateMax(8);
+  const pending=[...frames.keys()],lateCallbacks=[...frames.values()],slider=depth.slider,input=depth.input;
+  const cancellations=cancelled.length;
+  depth.dispose();depth.dispose();
+  assert.deepEqual(cancelled.slice(cancellations),pending,'dispose cancels every pending frame, excluding completed frames');
+  assert.equal(frames.size,0);assert.equal(depth.isActive,false);
+  for(const fn of lateCallbacks)fn();
+  slider.emit('input');input.emit('input');input.emit('change');
+  depth.show(10,1,()=>{throw Error('disposed callback');});depth.updateMax(9);depth.updateCastDistance({availableMeters:1,maximumMeters:2});depth.hide();
+  assert.equal(positions,3,'late callbacks/events and public operations do nothing after dispose');assert.equal(frames.size,0);
+  const reentrant=new c.DepthSelectorUI();
+  reentrant.show(10,5,()=>reentrant.dispose());reentrant.updateMax(1);
+  assert.equal(frames.size,0,'dispose from onChange also prevents subsequent scheduling');
 }
 
 function checkTimeoutScheduler() {
