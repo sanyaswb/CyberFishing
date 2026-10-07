@@ -4,8 +4,8 @@ import { InventoryItemFactory } from "../../game/application/inventory/inventory
 import { InventoryItemViewContext } from "../../game/application/inventory/inventory_item_view_context.js";
 import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
 import { InventoryRuntimeDisplayStatsResolver } from "../../game/application/inventory/inventory_runtime_display_stats_resolver.js";
-import { InventoryV2ActionType } from "../../game/presentation/inventory/inventory_view_model.js";
-import { InventoryV2CompositionRoot } from "./inventory_composition_root.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_view_model.js";
+import { InventoryCompositionRoot } from "./inventory_composition_root.js";
 import { ItemDatabase } from "../../game/application/inventory/item_database.js";
 import { LegacyInventorySaveSource } from "../../game/application/inventory/persistence/legacy_inventory_save_source.js";
 import { PlayerInventory } from "../../game/application/inventory/player_inventory.js";
@@ -13,7 +13,7 @@ import { ROD_CAST_DISPLAY_LABELS } from "../../game/presentation/inventory/rod_c
 import { RodCastDisplayStatsWriter } from "../../game/application/inventory/rod_cast_display_stats_writer.js";
 import { TackleLoadLimitPolicy } from "../../game/domain/equipment/tackle_load_limit_policy.js";
 
-// Composes the player's inventory: the legacy save seeds Inventory V2 (only when no V2 save exists), item views
+// Composes the player's inventory: the legacy save seeds the inventory (only when no current save exists), item views
 // get their runtime context, and PlayerInventory exposes the result to the game.
 export function createPlayerInventory({
   itemDB,
@@ -57,7 +57,7 @@ export function createPlayerInventory({
   });
   const instanceIds = new InventoryInstanceIdFactory({ makeRandomId, now });
   let playerInventory = null;
-  const inventoryV2 = InventoryV2CompositionRoot.compose({
+  const inventory = InventoryCompositionRoot.compose({
     cache,
     legacyItems: legacySave.inventory.getAll(),
     legacyEquipment: legacySave.equipment,
@@ -79,8 +79,8 @@ export function createPlayerInventory({
     assemblyProfileConfig,
   });
   playerInventory = new PlayerInventory({
-    inventoryV2,
-    actions: InventoryV2ActionType,
+    inventory,
+    actions: InventoryActionType,
     events,
     rodCastDisplayStats: new RodCastDisplayStatsWriter({
       castDistanceCalculator,

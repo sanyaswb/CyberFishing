@@ -1,9 +1,9 @@
-export class InventoryV2DomFactory {
+export class InventoryDomFactory {
   #document;
 
   constructor(documentRef = globalThis.document) {
     if (!documentRef?.createElement) {
-      throw new TypeError("InventoryV2DomFactory requires a document");
+      throw new TypeError("InventoryDomFactory requires a document");
     }
     this.#document = documentRef;
   }

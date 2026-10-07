@@ -1,6 +1,6 @@
-import { INVENTORY_V2_SCHEMA_VERSION } from "./inventory_state_store.js";
+import { INVENTORY_SCHEMA_VERSION } from "./inventory_state_store.js";
 
-export class InventoryV2SnapshotFactory {
+export class InventorySnapshotFactory {
   #repository;
   #assemblyStates;
   #equipmentState;
@@ -26,7 +26,7 @@ export class InventoryV2SnapshotFactory {
     this.#refillMemory = refillMemory;
     if (!itemSnapshotMapper?.toSnapshots) {
       throw new TypeError(
-        "InventoryV2SnapshotFactory requires InventoryItemSnapshotMapper",
+        "InventorySnapshotFactory requires InventoryItemSnapshotMapper",
       );
     }
     this.#itemSnapshotMapper = itemSnapshotMapper;
@@ -34,7 +34,7 @@ export class InventoryV2SnapshotFactory {
 
   create() {
     return {
-      schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+      schemaVersion: INVENTORY_SCHEMA_VERSION,
       items: this.#itemSnapshotMapper.toSnapshots(this.#repository.list()),
       assemblies: this.#assemblyStates.toSnapshot(),
       equipment: this.#equipmentState.snapshot(),

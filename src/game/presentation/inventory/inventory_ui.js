@@ -1,4 +1,4 @@
-export class InventoryV2UI {
+export class InventoryUI {
   #facade;
   #actionContract;
   #actionTypes;
@@ -61,7 +61,7 @@ export class InventoryV2UI {
       actionDispatcher: onAction,
     });
     if (!mountNode?.appendChild) {
-      throw new TypeError("InventoryV2UI requires a mountNode");
+      throw new TypeError("InventoryUI requires a mountNode");
     }
 
     this.#facade = facade;
@@ -197,7 +197,7 @@ export class InventoryV2UI {
     const itemIndex = this.#createDynamicItemIndex(viewModel);
     const cards = this.#nodesByClass(
       this.#rootNode,
-      "inventory-v2-item-card",
+      "inventory-item-card",
     );
     cards.forEach((card) => {
       const item = itemIndex.get(String(card.dataset.instanceId || ""));
@@ -212,7 +212,7 @@ export class InventoryV2UI {
 
     const loadValue = this.#firstNodeByClass(
       this.#headerHost,
-      "inventory-v2-load__value",
+      "inventory-load__value",
     );
     if (loadValue) {
       const value = Number(viewModel.header.loadValue) || 0;
@@ -293,14 +293,14 @@ export class InventoryV2UI {
 
   #buildShell() {
     this.#backpackButtonNode = this.#dom.button(
-      "inventory-v2-backpack-button",
+      "inventory-backpack-button",
       "🎒",
       { title: "Відкрити інвентар" },
     );
     this.#backpackButtonNode.setAttribute("aria-label", "Відкрити інвентар");
     this.#backpackButtonNode.addEventListener("click", () => this.toggle());
 
-    this.#rootNode = this.#dom.element("div", "inventory-v2-modal");
+    this.#rootNode = this.#dom.element("div", "inventory-modal");
     this.#rootNode.setAttribute("role", "dialog");
     this.#rootNode.setAttribute("aria-modal", "true");
     this.#rootNode.setAttribute("aria-label", "Інвентар");
@@ -308,20 +308,20 @@ export class InventoryV2UI {
 
     this.#headerHost = this.#dom.element(
       "div",
-      "inventory-v2-modal__header-host",
+      "inventory-modal__header-host",
     );
     this.#warningNode = this.#dom.element(
       "div",
-      "inventory-v2-warning",
+      "inventory-warning",
     );
-    const main = this.#dom.element("main", "inventory-v2-main");
+    const main = this.#dom.element("main", "inventory-main");
     this.#leftHost = this.#dom.element(
       "div",
-      "inventory-v2-main__left",
+      "inventory-main__left",
     );
     this.#rightHost = this.#dom.element(
       "div",
-      "inventory-v2-main__right",
+      "inventory-main__right",
     );
     main.append(this.#leftHost, this.#rightHost);
     this.#rootNode.append(this.#headerHost, this.#warningNode, main);

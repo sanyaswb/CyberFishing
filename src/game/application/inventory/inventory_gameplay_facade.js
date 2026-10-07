@@ -1,6 +1,6 @@
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
-export class InventoryV2GameplayBridge {
+export class InventoryGameplayBridge {
   #repository;
   #hydrator;
   #equipmentState;

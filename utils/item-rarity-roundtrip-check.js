@@ -64,15 +64,15 @@ class ItemRarityRoundTripCheck {
       "src/game/presentation/inventory/inventory_item_parameters_resolver.js",
     ]).expose({
       RarityConfig: "RARITY_VISUAL_CONFIG",
-      SortConfig: "INVENTORY_V2_SORT_CONFIG",
+      SortConfig: "INVENTORY_SORT_CONFIG",
       RarityResolver: "ItemRarityResolver",
       EffectiveRarityResolver: "EffectiveItemRarityResolver",
       ViewFactory: "InventoryItemViewFactory",
       SnapshotMapper: "InventoryItemSnapshotMapper",
-      OrderResolver: "InventoryV2ItemOrderResolver",
+      OrderResolver: "InventoryItemOrderResolver",
       VisualResolver: "RarityVisualResolver",
       DomAdapter: "ItemRarityDomAdapter",
-      ParametersResolver: "InventoryV2ItemParametersResolver",
+      ParametersResolver: "InventoryItemParametersResolver",
     });
     new ItemStatTestComposition(sourceRuntime.context).install({ withPolicy: ["SnapshotMapper"], withResolver: ["ViewFactory"] });
     this.#runtime = sourceRuntime.context;

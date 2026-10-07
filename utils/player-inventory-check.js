@@ -31,7 +31,7 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
   const { EffectiveItemStatsResolver } = load("src/game/domain/items/effective_item_stats_resolver.js");
   const { ITEM_STAT_OVERRIDE_CONFIG } = load("src/game/config/raw/items/item_stat_overrides.js");
   const { getInventoryAssemblyProfileConfig } = load("src/game/config/inventory/inventory_composition_config.js");
-  const { InventoryV2ActionType } = load("src/game/presentation/inventory/inventory_view_model.js");
+  const { InventoryActionType } = load("src/game/presentation/inventory/inventory_view_model.js");
   const { TackleLoadLimitPolicy } = load("src/game/domain/equipment/tackle_load_limit_policy.js");
   const physicsConfig = new FightPhysicsConfigAdapter(CONFIG);
   const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: ITEM_STAT_OVERRIDE_CONFIG });
@@ -55,16 +55,16 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
     makeRandomId,
     now: () => NOW,
   });
-  return { inventory, cache, forwarded, actions: InventoryV2ActionType, TackleLoadLimitPolicy, runtime, CONFIG };
+  return { inventory, cache, forwarded, actions: InventoryActionType, TackleLoadLimitPolicy, runtime, CONFIG };
 }
 
-const items = (inventory) => inventory.inventoryV2Facade.getViewModel().inventory.items;
+const items = (inventory) => inventory.inventoryFacade.getViewModel().inventory.items;
 
 function checkFreshStart() {
   const { inventory, cache, CONFIG } = compose();
   assert.equal(cache.writes.includes("player_inventory") || cache.writes.includes("player_equipment"), false,
     "the legacy save keys are only read, never written");
-  assert(cache.writes.length > 0, "Inventory V2 saves its migrated snapshot");
+  assert(cache.writes.length > 0, "Inventory saves its migrated snapshot");
   const ids = new Set(items(inventory).map((item) => item.itemId));
   for (const configured of CONFIG.player.inventory) assert(ids.has(configured.itemId), `configured ${configured.itemId} is seeded`);
   assert.equal(inventory.getEquipped().rod, null, "nothing is equipped on a fresh start");
@@ -95,17 +95,17 @@ function checkPlayerInventoryPort() {
 
   inventory.setLock(true);
   assert.equal(inventory.isLocked, true);
-  const blocked = inventory.dispatchInventoryV2Action({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: rod.instanceId });
+  const blocked = inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: rod.instanceId });
   assert.deepEqual({ ...blocked }, { success: false, warning: "Витягніть снасть з води, щоб змінити спорядження.", refresh: false },
     "equipment changes are blocked while tackle is in the water");
-  assert.equal(inventory.dispatchInventoryV2Action({ type: actions.OPEN }).success, true, "opening stays allowed while locked");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.OPEN }).success, true, "opening stays allowed while locked");
   assert.equal(inventory.getEquipped().rod, null);
 
   inventory.setLock(false);
   const before = changes.length;
-  assert.equal(inventory.dispatchInventoryV2Action({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: rod.instanceId }).success, true);
-  assert(changes.length > before, "a V2 change announces inventory-changed");
-  assert.equal(changes.at(-1).source, "inventory-v2");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.INVENTORY_ITEM_ACTIVATE, instanceId: rod.instanceId }).success, true);
+  assert(changes.length > before, "an inventory change announces inventory-changed");
+  assert.equal(changes.at(-1).source, "inventory");
   assert(forwarded.some((event) => event.type === "inventory-changed"), "changes reach the injected event target");
   const equipped = inventory.getEquipped();
   assert.equal(equipped.rod?.itemId, "rod_test_float", "the rod is equipped");
@@ -115,7 +115,7 @@ function checkPlayerInventoryPort() {
   assert.match(equipped.rod.displayStats["Масштаб"], /^\d+(\.\d+)?px = 1м$/u);
   assert.equal(inventory.getMaxTackleLoadKg(), new TackleLoadLimitPolicy().resolveMaxLoadKg(equipped));
   assert(inventory.getMaxTackleLoadKg() > 0, "an equipped rod with a load limit bounds the tackle");
-  assert.equal(inventory.evaluateCastReadiness().canCast, false, "cast readiness comes from Inventory V2");
+  assert.equal(inventory.evaluateCastReadiness().canCast, false, "cast readiness comes from Inventory");
 
   assert.throws(() => inventory.setLineCapacityStateProvider(null), /Line capacity state provider must be a function/u);
   assert.throws(() => inventory.setFreshnessExposureProvider("x"), /Freshness exposure provider must be a function/u);
@@ -124,8 +124,8 @@ function checkPlayerInventoryPort() {
 
   inventory.dispose();
   const afterDispose = changes.length;
-  inventory.inventoryV2Facade.notify();
-  assert.equal(changes.length, afterDispose, "dispose removes the V2 listener and the change handlers");
+  inventory.inventoryFacade.notify();
+  assert.equal(changes.length, afterDispose, "dispose removes the inventory listener and the change handlers");
 }
 
 function checkInstanceIds() {
@@ -144,6 +144,6 @@ checkFreshStart();
 checkLegacySaveMigration();
 checkPlayerInventoryPort();
 checkInstanceIds();
-console.log("Player inventory passed: fresh start seeds V2 without writing legacy keys; a legacy save migrates " +
+console.log("Player inventory passed: fresh start seeds the inventory without writing legacy keys; a legacy save migrates " +
   "(sinker -> feeder rig); lock policy, change events, cached equipment with rod display stats, tackle load " +
   "limit, readiness, provider validation, refresh, dispose and the id fallback behave as composed in production.");

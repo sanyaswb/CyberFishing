@@ -5,14 +5,14 @@ import { EquipmentLoadoutRepository } from "../../../domain/loadouts/equipment_l
 import { EquipmentState } from "../../../domain/equipment/equipment_state.js";
 import { ExactAssemblyRefillSignaturePolicy } from "../../../domain/assemblies/exact_assembly_refill_signature_policy.js";
 import { FlatInventoryItemRepository } from "../../../domain/inventory/flat_inventory_item_repository.js";
-import { INVENTORY_V2_SCHEMA_VERSION } from "./inventory_state_store.js";
+import { INVENTORY_SCHEMA_VERSION } from "./inventory_state_store.js";
 import { InventoryItemLocation } from "../../../domain/inventory/inventory_item_location.js";
 import { ItemAssemblyReader } from "../../../domain/assemblies/item_assembly_reader.js";
 import { ItemAssemblyService } from "../../../domain/assemblies/item_assembly_service.js";
 import { LegacyInventoryUnitAllocator } from "../legacy_inventory_unit_allocator.js";
 import { RodCapabilityResolver } from "../../../domain/equipment/rod_capability_resolver.js";
 
-export class InventoryV2LegacyMigration {
+export class InventoryLegacyMigration {
   static #legacyItemIdMap = Object.freeze({
     line_test_25m: "line_test_1",
     line_test_10m: "line_test_2",
@@ -125,7 +125,7 @@ export class InventoryV2LegacyMigration {
 
     return Object.freeze({
       snapshot: {
-        schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+        schemaVersion: INVENTORY_SCHEMA_VERSION,
         items: itemSnapshots,
         assemblies: assemblyStates.toSnapshot(),
         equipment: equipment.snapshot(),
@@ -145,9 +145,9 @@ export class InventoryV2LegacyMigration {
     for (const source of items || []) {
       if (!source?.instanceId || !source?.itemId) continue;
       const itemId =
-        InventoryV2LegacyMigration.#legacyItemIdMap[source.itemId] ||
+        InventoryLegacyMigration.#legacyItemIdMap[source.itemId] ||
         source.itemId;
-      if (InventoryV2LegacyMigration.#removedLegacyItemIds.has(itemId)) {
+      if (InventoryLegacyMigration.#removedLegacyItemIds.has(itemId)) {
         warnings.push(
           `Deprecated inventory item ${source.instanceId} (${itemId}) was removed during migration.`,
         );

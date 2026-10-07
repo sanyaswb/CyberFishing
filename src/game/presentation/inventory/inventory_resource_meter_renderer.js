@@ -1,4 +1,4 @@
-export class InventoryV2ResourceMeterRenderer {
+export class InventoryResourceMeterRenderer {
   #dom;
 
   constructor({ domFactory } = {}) {
@@ -25,9 +25,9 @@ export class InventoryV2ResourceMeterRenderer {
     const meter = this.#dom.element(
       "span",
       [
-        "inventory-v2-resource-meter",
-        `inventory-v2-resource-meter--${variant}`,
-        `inventory-v2-resource-meter--${model.id}`,
+        "inventory-resource-meter",
+        `inventory-resource-meter--${variant}`,
+        `inventory-resource-meter--${model.id}`,
       ].join(" "),
     );
     meter.dataset.resourceId = model.id;
@@ -37,7 +37,7 @@ export class InventoryV2ResourceMeterRenderer {
     if (showIcon && model.icon) {
       const icon = this.#dom.element(
         "span",
-        "inventory-v2-resource-meter__icon",
+        "inventory-resource-meter__icon",
         model.icon,
       );
       icon.setAttribute("aria-hidden", "true");
@@ -45,10 +45,10 @@ export class InventoryV2ResourceMeterRenderer {
     }
     const track = this.#dom.element(
       "span",
-      "inventory-v2-resource-meter__track",
+      "inventory-resource-meter__track",
     );
     track.appendChild(
-      this.#dom.element("span", "inventory-v2-resource-meter__fill"),
+      this.#dom.element("span", "inventory-resource-meter__fill"),
     );
     meter.appendChild(track);
     this.#applyModel(meter, model);
@@ -57,7 +57,7 @@ export class InventoryV2ResourceMeterRenderer {
 
   #applyModel(meter, model) {
     meter.style.setProperty(
-      "--inventory-v2-resource-percent",
+      "--inventory-resource-percent",
       `${model.percent}%`,
     );
     meter.setAttribute("aria-valuenow", String(model.percent));
@@ -67,7 +67,7 @@ export class InventoryV2ResourceMeterRenderer {
   #findDirectMeter(host) {
     return (
       Array.from(host.children || []).find((child) =>
-        child.classList?.contains("inventory-v2-resource-meter--thumbnail"),
+        child.classList?.contains("inventory-resource-meter--thumbnail"),
       ) || null
     );
   }

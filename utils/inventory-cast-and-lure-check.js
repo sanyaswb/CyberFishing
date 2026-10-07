@@ -4,9 +4,9 @@ const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
 const ROOT = path.resolve(__dirname, "..");
-const Assertion = CheckAssertion.create("Inventory-v2 cast/lure check");
+const Assertion = CheckAssertion.create("Inventory cast/lure check");
 
-class InventoryV2SourceRuntime extends SourceRuntime {
+class InventorySourceRuntime extends SourceRuntime {
   constructor() {
     super({
       globals: {
@@ -269,13 +269,13 @@ class ScoutingCastWarningCheck {
         const deps = new StateDepsFactory(root).create("scouting");
         assert(
           deps.commands.showMissingLineInventoryWarning === showMissingLineInventoryWarning,
-          "state dependency factory must preserve the Inventory-v2 warning command",
+          "state dependency factory must preserve the Inventory warning command",
         );
 
         const state = new ScoutingState(deps);
         state.handleInput({ clickPos: { x: 20, y: 20 } });
         assert(readinessCount === 1, "normal casting must consult the canonical readiness boundary");
-        assert(warningCount === 1, "normal casting must open Inventory-v2 through the line warning command");
+        assert(warningCount === 1, "normal casting must open Inventory through the line warning command");
         assert(castCount === 0, "normal casting must stop before castLine when line is missing");
       })();
     `);
@@ -369,18 +369,18 @@ class CompositionSeamCheck {
     Assertion.that(
       application.includes('result?.reason === "missing_line"') &&
         application.includes("this.#showMissingLineInventoryWarning();"),
-      "the definitive cast result must open Inventory-v2 for a missing line",
+      "the definitive cast result must open Inventory for a missing line",
     );
     Assertion.that(
       /evaluateCastReadiness\(\)[\s\S]*?#gameplayBridge\.evaluateCastReadiness/.test(
         inventory,
       ),
-      "PlayerInventory must delegate readiness to the Inventory-v2 bridge",
+      "PlayerInventory must delegate readiness to the Inventory bridge",
     );
   }
 }
 
-const runtime = new InventoryV2SourceRuntime();
+const runtime = new InventorySourceRuntime();
 runtime.load("src/game/application/inventory/equipment_read_model_factory.js");
 runtime.load("src/game/domain/rules/gameplay_rules.js");
 runtime.load("src/game/application/fishing/fishing_runtime_services.js");
@@ -433,4 +433,4 @@ new CompositionSeamCheck().run();
 
 Assertion.equal(runtime.context.BaitFactory.createCount, 0, "blocked casts created an entity");
 
-console.log("Inventory-v2 cast/lure check passed.");
+console.log("Inventory cast/lure check passed.");

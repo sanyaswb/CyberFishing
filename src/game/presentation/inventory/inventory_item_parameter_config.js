@@ -1,4 +1,4 @@
-export const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
+export const INVENTORY_ITEM_PARAMETER_CONFIG = Object.freeze({
   ratingTier: Object.freeze({
     label: "Клас рейтингу",
     description:
@@ -69,7 +69,7 @@ export const INVENTORY_V2_ITEM_PARAMETER_CONFIG = Object.freeze({
   "stat:durability": Object.freeze({ aliasOf: "condition" }),
 });
 
-export const INVENTORY_V2_ITEM_PARAMETER_ALIASES = Object.freeze({
+export const INVENTORY_ITEM_PARAMETER_ALIASES = Object.freeze({
   rating: "rating",
   "рейтинг": "rating",
   condition: "condition",
@@ -84,7 +84,7 @@ export const INVENTORY_V2_ITEM_PARAMETER_ALIASES = Object.freeze({
   "якість": "quality",
 });
 
-export const INVENTORY_V2_BALANCE_TOOLTIP_CONFIG = Object.freeze({
+export const INVENTORY_BALANCE_TOOLTIP_CONFIG = Object.freeze({
   referenceCastDistanceMeters: 12,
   ignoredEffectiveStatsPaths: Object.freeze([
     "assemblyProfileId",

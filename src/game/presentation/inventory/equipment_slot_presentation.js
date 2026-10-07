@@ -1,5 +1,5 @@
 /**
- * Inventory-v2 equipment slot presentation: UI labels, hints and locked-slot
+ * Inventory equipment slot presentation: UI labels, hints and locked-slot
  * warnings keyed by the stable slot ids of EQUIPMENT_SLOT_CONFIG (EquipmentSlotId).
  */
 export const EQUIPMENT_SLOT_PRESENTATION = Object.freeze({

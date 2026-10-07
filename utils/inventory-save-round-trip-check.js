@@ -2,7 +2,7 @@ const path = require("node:path");
 const vm = require("node:vm");
 const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loader");
 
-// Save round trip through the production InventoryV2CompositionRoot and its InventoryV2StateStore over an
+// Save round trip through the production InventoryCompositionRoot and its InventoryStateStore over an
 // in-memory cache: an old (legacy-key) save migrates to the current schema, the current save reloads and saves
 // back byte-identically, previous-schema saves (3, 2) upgrade, and an unknown schema falls back to the legacy
 // keys. Also the save-round-trip scenario of the Stage 4 tier A evidence (cluster 018 storage).
@@ -68,7 +68,7 @@ new NativeEsmTestLoader({ projectRoot: root, context }).loadAll([
   "src/game/application/inventory/freshest_refill_candidate_policy.js",
   "src/game/application/inventory/apply_bait_exposure_service.js",
   "src/game/application/inventory/inventory_item_hydrator.js",
-  "src/game/presentation/inventory/inventory_v2_item_view_factory.js",
+  "src/game/presentation/inventory/inventory_item_tree_view_factory.js",
   "src/game/presentation/inventory/inventory_subfilter_resolver.js",
   "src/game/presentation/inventory/inventory_item_order_resolver.js",
   "src/game/application/inventory/inventory_context_item_filter.js",
@@ -102,7 +102,7 @@ const result = vm.runInContext(`(() => {
     net: { id: "net", name: "Net", itemType: "net", gameplayStats: {} },
     boat: { id: "boat", name: "Boat", itemType: "boat", assemblyProfileId: "bait_boat", gameplayStats: { sections: 2 } },
   };
-  // A legacy save: player_inventory + player_equipment written by the classic inventory (no v2 key).
+  // A legacy save: player_inventory + player_equipment written by the classic inventory (no current key).
   const legacyItems = [
     { instanceId: "build-a", itemId: "sys_build_box", buildName: "Фідер" },
     { instanceId: "rod-1", itemId: "rod", buildId: "build-a", durability: 87 },
@@ -133,7 +133,7 @@ const result = vm.runInContext(`(() => {
   };
   const compose = (cache) => {
     let sequence = 0;
-    return InventoryV2CompositionRoot.compose({
+    return InventoryCompositionRoot.compose({
       ...itemStatCollaborators,
       cache,
       assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
@@ -149,8 +149,8 @@ const result = vm.runInContext(`(() => {
   const oldCache = memoryCache({ player_inventory: legacyItems, player_equipment: legacyEquipment });
   const migrated = compose(oldCache);
   const current = oldCache.get("player_inventory_v2");
-  check(current?.schemaVersion === INVENTORY_V2_SCHEMA_VERSION, "legacy save migrates to the current schema");
-  check(same(oldCache.writes, ["player_inventory_v2"]), "only the v2 key is written: " + oldCache.writes.join(","));
+  check(current?.schemaVersion === INVENTORY_SCHEMA_VERSION, "legacy save migrates to the current schema");
+  check(same(oldCache.writes, ["player_inventory_v2"]), "only the current key is written: " + oldCache.writes.join(","));
   check(same(oldCache.get("player_inventory"), legacyItems) && same(oldCache.get("player_equipment"), legacyEquipment),
     "legacy keys are not mutated");
   check(current.loadouts.length === 1 && current.equipment.rod === "rod-1", "legacy build and equipment are kept");
@@ -171,14 +171,14 @@ const result = vm.runInContext(`(() => {
     const cache = memoryCache({ player_inventory_v2: { ...current, schemaVersion } });
     const composition = compose(cache);
     const saved = cache.get("player_inventory_v2");
-    check(saved.schemaVersion === INVENTORY_V2_SCHEMA_VERSION, "schema " + schemaVersion + " upgrades");
+    check(saved.schemaVersion === INVENTORY_SCHEMA_VERSION, "schema " + schemaVersion + " upgrades");
     check(same(saved.items, current.items) && same(saved.equipment, current.equipment),
       "schema " + schemaVersion + " keeps items and equipment");
     check(composition.stateStore.load() !== null, "schema " + schemaVersion + " loads after the upgrade");
     upgraded[schemaVersion] = cache.bytes("player_inventory_v2") === currentBytes;
   }
 
-  // 4. Unknown schema: the v2 key is ignored and the legacy keys migrate again.
+  // 4. Unknown schema: the current key is ignored and the legacy keys migrate again.
   const unknownCache = memoryCache({ player_inventory_v2: { ...current, schemaVersion: 1 },
     player_inventory: legacyItems, player_equipment: legacyEquipment });
   compose(unknownCache);

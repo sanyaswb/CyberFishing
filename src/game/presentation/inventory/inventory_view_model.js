@@ -1,36 +1,36 @@
-import { INVENTORY_V2_SORT_CONFIG } from "./inventory_sort_config.js";
+import { INVENTORY_SORT_CONFIG } from "./inventory_sort_config.js";
 
-export const InventoryV2ActionType = Object.freeze({
-  OPEN: "inventory-v2/open",
-  CLOSE: "inventory-v2/close",
-  CATEGORY_SELECT: "inventory-v2/category-select",
-  SUBFILTER_TOGGLE: "inventory-v2/subfilter-toggle",
-  SORT_CRITERION_SELECT: "inventory-v2/sort-criterion-select",
-  SORT_DIRECTION_SELECT: "inventory-v2/sort-direction-select",
-  RARITY_FILTER_TOGGLE: "inventory-v2/rarity-filter-toggle",
-  INVENTORY_ITEM_ACTIVATE: "inventory-v2/inventory-item-activate",
-  INVENTORY_ITEM_LONG_PRESS: "inventory-v2/inventory-item-long-press",
-  EQUIPMENT_SLOT_ACTIVATE: "inventory-v2/equipment-slot-activate",
-  EQUIPMENT_SLOT_LONG_PRESS: "inventory-v2/equipment-slot-long-press",
-  ASSEMBLY_SOCKET_ACTIVATE: "inventory-v2/assembly-socket-activate",
-  ASSEMBLY_EQUIP: "inventory-v2/assembly-equip",
-  ASSEMBLY_UNEQUIP: "inventory-v2/assembly-unequip",
-  ASSEMBLY_DISASSEMBLE: "inventory-v2/assembly-disassemble",
-  ASSEMBLY_BACK: "inventory-v2/assembly-back",
-  LOADOUT_SAVE: "inventory-v2/loadout-save",
-  LOADOUT_PREVIEW_SLOT_EQUIP: "inventory-v2/loadout-preview-slot-equip",
-  LOADOUT_EQUIP_ALL: "inventory-v2/loadout-equip-all",
-  LOADOUT_DISASSEMBLE: "inventory-v2/loadout-disassemble",
-  LOADOUT_PREVIEW_BACK: "inventory-v2/loadout-preview-back",
-  AUTO_BAIT_CHANGE: "inventory-v2/auto-bait-change",
-  AUTO_CHUM_CHANGE: "inventory-v2/auto-chum-change",
+export const InventoryActionType = Object.freeze({
+  OPEN: "inventory/open",
+  CLOSE: "inventory/close",
+  CATEGORY_SELECT: "inventory/category-select",
+  SUBFILTER_TOGGLE: "inventory/subfilter-toggle",
+  SORT_CRITERION_SELECT: "inventory/sort-criterion-select",
+  SORT_DIRECTION_SELECT: "inventory/sort-direction-select",
+  RARITY_FILTER_TOGGLE: "inventory/rarity-filter-toggle",
+  INVENTORY_ITEM_ACTIVATE: "inventory/inventory-item-activate",
+  INVENTORY_ITEM_LONG_PRESS: "inventory/inventory-item-long-press",
+  EQUIPMENT_SLOT_ACTIVATE: "inventory/equipment-slot-activate",
+  EQUIPMENT_SLOT_LONG_PRESS: "inventory/equipment-slot-long-press",
+  ASSEMBLY_SOCKET_ACTIVATE: "inventory/assembly-socket-activate",
+  ASSEMBLY_EQUIP: "inventory/assembly-equip",
+  ASSEMBLY_UNEQUIP: "inventory/assembly-unequip",
+  ASSEMBLY_DISASSEMBLE: "inventory/assembly-disassemble",
+  ASSEMBLY_BACK: "inventory/assembly-back",
+  LOADOUT_SAVE: "inventory/loadout-save",
+  LOADOUT_PREVIEW_SLOT_EQUIP: "inventory/loadout-preview-slot-equip",
+  LOADOUT_EQUIP_ALL: "inventory/loadout-equip-all",
+  LOADOUT_DISASSEMBLE: "inventory/loadout-disassemble",
+  LOADOUT_PREVIEW_BACK: "inventory/loadout-preview-back",
+  AUTO_BAIT_CHANGE: "inventory/auto-bait-change",
+  AUTO_CHUM_CHANGE: "inventory/auto-chum-change",
 });
 
-export class InventoryV2FacadeContract {
+export class InventoryFacadeContract {
   static assert(facade, { actionDispatcher = null } = {}) {
     if (!facade || typeof facade.getViewModel !== "function") {
       throw new TypeError(
-        "InventoryV2UI requires a facade with getViewModel()",
+        "InventoryUI requires a facade with getViewModel()",
       );
     }
     if (
@@ -38,27 +38,27 @@ export class InventoryV2FacadeContract {
       typeof facade.dispatch !== "function"
     ) {
       throw new TypeError(
-        "InventoryV2UI requires facade.dispatch(action) or onAction(action)",
+        "InventoryUI requires facade.dispatch(action) or onAction(action)",
       );
     }
     if (
       facade.subscribe !== undefined &&
       typeof facade.subscribe !== "function"
     ) {
-      throw new TypeError("InventoryV2 facade.subscribe must be a function");
+      throw new TypeError("Inventory facade.subscribe must be a function");
     }
     return facade;
   }
 }
 
-export class InventoryV2ActionContract {
+export class InventoryActionContract {
   static assert(action) {
     if (!action || typeof action !== "object") {
-      throw new TypeError("Inventory V2 action must be an object");
+      throw new TypeError("Inventory action must be an object");
     }
-    const types = InventoryV2ActionType;
+    const types = InventoryActionType;
     if (!Object.values(types).includes(action.type)) {
-      throw new RangeError(`Unknown Inventory V2 action: ${action.type}`);
+      throw new RangeError(`Unknown Inventory action: ${action.type}`);
     }
 
     switch (action.type) {
@@ -68,7 +68,7 @@ export class InventoryV2ActionContract {
       case types.SUBFILTER_TOGGLE:
         this.#requireId(action.filterId, "filterId");
         if (typeof action.enabled !== "boolean") {
-          throw new TypeError("Inventory V2 subfilter enabled must be boolean");
+          throw new TypeError("Inventory subfilter enabled must be boolean");
         }
         break;
       case types.SORT_CRITERION_SELECT:
@@ -80,7 +80,7 @@ export class InventoryV2ActionContract {
       case types.RARITY_FILTER_TOGGLE:
         this.#requireId(action.rarityId, "rarityId");
         if (typeof action.enabled !== "boolean") {
-          throw new TypeError("Inventory V2 rarity filter enabled must be boolean");
+          throw new TypeError("Inventory rarity filter enabled must be boolean");
         }
         break;
       case types.INVENTORY_ITEM_ACTIVATE:
@@ -101,7 +101,7 @@ export class InventoryV2ActionContract {
         this.#requireId(action.slotId, "slotId");
         this.#requireId(action.parentInstanceId, "parentInstanceId");
         if (!Number.isInteger(action.slotIndex) || action.slotIndex < 0) {
-          throw new TypeError("Inventory V2 action slotIndex must be >= 0");
+          throw new TypeError("Inventory action slotIndex must be >= 0");
         }
         break;
       case types.ASSEMBLY_EQUIP:
@@ -112,7 +112,7 @@ export class InventoryV2ActionContract {
         break;
       case types.LOADOUT_SAVE:
         if (typeof action.name !== "string") {
-          throw new TypeError("Inventory V2 loadout name must be a string");
+          throw new TypeError("Inventory loadout name must be a string");
         }
         break;
       case types.LOADOUT_PREVIEW_SLOT_EQUIP:
@@ -127,7 +127,7 @@ export class InventoryV2ActionContract {
       case types.AUTO_BAIT_CHANGE:
       case types.AUTO_CHUM_CHANGE:
         if (typeof action.enabled !== "boolean") {
-          throw new TypeError("Inventory V2 setting enabled must be boolean");
+          throw new TypeError("Inventory setting enabled must be boolean");
         }
         break;
       default:
@@ -138,7 +138,7 @@ export class InventoryV2ActionContract {
 
   static #requireId(value, label) {
     if (typeof value !== "string" || value.trim().length === 0) {
-      throw new TypeError(`Inventory V2 action ${label} must be a non-empty string`);
+      throw new TypeError(`Inventory action ${label} must be a non-empty string`);
     }
   }
 
@@ -148,7 +148,7 @@ export class InventoryV2ActionContract {
   }
 }
 
-export class InventoryV2ViewModelNormalizer {
+export class InventoryViewModelNormalizer {
   #sortDefaults;
 
   static MAIN_SLOT_IDS = Object.freeze([
@@ -167,7 +167,7 @@ export class InventoryV2ViewModelNormalizer {
   ]);
 
   constructor({
-    sortConfig = INVENTORY_V2_SORT_CONFIG,
+    sortConfig = INVENTORY_SORT_CONFIG,
   } = {}) {
     this.#sortDefaults = Object.freeze({
       criterionIds: Object.freeze([
@@ -242,7 +242,7 @@ export class InventoryV2ViewModelNormalizer {
       auxiliarySlots: Object.freeze(
         this.#orderSlots(
           this.#normalizeSlots(source.auxiliarySlots, "auxiliary"),
-          InventoryV2ViewModelNormalizer.AUXILIARY_SLOT_IDS,
+          InventoryViewModelNormalizer.AUXILIARY_SLOT_IDS,
         ),
       ),
       save: Object.freeze({
@@ -444,7 +444,7 @@ export class InventoryV2ViewModelNormalizer {
   #orderMainSlots(slots) {
     return this.#orderSlots(
       slots,
-      InventoryV2ViewModelNormalizer.MAIN_SLOT_IDS,
+      InventoryViewModelNormalizer.MAIN_SLOT_IDS,
     );
   }
 

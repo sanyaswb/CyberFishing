@@ -1,4 +1,4 @@
-export class InventoryV2SnapshotMigration {
+export class InventorySnapshotMigration {
   #definitionResolver;
   #itemStateMigration;
   #itemSnapshotMapper;
@@ -15,7 +15,7 @@ export class InventoryV2SnapshotMigration {
     this.#itemSnapshotMapper = itemSnapshotMapper;
     this.#targetSchemaVersion = Number(targetSchemaVersion);
     if (!Number.isInteger(this.#targetSchemaVersion)) {
-      throw new TypeError("InventoryV2SnapshotMigration requires targetSchemaVersion");
+      throw new TypeError("InventorySnapshotMigration requires targetSchemaVersion");
     }
   }
 

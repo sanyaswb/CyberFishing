@@ -1,4 +1,4 @@
-export class InventoryV2SubfilterResolver {
+export class InventorySubfilterResolver {
   static DEFAULT_GROUPS = Object.freeze({
     spinning: Object.freeze({ id: "spinning-rods", label: "Спінінги" }),
     feeder: Object.freeze({ id: "feeder-rods", label: "Фідери" }),
@@ -32,7 +32,7 @@ export class InventoryV2SubfilterResolver {
 
   #groups;
 
-  constructor({ groups = InventoryV2SubfilterResolver.DEFAULT_GROUPS } = {}) {
+  constructor({ groups = InventorySubfilterResolver.DEFAULT_GROUPS } = {}) {
     this.#groups = groups;
   }
 

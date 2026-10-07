@@ -1,6 +1,6 @@
 import { EquipmentTransitionPort } from "./equipment_transition_executor.js";
 
-export class InventoryV2EquipmentTransitionPort extends EquipmentTransitionPort {
+export class InventoryEquipmentTransitionPort extends EquipmentTransitionPort {
   #transaction;
 
   constructor({ transaction } = {}) {

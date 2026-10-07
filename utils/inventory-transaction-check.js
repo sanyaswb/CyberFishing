@@ -27,7 +27,7 @@ vm.runInContext(`(() => {
         state.value = snapshot;
       },
     };
-    const coordinator = new InventoryV2TransactionCoordinator({
+    const coordinator = new InventoryTransactionCoordinator({
       participants: [participant],
       afterCommit: () => {
         if (afterCommit) afterCommit({ state, counters });
@@ -179,7 +179,7 @@ vm.runInContext(`(() => {
     const restoreOrder = [];
     const restoreError = new Error("restore failed");
     const primaryError = new Error("operation failed");
-    const coordinator = new InventoryV2TransactionCoordinator({
+    const coordinator = new InventoryTransactionCoordinator({
       participants: [
         {
           snapshot: () => state.first,
@@ -228,4 +228,4 @@ vm.runInContext(`(() => {
   }
 })()`, context);
 
-console.log("Inventory-v2 transaction check passed.");
+console.log("Inventory transaction check passed.");

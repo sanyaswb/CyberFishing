@@ -26,7 +26,7 @@ export class HorizontalScrollController {
       pointerEnd: (event) => this.#onPointerEnd(element, state, event),
       click: (event) => this.#onClick(state, event),
     };
-    element.classList?.add("inventory-v2-horizontal-scroll");
+    element.classList?.add("inventory-horizontal-scroll");
     element.addEventListener("wheel", handlers.wheel, { passive: false });
     element.addEventListener("pointerdown", handlers.pointerDown);
     element.addEventListener("pointermove", handlers.pointerMove);
@@ -49,7 +49,7 @@ export class HorizontalScrollController {
     element.removeEventListener("lostpointercapture", handlers.pointerEnd);
     element.removeEventListener("click", handlers.click, true);
     element.classList?.remove(
-      "inventory-v2-horizontal-scroll",
+      "inventory-horizontal-scroll",
       "is-horizontal-dragging",
     );
     this.#bindings.delete(element);

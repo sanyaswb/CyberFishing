@@ -4,7 +4,7 @@ import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_co
 // Inventory changes driven by the fishing game rather than the inventory UI: consuming items and equipped
 // slots, line breaks, bait exposure on rod retrieval and auto-refill after retrieval, hand chum use and boat
 // return. Each command runs in one inventory transaction.
-export class InventoryV2GameplayCommands {
+export class InventoryGameplayCommands {
   #transaction;
   #itemRemoval;
   #repository;
@@ -131,7 +131,7 @@ export class InventoryV2GameplayCommands {
     return this.#runAutoRefill(AutoRefillTrigger.BOAT_RETURNED, context);
   }
 
-  // Resolves a classic slot path ("line", "baits_1", "deliveryChums_0", ...) to the equipped V2 item.
+  // Resolves a classic slot path ("line", "baits_1", "deliveryChums_0", ...) to the equipped item.
   #resolveLegacyEquippedTarget(slotPath) {
     const match = /^(hooks|baits|deliveryChums)_(\d+)$/.exec(slotPath || "");
     const index = match ? Number(match[2]) : 0;

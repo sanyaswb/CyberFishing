@@ -1,4 +1,4 @@
-export class InventoryV2HeaderRenderer {
+export class InventoryHeaderRenderer {
   #dom;
 
   constructor({ domFactory } = {}) {
@@ -10,7 +10,7 @@ export class InventoryV2HeaderRenderer {
     settings,
     { onClose = null, onAutoBaitChange = null, onAutoChumChange = null } = {},
   ) {
-    const top = this.#dom.element("header", "inventory-v2-header");
+    const top = this.#dom.element("header", "inventory-header");
     top.appendChild(this.#renderLoad(header));
     top.appendChild(this.#renderActiveTackle(header));
     top.appendChild(
@@ -21,7 +21,7 @@ export class InventoryV2HeaderRenderer {
     );
 
     const close = this.#dom.button(
-      "inventory-v2-header__close",
+      "inventory-header__close",
       "× Закрити",
       { title: "Закрити інвентар" },
     );
@@ -31,17 +31,17 @@ export class InventoryV2HeaderRenderer {
   }
 
   #renderLoad(header) {
-    const load = this.#dom.element("div", "inventory-v2-load");
+    const load = this.#dom.element("div", "inventory-load");
     load.append(
-      this.#dom.element("span", "inventory-v2-load__icon", "🧱"),
+      this.#dom.element("span", "inventory-load__icon", "🧱"),
       this.#dom.element(
         "span",
-        "inventory-v2-load__label",
+        "inventory-load__label",
         `${header.loadLabel}:`,
       ),
       this.#dom.element(
         "strong",
-        "inventory-v2-load__value",
+        "inventory-load__value",
         `${this.#format(header.loadValue)} ${header.loadUnit}`,
       ),
     );
@@ -51,7 +51,7 @@ export class InventoryV2HeaderRenderer {
   #renderActiveTackle(header) {
     const active = this.#dom.element(
       "div",
-      "inventory-v2-active-tackle",
+      "inventory-active-tackle",
     );
     active.append(
       this.#renderIndicator("Наживка", header.activeBaits, "🪱"),
@@ -63,24 +63,24 @@ export class InventoryV2HeaderRenderer {
   #renderIndicator(labelText, items, fallbackIcon) {
     const indicator = this.#dom.element(
       "section",
-      "inventory-v2-active-indicator",
+      "inventory-active-indicator",
     );
     indicator.appendChild(
       this.#dom.element(
         "div",
-        "inventory-v2-active-indicator__label",
+        "inventory-active-indicator__label",
         labelText,
       ),
     );
     const content = this.#dom.element(
       "div",
-      "inventory-v2-active-indicator__items",
+      "inventory-active-indicator__items",
     );
     if (!items.length) {
       content.appendChild(
         this.#dom.element(
           "span",
-          "inventory-v2-active-indicator__empty",
+          "inventory-active-indicator__empty",
           "—",
         ),
       );
@@ -88,7 +88,7 @@ export class InventoryV2HeaderRenderer {
       items.forEach((item) => {
         const itemNode = this.#dom.element(
           "span",
-          "inventory-v2-active-indicator__item",
+          "inventory-active-indicator__item",
         );
         itemNode.title = String(item.name || labelText);
         const image = this.#dom.image(
@@ -113,17 +113,17 @@ export class InventoryV2HeaderRenderer {
   ) {
     const container = this.#dom.element(
       "div",
-      "inventory-v2-auto-settings",
+      "inventory-auto-settings",
     );
     container.append(
       this.#createToggle(
-        "inventory-v2-auto-bait",
+        "inventory-auto-bait",
         "Автонаживляння",
         settings.autoBait,
         onAutoBaitChange,
       ),
       this.#createToggle(
-        "inventory-v2-auto-chum",
+        "inventory-auto-chum",
         "Автоприкормка",
         settings.autoChum,
         onAutoChumChange,
@@ -133,16 +133,16 @@ export class InventoryV2HeaderRenderer {
   }
 
   #createToggle(id, labelText, checked, onChange) {
-    const label = this.#dom.element("label", "inventory-v2-toggle");
+    const label = this.#dom.element("label", "inventory-toggle");
     const input = this.#dom.element("input");
     input.id = id;
     input.type = "checkbox";
     input.checked = checked;
     input.addEventListener("change", () => onChange?.(input.checked));
-    const control = this.#dom.element("span", "inventory-v2-toggle__control");
+    const control = this.#dom.element("span", "inventory-toggle__control");
     const text = this.#dom.element(
       "span",
-      "inventory-v2-toggle__label",
+      "inventory-toggle__label",
       labelText,
     );
     label.append(input, control, text);

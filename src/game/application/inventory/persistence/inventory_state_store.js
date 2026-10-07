@@ -1,13 +1,13 @@
-export const INVENTORY_V2_SCHEMA_VERSION = 4;
+export const INVENTORY_SCHEMA_VERSION = 4;
 
 /**
- * Persistence boundary for inventory-v2.
+ * Persistence boundary for inventory.
  *
  * Domain services receive plain snapshots and never depend on localStorage or
  * CacheManager directly. This keeps persistence replaceable and makes a failed
  * migration recoverable without mutating the legacy cache keys.
  */
-export class InventoryV2StateStore {
+export class InventoryStateStore {
   #cache;
   #key;
   #itemSnapshotMapper;
@@ -18,11 +18,11 @@ export class InventoryV2StateStore {
     itemSnapshotMapper,
   } = {}) {
     if (!cache || typeof cache.get !== "function" || typeof cache.set !== "function") {
-      throw new TypeError("InventoryV2StateStore requires a cache adapter");
+      throw new TypeError("InventoryStateStore requires a cache adapter");
     }
     if (!itemSnapshotMapper?.toSnapshots) {
       throw new TypeError(
-        "InventoryV2StateStore requires InventoryItemSnapshotMapper",
+        "InventoryStateStore requires InventoryItemSnapshotMapper",
       );
     }
     this.#cache = cache;
@@ -32,7 +32,7 @@ export class InventoryV2StateStore {
 
   load() {
     const snapshot = this.#cache.get(this.#key, null);
-    if (!snapshot || snapshot.schemaVersion !== INVENTORY_V2_SCHEMA_VERSION) {
+    if (!snapshot || snapshot.schemaVersion !== INVENTORY_SCHEMA_VERSION) {
       return null;
     }
     return this.#clone(snapshot);
@@ -53,10 +53,10 @@ export class InventoryV2StateStore {
 
   #normalize(snapshot) {
     if (!snapshot || typeof snapshot !== "object") {
-      throw new TypeError("Inventory-v2 snapshot must be an object");
+      throw new TypeError("Inventory snapshot must be an object");
     }
     return {
-      schemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+      schemaVersion: INVENTORY_SCHEMA_VERSION,
       items: this.#itemSnapshotMapper.toSnapshots(this.#array(snapshot.items)),
       assemblies: this.#array(snapshot.assemblies),
       equipment: this.#object(snapshot.equipment),

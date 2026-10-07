@@ -1,4 +1,4 @@
-export class InventoryV2ItemCardRenderer {
+export class InventoryItemCardRenderer {
   #dom;
   #attachmentRenderer;
   #longPressController;
@@ -54,17 +54,17 @@ export class InventoryV2ItemCardRenderer {
   ) {
     const field = this.#dom.element(
       "div",
-      `inventory-v2-field inventory-v2-field--${variant}`,
+      `inventory-field inventory-field--${variant}`,
     );
     field.dataset.slotId = String(slot.slotId || "");
     const label = this.#dom.element(
       "div",
-      "inventory-v2-field__label",
+      "inventory-field__label",
       slot.label,
     );
     const well = this.#dom.element(
       "div",
-      `inventory-v2-slot inventory-v2-slot--${slot.state}`,
+      `inventory-slot inventory-slot--${slot.state}`,
     );
     well.classList.toggle("is-highlighted", slot.highlighted === true);
     well.dataset.slotState = slot.state;
@@ -84,7 +84,7 @@ export class InventoryV2ItemCardRenderer {
     } else {
       const isBlocked = ["locked", "unavailable"].includes(slot.state);
       const emptyButton = this.#dom.button(
-        "inventory-v2-slot__empty-button",
+        "inventory-slot__empty-button",
         "",
         isBlocked ? {} : { title: slot.label },
       );
@@ -118,7 +118,7 @@ export class InventoryV2ItemCardRenderer {
   ) {
     const wrapper = this.#dom.element(
       "div",
-      "inventory-v2-inventory-item",
+      "inventory-inventory-item",
     );
     wrapper.classList.toggle("is-selected", selected);
     wrapper.classList.toggle("is-compatible", compatible);
@@ -148,7 +148,7 @@ export class InventoryV2ItemCardRenderer {
     } = {},
   ) {
     const card = this.#dom.button(
-      `inventory-v2-item-card inventory-v2-item-card--${variant}`,
+      `inventory-item-card inventory-item-card--${variant}`,
       "",
     );
     card.classList.toggle("is-frameless", frameless);
@@ -177,20 +177,20 @@ export class InventoryV2ItemCardRenderer {
   }
 
   #renderMainVisual(card, item) {
-    const visual = this.#dom.element("span", "inventory-v2-item-card__visual");
+    const visual = this.#dom.element("span", "inventory-item-card__visual");
     const image = this.#dom.image(
       item.iconUrl || item.imageUrl || item.src,
       "",
     );
     if (image) {
-      image.className = "inventory-v2-item-card__image";
+      image.className = "inventory-item-card__image";
       image.setAttribute("aria-hidden", "true");
       visual.appendChild(image);
     } else {
       visual.appendChild(
         this.#dom.element(
           "span",
-          "inventory-v2-item-card__icon",
+          "inventory-item-card__icon",
           item.icon || item.emoji || "?",
         ),
       );
@@ -203,7 +203,7 @@ export class InventoryV2ItemCardRenderer {
       card.appendChild(
         this.#dom.element(
           "span",
-          "inventory-v2-item-card__quantity",
+          "inventory-item-card__quantity",
           Number(item.quantity),
         ),
       );
@@ -211,7 +211,7 @@ export class InventoryV2ItemCardRenderer {
     if (this.#showsIncompleteIndicator(item)) {
       const draft = this.#dom.element(
         "span",
-        "inventory-v2-item-card__incomplete-dot",
+        "inventory-item-card__incomplete-dot",
       );
       draft.setAttribute("role", "img");
       draft.setAttribute("aria-label", "Неповністю укомплектовано");

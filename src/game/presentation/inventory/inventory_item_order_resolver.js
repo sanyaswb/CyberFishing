@@ -1,7 +1,7 @@
-import { INVENTORY_V2_SORT_CONFIG } from "./inventory_sort_config.js";
+import { INVENTORY_SORT_CONFIG } from "./inventory_sort_config.js";
 import { RARITY_VISUAL_CONFIG } from "../rarity/rarity_visual_config.js";
 
-export class InventoryV2ItemOrderResolver {
+export class InventoryItemOrderResolver {
   #config;
   #typeRanks;
   #rarityOptions;
@@ -11,11 +11,11 @@ export class InventoryV2ItemOrderResolver {
   #lastResolvedOrder = Object.freeze([]);
 
   constructor({
-    config = INVENTORY_V2_SORT_CONFIG,
+    config = INVENTORY_SORT_CONFIG,
     rarityVisualConfig = RARITY_VISUAL_CONFIG,
   } = {}) {
     if (!config?.criteria || !config?.directions || !config?.typeOrder) {
-      throw new TypeError("InventoryV2ItemOrderResolver requires sort config");
+      throw new TypeError("InventoryItemOrderResolver requires sort config");
     }
     this.#config = config;
     this.#typeRanks = new Map(
@@ -33,7 +33,7 @@ export class InventoryV2ItemOrderResolver {
     );
     if (!this.#rarityOptions.length) {
       throw new TypeError(
-        "InventoryV2ItemOrderResolver requires rarity color stops",
+        "InventoryItemOrderResolver requires rarity color stops",
       );
     }
     this.#rarityRanks = new Map(

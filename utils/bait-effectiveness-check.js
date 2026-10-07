@@ -44,8 +44,8 @@ class BaitEffectivenessCheck {
       EffectivenessResolver: "BaitEffectivenessResolver",
       CatalogResolver: "BaitEffectivenessCatalogResolver",
       ViewFactory: "InventoryItemViewFactory",
-      ParametersResolver: "InventoryV2ItemParametersResolver",
-      BalanceResolver: "InventoryV2BalanceParameterResolver",
+      ParametersResolver: "InventoryItemParametersResolver",
+      BalanceResolver: "InventoryBalanceParameterResolver",
     });
     installDescriptorFactories(this.#sourceRuntime.context, { EffectivenessResolver: "BaitEffectivenessDescriptor" });
     this.#runtime = this.#sourceRuntime.context;

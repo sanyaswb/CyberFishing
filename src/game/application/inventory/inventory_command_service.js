@@ -2,16 +2,16 @@ import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/eq
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
 
-export class InventoryV2ApplicationError extends Error {
+export class InventoryApplicationError extends Error {
   constructor(code, message, details = {}) {
     super(message);
-    this.name = "InventoryV2ApplicationError";
+    this.name = "InventoryApplicationError";
     this.code = code;
     this.details = details;
   }
 }
 
-export class InventoryV2CommandService {
+export class InventoryCommandService {
   #repository;
   #assemblyStates;
   #profileRegistry;
@@ -111,58 +111,58 @@ export class InventoryV2CommandService {
 
   #dispatch(action) {
     // The UI action vocabulary is presentation-owned and injected by the composition root.
-    const InventoryV2ActionType = this.#actionTypes;
+    const InventoryActionType = this.#actionTypes;
     switch (action.type) {
-      case InventoryV2ActionType.OPEN:
+      case InventoryActionType.OPEN:
         this.#uiState.open();
         return this.#success();
-      case InventoryV2ActionType.CLOSE:
+      case InventoryActionType.CLOSE:
         this.#uiState.close();
         return this.#success();
-      case InventoryV2ActionType.CATEGORY_SELECT:
+      case InventoryActionType.CATEGORY_SELECT:
         this.#uiState.selectCategory(action.categoryId);
         return this.#success();
-      case InventoryV2ActionType.SUBFILTER_TOGGLE:
+      case InventoryActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
-      case InventoryV2ActionType.SORT_CRITERION_SELECT:
+      case InventoryActionType.SORT_CRITERION_SELECT:
         return this.#selectSortCriterion(action.criterionId);
-      case InventoryV2ActionType.SORT_DIRECTION_SELECT:
+      case InventoryActionType.SORT_DIRECTION_SELECT:
         return this.#selectSortDirection(action.directionId);
-      case InventoryV2ActionType.RARITY_FILTER_TOGGLE:
+      case InventoryActionType.RARITY_FILTER_TOGGLE:
         return this.#toggleRarityFilter(action.rarityId, action.enabled);
-      case InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE:
+      case InventoryActionType.INVENTORY_ITEM_ACTIVATE:
         return this.#activateInventoryItem(action.instanceId);
-      case InventoryV2ActionType.INVENTORY_ITEM_LONG_PRESS:
+      case InventoryActionType.INVENTORY_ITEM_LONG_PRESS:
         return this.#longPressInventoryItem(action.instanceId);
-      case InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE:
+      case InventoryActionType.EQUIPMENT_SLOT_ACTIVATE:
         return this.#activateEquipmentSlot(action.slotId);
-      case InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS:
+      case InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS:
         return this.#unequipSlot(action.slotId);
-      case InventoryV2ActionType.ASSEMBLY_SOCKET_ACTIVATE:
+      case InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE:
         return this.#activateAssemblySocket(action);
-      case InventoryV2ActionType.ASSEMBLY_EQUIP:
+      case InventoryActionType.ASSEMBLY_EQUIP:
         return this.#equipAssembly(action.rootInstanceId);
-      case InventoryV2ActionType.ASSEMBLY_UNEQUIP:
+      case InventoryActionType.ASSEMBLY_UNEQUIP:
         return this.#unequipAssembly(action.rootInstanceId);
-      case InventoryV2ActionType.ASSEMBLY_DISASSEMBLE:
+      case InventoryActionType.ASSEMBLY_DISASSEMBLE:
         return this.#disassembleAssembly(action.rootInstanceId);
-      case InventoryV2ActionType.ASSEMBLY_BACK:
+      case InventoryActionType.ASSEMBLY_BACK:
         this.#uiState.showLoadoutPanel();
         return this.#success();
-      case InventoryV2ActionType.LOADOUT_SAVE:
+      case InventoryActionType.LOADOUT_SAVE:
         return this.#saveLoadout(action.name);
-      case InventoryV2ActionType.LOADOUT_PREVIEW_SLOT_EQUIP:
+      case InventoryActionType.LOADOUT_PREVIEW_SLOT_EQUIP:
         return this.#equipLoadoutSlot(action.loadoutId, action.slotId);
-      case InventoryV2ActionType.LOADOUT_EQUIP_ALL:
+      case InventoryActionType.LOADOUT_EQUIP_ALL:
         return this.#equipLoadout(action.loadoutId);
-      case InventoryV2ActionType.LOADOUT_DISASSEMBLE:
+      case InventoryActionType.LOADOUT_DISASSEMBLE:
         return this.#disassembleLoadout(action.loadoutId);
-      case InventoryV2ActionType.LOADOUT_PREVIEW_BACK:
+      case InventoryActionType.LOADOUT_PREVIEW_BACK:
         this.#uiState.showLoadoutPanel();
         return this.#success({ loadoutId: action.loadoutId });
-      case InventoryV2ActionType.AUTO_BAIT_CHANGE:
+      case InventoryActionType.AUTO_BAIT_CHANGE:
         return this.#changeSetting("autoBait", action.enabled);
-      case InventoryV2ActionType.AUTO_CHUM_CHANGE:
+      case InventoryActionType.AUTO_CHUM_CHANGE:
         return this.#changeSetting("autoChum", action.enabled);
       default:
         return this.#failure(`Невідома дія інвентарю: ${action.type || "—"}`);
@@ -572,7 +572,7 @@ export class InventoryV2CommandService {
       const source = this.#repository.require(instanceId);
       const validation = this.#validateEquipment(slotId, source);
       if (!validation.isValid) {
-        throw new InventoryV2ApplicationError(
+        throw new InventoryApplicationError(
           validation.warningCode || "INCOMPATIBLE_EQUIPMENT",
           validation.reason || "Предмет несумісний.",
         );
@@ -591,7 +591,7 @@ export class InventoryV2CommandService {
     const item = this.#repository.require(instanceId);
     const validation = this.#validateEquipment(slotId, item);
     if (!validation.isValid) {
-      throw new InventoryV2ApplicationError(
+      throw new InventoryApplicationError(
         validation.warningCode || "INCOMPATIBLE_EQUIPMENT",
         validation.reason || "Предмет несумісний.",
       );
@@ -735,7 +735,7 @@ export class InventoryV2CommandService {
       reel: null,
     });
     if (!result.success) {
-      throw new InventoryV2ApplicationError(
+      throw new InventoryApplicationError(
         "LINE_ALLOCATION_FAILED",
         result.warning || "Не вдалося підготувати ліску.",
         { allocation: result.allocation || null },
@@ -790,7 +790,7 @@ export class InventoryV2CommandService {
       equipmentSnapshot,
     );
     if (readiness?.isValid === false) {
-      throw new InventoryV2ApplicationError(
+      throw new InventoryApplicationError(
         readiness.warningCode || "REEL_LINE_INCOMPATIBLE",
         readiness.warning || "Ліска в котушці несумісна з вудилищем.",
         { readiness },
@@ -820,7 +820,7 @@ export class InventoryV2CommandService {
       reel,
     });
     if (!result.success) {
-      throw new InventoryV2ApplicationError(
+      throw new InventoryApplicationError(
         "LINE_ALLOCATION_FAILED",
         result.warning || "Не вдалося встановити ліску на котушку.",
         { allocation: result.allocation || null },
@@ -864,7 +864,7 @@ export class InventoryV2CommandService {
 
   #assertAllowedPlan(plan) {
     if (plan?.allowed !== true) {
-      throw new InventoryV2ApplicationError(
+      throw new InventoryApplicationError(
         "INVENTORY_CAPACITY_EXCEEDED",
         plan?.warning || "Недостатньо місця в інвентарі.",
       );
@@ -920,11 +920,11 @@ export class InventoryV2CommandService {
       [this.#itemRemoval, "itemRemoval"],
     ];
     for (const [dependency, name] of dependencies) {
-      if (!dependency) throw new TypeError(`InventoryV2CommandService requires ${name}`);
+      if (!dependency) throw new TypeError(`InventoryCommandService requires ${name}`);
     }
     if (!this.#attachmentTargetResolver.findPlacementTargets) {
       throw new TypeError(
-        "InventoryV2CommandService requires attachmentTargetResolver.findPlacementTargets()",
+        "InventoryCommandService requires attachmentTargetResolver.findPlacementTargets()",
       );
     }
     if (
@@ -945,7 +945,7 @@ export class InventoryV2CommandService {
       )
     ) {
       throw new TypeError(
-        "InventoryV2CommandService requires valid sortConfig defaults",
+        "InventoryCommandService requires valid sortConfig defaults",
       );
     }
   }

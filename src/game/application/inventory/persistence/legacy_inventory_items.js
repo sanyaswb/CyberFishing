@@ -1,5 +1,5 @@
-// Item list of the classic (pre-V2) save while it is migrated and seeded at startup.
-export class Inventory {
+// Item list of the classic save while it is migrated and seeded at startup.
+export class LegacyInventoryItems {
   #items;
   #itemFactory;
 

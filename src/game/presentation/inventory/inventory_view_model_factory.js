@@ -3,7 +3,7 @@ import { EQUIPMENT_SLOT_PRESENTATION } from "./equipment_slot_presentation.js";
 import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_policy.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
-export class InventoryV2ViewModelFactory {
+export class InventoryViewModelFactory {
   static #categories = Object.freeze([
     { id: "all", label: "Усі", icon: "🎒" },
     { id: "compatible", label: "Сумісне", icon: "✓" },
@@ -79,12 +79,12 @@ export class InventoryV2ViewModelFactory {
       !this.#attachmentTargetResolver?.findPlacementTargets
     ) {
       throw new TypeError(
-        "InventoryV2ViewModelFactory requires attachmentTargetResolver",
+        "InventoryViewModelFactory requires attachmentTargetResolver",
       );
     }
     if (!this.#contextItemFilter?.filter) {
       throw new TypeError(
-        "InventoryV2ViewModelFactory requires contextItemFilter",
+        "InventoryViewModelFactory requires contextItemFilter",
       );
     }
     if (
@@ -92,7 +92,7 @@ export class InventoryV2ViewModelFactory {
       !this.#itemOrderResolver?.createControls
     ) {
       throw new TypeError(
-        "InventoryV2ViewModelFactory requires itemOrderResolver",
+        "InventoryViewModelFactory requires itemOrderResolver",
       );
     }
   }
@@ -455,12 +455,12 @@ export class InventoryV2ViewModelFactory {
             .map((item) => item.instanceId),
         );
     const categories = contextFiltered
-      ? InventoryV2ViewModelFactory.#categories.filter(
+      ? InventoryViewModelFactory.#categories.filter(
           (category) =>
             category.id === "all" ||
             itemViews.some((item) => this.#matchesCategory(item, category.id)),
         )
-      : InventoryV2ViewModelFactory.#categories;
+      : InventoryViewModelFactory.#categories;
     const availableCategoryIds = new Set(
       categories.map((category) => category.id),
     );

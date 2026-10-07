@@ -1,4 +1,4 @@
-export class InventoryV2SettingsTransactionParticipant {
+export class InventorySettingsTransactionParticipant {
   #settings;
 
   constructor(settings) {
@@ -16,7 +16,7 @@ export class InventoryV2SettingsTransactionParticipant {
   }
 }
 
-export class InventoryV2RefillMemoryTransactionParticipant {
+export class InventoryRefillMemoryTransactionParticipant {
   #memory;
 
   constructor(memory) {

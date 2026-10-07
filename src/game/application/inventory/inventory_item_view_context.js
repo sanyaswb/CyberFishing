@@ -1,8 +1,8 @@
 // Runtime context of inventory item views: the live reel config, the line-capacity context and the bait
 // freshness exposure. Gameplay installs the line-capacity and freshness providers after composition.
 //
-// The line-capacity context reads the equipment of the legacy save that seeded Inventory V2 at startup (as the
-// classic inventory did), not the live V2 equipment; this pre-existing behavior is kept unchanged.
+// The line-capacity context reads the equipment of the legacy save that seeded the inventory at startup (as
+// the classic inventory did), not the live equipment; this pre-existing behavior is kept unchanged.
 export class InventoryItemViewContext {
   #runtimeConfigProvider;
   #itemDatabase;

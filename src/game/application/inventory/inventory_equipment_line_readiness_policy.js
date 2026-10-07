@@ -3,7 +3,7 @@
  * equipment snapshot. This policy is read-only: line allocation and custody
  * remain in their dedicated services.
  */
-export class InventoryV2EquipmentLineReadinessPolicy {
+export class InventoryEquipmentLineReadinessPolicy {
   #repository;
   #assemblyReader;
   #itemReader;
@@ -17,17 +17,17 @@ export class InventoryV2EquipmentLineReadinessPolicy {
   } = {}) {
     if (!repository?.get) {
       throw new TypeError(
-        "InventoryV2EquipmentLineReadinessPolicy requires an item repository",
+        "InventoryEquipmentLineReadinessPolicy requires an item repository",
       );
     }
     if (!assemblyReader?.getChild) {
       throw new TypeError(
-        "InventoryV2EquipmentLineReadinessPolicy requires ItemAssemblyReader",
+        "InventoryEquipmentLineReadinessPolicy requires ItemAssemblyReader",
       );
     }
     if (!lineAllocationService?.validateExisting) {
       throw new TypeError(
-        "InventoryV2EquipmentLineReadinessPolicy requires a line allocation service",
+        "InventoryEquipmentLineReadinessPolicy requires a line allocation service",
       );
     }
     this.#repository = repository;

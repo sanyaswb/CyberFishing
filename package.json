@@ -17,7 +17,6 @@
     "check:quick": "node utils/run-checks.js --suite quick",
     "check:architecture": "node utils/run-checks.js --suite architecture",
     "check:inventory": "node utils/run-checks.js --suite inventory",
-    "check:inventory-v2": "node utils/run-checks.js --suite inventory-v2",
     "check:items": "node utils/run-checks.js --suite items",
     "check:gameplay": "node utils/run-checks.js --suite gameplay",
     "check:tools": "node utils/run-checks.js --suite tools",

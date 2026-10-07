@@ -1,10 +1,10 @@
 import { ConfiguredInventorySeeder } from "../configured_inventory_seeder.js";
 import { EquipmentStateMigrationPolicy } from "./equipment_state_migration_policy.js";
-import { Inventory } from "../inventory.js";
 import { InventoryItemIdMigrationPolicy } from "./inventory_item_id_migration_policy.js";
+import { LegacyInventoryItems } from "./legacy_inventory_items.js";
 
-// Reads the classic (pre-V2) save keys once at startup, applies the legacy id and equipment migrations and seeds
-// the configured starting items. Inventory V2 consumes the result only when it has no V2 save yet.
+// Reads the classic save keys once at startup, applies the legacy id and equipment migrations and seeds
+// the configured starting items. The inventory consumes the result only when it has no current save yet.
 export class LegacyInventorySaveSource {
   #cache;
   #itemDB;
@@ -28,7 +28,7 @@ export class LegacyInventorySaveSource {
       inventoryItems: cachedInventory,
       itemDB: this.#itemDB,
     });
-    const inventory = new Inventory(cachedInventory, this.#itemFactory);
+    const inventory = new LegacyInventoryItems(cachedInventory, this.#itemFactory);
     new ConfiguredInventorySeeder({
       inventory,
       itemDB: this.#itemDB,

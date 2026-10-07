@@ -1,6 +1,6 @@
-import { INVENTORY_V2_ITEM_PARAMETER_ALIASES, INVENTORY_V2_ITEM_PARAMETER_CONFIG } from "./inventory_item_parameter_config.js";
+import { INVENTORY_ITEM_PARAMETER_ALIASES, INVENTORY_ITEM_PARAMETER_CONFIG } from "./inventory_item_parameter_config.js";
 
-export const INVENTORY_V2_RARITY_NAMES = Object.freeze({
+export const INVENTORY_RARITY_NAMES = Object.freeze({
   common: "Звичайний",
   uncommon: "Незвичайний",
   rare: "Рідкісний",
@@ -9,7 +9,7 @@ export const INVENTORY_V2_RARITY_NAMES = Object.freeze({
   unique: "Легенда",
 });
 
-export class InventoryV2ItemParametersResolver {
+export class InventoryItemParametersResolver {
   #resourceMeterResolver;
   #progressionDomAdapter;
   #rarityVisualResolver;
@@ -31,14 +31,14 @@ export class InventoryV2ItemParametersResolver {
       typeof rarityVisualResolver.resolve !== "function"
     ) {
       throw new TypeError(
-        "InventoryV2ItemParametersResolver rarityVisualResolver must implement resolve",
+        "InventoryItemParametersResolver rarityVisualResolver must implement resolve",
       );
     }
     this.#rarityVisualResolver = rarityVisualResolver;
     this.#parameterConfig =
-      parameterConfig || INVENTORY_V2_ITEM_PARAMETER_CONFIG;
+      parameterConfig || INVENTORY_ITEM_PARAMETER_CONFIG;
     this.#parameterAliases =
-      parameterAliases || INVENTORY_V2_ITEM_PARAMETER_ALIASES;
+      parameterAliases || INVENTORY_ITEM_PARAMETER_ALIASES;
   }
 
   resolve(item) {
@@ -64,7 +64,7 @@ export class InventoryV2ItemParametersResolver {
         null;
       const rarityId = rarityVisual?.id || item.rarity.id;
       const rarityName =
-        INVENTORY_V2_RARITY_NAMES[rarityId] || rarityId || "Звичайний";
+        INVENTORY_RARITY_NAMES[rarityId] || rarityId || "Звичайний";
       const color =
         rarityVisual?.cssColor || item.rarityColor || item.rarity.color;
       this.#append(parameters, renderedIds, "rarity", "text", rarityName, {

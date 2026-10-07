@@ -1,5 +1,5 @@
 /**
- * Inventory-v2 terminal-line slot label: a reel rod takes a leader, any other
+ * Inventory terminal-line slot label: a reel rod takes a leader, any other
  * rod a main line; without a rod the slot names both. Composition injects the
  * rod capability resolver.
  */

@@ -1,4 +1,4 @@
-export class InventoryV2Facade {
+export class InventoryFacade {
   #commands;
   #viewModels;
   #gameplayBridge;
@@ -12,10 +12,10 @@ export class InventoryV2Facade {
     migrationWarnings = [],
   } = {}) {
     if (typeof commands?.dispatch !== "function") {
-      throw new TypeError("InventoryV2Facade requires InventoryV2CommandService");
+      throw new TypeError("InventoryFacade requires InventoryCommandService");
     }
     if (typeof viewModels?.create !== "function") {
-      throw new TypeError("InventoryV2Facade requires InventoryV2ViewModelFactory");
+      throw new TypeError("InventoryFacade requires InventoryViewModelFactory");
     }
     this.#commands = commands;
     this.#viewModels = viewModels;
@@ -38,7 +38,7 @@ export class InventoryV2Facade {
 
   subscribe(listener) {
     if (typeof listener !== "function") {
-      throw new TypeError("InventoryV2Facade.subscribe requires a listener");
+      throw new TypeError("InventoryFacade.subscribe requires a listener");
     }
     this.#listeners.add(listener);
     return () => this.#listeners.delete(listener);

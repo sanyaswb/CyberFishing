@@ -21,12 +21,12 @@ class ItemStateHardeningRuntimeLoader {
     ]).expose({
       OverridePolicy: "ItemStatOverridePolicy",
       EffectiveStatsResolver: "EffectiveItemStatsResolver",
-      Hydrator: "InventoryV2ItemHydrator",
+      Hydrator: "InventoryItemHydrator",
       SnapshotMapper: "InventoryItemSnapshotMapper",
       LegacyMigration: "LegacyItemStateMigration",
-      SnapshotMigration: "InventoryV2SnapshotMigration",
-      StateStore: "InventoryV2StateStore",
-      SnapshotFactory: "InventoryV2SnapshotFactory",
+      SnapshotMigration: "InventorySnapshotMigration",
+      StateStore: "InventoryStateStore",
+      SnapshotFactory: "InventorySnapshotFactory",
     });
     new ItemStatTestComposition(runtime.context).install({ withPolicy: ["EffectiveStatsResolver", "SnapshotMapper", "LegacyMigration"],
       withResolver: ["Hydrator"], migrations: ["SnapshotMigration"] });

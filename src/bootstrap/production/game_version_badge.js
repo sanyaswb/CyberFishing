@@ -1,4 +1,4 @@
-import { InventoryV2DomFactory } from "../../platform/browser/dom/inventory_v2_dom_factory.js";
+import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
 
 export class GameVersionBadge {
@@ -26,7 +26,7 @@ export class GameVersionBadge {
   }
 
   static mountById(id = "gameVersionBadge") {
-    const badge = new GameVersionBadge({ element: InventoryV2DomFactory.getElementById(id) });
+    const badge = new GameVersionBadge({ element: InventoryDomFactory.getElementById(id) });
     badge.render();
     return badge;
   }

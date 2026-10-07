@@ -1,7 +1,7 @@
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { ItemAssemblyPath } from "../../domain/assemblies/item_assembly_reader.js";
 
-export class InventoryV2RefillInventoryPort {
+export class InventoryRefillInventoryPort {
   #repository;
   #signaturePolicy;
   #stackingPolicy;
@@ -17,7 +17,7 @@ export class InventoryV2RefillInventoryPort {
   } = {}) {
     if (!reservationPolicy?.isReserved) {
       throw new TypeError(
-        "InventoryV2RefillInventoryPort requires a reservation policy",
+        "InventoryRefillInventoryPort requires a reservation policy",
       );
     }
     this.#repository = repository;
@@ -25,7 +25,7 @@ export class InventoryV2RefillInventoryPort {
     this.#stackingPolicy = stackingPolicy;
     this.#reservationPolicy = reservationPolicy;
     if (!candidatePolicy?.select) {
-      throw new TypeError("InventoryV2RefillInventoryPort requires candidatePolicy.select");
+      throw new TypeError("InventoryRefillInventoryPort requires candidatePolicy.select");
     }
     this.#candidatePolicy = candidatePolicy;
   }
@@ -59,7 +59,7 @@ export class InventoryV2RefillInventoryPort {
   }
 }
 
-export class InventoryV2RefillTargetWriter {
+export class InventoryRefillTargetWriter {
   #repository;
   #equipmentState;
   #assemblyService;

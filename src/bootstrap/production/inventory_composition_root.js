@@ -1,7 +1,7 @@
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
 import { AssemblyAttachmentTargetResolver } from "../../game/domain/assemblies/assembly_attachment_target_resolver.js";
 import { AssemblyCompletionPolicy } from "../../game/domain/assemblies/assembly_completion_policy.js";
-import { AssemblyInventoryContextFilterStrategy, EquipmentInventoryContextFilterStrategy, InventoryV2ContextItemFilter } from "../../game/application/inventory/inventory_context_item_filter.js";
+import { AssemblyInventoryContextFilterStrategy, EquipmentInventoryContextFilterStrategy, InventoryContextItemFilter } from "../../game/application/inventory/inventory_context_item_filter.js";
 import { AssemblyProfileRegistry } from "../../game/domain/assemblies/assembly_profile_registry.js";
 import { AssemblyStateRepository } from "../../game/domain/assemblies/assembly_state_repository.js";
 import { AutoRefillCoordinator, ExactInventoryAutoRefillPort } from "../../game/application/inventory/auto_refill_coordinator.js";
@@ -21,32 +21,32 @@ import { FishingReadinessPolicy } from "../../game/domain/equipment/fishing_read
 import { FlatInventoryItemRepository } from "../../game/domain/inventory/flat_inventory_item_repository.js";
 import { FreshestRefillCandidatePolicy } from "../../game/application/inventory/freshest_refill_candidate_policy.js";
 import { INVENTORY_RULE_MESSAGES } from "../../game/presentation/inventory/inventory_rule_messages.js";
-import { INVENTORY_V2_SCHEMA_VERSION, InventoryV2StateStore } from "../../game/application/inventory/persistence/inventory_state_store.js";
-import { INVENTORY_V2_SORT_CONFIG } from "../../game/presentation/inventory/inventory_sort_config.js";
+import { INVENTORY_SCHEMA_VERSION, InventoryStateStore } from "../../game/application/inventory/persistence/inventory_state_store.js";
+import { INVENTORY_SORT_CONFIG } from "../../game/presentation/inventory/inventory_sort_config.js";
 import { InventoryItemReservationPolicy } from "../../game/domain/inventory/inventory_item_reservation_policy.js";
 import { InventoryItemSnapshotMapper } from "../../game/application/inventory/persistence/inventory_item_snapshot_mapper.js";
-import { InventoryV2ActionType } from "../../game/presentation/inventory/inventory_view_model.js";
-import { InventoryV2CommandService } from "../../game/application/inventory/inventory_command_service.js";
-import { InventoryV2GameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_view_model.js";
+import { InventoryCommandService } from "../../game/application/inventory/inventory_command_service.js";
+import { InventoryGameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
 import { InventoryItemRemovalService } from "../../game/application/inventory/inventory_item_removal_service.js";
-import { InventoryV2UiState } from "../../game/application/inventory/inventory_ui_state.js";
-import { InventoryV2EquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
-import { InventoryV2EquipmentTransitionPort } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
-import { InventoryV2Facade } from "../../game/application/inventory/inventory_facade.js";
-import { InventoryV2GameplayBridge } from "../../game/application/inventory/inventory_gameplay_facade.js";
-import { InventoryV2ItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
-import { InventoryV2ItemOrderResolver } from "../../game/presentation/inventory/inventory_item_order_resolver.js";
-import { InventoryV2ItemViewFactory } from "../../game/presentation/inventory/inventory_v2_item_view_factory.js";
-import { InventoryV2LegacyMigration } from "../../game/application/inventory/persistence/inventory_legacy_migration.js";
-import { InventoryV2LineAllocationService } from "../../game/application/inventory/inventory_line_allocation_service.js";
-import { InventoryV2LoadoutPort } from "../../game/application/inventory/inventory_loadout_adapter.js";
-import { InventoryV2RefillInventoryPort, InventoryV2RefillTargetWriter } from "../../game/application/inventory/inventory_refill_adapters.js";
-import { InventoryV2RefillMemoryTransactionParticipant, InventoryV2SettingsTransactionParticipant } from "../../game/application/inventory/inventory_transaction_participants.js";
-import { InventoryV2SnapshotFactory } from "../../game/application/inventory/persistence/inventory_snapshot_factory.js";
-import { InventoryV2SnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
-import { InventoryV2SubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
-import { InventoryV2TransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
-import { InventoryV2ViewModelFactory } from "../../game/presentation/inventory/inventory_view_model_factory.js";
+import { InventoryUiState } from "../../game/application/inventory/inventory_ui_state.js";
+import { InventoryEquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
+import { InventoryEquipmentTransitionPort } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
+import { InventoryFacade } from "../../game/application/inventory/inventory_facade.js";
+import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_facade.js";
+import { InventoryItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
+import { InventoryItemOrderResolver } from "../../game/presentation/inventory/inventory_item_order_resolver.js";
+import { InventoryItemTreeViewFactory } from "../../game/presentation/inventory/inventory_item_tree_view_factory.js";
+import { InventoryLegacyMigration } from "../../game/application/inventory/persistence/inventory_legacy_migration.js";
+import { InventoryLineAllocationService } from "../../game/application/inventory/inventory_line_allocation_service.js";
+import { InventoryLoadoutPort } from "../../game/application/inventory/inventory_loadout_adapter.js";
+import { InventoryRefillInventoryPort, InventoryRefillTargetWriter } from "../../game/application/inventory/inventory_refill_adapters.js";
+import { InventoryRefillMemoryTransactionParticipant, InventorySettingsTransactionParticipant } from "../../game/application/inventory/inventory_transaction_participants.js";
+import { InventorySnapshotFactory } from "../../game/application/inventory/persistence/inventory_snapshot_factory.js";
+import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
+import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
+import { InventoryTransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
+import { InventoryViewModelFactory } from "../../game/presentation/inventory/inventory_view_model_factory.js";
 import { ItemAssemblyReader } from "../../game/domain/assemblies/item_assembly_reader.js";
 import { ItemAssemblyService } from "../../game/domain/assemblies/item_assembly_service.js";
 import { ItemAssemblyStackingPolicy } from "../../game/domain/inventory/item_assembly_stacking_policy.js";
@@ -62,7 +62,7 @@ import { TerminalLineSlotResolver } from "../../game/domain/equipment/terminal_l
 import { UnlimitedAssemblyCapacityPolicy } from "../../game/domain/inventory/unlimited_assembly_capacity_policy.js";
 import { UnlimitedInventoryCapacityPolicy } from "../../game/domain/inventory/inventory_capacity_policy.js";
 
-export class InventoryV2CompositionRoot {
+export class InventoryCompositionRoot {
   static create(options = {}) {
     return this.compose(options).facade;
   }
@@ -92,7 +92,7 @@ export class InventoryV2CompositionRoot {
     const overridePolicy = itemStatOverridePolicy;
     const itemStateMigration = new LegacyItemStateMigration({ overridePolicy });
     const definitions = itemDefinitionResolver || null;
-    const hydrator = new InventoryV2ItemHydrator({
+    const hydrator = new InventoryItemHydrator({
       itemDefinitionResolver: definitions,
       effectiveStatsResolver,
     });
@@ -103,7 +103,7 @@ export class InventoryV2CompositionRoot {
     });
     const store =
       stateStore ||
-      new InventoryV2StateStore({
+      new InventoryStateStore({
         cache:
           cache ||
           CacheManager,
@@ -177,7 +177,7 @@ export class InventoryV2CompositionRoot {
     const refillMemory = new AutoRefillMemory(
       snapshot.settings?.refillMemory || {},
     );
-    const snapshotFactory = new InventoryV2SnapshotFactory({
+    const snapshotFactory = new InventorySnapshotFactory({
       repository,
       assemblyStates,
       equipmentState,
@@ -186,14 +186,14 @@ export class InventoryV2CompositionRoot {
       refillMemory,
       itemSnapshotMapper,
     });
-    const transaction = new InventoryV2TransactionCoordinator({
+    const transaction = new InventoryTransactionCoordinator({
       participants: [
         repository,
         assemblyStates,
         equipmentState,
         loadouts,
-        new InventoryV2SettingsTransactionParticipant(settings),
-        new InventoryV2RefillMemoryTransactionParticipant(refillMemory),
+        new InventorySettingsTransactionParticipant(settings),
+        new InventoryRefillMemoryTransactionParticipant(refillMemory),
       ],
       afterCommit: () => store.save(snapshotFactory.create()),
     });
@@ -236,7 +236,7 @@ export class InventoryV2CompositionRoot {
       visibilityPolicy,
       terminalLineResolver,
     });
-    const contextItemFilter = new InventoryV2ContextItemFilter({
+    const contextItemFilter = new InventoryContextItemFilter({
       strategies: [
         new AssemblyInventoryContextFilterStrategy({
           targetResolver: attachmentTargetResolver,
@@ -255,13 +255,13 @@ export class InventoryV2CompositionRoot {
       capacityPolicy,
       messages: INVENTORY_RULE_MESSAGES,
     });
-    const equipmentTransitionPort = new InventoryV2EquipmentTransitionPort({
+    const equipmentTransitionPort = new InventoryEquipmentTransitionPort({
       transaction,
     });
     const equipmentTransitionExecutor = new EquipmentTransitionExecutor({
       port: equipmentTransitionPort,
     });
-    const lineAllocationService = new InventoryV2LineAllocationService({
+    const lineAllocationService = new InventoryLineAllocationService({
       linePolicy: new LineAllocationPolicy(lineConfig, {
         messages: INVENTORY_RULE_MESSAGES,
       }),
@@ -275,14 +275,14 @@ export class InventoryV2CompositionRoot {
       },
     });
     const equipmentLineReadinessPolicy =
-      new InventoryV2EquipmentLineReadinessPolicy({
+      new InventoryEquipmentLineReadinessPolicy({
         repository,
         assemblyReader,
         itemReader: (raw) => hydrator.hydrate(raw, repository),
         lineAllocationService,
       });
 
-    const loadoutPort = new InventoryV2LoadoutPort({
+    const loadoutPort = new InventoryLoadoutPort({
       repository,
       loadouts,
       transaction,
@@ -307,14 +307,14 @@ export class InventoryV2CompositionRoot {
       assemblyReader,
       memory: refillMemory,
     });
-    const refillInventoryPort = new InventoryV2RefillInventoryPort({
+    const refillInventoryPort = new InventoryRefillInventoryPort({
       repository,
       signaturePolicy,
       stackingPolicy,
       reservationPolicy,
       candidatePolicy: new FreshestRefillCandidatePolicy(),
     });
-    const refillTargetWriter = new InventoryV2RefillTargetWriter({
+    const refillTargetWriter = new InventoryRefillTargetWriter({
       repository,
       equipmentState,
       assemblyService,
@@ -337,7 +337,7 @@ export class InventoryV2CompositionRoot {
       profileRegistry,
       assemblyReader,
     });
-    const itemViews = new InventoryV2ItemViewFactory({
+    const itemViews = new InventoryItemTreeViewFactory({
       repository,
       assemblyStates,
       assemblyReader,
@@ -346,11 +346,11 @@ export class InventoryV2CompositionRoot {
         itemViewFactory?.create?.(raw) || hydrator.hydrate(raw, repository),
       boatChargeProvider,
     });
-    const subfilterResolver = new InventoryV2SubfilterResolver();
-    const itemOrderResolver = new InventoryV2ItemOrderResolver({
-      config: INVENTORY_V2_SORT_CONFIG,
+    const subfilterResolver = new InventorySubfilterResolver();
+    const itemOrderResolver = new InventoryItemOrderResolver({
+      config: INVENTORY_SORT_CONFIG,
     });
-    const viewModels = new InventoryV2ViewModelFactory({
+    const viewModels = new InventoryViewModelFactory({
       repository,
       assemblyStates,
       attachmentTargetResolver,
@@ -378,7 +378,7 @@ export class InventoryV2CompositionRoot {
       loadouts,
       now,
     });
-    const commands = new InventoryV2CommandService({
+    const commands = new InventoryCommandService({
       repository,
       assemblyStates,
       profileRegistry,
@@ -400,13 +400,13 @@ export class InventoryV2CompositionRoot {
       stackingPolicy,
       reservationPolicy,
       instanceIdFactory,
-      sortConfig: INVENTORY_V2_SORT_CONFIG,
-      actionTypes: InventoryV2ActionType,
+      sortConfig: INVENTORY_SORT_CONFIG,
+      actionTypes: InventoryActionType,
       now,
-      uiState: new InventoryV2UiState({ sortConfig: INVENTORY_V2_SORT_CONFIG }),
+      uiState: new InventoryUiState({ sortConfig: INVENTORY_SORT_CONFIG }),
       itemRemoval,
     });
-    const gameplayCommands = new InventoryV2GameplayCommands({
+    const gameplayCommands = new InventoryGameplayCommands({
       transaction,
       itemRemoval,
       repository,
@@ -423,7 +423,7 @@ export class InventoryV2CompositionRoot {
         : null,
       hydrator,
     });
-    const gameplayBridge = new InventoryV2GameplayBridge({
+    const gameplayBridge = new InventoryGameplayBridge({
       repository,
       hydrator,
       equipmentState,
@@ -432,7 +432,7 @@ export class InventoryV2CompositionRoot {
       gameplayCommands,
       itemViews,
     });
-    const facade = new InventoryV2Facade({
+    const facade = new InventoryFacade({
       commands,
       viewModels,
       gameplayBridge,
@@ -495,22 +495,22 @@ export class InventoryV2CompositionRoot {
     assemblyProfileConfig,
   }) {
     if (initialSnapshot) {
-      const migration = new InventoryV2SnapshotMigration({
+      const migration = new InventorySnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
         itemStateMigration,
-        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+        targetSchemaVersion: INVENTORY_SCHEMA_VERSION,
       }).migrate(initialSnapshot);
       const snapshot = store.save(migration.snapshot);
       return { snapshot, warnings: [...migration.warnings] };
     }
     const loaded = store.load();
     if (loaded) {
-      const normalized = new InventoryV2SnapshotMigration({
+      const normalized = new InventorySnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
         itemStateMigration,
-        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+        targetSchemaVersion: INVENTORY_SCHEMA_VERSION,
       }).migrate(loaded);
       return {
         snapshot: normalized.snapshot,
@@ -520,11 +520,11 @@ export class InventoryV2CompositionRoot {
 
     const previousSnapshot = store.loadPrevious?.([3, 2]) || null;
     if (previousSnapshot) {
-      const migration = new InventoryV2SnapshotMigration({
+      const migration = new InventorySnapshotMigration({
         itemDefinitionResolver: definitionLookup,
         itemSnapshotMapper,
         itemStateMigration,
-        targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+        targetSchemaVersion: INVENTORY_SCHEMA_VERSION,
       }).migrate(previousSnapshot);
       const snapshot = store.save(migration.snapshot);
       return { snapshot, warnings: [...migration.warnings] };
@@ -550,7 +550,7 @@ export class InventoryV2CompositionRoot {
       {};
     const sourceSettings =
       legacySettings || provided.settings || {};
-    const migration = new InventoryV2LegacyMigration({
+    const migration = new InventoryLegacyMigration({
       itemDefinitionResolver: definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,

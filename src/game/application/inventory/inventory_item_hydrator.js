@@ -1,4 +1,4 @@
-export class InventoryV2ItemHydrator {
+export class InventoryItemHydrator {
   #definitionResolver;
   #plainDefinitions = new Map();
   #effectiveStatsResolver;

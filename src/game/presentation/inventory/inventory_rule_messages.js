@@ -1,7 +1,7 @@
 import { EQUIPMENT_SLOT_PRESENTATION } from "./equipment_slot_presentation.js";
 
 /**
- * Inventory-v2 rule messages shown to the player. Domain rules never hold these
+ * Inventory rule messages shown to the player. Domain rules never hold these
  * texts: composition injects this catalog, so every result keeps its exact text.
  * Context-dependent entries are functions returning the exact strings.
  */

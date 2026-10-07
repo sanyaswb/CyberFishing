@@ -1,4 +1,4 @@
-export const INVENTORY_V2_SORT_CONFIG = Object.freeze({
+export const INVENTORY_SORT_CONFIG = Object.freeze({
   defaults: Object.freeze({
     criterionIds: Object.freeze(["rarity"]),
     directionId: "descending",

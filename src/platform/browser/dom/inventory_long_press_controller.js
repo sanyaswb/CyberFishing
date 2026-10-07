@@ -1,4 +1,4 @@
-export class InventoryV2LongPressController {
+export class InventoryLongPressController {
   static DURATION_MS = 1500;
   static EQUIPPED_DURATION_MS = 800;
   static MOVEMENT_TOLERANCE_PX = 8;
@@ -9,10 +9,10 @@ export class InventoryV2LongPressController {
   #bindings = new Set();
 
   constructor({
-    movementTolerancePx = InventoryV2LongPressController.MOVEMENT_TOLERANCE_PX,
+    movementTolerancePx = InventoryLongPressController.MOVEMENT_TOLERANCE_PX,
     degradationColorResolver = null,
   } = {}) {
-    this.#durationMs = InventoryV2LongPressController.DURATION_MS;
+    this.#durationMs = InventoryLongPressController.DURATION_MS;
     this.#movementTolerancePx = Math.max(
       0,
       Number(movementTolerancePx) || 0,
@@ -188,7 +188,7 @@ export class InventoryV2LongPressController {
   #updateProgressVisual(binding, ratio) {
     const normalized = Math.max(0, Math.min(1, Number(ratio) || 0));
     binding.progress?.style?.setProperty(
-      "--inventory-v2-long-press-angle",
+      "--inventory-long-press-angle",
       `${normalized * 360}deg`,
     );
     const color = this.#degradationColorResolver?.resolveWorseningProgress?.(
@@ -196,11 +196,11 @@ export class InventoryV2LongPressController {
     );
     if (color?.available !== true) return;
     binding.progress.style.setProperty(
-      "--inventory-v2-long-press-color",
+      "--inventory-long-press-color",
       color.cssColor,
     );
     binding.progress.style.setProperty(
-      "--inventory-v2-long-press-glow-color",
+      "--inventory-long-press-glow-color",
       color.cssGlowColor,
     );
   }
@@ -225,7 +225,7 @@ export class InventoryV2LongPressController {
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return null;
     const progress = documentRef.createElement("span");
-    progress.className = "inventory-v2-long-press-progress";
+    progress.className = "inventory-long-press-progress";
     progress.setAttribute("aria-hidden", "true");
     element.appendChild(progress);
     return progress;

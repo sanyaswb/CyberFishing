@@ -64,7 +64,7 @@ vm.runInContext(
     itemSnapshotMapper: new InventoryItemSnapshotMapper({
       itemDefinitionResolver: (itemId) => definitions[itemId] || null, overridePolicy: itemStatOverridePolicy }),
   });
-  const migration = new InventoryV2LegacyMigration({
+  const migration = new InventoryLegacyMigration({
     ...itemStatCollaborators,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
     instanceIdFactory: (source) => source.instanceId + "~split-" + (++sequence),
@@ -104,7 +104,7 @@ vm.runInContext(
 
 const snapshot = context.migrationResult.snapshot;
 const assert = (condition, message) => {
-  if (!condition) throw new Error(`Inventory-v2 migration check failed: ${message}`);
+  if (!condition) throw new Error(`Inventory migration check failed: ${message}`);
 };
 const byId = new Map(snapshot.items.map((item) => [item.instanceId, item]));
 const loadout = snapshot.loadouts[0];
@@ -142,11 +142,11 @@ assert(
 
 vm.runInContext(
   `
-  const upgradeVisualSnapshot = (schemaVersion) => new InventoryV2SnapshotMigration({
+  const upgradeVisualSnapshot = (schemaVersion) => new InventorySnapshotMigration({
     itemStateMigration: itemStatCollaborators.itemStateMigration,
     itemSnapshotMapper: itemStatCollaborators.itemSnapshotMapper,
     itemDefinitionResolver: (itemId) => definitions[itemId] || null,
-    targetSchemaVersion: INVENTORY_V2_SCHEMA_VERSION,
+    targetSchemaVersion: INVENTORY_SCHEMA_VERSION,
   }).migrate({
     schemaVersion,
     items: [{
@@ -607,4 +607,4 @@ assert(
   "active hand chum keeps instance rarity and recipe source facts",
 );
 
-console.log("Inventory-v2 migration checks passed.");
+console.log("Inventory migration checks passed.");

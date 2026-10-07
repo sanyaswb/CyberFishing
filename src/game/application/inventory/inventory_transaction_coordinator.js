@@ -4,7 +4,7 @@
  * share the outer checkpoint and persistence boundary. Any nested failure
  * marks the whole unit of work rollback-only, even when a caller catches it.
  */
-export class InventoryV2TransactionCoordinator {
+export class InventoryTransactionCoordinator {
   #participants;
   #afterCommit;
   #depth = 0;

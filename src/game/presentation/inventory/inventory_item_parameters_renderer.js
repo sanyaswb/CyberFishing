@@ -1,4 +1,4 @@
-export class InventoryV2ItemParametersRenderer {
+export class InventoryItemParametersRenderer {
   #dom;
   #resolver;
   #resourceMeterRenderer;
@@ -23,7 +23,7 @@ export class InventoryV2ItemParametersRenderer {
   renderSections(sections = [], { showHeaders = true } = {}) {
     const panel = this.#dom.element(
       "section",
-      "inventory-v2-item-parameters",
+      "inventory-item-parameters",
     );
     const source = [...(sections || [])];
     panel.dataset.instanceId = String(source[0]?.item?.instanceId || "");
@@ -47,7 +47,7 @@ export class InventoryV2ItemParametersRenderer {
     }
     section.dataset.instanceId = String(item?.instanceId || "");
     const list = this.#findParameterList(section) ||
-      this.#dom.element("ul", "inventory-v2-parameters-list");
+      this.#dom.element("ul", "inventory-parameters-list");
     list.replaceChildren(
       ...parameters.map((parameter) => this.#renderRow(parameter)),
     );
@@ -64,7 +64,7 @@ export class InventoryV2ItemParametersRenderer {
   #renderSection(section, parameters, showHeader) {
     const article = this.#dom.element(
       "article",
-      "inventory-v2-item-parameter-section",
+      "inventory-item-parameter-section",
     );
     article.dataset.instanceId = String(section?.item?.instanceId || "");
     if (showHeader) {
@@ -77,17 +77,17 @@ export class InventoryV2ItemParametersRenderer {
   #renderSectionHeader(section) {
     const header = this.#dom.element(
       "header",
-      "inventory-v2-item-parameter-section__header",
+      "inventory-item-parameter-section__header",
     );
     const identity = this.#dom.element(
       "span",
-      "inventory-v2-item-parameter-section__identity",
+      "inventory-item-parameter-section__identity",
     );
     const icon = section?.item?.icon || section?.item?.emoji;
     if (icon) {
       identity.appendChild(this.#dom.element(
         "span",
-        "inventory-v2-item-parameter-section__icon",
+        "inventory-item-parameter-section__icon",
         icon,
       ));
     }
@@ -98,7 +98,7 @@ export class InventoryV2ItemParametersRenderer {
     ].filter(Boolean).join(" ");
     identity.appendChild(this.#dom.element(
       "strong",
-      "inventory-v2-item-parameter-section__title",
+      "inventory-item-parameter-section__title",
       title,
     ));
     header.appendChild(identity);
@@ -106,7 +106,7 @@ export class InventoryV2ItemParametersRenderer {
     if (meta) {
       header.appendChild(this.#dom.element(
         "span",
-        "inventory-v2-item-parameter-section__meta",
+        "inventory-item-parameter-section__meta",
         meta,
       ));
     }
@@ -116,7 +116,7 @@ export class InventoryV2ItemParametersRenderer {
   #populate(panel, parameters) {
     if (!parameters || parameters.length === 0) return;
 
-    const list = this.#dom.element("ul", "inventory-v2-parameters-list");
+    const list = this.#dom.element("ul", "inventory-parameters-list");
 
     parameters.forEach((parameter) => {
       list.appendChild(this.#renderRow(parameter));
@@ -126,25 +126,25 @@ export class InventoryV2ItemParametersRenderer {
   }
 
   #renderRow(parameter) {
-    const li = this.#dom.element("li", "inventory-v2-parameter-row");
+    const li = this.#dom.element("li", "inventory-parameter-row");
     
-    const header = this.#dom.element("div", "inventory-v2-parameter-header");
+    const header = this.#dom.element("div", "inventory-parameter-header");
     
-    const labelSpan = this.#dom.element("span", "inventory-v2-parameter-label");
+    const labelSpan = this.#dom.element("span", "inventory-parameter-label");
     labelSpan.textContent = parameter.label;
     
     if (parameter.description) {
-      const helpIcon = this.#dom.element("span", "inventory-v2-parameter-help", "?");
+      const helpIcon = this.#dom.element("span", "inventory-parameter-help", "?");
       helpIcon.setAttribute("title", parameter.description);
       
-      const spacer = this.#dom.element("span", "inventory-v2-parameter-help-spacer", " ");
+      const spacer = this.#dom.element("span", "inventory-parameter-help-spacer", " ");
       labelSpan.append(spacer, helpIcon);
     }
     
     header.appendChild(labelSpan);
 
     if (parameter.value !== undefined && parameter.value !== null) {
-      const valueSpan = this.#dom.element("span", "inventory-v2-parameter-value", String(parameter.value));
+      const valueSpan = this.#dom.element("span", "inventory-parameter-value", String(parameter.value));
       if (parameter.color) {
         valueSpan.style.color = parameter.color;
       }
@@ -163,9 +163,9 @@ export class InventoryV2ItemParametersRenderer {
     } else if (parameter.kind === "effectiveness") {
       li.appendChild(this.#renderEffectiveness(parameter.entries));
     } else if (parameter.kind === "bar" && parameter.percent !== undefined) {
-      const barContainer = this.#dom.element("div", "inventory-v2-parameter-bar");
-      const barTrack = this.#dom.element("div", "inventory-v2-parameter-bar-track");
-      const barFill = this.#dom.element("div", "inventory-v2-parameter-bar-fill");
+      const barContainer = this.#dom.element("div", "inventory-parameter-bar");
+      const barTrack = this.#dom.element("div", "inventory-parameter-bar-track");
+      const barFill = this.#dom.element("div", "inventory-parameter-bar-fill");
       
       barFill.style.width = `${Math.max(0, Math.min(100, Number(parameter.percent)))}%`;
       if (parameter.color) {
@@ -176,11 +176,11 @@ export class InventoryV2ItemParametersRenderer {
       barContainer.appendChild(barTrack);
       li.appendChild(barContainer);
     } else if (parameter.kind === "segments") {
-      const segmentsContainer = this.#dom.element("div", "inventory-v2-parameter-segments");
+      const segmentsContainer = this.#dom.element("div", "inventory-parameter-segments");
       const total = parameter.totalSections || 10;
       const filled = parameter.filledSections || 0;
       for (let i = 0; i < total; i++) {
-        const seg = this.#dom.element("div", "inventory-v2-parameter-segment");
+        const seg = this.#dom.element("div", "inventory-parameter-segment");
         if (i < filled) {
           seg.classList.add("is-filled");
           if (parameter.color) {
@@ -199,21 +199,21 @@ export class InventoryV2ItemParametersRenderer {
   #renderEffectiveness(entries = []) {
     const list = this.#dom.element(
       "div",
-      "inventory-v2-bait-effectiveness",
+      "inventory-bait-effectiveness",
     );
     for (const entry of entries) {
       const row = this.#dom.element(
         "div",
-        "inventory-v2-bait-effectiveness__row",
+        "inventory-bait-effectiveness__row",
       );
       row.appendChild(this.#dom.element(
         "span",
-        "inventory-v2-bait-effectiveness__fish",
+        "inventory-bait-effectiveness__fish",
         entry.fishName || entry.fishId,
       ));
       const value = this.#dom.element(
         "span",
-        "inventory-v2-bait-effectiveness__value",
+        "inventory-bait-effectiveness__value",
         this.#effectivenessText(entry),
       );
       if (entry.discovered && Number.isFinite(Number(entry.multiplier))) {
@@ -263,11 +263,11 @@ export class InventoryV2ItemParametersRenderer {
 
   #findSection(host, instanceId) {
     const sections = [
-      ...(host?.classList?.contains("inventory-v2-item-parameter-section")
+      ...(host?.classList?.contains("inventory-item-parameter-section")
         ? [host]
         : []),
       ...Array.from(
-        host?.querySelectorAll?.(".inventory-v2-item-parameter-section") || [],
+        host?.querySelectorAll?.(".inventory-item-parameter-section") || [],
       ),
     ];
     return sections.find(
@@ -278,7 +278,7 @@ export class InventoryV2ItemParametersRenderer {
 
   #findParameterList(section) {
     return Array.from(
-      section?.querySelectorAll?.(".inventory-v2-parameters-list") || [],
+      section?.querySelectorAll?.(".inventory-parameters-list") || [],
     )[0] || null;
   }
 }

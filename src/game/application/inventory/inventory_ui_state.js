@@ -1,7 +1,7 @@
 // Navigation state of the inventory UI: open/closed, category, filters, sorting, selection, highlighted
 // equipment slot, panel mode (loadout or assembly editor) and the pending placement order. Commands change it
 // only through these named transitions; snapshot() is what view models read.
-export class InventoryV2UiState {
+export class InventoryUiState {
   #isOpen = false;
   #activeCategoryId = "all";
   #activeSubfilterIds = [];

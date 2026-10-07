@@ -41,11 +41,11 @@ vm.runInContext(`(() => {
     ...raw,
     effectiveStats: { ...raw.statOverrides },
   });
-  const service = new InventoryV2LineAllocationService({
+  const service = new InventoryLineAllocationService({
     repository,
     itemReader: hydrate,
     lineConfig: { rodLengthReserveMultiplier: 2 },
-    // Composed the way InventoryV2CompositionRoot composes it, with the player-facing texts.
+    // Composed the way InventoryCompositionRoot composes it, with the player-facing texts.
     linePolicy: new LineAllocationPolicy({ rodLengthReserveMultiplier: 2 }, {
       messages: INVENTORY_RULE_MESSAGES,
     }),
@@ -87,11 +87,11 @@ vm.runInContext(`(() => {
     ? { itemType: "reel", variant: "spinning_reel", effectiveStats: {}, ...raw }
     : { id: raw.itemId, itemType: "fishing_line", ...raw,
         effectiveStats: { ...raw.statOverrides } };
-  const service = new InventoryV2LineAllocationService({
+  const service = new InventoryLineAllocationService({
     repository,
     itemReader: hydrate,
     lineConfig: { rodLengthReserveMultiplier: 2 },
-    // Composed the way InventoryV2CompositionRoot composes it, with the player-facing texts.
+    // Composed the way InventoryCompositionRoot composes it, with the player-facing texts.
     linePolicy: new LineAllocationPolicy({ rodLengthReserveMultiplier: 2 }, {
       messages: INVENTORY_RULE_MESSAGES,
     }),
@@ -130,4 +130,4 @@ vm.runInContext(`(() => {
     "depleted segment must leave the repository");
 })()`, context);
 
-console.log("Inventory-v2 line allocation checks passed.");
+console.log("Inventory line allocation checks passed.");

@@ -1,7 +1,7 @@
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { LoadoutApplicationPort } from "./loadout_application_service.js";
 
-export class InventoryV2LoadoutPort extends LoadoutApplicationPort {
+export class InventoryLoadoutPort extends LoadoutApplicationPort {
   #repository;
   #loadouts;
   #transaction;

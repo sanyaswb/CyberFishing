@@ -1,4 +1,4 @@
-export class InventoryV2AssemblyEditorRenderer {
+export class InventoryAssemblyEditorRenderer {
   #dom;
   #itemRenderer;
   #parametersRenderer;
@@ -32,17 +32,17 @@ export class InventoryV2AssemblyEditorRenderer {
   ) {
     const editor = this.#dom.element(
       "section",
-      "inventory-v2-assembly-editor",
+      "inventory-assembly-editor",
     );
     const workspace = this.#dom.element(
       "div",
-      "inventory-v2-assembly-editor__workspace",
+      "inventory-assembly-editor__workspace",
     );
     workspace.appendChild(this.#renderRootVisual(model));
     if (model.sockets.length > 0) {
       const sockets = this.#dom.element(
         "div",
-        "inventory-v2-assembly-editor__sockets",
+        "inventory-assembly-editor__sockets",
       );
       model.sockets.forEach((socket) => {
         sockets.appendChild(
@@ -78,7 +78,7 @@ export class InventoryV2AssemblyEditorRenderer {
   #renderRootVisual(model) {
     const visual = this.#dom.element(
       "div",
-      "inventory-v2-assembly-editor__visual",
+      "inventory-assembly-editor__visual",
     );
     if (!model.root) return visual;
     visual.appendChild(this.#itemRenderer.renderItem(model.root, {
@@ -97,7 +97,7 @@ export class InventoryV2AssemblyEditorRenderer {
   ) {
     const actions = this.#dom.element(
       "div",
-      "inventory-v2-assembly-editor__actions",
+      "inventory-assembly-editor__actions",
     );
     actions.append(
       ...(model.showEquip ? [this.#actionButton(
@@ -134,7 +134,7 @@ export class InventoryV2AssemblyEditorRenderer {
   }
 
   #actionButton(label, modifier, enabled, action) {
-    const classes = ["inventory-v2-assembly-editor__button", modifier]
+    const classes = ["inventory-assembly-editor__button", modifier]
       .filter(Boolean)
       .join(" ");
     const button = this.#dom.button(classes, label);

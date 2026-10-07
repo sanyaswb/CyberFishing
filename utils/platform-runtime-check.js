@@ -123,7 +123,7 @@ function checkVersionBadge() {
       removeEventListener(type,callback){removed.push({type,callback});}};
     const runtime=new SourceRuntime({globals:{document}});
     runtime.load('src/game/presentation/version/project_version.js',{expose:['PROJECT_VERSION_CONFIG']});
-    runtime.load('src/platform/browser/dom/inventory_v2_dom_factory.js',{expose:['InventoryV2DomFactory']});
+    runtime.load('src/platform/browser/dom/inventory_dom_factory.js',{expose:['InventoryDomFactory']});
     runtime.load(declaration,{expose:['GameVersionBadge']});
     runtime.load('src/platform/browser/runtime/browser_startup_environment.js',{expose:['activateBrowserStartupInterface']});
     const Badge=runtime.context.GameVersionBadge, mount=()=>Badge.mountById();
@@ -323,8 +323,8 @@ function checkLongPressFrames(usePerformance) {
     cancelAnimationFrame(id){frames.delete(id);},
   };
   const runtime=new SourceRuntime({globals});
-  runtime.load("src/platform/browser/dom/inventory_v2_long_press_controller.js",{expose:["InventoryV2LongPressController"]});
-  const controller=new runtime.context.InventoryV2LongPressController();
+  runtime.load("src/platform/browser/dom/inventory_long_press_controller.js",{expose:["InventoryLongPressController"]});
+  const controller=new runtime.context.InventoryLongPressController();
   const element={ownerDocument:document,dataset:{},classList:{add(){},remove(){}},appendChild(){},
     addEventListener(name,callback){listeners.set(name,callback);},
     removeEventListener(name,callback){assert.equal(listeners.get(name),callback);listeners.delete(name);},
@@ -348,13 +348,13 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(frameRequests-before.frameRequests,120);
   assert.equal(styleWrites-before.styleWrites,120);
   assert.equal(createdNodes,before.createdNodes,"frames allocate no DOM nodes");
-  assert.equal(styles.get("--inventory-v2-long-press-angle"),"288deg");
+  assert.equal(styles.get("--inventory-long-press-angle"),"288deg");
   assert.equal(fired,0,"RAF progress does not own the press deadline");
   now=1500;timers.get(1)();timers.clear();
   assert.equal(fired,1);
   assert.equal(controller.hasActivePress,false);
   assert.equal(frames.size,0,"the deadline cancels its scheduled frame");
-  assert.equal(styles.get("--inventory-v2-long-press-angle"),"360deg");
+  assert.equal(styles.get("--inventory-long-press-angle"),"360deg");
   let suppressed=0;
   listeners.get("click")({preventDefault(){suppressed++;},stopPropagation(){},stopImmediatePropagation(){}});
   assert.equal(suppressed,1);assert.equal(clicks,0);

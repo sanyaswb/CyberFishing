@@ -49,11 +49,11 @@ class ItemFreshnessGameplayCheck {
       EffectivenessResolver: "BaitEffectivenessResolver",
       Location: "InventoryItemLocation",
       Repository: "FlatInventoryItemRepository",
-      Hydrator: "InventoryV2ItemHydrator",
+      Hydrator: "InventoryItemHydrator",
       ExposureService: "ApplyBaitExposureService",
       RefillSignature: "RefillCompatibleSignaturePolicy",
       FreshestPolicy: "FreshestRefillCandidatePolicy",
-      RefillPort: "InventoryV2RefillInventoryPort",
+      RefillPort: "InventoryRefillInventoryPort",
       StackingPolicy: "ItemAssemblyStackingPolicy",
       SnapshotMapper: "InventoryItemSnapshotMapper",
     });
@@ -75,9 +75,9 @@ class ItemFreshnessGameplayCheck {
   #checkProductionWiring() {
     const source = new SourceRuntime().readAuthoredSource("src/bootstrap/production/player_inventory_composition.js");
     Assertion.that(
-      /InventoryV2CompositionRoot\.compose\(\{[\s\S]*?\n    itemFreshnessResolver,\n/u.test(source) &&
+      /InventoryCompositionRoot\.compose\(\{[\s\S]*?\n    itemFreshnessResolver,\n/u.test(source) &&
         /new InventoryItemViewFactory\(\{[\s\S]*?freshnessResolver: itemFreshnessResolver,/u.test(source),
-      "PlayerInventory composition forwards the Freshness dependency to Inventory V2 and item views",
+      "PlayerInventory composition forwards the Freshness dependency to Inventory and item views",
     );
   }
 

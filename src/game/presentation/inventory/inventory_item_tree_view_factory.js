@@ -1,4 +1,4 @@
-export class InventoryV2ItemViewFactory {
+export class InventoryItemTreeViewFactory {
   #repository;
   #assemblyStates;
   #assemblyReader;

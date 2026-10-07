@@ -1,13 +1,13 @@
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
 /**
- * Preserves the legacy line-length rules while inventory-v2 owns custody.
+ * Preserves the legacy line-length rules while inventory owns custody.
  *
  * A line is still a real flat item. When the selected reel/rod accepts only a
  * part of a spool, this service creates a unique equipped segment and leaves
  * the remainder as a free inventory item. It does not know about DOM or UI.
  */
-export class InventoryV2LineAllocationService {
+export class InventoryLineAllocationService {
   #repository;
   #itemReader;
   #policy;
@@ -25,7 +25,7 @@ export class InventoryV2LineAllocationService {
   } = {}) {
     if (!repository?.require || !repository?.update || !repository?.add) {
       throw new TypeError(
-        "InventoryV2LineAllocationService requires FlatInventoryItemRepository",
+        "InventoryLineAllocationService requires FlatInventoryItemRepository",
       );
     }
     this.#repository = repository;
@@ -33,7 +33,7 @@ export class InventoryV2LineAllocationService {
     this.#policy = linePolicy;
     if (!this.#policy?.resolve) {
       throw new TypeError(
-        "InventoryV2LineAllocationService requires LineAllocationPolicy",
+        "InventoryLineAllocationService requires LineAllocationPolicy",
       );
     }
     this.#instanceIdFactory = instanceIdFactory;

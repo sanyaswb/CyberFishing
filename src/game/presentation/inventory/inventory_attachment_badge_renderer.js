@@ -1,4 +1,4 @@
-export class InventoryV2AttachmentBadgeRenderer {
+export class InventoryAttachmentBadgeRenderer {
   #dom;
 
   constructor({ domFactory } = {}) {
@@ -11,10 +11,10 @@ export class InventoryV2AttachmentBadgeRenderer {
     for (const [placement, entries] of groups) {
       const cluster = this.#dom.element(
         "span",
-        `inventory-v2-attachments inventory-v2-attachments--${placement}`,
+        `inventory-attachments inventory-attachments--${placement}`,
       );
       cluster.setAttribute("aria-hidden", "true");
-      cluster.style.setProperty("--inventory-v2-badge-count", entries.length);
+      cluster.style.setProperty("--inventory-badge-count", entries.length);
       entries.forEach((attachment, index) => {
         cluster.appendChild(this.#createBadge(attachment, index));
       });
@@ -52,8 +52,8 @@ export class InventoryV2AttachmentBadgeRenderer {
   }
 
   #createBadge(attachment, index) {
-    const badge = this.#dom.element("span", "inventory-v2-attachment-badge");
-    badge.style.setProperty("--inventory-v2-badge-index", index);
+    const badge = this.#dom.element("span", "inventory-attachment-badge");
+    badge.style.setProperty("--inventory-badge-index", index);
     badge.title = String(attachment.name || attachment.label || "");
 
     const image = this.#dom.image(
@@ -61,12 +61,12 @@ export class InventoryV2AttachmentBadgeRenderer {
       "",
     );
     if (image) {
-      image.className = "inventory-v2-attachment-badge__image";
+      image.className = "inventory-attachment-badge__image";
       badge.appendChild(image);
     } else {
       const icon = this.#dom.element(
         "span",
-        "inventory-v2-attachment-badge__icon",
+        "inventory-attachment-badge__icon",
         attachment.icon || attachment.emoji || "•",
       );
       badge.appendChild(icon);

@@ -1,4 +1,4 @@
-export class InventoryV2LoadoutPanelRenderer {
+export class InventoryLoadoutPanelRenderer {
   #dom;
   #itemRenderer;
   #getEquippedLongPressDurationMs;
@@ -20,11 +20,11 @@ export class InventoryV2LoadoutPanelRenderer {
   ) {
     const shell = this.#dom.element(
       "section",
-      "inventory-v2-loadout-shell",
+      "inventory-loadout-shell",
     );
     const panel = this.#dom.element(
       "div",
-      "inventory-v2-loadout-panel",
+      "inventory-loadout-panel",
     );
     if (model.save.visible) {
       shell.appendChild(
@@ -34,7 +34,7 @@ export class InventoryV2LoadoutPanelRenderer {
 
     const primary = this.#dom.element(
       "div",
-      "inventory-v2-loadout-panel__primary",
+      "inventory-loadout-panel__primary",
     );
     const rod = model.mainSlots.find((slot) => slot.slotId === "rod");
     const dependentSlots = model.mainSlots.filter(
@@ -51,7 +51,7 @@ export class InventoryV2LoadoutPanelRenderer {
     }
     const cascade = this.#dom.element(
       "div",
-      "inventory-v2-loadout-panel__cascade",
+      "inventory-loadout-panel__cascade",
     );
     dependentSlots.forEach((slot) => {
       cascade.appendChild(
@@ -68,7 +68,7 @@ export class InventoryV2LoadoutPanelRenderer {
     if (model.auxiliarySlots.length) {
       const auxiliary = this.#dom.element(
         "div",
-        "inventory-v2-loadout-panel__auxiliary",
+        "inventory-loadout-panel__auxiliary",
       );
       model.auxiliarySlots.forEach((slot) => {
         auxiliary.appendChild(
@@ -104,14 +104,14 @@ export class InventoryV2LoadoutPanelRenderer {
   }
 
   #renderSaveBar(save, { onSaveLoadout, onWarning }) {
-    const bar = this.#dom.element("div", "inventory-v2-loadout-save");
-    const input = this.#dom.element("input", "inventory-v2-loadout-save__input");
+    const bar = this.#dom.element("div", "inventory-loadout-save");
+    const input = this.#dom.element("input", "inventory-loadout-save__input");
     input.type = "text";
     input.maxLength = save.maxNameLength;
     input.placeholder = save.placeholder;
     input.setAttribute("aria-label", save.placeholder);
     const button = this.#dom.button(
-      "inventory-v2-loadout-save__button",
+      "inventory-loadout-save__button",
       "💾 Зберегти комплект",
     );
     button.classList.toggle("is-disabled", !save.enabled);

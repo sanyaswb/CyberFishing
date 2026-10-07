@@ -1,4 +1,4 @@
-// The player's inventory as the game sees it: a port over Inventory V2 that blocks equipment changes while
+// The player's inventory as the game sees it: a port over Inventory that blocks equipment changes while
 // tackle is in the water, caches the equipped read model (with the rod's cast display stats), forwards
 // gameplay events and consumption, and announces "inventory-changed".
 export class PlayerInventory {
@@ -10,12 +10,12 @@ export class PlayerInventory {
   #tackleLoadLimitPolicy;
   #itemDatabase;
   #itemViewContext;
-  #removeInventoryV2Listener = null;
+  #removeInventoryListener = null;
   #isLocked = false;
   #equippedCache = null;
 
   constructor({
-    inventoryV2,
+    inventory,
     actions,
     events,
     rodCastDisplayStats,
@@ -23,19 +23,19 @@ export class PlayerInventory {
     itemDatabase,
     itemViewContext,
   }) {
-    this.#facade = inventoryV2.facade;
-    this.#gameplayBridge = inventoryV2.gameplayBridge;
+    this.#facade = inventory.facade;
+    this.#gameplayBridge = inventory.gameplayBridge;
     this.#actions = actions;
     this.#events = events;
     this.#rodCastDisplayStats = rodCastDisplayStats;
     this.#tackleLoadLimitPolicy = tackleLoadLimitPolicy;
     this.#itemDatabase = itemDatabase;
     this.#itemViewContext = itemViewContext;
-    this.#removeInventoryV2Listener = this.#facade.subscribe(() => {
+    this.#removeInventoryListener = this.#facade.subscribe(() => {
       this.#equippedCache = null;
       this.#events.emit("inventory-changed", {
         equipment: this.getEquipped(),
-        source: "inventory-v2",
+        source: "inventory",
       });
     });
   }
@@ -48,11 +48,11 @@ export class PlayerInventory {
     return this.#isLocked;
   }
 
-  get inventoryV2Facade() {
+  get inventoryFacade() {
     return this.#facade;
   }
 
-  dispatchInventoryV2Action(action = {}) {
+  dispatchInventoryAction(action = {}) {
     const safeWhileLocked = new Set([
       this.#actions.OPEN,
       this.#actions.CLOSE,
@@ -141,8 +141,8 @@ export class PlayerInventory {
   }
 
   dispose() {
-    this.#removeInventoryV2Listener?.();
-    this.#removeInventoryV2Listener = null;
+    this.#removeInventoryListener?.();
+    this.#removeInventoryListener = null;
     this.#events.clear();
   }
 }

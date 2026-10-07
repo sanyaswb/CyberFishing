@@ -21,7 +21,7 @@ class ItemStatTestComposition {
   }
 
   // Snapshot migrations receive the composed legacy item-state migration and a snapshot mapper over
-  // their own definition resolver, as InventoryV2CompositionRoot composes them.
+  // their own definition resolver, as InventoryCompositionRoot composes them.
   bindMigration(Class) {
     const composition = this;
     const global = name => vm.runInContext(name, this.context);

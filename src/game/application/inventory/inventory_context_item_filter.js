@@ -1,4 +1,4 @@
-export class InventoryV2ContextItemFilter {
+export class InventoryContextItemFilter {
   #strategies;
 
   constructor({ strategies = [] } = {}) {

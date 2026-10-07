@@ -1,5 +1,5 @@
 /**
- * Stable inventory-v2 equipment identifiers.
+ * Stable inventory equipment identifiers.
  *
  * Slot numbers and labels belong to the UI. Domain state stores only these ids,
  * so a conditional slot never changes identity when the selected rod changes.

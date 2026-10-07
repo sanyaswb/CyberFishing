@@ -4,7 +4,7 @@ const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loade
 const vm = require("node:vm");
 
 const Assertion = CheckAssertion.create(
-  "Inventory-v2 production-shaped equipment hydration check",
+  "Inventory production-shaped equipment hydration check",
 );
 
 class EquipmentHydrationRuntime {
@@ -47,7 +47,7 @@ class EquipmentHydrationRuntime {
     load("src/game/domain/inventory/inventory_item_location.js", ["InventoryItemLocationKind", "InventoryItemLocation"]);
     load("src/game/domain/inventory/flat_inventory_item_repository.js", ["FlatInventoryItemRepository"]);
     load("src/game/domain/items/effective_item_stats_resolver.js", ["EffectiveItemStatsResolver"]);
-    load("src/game/application/inventory/inventory_item_hydrator.js", ["InventoryV2ItemHydrator"]);
+    load("src/game/application/inventory/inventory_item_hydrator.js", ["InventoryItemHydrator"]);
     load("src/game/domain/assemblies/item_assembly_reader.js", ["ItemAssemblyReader"]);
     load("src/game/application/inventory/equipment_read_model_factory.js", ["EquipmentReadModelFactory"]);
     load("src/game/domain/casting/distance_unit_converter.js", ["DistanceUnitConverter"]);
@@ -151,7 +151,7 @@ class ProductionShapedEquipmentFixture {
     const effectiveStatsResolver = new r.EffectiveItemStatsResolver({
       overridePolicy: { normalize: ({ overrides }) => overrides || {} },
     });
-    const hydrator = new r.InventoryV2ItemHydrator({
+    const hydrator = new r.InventoryItemHydrator({
       itemDefinitionResolver: this.definitions,
       effectiveStatsResolver,
     });
@@ -311,5 +311,5 @@ class ProductionShapedEquipmentHydrationCheck {
 const runtime = new EquipmentHydrationRuntime().context;
 new ProductionShapedEquipmentHydrationCheck(runtime).run();
 console.log(
-  "Inventory-v2 production-shaped equipment hydration checks passed.",
+  "Inventory production-shaped equipment hydration checks passed.",
 );

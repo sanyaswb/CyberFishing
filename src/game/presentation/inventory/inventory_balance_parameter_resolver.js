@@ -1,7 +1,7 @@
-import { INVENTORY_V2_BALANCE_TOOLTIP_CONFIG } from "./inventory_item_parameter_config.js";
-import { INVENTORY_V2_RARITY_NAMES } from "./inventory_item_parameters_resolver.js";
+import { INVENTORY_BALANCE_TOOLTIP_CONFIG } from "./inventory_item_parameter_config.js";
+import { INVENTORY_RARITY_NAMES } from "./inventory_item_parameters_resolver.js";
 
-export class InventoryV2BalanceParameterResolver {
+export class InventoryBalanceParameterResolver {
   #config;
   #castDistanceCalculator;
   #retrieveSpeedCalculator;
@@ -20,7 +20,7 @@ export class InventoryV2BalanceParameterResolver {
     rarityVisualResolver = null,
   } = {}) {
     this.#config =
-      config || INVENTORY_V2_BALANCE_TOOLTIP_CONFIG;
+      config || INVENTORY_BALANCE_TOOLTIP_CONFIG;
     this.#physicsConfig = physicsConfig || {};
     this.#castDistanceCalculator = castDistanceCalculator || null;
     this.#retrieveSpeedCalculator =
@@ -34,7 +34,7 @@ export class InventoryV2BalanceParameterResolver {
       typeof rarityVisualResolver.resolve !== "function"
     ) {
       throw new TypeError(
-        "InventoryV2BalanceParameterResolver rarityVisualResolver must implement resolve",
+        "InventoryBalanceParameterResolver rarityVisualResolver must implement resolve",
       );
     }
     this.#rarityVisualResolver = rarityVisualResolver;
@@ -670,7 +670,7 @@ export class InventoryV2BalanceParameterResolver {
     const rarityId = this.#rarityVisualResolver?.resolve(rarity)?.id ||
       rarity.id ||
       "";
-    return INVENTORY_V2_RARITY_NAMES[rarityId] || rarityId;
+    return INVENTORY_RARITY_NAMES[rarityId] || rarityId;
   }
 
   #humanize(value) {

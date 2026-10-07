@@ -1,4 +1,4 @@
-export class InventoryV2AssemblyParameterSectionResolver {
+export class InventoryAssemblyParameterSectionResolver {
   resolve(model = {}) {
     const sections = [];
     if (model.root) {

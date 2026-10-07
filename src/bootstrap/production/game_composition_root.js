@@ -68,8 +68,8 @@ import { InventoryEventBridge } from "../../game/application/inventory/inventory
 import { InventoryRuntimeConfigProvider } from "../../game/application/inventory/inventory_runtime_config_provider.js";
 import { ItemDatabase } from "../../game/application/inventory/item_database.js";
 import { LineCompatibilityRules } from "../../game/application/inventory/line_compatibility_rules.js";
-import { InventoryV2BalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
-import { InventoryV2Bootstrap } from "./inventory_ui_bootstrap.js";
+import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
+import { InventoryBootstrap } from "./inventory_ui_bootstrap.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { ItemCapacityResolver } from "../../game/domain/items/progression/item_capacity_resolver.js";
 import { ItemCatalogBaselineRegistry } from "../../game/domain/items/progression/item_catalog_baseline_registry.js";
@@ -775,22 +775,22 @@ export class GameCompositionRoot {
         ),
       };
     });
-    const inventoryV2Facade = inventory.inventoryV2Facade;
-    if (!inventoryV2Facade) {
-      throw new Error("Inventory V2 composition is required");
+    const inventoryFacade = inventory.inventoryFacade;
+    if (!inventoryFacade) {
+      throw new Error("Inventory composition is required");
     }
-    systems.inventoryUI = own(InventoryV2Bootstrap.create({
-      facade: inventoryV2Facade,
+    systems.inventoryUI = own(InventoryBootstrap.create({
+      facade: inventoryFacade,
       documentRef: this.#documentTarget,
       mountNode: this.#documentTarget?.body,
       warningTimers: new BrowserTimeoutScheduler(),
-      onAction: (action) => inventory.dispatchInventoryV2Action(action),
+      onAction: (action) => inventory.dispatchInventoryAction(action),
       rarityDomAdapter: itemRarityDomAdapter,
       rarityVisualResolver,
       progressionDomAdapter: itemProgressionDomAdapter,
       conditionDomAdapter: itemConditionDomAdapter,
       degradationColorResolver,
-      balanceParameterResolver: new InventoryV2BalanceParameterResolver({
+      balanceParameterResolver: new InventoryBalanceParameterResolver({
         castDistanceCalculator,
         retrieveSpeedCalculator: new ReelRetrieveSpeedCalculator(),
         reelConfig: physicsConfig?.getReelConfig?.() || {},

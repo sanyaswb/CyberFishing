@@ -50,7 +50,7 @@ It reports the production and DEV graph sizes and runs its own negative fixtures
 npm run check                 all checks (syntax, architecture guard, behavior tests)
 npm run check:quick           fast subset
 npm run check:gameplay        fishing and game-cycle systems
-npm run check:inventory       inventory systems (also :inventory-v2, :items, :tools)
+npm run check:inventory       inventory systems (also :items, :tools)
 node utils/run-checks.js --check game-cycle
 ```
 

@@ -66,7 +66,7 @@ const files = [
   "src/game/application/inventory/freshest_refill_candidate_policy.js",
   "src/game/application/inventory/apply_bait_exposure_service.js",
   "src/game/application/inventory/inventory_item_hydrator.js",
-  "src/game/presentation/inventory/inventory_v2_item_view_factory.js",
+  "src/game/presentation/inventory/inventory_item_tree_view_factory.js",
   "src/game/presentation/inventory/inventory_subfilter_resolver.js",
   "src/game/presentation/inventory/inventory_item_order_resolver.js",
   "src/game/application/inventory/inventory_context_item_filter.js",
@@ -91,7 +91,7 @@ vm.runInContext(
 
   const assertIntegration = (condition, message) => {
     if (!condition) {
-      throw new Error("Inventory-v2 integration check failed: " + message);
+      throw new Error("Inventory integration check failed: " + message);
     }
   };
 
@@ -290,7 +290,7 @@ vm.runInContext(
         persisted = JSON.parse(JSON.stringify(value));
       },
     };
-    return InventoryV2CompositionRoot.compose({
+    return InventoryCompositionRoot.compose({
       ...itemStatCollaborators,
       cache,
       assemblyProfileConfig: ITEM_ASSEMBLY_PROFILE_CONFIG,
@@ -380,12 +380,12 @@ vm.runInContext(
       raw("inspect-bait", "bait"),
     ],
   });
-  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(cardInspection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "inspect-pole",
   });
   cardInspection.equipmentState.setRootInstanceId("tackle", "inspect-hook");
   cardInspection.equipmentState.setRootInstanceId("float", "inspect-float");
-  dispatch(cardInspection, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+  dispatch(cardInspection, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, {
     slotId: "rod",
   });
   const equippedRodCard = cardInspection.facade.getViewModel();
@@ -402,7 +402,7 @@ vm.runInContext(
       rodParameterItemIds === "inspect-float,inspect-hook",
     "short press on an equipped rod opens its card with equipped component sections without unequipping it",
   );
-  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(cardInspection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "inspect-reel",
   });
   const incompatibleReelCard = cardInspection.facade.getViewModel();
@@ -413,10 +413,10 @@ vm.runInContext(
       Boolean(incompatibleReelCard.panel.assembly.equipWarning),
     "an incompatible inventory item still opens its card with a disabled Equip action and a reason",
   );
-  dispatch(cardInspection, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(cardInspection, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: "inspect-reel",
   });
-  dispatch(cardInspection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(cardInspection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "inspect-bait",
   });
   const slotlessItemCard = cardInspection.facade.getViewModel();
@@ -428,7 +428,7 @@ vm.runInContext(
     "a slotless inventory item opens as a read-only card and keeps normal inventory browsing",
   );
 
-  dispatch(compatibleFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(compatibleFiltering, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "compatible-pole",
   });
   const poleCompatibleView = compatibleFiltering.facade.getViewModel();
@@ -444,7 +444,7 @@ vm.runInContext(
         "compatible-float,compatible-hook,compatible-net",
     "equipping a pole rod automatically shows only items compatible with its active context",
   );
-  dispatch(compatibleFiltering, InventoryV2ActionType.CATEGORY_SELECT, {
+  dispatch(compatibleFiltering, InventoryActionType.CATEGORY_SELECT, {
     categoryId: "all",
   });
   const allAfterRodEquip = compatibleFiltering.facade.getViewModel();
@@ -461,7 +461,7 @@ vm.runInContext(
       ),
     "switching to All restores incompatible and unattached inventory items",
   );
-  dispatch(compatibleFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(compatibleFiltering, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "compatible-net",
   });
   assertIntegration(
@@ -471,10 +471,10 @@ vm.runInContext(
   );
   const compatibleHookRoot = dispatch(
     compatibleFiltering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "compatible-hook" },
   ).rootInstanceId;
-  dispatch(compatibleFiltering, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(compatibleFiltering, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: compatibleHookRoot,
   });
   assertIntegration(
@@ -491,10 +491,10 @@ vm.runInContext(
       raw("highlight-net", "net"),
     ],
   });
-  dispatch(highlightedSelection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(highlightedSelection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "highlight-rod",
   });
-  dispatch(highlightedSelection, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+  dispatch(highlightedSelection, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, {
     slotId: "float",
   });
   const highlightedView = highlightedSelection.facade.getViewModel();
@@ -513,7 +513,7 @@ vm.runInContext(
       )?.compatibleWithHighlightedSlot === false,
     "only compatible inventory cards are highlighted for the selected slot",
   );
-  dispatch(highlightedSelection, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(highlightedSelection, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "highlight-float",
   });
   assertIntegration(
@@ -529,10 +529,10 @@ vm.runInContext(
       raw("lure-wobbler", "wobbler"),
     ],
   });
-  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(directLureEquipment, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "lure-rod",
   });
-  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(directLureEquipment, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "lure-spinner",
   });
   assertIntegration(
@@ -543,7 +543,7 @@ vm.runInContext(
       ).baits[0]?.instanceId === "lure-spinner",
     "a non-composite spinner equips without requesting assembly slots",
   );
-  dispatch(directLureEquipment, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(directLureEquipment, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "lure-wobbler",
   });
   assertIntegration(
@@ -577,7 +577,7 @@ vm.runInContext(
   assertIntegration(
     presentationLine?.displayStats?.["Залишок ліски"] === "62 м" &&
       presentationLine?.progression?.capacity?.percent === 62,
-    "Inventory V2 preserves legacy hover parameters and line-capacity progression",
+    "Inventory preserves legacy hover parameters and line-capacity progression",
   );
 
   const inventoryBoatCharge = makeComposition({
@@ -617,7 +617,7 @@ vm.runInContext(
       availableSubtypeIds.has("leaders"),
     "inventory exposes the legacy subtype groups",
   );
-  dispatch(subtypeFiltering, InventoryV2ActionType.SUBFILTER_TOGGLE, {
+  dispatch(subtypeFiltering, InventoryActionType.SUBFILTER_TOGGLE, {
     filterId: "fishing-lines",
     enabled: true,
   });
@@ -627,7 +627,7 @@ vm.runInContext(
         "filter-line",
     "one selected subtype filters the inventory",
   );
-  dispatch(subtypeFiltering, InventoryV2ActionType.SUBFILTER_TOGGLE, {
+  dispatch(subtypeFiltering, InventoryActionType.SUBFILTER_TOGGLE, {
     filterId: "leaders",
     enabled: true,
   });
@@ -635,7 +635,7 @@ vm.runInContext(
     subtypeFiltering.facade.getViewModel().inventory.items.length === 2,
     "multiple subtype filters combine with OR semantics",
   );
-  dispatch(subtypeFiltering, InventoryV2ActionType.CATEGORY_SELECT, {
+  dispatch(subtypeFiltering, InventoryActionType.CATEGORY_SELECT, {
     categoryId: "rods",
   });
   const rodsAfterCategoryChange = subtypeFiltering.facade.getViewModel().inventory;
@@ -660,15 +660,15 @@ vm.runInContext(
       raw("context-net", "net"),
     ],
   });
-  dispatch(contextualFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualFiltering, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "context-rod",
   });
-  dispatch(contextualFiltering, InventoryV2ActionType.CATEGORY_SELECT, {
+  dispatch(contextualFiltering, InventoryActionType.CATEGORY_SELECT, {
     categoryId: "reels",
   });
   const contextReelRoot = dispatch(
     contextualFiltering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "context-reel" },
   ).rootInstanceId;
   const reelContextView = contextualFiltering.facade.getViewModel().inventory;
@@ -679,10 +679,10 @@ vm.runInContext(
         "all,lines",
     "an open reel shows only line candidates and ignores an obsolete category",
   );
-  dispatch(contextualFiltering, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextReelRoot,
   });
-  dispatch(contextualFiltering, InventoryV2ActionType.CATEGORY_SELECT, {
+  dispatch(contextualFiltering, InventoryActionType.CATEGORY_SELECT, {
     categoryId: "all",
   });
   const normalInventoryIds = new Set(
@@ -700,7 +700,7 @@ vm.runInContext(
 
   const contextSpringRoot = dispatch(
     contextualFiltering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "context-spring" },
   ).rootInstanceId;
   const initialSpringCandidates = new Set(
@@ -716,10 +716,10 @@ vm.runInContext(
       !initialSpringCandidates.has("context-net"),
     "a spring shows only components accepted by currently available sockets",
   );
-  dispatch(contextualFiltering, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualFiltering, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "context-hooks",
   });
-  dispatch(contextualFiltering, InventoryV2ActionType.ASSEMBLY_SOCKET_ACTIVATE, {
+  dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, {
     rootInstanceId: contextSpringRoot,
     parentInstanceId: contextSpringRoot,
     slotId: "hook",
@@ -736,13 +736,13 @@ vm.runInContext(
       nestedSpringCandidates.has("context-chum"),
     "adding a hook automatically exposes bait through the same nested-slot resolver",
   );
-  dispatch(contextualFiltering, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextSpringRoot,
   });
 
   const contextHookRoot = dispatch(
     contextualFiltering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "context-hooks" },
   ).rootInstanceId;
   const hookCandidateIds = contextualFiltering.facade
@@ -752,13 +752,13 @@ vm.runInContext(
     hookCandidateIds.length === 1 && hookCandidateIds[0] === "context-bait",
     "a standalone hook editor shows only bait",
   );
-  dispatch(contextualFiltering, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextHookRoot,
   });
 
   const contextBoatRoot = dispatch(
     contextualFiltering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "context-boat" },
   ).rootInstanceId;
   const boatCandidateIds = contextualFiltering.facade
@@ -768,7 +768,7 @@ vm.runInContext(
     boatCandidateIds.length === 1 && boatCandidateIds[0] === "context-chum",
     "a boat editor shows only cargo accepted by its sections",
   );
-  dispatch(contextualFiltering, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextBoatRoot,
   });
 
@@ -828,7 +828,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "rarity" },
   );
   assertIntegration(
@@ -838,12 +838,12 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "type" },
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    InventoryActionType.SORT_DIRECTION_SELECT,
     { directionId: "ascending" },
   );
   assertIntegration(
@@ -853,17 +853,17 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "type" },
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "rarity" },
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    InventoryActionType.SORT_DIRECTION_SELECT,
     { directionId: "descending" },
   );
   assertIntegration(
@@ -873,7 +873,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "ratingTier" },
   );
   const rarityThenLevel = inventoryOrdering.facade.getViewModel().inventory.sort;
@@ -889,7 +889,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "rarity" },
   );
   assertIntegration(
@@ -899,12 +899,12 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "rating" },
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "ratingTier" },
   );
   assertIntegration(
@@ -914,7 +914,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.SORT_DIRECTION_SELECT,
+    InventoryActionType.SORT_DIRECTION_SELECT,
     { directionId: "ascending" },
   );
   assertIntegration(
@@ -924,7 +924,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+    InventoryActionType.RARITY_FILTER_TOGGLE,
     { rarityId: "rare", enabled: true },
   );
   assertIntegration(
@@ -933,7 +933,7 @@ vm.runInContext(
   );
   dispatch(
     inventoryOrdering,
-    InventoryV2ActionType.RARITY_FILTER_TOGGLE,
+    InventoryActionType.RARITY_FILTER_TOGGLE,
     { rarityId: "rare", enabled: false },
   );
 
@@ -976,7 +976,7 @@ vm.runInContext(
   });
   dispatch(
     chainedOrdering,
-    InventoryV2ActionType.SORT_CRITERION_SELECT,
+    InventoryActionType.SORT_CRITERION_SELECT,
     { criterionId: "ratingTier" },
   );
   assertIntegration(
@@ -997,18 +997,18 @@ vm.runInContext(
   });
   const stableSpringRoot = dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-spring" },
   ).rootInstanceId;
   stablePlacementOrdering.facade.getViewModel();
   dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-hooks" },
   );
   dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-hooks" },
   );
   assertIntegration(
@@ -1020,17 +1020,17 @@ vm.runInContext(
   );
   dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-hooks" },
   );
   dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-hooks" },
   );
   dispatch(
     stablePlacementOrdering,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "stable-hooks" },
   );
   assertIntegration(
@@ -1060,12 +1060,12 @@ vm.runInContext(
   });
   const rapidBoatRoot = dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-boat" },
   ).rootInstanceId;
   const firstCargoSelection = dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-chum" },
   );
   const firstHighlightedCargo = repeatedSocketPlacement.facade
@@ -1079,7 +1079,7 @@ vm.runInContext(
   );
   dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-chum" },
   );
   assertIntegration(
@@ -1092,7 +1092,7 @@ vm.runInContext(
   );
   const secondCargoSelection = dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-chum" },
   );
   const remainingHighlightedCargo = repeatedSocketPlacement.facade
@@ -1106,7 +1106,7 @@ vm.runInContext(
   );
   dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-chum" },
   );
   assertIntegration(
@@ -1119,7 +1119,7 @@ vm.runInContext(
   );
   dispatch(
     repeatedSocketPlacement,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "rapid-chum" },
   );
   assertIntegration(
@@ -1134,7 +1134,7 @@ vm.runInContext(
     "the last remaining compatible section fills with one click",
   );
 
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "pole-rod",
   });
   const poleView = flow.facade.getViewModel();
@@ -1146,14 +1146,14 @@ vm.runInContext(
 
   const hookDraft = dispatch(
     flow,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "hook-stack" },
   ).rootInstanceId;
   assertIntegration(
     flow.assemblyStates.require(hookDraft).isDraft,
     "new hook assembly starts as draft",
   );
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "bait-stack",
   });
   const completedHookEditor = flow.facade.getViewModel().panel.assembly;
@@ -1165,7 +1165,7 @@ vm.runInContext(
       completedHookEditor.root.assemblyCompletion.hasAnyComponent === true,
     "an unequipped assembly with an attached component exposes Disassemble",
   );
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: hookDraft,
   });
   assertIntegration(
@@ -1173,7 +1173,7 @@ vm.runInContext(
       flow.equipmentState.getRootInstanceId("tackle") === hookDraft,
     "hook becomes prepared and equipped",
   );
-  dispatch(flow, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+  dispatch(flow, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, {
     slotId: "tackle",
   });
   assertIntegration(
@@ -1182,11 +1182,11 @@ vm.runInContext(
       flow.facade.getViewModel().panel.assembly.showEquip === false,
     "short press on active prepared stack opens its editor",
   );
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_UNEQUIP, {
     rootInstanceId: hookDraft,
   });
 
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "feeder-rod",
   });
   assertIntegration(
@@ -1206,19 +1206,19 @@ vm.runInContext(
 
   const springDraft = dispatch(
     flow,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "spring-stack" },
   ).rootInstanceId;
   const chooseHookSlot = dispatch(
     flow,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: hookDraft },
   );
   assertIntegration(
     chooseHookSlot.requiresSocketChoice === true,
     "three hook sockets require an explicit target",
   );
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_SOCKET_ACTIVATE, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, {
     rootInstanceId: springDraft,
     socketId: "hook[0]",
     parentInstanceId: springDraft,
@@ -1235,7 +1235,7 @@ vm.runInContext(
         .getRefillSignature("hook[0].bait") !== null,
     "prepared hook and bait are absorbed as one nested spring component",
   );
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: springDraft,
   });
   const partialInventorySpring = flow.facade
@@ -1246,17 +1246,17 @@ vm.runInContext(
       partialInventorySpring?.assemblyCompletion?.isComplete === false,
     "a partially filled assembly exposes incomplete metadata in inventory",
   );
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: springDraft,
   });
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "chum-stack",
   });
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: springDraft,
   });
 
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "chum-stack",
   });
   assertIntegration(
@@ -1266,16 +1266,16 @@ vm.runInContext(
 
   const boatRoot = dispatch(
     flow,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "boat-one" },
   ).rootInstanceId;
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "chum-stack",
   });
-  dispatch(flow, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: boatRoot,
   });
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "net-one",
   });
 
@@ -1289,7 +1289,7 @@ vm.runInContext(
       ")",
   );
 
-  const saved = dispatch(flow, InventoryV2ActionType.LOADOUT_SAVE, {
+  const saved = dispatch(flow, InventoryActionType.LOADOUT_SAVE, {
     name: "Feeder kit",
   });
   const loadout = flow.loadouts.require(saved.loadoutId);
@@ -1308,7 +1308,7 @@ vm.runInContext(
       flow.equipmentState.getRootInstanceId("handChum") !== null,
     "saving a loadout leaves auxiliary equipment active",
   );
-  dispatch(flow, InventoryV2ActionType.CATEGORY_SELECT, {
+  dispatch(flow, InventoryActionType.CATEGORY_SELECT, {
     categoryId: "all",
   });
   assertIntegration(
@@ -1331,7 +1331,7 @@ vm.runInContext(
   );
 
   flow.equipmentState.clear("tackle");
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: saved.loadoutId,
   });
   const savedPreview = flow.facade.getViewModel();
@@ -1343,7 +1343,7 @@ vm.runInContext(
       savedPreview.inventory.savedLoadout.slots.every((slot) => slot.item),
     "short press opens only the saved loadout contents on the right without equipping it",
   );
-  dispatch(flow, InventoryV2ActionType.LOADOUT_PREVIEW_BACK, {
+  dispatch(flow, InventoryActionType.LOADOUT_PREVIEW_BACK, {
     loadoutId: saved.loadoutId,
   });
   assertIntegration(
@@ -1351,10 +1351,10 @@ vm.runInContext(
       flow.equipmentState.getRootInstanceId("tackle") === null,
     "Back closes saved loadout contents without equipping anything",
   );
-  dispatch(flow, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: saved.loadoutId,
   });
-  dispatch(flow, InventoryV2ActionType.LOADOUT_PREVIEW_SLOT_EQUIP, {
+  dispatch(flow, InventoryActionType.LOADOUT_PREVIEW_SLOT_EQUIP, {
     loadoutId: saved.loadoutId,
     slotId: "tackle",
   });
@@ -1364,7 +1364,7 @@ vm.runInContext(
     "a saved loadout root can be equipped separately while its contents stay open",
   );
   flow.equipmentState.clear("tackle");
-  dispatch(flow, InventoryV2ActionType.LOADOUT_EQUIP_ALL, {
+  dispatch(flow, InventoryActionType.LOADOUT_EQUIP_ALL, {
     loadoutId: saved.loadoutId,
   });
   assertIntegration(
@@ -1373,7 +1373,7 @@ vm.runInContext(
     "Equip all restores the complete saved loadout and closes its contents",
   );
 
-  dispatch(flow, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+  dispatch(flow, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, {
     slotId: "tackle",
     instanceId: springDraft,
   });
@@ -1388,11 +1388,11 @@ vm.runInContext(
     .getRootInstanceId("rod");
   const repositorySizeBeforeRodCycles = flow.repository.size;
   for (let cycle = 0; cycle < 3; cycle += 1) {
-    dispatch(flow, InventoryV2ActionType.LOADOUT_PREVIEW_SLOT_EQUIP, {
+    dispatch(flow, InventoryActionType.LOADOUT_PREVIEW_SLOT_EQUIP, {
       loadoutId: saved.loadoutId,
       slotId: "rod",
     });
-    dispatch(flow, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+    dispatch(flow, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, {
       slotId: "rod",
       instanceId: remainingLoadoutRod,
     });
@@ -1423,10 +1423,10 @@ vm.runInContext(
   });
   const looseStackInitialSize = looseStackCycles.repository.size;
   for (let cycle = 0; cycle < 3; cycle += 1) {
-    dispatch(looseStackCycles, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+    dispatch(looseStackCycles, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
       instanceId: "stacked-pole-rods",
     });
-    dispatch(looseStackCycles, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+    dispatch(looseStackCycles, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, {
       slotId: "rod",
       instanceId: looseStackCycles.equipmentState.getRootInstanceId("rod"),
     });
@@ -1473,11 +1473,11 @@ vm.runInContext(
   disassembly.equipmentState.setRootInstanceId("tackle", disassemblySpring);
   const disassemblyLoadoutId = dispatch(
     disassembly,
-    InventoryV2ActionType.LOADOUT_SAVE,
+    InventoryActionType.LOADOUT_SAVE,
     { name: "Disassembly kit" },
   ).loadoutId;
   const activeDisassemblyAttempt = disassembly.facade.dispatch({
-    type: InventoryV2ActionType.ASSEMBLY_DISASSEMBLE,
+    type: InventoryActionType.ASSEMBLY_DISASSEMBLE,
     rootInstanceId: disassemblySpring,
   });
   assertIntegration(
@@ -1487,11 +1487,11 @@ vm.runInContext(
       disassembly.assemblyStates.has(disassemblySpring),
     "an equipped stack must be unequipped before it can be disassembled",
   );
-  dispatch(disassembly, InventoryV2ActionType.EQUIPMENT_SLOT_LONG_PRESS, {
+  dispatch(disassembly, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, {
     slotId: "tackle",
     instanceId: disassemblySpring,
   });
-  dispatch(disassembly, InventoryV2ActionType.ASSEMBLY_DISASSEMBLE, {
+  dispatch(disassembly, InventoryActionType.ASSEMBLY_DISASSEMBLE, {
     rootInstanceId: disassemblySpring,
   });
   assertIntegration(
@@ -1508,7 +1508,7 @@ vm.runInContext(
       disassembly.equipmentState.getRootInstanceId("tackle") === null,
     "disassembling an unequipped stack updates its loadout without destroying the other roots",
   );
-  dispatch(disassembly, InventoryV2ActionType.LOADOUT_DISASSEMBLE, {
+  dispatch(disassembly, InventoryActionType.LOADOUT_DISASSEMBLE, {
     loadoutId: disassemblyLoadoutId,
   });
   assertIntegration(
@@ -1529,28 +1529,28 @@ vm.runInContext(
       raw("line-kit-float", "floatDay"),
     ],
   });
-  dispatch(lineLoadout, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(lineLoadout, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "line-kit-rod",
   });
   const loadoutLineSegment = dispatch(
     lineLoadout,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "line-kit-source" },
   ).equippedInstanceId;
-  dispatch(lineLoadout, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(lineLoadout, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "line-kit-float",
   });
   const lineLoadoutId = dispatch(
     lineLoadout,
-    InventoryV2ActionType.LOADOUT_SAVE,
+    InventoryActionType.LOADOUT_SAVE,
     { name: "Pole line kit" },
   ).loadoutId;
-  dispatch(lineLoadout, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(lineLoadout, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "loose-rod",
   });
   const looseLineSegment = dispatch(
     lineLoadout,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "loose-line-source" },
   ).equippedInstanceId;
   assertIntegration(
@@ -1558,7 +1558,7 @@ vm.runInContext(
       lineMeters(lineLoadout, "loose-line-source") === 17,
     "pole line is split into the exact active segment before loadout swap",
   );
-  dispatch(lineLoadout, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(lineLoadout, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: lineLoadoutId,
   });
   assertIntegration(
@@ -1567,7 +1567,7 @@ vm.runInContext(
         looseLineSegment,
     "short loadout press opens its contents without changing active equipment",
   );
-  dispatch(lineLoadout, InventoryV2ActionType.LOADOUT_EQUIP_ALL, {
+  dispatch(lineLoadout, InventoryActionType.LOADOUT_EQUIP_ALL, {
     loadoutId: lineLoadoutId,
   });
   assertIntegration(
@@ -1577,7 +1577,7 @@ vm.runInContext(
         loadoutLineSegment,
     "equipping a loadout merges the outgoing terminal-line segment back to exactly 25m",
   );
-  dispatch(lineLoadout, InventoryV2ActionType.INVENTORY_ITEM_LONG_PRESS, {
+  dispatch(lineLoadout, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, {
     instanceId: lineLoadoutId,
   });
   assertIntegration(
@@ -1630,10 +1630,10 @@ vm.runInContext(
       },
     }],
   });
-  const rollbackTransaction = new InventoryV2TransactionCoordinator({
+  const rollbackTransaction = new InventoryTransactionCoordinator({
     participants: [rollbackRepository, rollbackEquipment, rollbackLoadouts],
   });
-  const rollbackPort = new InventoryV2LoadoutPort({
+  const rollbackPort = new InventoryLoadoutPort({
     repository: rollbackRepository,
     loadouts: rollbackLoadouts,
     transaction: rollbackTransaction,
@@ -1682,21 +1682,21 @@ vm.runInContext(
       raw("activation-empty-reel", "reel"),
     ],
   });
-  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualActivation, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "activation-rod",
   });
   const completeReelRoot = dispatch(
     contextualActivation,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "activation-reel" },
   ).rootInstanceId;
-  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualActivation, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "activation-line",
   });
-  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(contextualActivation, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: completeReelRoot,
   });
-  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualActivation, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: completeReelRoot,
   });
   assertIntegration(
@@ -1705,21 +1705,21 @@ vm.runInContext(
       contextualActivation.commands.getUiState().panelMode === "loadout",
     "a complete compatible assembly equips immediately without opening its card",
   );
-  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
+  dispatch(contextualActivation, InventoryActionType.ASSEMBLY_UNEQUIP, {
     rootInstanceId: completeReelRoot,
   });
   const emptyPreparedReel = dispatch(
     contextualActivation,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "activation-empty-reel" },
   ).rootInstanceId;
-  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(contextualActivation, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: emptyPreparedReel,
   });
-  dispatch(contextualActivation, InventoryV2ActionType.ASSEMBLY_UNEQUIP, {
+  dispatch(contextualActivation, InventoryActionType.ASSEMBLY_UNEQUIP, {
     rootInstanceId: emptyPreparedReel,
   });
-  dispatch(contextualActivation, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(contextualActivation, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: emptyPreparedReel,
   });
   assertIntegration(
@@ -1737,10 +1737,10 @@ vm.runInContext(
   });
   const reelWithoutRodRoot = dispatch(
     reelWithoutRod,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "raw-reel-no-rod" },
   ).rootInstanceId;
-  dispatch(reelWithoutRod, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(reelWithoutRod, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "raw-line-no-rod",
   });
   const noRodInstalledLine = reelWithoutRod.assemblyReader.getChild(
@@ -1761,12 +1761,12 @@ vm.runInContext(
       raw("raw-line-with-pole", "line", 1, { statOverrides: { lengthMeters: 25 } }),
     ],
   });
-  dispatch(reelWithPoleActive, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(reelWithPoleActive, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "active-pole-for-reel",
   });
   const reelWithPoleRoot = dispatch(
     reelWithPoleActive,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "raw-reel-with-pole" },
   ).rootInstanceId;
   const poleReelEditor = reelWithPoleActive.facade.getViewModel().panel.assembly;
@@ -1777,7 +1777,7 @@ vm.runInContext(
         "Цей слот не підтримується обраним вудилищем.",
     "a reel editor keeps Equip disabled while a pole rod is active",
   );
-  dispatch(reelWithPoleActive, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(reelWithPoleActive, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "raw-line-with-pole",
   });
   assertIntegration(
@@ -1797,18 +1797,18 @@ vm.runInContext(
       raw("short-reel-line", "line", 1, { statOverrides: { lengthMeters: 5 } }),
     ],
   });
-  dispatch(changedRodReel, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(changedRodReel, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "short-reel-rod",
   });
   const preparedShortReel = dispatch(
     changedRodReel,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "prepared-short-reel" },
   ).rootInstanceId;
-  dispatch(changedRodReel, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(changedRodReel, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "short-reel-line",
   });
-  dispatch(changedRodReel, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(changedRodReel, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: preparedShortReel,
   });
   const equippedTooltipContext =
@@ -1819,11 +1819,11 @@ vm.runInContext(
       equippedTooltipContext.equipment.line?.instanceId != null,
     "balance tooltip context exposes projected rod, reel and installed line",
   );
-  dispatch(changedRodReel, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(changedRodReel, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "long-reel-rod",
   });
   const rejectedPreparedReel = changedRodReel.facade.dispatch({
-    type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: preparedShortReel,
   });
   assertIntegration(
@@ -1844,19 +1844,19 @@ vm.runInContext(
       raw("draft-short-line", "line", 1, { statOverrides: { lengthMeters: 5 } }),
     ],
   });
-  dispatch(draftReelRollback, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(draftReelRollback, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "draft-long-rod",
   });
   const draftShortReel = dispatch(
     draftReelRollback,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "draft-short-reel" },
   ).rootInstanceId;
-  dispatch(draftReelRollback, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(draftReelRollback, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "draft-short-line",
   });
   const rejectedDraftReel = draftReelRollback.facade.dispatch({
-    type: InventoryV2ActionType.ASSEMBLY_EQUIP,
+    type: InventoryActionType.ASSEMBLY_EQUIP,
     rootInstanceId: draftShortReel,
   });
   assertIntegration(
@@ -1911,11 +1911,11 @@ vm.runInContext(
     invalidLoadout.snapshotFactory.create(),
   );
   const invalidLoadoutPreview = invalidLoadout.facade.dispatch({
-    type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: "invalid-line-kit",
   });
   const invalidLoadoutResult = invalidLoadout.facade.dispatch({
-    type: InventoryV2ActionType.LOADOUT_EQUIP_ALL,
+    type: InventoryActionType.LOADOUT_EQUIP_ALL,
     loadoutId: "invalid-line-kit",
   });
   assertIntegration(
@@ -1933,15 +1933,15 @@ vm.runInContext(
   const emptyStack = makeComposition({
     items: [raw("empty-feeder-rod", "rodFeeder"), raw("empty-spring", "spring")],
   });
-  dispatch(emptyStack, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(emptyStack, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "empty-feeder-rod",
   });
   const emptySpringRoot = dispatch(
     emptyStack,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "empty-spring" },
   ).rootInstanceId;
-  dispatch(emptyStack, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(emptyStack, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: emptySpringRoot,
   });
   assertIntegration(
@@ -1949,7 +1949,7 @@ vm.runInContext(
       emptyStack.equipmentState.getRootInstanceId("tackle") === null,
     "leaving the editor preserves an unfinished draft in inventory",
   );
-  dispatch(emptyStack, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(emptyStack, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: emptySpringRoot,
   });
   const emptySpringEditor = emptyStack.facade.getViewModel().panel.assembly;
@@ -1961,7 +1961,7 @@ vm.runInContext(
       emptySpringEditor.root.assemblyCompletion.isComplete === false,
     "an unequipped assembly with empty sockets hides Disassemble",
   );
-  dispatch(emptyStack, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(emptyStack, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: emptySpringRoot,
   });
   assertIntegration(
@@ -1988,18 +1988,18 @@ vm.runInContext(
       raw("ready-leader", "leader"),
     ],
   });
-  dispatch(readiness, InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE, {
+  dispatch(readiness, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "ready-rod",
   });
   const emptyReelRoot = dispatch(
     readiness,
-    InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     { instanceId: "ready-reel" },
   ).rootInstanceId;
-  dispatch(readiness, InventoryV2ActionType.ASSEMBLY_EQUIP, {
+  dispatch(readiness, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: emptyReelRoot,
   });
-  dispatch(readiness, InventoryV2ActionType.EQUIPMENT_SLOT_ACTIVATE, {
+  dispatch(readiness, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, {
     slotId: "reel",
   });
   const equippedEmptyReelEditor =
@@ -2012,7 +2012,7 @@ vm.runInContext(
       equippedEmptyReelEditor.root.assemblyCompletion.hasAnyComponent === false,
     "an equipped empty reel exposes Unequip but hides Disassemble",
   );
-  dispatch(readiness, InventoryV2ActionType.ASSEMBLY_BACK, {
+  dispatch(readiness, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: emptyReelRoot,
   });
   const castReadiness = readiness.gameplayBridge.evaluateCastReadiness();
@@ -2023,7 +2023,7 @@ vm.runInContext(
     "reel without line equips, while casting opens inventory with a line warning",
   );
   const leaderAttempt = readiness.facade.dispatch({
-    type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: "ready-leader",
   });
   assertIntegration(
@@ -2124,7 +2124,7 @@ vm.runInContext(
   );
 
   const handEquip = refill.facade.dispatch({
-    type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: "hand-chum",
   });
   assertIntegration(handEquip.success === true, "hand chum equips");
@@ -2245,7 +2245,7 @@ vm.runInContext(
     slotIndex: 0,
   });
   const custodyChumEquip = custody.facade.dispatch({
-    type: InventoryV2ActionType.INVENTORY_ITEM_ACTIVATE,
+    type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: "custody-chum",
   });
   assertIntegration(
@@ -2457,7 +2457,7 @@ vm.runInContext(
     equipment: { ...emptyEquipment(), rod: "clock-rod", tackle: "clock-hook" },
     now: loadoutNow,
   });
-  const clockSaved = dispatch(clockFlow, InventoryV2ActionType.LOADOUT_SAVE, { name: "Clock kit" });
+  const clockSaved = dispatch(clockFlow, InventoryActionType.LOADOUT_SAVE, { name: "Clock kit" });
   const createdClockKit = clockFlow.loadouts.require(clockSaved.loadoutId);
   assertIntegration(createdClockKit.createdAt === new Date(loadoutTime).toISOString(),
     "composition passes the same clock through createFromEquipment");
@@ -2471,8 +2471,8 @@ vm.runInContext(
   assertIntegration(restoredClockFlow.loadouts.require(clockSaved.loadoutId).createdAt === createdClockKit.createdAt,
     "snapshot composition carries clock without rewriting stored dates");
 
-  console.log("Inventory-v2 integration checks passed.");
+  console.log("Inventory integration checks passed.");
   `,
   context,
-  { filename: "inventory-v2-integration-scenarios.js" },
+  { filename: "inventory-integration-scenarios.js" },
 );

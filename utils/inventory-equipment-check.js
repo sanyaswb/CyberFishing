@@ -7,7 +7,7 @@ const {
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
-const Assertion = CheckAssertion.create("Inventory-v2 equipment check");
+const Assertion = CheckAssertion.create("Inventory equipment check");
 
 class RuntimeLoader {
   load() {
@@ -66,10 +66,10 @@ class RuntimeLoader {
       "EquipmentTransitionExecutor",
     ]);
     loader.load("src/game/application/inventory/inventory_equipment_transition_adapter.js", [
-      "InventoryV2EquipmentTransitionPort",
+      "InventoryEquipmentTransitionPort",
     ]);
     loader.load("src/game/application/inventory/inventory_loadout_adapter.js", [
-      "InventoryV2LoadoutPort",
+      "InventoryLoadoutPort",
     ]);
     loader.load("src/game/domain/loadouts/equipment_loadout.js", [
       "LOADOUT_DISPLAY_NAME",
@@ -106,7 +106,7 @@ class RuntimeLoader {
     loader.load("src/game/application/inventory/equipment_read_model_factory.js", [
       "EquipmentReadModelFactory",
     ]);
-    // Player-facing rule texts are injected the way InventoryV2CompositionRoot injects them.
+    // Player-facing rule texts are injected the way InventoryCompositionRoot injects them.
     for (const name of ["FishingReadinessPolicy", "ManualRodChangePlanner", "LoadoutEquipmentTransitionPlanner"]) {
       context[name] = bindConstructorDefaults(context[name], {
         messages: context.INVENTORY_RULE_MESSAGES,
@@ -172,7 +172,7 @@ class MemoryAssemblyReader {
   }
 }
 
-class InventoryV2EquipmentCheck {
+class InventoryEquipmentCheck {
   #runtime;
 
   constructor(runtime) {
@@ -195,15 +195,15 @@ class InventoryV2EquipmentCheck {
   #checkPortContracts() {
     const r = this.#runtime;
     // The base ports have no classic consumer (no activation): reach them through their adapters.
-    const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryV2EquipmentTransitionPort);
-    const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryV2LoadoutPort);
+    const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryEquipmentTransitionPort);
+    const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryLoadoutPort);
     const transitionPort = new EquipmentTransitionPort();
     for (const name of ["runAtomic", "moveRootToInventory", "moveRootToEquipment", "commitEquipmentState"]) {
       Assertion.throws(() => transitionPort[name](), `EquipmentTransitionPort.${name} requires an implementation`);
     }
     // The inventory adapter delegates atomicity to its transaction; root moves are no-ops (state lives in EquipmentState).
     const operations = [];
-    const adapter = new r.InventoryV2EquipmentTransitionPort({
+    const adapter = new r.InventoryEquipmentTransitionPort({
       transaction: { runAtomic: (operation) => { operations.push(operation); return operation(); } },
     });
     Assertion.that(adapter instanceof EquipmentTransitionPort, "inventory adapter implements EquipmentTransitionPort");
@@ -543,5 +543,5 @@ class InventoryV2EquipmentCheck {
 }
 
 const runtime = new RuntimeLoader().load();
-new InventoryV2EquipmentCheck(runtime).run();
-console.log("Inventory-v2 equipment checks passed.");
+new InventoryEquipmentCheck(runtime).run();
+console.log("Inventory equipment checks passed.");

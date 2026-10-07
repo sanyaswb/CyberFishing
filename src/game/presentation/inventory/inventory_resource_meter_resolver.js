@@ -1,4 +1,4 @@
-export const INVENTORY_V2_RESOURCE_METER_DEFINITIONS = Object.freeze([
+export const INVENTORY_RESOURCE_METER_DEFINITIONS = Object.freeze([
   Object.freeze({
     id: "energy",
     icon: "⚡",
@@ -16,10 +16,10 @@ export const INVENTORY_V2_RESOURCE_METER_DEFINITIONS = Object.freeze([
   }),
 ]);
 
-export class InventoryV2ResourceMeterResolver {
+export class InventoryResourceMeterResolver {
   #definitions;
 
-  constructor({ definitions = INVENTORY_V2_RESOURCE_METER_DEFINITIONS } = {}) {
+  constructor({ definitions = INVENTORY_RESOURCE_METER_DEFINITIONS } = {}) {
     this.#definitions = Object.freeze([...(definitions || [])]);
   }
 

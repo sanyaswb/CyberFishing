@@ -1,4 +1,4 @@
-export class InventoryV2InventoryGridRenderer {
+export class InventoryInventoryGridRenderer {
   #dom;
   #itemRenderer;
   #horizontalScrollController;
@@ -31,7 +31,7 @@ export class InventoryV2InventoryGridRenderer {
   ) {
     const panel = this.#dom.element(
       "section",
-      "inventory-v2-inventory-panel",
+      "inventory-inventory-panel",
     );
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
@@ -70,11 +70,11 @@ export class InventoryV2InventoryGridRenderer {
   ) {
     const navigation = this.#dom.element(
       "nav",
-      "inventory-v2-categories",
+      "inventory-categories",
     );
     navigation.setAttribute("aria-label", "Категорії інвентарю");
     const toggle = this.#dom.button(
-      "inventory-v2-categories__toggle",
+      "inventory-categories__toggle",
       "",
       { title: "Фільтри за підтипами" },
     );
@@ -86,7 +86,7 @@ export class InventoryV2InventoryGridRenderer {
     toggle.addEventListener("click", () => onSubfiltersToggle?.(toggle));
     navigation.appendChild(toggle);
     const sortToggle = this.#dom.button(
-      "inventory-v2-categories__toggle inventory-v2-categories__sort-toggle",
+      "inventory-categories__toggle inventory-categories__sort-toggle",
       "",
       { title: "Сортування та фільтр рідкості" },
     );
@@ -100,7 +100,7 @@ export class InventoryV2InventoryGridRenderer {
     model.categories.forEach((category) => {
       const label = [category.icon, category.label].filter(Boolean).join(" ");
       const button = this.#dom.button(
-        "inventory-v2-categories__button",
+        "inventory-categories__button",
         label,
       );
       button.classList.toggle("is-active", category.selected);
@@ -112,14 +112,14 @@ export class InventoryV2InventoryGridRenderer {
   }
 
   #renderSubfilters(model, onSubfilterToggle) {
-    const container = this.#dom.element("div", "inventory-v2-subfilters");
+    const container = this.#dom.element("div", "inventory-subfilters");
     container.classList.toggle("is-open", this.#subfiltersExpanded);
     container.setAttribute("aria-label", "Фільтри за підтипами");
     if (!model.subfilters.length) {
       container.appendChild(
         this.#dom.element(
           "span",
-          "inventory-v2-subfilters__empty",
+          "inventory-subfilters__empty",
           "Немає предметів для фільтрації",
         ),
       );
@@ -128,11 +128,11 @@ export class InventoryV2InventoryGridRenderer {
     model.subfilters.forEach((filter) => {
       const label = this.#dom.element(
         "label",
-        "inventory-v2-subfilters__option",
+        "inventory-subfilters__option",
       );
       const checkbox = this.#dom.element(
         "input",
-        "inventory-v2-subfilters__checkbox",
+        "inventory-subfilters__checkbox",
       );
       checkbox.type = "checkbox";
       checkbox.checked = filter.selected === true;
@@ -143,7 +143,7 @@ export class InventoryV2InventoryGridRenderer {
         checkbox,
         this.#dom.element(
           "span",
-          "inventory-v2-subfilters__label",
+          "inventory-subfilters__label",
           filter.label,
         ),
       );
@@ -166,17 +166,17 @@ export class InventoryV2InventoryGridRenderer {
       onRarityFilterToggle,
     },
   ) {
-    const container = this.#dom.element("div", "inventory-v2-sort-options");
+    const container = this.#dom.element("div", "inventory-sort-options");
     container.classList.toggle("is-open", this.#sortExpanded);
     container.setAttribute("aria-label", "Сортування інвентарю");
 
     const directionGroup = this.#dom.element(
       "div",
-      "inventory-v2-sort-options__group inventory-v2-sort-options__directions",
+      "inventory-sort-options__group inventory-sort-options__directions",
     );
     model.sort.directions.forEach((direction) => {
       const button = this.#dom.button(
-        "inventory-v2-sort-options__button inventory-v2-sort-options__direction",
+        "inventory-sort-options__button inventory-sort-options__direction",
         direction.icon,
         { title: direction.label },
       );
@@ -192,11 +192,11 @@ export class InventoryV2InventoryGridRenderer {
 
     const criterionGroup = this.#dom.element(
       "div",
-      "inventory-v2-sort-options__group inventory-v2-sort-options__criteria",
+      "inventory-sort-options__group inventory-sort-options__criteria",
     );
     model.sort.criteria.forEach((criterion) => {
       const button = this.#dom.button(
-        "inventory-v2-sort-options__button inventory-v2-sort-options__criterion",
+        "inventory-sort-options__button inventory-sort-options__criterion",
         criterion.label,
       );
       button.classList.toggle("is-active", criterion.selected);
@@ -219,16 +219,16 @@ export class InventoryV2InventoryGridRenderer {
 
     const rarityGroup = this.#dom.element(
       "div",
-      "inventory-v2-sort-options__group inventory-v2-sort-options__rarities",
+      "inventory-sort-options__group inventory-sort-options__rarities",
     );
     model.sort.rarities.forEach((rarity) => {
       const label = `${rarity.label}: ${rarity.count}`;
       const button = this.#dom.button(
-        "inventory-v2-sort-options__rarity",
+        "inventory-sort-options__rarity",
         "",
         { title: label },
       );
-      button.style.setProperty("--inventory-v2-rarity-filter-color", rarity.color);
+      button.style.setProperty("--inventory-rarity-filter-color", rarity.color);
       button.classList.toggle("is-active", rarity.selected);
       button.setAttribute("aria-label", label);
       button.setAttribute("aria-pressed", String(rarity.selected));
@@ -247,12 +247,12 @@ export class InventoryV2InventoryGridRenderer {
   }
 
   #renderItems(model, { onItemActivate, onItemLongPress }) {
-    const grid = this.#dom.element("div", "inventory-v2-inventory-grid");
+    const grid = this.#dom.element("div", "inventory-inventory-grid");
     if (!model.items.length) {
       grid.appendChild(
         this.#dom.element(
           "p",
-          "inventory-v2-inventory-grid__empty",
+          "inventory-inventory-grid__empty",
           model.emptyMessage,
         ),
       );

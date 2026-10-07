@@ -1,4 +1,4 @@
-export class InventoryV2SavedLoadoutPreviewRenderer {
+export class InventorySavedLoadoutPreviewRenderer {
   #dom;
   #itemRenderer;
 
@@ -19,28 +19,28 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
   ) {
     const preview = this.#dom.element(
       "section",
-      "inventory-v2-saved-loadout-preview",
+      "inventory-saved-loadout-preview",
     );
     const heading = this.#dom.element(
       "div",
-      "inventory-v2-saved-loadout-preview__heading",
+      "inventory-saved-loadout-preview__heading",
     );
     heading.append(
       this.#dom.element(
         "h3",
-        "inventory-v2-saved-loadout-preview__title",
+        "inventory-saved-loadout-preview__title",
         model.name,
       ),
       this.#dom.element(
         "p",
-        "inventory-v2-saved-loadout-preview__hint",
+        "inventory-saved-loadout-preview__hint",
         "Натисніть предмет, щоб спорядити лише його",
       ),
     );
 
     const slots = this.#dom.element(
       "div",
-      "inventory-v2-saved-loadout-preview__slots",
+      "inventory-saved-loadout-preview__slots",
     );
     model.slots.forEach((slot) => {
       slots.appendChild(this.#renderSlot(slot, onSlotEquip));
@@ -49,7 +49,7 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
       slots.appendChild(
         this.#dom.element(
           "p",
-          "inventory-v2-saved-loadout-preview__empty",
+          "inventory-saved-loadout-preview__empty",
           "Збірка порожня",
         ),
       );
@@ -71,20 +71,20 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
   #renderSlot(slot, onSlotEquip) {
     const field = this.#dom.element(
       "div",
-      "inventory-v2-saved-loadout-preview__field",
+      "inventory-saved-loadout-preview__field",
     );
     field.dataset.slotId = String(slot.slotId || "");
     field.classList.toggle("is-active", slot.active === true);
     field.appendChild(
       this.#dom.element(
         "div",
-        "inventory-v2-saved-loadout-preview__label",
+        "inventory-saved-loadout-preview__label",
         slot.label,
       ),
     );
     const well = this.#dom.element(
       "div",
-      "inventory-v2-saved-loadout-preview__well",
+      "inventory-saved-loadout-preview__well",
     );
     if (slot.item) {
       const card = this.#itemRenderer.renderItem(slot.item, {
@@ -95,7 +95,7 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
       well.appendChild(card);
       const membership = this.#dom.element(
         "span",
-        "inventory-v2-saved-loadout-preview__membership-dot",
+        "inventory-saved-loadout-preview__membership-dot",
       );
       membership.setAttribute("role", "img");
       membership.setAttribute("aria-label", "Належить до збірки");
@@ -114,7 +114,7 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
   ) {
     const actions = this.#dom.element(
       "div",
-      "inventory-v2-saved-loadout-preview__actions",
+      "inventory-saved-loadout-preview__actions",
     );
     actions.append(
       this.#actionButton(
@@ -144,7 +144,7 @@ export class InventoryV2SavedLoadoutPreviewRenderer {
 
   #actionButton(label, modifier, enabled, action) {
     const classes = [
-      "inventory-v2-saved-loadout-preview__button",
+      "inventory-saved-loadout-preview__button",
       modifier,
     ]
       .filter(Boolean)
