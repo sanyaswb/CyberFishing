@@ -455,6 +455,75 @@ function checkNativeDevelopmentDisplays() {
   console.log("Native DEV display parity: 19 overlays, "+comparisons+" active HTML comparisons, exact no-active/unknown/type labels, isolated catalog and stable Domain facts.");
 }
 
+function checkLocationMapConfigChanges() {
+  const source = new SourceRuntime({globals:{document:{addEventListener(){},removeEventListener(){},dispatchEvent(){}},
+    CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}}, console:{...console,log(){}}},
+    moduleStubs:{'src/platform/browser/storage/cache_manager.js':{CacheManager:{get:()=>({}),set(){}}}}});
+  const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
+  const {createRuntimeConfigContext} = source.importModule('src/bootstrap/production/config_context.js');
+  const {LocationMap} = source.importModule('src/game/domain/locations/location_world.js');
+  const fields = ['debugGrid','debugDepthText','debugZones','enableCastable','enableCollisions','enableSnags','enableDynamicZones'];
+  const config = JSON.parse(JSON.stringify(CONFIG));
+  const context = createRuntimeConfigContext(config);
+  const resources = {background:{dynamic:false},loaded:true};
+  const locationId = Object.keys(config.locations.map)[0];
+  const map = new LocationMap(locationId,config.locations,{next:()=>0.5},resources);
+  let calls = 0;
+  const recalculate = map.recalculateZones;
+  map.recalculateZones = function(...args) {calls++;return recalculate.apply(this,args);};
+  const verify = (expectedCalls,expectedRevision) => {
+    assert.equal(calls,expectedCalls,'only location flag changes recalculate zones');
+    assert.equal(map.getDebugRevision(),expectedRevision,'revision preserves the original update order');
+  };
+  verify(0,1);map.update(16,12);verify(1,2);
+  for(let frame=0;frame<128;frame++) map.update(16,12);
+  verify(1,2);
+  for(const [index,field] of fields.entries()) {
+    assert.equal(typeof config.locations[field],'boolean','supported location writers use booleans');
+    context.set('locations.'+field,!config.locations[field]);
+    map.update(16,12);verify(index+2,index+3);
+    map.update(16,12);verify(index+2,index+3);
+  }
+  const exported = JSON.parse(JSON.stringify(context.exportOverrides()));
+  context.set('debug.godMode.enabled',!config.debug.godMode.enabled);
+  context.set('physics.enabled',!config.physics.enabled);
+  map.update(16,12);verify(8,9);
+  context.resetAll();map.update(16,12);verify(9,10);
+  context.importOverrides(exported);map.update(16,12);verify(10,11);
+  context.importOverrides(exported);map.update(16,12);verify(10,11);
+  const replacement = JSON.parse(JSON.stringify(config.locations));
+  map.refreshConfig(replacement,resources);verify(11,12);
+  map.update(16,12);verify(11,12);
+  replacement.debugGrid = !replacement.debugGrid;
+  map.update(16,12);verify(12,13);
+  const changedReplacement = JSON.parse(JSON.stringify(replacement));
+  changedReplacement.enableSnags = !changedReplacement.enableSnags;
+  map.refreshConfig(changedReplacement,resources);verify(13,14);
+  map.update(16,12);verify(14,15);
+  const switches = new Map();
+  const ui = new Proxy({body:{},createSection:()=>({}),createSwitcherRow(key,value,parent,change,path){switches.set(path.join('.'),change);}},
+    {get:(target,key)=>target[key] || (()=>{})});
+  const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
+  const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,
+    debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}})});
+  tools.toggle();
+  // The map receives the same live view that actual checkbox callbacks write through the authoritative store.
+  map.refreshConfig(config.locations,resources);verify(15,16);
+  map.update(16,12);verify(16,17);
+  for(const [index,field] of fields.entries()) {
+    const change = switches.get('CONFIG.locations.'+field);
+    assert.equal(typeof change,'function','location checkbox exists: '+field);
+    change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
+    map.update(16,12);verify(index+17,index+18);
+  }
+  tools.dispose();
+  const missingFlags = JSON.parse(JSON.stringify(config.locations));
+  for(const field of fields) delete missingFlags[field];
+  const first = new LocationMap(locationId,missingFlags,{next:()=>0.5},resources);
+  first.update(16,12);assert.equal(first.getDebugRevision(),2,'first update recalculates even with missing flags');
+  first.update(16,12);assert.equal(first.getDebugRevision(),2);
+}
+
 async function checkNativeDevelopmentLifecycle() {
   const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,probeDispose:0,watchdogDispose:0};
   const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
@@ -496,5 +565,6 @@ async function checkNativeDevelopmentLifecycle() {
 
 checkNativeProductionStartup().then(checkNativeDevelopmentLifecycle).then(() => {
 checkNativeDevelopmentDisplays();
+checkLocationMapConfigChanges();
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
 }).catch(error => { console.error(error);process.exitCode = 1; });

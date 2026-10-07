@@ -6,6 +6,14 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 ## Resume facts
 
+- D1 implemented in the current checkpoint: seven comparisons plus initialization; original and updated traces are identical
+  (167 updates, 24 recalculations, 44 revision reads). The update template allocation is gone. Actual DevTools callbacks, context
+  set/reset/import, unrelated overrides and config replacement are covered. Game-cycle unchanged; uncached Full 64/64.
+  Evidence: [pre_stage7_d1_evidence.json](../archive/pre_stage7_d1_evidence.json),
+  [pre_stage7_d1_acceptance.json](../archive/pre_stage7_d1_acceptance.json). Raw recovery: `pre-stage7-fixes-archive` → `643a8dbc`.
+  D2/D4, D3 and patch 0.27.2 remain before the Stage 7 tooling archive.
+- Accepted HEAD/origin `develop`: `ee53295` (D1–D3 decisions; runtime code unchanged). Current release is `0.27.1` (`f2cf1e0`).
+  Final owner answer in this session: GodMode and Fixed Catch are for development balance testing only; production defaults must be off (D4 below).
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.
 - Authored import graphs: production 350 modules / 522 edges, DEV 446 / 692 (95 `src/dev`, 3 Development Bootstrap); zero unresolved,
@@ -39,7 +47,7 @@ recovery tag `stage6-dead-code-archive`):
 - dead `typeof X !== "undefined"` guards whose `X` is an imported or local binding (keep real browser-capability checks);
 - the unreachable DEV modules `src/dev/core/null_debug_runtime.js` and `src/dev/physics/physics_formula_map.js` (confirm with both graphs);
 - the test-only classic path aliases in `NativeEsmTestLoader` (move test consumers to canonical paths first);
-- the per-frame `currentDebugState` string in `LocationMap.update()` (config-changed flag, hot-loop evidence before/after);
+- the per-frame `currentDebugState` string in `LocationMap.update()` (original flag proposal superseded by D1's seven-field comparison);
 - owner decision with the exact list: history-only compatibility tooling/checks and the inert `build:*` scripts (see the archival order below).
 
 The C2b utils analysis found no unreachable utils file (all 219 reached from 84 live roots); net growth since 0.26.1 is +3 files, each with
@@ -112,8 +120,9 @@ Found during the closure browser run and byte-identical since before Stage 6 (de
 
 ## Owner decisions 2026-10-07 (supersede earlier wording)
 
-Execute as three separate steps (one commit each, own evidence), then one patch release 0.27.2. They are not migration work and
-must not be mixed with the Stage 7 tooling archive or API renames.
+Execute D1–D3 as three separate steps (one commit each, own evidence), then one patch release 0.27.2. Apply the final production-default
+decision D4 with D2's Fixed Catch/config work, with separate focused assertions; it does not add an archival/API transition or change
+the three-step order. These changes are not migration work and must not be mixed with the Stage 7 tooling archive or API renames.
 
 ### D1 — `LocationMap.update()` per-frame string: per-field comparison (not the override-store flag)
 
@@ -135,7 +144,8 @@ store (base config, location config replacement). The per-field comparison keeps
 
 ### D2 — `fixed-catch-active-lure-bite-sequence`: fix now (gameplay bugfix, scoped to the failing path)
 
-Base config ships `debug.fixedCatch.enabled: true`, so every player with a spinner/wobbler/jig crashes the loop on a bite.
+At decision commit `ee53295`, shared base config still ships `debug.fixedCatch.enabled: true`, so the failure also affects production.
+D4 changes production defaults; the D2 regression remains required for DEV balance testing with Fixed Catch enabled.
 
 - Fix in the Application fixed-catch branch of `game_state_machine.js`: when `rules.bite.selectBiteSequence(template, baitTypes)` returns
   `null` (the fixed fish has no mechanic for this bait), do not override — keep the naturally hooked fish. This respects the fish's own
@@ -145,7 +155,8 @@ Base config ships `debug.fixedCatch.enabled: true`, so every player with a spinn
 - Evidence: a focused regression in an existing gameplay check (spinner + fixed catch → no throw, natural fish hooked; float + fixed
   catch → unchanged fixed fish); game-cycle stdout must stay identical (do not add the scenario to game-cycle); browser smoke with a
   spinner bite on both pages, saves unchanged.
-- Separate owner question, not decided here: whether production defaults should keep `fixedCatch` / GodMode enabled.
+- Production-default question resolved by the owner's final answer: **no**. Apply D4 below; do not omit the enabled-DEV regression
+  merely because production starts with Fixed Catch disabled.
 
 ### D3 — `depth-selector-dispose-raf-race`: fix now (lifecycle hardening)
 
@@ -154,3 +165,27 @@ Base config ships `debug.fixedCatch.enabled: true`, so every player with a spinn
   No other behavior change; scheduling stays in Platform.
 - Evidence: focused case in `platform-runtime` (dispose before the frame runs → no throw, frame cancelled; normal show/updateMax position
   unchanged), browser in-page restart while a float rig shows the selector → 0 errors.
+
+### D4 — production GodMode / Fixed Catch defaults: off; balance controls belong to DEV
+
+Final owner answer (2026-10-07): **NO** to leaving GodMode and Fixed Catch enabled in production; they are only for balance testing during
+development. This resolves D2's open question and authorizes the scoped configuration behavior change. Runtime code has not yet changed.
+
+- `index.html` / Production Bootstrap must start with `debug.godMode.enabled === false` and `debug.fixedCatch.enabled === false`.
+  The current shared `src/game/config/runtime/game_config.js` has both `true`; changing just the diagnostic class or the production
+  `DevFlagsProvider` would not cover the direct config readers in BiteSystem, fishing runtime services and the state machine.
+- Use safe production base defaults. Compose any desired DEV defaults/overrides explicitly in Development Bootstrap before gameplay
+  starts, through the existing config context/ownership seams. Development currently calls `createProductionConfigContext()` too;
+  switching shared defaults alone must not silently remove its balance controls or create a second config context/store.
+- DEV (`dev.html`) retains GodMode / Fixed Catch controls and the existing editable parameters for balance testing, including live
+  overrides. Keep catalog/fish editing ownership and one Game/Application/Root/config context/store/loop. No production import of DEV,
+  hostname/URL detection in Domain, new global, copied config owner or gameplay-formula rewrite.
+- Preserve the injected `GameplayOverrideReader` / flags contracts and FixedCatchFishFactory; this decision changes startup policy,
+  not gameplay APIs. It does not authorize deleting the reader or weakening enabled-mode tests preserved during ESM migration.
+- Focused evidence in the existing config/gameplay checks: actual production composition disables both main switches on startup/reload;
+  DEV can enable/toggle them and the existing live consumers react; relevant reset/import/export behavior is explicit and tested;
+  settings from DEV do not silently enable the production page. Preserve every unrelated config value, save bytes/schema and timing.
+- Browser smoke: actual native `index.html` with both switches off and `dev.html` with enabled balance controls, plus D2's active-lure
+  fallback regression. Capture the intended normal production behavior; do not claim production startup behavior is unchanged.
+  Keep the deterministic game-cycle baseline stable with explicit scenario inputs; do not bless a digest change caused only by
+  inheriting the new production defaults in a test that requires enabled flags.

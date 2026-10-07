@@ -114,7 +114,14 @@ export class LocationMap {
   #bgOpacities = { evening: 0, night: 0 };
   #isDynamicBg = false;
   #bgLoaded = false;
-  #lastDebugState = "";
+  #debugStateInitialized = false;
+  #lastDebugGrid;
+  #lastDebugDepthText;
+  #lastDebugZones;
+  #lastEnableCastable;
+  #lastEnableCollisions;
+  #lastEnableSnags;
+  #lastEnableDynamicZones;
   #lastProjector = null;
   #debugRevision = 0;
   #castableBounds = { left: 0, right: 0, top: 0, bottom: 0 };
@@ -399,10 +406,24 @@ export class LocationMap {
 
   update(dt, gameTimeHours = null) {
     const locCfg = this.#locationsConfig;
-    const currentDebugState = `${locCfg.debugGrid}_${locCfg.debugDepthText}_${locCfg.debugZones}_${locCfg.enableCastable}_${locCfg.enableCollisions}_${locCfg.enableSnags}_${locCfg.enableDynamicZones}`;
-
-    if (this.#lastDebugState !== currentDebugState) {
-      this.#lastDebugState = currentDebugState;
+    if (
+      !this.#debugStateInitialized ||
+      this.#lastDebugGrid !== locCfg.debugGrid ||
+      this.#lastDebugDepthText !== locCfg.debugDepthText ||
+      this.#lastDebugZones !== locCfg.debugZones ||
+      this.#lastEnableCastable !== locCfg.enableCastable ||
+      this.#lastEnableCollisions !== locCfg.enableCollisions ||
+      this.#lastEnableSnags !== locCfg.enableSnags ||
+      this.#lastEnableDynamicZones !== locCfg.enableDynamicZones
+    ) {
+      this.#lastDebugGrid = locCfg.debugGrid;
+      this.#lastDebugDepthText = locCfg.debugDepthText;
+      this.#lastDebugZones = locCfg.debugZones;
+      this.#lastEnableCastable = locCfg.enableCastable;
+      this.#lastEnableCollisions = locCfg.enableCollisions;
+      this.#lastEnableSnags = locCfg.enableSnags;
+      this.#lastEnableDynamicZones = locCfg.enableDynamicZones;
+      this.#debugStateInitialized = true;
       this.#debugRevision += 1;
       this.recalculateZones(null, locCfg.cellSize);
     }
