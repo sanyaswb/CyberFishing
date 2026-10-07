@@ -6,8 +6,8 @@ export class DevToolsParameterTooltipProvider {
 
   constructor({
     urls = [
-      "src/config/metadata/dev_tool_parameter_descriptions.json",
-      "src/config/metadata/parameter_labels.json",
+      "src/dev/metadata/dev_tool_parameter_descriptions.json",
+      "src/dev/metadata/parameter_labels.json",
     ],
   } = {}) {
     this.#readyPromise = this.#load(urls);

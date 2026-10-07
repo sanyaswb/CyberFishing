@@ -29,7 +29,7 @@ Only `platform` and `dev` may reference browser/host globals (`window`, `documen
 injection. Runtime configuration has one frozen base and one override store, composed in bootstrap.
 Production GodMode and Fixed Catch are off; DEV composition switches them on for balance testing.
 
-Styles live in `src/ui/styles/`, DEV parameter descriptions in `src/config/metadata/`.
+Styles live in `src/game/presentation/styles/`; DEV metric/parameter descriptions in `src/dev/metadata/`.
 
 ## Guard
 

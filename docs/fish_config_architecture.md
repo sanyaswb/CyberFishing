@@ -5,33 +5,21 @@
 ## Structure
 
 ```txt
-src/config/databases/fish/
-  fish_db.js                 # public FISH_DB aggregation entry
-  fish_categories.js          # category registry
-  presets/
-    fish_profile_factory.js   # deep merge helpers
-    fish_profile_presets.js   # reusable physics archetypes
-  species/
-    peaceful_fish.js
-    predator_fish.js
-    rare_fish.js
-    event_fish.js
+src/game/config/raw/fish/        # authored species data (no imports)
+  peaceful_fish.js
+  predator_fish.js
+  rare_fish.js
+  event_fish.js
+src/game/config/databases/
+  fish/fish_categories.js         # category registry
+  fish_database.js                # public FISH_DB aggregation
 ```
 
 ## Adding a fish
 
-Add a species object to the correct `species/*.js` file. Keep the public `id` stable.
+Add a species object to the correct `src/game/config/raw/fish/*.js` file. Keep the public `id` stable.
 
-Preferred physics creation:
-
-```js
-physics: createFishPhysicsProfile(FISH_PROFILE_PRESETS.smallPeaceful, {
-  forceProfile: { basePower: 0.8 },
-  movementProfile: { baseSpeed: 1.1, agility: 1.1 },
-})
-```
-
-Full explicit profiles are still valid when a fish does not fit a preset.
+Each species declares its physics profile explicitly.
 
 ## Required fight profiles
 

@@ -6,7 +6,7 @@ const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browse
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
-const STYLE_FILE = path.join(ROOT, "src", "ui", "styles", "inventory_v2.css");
+const STYLE_FILE = path.join(ROOT, "src", "game", "presentation", "styles", "inventory_v2.css");
 const ITEM_PARAMETER_CONFIG_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_item_parameter_config.js");
 const VIEW_MODEL_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_view_model_factory.js");
 const ITEM_VIEW_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_v2_item_view_factory.js");

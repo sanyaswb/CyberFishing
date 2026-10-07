@@ -3,7 +3,6 @@ import { FISH_CATEGORIES } from "./fish/fish_categories.js";
 /**
  * Fish species database aggregator.
  *
- * Public global `FISH_DB` is kept stable while species are split by category.
- * Add new fish to `src/config/databases/fish/species/*.js`, not to this file.
+ * Species are authored by category in `src/game/config/raw/fish/*.js`; add new fish there.
  */
 export const FISH_DB = Object.values(FISH_CATEGORIES).flat();

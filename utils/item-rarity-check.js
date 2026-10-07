@@ -362,7 +362,7 @@ class ItemRarityCheck {
 
   #checkCssLayering() {
     const css = fs.readFileSync(
-      path.join(ROOT, "src/ui/styles/style.css"),
+      path.join(ROOT, "src/game/presentation/styles/style.css"),
       "utf8",
     );
     Assertion.that(

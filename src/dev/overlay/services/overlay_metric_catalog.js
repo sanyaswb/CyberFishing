@@ -5,7 +5,7 @@ export class OverlayMetricCatalog {
   #disposed = false;
 
   constructor({
-    url = "src/config/metadata/overlay_metric_descriptions.json",
+    url = "src/dev/metadata/overlay_metric_descriptions.json",
     fetchSource = typeof fetch === "function" ? fetch.bind(window) : null,
   } = {}) {
     this.#readyPromise = this.#load(url, fetchSource);
