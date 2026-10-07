@@ -4,11 +4,16 @@ Written: 2026-10-07 (Europe/Kiev). Implementation baseline: pushed `v0.27.2`,
 `e80d983ba8b9c891c2e504115a1f39cbfe22ab70`. D1-D4 and the patch release are complete.
 This specification covers the first Stage 7 transition only; it does not reopen Stage 6.
 
-Status: preparation 001 accepted; the exact three-check catalog change awaits the owner's decision.
+Status: preparations 001 and 002 accepted; the exact three-check catalog change awaits the owner's decision.
 Canonical test paths/config composition: [001_native-test-paths.json](preparations/001_native-test-paths.json),
 [uncached Full 64/64](../../archive/stage7_native_paths_acceptance.json). Raw recovery tag
 `stage7-compat-tools-archive` -> `aeb43037f4d4963cc4b8ccabfcb2bc96b6ab1cd0`, parent `a33c7ca`.
-No runtime/HTML/package/catalog change; live builder consumers remain the next preparation.
+Preparation 001 changed no runtime/HTML/package/catalog. Preparation 002 (2026-10-08):
+[native server/fresh installer](preparations/002_native-server-and-fresh-install.json),
+[uncached Full 64/64](../../archive/stage7_native_server_acceptance.json),
+[direct native browser smoke](../../archive/stage7_native_server_browser.json). Server validates native retirement
+before listen; fresh install verifies native sources without classic dist/builders. Remaining live validator
+consumers are the next preparation; no check/tool archive or closure claimed.
 Inventory: [tooling_archive_inventory.json](tooling_archive_inventory.json). Current queue and
 owner rules: [stage_7_handoff.md](../stage_7_handoff.md). Accepted release evidence:
 [Full 64/64](../../archive/pre_stage7_0272_acceptance.json),
@@ -89,10 +94,10 @@ the existing raw archive reader may supply historical facts; they must not weake
 | `stage-4-cluster-records-check.js` | Retain reconstruction/hash assertions and every Stage 4-6 release/cleanup/native closure fixture; separate provenance validation from build machinery. |
 | `package_contract/root_package_validator.js` | Keep the explicit rejection of retired package scripts; remove an obsolete command branch only after proving no live contract uses it. |
 
-Additional verified issue: the fresh-install helper still sees the historical runtime JSON and
-unconditionally reads its classic dist output paths, although native closure removed those files.
-Treat its native verification branch as part of this tooling transition, with a regression; do not
-change the already accepted 0.27.2 release record.
+Preparation 002 resolved the fresh-install helper's historical dist-path read. Its source copy retains
+isolated raw recovery refs/objects for strict provenance guards, with no source checkout/filtering,
+shared writable Git directory or generated outputs. Native preflight and actual fresh npm ci/suites
+pass; the existing 0.27.2 release record stays immutable.
 
 ## 4. Assertions that must survive the three-check archive
 

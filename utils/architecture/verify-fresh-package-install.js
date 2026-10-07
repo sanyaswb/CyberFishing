@@ -4,6 +4,7 @@ const path = require("node:path");
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const { spawnSync } = require("node:child_process");
+const { NativeRuntimeReadiness } = require("./esm_infrastructure/native_runtime_readiness");
 
 const PROJECT_ROOT = path.resolve(__dirname, "../..");
 
@@ -13,7 +14,9 @@ class FreshPackageInstallVerifier {
   run({ suites = true } = {}) {
     const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cyber-fishing-package-contract-"));
     try {
+      NativeRuntimeReadiness.verify(this.projectRoot);
       this.#copyWorkspace(temporaryRoot);
+      this.#copyGitRecovery(temporaryRoot);
       const copiedFiles = this.#snapshot(temporaryRoot);
       assert.deepEqual(copiedFiles, this.#snapshot(this.projectRoot), "Temporary source copy differs from the working tree");
       const steps = [];
@@ -34,32 +37,19 @@ class FreshPackageInstallVerifier {
             " in the isolated workspace. npm output:\n" + steps[0].stdout + "\n" + steps[0].stderr);
         }
       }
-      if (packageJson.scripts["build:stage-3-compat-runtime"]) {
-        steps.push(this.#runNode(["utils/build/build_stage_3_compat_runtime.js"], temporaryRoot, "cumulative-build"));
-      }
+      NativeRuntimeReadiness.verify(temporaryRoot);
       if (suites) {
         steps.push(this.#runNode(["utils/run-checks.js", "--suite", "architecture"], temporaryRoot, "architecture"));
         steps.push(this.#runNode(["utils/run-checks.js", "--suite", "quick"], temporaryRoot, "quick"));
         steps.push(this.#runNode(["utils/run-checks.js", "--suite", "all"], temporaryRoot, "full"));
       }
-      const runtimeContractPath = path.join(temporaryRoot, "architecture/migration/stage_3_compatibility_runtime.json");
-      let runtimeOutput = [];
-      if (fs.existsSync(runtimeContractPath)) {
-        const runtime = JSON.parse(fs.readFileSync(runtimeContractPath));
-        const outputs = [`${runtime.output.directory}${runtime.output.runtimeFile}`,
-          ...runtime.activationPositions.map((item) => `${runtime.output.directory}${item.shimFile}`)].sort();
-        runtimeOutput = outputs.map((relative) => {
-          const actual = fs.readFileSync(path.join(temporaryRoot, relative));
-          assert.deepEqual(actual, fs.readFileSync(path.join(this.projectRoot, relative)),
-            `Fresh build differs from the accepted working-tree output: ${relative}`);
-          return { path: relative, sha256: this.#sha256(actual) };
-        });
-      }
+      const runtimeOutput = NativeRuntimeReadiness.verify(temporaryRoot).outputs;
+      assert.deepEqual(runtimeOutput, NativeRuntimeReadiness.verify(this.projectRoot).outputs, "Fresh native output differs from the accepted workspace");
       assert.deepEqual(this.#snapshot(temporaryRoot), copiedFiles, "Clean install/build/checks modified copied sources");
       assert.deepEqual(this.#snapshot(this.projectRoot), copiedFiles, "Working tree changed during fresh verification");
       console.log(suites
         ? "Fresh package verification passed: npm ci reproduced the locked graph and Architecture, Quick, and Full suites passed in an isolated workspace."
-        : "Fresh package verification passed: npm ci reproduced the locked graph and cumulative runtime output byte-for-byte in an isolated workspace.");
+        : "Fresh package verification passed: npm ci reproduced the locked graph and native sources with no generated outputs in an isolated workspace.");
       return { status: "passed", node: process.version, npm: actualNpm, lockfileSha256: this.#sha256(lockBefore),
         lockfileChanged: false, dependenciesCopied: false, generatedOutputCopied: false,
         sourceCopy: { mode: "actual-working-tree-not-HEAD", files: copiedFiles.length,
@@ -68,6 +58,28 @@ class FreshPackageInstallVerifier {
     } finally {
       this.#removeVerifiedTemporaryRoot(temporaryRoot);
     }
+  }
+
+  // Recovery tags are inputs of the retained provenance guards. Copy Git objects/refs only;
+  // never checkout/filter source bytes or share a writable Git directory with the user's workspace.
+  #copyGitRecovery(target) {
+    const gitDirectory = path.join(target, ".git");
+    const run = args => {
+      const result = spawnSync("git", args, { cwd: target, encoding: "utf8", shell: false, env: this.#childEnvironment(), maxBuffer: 32 * 1024 * 1024 });
+      if (result.status !== 0) throw new Error("Fresh recovery metadata failed: " + result.stderr);
+    };
+    run(["clone", "--bare", "--local", "--no-hardlinks", "--dissociate", this.projectRoot, gitDirectory]);
+    run(["--git-dir=" + gitDirectory, "config", "core.bare", "false"]);
+    run(["--git-dir=" + gitDirectory, "config", "core.worktree", target]);
+    run(["read-tree", "HEAD"]);
+  }
+
+  #childEnvironment() {
+    const environment = { ...process.env };
+    // A caller's Git redirects must not send isolated-copy commands to another index/object directory.
+    for (const name of ["GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR",
+      "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"]) delete environment[name];
+    return environment;
   }
 
   #copyWorkspace(target) {
@@ -84,7 +96,7 @@ class FreshPackageInstallVerifier {
     const invocation = this.#resolveNpmInvocation();
     if (label) console.log(`[fresh] ${label} started`);
     const startedAt = Date.now();
-    const result = spawnSync(invocation.command, [...invocation.prefixArguments, ...argumentsList], { cwd, encoding: "utf8", shell: false, maxBuffer: 32 * 1024 * 1024 });
+    const result = spawnSync(invocation.command, [...invocation.prefixArguments, ...argumentsList], { cwd, encoding: "utf8", shell: false, env: this.#childEnvironment(), maxBuffer: 32 * 1024 * 1024 });
     if (result.status !== 0) throw new Error(`npm ${argumentsList.join(" ")} failed:\n${result.stdout}\n${result.stderr}`);
     if (!label) return result.stdout;
     console.log(`[fresh] ${label} passed`);
@@ -104,7 +116,7 @@ class FreshPackageInstallVerifier {
   #runNode(argumentsList, cwd, label) {
     console.log(`[fresh] ${label} started`);
     const startedAt = Date.now();
-    const result = spawnSync(process.execPath, argumentsList, { cwd, encoding: "utf8", shell: false, maxBuffer: 32 * 1024 * 1024 });
+    const result = spawnSync(process.execPath, argumentsList, { cwd, encoding: "utf8", shell: false, env: this.#childEnvironment(), maxBuffer: 32 * 1024 * 1024 });
     if (result.status !== 0) throw new Error(`Fresh-install checks failed:\n${result.stdout}\n${result.stderr}`);
     console.log(`[fresh] ${label} passed`);
     return this.#step(label, argumentsList, result, startedAt);
@@ -112,7 +124,7 @@ class FreshPackageInstallVerifier {
 
   #step(id, args, result, startedAt) {
     const stdout = result.stdout || "", stderr = result.stderr || "";
-    const summary = stdout.match(/Passed (\d+) checks in ([\d.]+)s\./u);
+    const summary = stdout.match(/Passed (\d+) checks in ([\d.]+)s\b/u);
     return { id, args, exitCode: result.status, durationMs: Date.now() - startedAt,
       passedChecks: summary ? Number(summary[1]) : null,
       stdout, stderr, stdoutSha256: this.#sha256(Buffer.from(stdout)), stderrSha256: this.#sha256(Buffer.from(stderr)) };

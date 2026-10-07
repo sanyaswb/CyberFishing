@@ -1,12 +1,7 @@
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
-const {
-  LegacyBridgeBuildApplication,
-} = require("./build/build_legacy_bridges");
-const {
-  StageThreeCompatibilityBuildApplication,
-} = require("./build/build_stage_3_compat_runtime");
+const { NativeRuntimeReadiness } = require("./architecture/esm_infrastructure/native_runtime_readiness");
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 4173;
@@ -144,20 +139,14 @@ class StaticFileServer {
 class DevServerApplication {
   #config;
   #server;
-  #bridgeBuilder;
-  #compatibilityBuilder;
+  #runtimeValidator;
   #fatalErrorHandler;
   #logger;
 
   constructor(
     config = new DevServerConfig(),
     {
-      bridgeBuilder = new LegacyBridgeBuildApplication({
-        projectRoot: config.rootDir,
-      }),
-      compatibilityBuilder = new StageThreeCompatibilityBuildApplication({
-        projectRoot: config.rootDir,
-      }),
+      runtimeValidator = () => NativeRuntimeReadiness.verify(config.rootDir),
       server = new StaticFileServer(config).createServer(),
       fatalErrorHandler = null,
       logger = console,
@@ -165,8 +154,7 @@ class DevServerApplication {
   ) {
     this.#config = config;
     this.#server = server;
-    this.#bridgeBuilder = bridgeBuilder;
-    this.#compatibilityBuilder = compatibilityBuilder;
+    this.#runtimeValidator = runtimeValidator;
     this.#logger = logger;
     this.#fatalErrorHandler = fatalErrorHandler || ((error) => {
       this.#printServerError(error);
@@ -175,28 +163,16 @@ class DevServerApplication {
   }
 
   async start() {
-    const legacyBuildReport = await this.#bridgeBuilder.run();
-    const compatibilityBuildReport = await this.#compatibilityBuilder.run();
-    const buildReport = compatibilityBuildReport.status === "no-stage-3-state" ||
-      compatibilityBuildReport.status === "no-active-runtime"
-      ? legacyBuildReport
-      : compatibilityBuildReport;
+    const runtimeReport = await this.#runtimeValidator();
     this.#server.on("error", (error) => this.#fatalErrorHandler(error));
     this.#server.listen(this.#config.port, this.#config.host, () => {
       const url = `http://${this.#config.host}:${this.#config.port}/`;
       this.#logger.log(`Frontend dev server: ${url}`);
       this.#logger.log(`Serving: ${this.#config.rootDir}`);
-      this.#logger.log(
-        `Legacy bridges: ${legacyBuildReport.status} ` +
-          `(${legacyBuildReport.bridgeCount || 0}).`,
-      );
-      this.#logger.log(
-        `Stage 3 compatibility: ${compatibilityBuildReport.status} ` +
-          `(${compatibilityBuildReport.activationCount || 0} activations).`,
-      );
+      this.#logger.log("Runtime: native ESM; no generated outputs.");
       this.#logger.log("Press Ctrl+C to stop.");
     });
-    return buildReport;
+    return runtimeReport;
   }
 
   #printServerError(error) {
@@ -212,7 +188,7 @@ class DevServerApplication {
 
 if (require.main === module) {
   new DevServerApplication().start().catch((error) => {
-    console.error(`Legacy bridge build failed before listen: ${error.message}`);
+    console.error(`Native runtime validation failed before listen: ${error.message}`);
     process.exitCode = 1;
   });
 }

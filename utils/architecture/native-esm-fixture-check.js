@@ -20,6 +20,7 @@ class NativeEsmFixtureRunner {
     assert.equal(require(path.join(PROJECT_ROOT, "package.json")).type, undefined, "Root package must not switch utils to ESM");
     const graph = new EsmFixtureGraphInspector({ fixtureRoot: FIXTURE_ROOT }).inspect(ENTRY_PATH);
     await this.#checkTestAdapter();
+    await this.#checkNativeServer();
     const globalsBefore = this.#globalIdentitySet();
     const fixtureModule = await import(`${pathToFileURL(ENTRY_PATH).href}?native-esm-check=1`);
     assert.equal(typeof fixtureModule.runEsmFixture, "function", "Named ESM runner export is missing");
@@ -82,6 +83,40 @@ class NativeEsmFixtureRunner {
     inputs.set("cycle-a.js", "export const A = 7;");
     assert.equal(negative.getExports("cycle-a.js").A, 7, "a failed import leaves no stale loading marker/cache entry");
     assert.throws(() => new SourceRuntime().importModule("src/core/math/vector2.js"), /ENOENT/, "deleted classic aliases are not restored");
+  }
+
+  async #checkNativeServer() {
+    const { NativeRuntimeReadiness } = require("./esm_infrastructure/native_runtime_readiness");
+    const { DevServerApplication, DevServerConfig, MimeTypeRegistry, StaticFileResolver } = require("../dev-server");
+    assert.deepEqual(NativeRuntimeReadiness.verify(PROJECT_ROOT), { status: "native-esm", outputs: [] });
+    assert.throws(() => NativeRuntimeReadiness.assertNoGeneratedOutput(file => file === "dist"), /generated dist output/);
+    const config = new DevServerConfig({ HOST: "127.0.0.1", PORT: "4190" }, ["node", "dev-server", "--port=4191"]);
+    assert.equal(config.port, 4191); assert.equal(config.host, "127.0.0.1");
+    assert.equal(new DevServerConfig({ PORT: "invalid" }, []).port, 4173);
+    const mime = new MimeTypeRegistry();
+    assert.equal(mime.getForFile("entry.JS"), "text/javascript; charset=utf-8");
+    assert.equal(mime.getForFile("config.json"), "application/json; charset=utf-8");
+    assert.equal(mime.getForFile("style.css"), "text/css; charset=utf-8");
+    assert.equal(mime.getForFile("asset.unknown"), "application/octet-stream");
+    const resolver = new StaticFileResolver(PROJECT_ROOT);
+    assert.equal(resolver.resolve("/"), path.join(PROJECT_ROOT, "index.html"));
+    assert.equal(resolver.resolve("/dev.html?v=0.27.2"), path.join(PROJECT_ROOT, "dev.html"));
+    assert.equal(resolver.resolve("/..%5Coutside.js"), process.platform === "win32" ? null : path.join(PROJECT_ROOT, "..\\outside.js"));
+    const calls = [], logs = [], events = new Map(); let fatal;
+    const server = { on(name, callback) { events.set(name, callback); calls.push("on:" + name); },
+      listen(port, host, callback) { calls.push(["listen", port, host]); callback(); } };
+    const report = { status: "native-esm", outputs: [] };
+    const app = new DevServerApplication(config, { server, runtimeValidator: async () => { calls.push("validate"); return report; },
+      fatalErrorHandler: error => { fatal = error; }, logger: { log(message) { logs.push(message); } } });
+    assert.equal(await app.start(), report);
+    assert.deepEqual(calls, ["validate", "on:error", ["listen", 4191, "127.0.0.1"]]);
+    assert(logs.includes("Runtime: native ESM; no generated outputs."));
+    const bindError = Object.assign(new Error("occupied"), { code: "EADDRINUSE" }); events.get("error")(bindError); assert.equal(fatal, bindError);
+    const failedCalls = [];
+    const failed = new DevServerApplication(config, { server: { on() { failedCalls.push("on"); }, listen() { failedCalls.push("listen"); } },
+      runtimeValidator: () => { throw new Error("unaccepted native retirement"); }, logger: { log() {} } });
+    await assert.rejects(failed.start(), /unaccepted native retirement/);
+    assert.deepEqual(failedCalls, [], "failed native validation never opens the listener");
   }
 
   #globalIdentitySet() {

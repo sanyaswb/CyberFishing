@@ -32,6 +32,12 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
   config test composition, no metadata aliases or old loader wrapper. Quick 24/24, Architecture 32/32,
   [uncached Full 64/64](../archive/stage7_native_paths_acceptance.json), game-cycle unchanged; no runtime/HTML/package change.
   Exact raw tooling recovery: `stage7-compat-tools-archive` -> `aeb43037` (parent audited spec checkpoint `a33c7ca`).
+- Stage 7.1 [preparation 002](stage_7/preparations/002_native-server-and-fresh-install.json) accepted (2026-10-08): native server
+  validates retirement before listen; fresh installer copies native source plus isolated recovery Git metadata and performs fresh npm ci,
+  with no classic build/dist reads. Fresh Architecture 32/32, Quick 24/24, Full 64/64; final workspace uncached
+  [Full 64/64](../archive/stage7_native_server_acceptance.json), [browser/HTTP smoke](../archive/stage7_native_server_browser.json).
+  Source/lock and game-cycle unchanged; caller Git index isolation checked; owned server/tabs closed. Runtime/HTML/package/catalog unchanged.
+  Next: move live identity/provenance/module-evaluation contracts out of build modules; exact catalog approval remains pending.
 
 - Both actual pages load one native module entry: `index.html` → `src/entrypoints/game.entry.js`, `dev.html` →
   `src/entrypoints/dev.entry.js` → `src/bootstrap/development/legacy_game_startup.js`. `dist/` is absent; both builders report `retired-native-esm`.
