@@ -530,7 +530,7 @@ async function checkNativeDevelopmentLifecycle() {
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
     'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
     'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
-    'src/dev/modules/reel_hold_gate_live_probe.js':{ReelHoldGateLiveProbe:class{dispose(){counts.probeDispose++;}}},
+    'src/dev/modules/reel_retrieve_diagnostic.js':{ReelRetrieveDiagnostic:class{dispose(){counts.probeDispose++;}}},
     'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
   }});
   const startup=source.importModule('src/bootstrap/development/development_game_startup.js');

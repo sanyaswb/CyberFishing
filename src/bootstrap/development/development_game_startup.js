@@ -27,7 +27,7 @@ import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
 import { OVERLAY_MODULES } from "../../dev/overlay/config/overlay_modules_config.js";
 import { OverlaySettingsStore } from "../../dev/overlay/overlay_settings_store.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
-import { ReelHoldGateLiveProbe } from "../../dev/modules/reel_hold_gate_live_probe.js";
+import { ReelRetrieveDiagnostic } from "../../dev/modules/reel_retrieve_diagnostic.js";
 import { RenderAllocationDiagnostics } from "../../dev/diagnostics/render_allocation_diagnostics.js";
 import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
@@ -85,7 +85,7 @@ async function startGame() {
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget});
-    probe = new ReelHoldGateLiveProbe({debugModulesSource});
+    probe = new ReelRetrieveDiagnostic({debugModulesSource});
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),

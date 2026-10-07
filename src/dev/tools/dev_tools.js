@@ -101,7 +101,7 @@ export class DevTools {
       this.#onDebugLiveUpdate,
     );
     document.addEventListener(
-      "stage-3-7-8-reel-retrieve-probe-state",
+      "reel-retrieve-diagnostic-state",
       this.#onReelRetrieveProbeState,
     );
     this.#sendReelRetrieveProbeCommand("query");
@@ -125,7 +125,7 @@ export class DevTools {
       this.#onDebugLiveUpdate,
     );
     document.removeEventListener(
-      "stage-3-7-8-reel-retrieve-probe-state",
+      "reel-retrieve-diagnostic-state",
       this.#onReelRetrieveProbeState,
     );
     this.#liveData = null;
@@ -199,7 +199,7 @@ export class DevTools {
     }
 
     const debugContent = this.#renderConfigDebugSection(body);
-    this.#renderStageThreeBatch007ProbeSection(debugContent);
+    this.#renderReelRetrieveDiagnosticSection(debugContent);
     this.#renderLocationDebugSection(debugContent);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
@@ -574,13 +574,13 @@ export class DevTools {
     this.#renderParameterAliases(obj, parentElement, path);
   }
 
-  #renderStageThreeBatch007ProbeSection(debugContent) {
+  #renderReelRetrieveDiagnosticSection(debugContent) {
     if (!debugContent) return;
 
     const content = this.#createSectionWithCache(
-      "🧪 STAGE 3.7.8 REEL / RETRIEVE GATE",
+      "🧪 ДІАГНОСТИКА ПІДМОТУВАННЯ",
       debugContent,
-      ["DEBUG_TOOLS", "stage-3.7.8-reel-retrieve"],
+      ["DEBUG_TOOLS", "reel-retrieve-diagnostic"],
     );
     const state = this.#reelRetrieveProbeState || { status: "unavailable" };
     const activeStatuses = new Set([
@@ -614,10 +614,11 @@ export class DevTools {
     }
     if (state.verdict) {
       this.#ui.createInfoRow(
-        "verdict",
+        "result",
         `${state.verdict.status} / ${state.verdict.blockerClassification}`,
         content,
       );
+      this.#ui.createInfoRow("scenario", state.verdict.scenario, content);
       this.#ui.createInfoRow(
         "console",
         `${state.verdict.console.errors} errors / ${state.verdict.console.warnings} warnings`,
@@ -632,13 +633,13 @@ export class DevTools {
     }
 
     if (activeStatuses.has(state.status)) {
-      this.#ui.createButtonRow("Cancel A/B probe", content, () => {
+      this.#ui.createButtonRow("Cancel A/B trace", content, () => {
         this.#sendReelRetrieveProbeCommand("cancel");
       });
       return;
     }
 
-    this.#ui.createButtonRow("Arm A/B probe", content, () => {
+    this.#ui.createButtonRow("Start A/B trace", content, () => {
       document.activeElement?.blur?.();
       this.#sendReelRetrieveProbeCommand("arm");
     });
@@ -646,7 +647,7 @@ export class DevTools {
 
   #sendReelRetrieveProbeCommand(action) {
     document.dispatchEvent(
-      new CustomEvent("stage-3-7-8-reel-retrieve-probe-command", {
+      new CustomEvent("reel-retrieve-diagnostic-command", {
         detail: { action },
       }),
     );
@@ -681,11 +682,11 @@ export class DevTools {
     );
     if (navigator?.clipboard?.writeText) {
       navigator.clipboard.writeText(result).catch(() => {
-        window.prompt?.("Copy Stage 3.7.8 A/B result", result);
+        window.prompt?.("Copy reel retrieve diagnostic result", result);
       });
       return;
     }
-    window.prompt?.("Copy Stage 3.7.8 A/B result", result);
+    window.prompt?.("Copy reel retrieve diagnostic result", result);
   }
 
   #renderItemProgressionSection(body) {

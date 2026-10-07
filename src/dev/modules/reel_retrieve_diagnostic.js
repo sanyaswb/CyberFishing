@@ -1,10 +1,12 @@
-export class ReelHoldGateLiveProbe {
+// Діагностика підмотування (DEV): on the user's "arm" command it records the line state before and after
+// releasing Space in a reel fight and reports whether released line or stroke credit recovered. It diagnoses
+// only that scenario; it does not validate the fight balance. Cancel and dispose release every resource.
+export class ReelRetrieveDiagnostic {
   #debugModulesSource;
   #lastSignature = "";
   #latestAcceptanceLive = null;
   #previousDebugModuleEnabled = null;
   #acceptanceState = Object.freeze({ status: "idle" });
-  #acceptanceSubscribers = new Set();
   #spaceHeld = false;
   #bestBefore = null;
   #animationFrame = null;
@@ -30,20 +32,7 @@ export class ReelHoldGateLiveProbe {
     this.#bind();
   }
 
-  getAcceptanceState() {
-    return this.#acceptanceState;
-  }
-
-  subscribeAcceptance(subscriber) {
-    if (typeof subscriber !== "function") {
-      throw new TypeError("Reel retrieve probe subscriber must be a function");
-    }
-    this.#acceptanceSubscribers.add(subscriber);
-    subscriber(this.#acceptanceState);
-    return () => this.#acceptanceSubscribers.delete(subscriber);
-  }
-
-  async armAcceptance() {
+  arm() {
     this.#cancelAcceptanceRun();
     this.#publishAcceptance({ status: "arming" });
 
@@ -61,7 +50,7 @@ export class ReelHoldGateLiveProbe {
           "Start a fight, hold Space until stroke credit is positive, then release it.",
       });
       console.info(
-        "[Stage 3.7.8 probe] Armed. Hold Space to build stroke credit, then release Space.",
+        "[Діагностика підмотування] Armed. Hold Space to build stroke credit, then release Space.",
       );
     } catch (error) {
       this.#stopConsoleCapture();
@@ -75,18 +64,17 @@ export class ReelHoldGateLiveProbe {
     return this.#acceptanceState;
   }
 
-  cancelAcceptance() {
+  cancel() {
     this.#cancelAcceptanceRun();
     this.#publishAcceptance({ status: "idle" });
   }
 
   dispose() {
     this.#cancelAcceptanceRun();
-    this.#acceptanceSubscribers.clear();
     if (typeof document !== "undefined") {
       document.removeEventListener("debug-live-update", this.#onDebugLiveUpdate);
       document.removeEventListener(
-        "stage-3-7-8-reel-retrieve-probe-command",
+        "reel-retrieve-diagnostic-command",
         this.#onAcceptanceCommand,
       );
     }
@@ -101,7 +89,7 @@ export class ReelHoldGateLiveProbe {
 
     document.addEventListener("debug-live-update", this.#onDebugLiveUpdate);
     document.addEventListener(
-      "stage-3-7-8-reel-retrieve-probe-command",
+      "reel-retrieve-diagnostic-command",
       this.#onAcceptanceCommand,
     );
     window.addEventListener("keydown", this.#onAcceptanceKeyDown, true);
@@ -111,11 +99,11 @@ export class ReelHoldGateLiveProbe {
   #onAcceptanceCommand = (event) => {
     const action = event.detail?.action;
     if (action === "arm") {
-      this.armAcceptance();
+      this.arm();
       return;
     }
     if (action === "cancel") {
-      this.cancelAcceptance();
+      this.cancel();
       return;
     }
     if (action === "query") {
@@ -169,6 +157,10 @@ export class ReelHoldGateLiveProbe {
     if (event.code !== "Space" || !this.#spaceHeld) return;
 
     this.#spaceHeld = false;
+    if (this.#animationFrame !== null) {
+      window.cancelAnimationFrame(this.#animationFrame);
+      this.#animationFrame = null;
+    }
     const current = this.#readAcceptanceSnapshot();
     const before = this.#preferStrokeCredit(this.#bestBefore, current);
     this.#bestBefore = null;
@@ -248,7 +240,7 @@ export class ReelHoldGateLiveProbe {
       this.#publishAcceptance(result);
       console.info("B — AFTER", bestAfter);
       console.info("REEL/RETRIEVE TRACE", trace);
-      console.info("STAGE 3.7.8 VERDICT", verdict);
+      console.info("REEL RETRIEVE DIAGNOSTIC", verdict);
     };
 
     this.#animationFrame = window.requestAnimationFrame(sample);
@@ -312,10 +304,11 @@ export class ReelHoldGateLiveProbe {
       this.#finiteNumber(before?.rodStrokeWonMeters) > 0;
 
     return Object.freeze({
+      scenario: "line recovery after releasing Space (reel)",
       status:
         setupValid && recoveryObserved && !strokeLineDesync && consoleClean
-          ? "PASS"
-          : "NOT_PASS",
+          ? "RECOVERY_CONFIRMED"
+          : "RECOVERY_NOT_CONFIRMED",
       setupValid,
       recoveryObserved,
       recoveryEvidence: Object.freeze({
@@ -440,11 +433,8 @@ export class ReelHoldGateLiveProbe {
 
   #publishAcceptance(state) {
     this.#acceptanceState = Object.freeze(state);
-    for (const subscriber of this.#acceptanceSubscribers) {
-      subscriber(this.#acceptanceState);
-    }
     document.dispatchEvent(
-      new CustomEvent("stage-3-7-8-reel-retrieve-probe-state", {
+      new CustomEvent("reel-retrieve-diagnostic-state", {
         detail: this.#acceptanceState,
       }),
     );
