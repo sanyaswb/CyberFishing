@@ -25,20 +25,6 @@
 │        ├── bg_test--evening.webp
 │        ├── bg_test--night.webp
 │        └── test-depth.webp
-├── backend
-│  ├── .gitignore
-│  ├── logs
-│  │  └── events.json
-│  ├── package-lock.json
-│  ├── package.json
-│  ├── server.js
-│  └── src
-│     ├── controllers
-│     │  └── eventController.js
-│     ├── routes
-│     │  └── eventRoutes.js
-│     └── services
-│        └── eventService.js
 ├── CHANGELOG.md
 ├── convert-images.js
 ├── dev.html
@@ -51,11 +37,17 @@
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
 │  ├── runtime_config_overrides.md
-│  └── simplified_fight_physics_model.md
+│  ├── simplified_fight_physics_model.md
+│  └── stats_and_balance_spec.md
 ├── index.html
 ├── package-lock.json
 ├── package.json
 ├── README.md
+├── specs
+│  └── 001-inventory-decomposition
+│     ├── plan.md
+│     ├── spec.md
+│     └── tasks.md
 ├── src
 │  ├── bootstrap
 │  │  ├── development
@@ -72,7 +64,8 @@
 │  │     ├── game_startup.js
 │  │     ├── game_version_badge.js
 │  │     ├── inventory_composition_root.js
-│  │     └── inventory_ui_bootstrap.js
+│  │     ├── inventory_ui_bootstrap.js
+│  │     └── player_inventory_composition.js
 │  ├── dev
 │  │  ├── core
 │  │  │  ├── debug_console.js
@@ -82,6 +75,7 @@
 │  │  ├── data
 │  │  │  └── dev_item_catalog.js
 │  │  ├── diagnostics
+│  │  │  ├── config_validation_reporter.js
 │  │  │  └── render_allocation_diagnostics.js
 │  │  ├── fishing
 │  │  │  ├── active_fish_dev_tools_schema.js
@@ -113,7 +107,7 @@
 │  │  │  ├── net_debug_module.js
 │  │  │  ├── prediction_debug_module.js
 │  │  │  ├── reel_hold_gate_debug_module.js
-│  │  │  ├── reel_hold_gate_live_probe.js
+│  │  │  ├── reel_retrieve_diagnostic.js
 │  │  │  ├── rod_stroke_debug_module.js
 │  │  │  ├── stamina_debug_module.js
 │  │  │  └── tension_debug_module.js
@@ -247,31 +241,32 @@
 │  │  │  │  ├── equipment_read_model_factory.js
 │  │  │  │  ├── equipment_service.js
 │  │  │  │  ├── equipment_transition_executor.js
-│  │  │  │  ├── equipment_validator.js
 │  │  │  │  ├── freshest_refill_candidate_policy.js
-│  │  │  │  ├── inventory.js
+│  │  │  │  ├── inventory_command_result.js
 │  │  │  │  ├── inventory_command_service.js
 │  │  │  │  ├── inventory_context_item_filter.js
-│  │  │  │  ├── inventory_equipment.js
 │  │  │  │  ├── inventory_equipment_line_readiness_policy.js
 │  │  │  │  ├── inventory_equipment_transition_adapter.js
 │  │  │  │  ├── inventory_event_bridge.js
 │  │  │  │  ├── inventory_facade.js
-│  │  │  │  ├── inventory_gameplay_facade.js
+│  │  │  │  ├── inventory_gameplay_bridge.js
+│  │  │  │  ├── inventory_gameplay_commands.js
+│  │  │  │  ├── inventory_instance_id_factory.js
 │  │  │  │  ├── inventory_item_factory.js
 │  │  │  │  ├── inventory_item_hydrator.js
+│  │  │  │  ├── inventory_item_removal_service.js
+│  │  │  │  ├── inventory_item_view_context.js
 │  │  │  │  ├── inventory_line_allocation_service.js
 │  │  │  │  ├── inventory_loadout_adapter.js
-│  │  │  │  ├── inventory_manager.js
 │  │  │  │  ├── inventory_refill_adapters.js
 │  │  │  │  ├── inventory_runtime_config_provider.js
 │  │  │  │  ├── inventory_runtime_display_stats_resolver.js
 │  │  │  │  ├── inventory_transaction_coordinator.js
 │  │  │  │  ├── inventory_transaction_participants.js
+│  │  │  │  ├── inventory_ui_state.js
 │  │  │  │  ├── item_database.js
 │  │  │  │  ├── legacy_inventory_unit_allocator.js
 │  │  │  │  ├── line_compatibility_rules.js
-│  │  │  │  ├── line_inventory_controller.js
 │  │  │  │  ├── line_runtime_display_stats_resolver.js
 │  │  │  │  ├── loadout_application_service.js
 │  │  │  │  ├── persistence
@@ -282,8 +277,12 @@
 │  │  │  │  │  ├── inventory_snapshot_factory.js
 │  │  │  │  │  ├── inventory_snapshot_migration.js
 │  │  │  │  │  ├── inventory_state_store.js
+│  │  │  │  │  ├── legacy_inventory_items.js
+│  │  │  │  │  ├── legacy_inventory_save_source.js
 │  │  │  │  │  └── legacy_item_state_migration.js
+│  │  │  │  ├── player_inventory.js
 │  │  │  │  ├── reel_runtime_display_stats_resolver.js
+│  │  │  │  ├── rod_cast_display_stats_writer.js
 │  │  │  │  ├── runtime_display_stat_formatter.js
 │  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── state
@@ -356,16 +355,15 @@
 │  │  │  │  ├── equipment_slot_visibility_policy.js
 │  │  │  │  ├── equipment_state.js
 │  │  │  │  ├── equipment_transition_planner.js
-│  │  │  │  ├── exact_item_signature_policy.js
 │  │  │  │  ├── fishing_readiness_policy.js
 │  │  │  │  ├── rod_capability_resolver.js
+│  │  │  │  ├── tackle_load_limit_policy.js
 │  │  │  │  └── terminal_line_slot_resolver.js
 │  │  │  ├── fish
 │  │  │  │  ├── fish.js
 │  │  │  │  ├── fish_anomaly_variant_resolver.js
 │  │  │  │  └── fish_rarity_resolver.js
 │  │  │  ├── fishing
-│  │  │  │  ├── buff_manager.js
 │  │  │  │  ├── drag_force_calculator.js
 │  │  │  │  ├── endurance
 │  │  │  │  │  └── endurance_movement_debuff_calculator.js
@@ -438,7 +436,6 @@
 │  │  │  │  ├── inventory_capacity_policy.js
 │  │  │  │  ├── inventory_item_location.js
 │  │  │  │  ├── inventory_item_reservation_policy.js
-│  │  │  │  ├── inventory_item_stacking_policy.js
 │  │  │  │  ├── item_assembly_stacking_policy.js
 │  │  │  │  └── unlimited_assembly_capacity_policy.js
 │  │  │  ├── items
@@ -535,23 +532,24 @@
 │  │     │  ├── inventory_item_parameter_config.js
 │  │     │  ├── inventory_item_parameters_renderer.js
 │  │     │  ├── inventory_item_parameters_resolver.js
+│  │     │  ├── inventory_item_tree_view_factory.js
 │  │     │  ├── inventory_item_view_factory.js
 │  │     │  ├── inventory_loadout_panel_renderer.js
 │  │     │  ├── inventory_resource_meter_renderer.js
+│  │     │  ├── inventory_resource_meter_resolver.js
 │  │     │  ├── inventory_rule_messages.js
 │  │     │  ├── inventory_saved_loadout_preview_renderer.js
 │  │     │  ├── inventory_sort_config.js
 │  │     │  ├── inventory_subfilter_resolver.js
 │  │     │  ├── inventory_tooltip_presenter.js
 │  │     │  ├── inventory_ui.js
-│  │     │  ├── inventory_v2_item_view_factory.js
-│  │     │  ├── inventory_v2_resource_meter_resolver.js
 │  │     │  ├── inventory_view_model.js
 │  │     │  ├── inventory_view_model_factory.js
 │  │     │  ├── item_condition_descriptor.js
 │  │     │  ├── item_freshness_descriptor.js
 │  │     │  ├── item_progression_visual_resolver.js
 │  │     │  ├── item_quality_resolver.js
+│  │     │  ├── rod_cast_display_labels.js
 │  │     │  └── terminal_line_slot_label_resolver.js
 │  │     ├── rarity
 │  │     │  └── rarity_visual_config.js
@@ -585,7 +583,7 @@
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── hud_style_resolver.js
-│  │     │  ├── inventory_v2.css
+│  │     │  ├── inventory.css
 │  │     │  ├── outcome_style_resolver.js
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  └── style.css
@@ -609,14 +607,13 @@
 │        ├── config
 │        │  └── deep_clone_config.js
 │        ├── diagnostics
-│        │  ├── console_logger.js
-│        │  └── event_logger.js
+│        │  └── console_logger.js
 │        ├── dom
 │        │  ├── draggable_button.js
 │        │  ├── engine_interface.js
 │        │  ├── horizontal_scroll_controller.js
-│        │  ├── inventory_v2_dom_factory.js
-│        │  ├── inventory_v2_long_press_controller.js
+│        │  ├── inventory_dom_factory.js
+│        │  ├── inventory_long_press_controller.js
 │        │  ├── item_condition_dom_adapter.js
 │        │  ├── item_progression_dom_adapter.js
 │        │  ├── item_rarity_dom_adapter.js
@@ -649,6 +646,7 @@
    ├── bait-effectiveness-check.js
    ├── check-js.js
    ├── config-runtime-check.js
+   ├── config-schema-check.js
    ├── consumable-event-identity-check.js
    ├── create-version-copy.js
    ├── degradation-color-check.js
@@ -656,19 +654,19 @@
    ├── dev-tools-linked-parameter-check.js
    ├── fish-rarity-check.js
    ├── float-depth-cast-check.js
+   ├── game-application-composition-check.js
    ├── game-cycle-check.js
    ├── git-version-copy.js
    ├── hook-domain-semantics-check.js
-   ├── inventory-lifecycle-check.js
+   ├── inventory-cast-and-lure-check.js
+   ├── inventory-equipment-check.js
+   ├── inventory-equipment-hydration-check.js
+   ├── inventory-integration-check.js
+   ├── inventory-line-allocation-check.js
+   ├── inventory-migration-check.js
    ├── inventory-save-round-trip-check.js
-   ├── inventory-v2-cast-and-lure-check.js
-   ├── inventory-v2-equipment-check.js
-   ├── inventory-v2-equipment-hydration-check.js
-   ├── inventory-v2-integration-check.js
-   ├── inventory-v2-line-allocation-check.js
-   ├── inventory-v2-migration-check.js
-   ├── inventory-v2-transaction-check.js
-   ├── inventory-v2-ui-check.js
+   ├── inventory-transaction-check.js
+   ├── inventory-ui-check.js
    ├── item-assembly-domain-check.js
    ├── item-condition-check.js
    ├── item-freshness-gameplay-check.js
@@ -679,7 +677,9 @@
    ├── item-state-hardening-check.js
    ├── line-allocation-check.js
    ├── platform-runtime-check.js
+   ├── player-inventory-check.js
    ├── rarity-production-check.js
+   ├── reel-retrieve-diagnostic-check.js
    ├── run-checks.js
    ├── testing
    │  ├── core

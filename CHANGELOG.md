@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.29.0 - Stage 7 Closed
+
+### Changed
+
+- Inventory split into single-purpose modules: PlayerInventory (composed in bootstrap), legacy save source, UI state, player commands, gameplay commands and item removal; byte-identical behavior proven by differential runs. The V2 marker is gone from names; the save key is unchanged.
+- Removed the unwired EventLogger/backend, BuffManager and ExactItemSignaturePolicy; ConfigSchemaValidator now runs as a check and on DEV config edits, and the reel probe became the DEV reel retrieve diagnostic.
+
 ## v0.28.0 - Lean Repository
 
 ### Changed
