@@ -127,7 +127,7 @@ export class ChumManager {
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
 
-    // ВИПРАВЛЕНО: Додано безпечні перевірки та дефолтні значення
+    // Безпечні перевірки та дефолтні значення
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
 
     this.loadFromStorage();

@@ -445,7 +445,7 @@ export class InventoryManager {
     const eq = this.getEquipped();
 
     if (baseSlot === "hooks") {
-      // ВИПРАВЛЕНО: Додано перевірку на базову кількість гачків вудки
+      // Перевірка базової кількості гачків вудки
       const maxHooks =
         eq.feederRig?.effectiveStats?.hooksCount ||
         eq.rod?.effectiveStats?.maxHooks ||

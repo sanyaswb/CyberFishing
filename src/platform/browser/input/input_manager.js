@@ -382,7 +382,7 @@ export class InputManager {
     if (e && e.clientX !== undefined) {
       if (this.#isDragging) {
         const dx = e.clientX - this.#startX;
-        // ЗМІНЕНО: Читаємо чутливість із конфігу (за замовчуванням 200)
+        // Чутливість із конфігу (за замовчуванням 200)
         const dy = this.#runtimeConfig.input?.swipeResistanceY ?? 200;
 
         const length = Math.hypot(dx, dy);

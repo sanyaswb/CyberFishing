@@ -712,7 +712,7 @@ export const ITEM_DB = {
         length: 3.0,
         maxWeight: 3.0,
         quality: 1.0,
-        catchType: "all", // ЗМІНЕНО: type -> catchType
+        catchType: "all",
         chances: [
           { min: 0, max: 39, chance: 80 },
           { min: 40, max: 79, chance: 70 },

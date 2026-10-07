@@ -122,7 +122,7 @@ export class ViewportProjector {
     }
   }
 
-  // --- НОВИЙ МЕТОД: Математична перспектива ---
+  // Математична перспектива
   getPerspective(virtualY) {
     const mapConfig = this.#locationsConfig.map[this.#locationId];
     // Беремо кути з конфігурації (або дефолтні значення 5 і 60)
@@ -155,13 +155,13 @@ export class ViewportProjector {
     return { scale, squashY };
   }
 
-  // ДОДАНО: Метод для плавного слідування за об'єктом ТІЛЬКИ по осі Y
+  // Плавне слідування за об'єктом ТІЛЬКИ по осі Y
   focusOnVirtualPos(vY, dt, lerpSpeed = 0.05) {
     if (this.#maxScrollY <= 0) return;
 
     const targetPixelY = vY * this.#scale;
 
-    // ЗМІНЕНО: Читаємо фокус камери з конфігу (за замовчуванням 0.7)
+    // Фокус камери з конфігу (за замовчуванням 0.7)
     const focusRatio = this.#locationsConfig.cameraFocusY ?? 0.7;
 
     let desiredCameraY = targetPixelY - this.#canvasHeight * focusRatio;

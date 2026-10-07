@@ -47,7 +47,7 @@ export class DevTools {
   #excludeKeys = [
     "id",
     "name",
-    "icon", // ДОДАНО: ігноруємо емодзі, щоб не створювати для них зайвих полів
+    "icon", // ігноруємо емодзі, щоб не створювати для них зайвих полів
     "bgUrls",
     "depthUrl",
     "endpoint",

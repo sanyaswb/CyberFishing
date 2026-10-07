@@ -348,7 +348,7 @@ export class StateDepsFactory {
       rng: root.rng,
       castManager: root.castManager,
       eatenBaits: root.eatenBaits,
-      // FIX: was a stale primitive; now a live getter function
+      // Live getter: the value changes during the fight
       getCastStartTime: root.getCastStartTime,
       canPlayerCast: root.canPlayerCast,
       setInvalidCastMarker: root.setInvalidCastMarker,
@@ -375,7 +375,7 @@ export class StateDepsFactory {
       },
       rng: root.rng,
       config: root.config,
-      // FIX: was a stale primitive; now a live getter function
+      // Live getter: the value changes during the fight
       getCastStartTime: root.getCastStartTime,
       canPlayerCast: root.canPlayerCast,
       ...this.#worldQueries(),
