@@ -36,6 +36,7 @@ CLASSIFICATION = ARCHITECTURAL DECISION
 - Give each mutable game-state fact one authoritative owner. Explicitly mark cached or derived state and never treat it as a second source of truth.
 - Keep Domain contracts independent of `game/config`; inject raw configuration through constructors, factories, or the composition root.
 - Base performance decisions on evidence: hot-loop participation, allocation frequency, DOM/Canvas access, and profiling risk. Add object pooling only for a proven high-churn lifecycle.
+- After every stage closure run a separate post-closure cleanup (owner 2026-10-07): remove code, tooling, guards, aliases and files that are no longer needed with reachability/consumer proof and exact-byte recovery, and optimize only with evidence; own preparation + patch release (Stage 5 precedent: preparation 031, v0.26.1, stage5-dead-code-archive). Behavior, saves, timing and public APIs unchanged; removing a live check or renaming an API is an owner decision.
 
 ---
 

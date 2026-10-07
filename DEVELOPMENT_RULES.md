@@ -48,6 +48,8 @@ Avoid overengineering. Every abstraction must solve a real problem in ownership,
 
 If information is missing, state safe engineering assumptions and continue. Never invent architecture-critical facts that should be verified from the code.
 
+After every migration stage is closed, run a separate post-closure cleanup before starting the next stage: remove code, tooling, guards, aliases and files that are no longer needed (prove unreachability and review every consumer; keep exact-byte recovery), and optimize only with evidence (hot-loop allocation/call traces, unchanged game-cycle and save bytes). Behavior, formulas, saves, timing and public APIs stay unchanged; removing a live check or renaming an API is an explicit owner decision. The cleanup is its own preparation and patch release.
+
 For reviews, check: behavior, dependency direction, state ownership, SOLID/SRP, runtime identity, compatibility safety, performance, tests and migration removability. Use P0/P1/P2/P3 only when useful.
 
 Priority:

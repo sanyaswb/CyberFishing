@@ -1,7 +1,7 @@
 # Stage 6 — closure specification (next session)
 
-Written: 2026-10-07 (Europe/Kiev). Goal of the session: close Stage 6 in full and hand off to Stage 7. Everything below is
-closure work only; no gameplay, formula, save, API, timing or hot-loop change is in scope.
+Written: 2026-10-07 (Europe/Kiev). Goal of the session: close Stage 6 in full, run the post-closure cleanup (C5) and hand off to Stage 7. Everything below is
+closure (C1–C4) and cleanup (C5) work only: no gameplay, formula, save, public API or timing change; hot-loop changes only as C5 evidence-backed, behavior-identical optimizations.
 
 ## 1. Resume state (verify first)
 
@@ -142,6 +142,43 @@ continuation spec §9 and `refactor_Task.txt` §6, grouped as:
 4. Commit the closure, push `develop`, create annotated `stage6-closed` on the closure commit
    (`git tag -a stage6-closed -m "CyberFishing Stage 6 closed - native development"`), push the tag.
 
+### C5 — Post-closure cleanup (owner rule 2026-10-07: after every Stage closure)
+
+Start only after the `stage6-closed` tag is pushed; the closure record stays immutable. Follow the Stage 5 precedent
+(post-closure preparation 031, patch release v0.26.1, `stage5-dead-code-archive`,
+`architecture/migration/stage_5/post_closure_cleanup_audit.md`).
+
+1. Write `architecture/migration/stage_6/post_closure_cleanup_audit.md`: every candidate with its read/write/import
+   sites (production, DEV, tests, checks, package scripts), the decision (remove / keep with reason / owner decision /
+   Stage 7) and the evidence required. Known candidates:
+   - 73 `typeof X !== "undefined"` guards in native `src` modules (e.g. `game_version_badge.js`,
+     `game_composition_root.js`, `inventory_composition_root.js`, several `src/dev/*`). Remove only those whose `X`
+     is an imported or local binding (always defined after ESM migration, precedent: Stage 4 removal of dead Domain
+     guards); keep real browser-capability checks (`window`, `document`, `performance`) in Platform/DEV.
+   - `src/dev/core/null_debug_runtime.js` and `src/dev/physics/physics_formula_map.js`: no import or reference in
+     `src`/`utils` (2026-10-07 grep); confirm with both graphs and the Manifest, then remove with their Manifest entries.
+   - Test-only classic path aliases in `utils/testing/runtime/native_esm_test_loader.js` (fed by preparation 005
+     `nativeReplacements`): move each test consumer to the canonical path, then remove the alias mechanism; keep
+     every assertion.
+   - Utils files left unreachable after C2b, unused imports/exports and dead branches found while auditing.
+   - Owner decision before removal (ask in chat with the exact list): history-only compatibility tooling and checks
+     (`utils/build/compat_runtime/*`, `build_legacy_bridges.js`, Stage 2/3 runtime fixture checks — changes the
+     64-check catalog) and the now-inert `build:*` package scripts (package contract transition).
+   - Evidence-based optimization: the per-frame `currentDebugState` string built in `LocationMap.update()` (known
+     hot-loop allocation; owner decision 2026-09-29: replace with a config-changed flag from the override store,
+     behavior unchanged); re-measure hot-loop allocations/call counts with the existing hot-loop tooling and list any
+     other proven churn. No optimization without before/after evidence.
+   - Not in this cleanup (Stage 7): API renames (`getDebugRevision`, debug diagnostics naming, debuff getters),
+     ViewportProjector split, folder relocation of `src/config/metadata` / `src/ui/styles`, EOL renormalization.
+2. Apply as Stage 6 preparation 006 (existing preparation mechanism: `removedModules` with exact bytes/blobs,
+   `files` before/after, `reason`), raw recovery tag `stage6-dead-code-archive` on a commit that holds the removed
+   bytes. Remove the 72 empty local directories left by the cutover (untracked, filesystem only).
+3. Verify: focused checks for every touched area, game-cycle hash unchanged, hot-loop evidence for any optimization,
+   Quick 24/24, Architecture 32/32, uncached Full 64/64, actual-page browser smoke with save bytes unchanged.
+4. Patch release 0.27.1 through the Stage 6 release contract (record `releases/002_*.json`, decision in the audit),
+   commit, `v0.27.1` tag, push develop and both tags; update the Stage 7 handoff, `refactor_Task.txt` (CRLF) and
+   resume points with the cleanup facts (files/lines removed, utils net delta).
+
 ## 3. Rules and pitfalls for this session
 
 - Read CLAUDE.md "Development rules" and `DEVELOPMENT_RULES.md`; behavior preservation is absolute.
@@ -164,3 +201,8 @@ continuation spec §9 and `refactor_Task.txt` §6, grouped as:
 - [ ] `architecture/migration/stage_7_handoff.md` written.
 - [ ] game-cycle hash unchanged; Quick 24/24, Architecture 32/32, uncached Full 64/64 on the closure snapshot.
 - [ ] Docs updated; closure commit and `stage6-closed` tag pushed.
+- [ ] Post-closure cleanup (C5): audit written, owner decisions asked, preparation 006 applied with
+      `stage6-dead-code-archive`, all suites/browser green, release v0.27.1 tagged and pushed.
+
+If the session runs short, stop after a pushed `stage6-closed` and leave C5 as the next session's first task —
+never start C5 before the closure tag exists.
