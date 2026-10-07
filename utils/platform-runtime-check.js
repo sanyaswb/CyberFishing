@@ -423,7 +423,7 @@ async function checkGameLoopAndAdapters() {
     godModeSource:()=>({noLineBreak:true,fixedBiteChancePercent:40}),debugModulesSource:()=>({fish:true})});
   assert.equal(dev.isEnabled("noLineBreak"),true);assert.equal(dev.isEnabled("fixedBiteChancePercent"),false);
   assert.equal(dev.godModeValue("fixedBiteChancePercent"),40);assert.equal(dev.isDebugEnabled(),true);
-  for(const [config,expected] of [[{debug:{overlay:true}},true],[{debug:{events:true}},true],[{logs:{events:true}},true],
+  for(const [config,expected] of [[{debug:{overlay:true}},true],[{debug:{events:true}},true],
     [{debug:{consoleModules:{fish:false}}},false],[{debug:{consoleModules:{fish:true}}},true]]) {
     assert.equal(new DevFlagsProvider({config}).isDebugEnabled(),expected,json(config));
   }

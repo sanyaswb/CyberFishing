@@ -46,7 +46,6 @@ export class DevFlagsProvider {
     return !!(
       this.#config.debug?.overlay ||
       this.#config.debug?.events ||
-      this.#config.logs?.events ||
       hasActiveConsoleModule
     );
   }

@@ -293,12 +293,6 @@ export const CONFIG = {
   itemStatOverrides: ITEM_STAT_OVERRIDE_CONFIG,
   degradationColors: null,
 
-  logs: {
-    events: false,
-    maxEntries: 50,
-    endpoint: "http://localhost:3000/api/events", // ОСЬ ЦЕЙ РЯДОК З'ЄДНУЄ ГРУ З БЕКЕНДОМ
-  },
-
   player: {
     equipment: {
       rodId: null,
