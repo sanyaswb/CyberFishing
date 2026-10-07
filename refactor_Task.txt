@@ -614,9 +614,11 @@ Deferred tasks agreed during the Stage 3 decompositions (prerequisites 007–021
 
 - [ ] Rename the production diagnostic snapshots called "debug" in `FishForceSystem` and `TackleStressSystem` to diagnostics (017).
 - [ ] Rename `LocationMap.getDebugRevision` to `getRevision`: it is the revision of the map's source data, owned by the map (owner decision 2026-09-29; an API change, deferred).
-- [ ] `LocationMap.update()` builds the `currentDebugState` string from config flags every frame (a hot-loop allocation): replace it with a "config changed" flag from the DEV override store without changing behaviour (Stage 6/7, owner decision 2026-09-29).
+- [ ] `LocationMap.update()` builds the `currentDebugState` string from config flags every frame (a hot-loop allocation). Owner decision 2026-10-07 supersedes 2026-09-29: compare the seven flags in private fields (no new Domain port, identical trigger/side effects), hot-loop evidence before/after; details stage_7_handoff.md D1.
 - [x] Delete the unread fish profile helpers `fish_profile_presets.js` (Stage 4 cluster 003) and `fish_profile_factory.js` (cluster 005): no reader in src, migrated export-only (inert); their classic globals were gone since migration; both ESM helpers and placeholders were deleted in verified post-closure preparation 031 / v0.26.1.
 - [ ] Separate coverage/API review for candidates retained after preparation 031: `BuffManager` (016), `InventoryV2GameplayBridge.evaluateBiteReadiness` / `evaluateChumBonus` and `FishingReadinessPolicy.evaluateChumBonus`. Actual holders: game-cycle multiplier/expiry scenario, inventory-v2-integration empty-stack checks and inventory-v2-equipment chum-bonus checks. Preserve these contracts until equivalent coverage or an explicit obsolete-API decision permits removal.
+- [ ] Fix pre-existing defect fixed-catch-active-lure-bite-sequence (owner decision 2026-10-07, D2): fixed-catch branch keeps the naturally hooked fish when the fixed fish has no bite sequence for the bait; focused regression, game-cycle unchanged.
+- [ ] Fix pre-existing defect depth-selector-dispose-raf-race (owner decision 2026-10-07, D3): track and cancel pending frames on dispose, guard after dispose; focused platform-runtime case.
 
 ---
 

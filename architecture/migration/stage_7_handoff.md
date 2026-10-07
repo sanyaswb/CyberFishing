@@ -29,8 +29,8 @@ Closure facts: [stage_6_closure.json](stage_6_closure.json). Stage 6 history: [s
 
 Done in preparation 006 / v0.27.1 (`stage6-dead-code-archive`): 73 dead import guards, the two unreachable DEV modules, the three package
 scripts and 85 empty directories removed; see [stage_6/post_closure_cleanup_audit.md](stage_6/post_closure_cleanup_audit.md).
-Still open from its list: the `LocationMap.currentDebugState` optimization (owner decision between the override-store flag and the
-allocation-free per-field comparison) and the test-loader aliases (first Stage 7 step). Original plan:
+Still open from its list: the `LocationMap.currentDebugState` optimization (decided 2026-10-07: per-field comparison, see
+"Owner decisions 2026-10-07" below) and the test-loader aliases (first Stage 7 step). Original plan:
 
 Owner rule 2026-10-07: every stage closure is followed by a separate cleanup preparation and patch release. Run C5 of
 [stage_6/stage6_closure_spec.md](stage_6/stage6_closure_spec.md) before any Stage 7 transition. Its candidates (audit first, exact-byte
@@ -53,7 +53,7 @@ at least two live uses (see `toolingArchive` in the closure record).
 - Remove the `FlatInventoryItemRepository` optional id fallback after proving every caller injects the factory and clock.
 - Split `ViewportProjector` world-perspective facts from camera state, with hot-loop evidence (allocation sites, call counts, frame traces).
 - Rename `LocationMap.getDebugRevision` → `getRevision` (owned source-data revision).
-- If C5 leaves it: replace the per-frame `currentDebugState` string in `LocationMap.update()` with a config-changed flag from the override store.
+- Replace the per-frame `currentDebugState` string in `LocationMap.update()` by the per-field comparison decided 2026-10-07 (below).
 - Rename the production "debug" diagnostic snapshots in `FishForceSystem` / `TackleStressSystem` to diagnostics.
 - Coverage/API review of `BuffManager`, `InventoryV2GameplayBridge.evaluateBiteReadiness` / `evaluateChumBonus` and
   `FishingReadinessPolicy.evaluateChumBonus`; keep the contracts until equivalent coverage or an explicit obsolete-API decision.
@@ -100,12 +100,57 @@ at least two live uses (see `toolingArchive` in the closure record).
    close with an uncached Full on the reduced catalog. A script must never point at a deleted file, so scripts go before or with their targets.
 4. Doing everything inside C5 is possible but mixes a catalog change into the patch cleanup; keep it separate unless you prefer one release.
 
-## Known pre-existing defects (owner decisions, not migration work)
+## Known pre-existing defects
 
 Found during the closure browser run and byte-identical since before Stage 6 (details in `architecture/archive/stage6_closure_browser.json`):
 
 - `fixed-catch-active-lure-bite-sequence`: with the base-config `debug.fixedCatch` (fish `crucian_stalker`, passive bite mechanics only), any
   spinner/wobbler/jig bite reads `runtimeConfig.float.biteSequence`, a key that never existed, and throws; the game loop stops on both pages.
-  Fixing it changes gameplay, so it needs an owner decision.
+  Fixing it changes gameplay; decided 2026-10-07 (below).
 - `depth-selector-dispose-raf-race`: `DepthSelectorUI.show()/updateMax()` schedule a frame callback that throws if `dispose()` runs in the same
-  frame. A real unload never reaches it; an in-page restart within one frame does. Lifecycle hardening candidate.
+  frame. A real unload never reaches it; an in-page restart within one frame does. Decided 2026-10-07 (below).
+
+## Owner decisions 2026-10-07 (supersede earlier wording)
+
+Execute as three separate steps (one commit each, own evidence), then one patch release 0.27.2. They are not migration work and
+must not be mixed with the Stage 7 tooling archive or API renames.
+
+### D1 — `LocationMap.update()` per-frame string: per-field comparison (not the override-store flag)
+
+Supersedes the 2026-09-29 "config-changed flag from the override store" wording. Reason: the store flag needs a new Domain port wired
+through Bootstrap and is not behavior-equivalent — the store revision changes on any override (fish physics, GodMode, …), so it would
+add `recalculateZones()` calls and `#debugRevision` increments (DEV render-cache invalidation), and it misses changes that bypass the
+store (base config, location config replacement). The per-field comparison keeps the current trigger exactly.
+
+- Seven private fields for `debugGrid`, `debugDepthText`, `debugZones`, `enableCastable`, `enableCollisions`, `enableSnags`,
+  `enableDynamicZones`, plus an "initialized" flag so the first `update()` always recalculates (today `""` never equals the template).
+- Compare in the same order with `!==`; on any difference assign all seven, then `#debugRevision += 1`, then
+  `recalculateZones(null, locCfg.cellSize)` — same side effects in the same order. Remove `#lastDebugState`.
+- Equivalence proof to record in the transition: every writer produces booleans (base literals in `game_config.js`, DevTools checkbox
+  schema `location_dev_tools_schema.js`, override export/import round-trip). String coercion differences (`true` vs `"true"`, `NaN`,
+  `_` inside values) are unreachable from existing writers; say so explicitly.
+- Evidence: hot-loop tooling before/after — the template-string allocation site disappears; `recalculateZones` call count and
+  `getDebugRevision()` values identical over a scenario that toggles each flag through the config context and through DevTools and
+  replaces the location config; game-cycle stdout `0db62de2…` unchanged. `getDebugRevision` → `getRevision` rename stays a Stage 7 API step.
+
+### D2 — `fixed-catch-active-lure-bite-sequence`: fix now (gameplay bugfix, scoped to the failing path)
+
+Base config ships `debug.fixedCatch.enabled: true`, so every player with a spinner/wobbler/jig crashes the loop on a bite.
+
+- Fix in the Application fixed-catch branch of `game_state_machine.js`: when `rules.bite.selectBiteSequence(template, baitTypes)` returns
+  `null` (the fixed fish has no mechanic for this bait), do not override — keep the naturally hooked fish. This respects the fish's own
+  bite mechanics (crucian does not take lures) and leaves every currently working path byte-for-byte identical.
+- Do not change `selectBiteSequence`, spawn rules or `tackle.js` in this step. The dead fallback `runtimeConfig.float.biteSequence`
+  (key never existed) is recorded as a Stage 7 cleanup candidate (explicit contract instead of a silent fallback).
+- Evidence: a focused regression in an existing gameplay check (spinner + fixed catch → no throw, natural fish hooked; float + fixed
+  catch → unchanged fixed fish); game-cycle stdout must stay identical (do not add the scenario to game-cycle); browser smoke with a
+  spinner bite on both pages, saves unchanged.
+- Separate owner question, not decided here: whether production defaults should keep `fixedCatch` / GodMode enabled.
+
+### D3 — `depth-selector-dispose-raf-race`: fix now (lifecycle hardening)
+
+- `DepthSelectorUI` records the id of every frame it schedules in `show()`/`updateMax()` and forgets it when that frame runs (every
+  scheduled callback still runs, as today), cancels the pending ids in `dispose()`, and `#updateInputPosition()` returns when disposed.
+  No other behavior change; scheduling stays in Platform.
+- Evidence: focused case in `platform-runtime` (dispose before the frame runs → no throw, frame cancelled; normal show/updateMax position
+  unchanged), browser in-page restart while a float rig shows the selector → 0 errors.
