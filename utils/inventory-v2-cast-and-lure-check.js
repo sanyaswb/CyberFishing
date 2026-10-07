@@ -353,7 +353,7 @@ class CompositionSeamCheck {
   run() {
     const bootstrap = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_composition_root.js");
     const application = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_application.js");
-    const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/legacy_inventory_system.js");
+    const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/inventory_manager.js");
 
     Assertion.that(
       bootstrap.includes("castReadinessEvaluator: (equipment) =>") &&

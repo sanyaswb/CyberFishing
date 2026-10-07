@@ -52,7 +52,11 @@ class ItemStatContractCheck {
     const capabilities = this.#sourceRuntime.read(
       "src/game/domain/equipment/rod_capability_resolver.js",
     );
-    const inventory = this.#sourceRuntime.readAuthoredSource("src/game/application/inventory/legacy_inventory_system.js");
+    // Every inventory application module (the classic inventory classes live there one per file).
+    const inventory = require("node:fs").readdirSync(require("node:path").join(__dirname, "../src/game/application/inventory"), { recursive: true })
+      .filter((file) => String(file).endsWith(".js")).sort()
+      .map((file) => this.#sourceRuntime.read(`src/game/application/inventory/${String(file).replaceAll("\\", "/")}`))
+      .join("\n");
     const ordering = this.#sourceRuntime.read(
       "src/game/presentation/inventory/inventory_item_order_resolver.js",
     );

@@ -135,7 +135,9 @@ class InventoryRuntimeLoader {
     );
     this.#loadSlotConfigFile(context, "src/game/presentation/inventory/equipment_slot_presentation.js");
     this.#loadSlotConfigFile(context, "src/game/presentation/inventory/inventory_rule_messages.js");
-    this.#moduleLoader.load("src/game/application/inventory/legacy_inventory_system.js", ["InventoryManager", "LineCompatibilityRules", "InventoryEventBridge"]);
+    this.#moduleLoader.load("src/game/application/inventory/inventory_manager.js", ["InventoryManager"]);
+    this.#moduleLoader.load("src/game/application/inventory/line_compatibility_rules.js", ["LineCompatibilityRules"]);
+    this.#moduleLoader.load("src/game/application/inventory/inventory_event_bridge.js", ["InventoryEventBridge"]);
     vm.runInContext("globalThis.LineCompatibilityRules = LineCompatibilityRules;\n" +
       "globalThis.INVENTORY_RULE_MESSAGES = INVENTORY_RULE_MESSAGES;", context);
     return context;
@@ -168,9 +170,11 @@ class InventoryFixtureFactory {
   #effectiveStatsResolver;
   #itemStatOverridePolicy;
   #slotConfig;
+  #runtime;
 
   // Composes the item stat collaborators the way GameCompositionRoot does.
   constructor(runtime) {
+    this.#runtime = runtime;
     this.#InventoryManager = runtime.InventoryManager;
     this.#slotConfig = runtime.SLOT_CONFIG;
     this.#LineCompatibilityRules = runtime.LineCompatibilityRules;
@@ -260,7 +264,9 @@ class InventoryFixtureFactory {
       // Line rules composed with the player-facing texts, as bootstrap composes them.
       new this.#LineCompatibilityRules({}, { messages: this.#ruleMessages }),
       { getReelConfig: () => ({}) },
-      null, null, null, null, null, null, null,
+      new this.#runtime.ItemRarityResolver(),
+      new this.#runtime.InventoryItemStackingPolicy(),
+      null, null, null, null, null,
       this.#effectiveStatsResolver,
       this.#itemStatOverridePolicy,
       MemoryCacheManager,

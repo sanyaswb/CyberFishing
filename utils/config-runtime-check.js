@@ -427,7 +427,7 @@ function checkNativeDevelopmentDisplays() {
   assert.deepEqual(Object.keys(catalog.builds),["debug_float_build","debug_feeder_build"]);
   assert.equal(catalog.rods,ITEM_DB.rods,"normal categories retain shared catalog identity");
   assert.equal(catalog.builds.debug_float_build,DEV_BUILD_TEMPLATES.debug_float_build);
-  const {ConfiguredInventorySeeder} = require("../src/game/application/inventory/legacy_inventory_system.js");
+  const {ConfiguredInventorySeeder} = require("../src/game/application/inventory/configured_inventory_seeder.js");
   const items = new Map(), inventoryAdapter = {getInstance:id=>items.get(id),remove:id=>items.delete(id),addItem:item=>items.set(item.instanceId,item)};
   new ConfiguredInventorySeeder({inventory:inventoryAdapter,itemDB:catalog,playerConfig:{}}).seed();
   assert(items.has("debug_float_build_box") && items.has("debug_feeder_build_box"));

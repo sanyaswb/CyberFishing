@@ -64,7 +64,12 @@ import { HudStyleResolver } from "../../game/presentation/styles/hud_style_resol
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { InputManager } from "../../platform/browser/input/input_manager.js";
 import { INVENTORY_RULE_MESSAGES } from "../../game/presentation/inventory/inventory_rule_messages.js";
-import { InventoryEventBridge, InventoryManager, InventoryRuntimeConfigProvider, ItemDatabase, LineCompatibilityRules } from "../../game/application/inventory/legacy_inventory_system.js";
+import { InventoryEventBridge } from "../../game/application/inventory/inventory_event_bridge.js";
+import { InventoryItemStackingPolicy } from "../../game/domain/inventory/inventory_item_stacking_policy.js";
+import { InventoryManager } from "../../game/application/inventory/inventory_manager.js";
+import { InventoryRuntimeConfigProvider } from "../../game/application/inventory/inventory_runtime_config_provider.js";
+import { ItemDatabase } from "../../game/application/inventory/item_database.js";
+import { LineCompatibilityRules } from "../../game/application/inventory/line_compatibility_rules.js";
 import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
 import { InventoryV2ActionType } from "../../game/presentation/inventory/inventory_view_model.js";
 import { InventoryV2BalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
@@ -672,7 +677,7 @@ export class GameCompositionRoot {
       lineRules,
       runtimeConfigProvider,
       itemRarityResolver,
-      undefined,
+      new InventoryItemStackingPolicy(),
       itemProgressionResolver,
       undefined,
       itemConditionResolver,
