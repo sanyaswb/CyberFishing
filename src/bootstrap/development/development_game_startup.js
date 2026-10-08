@@ -12,7 +12,8 @@ import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
 import { EventBus } from "../../engine/events/event_bus.js";
 import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
-import { FixedCatchFishFactory } from "../../game/application/fishing/fixed_catch_fish_factory.js";
+import { FixedCatchFishFactory } from "../../dev/fishing/fixed_catch_fish_factory.js";
+import { FixedCatchHook } from "../../dev/fishing/fixed_catch_hook.js";
 import { Game } from "../production/game.js";
 import { GameCompositionRoot } from "../production/game_composition_root.js";
 import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
@@ -96,7 +97,9 @@ async function startGame() {
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
       createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
-      createFixedCatchFishFactory: options => new FixedCatchFishFactory(options),
+      createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({
+        config, biteRules, devFlags, fishFactory: new FixedCatchFishFactory(resolvers),
+      }),
       createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
       createDebugService: config => new DebugService(config, debugModulesSource),
       collectFightDiagnostics: true,

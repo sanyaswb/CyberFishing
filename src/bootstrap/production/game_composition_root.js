@@ -159,7 +159,7 @@ export class GameCompositionRoot {
   #runtimeConfig;
   #createLocationDebugMapBuilder;
   #createItemProgressionDebugSnapshotProvider;
-  #createFixedCatchFishFactory;
+  #createHookedFishOverride;
   #createHookedFishProfileSynchronizer;
   #createDebugService;
   #loadRandomInventoryId;
@@ -178,7 +178,7 @@ export class GameCompositionRoot {
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
-    createFixedCatchFishFactory,
+    createHookedFishOverride,
     createHookedFishProfileSynchronizer,
     createDebugService,
     itemDb = ITEM_DB,
@@ -197,7 +197,7 @@ export class GameCompositionRoot {
     collectFightDiagnostics = false,
   } = {}) {
     for (const [name, factory] of Object.entries({
-      createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider,
+      createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
       isCatchResolutionLogEnabled,
@@ -217,7 +217,7 @@ export class GameCompositionRoot {
     }
     this.#createLocationDebugMapBuilder = createLocationDebugMapBuilder;
     this.#createItemProgressionDebugSnapshotProvider = createItemProgressionDebugSnapshotProvider;
-    this.#createFixedCatchFishFactory = createFixedCatchFishFactory;
+    this.#createHookedFishOverride = createHookedFishOverride;
     this.#createHookedFishProfileSynchronizer = createHookedFishProfileSynchronizer;
     this.#createDebugService = createDebugService;
     this.#loadRandomInventoryId = loadRandomInventoryId;
@@ -501,12 +501,6 @@ export class GameCompositionRoot {
       "baitEffectivenessCatalogResolver",
       ["resolve"],
     );
-    const fixedCatchFishFactory = this.#createFixedCatchFishFactory({
-      fishRarityResolver,
-      fishAnomalyVariantResolver,
-      fishVisualVariantResolver,
-    });
-    contracts.requireMethods(fixedCatchFishFactory, "fixedCatchFishFactory", ["create"]);
     const hookedFishProfileSynchronizer = this.#createOptionalDiagnostic(
       this.#createHookedFishProfileSynchronizer, "hookedFishProfileSynchronizer", [{
         fishRarityResolver,
@@ -902,7 +896,6 @@ export class GameCompositionRoot {
       itemRarityResolver,
       fishAnomalyVariantResolver,
       fishVisualVariantResolver,
-      fixedCatchFishFactory,
       fishing,
       equipment,
       net,
@@ -1054,7 +1047,16 @@ export class GameCompositionRoot {
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
       victoryActionGestureResolver:
         runtime.interaction.victoryActionGestureResolver,
-      fixedCatchFishFactory: runtime.fixedCatchFishFactory,
+      hookedFishOverride: this.#createOptionalDiagnostic(
+        this.#createHookedFishOverride, "hookedFishOverride", [{
+          config,
+          biteRules: runtime.biteRules,
+          devFlags,
+          fishRarityResolver: runtime.fishRarityResolver,
+          fishAnomalyVariantResolver: runtime.fishAnomalyVariantResolver,
+          fishVisualVariantResolver: runtime.fishVisualVariantResolver,
+        }], ["apply"],
+      ),
       setState: appPorts.setState,
       castLine: appPorts.castLine,
       markInvalidCast: appPorts.markInvalidCast,

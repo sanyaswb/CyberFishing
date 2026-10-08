@@ -120,7 +120,7 @@ export class StateDepsFactory {
       canPlayerCast: root.canPlayerCast,
       setInvalidCastMarker: root.setInvalidCastMarker,
       getViewportSize: root.getViewportSize,
-      fixedCatchFishFactory: root.fixedCatchFishFactory,
+      hookedFishOverride: root.hookedFishOverride,
       ...this.#worldQueries(),
       ...this.#fishingCommands(),
     });

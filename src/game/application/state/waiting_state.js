@@ -136,29 +136,9 @@ export class WaitingState extends GameState {
       isPulling: effectiveInput.isPulling,
     });
 
-    if (hooked && this.deps.config.debug?.fixedCatch?.enabled) {
-      const fixed = this.deps.config.debug.fixedCatch;
-      const template =
-        this.deps.config.spawns.fishes.find((f) => f.id === fixed.fishId) ||
-        this.deps.config.spawns.fishes[0];
-
-      const chosenSequence = this.deps.rules.bite.selectBiteSequence(
-        template,
-        baitCandidates.map((bait) => bait.variant || bait.itemType),
-      );
-      if (chosenSequence != null) {
-        hooked = this.deps.fixedCatchFishFactory.create({
-          template,
-          weightKg: fixed.weight,
-          biteSequence: chosenSequence,
-          anomalyChanceOverride: this.deps.services.devFlags.isEnabled(
-            "forceAnomalyChance",
-          )
-            ? 1
-            : null,
-          locationId: biteEnv?.locationId || "",
-        });
-      }
+    // DEV balance tools may replace the naturally hooked fish (Fixed Catch); production composes none.
+    if (this.deps.hookedFishOverride) {
+      hooked = this.deps.hookedFishOverride.apply({ hooked, baitCandidates, biteEnv });
     }
 
     if (hooked) {

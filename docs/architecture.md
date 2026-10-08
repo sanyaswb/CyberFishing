@@ -27,7 +27,10 @@ DEV → production layers (never the reverse)
 Only `platform` and `dev` may reference browser/host globals (`window`, `document`, `localStorage`,
 `console`, timers, …); every other layer uses ECMAScript built-ins only and receives host services by
 injection. Runtime configuration has one frozen base and one override store, composed in bootstrap.
-Production GodMode and Fixed Catch are off; DEV composition switches them on for balance testing.
+Production GodMode is off (gameplay reads it only through the injected `DevFlagsProvider`); DEV composition
+switches it on for balance testing. Fixed Catch exists only in DEV: Development startup composes `FixedCatchHook` as
+the optional hooked-fish override of the waiting state, and production composes none. The full fight diagnostics
+snapshot is likewise composed only for DEV (`collectFightDiagnostics`); gameplay, HUD and render read the fight frame.
 
 Styles live in `src/game/presentation/styles/`; DEV metric/parameter descriptions in `src/dev/metadata/`.
 

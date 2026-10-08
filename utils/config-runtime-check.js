@@ -177,7 +177,7 @@ function checkDevelopmentInputs() {
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
-    FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
+    FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
     documentTarget: document, windowTarget: window, godMode: godModeInstance } });
@@ -209,7 +209,10 @@ function checkDevelopmentInputs() {
   assert.equal(ports.createLocationDebugRenderFrameBuilder(rendererOptions).options, rendererOptions);
   assert.equal(ports.createLocationDebugMapBuilder(rendererOptions).options, rendererOptions);
   assert.equal(ports.createItemProgressionDebugSnapshotProvider(rendererOptions).options, rendererOptions);
-  assert.equal(ports.createFixedCatchFishFactory(rendererOptions).options, rendererOptions);
+  const hookDeps = { config, biteRules: {}, devFlags: {}, fishRarityResolver: {}, fishAnomalyVariantResolver: {}, fishVisualVariantResolver: {} };
+  const hook = ports.createHookedFishOverride(hookDeps);
+  assert.equal(hook.options.config, config);assert.equal(hook.options.biteRules, hookDeps.biteRules);assert.equal(hook.options.devFlags, hookDeps.devFlags);
+  assert.deepEqual(Object.keys(hook.options.fishFactory.options).sort(), ["fishAnomalyVariantResolver", "fishRarityResolver", "fishVisualVariantResolver"], "DEV Fixed Catch hook composes its fish factory");
   assert.equal(ports.createHookedFishProfileSynchronizer(rendererOptions).options, rendererOptions);
   assert.equal(ports.createDebugService(config).options, config);
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
@@ -268,7 +271,6 @@ async function checkNativeProductionStartup() {
   const { BrowserGameLifecycle } = require("../src/platform/browser/runtime/browser_game_lifecycle.js");
   const { EventBus } = require("../src/engine/events/event_bus.js");
   const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
-  const { FixedCatchFishFactory } = require("../src/game/application/fishing/fixed_catch_fish_factory.js");
   const { FightPhysicsConfigAdapter } = require("../src/game/config/physics/fight_physics_config_adapter.js");
   // Evaluate the actual module bodies with controlled imported collaborators and import callbacks.
   function evaluate(file, names, bindings) {
@@ -334,13 +336,11 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "createDevFlags", "createFixedCatchFishFactory"].sort(), "production supplies only gameplay and platform ports");
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "createDevFlags"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
         this.ports = ports;
         const flags = ports.createDevFlags(owner);assert(flags instanceof DevFlagsProvider);assert.equal(flags.isEnabled("noEquipmentLoss"), true);
         owner.debug.godMode.enabled = false;assert.equal(flags.isEnabled("noEquipmentLoss"), false);owner.debug.godMode.enabled = true;
         assert(reader instanceof GameplayOverrideReader);
-        assert(ports.createFixedCatchFishFactory({ fishRarityResolver: { resolve() {} }, fishAnomalyVariantResolver: { resolve() {} },
-          fishVisualVariantResolver: { resolveImagePath() {} } }) instanceof FixedCatchFishFactory);
       }
       async build(canvasId) {
         builds++;assert.equal(canvasId, "gameCanvas");
@@ -351,7 +351,7 @@ async function checkNativeProductionStartup() {
     }
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, DevFlagsProvider, GameplayOverrideReader: Overrides,
-      FixedCatchFishFactory, GameCompositionRoot: Root, ...composition, ...platform,
+      GameCompositionRoot: Root, ...composition, ...platform,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
     });

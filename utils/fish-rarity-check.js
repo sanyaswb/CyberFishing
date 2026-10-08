@@ -1151,7 +1151,7 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["OutcomeRenderFrameBuilder"],
   },
   {
-    relativePath: "src/game/application/fishing/fixed_catch_fish_factory.js",
+    relativePath: "src/dev/fishing/fixed_catch_fish_factory.js",
     classNames: ["FixedCatchFishFactory"],
   },
   {

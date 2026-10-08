@@ -1,6 +1,5 @@
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
-import { FixedCatchFishFactory } from "../../game/application/fishing/fixed_catch_fish_factory.js";
 import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
@@ -38,7 +37,6 @@ async function startGame() {
     documentTarget,
     windowTarget,
     createDevFlags: config => new DevFlagsProvider({ config, godModeSource: () => overrides }),
-    createFixedCatchFishFactory: options => new FixedCatchFishFactory(options),
   });
   const game = new Game("gameCanvas", compositionRoot);
   browserLifecycle.publishGame(game);

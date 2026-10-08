@@ -426,7 +426,8 @@ function checkFixedCatchBaitCompatibility() {
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
   const {WaitingState} = ({ ...source.importModule('src/game/application/state/state_machine.js'), ...source.importModule('src/game/application/state/state_deps_factory.js'), ...source.importModule('src/game/application/state/game_state.js'), ...source.importModule('src/game/application/state/scouting_state.js'), ...source.importModule('src/game/application/state/waiting_state.js'), ...source.importModule('src/game/application/state/biting_state.js'), ...source.importModule('src/game/application/state/playing_state.js'), ...source.importModule('src/game/application/state/failed_state.js'), ...source.importModule('src/game/application/state/victory_state.js') });
   const {BiteRules,BaitRules} = ({ ...source.importModule('src/game/domain/rules/equipment_rules.js'), ...source.importModule('src/game/domain/rules/bait_rules.js'), ...source.importModule('src/game/domain/rules/cast_rules.js'), ...source.importModule('src/game/domain/rules/bite_rules.js'), ...source.importModule('src/game/domain/rules/chum_rules.js'), ...source.importModule('src/game/domain/rules/boat_rules.js'), ...source.importModule('src/game/domain/rules/player_cast_rules.js') });
-  const {FixedCatchFishFactory} = source.importModule('src/game/application/fishing/fixed_catch_fish_factory.js');
+  const {FixedCatchFishFactory} = source.importModule('src/dev/fishing/fixed_catch_fish_factory.js');
+  const {FixedCatchHook} = source.importModule('src/dev/fishing/fixed_catch_hook.js');
   const template = CONFIG.spawns.fishes.find(fish=>fish.id==='crucian_stalker');
   const rules = new BiteRules(new BaitRules());
   const natural = {id:'natural-perch',biteSequence:{active:true}};
@@ -442,7 +443,8 @@ function checkFixedCatchBaitCompatibility() {
       float:{getPosition:()=>({x:0,y:0}),update(){},startBite(pulling,value){assert(value,'bite sequence must exist');sequence=value;}},
       inventory:{getEquipped:()=>eq},input:{getState:()=>({isPulling:false})},world:{getRodVirtualPos:()=>({x:0,y:1000}),getBiteEnv:()=>({locationId:'lake'})},
       rules:{equipment:{isSpinning:()=>bait!=='worm'},bite:rules},fishing:{collectAvailableBaits(eq,eaten,target){target.push({itemType:'bait',variant:bait});}},
-      clock:{now:1000},getCastStartTime:()=>0,eatenBaits:[],biteSystem:{evaluateBite:()=>hooked},fixedCatchFishFactory:factory,
+      clock:{now:1000},getCastStartTime:()=>0,eatenBaits:[],biteSystem:{evaluateBite:()=>hooked},
+      hookedFishOverride:new FixedCatchHook({config,biteRules:rules,devFlags:{isEnabled:()=>false},fishFactory:factory}),
       services:{devFlags:{isEnabled:()=>false}}});
     state.update(16,{bottom:1000},{input:{isPulling:false},env:{}});
     const compatible = enabled && hooked && bait==='worm';
