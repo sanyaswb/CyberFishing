@@ -1,21 +1,26 @@
-// Runtime context of inventory item views: the live reel config, the line-capacity context and the bait
-// freshness exposure. Gameplay installs the line-capacity and freshness providers after composition.
-//
-// The line-capacity context reads the equipment of the legacy save that seeded the inventory at startup (as
-// the classic inventory did), not the live equipment; this pre-existing behavior is kept unchanged.
+// Runtime context of inventory item views: the live reel config, the line-capacity context of the currently
+// equipped reel and line, and the bait freshness exposure. Composition attaches the inventory equipment after
+// the inventory exists; gameplay installs the line-capacity and freshness providers later.
 export class InventoryItemViewContext {
   #runtimeConfigProvider;
   #itemDatabase;
-  #legacyInventory;
-  #legacyEquipment;
+  #effectiveStatsResolver;
+  #equipmentState = null;
+  #assemblyReader = null;
+  #repository = null;
   #lineCapacityStateProvider = () => null;
   #freshnessExposureProvider = () => 0;
 
-  constructor({ runtimeConfigProvider, itemDatabase, legacyInventory, legacyEquipment }) {
+  constructor({ runtimeConfigProvider, itemDatabase, effectiveStatsResolver }) {
     this.#runtimeConfigProvider = runtimeConfigProvider;
     this.#itemDatabase = itemDatabase;
-    this.#legacyInventory = legacyInventory;
-    this.#legacyEquipment = legacyEquipment;
+    this.#effectiveStatsResolver = effectiveStatsResolver;
+  }
+
+  attachEquipment({ equipmentState, assemblyReader, repository }) {
+    this.#equipmentState = equipmentState;
+    this.#assemblyReader = assemblyReader;
+    this.#repository = repository;
   }
 
   setLineCapacityStateProvider(provider) {
@@ -41,19 +46,23 @@ export class InventoryItemViewContext {
   }
 
   #buildLineCapacityContext() {
-    const equipment = this.#legacyEquipment;
-    const reelInstance = equipment.reelId
-      ? this.#legacyInventory.getInstance(equipment.reelId)
-      : null;
-    const reelBase = reelInstance?.itemId
+    const reelInstanceId = this.#equipmentState?.getRootInstanceId("reel") || null;
+    const reelInstance = reelInstanceId ? this.#repository.get(reelInstanceId) : null;
+    const equippedLine = reelInstanceId
+      ? this.#assemblyReader.getChild(reelInstanceId, "line", 0)
+      : this.#repository?.get(this.#equipmentState?.getRootInstanceId("terminalLine")) || null;
+    const reelDefinition = reelInstance?.itemId
       ? this.#itemDatabase.getItemData(reelInstance.itemId)
       : null;
-    const reelCapacity = Number(
-      reelInstance?.statOverrides?.lineCapacityMeters ??
-        reelBase?.gameplayStats?.lineCapacityMeters,
-    );
+    // The same effective reel capacity the fight, landing and casting rules use.
+    const reelCapacity = reelDefinition
+      ? Number(this.#effectiveStatsResolver.resolve({
+          definition: reelDefinition,
+          instanceState: reelInstance,
+        }).lineCapacityMeters)
+      : NaN;
     return {
-      equippedLineInstanceId: equipment.lineId || null,
+      equippedLineInstanceId: equippedLine?.instanceId || null,
       reelCapacityMeters: Number.isFinite(reelCapacity)
         ? Math.max(0, reelCapacity)
         : null,

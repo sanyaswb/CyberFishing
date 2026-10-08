@@ -41,8 +41,7 @@ export function createPlayerInventory({
   const itemViewContext = new InventoryItemViewContext({
     runtimeConfigProvider,
     itemDatabase,
-    legacyInventory: legacySave.inventory,
-    legacyEquipment: legacySave.equipment,
+    effectiveStatsResolver,
   });
   const itemViewFactory = new InventoryItemViewFactory({
     itemDatabase,
@@ -78,6 +77,7 @@ export function createPlayerInventory({
     effectiveStatsResolver,
     assemblyProfileConfig,
   });
+  itemViewContext.attachEquipment(inventory);
   playerInventory = new PlayerInventory({
     inventory,
     actions: InventoryActionType,

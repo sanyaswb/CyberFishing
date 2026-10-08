@@ -14,7 +14,8 @@ class MemoryCache {
 }
 
 // Composes PlayerInventory with the production modules, the way GameCompositionRoot does.
-function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId = () => null } = {}) {
+function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId = () => null,
+  itemProgressionResolver = { resolve: () => ({ available: false }) } } = {}) {
   const runtime = new SourceRuntime();
   const load = (file) => runtime.importModule(file);
   const { createPlayerInventory } = load("src/bootstrap/production/player_inventory_composition.js");
@@ -44,7 +45,7 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
     lineRules: new LineCompatibilityRules(physicsConfig.getLineConfig(), { messages: INVENTORY_RULE_MESSAGES }),
     runtimeConfigProvider: new InventoryRuntimeConfigProvider(CONFIG, physicsConfig),
     itemRarityResolver: new ItemRarityResolver(),
-    itemProgressionResolver: { resolve: () => ({ available: false }) },
+    itemProgressionResolver,
     itemConditionResolver: null,
     itemFreshnessResolver: null,
     baitEffectivenessCatalogResolver: null,
@@ -128,6 +129,50 @@ function checkPlayerInventoryPort() {
   assert.equal(changes.length, afterDispose, "dispose removes the inventory listener and the change handlers");
 }
 
+// The line-capacity context of item views follows the currently equipped reel and line (spec 002).
+function checkLineCapacityContext() {
+  const cache = new MemoryCache();
+  cache.values.set("player_inventory", [
+    { instanceId: "legacy-rod", itemId: "rod_test_spin" },
+    { instanceId: "legacy-reel", itemId: "reel_test" },
+    { instanceId: "legacy-line", itemId: "line_test_1" },
+  ]);
+  cache.values.set("player_equipment", { rodId: "legacy-rod", reelId: "legacy-reel", lineId: "legacy-line" });
+  const lineContexts = new Map();
+  const itemProgressionResolver = { resolve: (item, context = {}) => {
+    if (item?.itemType === "fishing_line") lineContexts.set(item.instanceId, context.lineCapacity);
+    return { available: false };
+  } };
+  const { inventory, actions } = compose({ cache, itemProgressionResolver, playerConfig: { inventory: [], equipment: {}, inventorySettings: {} } });
+  let fight = null;
+  inventory.setLineCapacityStateProvider(() => fight);
+  const equipped = inventory.getEquipped();
+  const lineId = equipped.line?.instanceId;
+  assert(equipped.reel && lineId, "the migrated reel carries its line");
+  inventory.refreshItemData();
+  inventory.inventoryFacade.getViewModel();
+  inventory.getEquipped();
+  const context = lineContexts.get(lineId);
+  assert.equal(context?.equippedLineInstanceId, lineId, "the equipped line is the line on the current reel");
+  assert.equal(context.reelCapacityMeters, equipped.reel.effectiveStats.lineCapacityMeters, "the reel capacity is the equipped reel's effective capacity");
+  assert(context.reelCapacityMeters > 0);
+  assert.equal(context.activeState, null, "outside a fight there is no live line state");
+  fight = { lineInstanceId: lineId, hasReel: true, remainingMeters: 12 };
+  lineContexts.clear();
+  inventory.refreshItemData();
+  inventory.getEquipped();
+  assert.deepEqual(lineContexts.get(lineId)?.activeState, fight, "during a fight the live line state reaches the view");
+  fight = null;
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.EQUIPMENT_SLOT_LONG_PRESS, slotId: "reel" }).success, true, "the reel is unequipped");
+  lineContexts.clear();
+  inventory.refreshItemData();
+  inventory.inventoryFacade.getViewModel();
+  const after = [...lineContexts.values()].at(-1);
+  assert(after, "the line on the unequipped reel still has a view");
+  assert.equal(after.equippedLineInstanceId, null, "without an equipped reel no line counts as equipped");
+  assert.equal(after.reelCapacityMeters, null);
+}
+
 function checkInstanceIds() {
   const { runtime } = compose();
   const { InventoryInstanceIdFactory } = runtime.importModule("src/game/application/inventory/inventory_instance_id_factory.js");
@@ -143,7 +188,8 @@ function checkInstanceIds() {
 checkFreshStart();
 checkLegacySaveMigration();
 checkPlayerInventoryPort();
+checkLineCapacityContext();
 checkInstanceIds();
 console.log("Player inventory passed: fresh start seeds the inventory without writing legacy keys; a legacy save migrates " +
   "(sinker -> feeder rig); lock policy, change events, cached equipment with rod display stats, tackle load " +
-  "limit, readiness, provider validation, refresh, dispose and the id fallback behave as composed in production.");
+  "limit, readiness, provider validation, refresh, dispose, the id fallback and the live line-capacity context behave as composed in production.");
