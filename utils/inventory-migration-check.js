@@ -35,8 +35,14 @@ const files = [
   "src/game/application/inventory/persistence/inventory_snapshot_migration.js",
   "src/game/application/inventory/persistence/inventory_state_store.js",
   "src/game/application/inventory/persistence/inventory_legacy_migration.js",
+  "src/game/presentation/inventory/inventory_messages.js",
 ];
 new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
+// Player-facing inventory messages are injected the way the composition roots inject them.
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
+for (const name of ["InventoryLegacyMigration"]) {
+  context[name] = bindConstructorDefaults(context[name], { messages: context.INVENTORY_MESSAGES });
+}
 
 vm.runInContext(
   `

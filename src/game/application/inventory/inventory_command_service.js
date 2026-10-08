@@ -4,6 +4,7 @@ import { InventoryItemLocation } from "../../domain/inventory/inventory_item_loc
 import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
 
 export class InventoryCommandService {
+  #messages;
   #repository;
   #assemblyStates;
   #profileRegistry;
@@ -33,6 +34,7 @@ export class InventoryCommandService {
   #itemRemoval;
 
   constructor({
+    messages,
     repository,
     assemblyStates,
     profileRegistry,
@@ -60,6 +62,7 @@ export class InventoryCommandService {
     uiState,
     itemRemoval,
   } = {}) {
+    this.#messages = messages;
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
     this.#profileRegistry = profileRegistry;
@@ -97,7 +100,7 @@ export class InventoryCommandService {
     try {
       return this.#dispatch(action);
     } catch (error) {
-      return this.#failure(error?.message || "Не вдалося виконати дію.", error);
+      return this.#failure(error?.message, error);
     }
   }
 
@@ -157,7 +160,7 @@ export class InventoryCommandService {
       case InventoryActionType.AUTO_CHUM_CHANGE:
         return this.#changeSetting("autoChum", action.enabled);
       default:
-        return this.#failure(`Невідома дія інвентарю: ${action.type || "—"}`);
+        return this.#failure(this.#messages.unknownAction(action.type || "—"));
     }
   }
 
@@ -168,7 +171,7 @@ export class InventoryCommandService {
     }
 
     const source = this.#repository.get(instanceId);
-    if (!source) return this.#failure("Предмет не знайдено.");
+    if (!source) return this.#failure(this.#messages.itemNotFound);
     if (
       this.#uiState.panelMode === "assembly" &&
       this.#assemblyStates.has(this.#uiState.editingRootInstanceId)
@@ -195,7 +198,7 @@ export class InventoryCommandService {
       }
       this.#uiState.clearSelection();
       return this.#failure(
-        "Предмет не підходить до доступних комірок цієї збірки.",
+        this.#messages.itemFitsNoAssemblySocket,
       );
     }
 
@@ -278,7 +281,7 @@ export class InventoryCommandService {
       return this.#disassembleLoadout(instanceId);
     }
     if (!this.#assemblyStates.has(instanceId)) {
-      return this.#failure("Цей предмет не є складеним стеком.");
+      return this.#failure(this.#messages.notAnAssembledStack);
     }
     return this.#disassembleAssembly(instanceId);
   }
@@ -300,7 +303,7 @@ export class InventoryCommandService {
 
   #unequipSlot(slotId) {
     const currentId = this.#equipmentState.getRootInstanceId(slotId);
-    if (!currentId) return this.#failure("Комірка вже порожня.");
+    if (!currentId) return this.#failure(this.#messages.slotAlreadyEmpty);
     let unequippedInstanceId = currentId;
     this.#transaction.runAtomic(() => {
       if (slotId === "rod") {
@@ -326,7 +329,7 @@ export class InventoryCommandService {
   #activateAssemblySocket(action) {
     const rootInstanceId = action.rootInstanceId || this.#uiState.editingRootInstanceId;
     if (!rootInstanceId || !this.#assemblyStates.has(rootInstanceId)) {
-      return this.#failure("Збірку не знайдено.");
+      return this.#failure(this.#messages.assemblyNotFound);
     }
     const parentInstanceId = action.parentInstanceId || rootInstanceId;
     const slotIndex = Number(action.slotIndex) || 0;
@@ -349,7 +352,7 @@ export class InventoryCommandService {
       );
     }
     if (!occupied) {
-      return this.#failure("Спочатку виберіть компонент в інвентарі.");
+      return this.#failure(this.#messages.selectComponentFirst);
     }
 
     this.#transaction.runAtomic(() => {
@@ -371,7 +374,7 @@ export class InventoryCommandService {
     const root = this.#repository.require(rootInstanceId);
     const slotId = this.#findEquipmentSlot(root);
     if (!slotId) {
-      return this.#failure("Предмет не сумісний з поточним спорядженням або для нього немає доступної комірки.");
+      return this.#failure(this.#messages.itemIncompatibleOrNoSlot);
     }
     if (!this.#assemblyStates.has(rootInstanceId)) {
       const result = this.#equipLooseRoot(rootInstanceId, slotId);
@@ -393,9 +396,9 @@ export class InventoryCommandService {
       preferredSlotId &&
       !this.#validateEquipment(preferredSlotId, root).isValid
     ) {
-      return this.#failure("Збірка не сумісна з обраною коміркою спорядження.");
+      return this.#failure(this.#messages.assemblyIncompatibleWithSlot);
     }
-    if (!slotId) return this.#failure("Збірка не сумісна з поточним спорядженням.");
+    if (!slotId) return this.#failure(this.#messages.assemblyIncompatible);
     this.#transaction.runAtomic(() =>
       this.#equipRootWithinTransaction(rootInstanceId, slotId),
     );
@@ -404,9 +407,9 @@ export class InventoryCommandService {
   }
 
   #unequipAssembly(rootInstanceId) {
-    if (!rootInstanceId) return this.#failure("Збірку не знайдено.");
+    if (!rootInstanceId) return this.#failure(this.#messages.assemblyNotFound);
     const slotId = this.#findActiveSlot(rootInstanceId);
-    if (!slotId) return this.#failure("Збірка не споряджена.");
+    if (!slotId) return this.#failure(this.#messages.assemblyNotEquipped);
     const result = this.#unequipSlot(slotId);
     if (result.success) this.#uiState.showLoadoutPanel();
     return result;
@@ -414,11 +417,11 @@ export class InventoryCommandService {
 
   #disassembleAssembly(rootInstanceId) {
     if (!this.#assemblyStates.has(rootInstanceId)) {
-      return this.#failure("Збірку не знайдено.");
+      return this.#failure(this.#messages.assemblyNotFound);
     }
     if (this.#findActiveSlot(rootInstanceId)) {
       return this.#failure(
-        "Спочатку зніміть предмет. Розібрати його можна лише в інвентарі.",
+        this.#messages.unequipBeforeDisassembly,
       );
     }
     const result = this.#transaction.runAtomic(() => {
@@ -441,7 +444,7 @@ export class InventoryCommandService {
 
   #saveLoadout(name) {
     const normalizedName = String(name || "").trim().slice(0, 40);
-    if (!normalizedName) return this.#failure("Введіть назву комплекту.");
+    if (!normalizedName) return this.#failure(this.#messages.loadoutNameRequired);
     const result = this.#loadoutService.createFromEquipment({
       loadoutId: this.#nextId("loadout"),
       name: normalizedName,
@@ -454,7 +457,7 @@ export class InventoryCommandService {
 
   #equipLoadout(loadoutId) {
     if (!this.#loadouts.has(loadoutId)) {
-      return this.#failure("Збережену збірку не знайдено.");
+      return this.#failure(this.#messages.savedLoadoutNotFound);
     }
     const result = this.#loadoutService.equip({
       loadout: this.#loadouts.require(loadoutId),
@@ -467,16 +470,16 @@ export class InventoryCommandService {
 
   #equipLoadoutSlot(loadoutId, slotId) {
     if (!this.#loadouts.has(loadoutId)) {
-      return this.#failure("Збережену збірку не знайдено.");
+      return this.#failure(this.#messages.savedLoadoutNotFound);
     }
     if (!EQUIPMENT_MAIN_SLOT_IDS.includes(slotId)) {
-      return this.#failure("Ця комірка не належить до основної збірки.");
+      return this.#failure(this.#messages.slotNotInMainLoadout);
     }
     const rootInstanceId = this.#loadouts
       .require(loadoutId)
       .getRootInstanceId(slotId);
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
-      return this.#failure("У цій комірці збірки немає предмета.");
+      return this.#failure(this.#messages.loadoutSlotEmpty);
     }
     if (this.#equipmentState.getRootInstanceId(slotId) === rootInstanceId) {
       return this.#success({
@@ -500,7 +503,7 @@ export class InventoryCommandService {
 
   #disassembleLoadout(loadoutId) {
     if (!this.#loadouts.has(loadoutId)) {
-      return this.#failure("Збережену збірку не знайдено.");
+      return this.#failure(this.#messages.savedLoadoutNotFound);
     }
     const result = this.#loadoutService.disassemble({
       loadout: this.#loadouts.require(loadoutId),
@@ -531,7 +534,7 @@ export class InventoryCommandService {
     const available = this.#sortConfig.criteria.some(
       (criterion) => criterion.id === candidate,
     );
-    if (!available) return this.#failure("Невідомий критерій сортування.");
+    if (!available) return this.#failure(this.#messages.unknownSortCriterion);
     return this.#success({
       sortCriterionIds: this.#uiState.toggleSortCriterion(candidate),
     });
@@ -542,7 +545,7 @@ export class InventoryCommandService {
     const available = this.#sortConfig.directions.some(
       (direction) => direction.id === candidate,
     );
-    if (!available) return this.#failure("Невідомий напрямок сортування.");
+    if (!available) return this.#failure(this.#messages.unknownSortDirection);
     this.#uiState.selectSortDirection(candidate);
     return this.#success({ sortDirectionId: candidate });
   }
@@ -553,7 +556,7 @@ export class InventoryCommandService {
       this.#sortConfig.rarityLabels,
       candidate,
     );
-    if (!available) return this.#failure("Невідома рідкість предмета.");
+    if (!available) return this.#failure(this.#messages.unknownRarity);
     const activeRarityFilterIds = this.#uiState.toggleRarityFilter(candidate, enabled);
     return this.#success({ activeRarityFilterIds });
   }
@@ -566,7 +569,7 @@ export class InventoryCommandService {
       if (!validation.isValid) {
         throw new InventoryApplicationError(
           validation.warningCode || "INCOMPATIBLE_EQUIPMENT",
-          validation.reason || "Предмет несумісний.",
+          validation.reason || this.#messages.itemIncompatible,
         );
       }
       const preparedLine = this.#prepareLooseLineForEquipment(source, slotId);
@@ -585,7 +588,7 @@ export class InventoryCommandService {
     if (!validation.isValid) {
       throw new InventoryApplicationError(
         validation.warningCode || "INCOMPATIBLE_EQUIPMENT",
-        validation.reason || "Предмет несумісний.",
+        validation.reason || this.#messages.itemIncompatible,
       );
     }
     if (slotId === "rod") {
@@ -661,7 +664,7 @@ export class InventoryCommandService {
   }
 
   #fillAssemblyTarget(rootInstanceId, source, target) {
-    if (!target) return this.#failure("Комірку не знайдено.");
+    if (!target) return this.#failure(this.#messages.socketNotFound);
     this.#transaction.runAtomic(() => {
       const preparedSource = this.#prepareLineForAssemblySocket(source, target);
       const sourceInstanceId = preparedSource?.instanceId || source.instanceId;
@@ -729,7 +732,7 @@ export class InventoryCommandService {
     if (!result.success) {
       throw new InventoryApplicationError(
         "LINE_ALLOCATION_FAILED",
-        result.warning || "Не вдалося підготувати ліску.",
+        result.warning || this.#messages.linePreparationFailed,
         { allocation: result.allocation || null },
       );
     }
@@ -784,7 +787,7 @@ export class InventoryCommandService {
     if (readiness?.isValid === false) {
       throw new InventoryApplicationError(
         readiness.warningCode || "REEL_LINE_INCOMPATIBLE",
-        readiness.warning || "Ліска в котушці несумісна з вудилищем.",
+        readiness.warning || this.#messages.reelLineIncompatibleWithRod,
         { readiness },
       );
     }
@@ -814,7 +817,7 @@ export class InventoryCommandService {
     if (!result.success) {
       throw new InventoryApplicationError(
         "LINE_ALLOCATION_FAILED",
-        result.warning || "Не вдалося встановити ліску на котушку.",
+        result.warning || this.#messages.lineInstallOnReelFailed,
         { allocation: result.allocation || null },
       );
     }
@@ -858,7 +861,7 @@ export class InventoryCommandService {
     if (plan?.allowed !== true) {
       throw new InventoryApplicationError(
         "INVENTORY_CAPACITY_EXCEEDED",
-        plan?.warning || "Недостатньо місця в інвентарі.",
+        plan?.warning || this.#messages.inventoryFull,
       );
     }
   }
@@ -884,7 +887,7 @@ export class InventoryCommandService {
   }
 
   #failure(warning, error = null) {
-    return inventoryCommandFailure(warning, error);
+    return inventoryCommandFailure(warning || this.#messages.actionFailed, error);
   }
 
   #assertDependencies() {

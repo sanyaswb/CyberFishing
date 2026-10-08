@@ -2,6 +2,7 @@
 // tackle is in the water, caches the equipped read model (with the rod's cast display stats), forwards
 // gameplay events and consumption, and announces "inventory-changed".
 export class PlayerInventory {
+  #messages;
   #facade;
   #gameplayBridge;
   #actions;
@@ -15,6 +16,7 @@ export class PlayerInventory {
   #equippedCache = null;
 
   constructor({
+    messages,
     inventory,
     actions,
     events,
@@ -23,6 +25,7 @@ export class PlayerInventory {
     itemDatabase,
     itemViewContext,
   }) {
+    this.#messages = messages;
     this.#facade = inventory.facade;
     this.#gameplayBridge = inventory.gameplayBridge;
     this.#actions = actions;
@@ -64,7 +67,7 @@ export class PlayerInventory {
     if (this.#isLocked && !safeWhileLocked.has(action.type)) {
       return {
         success: false,
-        warning: "Витягніть снасть з води, щоб змінити спорядження.",
+        warning: this.#messages.equipmentLockedWhileFishing,
         refresh: false,
       };
     }

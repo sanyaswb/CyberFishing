@@ -1,7 +1,6 @@
 import { EQUIPMENT_AUXILIARY_SLOT_IDS } from "../equipment/equipment_slot_catalog.js";
 import { EQUIPMENT_MAIN_SLOT_IDS } from "../equipment/equipment_slot_catalog.js";
-
-export const LOADOUT_DISPLAY_NAME = "Комплект";
+import { LOADOUT_DISPLAY_NAME } from "./persisted_loadout_names.js";
 
 /**
  * A Комплект owns only the five main equipment roots. Child assembly items are
@@ -80,7 +79,7 @@ export class EquipmentLoadout {
     const auxiliaryIds = EQUIPMENT_AUXILIARY_SLOT_IDS;
     for (const slotId of auxiliaryIds) {
       if (assignments?.[slotId]) {
-        throw new RangeError(`A Комплект cannot contain auxiliary slot ${slotId}`);
+        throw new RangeError(`A loadout cannot contain auxiliary slot ${slotId}`);
       }
     }
   }

@@ -99,9 +99,15 @@ const files = [
   "src/game/application/inventory/inventory_gameplay_bridge.js",
   "src/game/application/inventory/inventory_facade.js",
   "src/bootstrap/production/inventory_composition_root.js",
+  "src/game/presentation/inventory/inventory_messages.js",
 ];
 
 new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
+// Player-facing inventory messages are injected the way the composition roots inject them.
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
+for (const name of ["InventoryLoadoutAdapter","LoadoutApplicationService"]) {
+  context[name] = bindConstructorDefaults(context[name], { messages: context.INVENTORY_MESSAGES });
+}
 
 vm.runInContext(
   `

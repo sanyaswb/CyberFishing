@@ -1,3 +1,4 @@
+import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_messages.js";
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
 import { AssemblyAttachmentTargetResolver } from "../../game/domain/assemblies/assembly_attachment_target_resolver.js";
 import { AssemblyCompletionPolicy } from "../../game/domain/assemblies/assembly_completion_policy.js";
@@ -266,9 +267,11 @@ export class InventoryCompositionRoot {
       transaction,
     });
     const equipmentTransitionExecutor = new EquipmentTransitionExecutor({
+      messages: INVENTORY_MESSAGES,
       port: equipmentTransitionPort,
     });
     const lineAllocationService = new InventoryLineAllocationService({
+      messages: INVENTORY_MESSAGES,
       linePolicy: new LineAllocationPolicy(lineConfig, {
         messages: INVENTORY_RULE_MESSAGES,
       }),
@@ -283,6 +286,7 @@ export class InventoryCompositionRoot {
     });
     const equipmentLineReadinessPolicy =
       new InventoryEquipmentLineReadinessPolicy({
+        messages: INVENTORY_MESSAGES,
         repository,
         assemblyReader,
         itemReader: (raw) => hydrator.hydrate(raw, repository),
@@ -290,6 +294,7 @@ export class InventoryCompositionRoot {
       });
 
     const loadoutPort = new InventoryLoadoutAdapter({
+      messages: INVENTORY_MESSAGES,
       repository,
       loadouts,
       transaction,
@@ -301,6 +306,7 @@ export class InventoryCompositionRoot {
       messages: INVENTORY_RULE_MESSAGES,
     });
     const loadoutService = new LoadoutApplicationService({
+      messages: INVENTORY_MESSAGES,
       port: loadoutPort,
       capacityPolicy,
       transitionPlanner: loadoutTransitionPlanner,
@@ -333,6 +339,7 @@ export class InventoryCompositionRoot {
       signaturePolicy,
     });
     const autoRefillCoordinator = new AutoRefillCoordinator({
+      messages: INVENTORY_MESSAGES,
       policy: autoRefillPolicy,
       targetProvider: autoRefillTargetProvider,
       port: exactRefillPort,
@@ -386,6 +393,7 @@ export class InventoryCompositionRoot {
       now,
     });
     const commands = new InventoryCommandService({
+      messages: INVENTORY_MESSAGES,
       repository,
       assemblyStates,
       profileRegistry,
@@ -414,6 +422,7 @@ export class InventoryCompositionRoot {
       itemRemoval,
     });
     const gameplayCommands = new InventoryGameplayCommands({
+      messages: INVENTORY_MESSAGES,
       transaction,
       itemRemoval,
       repository,
@@ -558,6 +567,7 @@ export class InventoryCompositionRoot {
     const sourceSettings =
       legacySettings || provided.settings || {};
     const migration = new InventoryLegacyMigration({
+      messages: INVENTORY_MESSAGES,
       itemDefinitionResolver: definitionLookup,
       itemSnapshotMapper,
       instanceIdFactory,

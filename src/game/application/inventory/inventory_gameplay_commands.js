@@ -5,6 +5,7 @@ import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_co
 // slots, line breaks, bait exposure on rod retrieval and auto-refill after retrieval, hand chum use and boat
 // return. Each command runs in one inventory transaction.
 export class InventoryGameplayCommands {
+  #messages;
   #transaction;
   #itemRemoval;
   #repository;
@@ -16,6 +17,7 @@ export class InventoryGameplayCommands {
   #hydrator;
 
   constructor({
+    messages,
     transaction,
     itemRemoval,
     repository,
@@ -26,6 +28,7 @@ export class InventoryGameplayCommands {
     baitExposureService = null,
     hydrator,
   }) {
+    this.#messages = messages;
     this.#transaction = transaction;
     this.#itemRemoval = itemRemoval;
     this.#repository = repository;
@@ -44,9 +47,9 @@ export class InventoryGameplayCommands {
       );
       return consumed
         ? inventoryCommandSuccess({ consumed: true })
-        : inventoryCommandFailure("Предмет не знайдено або його кількості недостатньо.");
+        : this.#failure(this.#messages.itemMissingOrInsufficient);
     } catch (error) {
-      return inventoryCommandFailure(error.message, error);
+      return this.#failure(error.message, error);
     }
   }
 
@@ -66,9 +69,9 @@ export class InventoryGameplayCommands {
       });
       return consumed
         ? inventoryCommandSuccess({ consumed: true })
-        : inventoryCommandFailure("У вказаній комірці немає предмета для витрати.");
+        : this.#failure(this.#messages.slotHasNothingToConsume);
     } catch (error) {
-      return inventoryCommandFailure(error.message, error);
+      return this.#failure(error.message, error);
     }
   }
 
@@ -89,9 +92,9 @@ export class InventoryGameplayCommands {
       });
       return result?.success
         ? inventoryCommandSuccess({ broken: true, breakResult: result })
-        : inventoryCommandFailure("Спорядженої ліски немає.");
+        : this.#failure(this.#messages.noEquippedLine);
     } catch (error) {
-      return inventoryCommandFailure(error.message, error);
+      return this.#failure(error.message, error);
     }
   }
 
@@ -119,7 +122,7 @@ export class InventoryGameplayCommands {
         warning: result.report.warning,
       });
     } catch (error) {
-      return inventoryCommandFailure(error.message, error);
+      return this.#failure(error.message, error);
     }
   }
 
@@ -203,8 +206,12 @@ export class InventoryGameplayCommands {
       );
       return inventoryCommandSuccess({ report, warning: report.warning });
     } catch (error) {
-      return inventoryCommandFailure(error.message, error);
+      return this.#failure(error.message, error);
     }
+  }
+
+  #failure(warning, error = null) {
+    return inventoryCommandFailure(warning || this.#messages.actionFailed, error);
   }
 
   #type(rawItem) {

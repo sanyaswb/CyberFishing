@@ -2,18 +2,21 @@ import { InventoryItemLocation } from "../../domain/inventory/inventory_item_loc
 import { LoadoutApplicationPort } from "./loadout_application_port.js";
 
 export class InventoryLoadoutAdapter extends LoadoutApplicationPort {
+  #messages;
   #repository;
   #loadouts;
   #transaction;
   #lineAllocationService;
 
   constructor({
+    messages,
     repository,
     loadouts,
     transaction,
     lineAllocationService = null,
   } = {}) {
     super();
+    this.#messages = messages;
     this.#repository = repository;
     this.#loadouts = loadouts;
     this.#transaction = transaction;
@@ -40,7 +43,7 @@ export class InventoryLoadoutAdapter extends LoadoutApplicationPort {
   assignRootToLoadout(instanceId, loadoutId, slotId) {
     const item = this.#repository.require(instanceId);
     if (InventoryItemLocation.isAttached(item.location)) {
-      throw new Error("Вкладений компонент не може стати коренем комплекту.");
+      throw new Error(this.#messages.nestedComponentCannotBeLoadoutRoot);
     }
     this.#repository.setLocation(
       instanceId,
@@ -92,7 +95,7 @@ export class InventoryLoadoutAdapter extends LoadoutApplicationPort {
     }
     const result = this.#lineAllocationService.release(instanceId);
     if (!result?.success) {
-      throw new Error("Не вдалося повернути відрізок ліски до інвентарю.");
+      throw new Error(this.#messages.lineSegmentReturnFailed);
     }
     return result;
   }

@@ -1,10 +1,12 @@
 export class AutoRefillCoordinator {
+  #messages;
   #policy;
   #targetProvider;
   #port;
   #warningSink;
 
-  constructor({ policy, targetProvider, port, warningSink = null } = {}) {
+  constructor({ messages, policy, targetProvider, port, warningSink = null } = {}) {
+    this.#messages = messages;
     if (typeof policy?.resolveScopes !== "function") {
       throw new TypeError("AutoRefillCoordinator requires AutoRefillPolicy");
     }
@@ -41,7 +43,7 @@ export class AutoRefillCoordinator {
     const filled = attempts.filter((attempt) => attempt.success).length;
     const missing = attempts.length - filled;
     const warning = missing > 0
-      ? `Не вистачило точних предметів для ${missing} комірок автопоповнення.`
+      ? this.#messages.autoRefillMissing(missing)
       : null;
     if (warning) {
       if (typeof this.#warningSink === "function") {

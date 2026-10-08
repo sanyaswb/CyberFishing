@@ -6,7 +6,7 @@ export function inventoryCommandSuccess(extra = {}) {
 export function inventoryCommandFailure(warning, error = null) {
   return Object.freeze({
     success: false,
-    warning: warning || "Не вдалося виконати дію.",
+    warning,
     refresh: true,
     error,
   });

@@ -8,6 +8,7 @@ import { InventoryItemLocation } from "../../domain/inventory/inventory_item_loc
  * the remainder as a free inventory item. It does not know about DOM or UI.
  */
 export class InventoryLineAllocationService {
+  #messages;
   #repository;
   #itemReader;
   #policy;
@@ -16,6 +17,7 @@ export class InventoryLineAllocationService {
   #sequence = 0;
 
   constructor({
+    messages,
     repository,
     itemReader,
     linePolicy = null,
@@ -23,6 +25,7 @@ export class InventoryLineAllocationService {
     instanceIdFactory = null,
     isReserved = null,
   } = {}) {
+    this.#messages = messages;
     if (!repository?.require || !repository?.update || !repository?.add) {
       throw new TypeError(
         "InventoryLineAllocationService requires FlatInventoryItemRepository",
@@ -63,7 +66,7 @@ export class InventoryLineAllocationService {
     try {
       const source = this.#repository.require(sourceInstanceId);
       if (!InventoryItemLocation.isInventory(source.location)) {
-        return this.#failure("Ліска зараз недоступна в інвентарі.");
+        return this.#failure(this.#messages.lineUnavailable);
       }
       if (this.#isReserved(source.instanceId)) {
         return this.#failure(
@@ -72,11 +75,11 @@ export class InventoryLineAllocationService {
       }
       const line = this.#hydrate(source);
       if (this.#type(line) !== "fishing_line") {
-        return this.#failure("Обраний предмет не є ліскою.");
+        return this.#failure(this.#messages.notALine);
       }
       const allocation = resolveAllocation(line);
       if (!allocation?.isValid) {
-        return this.#failure(allocation?.reason || "Ліска несумісна.", {
+        return this.#failure(allocation?.reason || this.#messages.lineIncompatible, {
           allocation,
         });
       }
@@ -139,24 +142,24 @@ export class InventoryLineAllocationService {
   validateExisting({ instanceId = null, line = null, rod, reel = null } = {}) {
     const raw = line || (instanceId ? this.#repository.get(instanceId) : null);
     if (!raw) {
-      return this.#failure("Встановлену ліску не знайдено.");
+      return this.#failure(this.#messages.installedLineNotFound);
     }
     const hydrated = this.#hydrate(raw);
     if (this.#type(hydrated) !== "fishing_line") {
-      return this.#failure("Встановлений компонент не є ліскою.");
+      return this.#failure(this.#messages.installedComponentNotALine);
     }
     const allocation = this.#policy.resolve({
       lineItem: hydrated,
       equipment: { rod, reel },
     });
     if (!allocation?.isValid) {
-      return this.#failure(allocation?.reason || "Ліска несумісна.", {
+      return this.#failure(allocation?.reason || this.#messages.lineIncompatible, {
         allocation,
       });
     }
     if (allocation.shouldSplit) {
       return this.#failure(
-        "Встановлена ліска перевищує місткість котушки.",
+        this.#messages.installedLineExceedsReel,
         { allocation },
       );
     }
@@ -239,7 +242,7 @@ export class InventoryLineAllocationService {
     const remaining = Math.max(0, this.getLengthMeters(item) - loss);
     if (remaining <= 0.001) {
       if (this.#repository.getChildren(instanceId).length > 0) {
-        throw new Error("Ліску з вкладеними компонентами неможливо видалити.");
+        throw new Error(this.#messages.lineWithChildrenCannotBeRemoved);
       }
       this.#repository.remove(instanceId);
       return Object.freeze({

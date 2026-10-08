@@ -1,7 +1,9 @@
 export class EquipmentTransitionExecutor {
+  #messages;
   #port;
 
-  constructor({ port } = {}) {
+  constructor({ messages, port } = {}) {
+    this.#messages = messages;
     if (!port || typeof port.runAtomic !== "function") {
       throw new TypeError("EquipmentTransitionExecutor requires a transaction port");
     }
@@ -40,7 +42,7 @@ export class EquipmentTransitionExecutor {
       return Object.freeze({
         success: false,
         changed: false,
-        warning: error?.message || "Не вдалося змінити спорядження.",
+        warning: error?.message || this.#messages.equipmentChangeFailed,
         error,
       });
     }

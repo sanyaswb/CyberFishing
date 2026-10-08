@@ -1,3 +1,4 @@
+import { IMPORTED_LOADOUT_NAME, RESTORED_LOADOUT_NAME } from "../../../domain/loadouts/persisted_loadout_names.js";
 import { AssemblyProfileRegistry } from "../../../domain/assemblies/assembly_profile_registry.js";
 import { AssemblyStateRepository } from "../../../domain/assemblies/assembly_state_repository.js";
 import { EQUIPMENT_SLOT_CONFIG } from "../../../domain/equipment/equipment_slot_catalog.js";
@@ -13,6 +14,7 @@ import { LegacyInventoryUnitAllocator } from "../legacy_inventory_unit_allocator
 import { RodCapabilityResolver } from "../../../domain/equipment/rod_capability_resolver.js";
 
 export class InventoryLegacyMigration {
+  #messages;
   static #legacyItemIdMap = Object.freeze({
     line_test_25m: "line_test_1",
     line_test_10m: "line_test_2",
@@ -30,6 +32,7 @@ export class InventoryLegacyMigration {
   #assemblyProfileConfig;
 
   constructor({
+    messages,
     itemDefinitionResolver,
     instanceIdFactory = null,
     now = null,
@@ -38,6 +41,7 @@ export class InventoryLegacyMigration {
     itemSnapshotMapper,
     assemblyProfileConfig,
   } = {}) {
+    this.#messages = messages;
     this.#itemDefinitionResolver = itemDefinitionResolver;
     this.#instanceIdFactory = instanceIdFactory;
     this.#now = now;
@@ -155,7 +159,7 @@ export class InventoryLegacyMigration {
       }
       const quantity = Number(source.quantity ?? 1);
       if (!Number.isInteger(quantity) || quantity < 1) {
-        warnings.push(`Пропущено пошкоджений стек ${source.instanceId}.`);
+        warnings.push(this.#messages.corruptedStackSkipped(source.instanceId));
         continue;
       }
       deduplicated.set(source.instanceId, { ...source, itemId, quantity });
@@ -258,7 +262,7 @@ export class InventoryLegacyMigration {
         const loadoutId = item.instanceId;
         builds.set(loadoutId, {
           loadoutId,
-          name: item.buildName || "Імпортований комплект",
+          name: item.buildName || IMPORTED_LOADOUT_NAME,
           legacyInstanceIds: [],
         });
       }
@@ -268,7 +272,7 @@ export class InventoryLegacyMigration {
       if (!builds.has(item.buildId)) {
         builds.set(item.buildId, {
           loadoutId: item.buildId,
-          name: "Відновлений комплект",
+          name: RESTORED_LOADOUT_NAME,
           legacyInstanceIds: [],
         });
       }
@@ -369,7 +373,7 @@ export class InventoryLegacyMigration {
     };
 
     if (!Object.values(roots).some(Boolean)) {
-      context.warnings.push(`Порожній комплект ${build.name} було пропущено.`);
+      context.warnings.push(this.#messages.emptyLoadoutSkipped(build.name));
       return;
     }
     const loadout = context.loadouts.add({
@@ -663,7 +667,7 @@ export class InventoryLegacyMigration {
     if (occupied && !activeOverride) return false;
     if (InventoryItemLocation.isAttached(source.location)) {
       context.warnings.push(
-        `Компонент ${sourceInstanceId} уже належить іншій оснастці; дублювання пропущено.`,
+        this.#messages.componentAlreadyAttached(sourceInstanceId),
       );
       return false;
     }

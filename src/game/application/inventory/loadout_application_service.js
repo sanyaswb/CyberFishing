@@ -2,6 +2,7 @@ import { EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_c
 import { EquipmentLoadout } from "../../domain/loadouts/equipment_loadout.js";
 
 export class LoadoutApplicationService {
+  #messages;
   #port;
   #capacityPolicy;
   #transitionPlanner;
@@ -10,6 +11,7 @@ export class LoadoutApplicationService {
   #now;
 
   constructor({
+    messages,
     port,
     capacityPolicy = null,
     transitionPlanner = null,
@@ -17,6 +19,7 @@ export class LoadoutApplicationService {
     equipmentActivationValidator = null,
     now = null,
   } = {}) {
+    this.#messages = messages;
     if (!port || typeof port.runAtomic !== "function") {
       throw new TypeError("LoadoutApplicationService requires LoadoutApplicationPort");
     }
@@ -34,14 +37,14 @@ export class LoadoutApplicationService {
     const rootInstanceIds = this.#mainAssignments(equipmentState);
     const containedRoots = Object.values(rootInstanceIds).filter(Boolean);
     if (containedRoots.length === 0) {
-      return Object.freeze({ success: false, warning: "Немає спорядження для комплекту." });
+      return Object.freeze({ success: false, warning: this.#messages.noEquipmentForLoadout });
     }
     for (const instanceId of containedRoots) {
       const owner = this.#port.getRootOwner?.(instanceId);
       if (owner?.kind === "loadout" && owner.loadoutId !== loadoutId) {
         return Object.freeze({
           success: false,
-          warning: "Один із предметів уже належить іншому комплекту.",
+          warning: this.#messages.itemInAnotherLoadout,
         });
       }
     }

@@ -4,17 +4,20 @@
  * remain in their dedicated services.
  */
 export class InventoryEquipmentLineReadinessPolicy {
+  #messages;
   #repository;
   #assemblyReader;
   #itemReader;
   #lineAllocationService;
 
   constructor({
+    messages,
     repository,
     assemblyReader,
     itemReader,
     lineAllocationService,
   } = {}) {
+    this.#messages = messages;
     if (!repository?.get) {
       throw new TypeError(
         "InventoryEquipmentLineReadinessPolicy requires an item repository",
@@ -58,7 +61,7 @@ export class InventoryEquipmentLineReadinessPolicy {
       return Object.freeze({
         isValid: false,
         warningCode: "REEL_LINE_INCOMPATIBLE",
-        warning: result.warning || "Ліска в котушці несумісна з вудилищем.",
+        warning: result.warning || this.#messages.reelLineIncompatibleWithRod,
         allocation: result.allocation || null,
       });
     }

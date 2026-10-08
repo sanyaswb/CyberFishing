@@ -8,11 +8,17 @@ const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loade
 new NativeEsmTestLoader({ projectRoot: root, context }).loadAll([
   "src/game/presentation/inventory/equipment_slot_presentation.js",
   "src/game/presentation/inventory/inventory_rule_messages.js",
+  "src/game/presentation/inventory/inventory_messages.js",
   "src/game/domain/inventory/inventory_item_location.js",
   "src/game/domain/inventory/flat_inventory_item_repository.js",
   "src/game/domain/line/line_allocation_policy.js",
   "src/game/application/inventory/inventory_line_allocation_service.js"
 ]);
+// Player-facing inventory messages are injected the way the composition roots inject them.
+const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
+for (const name of ["InventoryLineAllocationService"]) {
+  context[name] = bindConstructorDefaults(context[name], { messages: context.INVENTORY_MESSAGES });
+}
 
 vm.runInContext(`(() => {
   const assert = (condition, message) => {

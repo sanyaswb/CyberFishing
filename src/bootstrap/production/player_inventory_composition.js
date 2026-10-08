@@ -1,3 +1,4 @@
+import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_messages.js";
 import { EffectiveItemRarityResolver } from "../../game/domain/items/rarity/effective_item_rarity_resolver.js";
 import { InventoryInstanceIdFactory } from "../../game/application/inventory/inventory_instance_id_factory.js";
 import { InventoryItemFactory } from "../../game/application/inventory/inventory_item_factory.js";
@@ -79,6 +80,7 @@ export function createPlayerInventory({
   });
   itemViewContext.attachEquipment(inventory);
   playerInventory = new PlayerInventory({
+    messages: INVENTORY_MESSAGES,
     inventory,
     actions: InventoryActionType,
     events,

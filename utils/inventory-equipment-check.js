@@ -65,10 +65,8 @@ class RuntimeLoader {
     loader.load("src/game/application/inventory/inventory_loadout_adapter.js", [
       "InventoryLoadoutAdapter",
     ]);
-    loader.load("src/game/domain/loadouts/equipment_loadout.js", [
-      "LOADOUT_DISPLAY_NAME",
-      "EquipmentLoadout",
-    ]);
+    loader.load("src/game/domain/loadouts/persisted_loadout_names.js", ["LOADOUT_DISPLAY_NAME"]);
+    loader.load("src/game/domain/loadouts/equipment_loadout.js", ["EquipmentLoadout"]);
     loader.load("src/game/domain/loadouts/loadout_equipment_transition_planner.js", [
       "LoadoutEquipmentTransitionPlanner",
     ]);
@@ -95,6 +93,10 @@ class RuntimeLoader {
       "EquipmentReadModelFactory",
     ]);
     // Player-facing rule texts are injected the way InventoryCompositionRoot injects them.
+    loader.load("src/game/presentation/inventory/inventory_messages.js", ["INVENTORY_MESSAGES"]);
+    for (const name of ["EquipmentTransitionExecutor", "AutoRefillCoordinator"]) {
+      context[name] = bindConstructorDefaults(context[name], { messages: context.INVENTORY_MESSAGES });
+    }
     for (const name of ["FishingReadinessPolicy", "ManualRodChangePlanner", "LoadoutEquipmentTransitionPlanner"]) {
       context[name] = bindConstructorDefaults(context[name], {
         messages: context.INVENTORY_RULE_MESSAGES,
