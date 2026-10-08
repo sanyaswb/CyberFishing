@@ -156,13 +156,13 @@ export class FightPhysicsOrchestrator {
       "read_input",
       () => this.#updateInput({ input: fightInput, pullInputMapper, dragSystem, dtSec }),
     );
-    const hasReel = !!reel?.hasReel?.();
-    const dragSupported = hasReel && reel?.hasDrag?.() !== false;
+    const hasReel = !!reel.hasReel();
+    const dragSupported = hasReel && reel.hasDrag() !== false;
     const isPullMode = !!pullInput.pullHeld;
     const isRecoverMode = hasReel && !isPullMode;
-    const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
+    const maxTackleLoadKg = stressSystem.getEffectiveMaxTackleLoadKg() || 0;
     const rodLimitKg =
-      stressSystem.getEffectiveRodMaxLoadKg?.() || maxTackleLoadKg;
+      stressSystem.getEffectiveRodMaxLoadKg() || maxTackleLoadKg;
     const motion = pipelineFrame.run("update_fish_motion", () => this.#updateFishMotion({
       dtMs,
       dtSec,
@@ -316,7 +316,7 @@ export class FightPhysicsOrchestrator {
         currentLineState: rodPullFrame.lineStateAfterPull,
       }),
     );
-    const postStrokeRodPullResult = rodPullSystem.getState?.() ||
+    const postStrokeRodPullResult = rodPullSystem.getState() ||
       rodPullFrame.rodPullResult;
     const recoverFrame = pipelineFrame.run("recover_line", () => {
       const recoveryLoad = this.#resolveReelRecoveryLoad({
@@ -392,18 +392,18 @@ export class FightPhysicsOrchestrator {
         rodControlResult: rodControlFrame.rodControlResult,
       }),
     );
-    this.#recoveryFishSlowdownPolicy?.update?.({
+    this.#recoveryFishSlowdownPolicy.update({
       target: this.#lineRecoveryFishSlowdownState,
       autoRecoveredMeters: recoverFrame.autoRecoveredMeters,
       holdRecoveredMeters: recoverFrame.holdRecoveredMeters,
       config:
-        this.#physicsConfig?.getReelRecoveryConfig?.() ||
+        this.#physicsConfig.getReelRecoveryConfig() ||
         this.#getRuntimePhysicsConfig()?.fight?.reelRecovery ||
         {},
     });
     const holdReelRecover = recoverFrame.holdReelRecover;
     const recoveredMeters = recoverFrame.recoveredMeters;
-    rodPullSystem.recoverStroke?.({
+    rodPullSystem.recoverStroke({
       recoveredMeters: recoverFrame.autoRecoveredMeters,
     });
     const lineLimit = pipelineFrame.run(
@@ -563,7 +563,7 @@ export class FightPhysicsOrchestrator {
   #getDtSec(dtMs, physics) {
     return Math.min(
       Math.max(0, Number(dtMs) || 0),
-      this.#physicsConfig?.getMaxDtMs?.() ?? 50,
+      this.#physicsConfig.getMaxDtMs() ?? 50,
     ) / 1000;
   }
 
@@ -572,7 +572,7 @@ export class FightPhysicsOrchestrator {
     const target = this.#composedInputScratch;
     Object.assign(target, source);
 
-    const actions = source.fightActions || this.#fightInputActionComposer?.compose?.(
+    const actions = source.fightActions || this.#fightInputActionComposer.compose(
       source,
       {
         keys: this.#config?.input?.keys || {},
@@ -603,7 +603,7 @@ export class FightPhysicsOrchestrator {
   }
 
   #updateInput({ input, pullInputMapper, dragSystem, dtSec }) {
-    const pullInput = pullInputMapper?.update(input) || {
+    const pullInput = pullInputMapper.update(input) || {
       pullHeld: !!input?.isPulling,
       pullStartedThisFrame: !!input?.isPulling,
       pullReleasedThisFrame: false,
@@ -623,11 +623,11 @@ export class FightPhysicsOrchestrator {
     if (!rodControlSystem?.resolveIntent) return null;
     return rodControlSystem.resolveIntent({
       inputState: fightInput,
-      fishPosition: floatEntity?.getPosition?.(),
+      fishPosition: floatEntity.getPosition(),
       rodTipPosition,
       baseRodTipPosition: rodControlTargetAnchor || rodTipPosition,
       actualRodTipPosition,
-      config: this.#physicsConfig?.getRodControlConfig?.() || {},
+      config: this.#physicsConfig.getRodControlConfig() || {},
     });
   }
 
@@ -637,7 +637,7 @@ export class FightPhysicsOrchestrator {
     physics,
   } = {}) {
     const config =
-      this.#physicsConfig?.getRodControlConfig?.() ||
+      this.#physicsConfig.getRodControlConfig() ||
       physics?.fight?.rodControl ||
       {};
     const requestedMode =
@@ -676,7 +676,7 @@ export class FightPhysicsOrchestrator {
     rodControlIntent,
   }) {
     const config =
-      this.#physicsConfig?.getPlayerForceBudgetConfig?.() ||
+      this.#physicsConfig.getPlayerForceBudgetConfig() ||
       physics?.fight?.playerForceBudget ||
       this.#config?.physics?.fight?.playerForceBudget ||
       {};
@@ -780,7 +780,7 @@ export class FightPhysicsOrchestrator {
 
   #resolvePlayerPressureGainConfig(physics) {
     return (
-      this.#physicsConfig?.getPlayerPressureGainConfig?.() ||
+      this.#physicsConfig.getPlayerPressureGainConfig() ||
       physics?.fight?.playerPressureGain ||
       this.#config?.physics?.fight?.playerPressureGain ||
       {}
@@ -823,7 +823,7 @@ export class FightPhysicsOrchestrator {
 
   #resolvePlayerTensionBuildRateConfig(physics) {
     return (
-      this.#physicsConfig?.getPlayerTensionBuildRateConfig?.() ||
+      this.#physicsConfig.getPlayerTensionBuildRateConfig() ||
       physics?.fight?.playerTensionBuildRate ||
       this.#config?.physics?.fight?.playerTensionBuildRate ||
       {}
@@ -893,7 +893,7 @@ export class FightPhysicsOrchestrator {
       config.enabled === true &&
       !!this.#playerPressureFatigueCalculator &&
       !!this.#playerPressureFatigueState;
-    const state = this.#playerPressureFatigueState?.toFrame?.() || {};
+    const state = this.#playerPressureFatigueState.toFrame() || {};
     const efficiency = enabled ? clampUnitFinite(state.efficiency ?? 1) : 1;
     return Object.freeze({
       source: "player_pressure_fatigue_application",
@@ -983,7 +983,7 @@ export class FightPhysicsOrchestrator {
       (channels.rodControl ? fatiguedControlKg : 0);
 
     if (!enabled) {
-      this.#playerPressureFatigueState?.reset?.();
+      this.#playerPressureFatigueState.reset();
       return Object.freeze({
         source: "player_pressure_fatigue",
         enabled: false,
@@ -1066,7 +1066,7 @@ export class FightPhysicsOrchestrator {
 
   #resolvePlayerPressureFatigueConfig(physics) {
     return (
-      this.#physicsConfig?.getPlayerPressureFatigueConfig?.() ||
+      this.#physicsConfig.getPlayerPressureFatigueConfig() ||
       physics?.fight?.playerPressureFatigue ||
       this.#config?.physics?.fight?.playerPressureFatigue ||
       {}
@@ -1103,9 +1103,9 @@ export class FightPhysicsOrchestrator {
     const fishPosition = floatEntity.getPosition();
     const previousFishX = Number(fishPosition.x) || 0;
     const previousFishY = Number(fishPosition.y) || 0;
-    const fishVelocity = floatEntity.getVelocity?.() || this.#velocityScratch.set(0, 0);
+    const fishVelocity = floatEntity.getVelocity() || this.#velocityScratch.set(0, 0);
     const lineState = lineSystem.updateDistance(fishPosition, rodTipPosition);
-    const previousRodPullState = rodPullSystem?.getState?.() || {};
+    const previousRodPullState = rodPullSystem.getState() || {};
     const activeRodHoldKg = input?.isPulling
       ? Number(
           previousRodPullState.effectiveForceKg ??
@@ -1127,7 +1127,7 @@ export class FightPhysicsOrchestrator {
       landingDistanceMeters > 0 &&
       shoreLandingDistanceMeters <= landingDistanceMeters + 0.001;
     if (inCatchZone && !this.#fishWasInCatchZone) {
-      fishForceSystem.handleFightEvent?.({
+      fishForceSystem.handleFightEvent({
         type: FISH_FIGHT_EVENT.CATCH_ZONE_ENTERED,
         lineDistanceMeters: lineState.distanceMeters,
         shoreLandingDistanceMeters,
@@ -1135,7 +1135,7 @@ export class FightPhysicsOrchestrator {
       });
     }
     this.#fishWasInCatchZone = inCatchZone;
-    fishForceSystem.evaluateLastDashTrigger?.({
+    fishForceSystem.evaluateLastDashTrigger({
       dtMs,
       lineDistanceMeters: lineState.distanceMeters,
       shoreLandingDistanceMeters,
@@ -1159,7 +1159,7 @@ export class FightPhysicsOrchestrator {
       lineTaut: this.#isLineTaut(lineState),
       env,
       fishSpeedMultiplier:
-        this.#recoveryFishSlowdownPolicy?.getMotionMultiplier?.(
+        this.#recoveryFishSlowdownPolicy.getMotionMultiplier(
           lineRecoveryFishSlowdown,
         ) ?? 1,
     });
@@ -1168,7 +1168,7 @@ export class FightPhysicsOrchestrator {
     forceData.lineRecoveryFishSlowdownActive =
       !!lineRecoveryFishSlowdown?.active;
     forceData.lineRecoveryFishSlowdownMultiplier =
-      this.#recoveryFishSlowdownPolicy?.getMotionMultiplier?.(
+      this.#recoveryFishSlowdownPolicy.getMotionMultiplier(
         lineRecoveryFishSlowdown,
       ) ?? 1;
     forceData.lineRecoveryFishSlowdownSource =
@@ -1216,7 +1216,7 @@ export class FightPhysicsOrchestrator {
         constrainedVelocity: constrainedProjectionFrame,
         releasedMeters: lineState.releasedMeters,
         pixelsPerMeter:
-          this.#physicsConfig?.getPixelsPerMeter?.() ||
+          this.#physicsConfig.getPixelsPerMeter() ||
           50,
         dtSec,
       });
@@ -1242,7 +1242,7 @@ export class FightPhysicsOrchestrator {
         targetVelocity: frameTargetVelocity,
       });
     } else {
-      const fallbackVelocity = floatEntity.getVelocity?.() || fishVelocity;
+      const fallbackVelocity = floatEntity.getVelocity() || fishVelocity;
       fallbackVelocity.x = frameTargetVelocity.x;
       fallbackVelocity.y = frameTargetVelocity.y;
       floatEntity.update(
@@ -1272,7 +1272,7 @@ export class FightPhysicsOrchestrator {
         y: previousFishY,
       },
       proposedPosition: constrainedFishPosition,
-      velocity: floatEntity.getVelocity?.() || fishVelocity,
+      velocity: floatEntity.getVelocity() || fishVelocity,
       origin: rodTipPosition,
       limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({
         lineState,
@@ -1292,7 +1292,7 @@ export class FightPhysicsOrchestrator {
     if (postFishMotionLineConstraintState.radialConstraintActive) {
       prePlayerLineConstraint = lineSystem.constrainPosition(
         constrainedFishPosition,
-        floatEntity.getVelocity?.() || fishVelocity,
+        floatEntity.getVelocity() || fishVelocity,
         rodTipPosition,
       );
     }
@@ -1387,7 +1387,7 @@ export class FightPhysicsOrchestrator {
         previousFishY,
         currentFishY,
         pixelsPerMeter:
-          this.#physicsConfig?.getPixelsPerMeter?.() ||
+          this.#physicsConfig.getPixelsPerMeter() ||
           50,
         towardPlayerYSign,
       }),
@@ -1395,7 +1395,7 @@ export class FightPhysicsOrchestrator {
       currentFishY,
       towardPlayerYSign,
     };
-    const velocity = floatEntity.getVelocity?.() || fishVelocity;
+    const velocity = floatEntity.getVelocity() || fishVelocity;
     return {
       forceData,
       velocity,
@@ -1435,8 +1435,8 @@ export class FightPhysicsOrchestrator {
   }
 
   #resolveFishMotionDragContext({ reel, dragSystem } = {}) {
-    const hasReel = !!reel?.hasReel?.();
-    const dragSupported = hasReel && reel?.hasDrag?.() !== false;
+    const hasReel = !!reel.hasReel();
+    const dragSupported = hasReel && reel.hasDrag() !== false;
     const clampedDrag = Math.max(
       0,
       Math.min(1, Number(dragSystem?.value) || 0),
@@ -1461,7 +1461,7 @@ export class FightPhysicsOrchestrator {
     bounds,
   } = {}) {
     const pixelsPerMeter =
-      this.#physicsConfig?.getPixelsPerMeter?.() ||
+      this.#physicsConfig.getPixelsPerMeter() ||
       50;
     const shoreY = Number(bounds?.bottom) || 0;
     const fishY = Number(fishPosition?.y) || 0;
@@ -1587,7 +1587,7 @@ export class FightPhysicsOrchestrator {
       rodTipPosition,
       deltaMeters: smoothedRodMoveMeters,
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        this.#physicsConfig.getPixelsPerMeter() ||
         50,
       bounds,
       checkWater,
@@ -1596,7 +1596,7 @@ export class FightPhysicsOrchestrator {
       }),
     });
     const rodPullMoveMeters = rodPullMovement.meters;
-    this.#playerPullMotionSmoother.reconcileAxis?.({
+    this.#playerPullMotionSmoother.reconcileAxis({
       axis: "y",
       appliedMove: rodPullMoveMeters,
       deltaTime: dtSec,
@@ -1614,7 +1614,7 @@ export class FightPhysicsOrchestrator {
       rodTipPosition,
       deltaMeters: reelHoldDesiredMoveMeters,
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        this.#physicsConfig.getPixelsPerMeter() ||
         50,
       bounds,
       checkWater,
@@ -1676,7 +1676,7 @@ export class FightPhysicsOrchestrator {
       currentDistanceMeters: currentLineState?.distanceMeters,
       reasonPrefix: "player_frame",
     });
-    rodPullSystem?.recordDistanceMovement?.({
+    rodPullSystem.recordDistanceMovement({
       gainedMeters: frame.gainedMeters,
       lostMeters: frame.lostMeters,
       previousDistanceMeters: frame.previousDistanceMeters,
@@ -1786,7 +1786,7 @@ export class FightPhysicsOrchestrator {
       };
     }
 
-    const config = this.#physicsConfig?.getRodControlConfig?.() || {};
+    const config = this.#physicsConfig.getRodControlConfig() || {};
     const fishPosition = floatEntity.getPosition();
     const currentLineState = lineState || lineSystem.updateDistance(
       fishPosition,
@@ -1808,7 +1808,7 @@ export class FightPhysicsOrchestrator {
       0,
       Number.isFinite(currentFrameTensionKg)
         ? currentFrameTensionKg
-        : Number(stressSystem?.getTensionKg?.()) ||
+        : Number(stressSystem.getTensionKg()) ||
           Number(forceData?.fishTensionKg) ||
           0,
     );
@@ -1847,21 +1847,21 @@ export class FightPhysicsOrchestrator {
         dtSec,
       });
     } else {
-      this.#playerPullMotionSmoother.resetAxis?.("x");
+      this.#playerPullMotionSmoother.resetAxis("x");
     }
     const smoothedSignedMoveMeters = this.#limitRodControlMoveTowardTarget({
       signedMoveMeters: rawSmoothedSignedMoveMeters,
       fishPosition,
       rodControlResult,
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        this.#physicsConfig.getPixelsPerMeter() ||
         50,
     });
     if (
       Math.abs(rawSmoothedSignedMoveMeters) > 0.000001 &&
       Math.abs(smoothedSignedMoveMeters) <= 0.000001
     ) {
-      this.#playerPullMotionSmoother.resetAxis?.("x");
+      this.#playerPullMotionSmoother.resetAxis("x");
     }
     const allowedMoveMeters = Math.abs(smoothedSignedMoveMeters);
     const movement = this.#applyRodControlMovement({
@@ -1870,7 +1870,7 @@ export class FightPhysicsOrchestrator {
       directionX: Math.sign(smoothedSignedMoveMeters),
       deltaMeters: Math.abs(smoothedSignedMoveMeters),
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() ||
+        this.#physicsConfig.getPixelsPerMeter() ||
         50,
       bounds,
       checkWater,
@@ -1886,17 +1886,17 @@ export class FightPhysicsOrchestrator {
       movement.hardBlocked ||
       movement.directionalBlocked ||
       movement.meters + 0.000001 < requestedAppliedMeters;
-    this.#playerPullMotionSmoother.reconcileAxis?.({
+    this.#playerPullMotionSmoother.reconcileAxis({
       axis: "x",
       appliedMove: movement.signedMeters,
       deltaTime: dtSec,
       blocked: controlMovementBlocked,
     });
-    rodControlSystem.recordAppliedMovement?.({
+    rodControlSystem.recordAppliedMovement({
       movedMeters: movement.meters,
       movedPx: movement.px,
     });
-    const updatedResult = rodControlSystem.getState?.() || rodControlResult;
+    const updatedResult = rodControlSystem.getState() || rodControlResult;
     Object.assign(updatedResult, {
       phase: updatedResult.canApply
         ? "applying_force"
@@ -1971,12 +1971,12 @@ export class FightPhysicsOrchestrator {
 
   resetPlayerPullMotion() {
     this.#playerPullMotionSmoother.reset();
-    this.#poleFightSectorConstraint?.reset?.();
-    this.#poleFightSectorAngleConstraint?.reset?.();
+    this.#poleFightSectorConstraint.reset();
+    this.#poleFightSectorAngleConstraint.reset();
     this.#staminaBudgetOverflowWarningActive = false;
-    this.#playerPressureFatigueState?.reset?.();
-    this.#playerReelFatigueSession?.reset?.();
-    this.#recoveryFishSlowdownPolicy?.reset?.(
+    this.#playerPressureFatigueState.reset();
+    this.#playerReelFatigueSession.reset();
+    this.#recoveryFishSlowdownPolicy.reset(
       this.#lineRecoveryFishSlowdownState,
     );
   }
@@ -2001,7 +2001,7 @@ export class FightPhysicsOrchestrator {
       rodPullResult,
       fishRetrieveResult,
       lineState,
-      maxTackleLoadKg: stressSystem.getEffectiveMaxTackleLoadKg?.(),
+      maxTackleLoadKg: stressSystem.getEffectiveMaxTackleLoadKg(),
     });
     const calculatedTension = this.#calculateTension({
       tensionSystem,
@@ -2039,7 +2039,7 @@ export class FightPhysicsOrchestrator {
         tensionStressSource,
         dtSec,
         tensionConfig:
-          this.#physicsConfig?.getTensionConfig?.() ||
+          this.#physicsConfig.getTensionConfig() ||
           this.#config.tension ||
           {},
       });
@@ -2091,9 +2091,9 @@ export class FightPhysicsOrchestrator {
       rodPullForceKg: playerHoldTensionKg,
       fishTensionKg,
       playerHoldTensionKg,
-      rodLimitKg: stressSystem.getEffectiveRodMaxLoadKg?.(),
-      lineLimitKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.(),
-      hookLimitKg: stressSystem.getEffectiveHookMaxLoadKg?.(),
+      rodLimitKg: stressSystem.getEffectiveRodMaxLoadKg(),
+      lineLimitKg: stressSystem.getEffectiveLineSystemMaxLoadKg(),
+      hookLimitKg: stressSystem.getEffectiveHookMaxLoadKg(),
       dragLimitKg: dragContext.effectiveDragLimitKg,
       hardLineLimit: !!hardLineLimit,
       lineHasReserve,
@@ -2132,7 +2132,7 @@ export class FightPhysicsOrchestrator {
       inLandingZone,
       playerHoldActive,
       dtSec,
-      config: this.#physicsConfig?.getLandingLiftConfig?.(),
+      config: this.#physicsConfig.getLandingLiftConfig(),
     });
 
     this.#landingLiftHoldKg = lift.liftHoldKg;
@@ -2225,14 +2225,14 @@ export class FightPhysicsOrchestrator {
     const playerPressureControlExhausted =
       playerPressureFatigue?.isControlExhausted === true;
     const weakestFrame =
-      stressSystem?.getWeakestTackleLimitFrame?.() ||
+      stressSystem.getWeakestTackleLimitFrame() ||
       Object.freeze({
         weakestTackleLimitKg:
-          Math.max(0, Number(stressSystem?.getEffectiveMaxTackleLoadKg?.()) || 0),
+          Math.max(0, Number(stressSystem.getEffectiveMaxTackleLoadKg()) || 0),
         component: "stress_system",
         candidates: Object.freeze([]),
       });
-    const frame = this.#staminaBalanceFrame?.create?.({
+    const frame = this.#staminaBalanceFrame.create({
       phase: fishCondition?.phase || "stamina",
       playerIsPulling,
       fishTensionKg:
@@ -2368,7 +2368,7 @@ export class FightPhysicsOrchestrator {
   }
 
   #resolveLineAngleDeg({ floatEntity, rodTipPosition, rodControlResult } = {}) {
-    const fishPosition = floatEntity?.getPosition?.();
+    const fishPosition = floatEntity.getPosition();
     if (this.#hasPoint(fishPosition) && this.#hasPoint(rodTipPosition)) {
       const absOffsetX = Math.abs(fishPosition.x - rodTipPosition.x);
       const dy = Math.abs(rodTipPosition.y - fishPosition.y);
@@ -2436,7 +2436,7 @@ export class FightPhysicsOrchestrator {
   }
 
   #resolveLandingReadiness({ landingLiftFrame, tensionFrame }) {
-    const config = this.#physicsConfig?.getLandingLiftConfig?.() || {};
+    const config = this.#physicsConfig.getLandingLiftConfig() || {};
     if (this.#landingLiftReadinessPolicy?.evaluate) {
       return this.#landingLiftReadinessPolicy.evaluate({
         landingLiftFrame,
@@ -2566,8 +2566,8 @@ export class FightPhysicsOrchestrator {
     lineState,
   }) {
     const reelHoldConfig =
-      this.#physicsConfig?.getReelHoldConfig?.() ||
-      this.#physicsConfig?.getReelConfig?.() ||
+      this.#physicsConfig.getReelHoldConfig() ||
+      this.#physicsConfig.getReelConfig() ||
       {};
     const lineRecoverableMeters = Math.max(
       0,
@@ -2594,10 +2594,10 @@ export class FightPhysicsOrchestrator {
       dragLocked: dragContext?.dragLocked,
       shouldSlipDrag: tensionPreview?.shouldSlipDrag,
       reelMaxLoadKg:
-        reel?.getEffectiveMaxLoadKg?.() ??
-        reel?.getMaxLoadKg?.() ??
+        reel.getEffectiveMaxLoadKg() ??
+        reel.getMaxLoadKg() ??
         0,
-      retrieveSpeedMetersPerSecond: reel?.getRetrieveSpeedMetersPerSec?.() ?? 0,
+      retrieveSpeedMetersPerSecond: reel.getRetrieveSpeedMetersPerSec() ?? 0,
       lineRecoverableMeters,
       physics,
     });
@@ -2627,7 +2627,7 @@ export class FightPhysicsOrchestrator {
     });
     const constraintResult = lineSystem.constrainPosition(
       floatEntity.getPosition(),
-      floatEntity.getVelocity?.() || velocity,
+      floatEntity.getVelocity() || velocity,
       rodTipPosition,
     );
     const lineStateBeforeRecover = lineSystem.updateDistance(
@@ -2706,9 +2706,9 @@ export class FightPhysicsOrchestrator {
       origin: rodTipPosition,
       limitRadiusPx: this.#resolvePoleFightSectorLimitRadiusPx({ lineState }),
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+        this.#physicsConfig.getPixelsPerMeter() || 50,
       config:
-        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#physicsConfig.getPoleFightSectorConfig() ||
         this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
         {},
     });
@@ -2743,9 +2743,9 @@ export class FightPhysicsOrchestrator {
       origin,
       limitRadiusPx,
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+        this.#physicsConfig.getPixelsPerMeter() || 50,
       config:
-        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#physicsConfig.getPoleFightSectorConfig() ||
         this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
         {},
       enforceRadius,
@@ -2786,9 +2786,9 @@ export class FightPhysicsOrchestrator {
       origin,
       limitRadiusPx,
       pixelsPerMeter:
-        this.#physicsConfig?.getPixelsPerMeter?.() || 50,
+        this.#physicsConfig.getPixelsPerMeter() || 50,
       config:
-        this.#physicsConfig?.getPoleFightSectorConfig?.() ||
+        this.#physicsConfig.getPoleFightSectorConfig() ||
         this.#getRuntimePhysicsConfig()?.fight?.poleFightSector ||
         {},
     });
@@ -2884,7 +2884,7 @@ export class FightPhysicsOrchestrator {
     frame.rodStrokeUnrecoveredMeters = rodPullDisplay.rodStrokeUnrecoveredMeters;
     frame.shouldSlipDrag = !!fishRetrieveResult?.shouldSlipDrag;
     frame.totalTensionKg = tensionResult.totalTensionKg;
-    this.#playerMaxPowerY = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
+    this.#playerMaxPowerY = stressSystem.getEffectiveMaxTackleLoadKg() || 0;
   }
 
   #buildDebugSnapshot({
@@ -3339,7 +3339,7 @@ export class FightPhysicsOrchestrator {
         frame.poleFightSectorLimitRadiusPx,
       poleFightSectorLimitRadiusMeters:
         Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0) /
-        Math.max(1, this.#physicsConfig?.getPixelsPerMeter?.() || 50),
+        Math.max(1, this.#physicsConfig.getPixelsPerMeter() || 50),
       poleFightSectorOriginX:
         Number(poleFightSectorFrame?.originX) || 0,
       poleFightSectorOriginY:
@@ -3822,9 +3822,9 @@ export class FightPhysicsOrchestrator {
       rodStressRatio: tensionResult.rodStressRatio,
       lineStressRatio: tensionResult.lineStressRatio,
       hookStressRatio: tensionResult.hookStressRatio,
-      rodMaxLoadKg: stressSystem.getEffectiveRodMaxLoadKg?.() || 0,
-      lineMaxLoadKg: stressSystem.getEffectiveLineSystemMaxLoadKg?.() || 0,
-      hookMaxLoadKg: stressSystem.getEffectiveHookMaxLoadKg?.() || 0,
+      rodMaxLoadKg: stressSystem.getEffectiveRodMaxLoadKg() || 0,
+      lineMaxLoadKg: stressSystem.getEffectiveLineSystemMaxLoadKg() || 0,
+      hookMaxLoadKg: stressSystem.getEffectiveHookMaxLoadKg() || 0,
       playerForceKg: forceData.player.forceKg,
       activeEffectivePullKg: fishRetrieveResult?.effectiveRodHoldKg ?? 0,
       activeNetPullKg: Math.max(0, Number(fishRetrieveResult?.netForceKg) || 0),
@@ -4050,9 +4050,9 @@ export class FightPhysicsOrchestrator {
       fishForceX: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.x ? Math.sign(forceData.targetVelocity.x) : 0)),
       playerMaxPowerY: this.#playerMaxPowerY,
       playerMaxPowerX:
-        (stressSystem.getEffectiveMaxTackleLoadKg?.() || 0) *
+        (stressSystem.getEffectiveMaxTackleLoadKg() || 0) *
         (
-          this.#physicsConfig?.getPlayerSteeringMultiplier?.() ??
+          this.#physicsConfig.getPlayerSteeringMultiplier() ??
           1.5
         ),
       lineConstrained: constraintResult.constrained,
@@ -4064,7 +4064,7 @@ export class FightPhysicsOrchestrator {
       calculatedTensionKg: tensionResult.tensionKg,
       simpleFightSpeedPxPerSec:
         (Number(fishRetrieveResult?.speedMps) || 0) *
-        (this.#physicsConfig?.getPixelsPerMeter?.() || 50),
+        (this.#physicsConfig.getPixelsPerMeter() || 50),
       fightMovementTargetSpeedPxPerSec:
         forceData.fightMovementFrame?.targetSpeedPxPerSec ??
         Math.hypot(forceData.targetVelocity.x || 0, forceData.targetVelocity.y || 0),
@@ -4346,7 +4346,7 @@ export class FightPhysicsOrchestrator {
 
   #smoothPlayerPullAxis({ axis, desiredMoveMeters, dtSec }) {
     const config =
-      this.#physicsConfig?.getPlayerPullMotionConfig?.() ||
+      this.#physicsConfig.getPlayerPullMotionConfig() ||
       this.#getRuntimePhysicsConfig()?.fight?.playerPullMotion ||
       {};
     return this.#playerPullMotionSmoother.updateAxis({
@@ -4581,7 +4581,7 @@ export class FightPhysicsOrchestrator {
     );
     const pixelsPerMeter = Math.max(
       1,
-      Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
+      Number(this.#physicsConfig.getPixelsPerMeter()) || 50,
     );
     return releasedMeters * pixelsPerMeter;
   }

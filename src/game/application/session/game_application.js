@@ -171,7 +171,7 @@ export class GameApplication {
     this.#chum = runtime.chum;
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
-    this.#inventory.setFreshnessExposureProvider?.((item) => {
+    this.#inventory.setFreshnessExposureProvider((item) => {
       const active = ["waiting", "biting", "playing"].includes(
         this.#stateMachine?.currentName || this.#gameStateName,
       );
@@ -250,9 +250,9 @@ export class GameApplication {
       panViewport: (deltaX) => this.#world.pan(deltaX, 0),
       getInputState: () => this.#lastInputState,
       getChumPowerAimVisual: () =>
-        this.#chumController?.getPowerAimVisualState?.() || null,
+        this.#chumController.getPowerAimVisualState() || null,
       getChumAccuracyPreview: () =>
-        this.#chumController?.getPowerAimAccuracyPreview?.(
+        this.#chumController.getPowerAimAccuracyPreview(
           this.getDynamicBounds(),
         ) || null,
       getGameStateName: () =>
@@ -322,10 +322,10 @@ export class GameApplication {
   #createDebugContext() {
     return {
       emitDebugEvent: (type, detail) => this.emitDebugEvent(type, detail),
-      getEnvSnapshot: () => this.#env?.getSnapshot?.() || {},
+      getEnvSnapshot: () => this.#env.getSnapshot() || {},
       getFloatPosition: () => this.#float?.getPosition?.() || { x: 0, y: 0 },
       getBiteEnv: () => this.getEnvDataForBite(),
-      getEquipment: () => this.#inventory?.getEquipped?.() || {},
+      getEquipment: () => this.#inventory.getEquipped() || {},
       getInputState: () => this.#lastInputState,
       getGameStateName: () => this.gameStateName,
       getCastExposureMs: () => this.#getCastExposureMs(),
@@ -377,7 +377,7 @@ export class GameApplication {
     }
 
     this.#hasEquippedNet = !!newEq.net;
-    this.#chumController?.refreshActiveHandChum();
+    this.#chumController.refreshActiveHandChum();
 
     if (typeof this.#ui?.updateNetButtonState === "function") {
       this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
@@ -474,9 +474,9 @@ export class GameApplication {
   }
 
   #handleItemDatabaseUpdate() {
-    this.#inventory?.refreshItemData?.();
-    const eq = this.#inventory?.getEquipped?.();
-    if (eq) this.#fightService?.syncEquipment(eq);
+    this.#inventory.refreshItemData();
+    const eq = this.#inventory.getEquipped();
+    if (eq) this.#fightService.syncEquipment(eq);
   }
 
   #isFishDatabaseUpdate(event) {
@@ -485,13 +485,13 @@ export class GameApplication {
   }
 
   #handleFishDatabaseUpdate() {
-    this.#bite?.setFishDatabase?.(this.#fishDatabase);
+    this.#bite.setFishDatabase(this.#fishDatabase);
   }
 
   #handleHookedFishRuntimeUpdate(event) {
     const fish = event?.detail?.fish;
     if (!fish) return;
-    this.#fightService?.syncFishRuntime?.(fish);
+    this.#fightService.syncFishRuntime(fish);
   }
 
   #isMapDatabaseUpdate(event) {
@@ -550,7 +550,7 @@ export class GameApplication {
     }
     this.#stateMachine.setState(name, data);
     if (retrievalContext) {
-      this.#inventory?.handleRodRetrieved?.(retrievalContext);
+      this.#inventory.handleRodRetrieved(retrievalContext);
     }
   }
 
@@ -569,7 +569,7 @@ export class GameApplication {
       .then(() => {
         this.#stateMachine.setState("victory", data);
         if (rodRetrievalContext) {
-          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+          this.#inventory.handleRodRetrieved(rodRetrievalContext);
         }
       })
       .catch((error) => {
@@ -578,7 +578,7 @@ export class GameApplication {
           error,
         });
         if (rodRetrievalContext) {
-          this.#inventory?.handleRodRetrieved?.(rodRetrievalContext);
+          this.#inventory.handleRodRetrieved(rodRetrievalContext);
         }
       });
   }
@@ -610,7 +610,7 @@ export class GameApplication {
     context.env = this.#env.getPhysicsEnv();
     context.biteEnv = this.getEnvDataForBite();
     this.#stateMachine.update(dt, bounds, context);
-    this.#inventoryUI?.updateDynamicProgression?.(dt);
+    this.#inventoryUI.updateDynamicProgression(dt);
     this.#updateRodVisualOffset(dt, input, bounds);
 
     if (this.invalidCastMarker) {
@@ -623,10 +623,10 @@ export class GameApplication {
   }
 
   #syncDragControlAvailability() {
-    const eq = this.#inventory?.getEquipped?.() || {};
+    const eq = this.#inventory.getEquipped() || {};
     const rodAllowsReel = eq.rod?.effectiveStats?.hasReel !== false;
     const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
-    this.#input?.setDragControlEnabled?.(rodAllowsReel && reelHasDrag);
+    this.#input.setDragControlEnabled(rodAllowsReel && reelHasDrag);
   }
 
   #applyViewportPan(input) {
@@ -658,7 +658,7 @@ export class GameApplication {
   }
 
   #consumeWetFeederChum(context = this.#createRodRetrievalContext()) {
-    this.#fishingController?.consumeWetFeederChum?.(
+    this.#fishingController.consumeWetFeederChum(
       context.equipment,
       context.exposureMs,
     );
@@ -673,7 +673,7 @@ export class GameApplication {
   }
 
   #createRodRetrievalContext() {
-    const equipment = this.#inventory?.getEquipped?.() || {};
+    const equipment = this.#inventory.getEquipped() || {};
     return Object.freeze({
       equipment,
       exposureMs: this.#getCastExposureMs(),
@@ -699,7 +699,7 @@ export class GameApplication {
     ) {
       const retrievalContext = this.#createRodRetrievalContext();
       this.#consumeWetFeederChum(retrievalContext);
-      this.#inventory?.handleRodRetrieved?.(retrievalContext);
+      this.#inventory.handleRodRetrieved(retrievalContext);
     }
 
     this.#castRodScreenX = Number.isFinite(options.rodScreenX)
@@ -801,7 +801,7 @@ export class GameApplication {
   }
 
   set isAimingChum(value) {
-    this.#chumController?.setAiming(value);
+    this.#chumController.setAiming(value);
   }
 
   get activeBoat() {
@@ -819,22 +819,22 @@ export class GameApplication {
   }
 
   #showMissingRodInventoryWarning() {
-    this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.(this.#messages.equipRodToCast);
+    this.#inventoryUI.open();
+    this.#inventoryUI.showWarning(this.#messages.equipRodToCast);
   }
 
   #showMissingReelInventoryWarning() {
-    const eq = this.#inventory?.getEquipped?.();
-    const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || this.#messages.unnamedRod;
-    this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.(
+    const eq = this.#inventory.getEquipped();
+    const rodName = this.#equipmentRules.getRodDisplayName(eq) || this.#messages.unnamedRod;
+    this.#inventoryUI.open();
+    this.#inventoryUI.showWarning(
       this.#messages.rodNeedsReelToCast(rodName),
     );
   }
 
   #showMissingLineInventoryWarning() {
-    this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.(this.#messages.equipLineToCast);
+    this.#inventoryUI.open();
+    this.#inventoryUI.showWarning(this.#messages.equipLineToCast);
   }
 
   start() {
