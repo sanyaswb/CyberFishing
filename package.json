@@ -21,7 +21,7 @@
     "check:gameplay": "node utils/run-checks.js --suite gameplay",
     "check:tools": "node utils/run-checks.js --suite tools",
     "check:js": "node utils/run-checks.js --check syntax",
-    "struct": "struct -i dist -i build -i coverage -o project-structure.txt",
+    "struct": "node utils/project-structure.js",
     "git:add": "npm run struct && git add .",
     "git:version-copy": "node utils/git-version-copy.js"
   },
@@ -29,7 +29,6 @@
     "glob": "^13.0.6"
   },
   "devDependencies": {
-    "@structure-codes/cli": "^0.0.6",
     "acorn": "^8.16.0",
     "eslint-scope": "^9.1.2",
     "espree": "^11.2.0",

@@ -1,5 +1,8 @@
 ├── .gitattributes
 ├── .gitignore
+├── CHANGELOG.md
+├── DEVELOPMENT_RULES.md
+├── README.md
 ├── assets
 │  ├── audio
 │  │  └── bell_ring.mp3
@@ -25,10 +28,8 @@
 │        ├── bg_test--evening.webp
 │        ├── bg_test--night.webp
 │        └── test-depth.webp
-├── CHANGELOG.md
 ├── convert-images.js
 ├── dev.html
-├── DEVELOPMENT_RULES.md
 ├── docs
 │  ├── architecture.md
 │  ├── balance_simulator.md
@@ -36,13 +37,14 @@
 │  ├── fishing_physics_formula_map.md
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
+│  ├── refactoring_remaining.md
 │  ├── runtime_config_overrides.md
 │  ├── simplified_fight_physics_model.md
 │  └── stats_and_balance_spec.md
 ├── index.html
 ├── package-lock.json
 ├── package.json
-├── README.md
+├── project-structure.txt
 ├── specs
 │  ├── 001-inventory-decomposition
 │  │  ├── plan.md
@@ -54,7 +56,25 @@
 │  │  └── spec.md
 │  ├── 004-css-cleanup
 │  │  └── spec.md
-│  └── 005-player-texts
+│  ├── 005-player-texts
+│  │  └── spec.md
+│  ├── 006-unreachable-progression-ui
+│  │  └── spec.md
+│  ├── 007-progression-styling
+│  │  └── spec.md
+│  ├── 008-test-capacity-policy
+│  │  └── spec.md
+│  ├── 009-production-comments
+│  │  └── spec.md
+│  ├── 010-rating-tier-option
+│  │  └── spec.md
+│  ├── 011-unused-readiness
+│  │  └── spec.md
+│  ├── 013-viewport-perspective
+│  │  └── spec.md
+│  ├── 014-tracked-structure
+│  │  └── spec.md
+│  └── 017-force-diagnostics
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -499,7 +519,6 @@
 │  │  │  │  ├── tackle_stress_system.js
 │  │  │  │  └── weakest_tackle_limit_resolver.js
 │  │  │  ├── inventory
-│  │  │  │  ├── delegating_inventory_capacity_policy.js
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
 │  │  │  │  ├── inventory_item_location.js
@@ -562,7 +581,8 @@
 │  │  │  ├── locations
 │  │  │  │  ├── dynamic_zone.js
 │  │  │  │  ├── grid_cell.js
-│  │  │  │  └── location_map.js
+│  │  │  │  ├── location_map.js
+│  │  │  │  └── world_perspective.js
 │  │  │  ├── rules
 │  │  │  │  ├── bait_rules.js
 │  │  │  │  ├── bite_rules.js
@@ -784,14 +804,17 @@
    ├── line-allocation-check.js
    ├── platform-runtime-check.js
    ├── player-inventory-check.js
+   ├── project-structure.js
    ├── rarity-production-check.js
    ├── reel-retrieve-diagnostic-check.js
    ├── run-checks.js
    ├── testing
+   │  ├── README.md
    │  ├── core
    │  │  ├── check_assertion.js
    │  │  └── source_runtime.js
-   │  ├── README.md
+   │  ├── doubles
+   │  │  └── delegating_inventory_capacity_policy.js
    │  ├── runtime
    │  │  ├── chum_test_composition.js
    │  │  ├── config_test_composition.js
@@ -803,4 +826,5 @@
    │  │  └── render_frame_test_composition.js
    │  └── suites
    │     └── check_manifest.js
-   └── victory-input-check.js
+   ├── victory-input-check.js
+   └── viewport-check.js
