@@ -22,6 +22,9 @@ export class FishForceSystem {
   #enduranceMovementDebuffCalculator = new EnduranceMovementDebuffCalculator();
   #physicsConfig;
   #diagnostics = {};
+  // The fish's runtime physics normalized once per physics object (the fish replaces the object when it changes).
+  #fishPhysicsSource = null;
+  #fishPhysics = null;
 
   constructor({ fish, config }) {
     this.#fish = fish;
@@ -55,7 +58,11 @@ export class FishForceSystem {
       Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
     );
     const rawFishPhysics = this.#fish.getPhysicsConfig?.() || {};
-    const fishPhysics = FishPhysicsProfile.toRuntimeConfig(rawFishPhysics);
+    if (rawFishPhysics !== this.#fishPhysicsSource) {
+      this.#fishPhysicsSource = rawFishPhysics;
+      this.#fishPhysics = FishPhysicsProfile.toRuntimeConfig(rawFishPhysics);
+    }
+    const fishPhysics = this.#fishPhysics;
 
     const maxStamina = this.#firstFiniteNumber(
       fishCondition?.maxStamina,
