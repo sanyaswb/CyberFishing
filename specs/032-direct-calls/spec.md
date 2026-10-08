@@ -16,9 +16,9 @@ defensive.
 
 ## This pass
 - `FightPhysicsOrchestrator`: 86 calls on the physics config adapter, the session systems (stress, rod pull,
-  rod control, fish force, reel, pull input, float) and its own calculators (90 → 5 optional calls).
+  rod control, fish force, reel, pull input, float) and its own calculators (92 → 6 optional calls).
 - `GameApplication`: 29 calls on the inventory, inventory UI, fishing controller, equipment rules, fight service,
-  environment, bite system, input and chum controller (48 → 19).
+  environment, bite system, input and chum controller (55 → 26).
 
 Left optional on purpose: item records with alternative shapes, fight-only fields of `FightService`, DEV debug
 adapters and teardown.
