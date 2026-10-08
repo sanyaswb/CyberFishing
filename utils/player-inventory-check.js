@@ -28,6 +28,8 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
   const { InventoryEventBridge } = load("src/game/application/inventory/inventory_event_bridge.js");
   const { InventoryRuntimeConfigProvider } = load("src/game/application/inventory/inventory_runtime_config_provider.js");
   const { ItemRarityResolver } = load("src/game/domain/items/rarity/item_rarity_resolver.js");
+  const { ItemRarityStrategyRegistry } = load("src/game/domain/items/rarity/item_rarity_strategy_registry.js");
+  const { AuthoredItemRarityStrategy } = load("src/game/domain/items/rarity/authored_item_rarity_strategy.js");
   const { ItemStatOverridePolicy } = load("src/game/domain/items/item_stat_override_policy.js");
   const { EffectiveItemStatsResolver } = load("src/game/domain/items/effective_item_stats_resolver.js");
   const { ITEM_STAT_OVERRIDE_CONFIG } = load("src/game/config/raw/items/item_stat_overrides.js");
@@ -44,7 +46,8 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
     castDistanceCalculator: new CastDistanceCalculator(CONFIG),
     lineRules: new LineCompatibilityRules(physicsConfig.getLineConfig(), { messages: INVENTORY_RULE_MESSAGES }),
     runtimeConfigProvider: new InventoryRuntimeConfigProvider(CONFIG, physicsConfig),
-    itemRarityResolver: new ItemRarityResolver(),
+    itemRarityResolver: new ItemRarityResolver({
+      strategyRegistry: new ItemRarityStrategyRegistry([new AuthoredItemRarityStrategy()]) }),
     itemProgressionResolver,
     itemConditionResolver: null,
     itemFreshnessResolver: null,

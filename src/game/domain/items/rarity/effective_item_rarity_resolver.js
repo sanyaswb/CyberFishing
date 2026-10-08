@@ -1,4 +1,3 @@
-import { ItemRarityResolver } from "./item_rarity_resolver.js";
 
 /**
  * Resolves the immutable rarity descriptor exposed by runtime item views.
@@ -11,7 +10,7 @@ import { ItemRarityResolver } from "./item_rarity_resolver.js";
 export class EffectiveItemRarityResolver {
   #itemRarityResolver;
 
-  constructor({ itemRarityResolver = new ItemRarityResolver() } = {}) {
+  constructor({ itemRarityResolver } = {}) {
     if (!itemRarityResolver || typeof itemRarityResolver.resolve !== "function") {
       throw new TypeError(
         "EffectiveItemRarityResolver requires itemRarityResolver.resolve",

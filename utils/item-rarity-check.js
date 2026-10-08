@@ -1,6 +1,7 @@
 const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
+const { composeItemRarityResolver } = require("./testing/runtime/item_rarity_test_composition");
 
 const Assertion = CheckAssertion.create("Item rarity check");
 
@@ -78,7 +79,7 @@ class ItemRarityCheck {
   constructor(runtime) {
     this.#runtime = runtime;
     this.#itemDb = runtime.__ITEM_DB__;
-    this.#domainResolver = new runtime.__ITEM_RESOLVER__();
+    this.#domainResolver = composeItemRarityResolver(runtime);
     this.#visualResolver = this.#createVisualResolver(
       runtime.__VISUAL_CONFIG__,
     );

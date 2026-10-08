@@ -1,13 +1,9 @@
-import { AuthoredItemRarityStrategy } from "./authored_item_rarity_strategy.js";
-import { ItemRarityStrategyRegistry } from "./item_rarity_strategy_registry.js";
-
 export class ItemRarityResolver {
   #strategyRegistry;
 
-  constructor({ strategyRegistry = null } = {}) {
-    this.#strategyRegistry =
-      strategyRegistry ||
-      new ItemRarityStrategyRegistry([new AuthoredItemRarityStrategy()]);
+  // strategyRegistry: the rarity strategies composed in bootstrap (the authored strategy today).
+  constructor({ strategyRegistry } = {}) {
+    this.#strategyRegistry = strategyRegistry;
   }
 
   resolve(rarityProfile) {

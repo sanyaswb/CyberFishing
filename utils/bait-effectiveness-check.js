@@ -1,6 +1,7 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { installDescriptorFactories, bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
+const { composeItemRarityResolver } = require("./testing/runtime/item_rarity_test_composition");
 
 const Assertion = CheckAssertion.create("Bait effectiveness check");
 
@@ -55,7 +56,8 @@ class BaitEffectivenessCheck {
       () => ({ knowledgePolicy: new context.AlwaysKnownBaitEffectivenessPolicy() }));
     this.#runtime = this.#sourceRuntime.context;
     this.#runtime.ViewFactory = bindConstructorDefaults(this.#runtime.ViewFactory,
-      () => ({ effectiveRarityResolver: new this.#runtime.EffectiveItemRarityResolver() }));
+      () => ({ effectiveRarityResolver: new this.#runtime.EffectiveItemRarityResolver({
+        itemRarityResolver: composeItemRarityResolver(this.#runtime) }) }));
   }
 
   run() {

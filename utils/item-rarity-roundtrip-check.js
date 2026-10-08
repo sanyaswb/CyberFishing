@@ -1,6 +1,7 @@
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
+const { composeItemRarityResolver } = require("./testing/runtime/item_rarity_test_composition");
 
 const Assertion = CheckAssertion.create("Item rarity round-trip check");
 
@@ -80,7 +81,7 @@ class ItemRarityRoundTripCheck {
     this.#database = {
       getItemData: (itemId) => this.#definitions[itemId] || null,
     };
-    const itemRarityResolver = new this.#runtime.RarityResolver();
+    const itemRarityResolver = composeItemRarityResolver(this.#runtime);
     const effectiveRarityResolver = new this.#runtime.EffectiveRarityResolver({
       itemRarityResolver,
     });

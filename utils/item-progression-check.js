@@ -3,6 +3,7 @@ const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
+const { composeItemRarityResolver } = require("./testing/runtime/item_rarity_test_composition");
 
 const Assertion = CheckAssertion.create("Item progression check");
 
@@ -89,7 +90,8 @@ class RuntimeLoader {
       withResolver: ["Validator", "Baselines", "Capacity", "Progression", "ViewFactory"],
     });
     runtime.context.ViewFactory = bindConstructorDefaults(runtime.context.ViewFactory,
-      () => ({ effectiveRarityResolver: new runtime.context.EffectiveItemRarityResolver() }));
+      () => ({ effectiveRarityResolver: new runtime.context.EffectiveItemRarityResolver({
+        itemRarityResolver: composeItemRarityResolver(runtime.context) }) }));
     // Default capacity labels are injected the way bootstrap injects them.
     runtime.context.Capacity = bindConstructorDefaults(runtime.context.Capacity, {
       messages: runtime.context.RULE_MESSAGES,
