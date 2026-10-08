@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.30.1 - Cleanup Complete
+
+- Remove unused progression UI/styles and readiness APIs; optional rating-tier badges respect metadata visibility.
+- Separate world perspective from camera state with verified frame parity; isolate test doubles and standardize diagnostics names/comments.
+- Generate project structure from Git-tracked files and retire the unused structure CLI dependency; gameplay and saves preserved.
+
 ## v0.30.0 - Clear Responsibilities
 
 ### Fixed

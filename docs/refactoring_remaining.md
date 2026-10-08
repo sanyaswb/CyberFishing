@@ -1,52 +1,59 @@
-# Refactoring: remaining steps (handoff 2026-10-08)
+# Refactoring: cleanup closure (2026-10-08)
 
-State: v0.30.0 released (specs 001–005); spec 006 (unreachable item progression UI) committed after it.
-Reference values: `node utils/run-checks.js` 37/37; game-cycle stdout SHA256
-`7b9baea38feaa4b550e20bc2d22d5eed7875a8c7fb6f3fdf9e176ddf573ed5b6`; `node utils/architecture-check.js` 19 negative
-fixtures, production 462 modules / 653 imports.
+State: all 11 handoff steps implemented and accepted for **v0.30.1**. Classic-to-ESM migration and Stage 7
+remain closed; historical machinery stays at `migration-final-archive`. There is no next cleanup step in this list.
 
-Process for every step (DEVELOPMENT_RULES.md): spec in `specs/00N-*/spec.md` → change → reachability/parity proof →
-all checks + guard + unchanged game-cycle digest → browser smoke of `index.html` and `dev.html` (0 console errors) →
-commit with facts → push. Behavior, saves, formulas and timing stay unchanged unless the owner decides otherwise.
+## Completed steps and decisions
 
-## Steps
+1. **Write-only progression styling — done ([007](../specs/007-progression-styling/spec.md)).**
+   No production/DEV reader of the six progression CSS properties or `has-item-progression`; removed their writes
+   and the unused capacity visual/dependency. Rating/quality colors and the line resource meter remain.
+2. **Rating-tier badge option — fixed ([010](../specs/010-rating-tier-option/spec.md)).**
+   The renderer passes `renderRatingTierBadge: showMetadata`. Real adapter/card integration proves one badge with
+   metadata and zero without it, including an explicitly enabled rating tier.
+3. **`ratingTier` capability — retained ([010](../specs/010-rating-tier-option/spec.md)).**
+   Keep the tested resolver, validator, sort/parameter/badge capability for balance overrides; it remains absent
+   from production config. No gameplay or save change.
+4. **Test-only Domain module — moved ([008](../specs/008-test-capacity-policy/spec.md)).**
+   `DelegatingInventoryCapacityPolicy` lives in `utils/testing/doubles/`; all three test consumers use it there.
+   It is reachable from neither browser entry. The source graph lost one module, runtime graphs were unchanged.
+5. **Historical comments — cleaned ([009](../specs/009-production-comments/spec.md)).**
+   Actual scan: 118 Cyrillic comments in 18 files. Useful explanations translated into English; edit markers and
+   redundant narration removed. Every modified file retains identical code tokens; no Cyrillic comment remains
+   in the inspected engine/domain/application/platform/bootstrap scope.
+6. **Unused readiness APIs — removed ([011](../specs/011-unused-readiness/spec.md)).**
+   Retired `InventoryGameplayBridge.evaluateBiteReadiness`/`evaluateChumBonus` and the resulting test-only policy
+   branches/helpers/messages. Live `BiteSystem`, cast/equipment readiness and both inventory check files remain.
+7. **Force/tackle diagnostics names — consistent ([017](../specs/017-force-diagnostics/spec.md)).**
+   Private snapshots/helpers use diagnostics; the force result has `diagnostics` and all three readers migrated.
+   Snapshot contents/ownership and public accessors stay unchanged; no compatibility alias added.
+8. **Camera and world perspective — separated ([013](../specs/013-viewport-perspective/spec.md)).**
+   Domain `WorldPerspective` owns the exact formula; application `ViewportProjector` owns camera state and coordinate
+   conversion. Bootstrap binds/injects one perspective query with the same function identity and no per-frame
+   wrapper. 1,200 differential frames have identical outputs and Math call traces; allocation sites unchanged.
+9. **`struct` — Git-tracked files only ([014](../specs/014-tracked-structure/spec.md)).**
+   `npm run struct` uses `git ls-files -z`; every tree leaf equals a tracked path. Local notes excluded, generation
+   deterministic. Unused structure CLI dependency removed without unrelated package upgrades.
+10. **Patch release 0.30.1 — accepted ([015](../specs/015-release-0301/spec.md)).**
+    Package/lock/UI versions, codename/notes, page cache versions, short CHANGELOG and project structure updated.
+    Fresh clone `npm ci` + `npm run check` passes; `npm run struct` reproduces the committed bytes. Publication
+    uses the annotated `v0.30.1` tag and `develop` after acceptance.
+11. **Local context — updated (never committed).**
+    CLAUDE.md reduced to 36 lines with the current light process and resume point; memory index/current-release
+    note updated. Historical memory files preserved as recovery references. Original local context backed up
+    in `.git/codex-refactor-0301/`.
 
-1. **Write-only progression styling (007).** After spec 006 nothing reads what `ItemProgressionDomAdapter` writes on a
-   card: the `--item-*` CSS variables (`#applyVariables`, `#properties`) and the `has-item-progression` class have no
-   CSS or code consumer. The capacity color resolved by `ItemProgressionVisualResolver` is no longer displayed either
-   (rating and quality colors are still used by `InventoryItemParametersResolver`). Prove there is no reader, remove,
-   and adjust the `degradation-color-check` assertion that only pins the capacity color source.
-2. **Rating-tier badge option (owner decision).** `InventoryItemCardRenderer` passes `renderLevelBadge`, the adapter
-   reads `renderRatingTierBadge`, so the badge ignores `showMetadata`. Dormant: `ratingTier` is disabled in the
-   production config. Options: rename the option (behavior change only when `ratingTier` is enabled) or decide step 3.
-3. **`ratingTier` capability (owner decision).** Config-gated balance feature, off in production: resolver, sort
-   criterion, parameter row, config validator, badge, `ITEM_PROGRESSION_LABELS`. Keep for balance work, or remove the
-   whole capability (then step 2 disappears).
-4. **Test-only Domain module (008).** `src/game/domain/inventory/delegating_inventory_capacity_policy.js` is reachable
-   from neither entry; only `inventory-equipment-check`, `inventory-integration-check` and
-   `inventory-save-round-trip-check` use it. Move it to `utils/testing/` (or inline a test double) and delete it from `src`.
-5. **Developer notes in production comments (optional, 009).** About 30 files in engine/domain/application/platform/
-   bootstrap keep Ukrainian edit notes such as `// <--- ЗМІНЕНО` or `/* Можеш змінити висоту… */`. The guard ignores
-   comments; rewrite the useful ones in English and drop edit markers. No code change; digest must stay identical.
-Open items carried over from the archived plan (`refactor_Task.txt` §6 at tag `migration-final-archive`; the rest
-of §6 is done: tooling archive and LF portability in 0.28.0, repository id fallback and `getDebugRevision` retired):
+## Acceptance facts
 
-6. **Unused gameplay-bridge readiness methods (§6 "coverage/API review").** `InventoryGameplayBridge.evaluateBiteReadiness`
-   / `evaluateChumBonus` (and `FishingReadinessPolicy.evaluateChumBonus` behind them) have no caller in `src/`; only
-   `inventory-integration-check` and `inventory-equipment-check` call them. Remove with those assertions, or keep with
-   a written reason. (`BuffManager` from the same item was removed in 0.29.0.)
-7. **"debug" → diagnostics naming (§6, 017).** Public accessors are already `getDiagnostics`; `FishForceSystem` and
-   `TackleStressSystem` still name the snapshot `#debug` and expose a `debug:` key. Rename, preserving every reader.
-8. **ViewportProjector (§6).** It still holds camera state (`#cameraX/Y`, `pan`, `focusOnVirtualPos`) next to world
-   perspective (`getPerspective`). Split only with hot-loop evidence (allocations, call counts, game-cycle digest).
-9. **`struct` script (§6, owner decision).** `npm run struct` also lists untracked local files (CLAUDE.md, CODEX.md),
-   so `project-structure.txt` is generated from `git ls-files`. Decide: keep manual generation or make the script
-   use tracked files only.
-10. **Patch release 0.30.1.** CHANGELOG (1–3 lines), version in `package.json`, `package-lock.json` (2 places),
-   `project_version.js` (version, codename, notes), `index.html`/`dev.html` `?v=`; regenerate `project-structure.txt`
-   from `git ls-files` (not `npm run struct`); fresh clone `npm ci` + `npm run check`; tag `v0.30.1`; push.
-11. **Local housekeeping (never committed).** Shrink the local `CLAUDE.md` to the current light process (most of its
-   Stage 3–6 tooling rules are historical) and update the resume point and memory.
+- Architecture **2/2**, Quick **13/13**, Full **38/38** (added the viewport ownership/identity contract).
+- Guard: **19 negative fixtures**; 572 source modules; production **463 modules / 654 imports**, DEV **569 / 839**.
+- Game-cycle stdout SHA256 unchanged:
+  `7b9baea38feaa4b550e20bc2d22d5eed7875a8c7fb6f3fdf9e176ddf573ed5b6`.
+- Save round trips: schema 2/3 upgrades byte-identical; current schema/save key unchanged.
+- Chrome smoke performed by Codex through `computer-use`: world renders, both entries show `v0.30.1`, both
+  inventories open with 20 cards; **0/0 console errors**.
+- Fresh clone: 21 packages installed; **38/38** checks; clean tree after structure regeneration, 688 tracked leaves.
+  Structure SHA256 `ea55db4f0386e950ec23ef3cd2a504e004ee3e893a62592d6e81c4cc3e65d05e`.
 
-Owner-side: spec-kit CLI does not install in the agent sandbox; run
-`uv tool install specify-cli --from git+https://github.com/github/spec-kit.git` locally if the `specify` CLI is wanted.
+For the next task, inspect current Git status and follow the owner's current instructions and
+`DEVELOPMENT_RULES.md`; do not resume archived Stage 3–7 tooling.
