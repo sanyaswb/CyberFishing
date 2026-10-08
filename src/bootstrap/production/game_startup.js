@@ -62,7 +62,6 @@ async function startGame() {
   if (!started) {
     new ConsoleLogger().error(new Error("[Bootstrap] CyberFishing game loop did not start."));
   }
-  compositionRoot.printStorageUsage();
   return game;
   } catch (error) { cleanup(); throw error; }
 }

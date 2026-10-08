@@ -14,10 +14,6 @@ export class ChumControls {
     UiEventShield.makeSolid(this.button);
 
     this.button.addEventListener("click", (e) => {
-      console.log(
-        "--- DEBUG 1: ChumControls клік! Поточний стан:",
-        this.currentState,
-      );
       if (
         this.currentState === "disabled" ||
         this.currentState === "empty" ||
