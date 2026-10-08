@@ -1,12 +1,15 @@
 export class HoldCharges {
-  constructor() {
+  #labels;
+
+  constructor({ labels } = {}) {
+    this.#labels = labels;
     this.container = document.createElement("div");
     this.container.style.cssText = `
       position: fixed;
-      bottom: 25vh; /* Можеш змінити висоту, щоб не перекривало інші кнопки */
+      bottom: 25vh; /* Raise or lower so it does not cover other buttons */
       left: 50%;
       transform: translateX(-50%);
-      display: none; /* За замовчуванням приховано */
+      display: none; /* Hidden by default */
       gap: 12px;
       z-index: 9998;
       pointer-events: none;
@@ -72,7 +75,7 @@ export class HoldCharges {
 
     // Показуємо або ховаємо текст
     if (holdState.isActive) {
-      this.textLabel.innerText = "УТРИМАННЯ";
+      this.textLabel.innerText = this.#labels.holdActive;
       this.textLabel.style.display = "block";
     } else {
       this.textLabel.style.display = "none";

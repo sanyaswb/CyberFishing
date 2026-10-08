@@ -9,14 +9,16 @@ export class ItemProgressionDomAdapter {
   ]);
 
   #visualResolver;
+  #labels;
 
-  constructor({ visualResolver } = {}) {
+  constructor({ visualResolver, labels } = {}) {
     if (!visualResolver || typeof visualResolver.resolve !== "function") {
       throw new TypeError(
         "ItemProgressionDomAdapter requires visualResolver",
       );
     }
     this.#visualResolver = visualResolver;
+    this.#labels = labels;
   }
 
   resolveVisual(progression) {
@@ -100,14 +102,14 @@ export class ItemProgressionDomAdapter {
     section.className = "inv-tooltip-section inv-tooltip-progression";
     const title = documentRef.createElement("div");
     title.className = "inv-tooltip-section-title";
-    title.textContent = "Прогресія предмета";
+    title.textContent = this.#labels.title;
     section.appendChild(title);
 
     if (progression.ratingTier?.available) {
       this.#appendTooltipRow(
         documentRef,
         section,
-        "Клас рейтингу",
+        this.#labels.ratingTier,
         `${progression.ratingTier.current}/${progression.ratingTier.maximum}`,
       );
     }
@@ -119,7 +121,7 @@ export class ItemProgressionDomAdapter {
       this.#appendTooltipRow(
         documentRef,
         section,
-        progression.capacity.detailLabel || "Залишок ліски",
+        progression.capacity.detailLabel || this.#labels.lineRemaining,
         `${this.#format(progression.capacity.current)}/${this.#format(
           progression.capacity.maximum,
         )}${progression.capacity.metricSuffix
@@ -130,7 +132,7 @@ export class ItemProgressionDomAdapter {
       this.#appendTooltipRow(
         documentRef,
         section,
-        "Використано",
+        this.#labels.used,
         this.#withSuffix(
           this.#format(progression.capacity.used),
           progression.capacity.metricSuffix,
@@ -145,7 +147,7 @@ export class ItemProgressionDomAdapter {
       this.#appendTooltipRow(
         documentRef,
         section,
-        progression.rating.metricLabel || "Основний параметр",
+        progression.rating.metricLabel || this.#labels.primaryParameter,
         this.#withSuffix(
           this.#format(progression.rating.rawValue),
           progression.rating.metricSuffix,
@@ -154,7 +156,7 @@ export class ItemProgressionDomAdapter {
       this.#appendTooltipRow(
         documentRef,
         section,
-        "Діапазон групи",
+        this.#labels.groupRange,
         `${this.#format(progression.rating.minimum)}–${this.#format(
           progression.rating.maximum,
         )}${progression.rating.metricSuffix
@@ -225,7 +227,7 @@ export class ItemProgressionDomAdapter {
     badge.textContent = String(ratingTier.current);
     badge.setAttribute(
       "aria-label",
-      `Клас рейтингу ${ratingTier.current} з ${ratingTier.maximum}`,
+      this.#labels.ratingTierOf(ratingTier.current, ratingTier.maximum),
     );
     return badge;
   }
@@ -235,7 +237,7 @@ export class ItemProgressionDomAdapter {
     bar.className = "inv-slot__capacity-bar";
     bar.setAttribute(
       "aria-label",
-      `Ємність ${this.#format(capacity.percent)}%`,
+      this.#labels.capacityPercent(this.#format(capacity.percent)),
     );
     const track = documentRef.createElement("span");
     track.className = "inv-slot__capacity-track";
@@ -248,7 +250,7 @@ export class ItemProgressionDomAdapter {
   #createTooltipRatingScale(documentRef, rating) {
     const block = this.#createTooltipScaleBlock(
       documentRef,
-      "Рейтинг",
+      this.#labels.rating,
       `${this.#format(rating.percent)}%`,
     );
     const scale = documentRef.createElement("div");
@@ -256,7 +258,7 @@ export class ItemProgressionDomAdapter {
     scale.setAttribute("role", "img");
     scale.setAttribute(
       "aria-label",
-      `Рейтинг ${this.#format(rating.percent)}%`,
+      this.#labels.ratingPercent(this.#format(rating.percent)),
     );
     const track = documentRef.createElement("span");
     track.className = "inv-tooltip__rating-track";
@@ -270,7 +272,7 @@ export class ItemProgressionDomAdapter {
   #createTooltipCapacityScale(documentRef, capacity) {
     const block = this.#createTooltipScaleBlock(
       documentRef,
-      capacity.metricLabel || "Ємність",
+      capacity.metricLabel || this.#labels.capacity,
       `${this.#format(capacity.percent)}%`,
       "capacity",
     );
@@ -279,7 +281,7 @@ export class ItemProgressionDomAdapter {
     scale.setAttribute("role", "img");
     scale.setAttribute(
       "aria-label",
-      `Ємність ${this.#format(capacity.percent)}%`,
+      this.#labels.capacityPercent(this.#format(capacity.percent)),
     );
     const track = documentRef.createElement("span");
     track.className = "inv-tooltip__capacity-track";
@@ -293,7 +295,7 @@ export class ItemProgressionDomAdapter {
   #createTooltipQualityScale(documentRef, quality) {
     const block = this.#createTooltipScaleBlock(
       documentRef,
-      "Якість",
+      this.#labels.quality,
       `${this.#format(quality.value)}/${quality.maximum}`,
     );
     const scale = documentRef.createElement("div");
@@ -301,7 +303,7 @@ export class ItemProgressionDomAdapter {
     scale.setAttribute("role", "img");
     scale.setAttribute(
       "aria-label",
-      `Якість ${quality.value} з ${quality.maximum}`,
+      this.#labels.qualityOf(quality.value, quality.maximum),
     );
     const fragment = documentRef.createDocumentFragment();
     for (let index = 0; index < quality.totalSections; index += 1) {

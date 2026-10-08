@@ -2,8 +2,10 @@ export class DepthSelector {
   #pendingFrames = new Set();
   #disposed = false;
   #animationFrameHost;
+  #labels;
 
-  constructor() {
+  constructor({ labels } = {}) {
+    this.#labels = labels;
     this.#animationFrameHost = document.defaultView;
     this.container = document.createElement("div");
     this.container.innerHTML = `
@@ -67,8 +69,8 @@ export class DepthSelector {
             <div id="ds-container">
                 <div id="ds-wrapper">
                     <div id="ds-distance-panel">
-                        <span id="ds-distance-value">Закид: 0.0 м</span>
-                        <div id="ds-distance-track" role="progressbar" aria-label="Доступна дальність закидання">
+                        <span id="ds-distance-value">${this.#labels.castDistance("0.0")}</span>
+                        <div id="ds-distance-track" role="progressbar" aria-label="${this.#labels.castDistanceRange}">
                             <div id="ds-distance-fill"></div>
                         </div>
                     </div>
@@ -171,7 +173,7 @@ export class DepthSelector {
     this.slider.max = maxDepth;
     this.maxLabel.innerText = maxDepth.toFixed(1);
 
-    // Якщо поточна глибина стала більшою за новий ліміт - обрізаємо її
+    // Clamp the current depth when it exceeds the new limit.
     let val = parseFloat(this.input.value);
     if (val > maxDepth) {
       val = maxDepth;
@@ -204,7 +206,7 @@ export class DepthSelector {
     );
     const ratio = maximum > 0 ? available / maximum : 0;
 
-    this.distanceValue.innerText = `Закид: ${available.toFixed(1)} м`;
+    this.distanceValue.innerText = this.#labels.castDistance(available.toFixed(1));
     this.distanceFill.style.width = `${(ratio * 100).toFixed(1)}%`;
     this.distanceTrack.setAttribute("aria-valuemin", "0");
     this.distanceTrack.setAttribute(

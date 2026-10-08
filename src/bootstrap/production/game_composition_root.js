@@ -1,3 +1,5 @@
+import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
+import { ITEM_PROGRESSION_LABELS } from "../../game/presentation/inventory/item_progression_labels.js";
 import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
@@ -405,6 +407,7 @@ export class GameCompositionRoot {
     });
     const itemProgressionDomAdapter = new ItemProgressionDomAdapter({
       visualResolver: itemProgressionVisualResolver,
+      labels: ITEM_PROGRESSION_LABELS,
     });
     const itemProgressionDebugProvider = this.#createOptionalDiagnostic(
       this.#createItemProgressionDebugSnapshotProvider, "itemProgressionDebugProvider", [{
@@ -761,7 +764,7 @@ export class GameCompositionRoot {
             itemProgressionResolver,
           }], ["dispose"],
         ))),
-        { cache: LocalStorageCache },
+        { cache: LocalStorageCache, labels: HUD_LABELS },
       )),
       chum: own(new ChumService(locId, chumConfigObj, projector, {
         cache: LocalStorageCache,
@@ -856,9 +859,9 @@ export class GameCompositionRoot {
       physicsConfig?.getDistanceConfig?.() || {},
     );
     const castPenalty = new CastPenalty();
-    const depthUI = own(new DepthSelector());
+    const depthUI = own(new DepthSelector({ labels: HUD_LABELS }));
     const timeUI = own(new TimeDisplay());
-    const holdUI = own(new HoldCharges());
+    const holdUI = own(new HoldCharges({ labels: HUD_LABELS }));
     return {
       location,
       rng,

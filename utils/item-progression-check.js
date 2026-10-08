@@ -863,8 +863,10 @@ class ItemProgressionCheck {
         ),
       "thumbnail rating-tier badge is numeric without an L prefix",
     );
+    const labels = new SourceRuntime().readAuthoredSource("src/game/presentation/inventory/item_progression_labels.js");
     Assertion.that(
-      adapter.includes("Клас рейтингу") &&
+      labels.includes('ratingTier: "Клас рейтингу"') &&
+        !labels.includes("Прогресійний рівень") &&
         !adapter.includes("Прогресійний рівень"),
       "rating segmentation is no longer named as a generic level",
     );

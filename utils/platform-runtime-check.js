@@ -178,7 +178,11 @@ function checkBrowserWidgets() {
   const definitions=[["src/platform/browser/dom/engine_interface.js",'UI_EXCEPTIONS','initEngineInterface'],["src/platform/browser/dom/ui_event_shield.js",'UiEventShield'],["src/platform/browser/dom/draggable_button.js",'DraggableButton'],
     ["src/platform/browser/ui/game_controls.js",'GameControls'],["src/platform/browser/ui/chum_controls.js",'ChumControls'],["src/platform/browser/ui/depth_selector.js",'DepthSelector'],["src/platform/browser/ui/time_display.js",'TimeDisplay'],["src/platform/browser/ui/hold_charges.js",'HoldCharges']];
   for(const [file,...expose]of definitions)runtime.load(file,{expose});
-  const c=runtime.context;c.initEngineInterface();assert.equal(document.head.children.length,1);
+  runtime.load('src/game/presentation/hud/hud_labels.js',{expose:['HUD_LABELS']});
+  const c=runtime.context;c.initEngineInterface();
+  // Player-facing HUD labels are injected the way GameCompositionRoot injects them.
+  const {bindConstructorDefaults}=require('./testing/runtime/constructor_defaults');
+  for(const name of ['DepthSelector','HoldCharges'])c[name]=bindConstructorDefaults(c[name],{labels:c.HUD_LABELS});assert.equal(document.head.children.length,1);
   let blocked=false;document.emit('contextmenu',{target:{tagName:'DIV',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(blocked);
   blocked=false;document.emit('contextmenu',{target:{tagName:'INPUT',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(!blocked);
   const button=makeNode(),cache={get:key=>saved.get(key),set:(key,value)=>saved.set(key,value)};
@@ -190,7 +194,7 @@ function checkBrowserWidgets() {
   drag.onPointerDown(point);for(const fn of timers.values())fn();timers.clear();
   for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
-  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache});
+  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS});
   const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++);
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
   for(let frame=0;frame<120;frame++) {
@@ -204,6 +208,7 @@ function checkBrowserWidgets() {
   }
   assert.equal(queries,initialQueries,'updates use cached DOM references');assert.equal(depth.lastChange,2);assert.equal(time.emojiSpan.innerText,'🌇');
   assert.equal(clicks,61,'only enabled chum states dispatch clicks');assert.equal(hold.circles.length,4);
+  assert.equal(hold.textLabel.innerText,'УТРИМАННЯ');assert.equal(depth.distanceValue.innerText,'Закид: 20.0 м','injected HUD labels reach the widgets');
   controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);drainFrames();
   controls.hideNetButton();depth.hide();hold.update(null);assert.equal(hold.container.style.display,'none');
   controls.dispose();controls.dispose();time.dispose();hold.dispose();chum.dispose();assert.equal(disposed,1);assert.equal(timers.size,0);

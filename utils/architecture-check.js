@@ -46,6 +46,13 @@ const ALLOWED_IMPORTS = Object.freeze({
 // Only these layers may touch browser/host globals (DOM, Canvas, storage, audio, timers, console).
 const HOST_LAYERS = new Set(["platform", "dev"]);
 
+// Player-facing text lives in presentation catalogs injected by composition; these layers carry none.
+// Diagnostics (console/logger call arguments) stay where they are logged; persisted names are save format.
+const TEXT_FREE_LAYERS = new Set(["engine", "game/domain", "game/application", "platform", "bootstrap/production",
+  "bootstrap/development"]);
+const SAVE_FORMAT_TEXT_MODULES = new Set(["src/game/domain/loadouts/persisted_loadout_names.js"]);
+const PLAYER_TEXT = /[Ѐ-ӿ]/u;
+
 const ECMASCRIPT_GLOBALS = new Set([
   "AggregateError", "Array", "ArrayBuffer", "BigInt", "BigInt64Array", "BigUint64Array", "Boolean", "DataView",
   "Date", "Error", "EvalError", "Float32Array", "Float64Array", "Infinity", "Int8Array", "Int16Array",
@@ -119,6 +126,36 @@ class ArchitectureRules {
     }
   }
 
+  // String and template literals with Cyrillic text are player-facing unless they are diagnostics call arguments.
+  #checkPlayerText(file, ast) {
+    const visit = (node) => {
+      if (!node || typeof node.type !== "string" || ArchitectureRules.#isDiagnosticsCall(node)) return;
+      const text = node.type === "Literal" && typeof node.value === "string" ? node.value
+        : node.type === "TemplateElement" ? node.value.cooked : null;
+      if (text !== null && PLAYER_TEXT.test(text)) {
+        this.#fail(`${file} holds player-facing text ${JSON.stringify(text.slice(0, 40))}; inject it from a presentation catalog`);
+      }
+      for (const key of Object.keys(node)) {
+        const value = node[key];
+        if (Array.isArray(value)) value.forEach(visit);
+        else if (value && typeof value.type === "string") visit(value);
+      }
+    };
+    visit(ast);
+  }
+
+  // console.x(...) or <...>.logger.x(...) / #logger?.x?.(...), optional chaining included.
+  static #isDiagnosticsCall(node) {
+    if (node.type === "ChainExpression") node = node.expression;
+    if (node.type !== "CallExpression") return false;
+    const callee = node.callee.type === "ChainExpression" ? node.callee.expression : node.callee;
+    if (callee.type !== "MemberExpression") return false;
+    const target = callee.object;
+    const name = target.type === "Identifier" ? target.name
+      : target.type === "MemberExpression" ? target.property.name : null;
+    return name === "console" || /logger$/iu.test(name ?? "");
+  }
+
   static snakeCase(name) {
     return name.replace(/([a-z])([0-9]+[A-Z])/gu, "$1_$2").replace(/([a-z])([A-Z])/gu, "$1_$2")
       .replace(/([A-Z])([A-Z][a-z])/gu, "$1_$2").toLowerCase();
@@ -151,6 +188,7 @@ class ArchitectureRules {
     }
     this.graph.set(file, targets);
     this.#checkClassNaming(file, ast);
+    if (TEXT_FREE_LAYERS.has(layer) && !SAVE_FORMAT_TEXT_MODULES.has(file)) this.#checkPlayerText(file, ast);
     if (layer && !HOST_LAYERS.has(layer)) {
       const scope = eslintScope.analyze(ast, { ecmaVersion: 2022, sourceType: "module" });
       const names = new Set(scope.globalScope.through.map((reference) => reference.identifier.name));
@@ -263,6 +301,9 @@ function checkFixtures() {
     "src/game/domain/rule.js": 'import { clamp } from "../../engine/math.js"; export class Rule { value() { return clamp(Math.PI); } }',
     "src/engine/math.js": "export const clamp = (value) => Math.min(1, value);",
     "src/dev/panel.js": "export const panel = () => document.body;",
+    "src/engine/trace.js": 'export const trace = (owner) => owner.logger?.warn?.(`Діагностика ${owner.id}`);',
+    "src/game/domain/loadouts/persisted_loadout_names.js": 'export const LOADOUT_DISPLAY_NAME = "Комплект";',
+    "src/game/presentation/messages.js": 'export const MESSAGES = { hello: "Привіт" };',
   };
   assert.deepEqual(new ArchitectureRules(base).analyse(), [], "valid fixture passes");
   const cases = [
@@ -282,6 +323,9 @@ function checkFixtures() {
     ["two classes", { "src/engine/math.js": "export class Math2 {}\nexport class Clamp {}\nexport const clamp = (v) => v;" }, /exports 2 classes/u],
     ["file not named after class", { "src/engine/math.js": "export class Clamp {}\nexport const clamp = (v) => v;" }, /must be named clamp\.js after its class Clamp/u],
     ["catch-all class name", { "src/engine/input_manager.js": "export class InputManager {}" }, /class InputManager has a catch-all name/u],
+    ["player text in domain", { "src/game/domain/rule.js": 'export class Rule { text() { return "Привіт"; } }' }, /rule\.js holds player-facing text "Привіт"/u],
+    ["player text template in platform", { "src/platform/label.js": "export const label = (m) => `Закид: ${m} м`;" }, /label\.js holds player-facing text "Закид: "/u],
+    ["player text passed to a non-logger call", { "src/bootstrap/production/start.js": 'import "../../game/domain/rule.js"; show("Увага");' }, /start\.js holds player-facing text "Увага"/u],
   ];
   for (const [name, overrides, expected] of cases) {
     const violations = new ArchitectureRules({ ...base, ...overrides }).analyse();
@@ -301,4 +345,4 @@ const production = rules.reachable(ENTRIES.production.entry);
 const development = rules.reachable(ENTRIES.development.entry);
 console.log(`Architecture passed: ${rules.graph.size} modules; production ${production.size} modules / ` +
   `${rules.edgeCount(production)} imports, DEV ${development.size} / ${rules.edgeCount(development)}; ` +
-  `no forbidden layer edge, cycle, host global outside platform/dev or production DEV import; ${fixtures} negative fixtures.`);
+  `no forbidden layer edge, cycle, host global outside platform/dev, production DEV import or player text outside presentation; ${fixtures} negative fixtures.`);

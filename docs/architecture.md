@@ -55,9 +55,13 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 - an import cycle;
 - a production module (reachable from `game.entry.js`) in `dev` or `bootstrap/development`;
 - a host global outside `platform`/`dev`;
-- a page that does not load exactly its one module entry.
+- a page that does not load exactly its one module entry;
 - a module exporting more than one class, a module not named after its class (`snake_case(Class).js`), or a
-  class named `*Manager`, `*Util(s)` or `*Helper(s)`.
+  class named `*Manager`, `*Util(s)` or `*Helper(s)`;
+- a Cyrillic string or template literal in `engine`, `game/domain`, `game/application`, `platform` or `bootstrap`,
+  except arguments of `console.*`/logger calls (diagnostics) and the save-format names in
+  `game/domain/loadouts/persisted_loadout_names.js`. Player-facing text lives in presentation catalogs
+  (`INVENTORY_MESSAGES`, `FISHING_MESSAGES`, `HUD_LABELS`, …) injected through constructors by bootstrap.
 
 It reports the production and DEV graph sizes and runs its own negative fixtures first.
 

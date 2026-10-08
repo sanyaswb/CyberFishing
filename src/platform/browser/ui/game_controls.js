@@ -11,13 +11,15 @@ export class GameControls {
   #continueBtn;
   onContinueClick;
   #lifecycle;
+  #labels;
   #onFullscreenChange = () => {
     if (!this.#fullscreenBtn) return;
     this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
   };
 
-  constructor(config, lifecycle, { cache } = {}) {
+  constructor(config, lifecycle, { cache, labels } = {}) {
     this.#cache = cache;
+    this.#labels = labels;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("GameControls requires devTools");
     }
@@ -172,7 +174,7 @@ export class GameControls {
   #initContinueBtn() {
     this.#continueBtn = document.createElement("button");
     this.#continueBtn.className = "ui-fade-target";
-    this.#continueBtn.innerHTML = "ПРОДОВЖИТИ";
+    this.#continueBtn.innerHTML = this.#labels.continueAfterOutcome;
 
     Object.assign(this.#continueBtn.style, {
       position: "absolute",

@@ -1,6 +1,6 @@
 # Feature Specification: Player-facing texts live in presentation
 
-**Branch**: `develop` · **Created**: 2026-10-08 · **Status**: Approved by owner (chat, 2026-10-08) · **Kind**: structural, same texts
+**Branch**: `develop` · **Created**: 2026-10-08 · **Status**: Implemented 2026-10-08 (approved by owner in chat) · **Kind**: structural, same texts
 
 ## Problem (verified)
 Rule 5 of the owner's decomposition framework: player-facing text belongs to a presentation catalog that is injected.
