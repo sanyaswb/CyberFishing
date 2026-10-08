@@ -403,7 +403,6 @@ export class GameCompositionRoot {
     });
     const itemProgressionVisualResolver = new ItemProgressionVisualResolver({
       rarityVisualResolver,
-      degradationColorResolver,
     });
     const itemProgressionDomAdapter = new ItemProgressionDomAdapter({
       visualResolver: itemProgressionVisualResolver,

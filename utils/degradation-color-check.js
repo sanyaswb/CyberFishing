@@ -102,17 +102,9 @@ class DegradationColorCheck {
   }
 
   #checkCapacityIntegration() {
-    const source = new SourceRuntime().readAuthoredSource(
-      "src/game/presentation/inventory/item_progression_visual_resolver.js",
-    );
     const css = fs.readFileSync(
       path.join(ROOT, "src/game/presentation/styles/inventory.css"),
       "utf8",
-    );
-    Assertion.that(
-      source.includes("this.#degradationColorResolver.resolvePercent(") &&
-        source.includes("progression.capacity.percent"),
-      "Capacity delegates color selection to the degradation system",
     );
     Assertion.that(
       !css.includes("inv-slot__capacity-bar") && css.includes(".inventory-resource-meter__fill"),

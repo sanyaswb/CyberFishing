@@ -1,9 +1,8 @@
 export class ItemProgressionVisualResolver {
   #rarityVisualResolver;
-  #degradationColorResolver;
   #gradient = null;
 
-  constructor({ rarityVisualResolver, degradationColorResolver } = {}) {
+  constructor({ rarityVisualResolver } = {}) {
     if (
       !rarityVisualResolver ||
       typeof rarityVisualResolver.resolvePosition !== "function"
@@ -12,16 +11,7 @@ export class ItemProgressionVisualResolver {
         "ItemProgressionVisualResolver requires rarityVisualResolver",
       );
     }
-    if (
-      !degradationColorResolver ||
-      typeof degradationColorResolver.resolvePercent !== "function"
-    ) {
-      throw new TypeError(
-        "ItemProgressionVisualResolver requires degradationColorResolver",
-      );
-    }
     this.#rarityVisualResolver = rarityVisualResolver;
-    this.#degradationColorResolver = degradationColorResolver;
   }
 
   resolve(progression) {
@@ -35,22 +25,15 @@ export class ItemProgressionVisualResolver {
         ? progression.quality.visualPosition
         : null,
     );
-    const capacity = progression.capacity?.available
-      ? this.#degradationColorResolver.resolvePercent(
-          progression.capacity.percent,
-        )
-      : this.#unavailableVisual();
     return Object.freeze({
       available:
         rating.available ||
         ratingTier.available ||
-        quality.available ||
-        capacity.available,
+        quality.available,
       gradient: this.#ordinaryGradient(),
       rating,
       ratingTier,
       quality,
-      capacity,
     });
   }
 
@@ -109,7 +92,6 @@ export class ItemProgressionVisualResolver {
       rating: unavailable,
       ratingTier: unavailable,
       quality: unavailable,
-      capacity: unavailable,
     });
   }
 

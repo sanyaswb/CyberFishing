@@ -749,9 +749,6 @@ class ItemProgressionCheck {
     });
     const visualResolver = new this.#runtime.ProgressionVisual({
       rarityVisualResolver: rarityVisual,
-      degradationColorResolver: new this.#runtime.DegradationVisual({
-        configProvider: () => this.#runtime.DEGRADATION_CONFIG,
-      }),
     });
     const progressionResolver = this.#createResolver(
       this.#runtime.CONFIGURATION,
@@ -788,17 +785,6 @@ class ItemProgressionCheck {
         tierVisual.ratingTier.cssColor === "",
       "explicit ratingTier is supported as rating segmentation",
     );
-    const lineProgression = progressionResolver.resolve(
-      this.#hydrateBase(this.#runtime.DB.lines.line_test_1),
-      { catalogItem: this.#runtime.DB.lines.line_test_1 },
-    );
-    const lineVisual = visualResolver.resolve(lineProgression);
-    Assertion.equal(
-      lineVisual.capacity.cssColor,
-      "rgb(0, 255, 128)",
-      "full Capacity uses the safe degradation color",
-    );
-
     const css = ["style.css", "inventory.css"]
       .map((file) => fs.readFileSync(path.join(ROOT, "src/game/presentation/styles", file), "utf8"))
       .join("\n");
