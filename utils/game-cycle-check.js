@@ -164,6 +164,7 @@ const GAMEPLAY_FILES = [
   "src/game/domain/locations/dynamic_zone.js",
   "src/game/domain/locations/location_map.js",
   "src/game/application/viewport/viewport_projector.js",
+  "src/game/domain/locations/world_perspective.js",
   "src/game/application/world/current_location.js",
   "src/game/application/world/environment_system.js",
   "src/game/application/world/game_world.js",
@@ -2025,7 +2026,9 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const location = new CurrentLocation(viewConfig);
   verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
     location.currentEnvironment === null, "location manager resolves the configured location");
-  const projector = new ViewportProjector(viewConfig, location.id);
+  const worldPerspective = new WorldPerspective(viewConfig, location.id);
+  const projector = new ViewportProjector(viewConfig, location.id,
+    worldPerspective.getPerspective.bind(worldPerspective));
   const gameConfig = createConfig();
   const environment = new EnvironmentSystem(new CurrentLocation(gameConfig.locations).config, 6, new SeededRng(7),
     gameConfig.spawns);

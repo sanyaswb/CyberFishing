@@ -213,6 +213,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "viewport",
+    title: "Camera and world perspective ownership",
+    file: "utils/viewport-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "config-schema",
     title: "Configuration schema validation (production, DEV and DEV reporter)",
     file: "utils/config-schema-check.js",

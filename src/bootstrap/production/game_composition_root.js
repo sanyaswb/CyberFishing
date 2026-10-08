@@ -148,6 +148,7 @@ import { VictoryLayoutResolver } from "../../game/presentation/screens/victory_l
 import { VictoryRenderer } from "../../game/presentation/screens/victory_renderer.js";
 import { VictoryThemeResolver } from "../../game/presentation/screens/victory_theme_resolver.js";
 import { ViewportProjector } from "../../game/application/viewport/viewport_projector.js";
+import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
 import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
 import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
 import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_renderer.js";
@@ -674,7 +675,12 @@ export class GameCompositionRoot {
       locCfg,
       this.#config.locations,
     );
-    const projector = new ViewportProjector(this.#config.locations, locId);
+    const worldPerspective = new WorldPerspective(this.#config.locations, locId);
+    const projector = new ViewportProjector(
+      this.#config.locations,
+      locId,
+      worldPerspective.getPerspective.bind(worldPerspective),
+    );
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
       new FightPhysicsConfigAdapter(this.#config);
