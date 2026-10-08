@@ -32,7 +32,7 @@ export class InventoryAssemblyEditorRenderer {
   ) {
     const editor = this.#dom.element(
       "section",
-      "inventory-assembly-editor",
+      "inventory-assembly-editor inventory-panel inventory-panel--full-height",
     );
     const workspace = this.#dom.element(
       "div",
@@ -102,7 +102,7 @@ export class InventoryAssemblyEditorRenderer {
     actions.append(
       ...(model.showEquip ? [this.#actionButton(
         "Спорядити",
-        "is-primary",
+        "inventory-action--primary",
         model.canEquip,
         () => {
           if (!model.canEquip) return onWarning?.(model.equipWarning);
@@ -119,7 +119,7 @@ export class InventoryAssemblyEditorRenderer {
       })] : []),
       ...(model.showDisassemble ? [this.#actionButton(
         "Розібрати",
-        "is-danger",
+        "inventory-action--danger",
         model.canDisassemble,
         () => {
           if (!model.canDisassemble) {
@@ -128,17 +128,17 @@ export class InventoryAssemblyEditorRenderer {
           onDisassemble?.();
         },
       )] : []),
-      this.#actionButton("Назад", "is-muted", true, () => onBack?.()),
+      this.#actionButton("Назад", "inventory-action--muted", true, () => onBack?.()),
     );
     return actions;
   }
 
   #actionButton(label, modifier, enabled, action) {
-    const classes = ["inventory-assembly-editor__button", modifier]
+    const classes = ["inventory-assembly-editor__button inventory-action", modifier]
       .filter(Boolean)
       .join(" ");
     const button = this.#dom.button(classes, label);
-    button.classList.toggle("is-disabled", !enabled);
+    button.classList.toggle("inventory-action--disabled", !enabled);
     button.setAttribute("aria-disabled", String(!enabled));
     button.addEventListener("click", action);
     return button;

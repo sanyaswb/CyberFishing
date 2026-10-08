@@ -3,9 +3,6 @@
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
-
-
-
 // Actual Canvas renderers and composites over reused visible/hidden models and deterministic draw commands.
 function checkCanvasScenes() {
   const runtime=new SourceRuntime();runtime.load('src/game/presentation/styles/degradation_color_resolver.js',{expose:['DegradationColorResolver']});
@@ -136,10 +133,10 @@ function checkVersionBadge() {
     if(readyState==='loading'){assert.equal(queries.length,0);assert.equal(loaded.length,1);assert.equal(loaded[0].callback,mount);assert.equal(loaded[0].options.once,true);loaded[0].callback();}
     else assert.equal(loaded.length,0);
     assert.deepEqual(queries,['gameVersionBadge']);assert.equal(node.textContent,`v${expectedVersion} prototype`);assert.equal(node.dataset.version,expectedVersion);
-    assert.equal(styles.length,1,'only the engine interface style is created');
+    assert.equal(styles.length,0,'browser startup never injects presentation styles');
     dispose();
     assert.deepEqual(removed.map(item=>item.type).sort(),['DOMContentLoaded','contextmenu','touchstart']);
-    assert.equal(removed.find(item=>item.type==='DOMContentLoaded').callback,mount);assert.equal(styles[0].removed,1);
+    assert.equal(removed.find(item=>item.type==='DOMContentLoaded').callback,mount);assert.equal(styles.length,0);
     const mounted=Badge.mountById('custom');
     assert.equal(mounted.element,node);assert.equal(queries.at(-1),'custom');
     assert.equal(Badge.mountById('missing').element,null);
@@ -158,8 +155,8 @@ function checkVersionBadge() {
 function checkBrowserWidgets() {
   const ids=new Map(),frames=new Map(),cancelled=[],timers=new Map(),saved=new Map();let nextFrame=0,nextTimer=0,clicks=0,disposed=0,queries=0;
   const drainFrames=()=>{while(frames.size){const [id,fn]=frames.entries().next().value;frames.delete(id);fn();}};
-  const makeNode=()=>({style:{},children:[],listeners:new Map(),attrs:{},value:'1',min:'0.1',max:'20',clientHeight:120,
-    classList:{values:new Set(),add(v){this.values.add(v);},remove(v){this.values.delete(v);},toggle(v,on){if(on)this.add(v);else this.remove(v);}},
+  const makeNode=()=>({style:{setProperty(key,value){this[key]=value;}},children:[],listeners:new Map(),attrs:{},value:'1',min:'0.1',max:'20',clientHeight:120,
+    classList:{values:new Set(),contains(v){return this.values.has(v);},add(v){this.values.add(v);},remove(v){this.values.delete(v);},toggle(v,on){if(on)this.add(v);else this.remove(v);}},
     set innerHTML(value){this.html=value;for(const match of value.matchAll(/id="([^"]+)"/g))if(!ids.has(match[1]))ids.set(match[1],makeNode());},
     get innerHTML(){return this.html;},addEventListener(type,fn,opts){const list=this.listeners.get(type)||[];list.push({fn,opts});this.listeners.set(type,list);},
     removeEventListener(type,fn){this.listeners.set(type,(this.listeners.get(type)||[]).filter(x=>x.fn!==fn));},
@@ -182,7 +179,7 @@ function checkBrowserWidgets() {
   const c=runtime.context;c.initEngineInterface();
   // Player-facing HUD labels are injected the way GameCompositionRoot injects them.
   const {bindConstructorDefaults}=require('./testing/runtime/constructor_defaults');
-  for(const name of ['DepthSelector','HoldCharges'])c[name]=bindConstructorDefaults(c[name],{labels:c.HUD_LABELS});assert.equal(document.head.children.length,1);
+  for(const name of ['DepthSelector','HoldCharges'])c[name]=bindConstructorDefaults(c[name],{labels:c.HUD_LABELS});assert.equal(document.head.children.length,0,'browser widgets do not inject styles');
   let blocked=false;document.emit('contextmenu',{target:{tagName:'DIV',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(blocked);
   blocked=false;document.emit('contextmenu',{target:{tagName:'INPUT',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(!blocked);
   const button=makeNode(),cache={get:key=>saved.get(key),set:(key,value)=>saved.set(key,value)};
@@ -192,8 +189,10 @@ function checkBrowserWidgets() {
   const point={button:0,pointerType:'mouse',pointerId:1,clientX:25,clientY:25,stopPropagation(){}};
   drag.onPointerDown(point);drag.onPointerUp(point);assert.equal(clicks,1);assert.equal(timers.size,0);
   drag.onPointerDown(point);for(const fn of timers.values())fn();timers.clear();
+  assert(button.classList.contains('draggable-control--dragging'),'holding starts shared drag feedback');
   for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
+  assert(!button.classList.contains('draggable-control--dragging'),'releasing clears drag feedback');
   const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS});
   const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++);
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;

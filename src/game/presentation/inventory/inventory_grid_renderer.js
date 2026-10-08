@@ -31,7 +31,7 @@ export class InventoryGridRenderer {
   ) {
     const panel = this.#dom.element(
       "section",
-      "inventory-list-panel",
+      "inventory-list-panel inventory-panel inventory-panel--full-height",
     );
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
@@ -43,12 +43,12 @@ export class InventoryGridRenderer {
       onCategorySelect,
       onSubfiltersToggle: (toggle) => {
         this.#subfiltersExpanded = !this.#subfiltersExpanded;
-        subfilters.classList.toggle("is-open", this.#subfiltersExpanded);
+        subfilters.classList.toggle("inventory-subfilters--open", this.#subfiltersExpanded);
         this.#syncSubfilterToggle(toggle);
       },
       onSortToggle: (toggle) => {
         this.#sortExpanded = !this.#sortExpanded;
-        sortOptions.classList.toggle("is-open", this.#sortExpanded);
+        sortOptions.classList.toggle("inventory-sort-options--open", this.#sortExpanded);
         this.#syncSortToggle(toggle);
       },
     });
@@ -103,7 +103,7 @@ export class InventoryGridRenderer {
         "inventory-categories__button",
         label,
       );
-      button.classList.toggle("is-active", category.selected);
+      button.classList.toggle("inventory-categories__button--active", category.selected);
       button.setAttribute("aria-pressed", String(category.selected));
       button.addEventListener("click", () => onCategorySelect?.(category.id));
       navigation.appendChild(button);
@@ -113,7 +113,7 @@ export class InventoryGridRenderer {
 
   #renderSubfilters(model, onSubfilterToggle) {
     const container = this.#dom.element("div", "inventory-subfilters");
-    container.classList.toggle("is-open", this.#subfiltersExpanded);
+    container.classList.toggle("inventory-subfilters--open", this.#subfiltersExpanded);
     container.setAttribute("aria-label", "Фільтри за підтипами");
     if (!model.subfilters.length) {
       container.appendChild(
@@ -155,7 +155,7 @@ export class InventoryGridRenderer {
   #syncSubfilterToggle(toggle) {
     toggle.textContent = this.#subfiltersExpanded ? "▴" : "▾";
     toggle.setAttribute("aria-expanded", String(this.#subfiltersExpanded));
-    toggle.classList.toggle("is-active", this.#subfiltersExpanded);
+    toggle.classList.toggle("inventory-categories__toggle--active", this.#subfiltersExpanded);
   }
 
   #renderSortOptions(
@@ -167,7 +167,7 @@ export class InventoryGridRenderer {
     },
   ) {
     const container = this.#dom.element("div", "inventory-sort-options");
-    container.classList.toggle("is-open", this.#sortExpanded);
+    container.classList.toggle("inventory-sort-options--open", this.#sortExpanded);
     container.setAttribute("aria-label", "Сортування інвентарю");
 
     const directionGroup = this.#dom.element(
@@ -180,7 +180,7 @@ export class InventoryGridRenderer {
         direction.icon,
         { title: direction.label },
       );
-      button.classList.toggle("is-active", direction.selected);
+      button.classList.toggle("inventory-sort-options__button--active", direction.selected);
       button.setAttribute("aria-label", direction.label);
       button.setAttribute("aria-pressed", String(direction.selected));
       button.addEventListener("click", () =>
@@ -199,7 +199,7 @@ export class InventoryGridRenderer {
         "inventory-sort-options__button inventory-sort-options__criterion",
         criterion.label,
       );
-      button.classList.toggle("is-active", criterion.selected);
+      button.classList.toggle("inventory-sort-options__button--active", criterion.selected);
       button.setAttribute("aria-pressed", String(criterion.selected));
       button.dataset.sortPriority = criterion.selected
         ? String(criterion.priority)
@@ -229,7 +229,7 @@ export class InventoryGridRenderer {
         { title: label },
       );
       button.style.setProperty("--inventory-rarity-filter-color", rarity.color);
-      button.classList.toggle("is-active", rarity.selected);
+      button.classList.toggle("inventory-sort-options__rarity--active", rarity.selected);
       button.setAttribute("aria-label", label);
       button.setAttribute("aria-pressed", String(rarity.selected));
       button.addEventListener("click", () =>
@@ -243,7 +243,7 @@ export class InventoryGridRenderer {
 
   #syncSortToggle(toggle) {
     toggle.setAttribute("aria-expanded", String(this.#sortExpanded));
-    toggle.classList.toggle("is-active", this.#sortExpanded);
+    toggle.classList.toggle("inventory-categories__toggle--active", this.#sortExpanded);
   }
 
   #renderItems(model, { onItemActivate, onItemLongPress }) {

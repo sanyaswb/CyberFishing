@@ -1,29 +1,11 @@
 export class TimeDisplay {
   constructor() {
     this.container = document.createElement("div");
-    this.container.style.cssText = `
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            background: rgba(11, 21, 32, 0.85);
-            border: 2px solid #4a5b6c;
-            border-radius: 8px;
-            padding: 6px 16px;
-            color: #fff;
-            font-family: monospace;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 9998;
-            pointer-events: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        `;
+    this.container.className = "time-display";
 
     this.emojiSpan = document.createElement("span");
     this.timeSpan = document.createElement("span");
-    this.timeSpan.style.color = "#00ccff";
+    this.timeSpan.className = "time-display__time";
 
     this.container.appendChild(this.emojiSpan);
     this.container.appendChild(this.timeSpan);

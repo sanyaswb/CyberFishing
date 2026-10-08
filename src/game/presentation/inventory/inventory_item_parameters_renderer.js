@@ -126,31 +126,31 @@ export class InventoryItemParametersRenderer {
   }
 
   #renderRow(parameter) {
-    const li = this.#dom.element("li", "inventory-parameter-row");
-    
-    const header = this.#dom.element("div", "inventory-parameter-header");
-    
-    const labelSpan = this.#dom.element("span", "inventory-parameter-label");
+    const li = this.#dom.element("li", "inventory-parameter");
+    if (parameter.color) {
+      li.style.setProperty("--inventory-parameter-color", parameter.color);
+    }
+
+    const header = this.#dom.element("div", "inventory-parameter__header");
+
+    const labelSpan = this.#dom.element("span", "inventory-parameter__label");
     labelSpan.textContent = parameter.label;
-    
+
     if (parameter.description) {
-      const helpIcon = this.#dom.element("span", "inventory-parameter-help", "?");
+      const helpIcon = this.#dom.element("span", "inventory-parameter__help", "?");
       helpIcon.setAttribute("title", parameter.description);
-      
-      const spacer = this.#dom.element("span", "inventory-parameter-help-spacer", " ");
+
+      const spacer = this.#dom.element("span", "inventory-parameter__help-spacer", " ");
       labelSpan.append(spacer, helpIcon);
     }
-    
+
     header.appendChild(labelSpan);
 
     if (parameter.value !== undefined && parameter.value !== null) {
-      const valueSpan = this.#dom.element("span", "inventory-parameter-value", String(parameter.value));
-      if (parameter.color) {
-        valueSpan.style.color = parameter.color;
-      }
+      const valueSpan = this.#dom.element("span", "inventory-parameter__value", String(parameter.value));
       header.appendChild(valueSpan);
     }
-    
+
     li.appendChild(header);
 
     if (parameter.kind === "resource" && parameter.resource) {
@@ -163,29 +163,25 @@ export class InventoryItemParametersRenderer {
     } else if (parameter.kind === "effectiveness") {
       li.appendChild(this.#renderEffectiveness(parameter.entries));
     } else if (parameter.kind === "bar" && parameter.percent !== undefined) {
-      const barContainer = this.#dom.element("div", "inventory-parameter-bar");
-      const barTrack = this.#dom.element("div", "inventory-parameter-bar-track");
-      const barFill = this.#dom.element("div", "inventory-parameter-bar-fill");
-      
+      const barContainer = this.#dom.element("div", "inventory-parameter__bar");
+      const barTrack = this.#dom.element("div", "inventory-parameter__bar-track");
+      const barFill = this.#dom.element("div", "inventory-parameter__bar-fill");
+
       barFill.style.width = `${Math.max(0, Math.min(100, Number(parameter.percent)))}%`;
-      if (parameter.color) {
-        barFill.style.backgroundColor = parameter.color;
-      }
-      
+
       barTrack.appendChild(barFill);
       barContainer.appendChild(barTrack);
       li.appendChild(barContainer);
     } else if (parameter.kind === "segments") {
-      const segmentsContainer = this.#dom.element("div", "inventory-parameter-segments");
+      const segmentsContainer = this.#dom.element("div", "inventory-parameter__segments");
       const total = parameter.totalSections || 10;
       const filled = parameter.filledSections || 0;
       for (let i = 0; i < total; i++) {
-        const seg = this.#dom.element("div", "inventory-parameter-segment");
+        const seg = this.#dom.element("div", "inventory-parameter__segment");
         if (i < filled) {
-          seg.classList.add("is-filled");
+          seg.classList.add("inventory-parameter__segment--filled");
           if (parameter.color) {
-            seg.style.backgroundColor = parameter.color;
-            seg.style.boxShadow = `0 0 6px ${parameter.color}`;
+            seg.classList.add("inventory-parameter__segment--colored");
           }
         }
         segmentsContainer.appendChild(seg);

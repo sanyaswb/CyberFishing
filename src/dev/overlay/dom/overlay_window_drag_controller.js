@@ -178,7 +178,7 @@ export class OverlayWindowDragController {
 
   #isInteractiveTarget(target) {
     return !!target?.closest?.(
-      "button,input,select,textarea,[data-overlay-control],.overlay-metric-label",
+      "button,input,select,textarea,[data-overlay-control],.debug-overlay__metric-label",
     );
   }
 

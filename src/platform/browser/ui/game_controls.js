@@ -33,41 +33,16 @@ export class GameControls {
 
   hideNetButton() {
     if (this.#netBtn) {
-      this.#netBtn.style.display = "none";
+      this.#netBtn.classList.remove("game-control--net-visible");
       // Reset the state so the entrance animation can run again.
-      this.#netBtn.style.transform = "scale(0)";
+      this.#netBtn.classList.remove("game-control--net-entered");
     }
   }
 
   #initFullscreenBtn() {
     this.#fullscreenBtn = document.createElement("button");
-    this.#fullscreenBtn.className = "ui-fade-target";
+    this.#fullscreenBtn.className = "game-control game-control--fullscreen";
     this.#fullscreenBtn.innerHTML = "⛶";
-
-    Object.assign(this.#fullscreenBtn.style, {
-      position: "absolute",
-      top: "15px",
-      right: "15px",
-      padding: "8px 16px",
-      backgroundColor: "rgba(15, 23, 30, 0.8)",
-      color: "#00ff80",
-      border: "1px solid #00ff80",
-      borderRadius: "4px",
-      fontFamily: "monospace",
-      fontWeight: "bold",
-      cursor: "pointer",
-      zIndex: "9999",
-      transition: "all 0.2s ease",
-      touchAction: "none",
-    });
-
-    this.#fullscreenBtn.addEventListener("mouseenter", () => {
-      this.#fullscreenBtn.style.backgroundColor = "rgba(0, 255, 128, 0.2)";
-    });
-
-    this.#fullscreenBtn.addEventListener("mouseleave", () => {
-      this.#fullscreenBtn.style.backgroundColor = "rgba(15, 23, 30, 0.8)";
-    });
 
     new DraggableButton(
       this.#fullscreenBtn,
@@ -96,26 +71,8 @@ export class GameControls {
 
   #initNetBtn() {
     this.#netBtn = document.createElement("button");
-    this.#netBtn.className = "ui-fade-target";
+    this.#netBtn.className = "game-control game-control--net";
     this.#netBtn.innerHTML = "🕸️";
-
-    Object.assign(this.#netBtn.style, {
-      position: "absolute",
-      bottom: "20px",
-      right: "100px",
-      padding: "12px",
-      borderRadius: "8px",
-      fontFamily: "monospace",
-      fontWeight: "bold",
-      fontSize: "16px",
-      zIndex: "9999",
-      display: "none",
-      touchAction: "none",
-      transition: "all 0.2s ease",
-      color: "#fff",
-      borderWidth: "2px",
-      borderStyle: "solid",
-    });
 
     new DraggableButton(
       this.#netBtn,
@@ -141,70 +98,22 @@ export class GameControls {
       return;
     }
 
-    const isAppearing =
-      this.#netBtn.style.display === "none" ||
-      this.#netBtn.style.display === "";
-
-    this.#netBtn.style.display = "flex";
-    this.#netBtn.style.justifyContent = "center";
-    this.#netBtn.style.alignItems = "center";
-
+    const isAppearing = !this.#netBtn.classList.contains("game-control--net-visible");
+    this.#netBtn.classList.add("game-control--net-visible");
+    this.#netBtn.classList.toggle("game-control--net-ready", isReady);
+    this.#netBtn.classList.toggle("game-control--net-unready", !isReady);
     if (isAppearing) {
-      this.#netBtn.style.transform = "scale(0)";
+      this.#netBtn.classList.remove("game-control--net-entered");
       requestAnimationFrame(() => {
-        this.#netBtn.style.transition =
-          "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s";
-        this.#netBtn.style.transform = "scale(1)";
+        this.#netBtn?.classList.add("game-control--net-entered");
       });
-    }
-
-    if (isReady) {
-      this.#netBtn.style.backgroundColor = "rgba(0, 255, 128, 0.7)";
-      this.#netBtn.style.borderColor = "#00ff80";
-      this.#netBtn.style.cursor = "pointer";
-      this.#netBtn.style.boxShadow = "0 0 15px rgba(0, 255, 128, 0.5)";
-    } else {
-      this.#netBtn.style.backgroundColor = "rgba(128, 128, 128, 0.3)";
-      this.#netBtn.style.borderColor = "#aaa";
-      this.#netBtn.style.cursor = "not-allowed";
-      this.#netBtn.style.boxShadow = "none";
     }
   }
 
   #initContinueBtn() {
     this.#continueBtn = document.createElement("button");
-    this.#continueBtn.className = "ui-fade-target";
+    this.#continueBtn.className = "game-control game-control--continue";
     this.#continueBtn.innerHTML = this.#labels.continueAfterOutcome;
-
-    Object.assign(this.#continueBtn.style, {
-      position: "absolute",
-      top: "80%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      padding: "15px 40px",
-      borderRadius: "8px",
-      fontFamily: "monospace",
-      fontWeight: "bold",
-      fontSize: "24px",
-      zIndex: "9999",
-      display: "none",
-      backgroundColor: "rgba(0, 204, 255, 0.8)",
-      color: "#fff",
-      border: "2px solid #00ccff",
-      cursor: "pointer",
-      boxShadow: "0 0 15px rgba(0, 204, 255, 0.4)",
-      transition: "all 0.2s ease",
-    });
-
-    this.#continueBtn.addEventListener("mouseenter", () => {
-      this.#continueBtn.style.backgroundColor = "rgba(0, 204, 255, 1)";
-      this.#continueBtn.style.transform = "translate(-50%, -50%) scale(1.05)";
-    });
-
-    this.#continueBtn.addEventListener("mouseleave", () => {
-      this.#continueBtn.style.backgroundColor = "rgba(0, 204, 255, 0.8)";
-      this.#continueBtn.style.transform = "translate(-50%, -50%) scale(1)";
-    });
 
     UiEventShield.makeSolid(this.#continueBtn);
 
@@ -217,27 +126,27 @@ export class GameControls {
 
   updateContinueButtonState(isVisible) {
     if (!this.#continueBtn) return;
-    this.#continueBtn.style.display = isVisible ? "block" : "none";
+    this.#continueBtn.classList.toggle("game-control--continue-visible", isVisible);
   }
 
   // Scouting pointer feedback: dims the page while the pointer is held, flashes the release class for one frame.
   setScoutingPointerDimmed(isDimmed) {
-    document.body.classList.toggle("scouting-pointer-hold", isDimmed);
+    document.body.classList.toggle("game-shell--pointer-hold", isDimmed);
 
     if (isDimmed) {
-      document.body.classList.remove("scouting-pointer-release");
+      document.body.classList.remove("game-shell--pointer-release");
       return;
     }
 
-    document.body.classList.add("scouting-pointer-release");
+    document.body.classList.add("game-shell--pointer-release");
     requestAnimationFrame(() => {
-      document.body.classList.remove("scouting-pointer-release");
+      document.body.classList.remove("game-shell--pointer-release");
     });
   }
 
   setOutcomeOverlayActive(isActive) {
     document.body?.classList.toggle(
-      "victory-outcome-active",
+      "game-shell--outcome-active",
       isActive === true,
     );
   }
@@ -260,8 +169,4 @@ export class GameControls {
     this.onContinueClick = null;
   }
 }
-
-
-
-
 

@@ -29,6 +29,6 @@ export class FishBalanceOverlayModule extends OverlayModule {
         headerTitle: "STATE FORCE PREVIEW",
       });
     }
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 }

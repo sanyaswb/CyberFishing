@@ -66,6 +66,35 @@ function unusedClasses(css, vocabulary) {
   return classSelectors(css).filter((name) => !vocabulary.knows(name));
 }
 
+function stylePolicyViolations(css) {
+  const source = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const bem = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:__[a-z0-9]+(?:-[a-z0-9]+)*)?(?:--[a-z0-9]+(?:-[a-z0-9]+)*)?$/;
+  const violations = classSelectors(source)
+    .filter((name) => !bem.test(name) || /^(?:is|has)-/.test(name))
+    .map((name) => `Non-BEM class: ${name}`);
+  if (/font\s*:[^;{}]*\b\d+(?:\.\d+)?px[^;{}]*\binherit\s*;/i.test(source)) {
+    violations.push("Invalid font shorthand: inherit cannot be a font family");
+  }
+  if (/outline(?:-style|-width)?\s*:\s*(?:none|0(?:px)?)\s*!important/i.test(source)) {
+    violations.push("Forced focus outline removal");
+  }
+  if (/:\s+(?:active|hover|checked|focus-visible)\b/.test(source)) {
+    violations.push("Whitespace splits a pseudo-class");
+  }
+  return violations;
+}
+
+function staticStyleViolations(source) {
+  const violations = [];
+  if (/createElement\(\s*["']style["']\s*\)/.test(source) || /\.cssText\s*=/.test(source)) {
+    violations.push("Injected presentation styles");
+  }
+  for (const match of source.matchAll(/style=["']([^"']*)["']/g)) {
+    if (!match[1].startsWith("--")) violations.push("Static inline presentation style");
+  }
+  return violations;
+}
+
 function projectVocabulary() {
   const production = new ClassVocabulary();
   const development = new ClassVocabulary();
@@ -76,6 +105,7 @@ function projectVocabulary() {
       if (entry.isDirectory()) walk(relative);
       else if (relative.endsWith(".js")) {
         const text = fs.readFileSync(path.join(ROOT, relative), "utf8");
+        assert.deepEqual(staticStyleViolations(text), [], `${relative} must leave static appearance in CSS`);
         const dev = relative.startsWith("src/dev/") || relative.startsWith("src/bootstrap/development/");
         development.addModule(text, (css) => injected.push({ file: relative, css, dev }));
         if (!dev) production.addModule(text);
@@ -101,6 +131,14 @@ assert.throws(() => readPageStylesheets({ html: link("src/game/presentation/styl
 assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/dev-tools.css") }), /Production loads DEV CSS/);
 assert.throws(() => readPageStylesheets({ html: link("../../outside.css") }), /escapes project/);
 assert.throws(() => readPageStylesheets({ html: link("https://external.example/styles.css") }), /relative project path/);
+assert.equal(stylePolicyViolations('.is-open {} .card__image--large {}').length, 1);
+assert.equal(stylePolicyViolations('.card { font: 700 12px inherit; }').length, 1);
+assert.equal(stylePolicyViolations('*:focus { outline: none !important; }').length, 1);
+assert.equal(stylePolicyViolations('button: active { transform: scale(1); }').length, 1);
+assert.equal(staticStyleViolations('document.createElement("style");').length, 1);
+assert.equal(staticStyleViolations('el.style.cssText = "color: red";').length, 1);
+assert.equal(staticStyleViolations('`<span style="color:red">text</span>`').length, 1);
+assert.deepEqual(staticStyleViolations('`<span style="--debug-overlay-color:${color};">text</span>`'), []);
 
 const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
@@ -110,6 +148,8 @@ for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
   const dev = file.startsWith("src/dev/");
   const unused = unusedClasses(css, dev ? vocabulary.development : vocabulary.production);
   total += classSelectors(css).length;
+  assert.deepEqual(stylePolicyViolations(css), [], `${file} violates the BEM/focus/font policy`);
   assert.deepEqual(unused, [], `${file} styles classes that no code uses: ${unused.join(", ")}`);
 }
-console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and ${vocabulary.injected.length} injected blocks; native order/version/ownership/reachability valid; 6 negative fixtures rejected.`);
+assert.equal(vocabulary.injected.length, 0, "static presentation styles belong in native CSS assets");
+console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and no injected blocks; native order/version/ownership/reachability and BEM/focus/font policy valid; 13 negative fixtures rejected.`);

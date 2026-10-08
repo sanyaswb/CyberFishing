@@ -62,7 +62,7 @@ export class FishMovementSummaryOverlayModule extends OverlayModule {
       metricKey: "fishMovementSummary.winner",
       color: f.netForceColor(data.netForceKg),
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #relationColor(relation) {

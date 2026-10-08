@@ -28,7 +28,7 @@ export class InventoryTooltipPresenter {
     this.#balanceParameterResolver = balanceParameterResolver;
     this.#tooltipNode = this.#document.createElement("div");
     this.#tooltipNode.className =
-      "inv-tooltip inventory-tooltip inventory-balance-tooltip";
+      "inventory-tooltip inventory-balance-tooltip";
     this.#tooltipNode.setAttribute("role", "tooltip");
     this.#document.body.appendChild(this.#tooltipNode);
   }
@@ -109,7 +109,7 @@ export class InventoryTooltipPresenter {
     }
 
     const title = this.#document.createElement("div");
-    title.className = "inv-tooltip-title";
+    title.className = "inventory-tooltip__title";
     title.textContent = [item.icon || item.emoji, item.name]
       .filter(Boolean)
       .join(" ");
@@ -136,9 +136,9 @@ export class InventoryTooltipPresenter {
 
   #renderSection(section) {
     const node = this.#document.createElement("section");
-    node.className = "inv-tooltip-section inventory-balance-tooltip__section";
+    node.className = "inventory-tooltip__section inventory-balance-tooltip__section";
     const title = this.#document.createElement("div");
-    title.className = "inv-tooltip-section-title";
+    title.className = "inventory-tooltip__section-title";
     title.textContent = section.title;
     node.appendChild(title);
     section.rows.forEach((row) =>
@@ -173,7 +173,7 @@ export class InventoryTooltipPresenter {
     if (row.delta) {
       const delta = this.#document.createElement("span");
       delta.className =
-        `inventory-balance-tooltip__delta is-${row.tone || "neutral"}`;
+        `inventory-balance-tooltip__delta inventory-balance-tooltip__delta--${row.tone || "neutral"}`;
       delta.textContent = row.delta;
       values.appendChild(delta);
     }
@@ -188,7 +188,7 @@ export class InventoryTooltipPresenter {
     for (const impact of row.impacts || []) {
       const impactNode = this.#document.createElement("div");
       impactNode.className =
-        `inventory-balance-tooltip__impact is-${impact.tone || "neutral"}`;
+        `inventory-balance-tooltip__impact inventory-balance-tooltip__impact--${impact.tone || "neutral"}`;
       const impactLabel = this.#document.createElement("span");
       impactLabel.textContent = impact.label;
       const impactValue = this.#document.createElement("strong");

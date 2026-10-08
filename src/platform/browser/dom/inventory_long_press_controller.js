@@ -104,7 +104,7 @@ export class InventoryLongPressController {
     binding.fired = false;
     binding.startedAt = this.#now();
     this.#updateProgressVisual(binding, 0);
-    binding.element.classList.add("is-long-pressing");
+    binding.element.classList.add("inventory-item-card--pressing");
     this.#scheduleProgressUpdate(binding);
     binding.element.setPointerCapture?.(event.pointerId);
     binding.timerId = globalThis.setTimeout(() => {
@@ -112,8 +112,8 @@ export class InventoryLongPressController {
       binding.fired = true;
       this.#stopProgressUpdate(binding);
       this.#updateProgressVisual(binding, 1);
-      binding.element.classList.remove("is-long-pressing");
-      binding.element.classList.add("is-long-press-fired");
+      binding.element.classList.remove("inventory-item-card--pressing");
+      binding.element.classList.add("inventory-item-card--press-fired");
       binding.onLongPress?.(event);
     }, binding.durationMs);
   }
@@ -149,7 +149,7 @@ export class InventoryLongPressController {
       event.stopPropagation();
       event.stopImmediatePropagation?.();
       binding.fired = false;
-      binding.element.classList.remove("is-long-press-fired");
+      binding.element.classList.remove("inventory-item-card--press-fired");
       return;
     }
     binding.onClick?.(event);
@@ -162,7 +162,7 @@ export class InventoryLongPressController {
     }
     this.#stopProgressUpdate(binding);
     this.#updateProgressVisual(binding, 0);
-    binding.element.classList.remove("is-long-pressing");
+    binding.element.classList.remove("inventory-item-card--pressing");
   }
 
   #scheduleProgressUpdate(binding) {
@@ -225,7 +225,7 @@ export class InventoryLongPressController {
     const documentRef = element.ownerDocument || globalThis.document;
     if (!documentRef?.createElement) return null;
     const progress = documentRef.createElement("span");
-    progress.className = "inventory-long-press-progress";
+    progress.className = "inventory-item-card__press-progress";
     progress.setAttribute("aria-hidden", "true");
     element.appendChild(progress);
     return progress;
@@ -246,8 +246,8 @@ export class InventoryLongPressController {
     binding.element.removeEventListener("click", binding.click);
     binding.element.removeEventListener("contextmenu", binding.contextMenu);
     binding.element.classList.remove(
-      "is-long-pressing",
-      "is-long-press-fired",
+      "inventory-item-card--pressing",
+      "inventory-item-card--press-fired",
     );
     binding.progress?.remove();
     this.#bindings.delete(binding);

@@ -794,7 +794,7 @@ class ItemProgressionCheck {
         `${stop.id} color is not duplicated in CSS`,
       );
     }
-    Assertion.that(css.includes(".inv-slot__rating-tier-badge"), ".inv-slot__rating-tier-badge is styled");
+    Assertion.that(css.includes(".inventory-item-card__rating-badge"), ".inventory-item-card__rating-badge is styled");
     const adapter = new SourceRuntime().readAuthoredSource("src/platform/browser/dom/item_progression_dom_adapter.js");
     Assertion.that(
       !adapter.includes('className = "inv-slot__rating-bar"') &&
@@ -803,7 +803,7 @@ class ItemProgressionCheck {
     );
     Assertion.that(
       !adapter.includes("appendTooltip") &&
-        !adapter.includes("inv-tooltip") &&
+        !adapter.includes("inventory-tooltip") &&
         !adapter.includes("inv-slot__capacity-bar"),
       "progression adds only the rating-tier badge; the balance tooltip and the line resource meter show the rest",
     );
@@ -837,7 +837,7 @@ class ItemProgressionCheck {
     );
     Assertion.that(
       css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)") &&
-        css.includes(".inventory-list-item.is-selected::after"),
+        css.includes(".inventory-list-item.inventory-list-item--selected::after"),
       "rarity and interaction layers remain independent",
     );
   }

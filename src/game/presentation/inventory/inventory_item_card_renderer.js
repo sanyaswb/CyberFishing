@@ -66,11 +66,11 @@ export class InventoryItemCardRenderer {
       "div",
       `inventory-slot inventory-slot--${slot.state}`,
     );
-    well.classList.toggle("is-highlighted", slot.highlighted === true);
+    well.classList.toggle("inventory-slot--highlighted", slot.highlighted === true);
     well.dataset.slotState = slot.state;
 
     if (slot.item) {
-      well.classList.add("is-filled");
+      well.classList.add("inventory-slot--filled");
       well.appendChild(
         this.renderItem(slot.item, {
           variant,
@@ -120,8 +120,8 @@ export class InventoryItemCardRenderer {
       "div",
       "inventory-list-item",
     );
-    wrapper.classList.toggle("is-selected", selected);
-    wrapper.classList.toggle("is-compatible", compatible);
+    wrapper.classList.toggle("inventory-list-item--selected", selected);
+    wrapper.classList.toggle("inventory-list-item--compatible", compatible);
     wrapper.dataset.instanceId = String(item.instanceId || "");
     wrapper.appendChild(
       this.renderItem(item, {
@@ -151,7 +151,7 @@ export class InventoryItemCardRenderer {
       `inventory-item-card inventory-item-card--${variant}`,
       "",
     );
-    card.classList.toggle("is-frameless", frameless);
+    card.classList.toggle("inventory-item-card--frameless", frameless);
     card.dataset.instanceId = String(item.instanceId || "");
     card.setAttribute("aria-label", String(item.name || "Предмет"));
     this.#renderMainVisual(card, item);
@@ -233,7 +233,7 @@ export class InventoryItemCardRenderer {
       } else {
         const color = item.rarityVisual?.cssColor || item.rarityColor;
         if (this.#isSafeCssColor(color)) {
-          card.classList.add("has-rarity");
+          card.classList.add("item-rarity");
           card.style.setProperty("--rarity-color", color);
         }
       }

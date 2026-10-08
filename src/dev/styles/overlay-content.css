@@ -1,0 +1,236 @@
+/* DEV diagnostic content: semantic text, headings, rows and sections. */
+
+.debug-overlay__text--custom {
+  color: var(--debug-overlay-color, inherit);
+}
+
+.debug-overlay__text--info {
+  color: var(--ui-info);
+}
+
+.debug-overlay__text--warning {
+  color: var(--ui-warning);
+}
+
+.debug-overlay__text--accent {
+  color: var(--ui-accent);
+}
+
+.debug-overlay__text--body {
+  color: #e6e6e6;
+}
+
+.debug-overlay__text--highlight {
+  color: #ffff00;
+}
+
+.debug-overlay__text--success {
+  color: var(--ui-success);
+}
+
+.debug-overlay__text--muted {
+  color: var(--ui-muted);
+}
+
+.debug-overlay__text--god-warning {
+  color: #ffd34d;
+}
+
+.debug-overlay__text--bright {
+  color: var(--ui-text);
+}
+
+.debug-overlay__text--detail {
+  color: #ddd;
+}
+
+.debug-overlay__text--danger {
+  color: var(--ui-danger);
+}
+
+.debug-overlay__text--anomaly {
+  color: #b066ff;
+}
+
+.debug-overlay__physics-card {
+  margin-bottom: 10px;
+  background: rgba(0,0,0,0.22);
+  border-left: 3px solid var(--ui-info);
+}
+
+.debug-overlay__physics-card,
+.debug-overlay__chance-card,
+.debug-overlay__debuff-card {
+  padding: 6px;
+  border-radius: var(--ui-radius-control);
+}
+
+.debug-overlay__chance-card,
+.debug-overlay__debuff-card {
+  background: rgba(0,0,0,0.3);
+}
+
+.debug-overlay__section-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.debug-overlay__spacer {
+  margin-bottom: 12px;
+}
+
+.debug-overlay__group-title {
+  margin: 6px 0 3px;
+  font-weight: 700;
+}
+
+.debug-overlay__live-title {
+  margin: 2px 0 5px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.debug-overlay__preview-title {
+  margin-bottom: 6px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.debug-overlay__text--emphasis {
+  font-weight: bold;
+}
+
+.debug-overlay__state-row {
+  margin-bottom: 3px;
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.debug-overlay__line {
+  margin-bottom: 4px;
+}
+
+.debug-overlay__text--state {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.debug-overlay__divider {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--ui-border);
+}
+
+.debug-overlay__note {
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.debug-overlay__notice {
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.debug-overlay__chance-card {
+  margin-bottom: 8px;
+  border-left: 3px solid #b066ff;
+}
+
+.debug-overlay__pair {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.debug-overlay__breakdown {
+  font-size: 11px;
+  line-height: 1.4;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.debug-overlay__wide {
+  grid-column: span 2;
+}
+
+.debug-overlay__pair--compact {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.debug-overlay__text--small {
+  font-size: 11px;
+}
+
+.debug-overlay__pair--centered {
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+.debug-overlay__line--tight {
+  margin-bottom: 2px;
+}
+
+.debug-overlay__debuff-card {
+  border-left: 3px solid #ff00ff;
+}
+
+.debug-overlay__text--uppercase {
+  text-transform: uppercase;
+}
+
+.debug-overlay__line--spaced {
+  margin-bottom: 8px;
+}
+
+.debug-overlay__caption {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.debug-overlay__pair--tight {
+  margin-bottom: 2px;
+}
+
+.debug-overlay__physics-title {
+  font-weight: bold;
+  margin: 8px 0 5px;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.debug-overlay__lead {
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.debug-overlay__comparison {
+  font-weight: bold;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.debug-overlay__pair--spaced {
+  margin-bottom: 12px;
+}
+
+.debug-overlay__pair--separated {
+  margin-bottom: 8px;
+}
+
+.debug-overlay__heading {
+  margin-bottom: 8px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--ui-border);
+  padding-bottom: 4px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+

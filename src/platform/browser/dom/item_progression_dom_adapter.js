@@ -39,14 +39,14 @@ export class ItemProgressionDomAdapter {
 
   clear(element) {
     if (!element) return;
-    for (const node of element.querySelectorAll?.(".inv-slot__rating-tier-badge") || []) {
+    for (const node of element.querySelectorAll?.(".inventory-item-card__rating-badge") || []) {
       node.remove();
     }
   }
 
   #createRatingTierBadge(documentRef, ratingTier) {
     const badge = documentRef.createElement("div");
-    badge.className = "inv-slot__rating-tier-badge";
+    badge.className = "inventory-item-card__rating-badge";
     badge.textContent = String(ratingTier.current);
     badge.setAttribute(
       "aria-label",

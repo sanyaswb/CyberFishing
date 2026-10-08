@@ -2,7 +2,6 @@
 
 .inventory-assembly-editor {
   display: flex;
-  min-height: 0;
   flex-direction: column;
   align-items: center;
   gap: 14px;
@@ -75,29 +74,12 @@
   gap: 8px;
 }
 
-.inventory-assembly-editor__button {
-  min-height: 37px;
-  padding: 7px 8px;
-  border: 1px solid #627077;
-  border-radius: 4px;
-  background: #29343a;
-  color: #f1f5f6;
-  cursor: pointer;
-  font: 700 11px inherit;
-}
+@media (max-width: 520px) {
+  .inventory-assembly-editor {
+    padding: 14px;
+  }
 
-.inventory-assembly-editor__button.is-primary {
-  border-color: var(--inventory-success);
-  background: rgba(0, 245, 138, 0.2);
-  color: #6affbd;
-}
-
-.inventory-assembly-editor__button.is-danger {
-  border-color: var(--inventory-danger);
-  background: rgba(255, 66, 87, 0.16);
-  color: #ff8e9b;
-}
-
-.inventory-assembly-editor__button.is-muted {
-  color: #c2c9cc;
+  .inventory-assembly-editor__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

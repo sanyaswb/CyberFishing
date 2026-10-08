@@ -54,7 +54,7 @@ export class FishLiveForceSummarySection {
     const directionLabel = this.#formatDirection(data.fishDirectionState);
     const powerRatio = this.#finiteNonNegative(data.fishPowerRatio, 1);
 
-    let html = `<div style="color: #73c2fb; margin: 2px 0 5px; font-weight: bold; font-size: 12px;">ПОТОЧНА СИЛА</div>`;
+    let html = `<div class="debug-overlay__text debug-overlay__text--info debug-overlay__live-title">ПОТОЧНА СИЛА</div>`;
     html += module.metricRow(
       "База",
       `${f.kg(baseForceKg, 3)} ${this.#lossText(baseForceLossKg)}`,

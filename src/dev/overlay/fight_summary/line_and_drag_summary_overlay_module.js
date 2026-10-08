@@ -68,7 +68,7 @@ export class LineAndDragSummaryOverlayModule extends OverlayModule {
       metricKey: "lineAndDrag.recoveredFrame",
       color: this.#positive(recoveredFrame) > 0 ? "#00ff80" : "#8a9bac",
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #positive(value) {

@@ -210,7 +210,7 @@ class ItemConditionCheck {
     });
     new this.#runtime.Adapter().apply(element, condition);
     Assertion.that(
-      element.classList.contains("has-item-condition"),
+      element.classList.contains("item-condition"),
       "condition class is applied",
     );
     Assertion.equal(

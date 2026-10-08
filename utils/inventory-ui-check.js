@@ -468,9 +468,9 @@ class InventoryStaticContractCheck {
       ".inventory-item-parameter-section:last-child:nth-child(odd):not(:only-child)",
       ".inventory-item-parameter-section__header",
       ".inventory-parameters-list",
-      ".inventory-parameter-row",
-      ".inventory-parameter-bar-track",
-      ".inventory-parameter-segments",
+      ".inventory-parameter",
+      ".inventory-parameter__bar-track",
+      ".inventory-parameter__segments",
       ".inventory-item-card__incomplete-dot",
       ".inventory-categories__toggle",
       ".inventory-categories__sort-toggle::before",
@@ -478,9 +478,9 @@ class InventoryStaticContractCheck {
       ".inventory-subfilters__checkbox",
       ".inventory-sort-options",
       ".inventory-sort-options__button",
-      ".inventory-sort-options__criterion.is-active::before",
+      ".inventory-sort-options__criterion.inventory-sort-options__button--active::before",
       ".inventory-sort-options__rarity",
-      ".inventory-list-item.is-compatible:not(.is-selected)",
+      ".inventory-list-item.inventory-list-item--compatible:not(.inventory-list-item--selected)",
       ".inventory-tooltip",
       ".inventory-balance-tooltip__row",
       ".inventory-balance-tooltip__identity",
@@ -493,7 +493,7 @@ class InventoryStaticContractCheck {
       /\.inventory-warning\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const visibleWarningRule = style.match(
-      /\.inventory-warning\.is-visible\s*\{[\s\S]*?\n\}/,
+      /\.inventory-warning\.inventory-warning--visible\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const resourceThumbnailRule = style.match(
       /\.inventory-resource-meter--thumbnail\s*\{[\s\S]*?\n\}/,
@@ -505,10 +505,10 @@ class InventoryStaticContractCheck {
       /\.inventory-resource-meter__track\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const parameterBarRule = style.match(
-      /\.inventory-parameter-bar-track\s*\{[\s\S]*?\n\}/,
+      /\.inventory-parameter__bar-track\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const parameterSegmentsRule = style.match(
-      /\.inventory-parameter-segments\s*\{[\s\S]*?\n\}/,
+      /\.inventory-parameter__segments\s*\{[\s\S]*?\n\}/,
     )?.[0];
     assert.ok(warningRule, "Missing inventory warning rule");
     assert.ok(
@@ -565,7 +565,7 @@ class InventoryStaticContractCheck {
         style.includes("--inventory-assembly-content-width") &&
         style.includes(".inventory-assembly-editor__visual") &&
         style.includes(".inventory-parameters-list") &&
-        style.includes(".inventory-parameter-bar-track") &&
+        style.includes(".inventory-parameter__bar-track") &&
         style.includes("grid-template-columns: repeat(2, minmax(0, 1fr))"),
       "The assembly editor must stack visual, sockets and production parameters in one card",
     );
@@ -609,12 +609,12 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-slot:not\(\.is-filled\)\s*\{[\s\S]*?border:\s*2px solid #252e31;[\s\S]*?background:\s*#181e20;/,
+      /\.inventory-slot:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border:\s*2px solid #252e31;[\s\S]*?background:\s*#181e20;/,
       "Open empty slots must keep the standard empty-slot visual",
     );
     assert.match(
       style,
-      /\.inventory-slot--locked:not\(\.is-filled\),\s*\.inventory-slot--unavailable:not\(\.is-filled\)\s*\{[\s\S]*?border-color:\s*#080a0b;[\s\S]*?background:\s*#101415;/,
+      /\.inventory-slot--locked:not\(\.inventory-slot--filled\),\s*\.inventory-slot--unavailable:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border-color:\s*#080a0b;[\s\S]*?background:\s*#101415;/,
       "Locked and missing-item slots must share the same dark well visual",
     );
     assert.ok(
@@ -627,14 +627,14 @@ class InventoryStaticContractCheck {
       "Missing-item slots must use the dark visual without the locked cross",
     );
     assert.ok(
-      style.includes(".inventory-slot.is-highlighted {"),
+      style.includes(".inventory-slot.inventory-slot--highlighted {"),
       "Compatible filled and empty sockets must share the highlight state",
     );
     const highlightedSlotRule = style.match(
-      /\.inventory-slot\.is-highlighted\s*\{[\s\S]*?\n\}/,
+      /\.inventory-slot\.inventory-slot--highlighted\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const highlightedSlotOverlayRule = style.match(
-      /\.inventory-slot\.is-highlighted::after\s*\{[\s\S]*?\n\}/,
+      /\.inventory-slot\.inventory-slot--highlighted::after\s*\{[\s\S]*?\n\}/,
     )?.[0];
     assert.ok(
       highlightedSlotRule &&
@@ -659,10 +659,12 @@ class InventoryStaticContractCheck {
       style.includes("--inventory-slot-size: var(--inventory-card-size)"),
       "Legacy progression bars must inherit the Inventory card size",
     );
+    const ratingBadgeRule = style.match(/\.inventory-item-card__rating-badge\s*\{([^}]+)\}/)?.[1];
     assert.ok(
       style.includes("object-position: center center") &&
-        style.includes(".inventory-item-card .inv-slot__rating-tier-badge") &&
-        style.includes("justify-content: center"),
+        ratingBadgeRule?.includes("display: flex") &&
+        ratingBadgeRule.includes("align-items: center") &&
+        ratingBadgeRule.includes("justify-content: center"),
       "Item artwork and optional rating-tier numbers must remain centered",
     );
     assert.doesNotMatch(
@@ -950,7 +952,7 @@ class InventoryStaticContractCheck {
     subscriber({ viewModel: currentView, warning: "Partial refill" });
     const warningNode = this.#findByClass(ui.rootNode, "inventory-warning");
     assert.strictEqual(warningNode.textContent, "Partial refill");
-    assert.ok(warningNode.classList.contains("is-visible"));
+    assert.ok(warningNode.classList.contains("inventory-warning--visible"));
     const mainNode = this.#findByClass(ui.rootNode, "inventory-main");
     const headerHost = this.#findByClass(
       ui.rootNode,
@@ -1056,7 +1058,7 @@ class InventoryStaticContractCheck {
       clientX: 100,
     });
     assert.strictEqual(
-      categoryNavigation.classList.contains("is-horizontal-dragging"),
+      categoryNavigation.classList.contains("inventory-horizontal-scroll--dragging"),
       false,
     );
     assert.strictEqual(categoryNavigation.hasPointerCapture(29), false);
@@ -1102,7 +1104,7 @@ class InventoryStaticContractCheck {
     assert.strictEqual(categoryNavigation.scrollLeft, 100);
     assert.strictEqual(touchSwipe.defaultPrevented, true);
     assert.ok(
-      !categoryNavigation.classList.contains("is-horizontal-dragging"),
+      !categoryNavigation.classList.contains("inventory-horizontal-scroll--dragging"),
       "Touch swipe must release the horizontal drag state",
     );
     const suppressedSwipeClick = categoryNavigation.emit("click");
@@ -1133,8 +1135,8 @@ class InventoryStaticContractCheck {
     );
     assert.strictEqual(categoryToggle.getAttribute("aria-expanded"), "false");
     categoryToggle.click();
-    assert.ok(subfilterPanel.classList.contains("is-open"));
-    assert.ok(categoryToggle.classList.contains("is-active"));
+    assert.ok(subfilterPanel.classList.contains("inventory-subfilters--open"));
+    assert.ok(categoryToggle.classList.contains("inventory-categories__toggle--active"));
     assert.strictEqual(categoryToggle.getAttribute("aria-expanded"), "true");
     const subtypeCheckbox = this.#findByClass(
       subfilterPanel,
@@ -1148,7 +1150,7 @@ class InventoryStaticContractCheck {
       enabled: true,
     });
     categoryToggle.click();
-    assert.ok(!subfilterPanel.classList.contains("is-open"));
+    assert.ok(!subfilterPanel.classList.contains("inventory-subfilters--open"));
     assert.strictEqual(categoryToggle.getAttribute("aria-expanded"), "false");
     assert.ok(
       this.#walk(categoryNavigation).some((node) =>
@@ -1167,12 +1169,12 @@ class InventoryStaticContractCheck {
     );
     assert.strictEqual(sortToggle.getAttribute("aria-expanded"), "false");
     sortToggle.click();
-    assert.ok(sortPanel.classList.contains("is-open"));
+    assert.ok(sortPanel.classList.contains("inventory-sort-options--open"));
     assert.strictEqual(sortToggle.getAttribute("aria-expanded"), "true");
     const activeSortCriteria = this.#findAllByClass(
       sortPanel,
       "inventory-sort-options__criterion",
-    ).filter((button) => button.classList.contains("is-active"));
+    ).filter((button) => button.classList.contains("inventory-sort-options__button--active"));
     assert.strictEqual(activeSortCriteria.length, 2);
     assert.strictEqual(activeSortCriteria[0].dataset.sortPriority, "1");
     assert.strictEqual(activeSortCriteria[1].dataset.sortPriority, "2");
@@ -1212,7 +1214,7 @@ class InventoryStaticContractCheck {
     assert.strictEqual(
       this.#findAllByClass(
         inventoryCard,
-        "inventory-long-press-progress",
+        "inventory-item-card__press-progress",
       ).length,
       1,
       "Long press must render one centered circular progress overlay",
@@ -1247,7 +1249,7 @@ class InventoryStaticContractCheck {
     assert.strictEqual(tooltip.style.display, "none");
     const compatibleWrapper = inventoryCard.parentNode;
     assert.ok(
-      compatibleWrapper.classList.contains("is-compatible"),
+      compatibleWrapper.classList.contains("inventory-list-item--compatible"),
       "A card compatible with the selected equipment slot must be green-highlighted",
     );
     const highlightedReelWell = this.#findByClass(
@@ -1255,7 +1257,7 @@ class InventoryStaticContractCheck {
       "inventory-slot",
     );
     assert.ok(
-      highlightedReelWell.classList.contains("is-highlighted"),
+      highlightedReelWell.classList.contains("inventory-slot--highlighted"),
       "The selected empty equipment slot must be green-highlighted",
     );
     inventoryCard.click();
@@ -1751,7 +1753,7 @@ class InventoryStaticContractCheck {
       charge: { percent: 74, label: "Boat charge 74%" },
     });
     assert.ok(
-      !inventoryBoat.classList.contains("has-rarity"),
+      !inventoryBoat.classList.contains("item-rarity"),
       "An item without a rarity descriptor must not receive a rarity frame state",
     );
     const inventoryBoatMeter = this.#findByClass(
@@ -1871,7 +1873,7 @@ class InventoryStaticContractCheck {
       },
     });
     assert.strictEqual(
-      this.#findAllByClass(leveledCard, "inv-slot__rating-tier-badge").length,
+      this.#findAllByClass(leveledCard, "inventory-item-card__rating-badge").length,
       1,
     );
     const lineResourceMeter = this.#findByClass(
@@ -1888,7 +1890,7 @@ class InventoryStaticContractCheck {
       },
     }, { showMetadata: false });
     assert.strictEqual(
-      this.#findAllByClass(metadataFreeCard, "inv-slot__rating-tier-badge").length,
+      this.#findAllByClass(metadataFreeCard, "inventory-item-card__rating-badge").length,
       0,
       "Enabled rating tiers respect metadata visibility",
     );
@@ -2039,7 +2041,7 @@ class InventoryStaticContractCheck {
       "Root and attached bait must render as separate parameter sections",
     );
     assert.ok(
-      this.#findAllByClass(assemblyParameters, "inventory-parameter-row")
+      this.#findAllByClass(assemblyParameters, "inventory-parameter")
         .length >= 3 &&
         this.#findAllByClass(
           assemblyParameters,
@@ -2119,9 +2121,9 @@ class InventoryStaticContractCheck {
       "Наживка — гачок 1",
     );
     const baitWell = this.#findByClass(baitSocket, "inventory-slot");
-    assert.ok(baitWell.classList.contains("is-filled"));
+    assert.ok(baitWell.classList.contains("inventory-slot--filled"));
     assert.ok(
-      baitWell.classList.contains("is-highlighted"),
+      baitWell.classList.contains("inventory-slot--highlighted"),
       "A filled compatible socket must be highlighted for replacement",
     );
 
@@ -2181,7 +2183,7 @@ class InventoryStaticContractCheck {
       rootInstanceId: "assembly-active",
     });
     assert.strictEqual(
-      this.#findAllByClass(ui.rootNode, "is-danger").length,
+      this.#findAllByClass(ui.rootNode, "inventory-action--danger").length,
       0,
       "The hidden Disassemble action must not leave a danger button",
     );
@@ -2191,7 +2193,7 @@ class InventoryStaticContractCheck {
     ui.render(currentView);
     const blockedEquipButton = this.#findByText(ui.rootNode, "Спорядити");
     assert.ok(
-      blockedEquipButton.classList.contains("is-disabled") &&
+      blockedEquipButton.classList.contains("inventory-action--disabled") &&
         blockedEquipButton.getAttribute("aria-disabled") === "true",
       "An incompatible assembly must render Equip as inactive",
     );
@@ -2209,7 +2211,7 @@ class InventoryStaticContractCheck {
     dispatched.length = 0;
     subscriber({ warning: "Not enough bait for every hook" });
     assert.strictEqual(ui.isOpen, true);
-    assert.ok(ui.rootNode.classList.contains("is-open"));
+    assert.ok(ui.rootNode.classList.contains("inventory-modal--open"));
     assert.strictEqual(
       this.#findByClass(ui.rootNode, "inventory-warning").textContent,
       "Not enough bait for every hook",

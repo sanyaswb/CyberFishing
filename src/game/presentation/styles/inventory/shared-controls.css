@@ -27,7 +27,7 @@
     transform 150ms ease;
 }
 
-.inventory-warning.is-visible {
+.inventory-warning.inventory-warning--visible {
   max-height: 120px;
   padding: 9px 16px;
   border-width: 1px;
@@ -37,9 +37,8 @@
   visibility: visible;
 }
 
-.inventory-loadout-save__button.is-disabled,
-.inventory-assembly-editor__button.is-disabled,
-.inventory-saved-loadout-preview__button.is-disabled {
+.inventory-loadout-save__button.inventory-loadout-save__button--disabled,
+.inventory-action.inventory-action--disabled {
   opacity: 0.46;
   cursor: not-allowed;
 }
@@ -96,4 +95,51 @@
 .inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,
 .inventory-tooltip::-webkit-scrollbar-thumb:hover {
   background: var(--inventory-scrollbar-thumb-hover);
+}
+
+/* Shared blocks are mixed into component elements; layout stays with each parent. */
+.inventory-panel {
+  min-height: var(--inventory-panel-min-height, 0);
+  border: 1px solid var(--inventory-panel-border);
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-panel);
+}
+
+.inventory-panel--full-height {
+  height: 100%;
+}
+
+.inventory-action {
+  min-height: 37px;
+  padding: var(--inventory-control-padding);
+  border: 1px solid var(--inventory-control-border);
+  border-radius: var(--inventory-control-radius);
+  background: var(--inventory-control-background);
+  color: var(--inventory-control-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.inventory-action--primary {
+  border-color: var(--inventory-success);
+  background: var(--inventory-primary-background);
+  color: var(--inventory-primary-text);
+}
+
+.inventory-action--danger {
+  border-color: var(--inventory-danger);
+  background: var(--inventory-danger-background);
+  color: var(--inventory-danger-text);
+}
+
+.inventory-action--muted {
+  color: var(--inventory-muted-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-warning {
+    transition: none;
+  }
 }

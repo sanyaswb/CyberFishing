@@ -297,24 +297,24 @@ class ItemRarityCheck {
     });
     adapter.apply(element, unique);
     Assertion.equal(element.style.values.size, 6, "adapter writes six CSS variables");
-    Assertion.that(element.classList.contains("has-rarity"), "rarity frame class");
-    Assertion.that(element.classList.contains("rarity-unique"), "unique class");
+    Assertion.that(element.classList.contains("item-rarity"), "rarity frame class");
+    Assertion.that(element.classList.contains("item-rarity--unique"), "unique class");
     Assertion.that(
-      !element.classList.contains("rarity-glow"),
+      !element.classList.contains("item-rarity--glow"),
       "disabled glow does not add a DOM glow class",
     );
     Assertion.that(
-      !element.classList.contains("rarity-pulse"),
+      !element.classList.contains("item-rarity--pulse"),
       "disabled pulse does not add a DOM animation class",
     );
     adapter.clear(element);
     Assertion.equal(element.style.values.size, 0, "adapter clears CSS variables");
     Assertion.that(
-      !element.classList.contains("rarity-glow"),
+      !element.classList.contains("item-rarity--glow"),
       "adapter clears the DOM glow class",
     );
     Assertion.that(
-      !element.classList.contains("rarity-pulse"),
+      !element.classList.contains("item-rarity--pulse"),
       "adapter clears the DOM pulse class",
     );
   }
@@ -326,15 +326,15 @@ class ItemRarityCheck {
       "item cards draw the rarity frame from the rarity color",
     );
     Assertion.that(
-      css.includes(".inventory-item-card.rarity-glow"),
+      css.includes(".inventory-item-card.item-rarity--glow"),
       "item glow CSS is gated by the config-driven class",
     );
     Assertion.that(
-      css.includes(".inventory-item-card.rarity-unique.rarity-pulse"),
+      css.includes(".inventory-item-card.item-rarity--unique.item-rarity--pulse"),
       "item pulse CSS is gated by the config-driven class",
     );
     Assertion.that(
-      css.includes(".inv-tooltip.rarity-unique.rarity-glow.rarity-pulse"),
+      css.includes(".inventory-tooltip.item-rarity--unique.item-rarity--glow.item-rarity--pulse"),
       "tooltip glow CSS is gated by the config-driven class",
     );
     const pulseStart = css.indexOf("@keyframes inventory-card-rarity-pulse");
@@ -345,16 +345,18 @@ class ItemRarityCheck {
       "unique item pulse keeps opacity animation independent from glow",
     );
     for (const selector of [
-      ".inventory-slot.is-highlighted::after",
-      ".inventory-list-item.is-selected::after",
-      ".inventory-list-item.is-compatible:not(.is-selected)::after",
+      ".inventory-slot.inventory-slot--highlighted::after",
+      ".inventory-list-item.inventory-list-item--selected::after",
+      ".inventory-list-item.inventory-list-item--compatible:not(.inventory-list-item--selected)::after",
     ]) {
       Assertion.that(css.includes(selector), `${selector} uses the interaction after layer`);
     }
-    Assertion.that(
-      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.inventory-item-card\.rarity-unique\.rarity-pulse,\s*\.inv-tooltip\.rarity-unique\.rarity-pulse \{\s*animation: none;/u.test(css),
-      "reduced motion disables the card and tooltip pulse",
-    );
+    for (const block of ["inventory-item-card", "inventory-tooltip"]) {
+      Assertion.that(
+        new RegExp(`@media \\(prefers-reduced-motion: reduce\\) \\{[\\s\\S]*?\\.${block}\\.item-rarity--unique\\.item-rarity--pulse \\{\\s*animation: none;`, "u").test(css),
+        `reduced motion disables the ${block} pulse in its owner stylesheet`,
+      );
+    }
     for (const color of this.#runtime.__VISUAL_CONFIG__.colorStops) {
       const channels = color.color;
       const hex = `#${channels

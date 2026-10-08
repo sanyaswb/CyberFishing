@@ -19,7 +19,7 @@ export class InventorySavedLoadoutPreviewRenderer {
   ) {
     const preview = this.#dom.element(
       "section",
-      "inventory-saved-loadout-preview",
+      "inventory-saved-loadout-preview inventory-panel inventory-panel--full-height",
     );
     const heading = this.#dom.element(
       "div",
@@ -74,7 +74,7 @@ export class InventorySavedLoadoutPreviewRenderer {
       "inventory-saved-loadout-preview__field",
     );
     field.dataset.slotId = String(slot.slotId || "");
-    field.classList.toggle("is-active", slot.active === true);
+    field.classList.toggle("inventory-saved-loadout-preview__field--active", slot.active === true);
     field.appendChild(
       this.#dom.element(
         "div",
@@ -101,7 +101,7 @@ export class InventorySavedLoadoutPreviewRenderer {
       membership.setAttribute("aria-label", "Належить до збірки");
       well.appendChild(membership);
     } else {
-      well.classList.add("is-empty");
+      well.classList.add("inventory-saved-loadout-preview__well--empty");
       well.setAttribute("aria-label", `${slot.label}: порожньо`);
     }
     field.appendChild(well);
@@ -119,17 +119,17 @@ export class InventorySavedLoadoutPreviewRenderer {
     actions.append(
       this.#actionButton(
         "Спорядити все",
-        "is-primary",
+        "inventory-action--primary",
         model.canEquipAll,
         () => {
           if (!model.canEquipAll) return onWarning?.(model.equipWarning);
           onEquipAll?.();
         },
       ),
-      this.#actionButton("Назад", "is-muted", true, () => onBack?.()),
+      this.#actionButton("Назад", "inventory-action--muted", true, () => onBack?.()),
       this.#actionButton(
         "Розібрати",
-        "is-danger",
+        "inventory-action--danger",
         model.canDisassemble,
         () => {
           if (!model.canDisassemble) {
@@ -144,13 +144,13 @@ export class InventorySavedLoadoutPreviewRenderer {
 
   #actionButton(label, modifier, enabled, action) {
     const classes = [
-      "inventory-saved-loadout-preview__button",
+      "inventory-saved-loadout-preview__button inventory-action",
       modifier,
     ]
       .filter(Boolean)
       .join(" ");
     const button = this.#dom.button(classes, label);
-    button.classList.toggle("is-disabled", !enabled);
+    button.classList.toggle("inventory-action--disabled", !enabled);
     button.setAttribute("aria-disabled", String(!enabled));
     button.addEventListener("click", action);
     return button;

@@ -11,11 +11,11 @@ export class PlayerMaxOverlayModule extends OverlayModule {
 
   render(d) {
     let html = this.formatHeader("📊 СИЛА ГРАВЦЯ", "#00ff80");
-    html += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>ЛІМІТ СНАСТІ:</span> <span style="color: #00ff80; font-weight: bold;">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Rod hold:</span><span style="color:#00ff80;">${(d.rodPullForceKg || 0).toFixed(3)}kg</span></div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>Model speed:</span><span style="color:#00ff80;">${(d.modelFightSpeedMps || 0).toFixed(2)}m/s</span></div>`;
+    html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>ЛІМІТ СНАСТІ:</span> <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">${(d.maxTackleLoadKg || d.playerMaxPowerY || 0).toFixed(3)} кг</span></div>`;
+    html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>Rod hold:</span><span class="debug-overlay__text debug-overlay__text--success">${(d.rodPullForceKg || 0).toFixed(3)}kg</span></div>`;
+    html += `<div class="debug-overlay__pair debug-overlay__pair--tight"><span>Model speed:</span><span class="debug-overlay__text debug-overlay__text--success">${(d.modelFightSpeedMps || 0).toFixed(2)}m/s</span></div>`;
     if (d.dragSupported) {
-      html += `<div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><span>ФРИКЦІОН:</span> <span style="color: #00ccff; font-weight: bold;">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
+      html += `<div class="debug-overlay__pair debug-overlay__pair--spaced"><span>ФРИКЦІОН:</span> <span class="debug-overlay__text debug-overlay__text--accent debug-overlay__text--emphasis">${(d.dragLimitKg || 0).toFixed(3)} кг</span></div>`;
     }
     return html;
   }

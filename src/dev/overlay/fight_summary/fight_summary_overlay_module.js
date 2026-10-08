@@ -63,7 +63,7 @@ export class FightSummaryOverlayModule extends OverlayModule {
       metricKey: "fightSummary.breakRisk",
       color: breakRisk.color,
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #renderPlayerPressureFatigue(data) {
@@ -79,7 +79,7 @@ export class FightSummaryOverlayModule extends OverlayModule {
       : "disabled";
     const controlExhausted =
       enabled && data.playerPressureFatigueControlExhausted === true;
-    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">PLAYER FATIGUE</div>`;
+    let html = `<div class="debug-overlay__text debug-overlay__text--warning debug-overlay__group-title">PLAYER FATIGUE</div>`;
     html += this.metricRow("State", state, {
       metricKey: "fightSummary.pressureFatigueState",
       color: state === "fatiguing"
@@ -172,7 +172,7 @@ export class FightSummaryOverlayModule extends OverlayModule {
     const multiplier = this.#finite(data.tensionBuildRateMultiplier, 1);
     const capBlocked = data.tensionBuildBlockedByCap === true;
     const reserveKg = this.#positive(data.tensionBuildRemainingReserveKg);
-    let html = `<div style="margin:6px 0 3px; color:#ffaa00; font-weight:700;">TENSION BUILD</div>`;
+    let html = `<div class="debug-overlay__text debug-overlay__text--warning debug-overlay__group-title">TENSION BUILD</div>`;
     html += this.metricRow("Mode", this.#formatMode(mode), {
       metricKey: "fightSummary.tensionBuildMode",
       color: mode === "hold_and_control" ? "#ffaa00" : "#73c2fb",

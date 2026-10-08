@@ -24,8 +24,8 @@ export class FightSectionBase {
   render(data, { force = false } = {}) {
     if (!force && !this.isEnabled()) return "";
     const body = this.rows(data).filter(Boolean).join("");
-    return `<div style="margin-bottom:10px; background:rgba(0,0,0,0.22); border-left:3px solid #73c2fb; padding:6px; border-radius:4px;">
-      <div style="color:#73c2fb; font-weight:bold; margin-bottom:5px; font-size:12px; text-transform:uppercase;">${this.title}</div>
+    return `<div class="debug-overlay__physics-card">
+      <div class="debug-overlay__text debug-overlay__text--info debug-overlay__section-title">${this.title}</div>
       ${body}
     </div>`;
   }

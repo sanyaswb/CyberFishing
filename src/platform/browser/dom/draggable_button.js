@@ -23,6 +23,7 @@ export class DraggableButton {
     this.#onClickCallback = onClickCallback;
     this.#config = config;
     this.#options = options;
+    this.#element.classList.add("draggable-control");
 
     // Prefer the explicit ID, then the element ID, then the default name.
     this.#id = options.id || element.id || "default_draggable";
@@ -39,7 +40,6 @@ export class DraggableButton {
     this.#initEvents();
     this.#restorePosition();
   }
-
 
   #restorePosition() {
     if (!this.#options.cache) return;
@@ -73,7 +73,6 @@ export class DraggableButton {
     const winWidth = window.innerWidth;
     const winHeight = window.innerHeight;
 
-
     const distLeft = rect.left;
     const distRight = winWidth - rect.right;
     const distTop = rect.top;
@@ -99,12 +98,10 @@ export class DraggableButton {
       pos.top = "auto";
     }
 
-
     this.#element.style.left = pos.left;
     this.#element.style.right = pos.right;
     this.#element.style.top = pos.top;
     this.#element.style.bottom = pos.bottom;
-
 
     this.#options.cache.set(`drag_pos_${this.#id}`, pos);
   }
@@ -128,6 +125,7 @@ export class DraggableButton {
       this.#element.releasePointerCapture(this.#pointerId);
     this.#pointerId = null;
     this.#isDragging = false;
+    this.#element.classList.remove("draggable-control--dragging");
     this.#onClickCallback = null;
   }
 
@@ -161,9 +159,7 @@ export class DraggableButton {
   #startDrag() {
     this.#isDragging = true;
     if (!this.#options.noTransform) {
-      this.#element.style.transform = "scale(1.1)";
-      this.#element.style.boxShadow = "0 10px 25px rgba(0,0,0,0.5)";
-      this.#element.style.transition = "none";
+      this.#element.classList.add("draggable-control--dragging");
     }
     this.#element.style.position = "absolute";
     this.#element.style.margin = "0";
@@ -218,8 +214,7 @@ export class DraggableButton {
     if (this.#isDragging) {
       this.#isDragging = false;
       if (!this.#options.noTransform) {
-        this.#element.style.transform = "";
-        this.#element.style.boxShadow = "";
+        this.#element.classList.remove("draggable-control--dragging");
         this.#element.style.transition = "";
       }
       // Save the position when the drag ends.

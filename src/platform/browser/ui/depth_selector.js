@@ -9,81 +9,24 @@ export class DepthSelector {
     this.#animationFrameHost = document.defaultView;
     this.container = document.createElement("div");
     this.container.innerHTML = `
-            <style>
-                #ds-container {
-                    position: fixed; top: 0; right: 0; width: 140px; height: 100%;
-                    display: none; justify-content: center; align-items: center; padding-right: 5%;
-                    font-family: sans-serif; pointer-events: none; z-index: 9999;
-                }
-                #ds-wrapper {
-                    display: flex; align-items: center; gap: 15px; height: 50vh; position: relative;
-                    pointer-events: none;
-                }
-                #ds-input-container {
-                    position: absolute; left: -90px;
-                }
-                #ds-input {
-                    background: #73c2fb; color: #000; font-size: 18px; font-weight: bold;
-                    border: 2px solid #000; border-radius: 4px; padding: 4px;
-                    width: 60px; text-align: center; outline: none;
-                    pointer-events: auto;
-                }
-                #ds-input::after {
-                    content: ''; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
-                    width: 12px; height: 2px; background: #fff;
-                }
-                #ds-slider-container {
-                    height: 100%; display: flex; align-items: center;
-                }
-                #ds-slider {
-                    writing-mode: vertical-lr; width: 8px; height: 100%; margin: 0; cursor: pointer;
-                    background: linear-gradient(to bottom, #002233, #73c2fb); border-radius: 4px; outline: none;
-                    pointer-events: auto;
-                }
-                #ds-labels {
-                    display: flex; flex-direction: column; justify-content: space-between;
-                    height: 100%; color: #fff; font-size: 14px; font-weight: bold; margin-left: 5px;
-                }
-                #ds-distance-panel {
-                    position: absolute; left: -165px; top: -66px; width: 145px;
-                    padding: 8px 10px; border: 1px solid rgba(115, 194, 251, 0.8);
-                    border-radius: 7px; background: rgba(11, 21, 32, 0.9);
-                    color: #fff; font-size: 12px; font-weight: bold;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-                }
-                #ds-distance-value {
-                    display: block; margin-bottom: 6px; color: #00ff80;
-                    font-size: 14px; text-align: center;
-                }
-                #ds-distance-track {
-                    width: 100%; height: 9px; overflow: hidden;
-                    border: 1px solid rgba(255, 255, 255, 0.65);
-                    border-radius: 5px; background: rgba(0, 0, 0, 0.55);
-                }
-                #ds-distance-fill {
-                    width: 100%; height: 100%; border-radius: inherit;
-                    background: linear-gradient(90deg, #0b8f49, #00ff80);
-                    transition: width 80ms linear;
-                }
-            </style>
-            <div id="ds-container">
-                <div id="ds-wrapper">
-                    <div id="ds-distance-panel">
-                        <span id="ds-distance-value">${this.#labels.castDistance("0.0")}</span>
-                        <div id="ds-distance-track" role="progressbar" aria-label="${this.#labels.castDistanceRange}">
-                            <div id="ds-distance-fill"></div>
+            <div id="ds-container" class="depth-selector">
+                <div id="ds-wrapper" class="depth-selector__wrapper">
+                    <div id="ds-distance-panel" class="depth-selector__distance-panel">
+                        <span id="ds-distance-value" class="depth-selector__distance-value">${this.#labels.castDistance("0.0")}</span>
+                        <div id="ds-distance-track" class="depth-selector__distance-track" role="progressbar" aria-label="${this.#labels.castDistanceRange}">
+                            <div id="ds-distance-fill" class="depth-selector__distance-fill"></div>
                         </div>
                     </div>
-                    <div id="ds-input-container">
-                        <input type="text" id="ds-input" value="1.5">
+                    <div id="ds-input-container" class="depth-selector__input-container">
+                        <input type="text" id="ds-input" class="depth-selector__input" value="1.5">
                     </div>
-                    <div id="ds-slider-container">
-                        <input type="range" id="ds-slider" min="0.1" step="0.1">
+                    <div id="ds-slider-container" class="depth-selector__slider-container">
+                        <input type="range" id="ds-slider" class="depth-selector__slider" min="0.1" step="0.1">
                     </div>
-                    <div id="ds-labels">
-                        <span id="ds-min">0.1</span>
+                    <div id="ds-labels" class="depth-selector__labels">
+                        <span id="ds-min" class="depth-selector__min">0.1</span>
                         <span></span>
-                        <span id="ds-max">8.0</span>
+                        <span id="ds-max" class="depth-selector__max">8.0</span>
                     </div>
                 </div>
             </div>

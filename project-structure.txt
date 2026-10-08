@@ -41,7 +41,8 @@
 │  ├── refactoring_remaining.md
 │  ├── runtime_config_overrides.md
 │  ├── simplified_fight_physics_model.md
-│  └── stats_and_balance_spec.md
+│  ├── stats_and_balance_spec.md
+│  └── styles.md
 ├── index.html
 ├── package-lock.json
 ├── package.json
@@ -174,7 +175,6 @@
 │  │  │  │  ├── overlay_interaction_bridge.js
 │  │  │  │  ├── overlay_metric_info_bridge.js
 │  │  │  │  ├── overlay_scale_controls.js
-│  │  │  │  ├── overlay_style_installer.js
 │  │  │  │  └── overlay_window_drag_controller.js
 │  │  │  ├── fight_physics
 │  │  │  │  ├── fight_auto_recovery_section.js
@@ -237,7 +237,9 @@
 │  │  │  ├── location_dev_tools_schema.js
 │  │  │  └── memory_leak_watchdog.js
 │  │  ├── styles
-│  │  │  └── dev-tools.css
+│  │  │  ├── dev-tools.css
+│  │  │  ├── overlay-content.css
+│  │  │  └── overlay.css
 │  │  └── tools
 │  │     ├── dev_tools.js
 │  │     ├── dev_tools_parameter_tooltip_provider.js
@@ -719,6 +721,13 @@
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── game-shell.css
+│  │     │  ├── hud
+│  │     │  │  ├── chum-control.css
+│  │     │  │  ├── depth-selector.css
+│  │     │  │  ├── draggable-control.css
+│  │     │  │  ├── game-controls.css
+│  │     │  │  ├── hold-charges.css
+│  │     │  │  └── time-display.css
 │  │     │  ├── hud_style_resolver.js
 │  │     │  ├── inventory
 │  │     │  │  ├── assembly-editor.css
@@ -730,12 +739,13 @@
 │  │     │  │  ├── loadout.css
 │  │     │  │  ├── modal.css
 │  │     │  │  ├── resource-meters.css
-│  │     │  │  ├── responsive.css
 │  │     │  │  ├── shared-controls.css
 │  │     │  │  ├── slots.css
+│  │     │  │  ├── theme.css
 │  │     │  │  └── tooltips.css
 │  │     │  ├── outcome_style_resolver.js
 │  │     │  ├── rarity_visual_resolver.js
+│  │     │  ├── tokens.css
 │  │     │  └── version-badge.css
 │  │     ├── version
 │  │     │  └── project_version.js

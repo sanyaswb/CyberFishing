@@ -15,17 +15,17 @@ export class DebuffsOverlayModule extends OverlayModule {
 
     // Секція рандомних дебафів
     const debuffName = formatDebuffName(d.debuffState);
-    let debuffDesc = '<span style="color: #8a9bac;">фаза 2 ще ціла</span>';
+    let debuffDesc = '<span class="debug-overlay__text debug-overlay__text--muted">фаза 2 ще ціла</span>';
 
     if (debuffName !== "Немає") {
       const sColor = this.getStateColor(d.fishState);
-      debuffDesc = `<span style="color: ${sColor}; font-weight: bold;">[${d.fishState?.toUpperCase()}]</span> <span style="color: #ffaa00; font-size: 11px;">${debuffName}</span>`;
+      debuffDesc = `<span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${sColor};">[${d.fishState?.toUpperCase()}]</span> <span class="debug-overlay__text debug-overlay__text--warning debug-overlay__text--small">${debuffName}</span>`;
     }
 
-    html += `<div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;"><span>Рандом:</span> <span>${debuffDesc}</span></div>`;
+    html += `<div class="debug-overlay__pair debug-overlay__pair--centered"><span>Рандом:</span> <span>${debuffDesc}</span></div>`;
 
     // Секція Майстерності (Mastery)
-    html += `<div style="margin-bottom: 2px;"><span>Майстерність:</span></div>`;
+    html += `<div class="debug-overlay__line debug-overlay__line--tight"><span>Майстерність:</span></div>`;
 
     const mRatio = this.configSource().stamina.mechanics.masteryTimeRatio || 0.5;
     const targetMs = (d.exhaustionDurationMs || 1000) * mRatio;
@@ -34,16 +34,16 @@ export class DebuffsOverlayModule extends OverlayModule {
 
     let mHtml = "";
     if (curTimer === 0 && curMult === 1.0) {
-      mHtml = `<span style="color: #8a9bac;">Тримайте по центру...</span>`;
+      mHtml = `<span class="debug-overlay__text debug-overlay__text--muted">Тримайте по центру...</span>`;
     } else if (!d.isMasteryActive) {
       const pct = Math.min(100, (curTimer / targetMs) * 100);
-      mHtml = `<div style="color: #00ccff; font-size: 11px; font-weight: bold;">[ФАЗА 1] Утримання: ${pct.toFixed(0)}%</div>`;
+      mHtml = `<div class="debug-overlay__text debug-overlay__text--accent debug-overlay__text--small debug-overlay__text--emphasis">[ФАЗА 1] Утримання: ${pct.toFixed(0)}%</div>`;
     } else {
       const pLost = ((1 - curMult) * 100).toFixed(1);
-      mHtml = `<div style="color: #ff4444; font-size: 11px; font-weight: bold;">[ФАЗА 2] Здавлювання: ВПАЛА НА -${pLost}%</div>`;
+      mHtml = `<div class="debug-overlay__text debug-overlay__text--danger debug-overlay__text--small debug-overlay__text--emphasis">[ФАЗА 2] Здавлювання: ВПАЛА НА -${pLost}%</div>`;
     }
 
-    html += `<div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; border-left: 3px solid #ff00ff;">${mHtml}</div>`;
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    html += `<div class="debug-overlay__debuff-card">${mHtml}</div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 }

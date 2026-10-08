@@ -16,9 +16,9 @@ export class BehaviorOverlayModule extends OverlayModule {
     );
 
     // Основні параметри поведінки
-    html += `<div style="margin-bottom: 4px;">Стан: <span style="color: ${color}; text-transform: uppercase; font-weight: bold;">${d.fishState || "---"}</span></div>`;
-    html += `<div style="margin-bottom: 4px;">Множник Тяги (Y): <span style="color: ${color};">x${(d.pullMult || 0).toFixed(2)}</span></div>`;
-    html += `<div style="margin-bottom: 4px;">Множник Втечі (X): <span style="color: ${color};">x${(d.moveMult || 0).toFixed(2)}</span></div>`;
+    html += `<div class="debug-overlay__line">Стан: <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--state" style="--debug-overlay-color:${color};">${d.fishState || "---"}</span></div>`;
+    html += `<div class="debug-overlay__line">Множник Тяги (Y): <span class="debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${color};">x${(d.pullMult || 0).toFixed(2)}</span></div>`;
+    html += `<div class="debug-overlay__line">Множник Втечі (X): <span class="debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${color};">x${(d.moveMult || 0).toFixed(2)}</span></div>`;
 
     // --- НОВИЙ БЛОК: Прикормка для цієї риби ---
     if (d.chumZones && d.chumZones.length > 0) {
@@ -31,14 +31,14 @@ export class BehaviorOverlayModule extends OverlayModule {
         .reduce((max, z) => Math.max(max, z.currentBonus || 1), 1.0);
 
       if (activeBonus > 1) {
-        html += `<div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed #4a5b6c;">`;
-        html += `<span style="color: #ffff00;">🧲 БОНУС ПРИКОРМКИ:</span> <span style="color: #00ff80; font-weight: bold;">x${activeBonus.toFixed(2)}</span>`;
+        html += `<div class="debug-overlay__divider">`;
+        html += `<span class="debug-overlay__text debug-overlay__text--highlight">🧲 БОНУС ПРИКОРМКИ:</span> <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">x${activeBonus.toFixed(2)}</span>`;
         html += `</div>`;
       } else {
-        html += `<div style="margin-top: 6px; color: #8a9bac; font-size: 11px;">Прикормка не впливає на цей вид</div>`;
+        html += `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__note">Прикормка не впливає на цей вид</div>`;
       }
     }
 
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 }

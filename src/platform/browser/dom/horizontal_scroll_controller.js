@@ -50,7 +50,7 @@ export class HorizontalScrollController {
     element.removeEventListener("click", handlers.click, true);
     element.classList?.remove(
       "inventory-horizontal-scroll",
-      "is-horizontal-dragging",
+      "inventory-horizontal-scroll--dragging",
     );
     this.#bindings.delete(element);
   }
@@ -88,7 +88,7 @@ export class HorizontalScrollController {
 
     if (!state.dragging) {
       state.dragging = true;
-      element.classList?.add("is-horizontal-dragging");
+      element.classList?.add("inventory-horizontal-scroll--dragging");
       if (
         state.pointerId !== null &&
         typeof element.setPointerCapture === "function"
@@ -112,7 +112,7 @@ export class HorizontalScrollController {
     state.active = false;
     state.dragging = false;
     state.pointerId = null;
-    element.classList?.remove("is-horizontal-dragging");
+    element.classList?.remove("inventory-horizontal-scroll--dragging");
     if (
       pointerId !== null &&
       element.hasPointerCapture?.(pointerId)

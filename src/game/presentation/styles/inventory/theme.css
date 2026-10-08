@@ -1,0 +1,42 @@
+/* Inventory palette, shared metrics and portal scrollbar tokens. */
+
+:root {
+  --inventory-scrollbar-size: 6px;
+  --inventory-scrollbar-thumb: #3f565f;
+  --inventory-scrollbar-thumb-hover: #58727d;
+  --inventory-scrollbar-track: transparent;
+}
+
+.inventory-modal {
+  --inventory-accent: #00d8ff;
+  --inventory-accent-rgb: 0, 216, 255;
+  --inventory-success: #00f58a;
+  --inventory-success-rgb: 0, 245, 138;
+  --inventory-danger: #ff4257;
+  --inventory-danger-rgb: 255, 66, 87;
+  --inventory-warning: #ffb300;
+  --inventory-panel: rgba(14, 20, 22, 0.92);
+  --inventory-resource-border: #7a8589;
+  --inventory-resource-track: #172025;
+  --inventory-resource-fill-start: #48cf15;
+  --inventory-resource-fill-end: #c4ff1d;
+  --inventory-resource-icon: #28a9ff;
+  --inventory-parameter-meter-height: 7px;
+  --inventory-assembly-card-width: min(100%, 292px);
+  --inventory-assembly-content-width: min(100%, 720px);
+  --inventory-parameter-tile-gap: 12px;
+  --inventory-card-size: clamp(78px, 6.2vw, 110px);
+  --inventory-socket-size: clamp(66px, 5vw, 88px);
+  --inventory-control-border: #627077;
+  --inventory-control-background: #29343a;
+  --inventory-control-text: #f1f5f6;
+  --inventory-control-radius: var(--ui-radius-control);
+  --inventory-control-padding: 7px 8px;
+  --inventory-primary-background: rgba(var(--inventory-success-rgb), 0.2);
+  --inventory-primary-text: #6affbd;
+  --inventory-danger-background: rgba(var(--inventory-danger-rgb), 0.16);
+  --inventory-danger-text: #ff8e9b;
+  --inventory-muted-text: #c2c9cc;
+  --inventory-panel-border: rgba(201, 216, 218, 0.23);
+  --inventory-panel-radius: 10px;
+}

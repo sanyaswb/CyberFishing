@@ -51,7 +51,7 @@ export class FightPhysicsOverlayModule extends OverlayModule {
     html += this.#groups
       .map((group) => this.#renderGroup(group, normalized))
       .join("");
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #renderGroup(group, data) {
@@ -66,6 +66,6 @@ export class FightPhysicsOverlayModule extends OverlayModule {
 
     if (!body) return "";
 
-    return `<div style="color:#8a9bac; font-weight:bold; margin:8px 0 5px; font-size:11px; letter-spacing:0; text-transform:uppercase;">${this.htmlBuilder.escapeHtml(group.title)}</div>${body}`;
+    return `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__physics-title">${this.htmlBuilder.escapeHtml(group.title)}</div>${body}`;
   }
 }

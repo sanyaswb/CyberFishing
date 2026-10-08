@@ -17,13 +17,13 @@ export class WorstCaseOverlayModule extends OverlayModule {
     if (!worstCase) return "";
 
     let html = this.formatHeader("💀 НАЙГІРШІ УМОВИ (КУТ)", "#ff4444");
-    html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга X:</div>
-             <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${worstCase.worstFishX.toFixed(3)}</span></div>
-             <div style="margin-bottom: 8px; display: flex; justify-content: space-between;"><span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${worstCase.playerSteerMin.toFixed(3)}</span></div>`;
+    html += `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__caption">Максимальна тяга X:</div>
+             <div class="debug-overlay__pair debug-overlay__pair--tight"><span>Риба:</span> <span class="debug-overlay__text debug-overlay__text--danger debug-overlay__text--emphasis">${worstCase.worstFishX.toFixed(3)}</span></div>
+             <div class="debug-overlay__pair debug-overlay__pair--separated"><span>Гравець:</span> <span class="debug-overlay__text debug-overlay__text--warning debug-overlay__text--emphasis">${worstCase.playerSteerMin.toFixed(3)}</span></div>`;
 
-    html += `<div style="color: #8a9bac; font-size: 12px; margin-bottom: 4px;">Максимальна тяга Y:</div>
-             <div style="margin-bottom: 2px; display: flex; justify-content: space-between;"><span>Риба:</span> <span style="color: #ff4444; font-weight: bold;">${worstCase.maxPossibleForceY.toFixed(3)}</span></div>
-             <div style="margin-bottom: 12px; display: flex; justify-content: space-between;"><span>Гравець:</span> <span style="color: #ffaa00; font-weight: bold;">${worstCase.worstPlayerY.toFixed(3)}</span></div>`;
+    html += `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__caption">Максимальна тяга Y:</div>
+             <div class="debug-overlay__pair debug-overlay__pair--tight"><span>Риба:</span> <span class="debug-overlay__text debug-overlay__text--danger debug-overlay__text--emphasis">${worstCase.maxPossibleForceY.toFixed(3)}</span></div>
+             <div class="debug-overlay__pair debug-overlay__pair--spaced"><span>Гравець:</span> <span class="debug-overlay__text debug-overlay__text--warning debug-overlay__text--emphasis">${worstCase.worstPlayerY.toFixed(3)}</span></div>`;
 
     return html;
   }

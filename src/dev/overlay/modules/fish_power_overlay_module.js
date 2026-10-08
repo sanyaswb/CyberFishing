@@ -16,10 +16,10 @@ export class FishPowerOverlayModule extends OverlayModule {
     const activeForceKg = this.#finiteNonNegative(data.fishActiveKg);
 
     let html = this.formatHeader("ПОТОЧНА СИЛА РИБИ", "#ffaa00");
-    html += `<div style="margin-bottom: 4px;">Вага: <span style="color: #8a9bac;">${fishWeightKg.toFixed(3)} кг</span></div>`;
-    html += `<div style="margin-bottom: 4px;">Базовий коефіцієнт сили: <span style="color: #8a9bac;">${basePowerCoefficient.toFixed(3)}</span></div>`;
-    html += `<div style="margin-bottom: 4px;">Пасивна сила у воді: <span style="color: #e6e6e6; font-weight: bold;">${passiveForceKg.toFixed(3)} кг</span></div>`;
-    html += `<div style="margin-bottom: 12px; font-size: 16px;">Активна сила поточного стану: <span style="color: #00ff80; font-weight: bold;">${activeForceKg.toFixed(3)} кг</span></div>`;
+    html += `<div class="debug-overlay__line">Вага: <span class="debug-overlay__text debug-overlay__text--muted">${fishWeightKg.toFixed(3)} кг</span></div>`;
+    html += `<div class="debug-overlay__line">Базовий коефіцієнт сили: <span class="debug-overlay__text debug-overlay__text--muted">${basePowerCoefficient.toFixed(3)}</span></div>`;
+    html += `<div class="debug-overlay__line">Пасивна сила у воді: <span class="debug-overlay__text debug-overlay__text--body debug-overlay__text--emphasis">${passiveForceKg.toFixed(3)} кг</span></div>`;
+    html += `<div class="debug-overlay__lead">Активна сила поточного стану: <span class="debug-overlay__text debug-overlay__text--success debug-overlay__text--emphasis">${activeForceKg.toFixed(3)} кг</span></div>`;
     return html;
   }
 

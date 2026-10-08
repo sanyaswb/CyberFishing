@@ -33,6 +33,6 @@ export class FishCurrentForceOverlayModule extends OverlayModule {
       metricKey: "fishBalance.stateForceMultiplier",
       color: "#73c2fb",
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 }

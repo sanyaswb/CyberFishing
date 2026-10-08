@@ -31,7 +31,7 @@ export class FishStateForcePreviewSection {
 
     let html = "";
     if (includeHeader) {
-      html += `<div style="color: #00ccff; margin-bottom: 6px; font-weight: bold; text-transform: uppercase; font-size: 12px;">${this.#htmlBuilder.escapeHtml(headerTitle)} — ${this.#htmlBuilder.escapeHtml(modeLabel)}</div>`;
+      html += `<div class="debug-overlay__text debug-overlay__text--accent debug-overlay__preview-title">${this.#htmlBuilder.escapeHtml(headerTitle)} — ${this.#htmlBuilder.escapeHtml(modeLabel)}</div>`;
     }
 
     html += this.#renderDirectionTabs({ mode });
@@ -63,23 +63,23 @@ export class FishStateForcePreviewSection {
     const details = [];
 
     if (visibleDetails.active) {
-      details.push(`active <span style="color: ${row.color}; font-weight: bold;">${row.activeForceKg.toFixed(3)} кг</span>`);
+      details.push(`active <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">${row.activeForceKg.toFixed(3)} кг</span>`);
     }
     if (visibleDetails.force) {
-      details.push(`force <span style="color: ${row.color}; font-weight: bold;">x${row.forceMultiplier.toFixed(2)}</span>`);
+      details.push(`force <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">x${row.forceMultiplier.toFixed(2)}</span>`);
     }
     if (visibleDetails.speed) {
-      details.push(`speed <span style="color: ${row.color}; font-weight: bold;">x${row.speedMultiplier.toFixed(2)}</span>`);
+      details.push(`speed <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">x${row.speedMultiplier.toFixed(2)}</span>`);
     }
     if (visibleDetails.weight) {
-      details.push(`weight <span style="color: ${row.color}; font-weight: bold;">${row.weight.toFixed(0)}</span>`);
+      details.push(`weight <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">${row.weight.toFixed(0)}</span>`);
     }
 
     const detailHtml = details.length > 0 ? ` · ${details.join(" · ")}` : "";
 
-    return `<div style="margin-bottom: 3px; display: grid; grid-template-columns: 72px 1fr; gap: 8px; align-items: baseline; font-size: 12px;">
-              <span style="color: ${row.color}; font-weight: bold;">${this.#htmlBuilder.escapeHtml(String(row.name).toUpperCase())}</span>
-              <span style="color: #e6e6e6;">сила <span style="color: ${row.color}; font-weight: bold;">${row.finalForceKg.toFixed(3)} кг</span>${detailHtml}</span>
+    return `<div class="debug-overlay__state-row">
+              <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">${this.#htmlBuilder.escapeHtml(String(row.name).toUpperCase())}</span>
+              <span class="debug-overlay__text debug-overlay__text--body">сила <span class="debug-overlay__text debug-overlay__text--custom debug-overlay__text--emphasis" style="--debug-overlay-color:${row.color};">${row.finalForceKg.toFixed(3)} кг</span>${detailHtml}</span>
             </div>`;
   }
 
@@ -200,7 +200,7 @@ export class FishStateForcePreviewSection {
       }))
       .join("");
 
-    return `<div class="debug-overlay-tab-row" role="group" aria-label="Fish state force direction mode">${buttons}</div>`;
+    return `<div class="debug-overlay__tabs" role="group" aria-label="Fish state force direction mode">${buttons}</div>`;
   }
 
   #renderDetailToggles(visibleDetails) {
@@ -219,13 +219,13 @@ export class FishStateForcePreviewSection {
       }))
       .join("");
 
-    return `<div class="debug-overlay-tab-row debug-overlay-tab-row--compact" role="group" aria-label="Fish state force visible details">${buttons}</div>`;
+    return `<div class="debug-overlay__tabs debug-overlay__tabs--compact" role="group" aria-label="Fish state force visible details">${buttons}</div>`;
   }
 
   #renderControlButton({ control, value, label, isActive }) {
-    const activeClass = isActive ? " debug-overlay-tab--active" : "";
+    const activeClass = isActive ? " debug-overlay__tab--active" : "";
     const pressed = isActive ? "true" : "false";
-    return `<button type="button" class="debug-overlay-tab${activeClass}" data-overlay-control="${this.#htmlBuilder.escapeAttr(control)}" data-overlay-value="${this.#htmlBuilder.escapeAttr(value)}" aria-pressed="${pressed}">${this.#htmlBuilder.escapeHtml(label)}</button>`;
+    return `<button type="button" class="debug-overlay__tab${activeClass}" data-overlay-control="${this.#htmlBuilder.escapeAttr(control)}" data-overlay-value="${this.#htmlBuilder.escapeAttr(value)}" aria-pressed="${pressed}">${this.#htmlBuilder.escapeHtml(label)}</button>`;
   }
 
   #resolveSelectedMode() {

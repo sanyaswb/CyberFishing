@@ -63,6 +63,6 @@ export class RodControlSummaryOverlayModule extends OverlayModule {
       metricKey: "rodControlSummary.blockedReason",
       color: blockedReason === "none" ? "#8a9bac" : "#ffaa00",
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 }

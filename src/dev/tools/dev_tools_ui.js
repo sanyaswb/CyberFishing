@@ -25,9 +25,9 @@ export class DevToolsUI {
 
   togglePanel(isOpen) {
     if (isOpen) {
-      this.#panel.classList.add("open");
+      this.#panel.classList.add("devtools--open");
     } else {
-      this.#panel.classList.remove("open");
+      this.#panel.classList.remove("devtools--open");
     }
   }
 
@@ -54,16 +54,16 @@ export class DevToolsUI {
 
   createSection(labelStr, parentElement, isExpanded, onToggle, path = null) {
     const section = document.createElement("div");
-    section.className = "devtools-section";
+    section.className = "devtools__section";
     this.#assignDevToolsPath(section, path);
 
     const title = document.createElement("div");
-    title.className = "devtools-section-title";
+    title.className = "devtools__section-title";
     this.#assignDevToolsPath(title, path);
     title.innerHTML = `<span>${isExpanded ? "▼" : "▶"}</span> ${labelStr}`;
 
     const content = document.createElement("div");
-    content.className = "devtools-section-content";
+    content.className = "devtools__section-content";
     this.#assignDevToolsPath(content, path);
     content.style.display = isExpanded ? "block" : "none";
 
@@ -83,11 +83,11 @@ export class DevToolsUI {
 
   createInfoRow(labelStr, value, parentElement, path = null) {
     const row = document.createElement("div");
-    row.className = "devtools-row";
+    row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
     row.appendChild(this.#createLabelElement(labelStr, path));
     const valueEl = document.createElement("div");
-    valueEl.className = "devtools-value";
+    valueEl.className = "devtools__value";
     valueEl.innerText = value;
     row.appendChild(valueEl);
     parentElement.appendChild(row);
@@ -95,9 +95,9 @@ export class DevToolsUI {
 
   createButtonRow(labelStr, parentElement, onClickCallback) {
     const row = document.createElement("div");
-    row.className = "devtools-row";
+    row.className = "devtools__row";
     const btn = document.createElement("button");
-    btn.className = "devtools-action-btn";
+    btn.className = "devtools__action";
     btn.innerText = labelStr;
     btn.addEventListener("click", onClickCallback);
     row.appendChild(btn);
@@ -113,21 +113,21 @@ export class DevToolsUI {
     bindingPath = path,
   ) {
     const row = document.createElement("div");
-    row.className = "devtools-row";
+    row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
 
     const label = this.#createLabelElement(labelStr, path);
     row.appendChild(label);
 
     const inputElement = document.createElement("label");
-    inputElement.className = "switch";
+    inputElement.className = "devtools__switch";
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = initialValue;
 
     const slider = document.createElement("span");
-    slider.className = "slider";
+    slider.className = "devtools__slider";
 
     inputElement.appendChild(cb);
     inputElement.appendChild(slider);
@@ -150,7 +150,7 @@ export class DevToolsUI {
     bindingPath = path,
   ) {
     const row = document.createElement("div");
-    row.className = "devtools-row";
+    row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
 
     const label = this.#createLabelElement(key, path);
@@ -162,7 +162,7 @@ export class DevToolsUI {
       inputElement = document.createElement("input");
       inputElement.type = "number";
       inputElement.step = "any";
-      inputElement.className = "devtools-input-num";
+      inputElement.className = "devtools__input devtools__input--number";
       inputElement.value = val;
       inputElement.addEventListener("change", (e) =>
         onChangeCallback(parseFloat(e.target.value) || 0),
@@ -170,7 +170,7 @@ export class DevToolsUI {
     } else {
       inputElement = document.createElement("input");
       inputElement.type = "text";
-      inputElement.className = "devtools-input-text";
+      inputElement.className = "devtools__input devtools__input--text";
       inputElement.value = val;
       inputElement.addEventListener("change", (e) => {
         let newVal = e.target.value;
@@ -198,25 +198,15 @@ export class DevToolsUI {
     bindingPath = path,
   ) {
     const row = document.createElement("div");
-    row.className = "devtools-row";
+    row.className = "devtools__row";
     this.#assignDevToolsPath(row, path);
 
     const label = this.#createLabelElement(key, path);
     row.appendChild(label);
 
     const btn = document.createElement("button");
-    btn.className = "devtools-btn-enum";
+    btn.className = "devtools__enum";
     btn.innerText = currentValue;
-    Object.assign(btn.style, {
-      background: "#3a3a50",
-      color: "#00ccff",
-      border: "1px solid #5a5a70",
-      borderRadius: "4px",
-      padding: "2px 8px",
-      cursor: "pointer",
-      fontWeight: "bold",
-      width: "80px",
-    });
 
     btn.addEventListener("click", () => {
       let currentIndex = optionsArray.indexOf(btn.innerText);
@@ -237,7 +227,7 @@ export class DevToolsUI {
     const labelText = String(rawLabel);
     const cleanLabelText = labelText.replace(/\s+\*$/u, "");
     const label = document.createElement("div");
-    label.className = "devtools-label";
+    label.className = "devtools__label";
     this.#assignDevToolsPath(label, path);
     label.dataset.devtoolsKey = cleanLabelText;
     label.innerText = this.#formatLabelText(labelText);
@@ -271,29 +261,7 @@ export class DevToolsUI {
   #initBtn(config) {
     this.#btn = document.createElement("button");
     this.#btn.innerHTML = "⚙️";
-
-    Object.assign(this.#btn.style, {
-      position: "absolute",
-      top: "15px",
-      left: "160px",
-      fontSize: "32px",
-      background: "transparent",
-      border: "none",
-      padding: "0",
-      cursor: "pointer",
-      zIndex: "9998",
-      filter: "drop-shadow(0px 2px 5px rgba(0,0,0,0.8))",
-      transition: "transform 0.1s ease",
-    });
-
-    this.#btn.addEventListener(
-      "mouseenter",
-      () => (this.#btn.style.transform = "scale(1.1)"),
-    );
-    this.#btn.addEventListener(
-      "mouseleave",
-      () => (this.#btn.style.transform = "scale(1)"),
-    );
+    this.#btn.className = "devtools__toggle";
 
     UiEventShield.makeSolid(this.#btn);
 
@@ -308,23 +276,23 @@ export class DevToolsUI {
 
   #initPanel() {
     this.#panel = document.createElement("div");
-    this.#panel.className = "devtools-panel";
+    this.#panel.className = "devtools";
 
     this.#panel.innerHTML = `
-            <div class="devtools-header">
+            <div class="devtools__header">
                 <h2>⚙️ DEV TOOLS</h2>
-                <button class="devtools-close">×</button>
+                <button class="devtools__close">×</button>
             </div>
-            <div class="devtools-body"></div>
+            <div class="devtools__body"></div>
         `;
 
     document.body.appendChild(this.#panel);
-    this.#body = this.#panel.querySelector(".devtools-body");
+    this.#body = this.#panel.querySelector(".devtools__body");
 
     UiEventShield.makeSolid(this.#panel);
 
     this.#panel
-      .querySelector(".devtools-close")
+      .querySelector(".devtools__close")
       .addEventListener("click", this.#onToggleCallback);
   }
 }

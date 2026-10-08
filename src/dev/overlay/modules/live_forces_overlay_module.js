@@ -33,24 +33,24 @@ export class LiveForcesOverlayModule extends OverlayModule {
       );
       const yLead =
         fY > pY
-          ? `<span style="color: #ff4444;">🚨 Риба тягне сильніше на ${yDiff}%</span>`
-          : `<span style="color: #00ff80;">💪 Гравець тягне сильніше на ${yDiff}%</span>`;
+          ? `<span class="debug-overlay__text debug-overlay__text--danger">🚨 Риба тягне сильніше на ${yDiff}%</span>`
+          : `<span class="debug-overlay__text debug-overlay__text--success">💪 Гравець тягне сильніше на ${yDiff}%</span>`;
 
       html += this.formatHeader("⚖️ LIVE: ТЯГА (Y)");
-      html += `<div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${pY.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${fY.toFixed(3)}</span></div>`;
-      html += `<div style="font-weight: bold; font-size: 13px; margin-bottom: 12px;">${yLead}</div>`;
+      html += `<div class="debug-overlay__line">Гравець: <span class="debug-overlay__text debug-overlay__text--success">${pY.toFixed(3)}</span> | Риба: <span class="debug-overlay__text debug-overlay__text--danger">${fY.toFixed(3)}</span></div>`;
+      html += `<div class="debug-overlay__comparison">${yLead}</div>`;
     }
 
     // Блок X (Керування)
     if (this.settingsStore?.isEnabled?.("liveX")) {
       const xLead =
         fX > pX
-          ? `<span style="color: #ff4444;">🚨 Риба втікає (Домінує)</span>`
-          : `<span style="color: #00ff80;">✅ Керування стабільне</span>`;
+          ? `<span class="debug-overlay__text debug-overlay__text--danger">🚨 Риба втікає (Домінує)</span>`
+          : `<span class="debug-overlay__text debug-overlay__text--success">✅ Керування стабільне</span>`;
 
       html += this.formatHeader("⚖️ LIVE: КЕРУВАННЯ (X)");
-      html += `<div style="margin-bottom: 4px;">Гравець: <span style="color: #00ff80;">${pX.toFixed(3)}</span> | Риба: <span style="color: #ff4444;">${fX.toFixed(3)}</span></div>`;
-      html += `<div style="font-weight: bold; font-size: 13px; margin-bottom: 12px;">${xLead}</div>`;
+      html += `<div class="debug-overlay__line">Гравець: <span class="debug-overlay__text debug-overlay__text--success">${pX.toFixed(3)}</span> | Риба: <span class="debug-overlay__text debug-overlay__text--danger">${fX.toFixed(3)}</span></div>`;
+      html += `<div class="debug-overlay__comparison">${xLead}</div>`;
     }
 
     return html;

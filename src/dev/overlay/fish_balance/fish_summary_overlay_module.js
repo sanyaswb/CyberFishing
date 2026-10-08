@@ -44,7 +44,7 @@ export class FishSummaryOverlayModule extends OverlayModule {
       metricKey: "fishBalance.lastDash",
       color: lastDashActive ? "#ff5cf4" : "#8a9bac",
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #directionColor(direction) {

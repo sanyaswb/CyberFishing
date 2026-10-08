@@ -130,7 +130,7 @@
 
 .inventory-toggle input:checked + .inventory-toggle__control {
   border-color: var(--inventory-success);
-  background: rgba(0, 245, 138, 0.22);
+  background: rgba(var(--inventory-success-rgb), 0.22);
 }
 
 .inventory-toggle input:checked + .inventory-toggle__control::after {
@@ -149,7 +149,54 @@
   border: 0;
   border-radius: 5px;
   background: var(--inventory-danger);
-  color: #fff;
+  color: var(--ui-text);
   cursor: pointer;
-  font: 700 12px inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 1180px) {
+  .inventory-header {
+    grid-template-columns: minmax(180px, 1fr) auto auto auto;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 820px) {
+  .inventory-header {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .inventory-header__close {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .inventory-active-tackle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .inventory-auto-settings {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .inventory-load__label,
+  .inventory-toggle__label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-toggle__control,
+  .inventory-toggle__control::after {
+    transition: none;
+  }
 }

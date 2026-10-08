@@ -130,7 +130,7 @@ export class InventoryUI {
   open() {
     if (!this.#isMounted) this.mount();
     this.#isOpen = true;
-    this.#rootNode.classList.add("is-open");
+    this.#rootNode.classList.add("inventory-modal--open");
     this.#rootNode.removeAttribute("aria-hidden");
     this.#dispatch({ type: this.#actionTypes.OPEN });
     this.refresh();
@@ -139,7 +139,7 @@ export class InventoryUI {
   close() {
     if (!this.#isOpen) return;
     this.#isOpen = false;
-    this.#rootNode.classList.remove("is-open");
+    this.#rootNode.classList.remove("inventory-modal--open");
     this.#rootNode.setAttribute("aria-hidden", "true");
     this.#longPressController.clear();
     this.#tooltipPresenter.hide();
@@ -185,7 +185,7 @@ export class InventoryUI {
     this.#renderInventory(viewModel.inventory);
 
     const visible = this.#isOpen && viewModel.isOpen;
-    this.#rootNode.classList.toggle("is-open", visible);
+    this.#rootNode.classList.toggle("inventory-modal--open", visible);
     if (visible) this.#rootNode.removeAttribute("aria-hidden");
     else this.#rootNode.setAttribute("aria-hidden", "true");
   }
@@ -262,11 +262,11 @@ export class InventoryUI {
     const text = typeof message === "string" ? message.trim() : "";
     if (!text) return;
     this.#warningNode.textContent = text;
-    this.#warningNode.classList.add("is-visible");
+    this.#warningNode.classList.add("inventory-warning--visible");
     this.#warningNode.setAttribute("role", "alert");
     if (this.#warningTimer !== null) this.#warningTimers.clearTimeout(this.#warningTimer);
     this.#warningTimer = this.#warningTimers.setTimeout(() => {
-      this.#warningNode.classList.remove("is-visible");
+      this.#warningNode.classList.remove("inventory-warning--visible");
       this.#warningTimer = null;
     }, 5000);
     this.#onWarning?.(text);

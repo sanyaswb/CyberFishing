@@ -7,7 +7,7 @@ export class ItemConditionDomAdapter {
       return null;
     }
     const percent = Math.max(0, Math.min(100, Number(condition.percent) || 0));
-    element.classList.add("has-item-condition");
+    element.classList.add("item-condition");
     element.style.setProperty(ItemConditionDomAdapter.#property, `${percent}%`);
     if (element.dataset) element.dataset.conditionPercent = String(percent);
     return condition;
@@ -15,7 +15,7 @@ export class ItemConditionDomAdapter {
 
   clear(element) {
     if (!element) return;
-    element.classList?.remove("has-item-condition");
+    element.classList?.remove("item-condition");
     element.style?.removeProperty(ItemConditionDomAdapter.#property);
     if (element.dataset) delete element.dataset.conditionPercent;
   }

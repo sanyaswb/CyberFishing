@@ -215,7 +215,7 @@ class ItemRarityRoundTripCheck {
       dataset: {},
     };
     adapter.apply(card, item.rarity);
-    Assertion.that(card.classList.values.has("has-rarity"), "restored card has rarity frame");
+    Assertion.that(card.classList.values.has("item-rarity"), "restored card has rarity frame");
     Assertion.equal(card.dataset.rarity, "rare", "restored card exposes rarity id");
     Assertion.that(
       card.style.values.has("--rarity-color") &&

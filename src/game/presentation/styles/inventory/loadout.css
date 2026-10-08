@@ -1,6 +1,7 @@
 /* Equipped loadout, save action and saved-loadout preview. */
 
 .inventory-loadout-shell {
+  height: 100%;
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -9,7 +10,6 @@
 
 .inventory-loadout-panel {
   display: flex;
-  min-height: 0;
   flex: 1;
   flex-direction: column;
   gap: 17px;
@@ -28,11 +28,12 @@
   flex: 1;
   padding: 7px 9px;
   border: 1px solid #43525b;
-  border-radius: 4px;
+  border-radius: var(--ui-radius-control);
   outline: none;
   background: #09131b;
   color: #e9f9ff;
-  font: 12px inherit;
+  font-family: inherit;
+  font-size: 12px;
 }
 
 .inventory-loadout-save__input:focus {
@@ -42,11 +43,13 @@
 .inventory-loadout-save__button {
   padding: 7px 11px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--ui-radius-control);
   background: var(--inventory-success);
   color: #00170d;
   cursor: pointer;
-  font: 700 12px inherit;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .inventory-loadout-panel__primary {
@@ -94,14 +97,13 @@
 }
 
 .inventory-loadout-panel__primary
-  .inventory-field--rod
-  .inventory-item-card__icon {
+.inventory-field--rod
+.inventory-item-card__icon {
   font-size: clamp(68px, 9vw, 126px);
 }
 
 .inventory-saved-loadout-preview {
   display: flex;
-  min-height: 0;
   flex-direction: column;
   gap: 18px;
   padding: 18px;
@@ -159,14 +161,14 @@
   background: rgba(7, 12, 14, 0.72);
 }
 
-.inventory-saved-loadout-preview__well.is-empty {
+.inventory-saved-loadout-preview__well.inventory-saved-loadout-preview__well--empty {
   border-color: #080a0b;
   background: rgba(74, 78, 80, 0.4);
 }
 
-.inventory-saved-loadout-preview__field.is-active
-  .inventory-saved-loadout-preview__well {
-  box-shadow: 0 0 0 1px rgba(0, 245, 138, 0.55);
+.inventory-saved-loadout-preview__field.inventory-saved-loadout-preview__field--active
+.inventory-saved-loadout-preview__well {
+  box-shadow: 0 0 0 1px rgba(var(--inventory-success-rgb), 0.55);
 }
 
 .inventory-item-card--saved-loadout {
@@ -184,7 +186,7 @@
   border: 1px solid #c8ffe6;
   border-radius: 50%;
   background: var(--inventory-success);
-  box-shadow: 0 0 7px rgba(0, 245, 138, 0.72);
+  box-shadow: 0 0 7px rgba(var(--inventory-success-rgb), 0.72);
   pointer-events: none;
 }
 
@@ -202,29 +204,27 @@
   justify-content: start;
 }
 
-.inventory-saved-loadout-preview__button {
-  min-height: 37px;
-  padding: 7px 8px;
-  border: 1px solid #627077;
-  border-radius: 4px;
-  background: #29343a;
-  color: #f1f5f6;
-  cursor: pointer;
-  font: 700 11px inherit;
+@media (max-width: 820px) {
+  .inventory-loadout-panel__auxiliary {
+    --inventory-auxiliary-card-size: var(--inventory-card-size);
+  }
 }
 
-.inventory-saved-loadout-preview__button.is-primary {
-  border-color: var(--inventory-success);
-  background: rgba(0, 245, 138, 0.2);
-  color: #6affbd;
-}
+@media (max-width: 520px) {
+  .inventory-loadout-save {
+    flex-direction: column;
+  }
 
-.inventory-saved-loadout-preview__button.is-danger {
-  border-color: var(--inventory-danger);
-  background: rgba(255, 66, 87, 0.16);
-  color: #ff8e9b;
-}
+  .inventory-loadout-panel__primary {
+    grid-template-columns: 1fr 104px;
+    gap: 14px;
+  }
 
-.inventory-saved-loadout-preview__button.is-muted {
-  color: #c2c9cc;
+  .inventory-saved-loadout-preview__slots {
+    grid-template-columns: repeat(auto-fill, var(--inventory-card-size));
+  }
+
+  .inventory-saved-loadout-preview__actions {
+    grid-template-columns: 1fr;
+  }
 }

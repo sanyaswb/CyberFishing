@@ -1,0 +1,121 @@
+/* DEV overlay window, metric rows and interaction controls. */
+
+.debug-overlay__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+.debug-overlay__label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 16px;
+  line-height: 1.2;
+}
+.debug-overlay__value {
+  font-weight: bold;
+  text-align: right;
+}
+
+.debug-overlay__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 6px;
+  pointer-events: auto;
+}
+.debug-overlay__tab {
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--ui-radius-control);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.debug-overlay__tab:hover,
+.debug-overlay__tab:focus-visible {
+  background: rgba(120, 190, 255, 0.16);
+  border-color: rgba(120, 190, 255, 0.45);
+  outline: none;
+}
+.debug-overlay__tab--active {
+  background: rgba(120, 190, 255, 0.22);
+  border-color: rgba(120, 190, 255, 0.65);
+}
+.debug-overlay__metric-label {
+  cursor: help;
+  pointer-events: auto;
+  touch-action: manipulation;
+  text-decoration: underline dotted rgba(115, 194, 251, 0.55);
+  text-underline-offset: 2px;
+  border-radius: 3px;
+  outline: none;
+  transition: background 80ms ease, color 80ms ease;
+}
+.debug-overlay__metric-label:hover,
+.debug-overlay__metric-label:focus-visible {
+  color: var(--ui-text);
+  background: rgba(115, 194, 251, 0.16);
+}
+.debug-overlay__metric-label--active,
+.debug-overlay__metric-label:active {
+  color: var(--ui-text);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.debug-overlay {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(var(--ui-surface-rgb), 0.95);
+  color: var(--ui-text);
+  padding: 15px 15px 50px 15px;
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  z-index: var(--ui-layer-panel);
+  display: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  min-width: 280px;
+  transform-origin: top left;
+  touch-action: none;
+  pointer-events: all;
+}
+
+.debug-overlay__scale-controls {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: var(--ui-layer-tooltip);
+  pointer-events: all;
+}
+
+.debug-overlay__scale-button {
+  width: 32px;
+  height: 32px;
+  background-color: rgba(var(--ui-accent-rgb), 0.1);
+  color: var(--ui-accent);
+  border: 1px solid var(--ui-accent);
+  border-radius: 6px;
+  font-family: var(--ui-font-mono);
+  font-weight: bold;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+}
+
+.debug-overlay__content {
+  pointer-events: none;
+}

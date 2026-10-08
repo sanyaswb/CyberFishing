@@ -24,7 +24,7 @@ export class InventoryLoadoutPanelRenderer {
     );
     const panel = this.#dom.element(
       "div",
-      "inventory-loadout-panel",
+      "inventory-loadout-panel inventory-panel",
     );
     if (model.save.visible) {
       shell.appendChild(
@@ -114,7 +114,7 @@ export class InventoryLoadoutPanelRenderer {
       "inventory-loadout-save__button",
       "💾 Зберегти комплект",
     );
-    button.classList.toggle("is-disabled", !save.enabled);
+    button.classList.toggle("inventory-loadout-save__button--disabled", !save.enabled);
     button.setAttribute("aria-disabled", String(!save.enabled));
     const saveAction = () => {
       if (!save.enabled) {

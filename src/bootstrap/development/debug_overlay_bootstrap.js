@@ -39,7 +39,6 @@ import { OverlayMetricInfoBridge } from "../../dev/overlay/dom/overlay_metric_in
 import { OverlayMetricResolver } from "../../dev/overlay/overlay_metric_resolver.js";
 import { OverlayModuleRegistry } from "../../dev/overlay/core/overlay_module_registry.js";
 import { OverlayScaleControls } from "../../dev/overlay/dom/overlay_scale_controls.js";
-import { OverlayStyleInstaller } from "../../dev/overlay/dom/overlay_style_installer.js";
 import { OverlayUpdateLoop } from "../../dev/overlay/core/overlay_update_loop.js";
 import { OverlayValueFormatter } from "../../dev/overlay/services/overlay_value_formatter.js";
 import { OverlayViewStateStore } from "../../dev/overlay/services/overlay_view_state_store.js";
@@ -118,7 +117,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     new FishPowerOverlayModule(moduleOptions), new DebuffsOverlayModule(moduleOptions), new FightPhysicsOverlayModule({...moduleOptions, groups}),
     new PlayerMaxOverlayModule(moduleOptions), new LiveForcesOverlayModule(moduleOptions), new ChumOverlayModule(moduleOptions),
     new StaminaBalanceOverlayModule(moduleOptions), new WorstCaseOverlayModule({...moduleOptions, selector: new WorstCaseForceDebugSelector({configSource})})]);
-  const domAdapter = new OverlayDomAdapter({documentTarget, styleInstaller: new OverlayStyleInstaller(documentTarget),
+  const domAdapter = new OverlayDomAdapter({documentTarget,
     createScaleControls: options => new OverlayScaleControls(options),
     createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget})});
   const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore});

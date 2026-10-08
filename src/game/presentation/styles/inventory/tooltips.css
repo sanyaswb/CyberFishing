@@ -1,44 +1,49 @@
 /* Item tooltip base, rarity pulse and balance details outside the modal. */
 
-.inv-tooltip {
+.inventory-tooltip {
   position: absolute;
   display: none;
   background: rgba(10, 20, 30, 0.95);
-  border: 1px solid #00ccff;
+  border: 1px solid var(--ui-accent);
   padding: 10px;
   border-radius: 5px;
   pointer-events: none;
-  z-index: 10001;
-  min-width: 150px;
+  z-index: var(--ui-layer-tooltip);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  width: max-content;
+  min-width: min(390px, calc(100vw - 24px));
+  max-width: min(640px, calc(100vw - 24px));
+  max-height: min(760px, calc(100vh - 24px));
+  overflow: hidden auto;
 }
 
-.inv-tooltip.has-rarity {
+.inventory-tooltip.item-rarity {
   border-color: var(--rarity-color);
 }
 
-.inv-tooltip.rarity-unique.rarity-glow.rarity-pulse {
+.inventory-tooltip.item-rarity--unique.item-rarity--glow.item-rarity--pulse {
   box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
   animation: inventory-rarity-tooltip-pulse var(--rarity-animation-duration)
     ease-in-out infinite;
 }
 
-.inv-tooltip-title {
+.inventory-tooltip__title {
   margin-bottom: 5px;
-  color: var(--rarity-color, #00ccff);
+  color: var(--rarity-color, var(--ui-accent));
   font-size: 16px;
   font-weight: bold;
 }
 
-.inv-tooltip-section {
+.inventory-tooltip__section {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid rgba(115, 194, 251, 0.35);
 }
 
-.inv-tooltip-section-title {
+.inventory-tooltip__section-title {
   margin-bottom: 4px;
-  color: #73c2fb;
+  color: var(--ui-info);
   font-size: 12px;
   font-weight: bold;
   text-transform: uppercase;
@@ -53,15 +58,6 @@
   50% {
     box-shadow: 0 0 var(--rarity-glow-blur) var(--rarity-color);
   }
-}
-
-.inventory-tooltip {
-  box-sizing: border-box;
-  width: max-content;
-  min-width: min(390px, calc(100vw - 24px));
-  max-width: min(640px, calc(100vw - 24px));
-  max-height: min(760px, calc(100vh - 24px));
-  overflow: hidden auto;
 }
 
 .inventory-balance-tooltip__section {
@@ -147,15 +143,18 @@
   border-top: 1px dashed rgba(115, 194, 251, 0.13);
 }
 
-.inventory-balance-tooltip .is-positive {
+.inventory-balance-tooltip__delta--positive,
+.inventory-balance-tooltip__impact--positive {
   color: #42ed9b;
 }
 
-.inventory-balance-tooltip .is-negative {
+.inventory-balance-tooltip__delta--negative,
+.inventory-balance-tooltip__impact--negative {
   color: #ff626c;
 }
 
-.inventory-balance-tooltip .is-neutral {
+.inventory-balance-tooltip__delta--neutral,
+.inventory-balance-tooltip__impact--neutral {
   color: #a6b7bc;
 }
 
@@ -165,6 +164,12 @@
   font-size: 14px;
 }
 
-.inventory-balance-tooltip .inv-tooltip-section-title {
+.inventory-balance-tooltip .inventory-tooltip__section-title {
   font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-tooltip.item-rarity--unique.item-rarity--pulse {
+    animation: none;
+  }
 }

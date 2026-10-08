@@ -26,7 +26,7 @@ export class OverlayMetricInfoBridge {
     if (this.#isStarted) return;
     this.#isStarted = true;
     this.#listenForDebugData();
-    const content = this.#documentTarget.querySelector(".debug-overlay-content");
+    const content = this.#documentTarget.querySelector(".debug-overlay__content");
     this.#eventTarget = content || this.#documentTarget;
     this.#eventTarget.addEventListener("pointerover", this.#onPointerOver, true);
     this.#eventTarget.addEventListener("focusin", this.#onFocusIn, true);
@@ -94,7 +94,7 @@ export class OverlayMetricInfoBridge {
   }
 
   #findMetricLabel(target) {
-    return target?.closest?.(".overlay-metric-label") || null;
+    return target?.closest?.(".debug-overlay__metric-label") || null;
   }
 
   #applyTooltip(labelElement) {
@@ -104,16 +104,16 @@ export class OverlayMetricInfoBridge {
   }
 
   #inspectLabel(labelElement) {
-    const row = labelElement.closest(".debug-overlay-row");
+    const row = labelElement.closest(".debug-overlay__row");
     const label = labelElement.dataset.metric || "metric";
     const value =
-      row?.querySelector(".debug-overlay-value")?.textContent?.trim() || "";
+      row?.querySelector(".debug-overlay__value")?.textContent?.trim() || "";
     const entry = this.#catalog.getEntry(label);
 
-    labelElement.classList.add("overlay-metric-label-active");
+    labelElement.classList.add("debug-overlay__metric-label--active");
     window.setTimeout(() => {
       if (labelElement.isConnected) {
-        labelElement.classList.remove("overlay-metric-label-active");
+        labelElement.classList.remove("debug-overlay__metric-label--active");
       }
     }, 180);
 

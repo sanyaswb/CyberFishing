@@ -65,7 +65,7 @@ export class FishDebuffsSummaryOverlayModule extends OverlayModule {
       metricKey: "fishBalance.effectiveRadial",
       color: "#73c2fb",
     });
-    return html + `<div style="margin-bottom: 12px;"></div>`;
+    return html + `<div class="debug-overlay__spacer"></div>`;
   }
 
   #resolveFirstFinite(...values) {

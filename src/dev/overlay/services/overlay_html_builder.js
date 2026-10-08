@@ -1,6 +1,6 @@
 export class OverlayHtmlBuilder {
   formatHeader(title, color = "#00ccff") {
-    return `<div style="color: ${this.escapeAttr(color)}; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #4a5b6c; padding-bottom: 4px; text-transform: uppercase; font-size: 13px;">${this.escapeHtml(title)}</div>`;
+    return `<div class="debug-overlay__text debug-overlay__text--custom debug-overlay__heading" style="--debug-overlay-color:${this.escapeAttr(color)};">${this.escapeHtml(title)}</div>`;
   }
 
   metricRow(label, value, options = {}) {
@@ -9,16 +9,16 @@ export class OverlayHtmlBuilder {
     const safeMetricKey = this.escapeAttr(metricKey);
     const safeLabel = this.escapeHtml(label);
 
-    return `<div class="debug-overlay-row" data-overlay-metric="${safeMetricKey}">
+    return `<div class="debug-overlay__row" data-overlay-metric="${safeMetricKey}">
       <span
-        class="debug-overlay-label overlay-metric-label"
+        class="debug-overlay__label debug-overlay__metric-label"
         data-metric="${safeMetricKey}"
         role="button"
         tabindex="0"
         title="${this.escapeAttr(label)}"
         aria-label="Пояснити формулу для ${this.escapeAttr(label)}"
       >${safeLabel}:</span>
-      <span class="debug-overlay-value" style="color:${this.escapeAttr(color)};">${value}</span>
+      <span class="debug-overlay__value debug-overlay__text debug-overlay__text--custom" style="--debug-overlay-color:${this.escapeAttr(color)};">${value}</span>
     </div>`;
   }
 

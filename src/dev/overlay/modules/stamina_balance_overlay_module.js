@@ -213,7 +213,7 @@ export class StaminaBalanceOverlayModule extends OverlayModule {
       data.staminaBudgetOverflowWarning ? "yes" : "no",
       { color: data.staminaBudgetOverflowWarning ? "#ff4444" : "#8a9bac" },
     );
-    return `${html}<div style="margin-bottom: 12px;"></div>`;
+    return `${html}<div class="debug-overlay__spacer"></div>`;
   }
 
   #renderSimplifiedStaminaPhase({ html, data, f }) {
@@ -242,7 +242,7 @@ export class StaminaBalanceOverlayModule extends OverlayModule {
       `${f.num(data.staminaBefore, 2)} -> ${f.num(data.staminaAfter, 2)}`,
       { color: "#73c2fb" },
     );
-    return `${html}<div style="margin-bottom: 12px;"></div>`;
+    return `${html}<div class="debug-overlay__spacer"></div>`;
   }
 
   #renderEndurancePhase({ html, data, f }) {
@@ -339,6 +339,6 @@ export class StaminaBalanceOverlayModule extends OverlayModule {
       `${f.num(data.currentExhaustion, 2)}/${f.num(data.fishConditionMaxEndurance, 2)}`,
       { color: "#ff8888" },
     );
-    return `${html}<div style="margin-bottom: 12px;"></div>`;
+    return `${html}<div class="debug-overlay__spacer"></div>`;
   }
 }
