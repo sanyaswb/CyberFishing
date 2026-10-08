@@ -6,6 +6,7 @@ utils/
   *-check.js                    one scenario file per domain contract
   architecture-check.js         layer/import/global guard (see docs/architecture.md)
   testing/
+    doubles/                    test-only implementations of production contracts
     core/                       CheckAssertion and SourceRuntime (Node VM over native ESM sources)
     runtime/                    native ESM test loader and test compositions
     suites/check_manifest.js    single registry of checks and suite membership

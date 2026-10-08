@@ -1,4 +1,4 @@
-import { InventoryCapacityPolicy } from "./inventory_capacity_policy.js";
+import { InventoryCapacityPolicy } from "../../../src/game/domain/inventory/inventory_capacity_policy.js";
 
 export class DelegatingInventoryCapacityPolicy extends InventoryCapacityPolicy {
   #evaluator;

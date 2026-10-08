@@ -49,12 +49,12 @@ class RuntimeLoader {
     ]);
     loader.load("src/game/domain/inventory/inventory_capacity_policy.js", ["InventoryCapacityPolicy"]);
     loader.load("src/game/domain/inventory/unlimited_inventory_capacity_policy.js", ["UnlimitedInventoryCapacityPolicy"]);
-    loader.load("src/game/domain/inventory/delegating_inventory_capacity_policy.js", ["DelegatingInventoryCapacityPolicy"]);
+    loader.load("utils/testing/doubles/delegating_inventory_capacity_policy.js", ["DelegatingInventoryCapacityPolicy"]);
     // Production activates only the export with legacy consumers. This legacy-shaped test also
     // exercises the other two named exports through their exact identity in the loaded ESM module.
     const capacityModule = loader.getExports('src/game/domain/inventory/inventory_capacity_policy.js');
     context.InventoryCapacityPolicy = capacityModule.InventoryCapacityPolicy;
-    context.DelegatingInventoryCapacityPolicy = loader.getExports('src/game/domain/inventory/delegating_inventory_capacity_policy.js').DelegatingInventoryCapacityPolicy;
+    context.DelegatingInventoryCapacityPolicy = loader.getExports('utils/testing/doubles/delegating_inventory_capacity_policy.js').DelegatingInventoryCapacityPolicy;
     loader.load("src/game/domain/equipment/equipment_transition_plan.js", ["EquipmentTransitionPlan"]);
     loader.load("src/game/domain/equipment/manual_rod_change_planner.js", ["ManualRodChangePlanner"]);
     loader.load("src/game/application/inventory/equipment_transition_port.js", ["EquipmentTransitionPort"]);

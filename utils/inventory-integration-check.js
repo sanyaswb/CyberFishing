@@ -39,7 +39,7 @@ const files = [
   "src/game/presentation/inventory/equipment_slot_availability_policy.js",
   "src/game/domain/inventory/inventory_capacity_policy.js",
   "src/game/domain/inventory/unlimited_inventory_capacity_policy.js",
-  "src/game/domain/inventory/delegating_inventory_capacity_policy.js",
+  "utils/testing/doubles/delegating_inventory_capacity_policy.js",
   "src/game/domain/equipment/equipment_transition_plan.js",
   "src/game/domain/equipment/manual_rod_change_planner.js",
   "src/game/domain/equipment/auto_refill_trigger.js",

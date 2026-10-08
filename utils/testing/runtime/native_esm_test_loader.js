@@ -29,7 +29,7 @@ class NativeEsmTestLoader {
   }
 
   hasModule(file) {
-    return /^(?:src\/(?:dev|engine|game|platform|bootstrap|entrypoints)\/)/u.test(file);
+    return /^(?:src\/(?:dev|engine|game|platform|bootstrap|entrypoints)\/|utils\/testing\/doubles\/)/u.test(file);
   }
 
 
