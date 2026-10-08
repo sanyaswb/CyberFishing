@@ -28,7 +28,6 @@
 │        ├── bg_test--evening.webp
 │        ├── bg_test--night.webp
 │        └── test-depth.webp
-├── convert-images.js
 ├── dev.html
 ├── docs
 │  ├── architecture.md
@@ -75,6 +74,8 @@
 │  ├── 014-tracked-structure
 │  │  └── spec.md
 │  ├── 015-release-0301
+│  │  └── spec.md
+│  ├── 016-converter-location
 │  │  └── spec.md
 │  └── 017-force-diagnostics
 │     └── spec.md
@@ -775,6 +776,7 @@
    ├── config-runtime-check.js
    ├── config-schema-check.js
    ├── consumable-event-identity-check.js
+   ├── convert-images.js
    ├── create-version-copy.js
    ├── css-usage-check.js
    ├── degradation-color-check.js

@@ -57,3 +57,7 @@ remain closed; historical machinery stays at `migration-final-archive`. There is
 
 For the next task, inspect current Git status and follow the owner's current instructions and
 `DEVELOPMENT_RULES.md`; do not resume archived Stage 3–7 tooling.
+
+Post-release follow-up: the owner authorized committing `convert-images.js` → `utils/convert-images.js`
+([016](../specs/016-converter-location/spec.md)). Its base directory still points at the project root;
+source/startup/search parity and Architecture/Quick/Full pass. The published v0.30.1 tag is unchanged.

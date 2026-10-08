@@ -12,7 +12,7 @@ const QUALITY_PRESETS = {
   3: { name: 'High', webp: 95, avif: 85 },
 };
 
-const BASE_DIR = __dirname;
+const BASE_DIR = path.resolve(__dirname, '..');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
