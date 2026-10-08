@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.31.0 - Lean Fight Frame
+
+- Production fights write one reused fight frame (no DEV diagnostics snapshot or per-frame copies) and reuse normalized physics settings until the runtime config changes; about 40% less fight update time in a seeded benchmark (228 → 135 ms), identical gameplay.
+- Shared numeric normalization and reused helpers replace 81 private copies and duplicated blocks; DEV composes production classes instead of copies.
+- Fixed Catch and the fight diagnostics snapshot exist only in DEV; the game session and its facades moved from bootstrap into the application and presentation layers.
+
 ## v0.30.1 - Cleanup Complete
 
 - Remove unused progression UI/styles and readiness APIs; optional rating-tier badges respect metadata visibility.
