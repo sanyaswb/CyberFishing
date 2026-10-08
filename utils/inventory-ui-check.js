@@ -1453,14 +1453,13 @@ class InventoryStaticContractCheck {
       name: "Match",
     });
 
-    const progressionDomAdapter = {
-      apply: (card, _progression, _visual, options = {}) => {
-        const badge = document.createElement("span");
-        badge.className = "inv-slot__rating-tier-badge";
-        badge.textContent = "4";
-        card.appendChild(badge);
-      },
-    };
+    const { ItemProgressionDomAdapter } = new SourceRuntime().importModule(
+      "src/platform/browser/dom/item_progression_dom_adapter.js",
+    );
+    const progressionDomAdapter = new ItemProgressionDomAdapter({
+      visualResolver: { resolve: () => ({ available: true }) },
+      labels: { ratingTierOf: (current, maximum) => `Tier ${current} of ${maximum}` },
+    });
     const isolatedDom = new sandbox.InventoryDomFactory(document);
     const isolatedItemRenderer = new sandbox.InventoryItemCardRenderer({
       domFactory: isolatedDom,
@@ -1878,6 +1877,20 @@ class InventoryStaticContractCheck {
     const lineResourceMeter = this.#findByClass(
       leveledCard,
       "inventory-resource-meter",
+    );
+    const metadataFreeCard = isolatedItemRenderer.renderItem({
+      instanceId: "metadata-free-tier",
+      name: "Metadata-free tier",
+      icon: "L",
+      progression: {
+        available: true,
+        ratingTier: { available: true, current: 4, maximum: 6 },
+      },
+    }, { showMetadata: false });
+    assert.strictEqual(
+      this.#findAllByClass(metadataFreeCard, "inv-slot__rating-tier-badge").length,
+      0,
+      "Enabled rating tiers respect metadata visibility",
     );
     assert.strictEqual(
       this.#findAllByClass(leveledCard, "inv-slot__capacity-bar").length,

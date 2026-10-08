@@ -244,7 +244,7 @@ export class InventoryItemCardRenderer {
         item.progression,
         null,
         {
-          renderLevelBadge: showMetadata,
+          renderRatingTierBadge: showMetadata,
         },
       );
     }
