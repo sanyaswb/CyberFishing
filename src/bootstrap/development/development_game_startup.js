@@ -1,3 +1,5 @@
+import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
@@ -59,6 +61,8 @@ async function startGame() {
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
+  // DEV window positions and section states share the game's storage prefix.
+  const storageCache = new LocalStorageCache({storage: windowTarget.localStorage, logger: new ConsoleLogger()});
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = createDevItemCatalog(ITEM_DB);
   const mapCatalog = CONFIG.locations.map;
@@ -85,7 +89,7 @@ async function startGame() {
   };
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
-    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget});
+    overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache});
     probe = new ReelRetrieveDiagnostic({debugModulesSource});
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
@@ -105,10 +109,10 @@ async function startGame() {
       collectFightDiagnostics: true,
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
-        catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource,
+        catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();
-          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider)};
+          return {tooltipProvider, ui: new DevToolsUI(toggle, liveConfig, tooltipProvider, storageCache)};
         }}),
       createLocationDebugRenderFrameBuilder: options => new LocationDebugRenderFrameBuilder(options),
       getRenderDiagnostics: () => RenderAllocationDiagnostics,

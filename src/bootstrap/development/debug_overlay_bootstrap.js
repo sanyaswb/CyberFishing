@@ -49,7 +49,7 @@ import { StaminaBalanceOverlayModule } from "../../dev/overlay/modules/stamina_b
 import { WorstCaseForceDebugSelector } from "../../dev/fishing/worst_case_force_debug_selector.js";
 import { WorstCaseOverlayModule } from "../../dev/overlay/modules/worst_case_overlay_module.js";
 
-export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget}) {
+export function createDebugOverlayRuntime({config, baseConfig, settingsStore, documentTarget, windowTarget, storageCache}) {
   const configSource = () => config;
   const htmlBuilder = new OverlayHtmlBuilder();
   const formatter = new OverlayValueFormatter();
@@ -119,7 +119,7 @@ export function createDebugOverlayRuntime({config, baseConfig, settingsStore, do
     new StaminaBalanceOverlayModule(moduleOptions), new WorstCaseOverlayModule({...moduleOptions, selector: new WorstCaseForceDebugSelector({configSource})})]);
   const domAdapter = new OverlayDomAdapter({documentTarget,
     createScaleControls: options => new OverlayScaleControls(options),
-    createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget})});
+    createDragController: element => new OverlayWindowDragController({element, config, id: "debug_overlay", windowTarget, cache: storageCache})});
   const interactionBridge = new OverlayInteractionBridge({rootElementProvider: () => domAdapter.getRootElement(), viewStateStore});
   let controller;
   const updateLoop = new OverlayUpdateLoop({callback: () => controller.update(), intervalMs: Number(configSource()?.debug?.overlayUpdateMs) || 150});

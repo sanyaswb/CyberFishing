@@ -13,7 +13,6 @@ import { ExactInventoryAutoRefillPort } from "../../game/application/inventory/e
 import { AutoRefillMemory } from "../../game/domain/equipment/auto_refill_memory.js";
 import { AutoRefillPolicy } from "../../game/domain/equipment/auto_refill_policy.js";
 import { AutoRefillSettings } from "../../game/domain/equipment/auto_refill_settings.js";
-import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_SLOT_CONFIG } from "../../game/domain/equipment/equipment_slot_catalog.js";
 import { EQUIPMENT_SLOT_PRESENTATION } from "../../game/presentation/inventory/equipment_slot_presentation.js";
 import { EquipmentAutoRefillTargetProvider } from "../../game/application/inventory/equipment_auto_refill_target_provider.js";
@@ -117,9 +116,7 @@ export class InventoryCompositionRoot {
     const store =
       stateStore ||
       new InventoryStateStore({
-        cache:
-          cache ||
-          LocalStorageCache,
+        cache,
         itemSnapshotMapper,
       });
 
@@ -554,8 +551,7 @@ export class InventoryCompositionRoot {
       typeof legacyStateProvider === "function"
         ? legacyStateProvider() || {}
         : legacyStateProvider || {};
-    const cacheAdapter =
-      cache || LocalStorageCache;
+    const cacheAdapter = cache;
     const sourceItems =
       legacyItems ||
       provided.legacyItems ||

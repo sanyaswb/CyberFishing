@@ -1,4 +1,3 @@
-import { LocalStorageCache } from "../../../platform/browser/storage/local_storage_cache.js";
 import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js";
 import { clampNumber } from "../../../engine/math/number_normalization.js";
 
@@ -7,6 +6,7 @@ export class OverlayWindowDragController {
   #config;
   #windowTarget;
   #id;
+  #cache;
   #holdTimer = null;
   #isDragging = false;
   #startX = 0;
@@ -23,11 +23,13 @@ export class OverlayWindowDragController {
     config,
     id = "debug_overlay",
     windowTarget = typeof window !== "undefined" ? window : null,
+    cache,
   } = {}) {
     this.#element = element;
     this.#config = config || {};
     this.#windowTarget = windowTarget;
     this.#id = id;
+    this.#cache = cache;
   }
 
   attach() {
@@ -154,7 +156,7 @@ export class OverlayWindowDragController {
 
   #restorePosition() {
     if (!this.#element) return;
-    const savedPosition = LocalStorageCache.get(`drag_pos_${this.#id}`);
+    const savedPosition = this.#cache.get(`drag_pos_${this.#id}`);
     if (!savedPosition) return;
 
     this.#element.style.position = "absolute";
@@ -169,7 +171,7 @@ export class OverlayWindowDragController {
   #savePosition() {
     if (!this.#element) return;
     const rect = this.#element.getBoundingClientRect();
-    LocalStorageCache.set(`drag_pos_${this.#id}`, {
+    this.#cache.set(`drag_pos_${this.#id}`, {
       left: `${Math.max(0, rect.left)}px`,
       top: `${Math.max(0, rect.top)}px`,
       right: "auto",

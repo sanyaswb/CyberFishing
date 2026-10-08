@@ -1,49 +1,58 @@
+// Game data in browser storage under one key prefix; read and write failures are reported and absorbed.
 export class LocalStorageCache {
   static PREFIX = "fishing_game_";
+  #storage;
+  #logger;
 
-  static set(key, value) {
+  // storage: the browser Storage (window.localStorage); logger: the platform console logger.
+  constructor({ storage, logger }) {
+    this.#storage = storage;
+    this.#logger = logger;
+  }
+
+  set(key, value) {
     try {
-      localStorage.setItem(this.PREFIX + key, JSON.stringify(value));
+      this.#storage.setItem(LocalStorageCache.PREFIX + key, JSON.stringify(value));
     } catch (e) {
-      console.warn(
+      this.#logger.warn(
         "[LocalStorageCache] Помилка збереження в кеш. Можливо, перевищено ліміт 5MB:",
         e,
       );
     }
   }
 
-  static get(key, defaultValue = null) {
+  get(key, defaultValue = null) {
     try {
-      const item = localStorage.getItem(this.PREFIX + key);
+      const item = this.#storage.getItem(LocalStorageCache.PREFIX + key);
       return item ? JSON.parse(item) : defaultValue;
     } catch (e) {
-      console.warn("[LocalStorageCache] Помилка читання з кешу:", e);
+      this.#logger.warn("[LocalStorageCache] Помилка читання з кешу:", e);
       return defaultValue;
     }
   }
 
-  static remove(key) {
-    localStorage.removeItem(this.PREFIX + key);
+  remove(key) {
+    this.#storage.removeItem(LocalStorageCache.PREFIX + key);
   }
 
-  static clearAll() {
+  clearAll() {
     const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith(this.PREFIX)) {
+    for (let i = 0; i < this.#storage.length; i++) {
+      const key = this.#storage.key(i);
+      if (key.startsWith(LocalStorageCache.PREFIX)) {
         keysToRemove.push(key);
       }
     }
-    keysToRemove.forEach((k) => localStorage.removeItem(k));
-    console.log("[LocalStorageCache] Весь кеш гри очищено.");
+    keysToRemove.forEach((k) => this.#storage.removeItem(k));
+    this.#logger.log("[LocalStorageCache] Весь кеш гри очищено.");
   }
 
-  static printStorageUsage() {
+  printStorageUsage() {
     let totalBytes = 0;
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const value = localStorage.getItem(key);
+    for (let i = 0; i < this.#storage.length; i++) {
+      const key = this.#storage.key(i);
+      const value = this.#storage.getItem(key);
 
       totalBytes += (key.length + value.length) * 2;
     }
@@ -59,7 +68,7 @@ export class LocalStorageCache {
     if (percentage > 70) color = "#ffaa00";
     if (percentage > 90) color = "#ff4444";
 
-    console.log(
+    this.#logger.log(
       `%c💾 [LocalStorageCache] Використано: ${kb} KB (${mb} MB) з ~${limitMb} MB | Заповнено на ${percentage}%`,
       `color: ${color}; font-weight: bold; font-family: monospace;`,
     );

@@ -1,4 +1,3 @@
-import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { DevToolsControlBindingRegistry } from "../services/dev_tools_control_binding_registry.js";
 import { DraggableButton } from "../../platform/browser/dom/draggable_button.js";
 import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
@@ -11,8 +10,10 @@ export class DevToolsUI {
   #tooltipProvider;
   #controlBindings = new DevToolsControlBindingRegistry();
   #dragButton;
+  #storageCache;
 
-  constructor(onToggleCallback, config, tooltipProvider = null) {
+  constructor(onToggleCallback, config, tooltipProvider = null, storageCache = null) {
+    this.#storageCache = storageCache;
     this.#onToggleCallback = onToggleCallback;
     this.#tooltipProvider = tooltipProvider;
     this.#initBtn(config);
@@ -267,7 +268,7 @@ export class DevToolsUI {
 
     this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
       id: "devtools_btn",
-      cache: LocalStorageCache,
+      cache: this.#storageCache,
       noTransform: true,
     });
 

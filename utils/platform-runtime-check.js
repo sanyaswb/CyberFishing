@@ -572,9 +572,10 @@ async function main() {
   assert.equal(diagnosticCalls,4,"failed pending entries are removed and can retry");
 
   const saved=new Map([["foreign","keep"]]);
-  runtime.context.localStorage={get length(){return saved.size;},key:index=>[...saved.keys()][index],
+  const storage={get length(){return saved.size;},key:index=>[...saved.keys()][index],
     setItem:(key,value)=>saved.set(key,value),getItem:key=>saved.get(key)||null,removeItem:key=>saved.delete(key)};
-  const LocalStorageCache=runtime.context.LocalStorageCache;
+  const warnings=[];
+  const LocalStorageCache=new runtime.context.LocalStorageCache({storage,logger:{log(){},warn:(...args)=>warnings.push(args)}});
   const save={version:1,items:[{id:"item-1",condition:0.73}],equipped:{rodId:"item-1"}};
   LocalStorageCache.set("save",save);
   assert.equal(saved.get("fishing_game_save"),JSON.stringify(save),"save prefix and JSON bytes are unchanged");
@@ -582,8 +583,6 @@ async function main() {
   assert.notEqual(LocalStorageCache.get("save"),save);
   LocalStorageCache.remove("save");assert.equal(LocalStorageCache.get("save","default"),"default");
   saved.set("fishing_game_broken","invalid JSON");
-  const warnings=[];
-  runtime.context.console={log(){},warn:(...args)=>warnings.push(args),error:console.error};
   assert.equal(LocalStorageCache.get("broken","safe fallback"),"safe fallback");
   assert.equal(warnings.length,1,"failed reads retain their warning and caller fallback");
   LocalStorageCache.set("one",save);LocalStorageCache.set("two",[]);LocalStorageCache.clearAll();

@@ -1,5 +1,4 @@
 import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
-import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
@@ -22,6 +21,7 @@ export class DevTools {
   #parameterAliases;
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
+  #storageCache;
   #reelRetrieveProbeState = Object.freeze({ status: "unavailable" });
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
@@ -69,8 +69,10 @@ export class DevTools {
       settingsStore,
       debugModulesSource,
       createUI,
+      storageCache,
     } = {},
   ) {
+    this.#storageCache = storageCache;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -478,7 +480,7 @@ export class DevTools {
   }
 
   #createSectionWithCache(labelStr, parentElement, path = null) {
-    let savedStates = LocalStorageCache.get("dev_tools_sections_state", {});
+    let savedStates = this.#storageCache.get("dev_tools_sections_state", {});
     let isExpanded = savedStates[labelStr] || false;
 
     return this.#ui.createSection(
@@ -486,9 +488,9 @@ export class DevTools {
       parentElement,
       isExpanded,
       (isNowExpanded) => {
-        savedStates = LocalStorageCache.get("dev_tools_sections_state", {});
+        savedStates = this.#storageCache.get("dev_tools_sections_state", {});
         savedStates[labelStr] = isNowExpanded;
-        LocalStorageCache.set("dev_tools_sections_state", savedStates);
+        this.#storageCache.set("dev_tools_sections_state", savedStates);
       },
       path,
     );

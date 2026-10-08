@@ -178,7 +178,7 @@ function checkDevelopmentInputs() {
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
-    itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, debugModulesSource: () => debugModules, debugModules,
+    itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
     documentTarget: document, windowTarget: window, godMode: godModeInstance } });
 
@@ -445,7 +445,7 @@ function checkNativeDevelopmentDisplays() {
 function checkLocationMapConfigChanges() {
   const source = new SourceRuntime({globals:{document:{addEventListener(){},removeEventListener(){},dispatchEvent(){}},
     CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}}, console:{...console,log(){}}},
-    moduleStubs:{'src/platform/browser/storage/local_storage_cache.js':{LocalStorageCache:{get:()=>({}),set(){}}}}});
+  });
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
   const {createRuntimeConfigContext} = source.importModule('src/bootstrap/production/config_context.js');
   const {LocationMap} = ({ ...source.importModule('src/game/domain/locations/grid_cell.js'), ...source.importModule('src/game/domain/locations/dynamic_zone.js'), ...source.importModule('src/game/domain/locations/location_map.js') });
@@ -491,7 +491,7 @@ function checkLocationMapConfigChanges() {
   const ui = new Proxy({body:{},createSection:()=>({}),createSwitcherRow(key,value,parent,change,path){switches.set(path.join('.'),change);}},
     {get:(target,key)=>target[key] || (()=>{})});
   const {DevTools} = source.importModule('src/dev/tools/dev_tools.js');
-  const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,
+  const tools = new DevTools(config,{synchronize(){}},{configRuntime:context,catalogs:{},settingsStore:null,storageCache:{get:()=>({}),set(){}},
     debugModulesSource:()=>({}),createUI:()=>({ui,tooltipProvider:{ready:Promise.resolve()}})});
   tools.toggle();
   // The map receives the same live view that actual checkbox callbacks write through the authoritative store.

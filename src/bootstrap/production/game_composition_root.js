@@ -177,6 +177,7 @@ export class GameCompositionRoot {
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #collectFightDiagnostics;
+  #storageCache;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -235,6 +236,7 @@ export class GameCompositionRoot {
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#collectFightDiagnostics = collectFightDiagnostics === true;
+    this.#storageCache = new LocalStorageCache({ storage: windowTarget?.localStorage, logger: new ConsoleLogger() });
     this.#config = config || {};
     this.#itemDb = itemDb;
     this.#runtimeConfig = {};
@@ -251,7 +253,7 @@ export class GameCompositionRoot {
   }
 
   printStorageUsage() {
-    if (LocalStorageCache.printStorageUsage) LocalStorageCache.printStorageUsage();
+    this.#storageCache.printStorageUsage();
   }
 
   getMemoryWatchdogConfig() {
@@ -711,7 +713,7 @@ export class GameCompositionRoot {
       baitEffectivenessCatalogResolver,
       effectiveStatsResolver: effectiveItemStatsResolver,
       itemStatOverridePolicy,
-      cache: LocalStorageCache,
+      cache: this.#storageCache,
       assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
       makeRandomId: createRandomInventoryId,
       now: () => Date.now(),
@@ -769,10 +771,10 @@ export class GameCompositionRoot {
             itemProgressionResolver,
           }], ["dispose"],
         ))),
-        { cache: LocalStorageCache, labels: HUD_LABELS },
+        { cache: this.#storageCache, labels: HUD_LABELS },
       )),
       chum: own(new ChumService(locId, chumConfigObj, projector, {
-        cache: LocalStorageCache,
+        cache: this.#storageCache,
         configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
