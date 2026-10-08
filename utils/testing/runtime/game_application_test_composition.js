@@ -7,20 +7,20 @@ async function checkGameApplicationComposition(diagnostics = true) {
   class FixedDate extends Date { constructor(...args){super(...(args.length?args:[Date.UTC(2026,9,4)]));} static now(){return Date.UTC(2026,9,4);} }
   const source=new SourceRuntime({globals:{Date:FixedDate,performance:{now:()=>0},console:{log(){},error(...args){errors.push(args);}}}});
   source.load('src/engine/math/vector2.js');
-  ({ ...source.importModule('src/bootstrap/production/game_viewport_facade.js'), ...source.importModule('src/bootstrap/production/game_debug_facade.js'), ...source.importModule('src/bootstrap/production/game_fishing_facade.js'), ...source.importModule('src/bootstrap/production/game_application.js') });
+  ({ ...source.importModule('src/game/presentation/viewport/game_viewport_facade.js'), ...source.importModule('src/game/application/session/game_debug_facade.js'), ...source.importModule('src/game/application/fishing/game_fishing_facade.js'), ...source.importModule('src/game/application/session/game_application.js') });
   source.importModule('src/platform/browser/diagnostics/console_logger.js');
-  for(const name of ['BaitFactory','Net','ConfigProvider','EventLifecycle','FishingCastExposureResolver','GameClock','InventoryItemLocation','RodVisualOffsetSystem','ConsoleLogger']) {
+  for(const name of ['BaitFactory','Net','ConfigProvider','EventLifecycle','FishingCastExposureResolver','InventoryItemLocation','RodVisualOffsetSystem','ConsoleLogger']) {
     const owners=source.moduleNamespaces.filter(exports=>Object.hasOwn(exports,name));
     if(owners.length!==1)throw new Error('Expected one canonical export: '+name);
     source.context[name]=owners[0][name];
   }
   source.load('src/game/config/databases/fish_database.js',{expose:['FISH_DB']});
-  source.load('src/bootstrap/production/game_application.js', { expose: ['GameApplication'] });
+  source.load('src/game/application/session/game_application.js', { expose: ['GameApplication'] });
   source.load('src/game/presentation/fishing/fishing_messages.js',{expose:['FISHING_MESSAGES']});
   source.context.GameApplication=require('./constructor_defaults').bindConstructorDefaults(source.context.GameApplication,{messages:source.context.FISHING_MESSAGES});
-    source.load('src/bootstrap/production/game_viewport_facade.js', { expose: ['GameViewportFacade'] });
-    source.load('src/bootstrap/production/game_debug_facade.js', { expose: ['GameDebugFacade'] });
-    source.load('src/bootstrap/production/game_fishing_facade.js', { expose: ['GameFishingFacade'] });
+    source.load('src/game/presentation/viewport/game_viewport_facade.js', { expose: ['GameViewportFacade'] });
+    source.load('src/game/application/session/game_debug_facade.js', { expose: ['GameDebugFacade'] });
+    source.load('src/game/application/fishing/game_fishing_facade.js', { expose: ['GameFishingFacade'] });
   function target(){const handlers=new Map();return{handlers,addEventListener(type,fn){const list=handlers.get(type)||[];list.push(fn);handlers.set(type,list);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(item=>item!==fn));},emit(type,detail){for(const fn of handlers.get(type)||[])fn({detail});}};}
   const windowTarget=target(),documentTarget=target(),clock={now:1000},bounds={left:0,right:800,top:0,bottom:600};
   const config={ui:{rod:{x:'center'}},casting:{enabled:true},debug:{timeScale:2},locations:{lake:{enabled:true}},physics:{fight:{rodControl:{}}}};
@@ -48,13 +48,15 @@ async function checkGameApplicationComposition(diagnostics = true) {
     equipmentRules:{getMaxHookDepth:()=>8,getRodDisplayName:()=> 'Test rod'},baitRules:{isActiveLure:()=>false},playerCastRules:{canPlayerCast:(eq,boat)=>eq===equipment&&boat===null},
     depthUI:{updateMax(value){assert.equal(value,8);},dispose(){disposed.push('depth');}},timeUI:{update(value){assert.equal(value,5);events.push('time');},dispose(){disposed.push('time');}},holdUI:{dispose(){disposed.push('hold');}}};
   const compositionRoot={create(){throw new Error('Injected runtime must be reused');},createApplicationServices(options){appPorts=options.appPorts;assert.equal(options.runtime,runtime);assert.equal(options.runtimeConfig,config);assert.equal(options.clock,clock);assert.equal(options.rng,rng);return{loop,fightService,debugService:diagnostics === 'malformed' ? {} : diagnostics ? {update(context){debugContext??=context;assert.equal(context,debugContext);assert.equal(context.getEquipment(),equipment);assert.equal(context.getInputState(),input);events.push('debug');}} : null,chumController,stateMachine,renderCoordinator,
+    viewportFacade:new source.context.GameViewportFacade({world:options.runtime.world,projector:options.runtime.projector,canvasMetrics:options.canvasMetrics,config:options.config,
+      biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv}}),
     biteEnvironmentService:{getDynamicBounds:()=>bounds,checkWater:(x,y)=>({x,y,depth:2}),getBiteEnvData:()=>biteEnv},castService:{cast(x,y,depth,options){assert.equal(options.equipment,equipment);return castResult;}}};}};
   const debugEvents={emit(type,detail){events.push([type,detail]);},on:()=>()=>{},clear(){disposed.push('debug');}};
   if (diagnostics === 'malformed') {
-    assert.throws(() => new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,logger:new source.context.ConsoleLogger()}), /optional debugService.update/);
+    assert.throws(() => new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()}), /optional debugService.update/);
     return;
   }
-  const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,logger:new source.context.ConsoleLogger()});
+  const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags:{isDebugEnabled:()=>true,isEnabled:()=>false},audio:{},debugEvents,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()});
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
   assert.equal(source.context.EventLifecycle.getActiveListenerCount(),3);
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);

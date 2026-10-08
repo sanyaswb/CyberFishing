@@ -16,7 +16,7 @@ function check(structured) {
     ["src/game/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
     ["src/bootstrap/production/config_context.js",["createRuntimeConfigContext"]],
     ["src/bootstrap/production/game_composition_root.js",["GameCompositionRoot"]],
-    ["src/platform/browser/runtime/config_provider.js",["ConfigProvider"]],
+    ["src/game/config/runtime/config_provider.js",["ConfigProvider"]],
     ["src/game/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
     ["src/dev/overlay/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});

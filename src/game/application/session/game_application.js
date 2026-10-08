@@ -1,14 +1,11 @@
-import { BaitFactory } from "../../game/domain/tackle/bait_factory.js";
-import { Net } from "../../game/domain/tackle/net.js";
-import { ConfigProvider } from "../../platform/browser/runtime/config_provider.js";
-import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
-import { FISH_DB } from "../../game/config/databases/fish_database.js";
-import { FishingCastExposureResolver } from "../../game/domain/fishing/fishing_cast_exposure_resolver.js";
-import { GameClock } from "../../platform/browser/time/game_clock.js";
+import { BaitFactory } from "../../domain/tackle/bait_factory.js";
+import { Net } from "../../domain/tackle/net.js";
+import { ConfigProvider } from "../../config/runtime/config_provider.js";
+import { EventLifecycle } from "../../../engine/events/event_lifecycle.js";
+import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameDebugFacade } from "./game_debug_facade.js";
-import { GameFishingFacade } from "./game_fishing_facade.js";
-import { GameViewportFacade } from "./game_viewport_facade.js";
-import { InventoryItemLocation } from "../../game/domain/inventory/inventory_item_location.js";
+import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
+import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
 export class GameApplication {
   #messages;
@@ -37,7 +34,8 @@ export class GameApplication {
   #windowTarget;
   #documentTarget;
   #logger;
-  #clock = new GameClock();
+  #clock;
+  #fishDatabase;
   #castExposureResolver = new FishingCastExposureResolver();
   #listeners = new EventLifecycle();
   #disposed = false;
@@ -130,11 +128,13 @@ export class GameApplication {
     windowTarget,
     documentTarget,
     runtime = null,
-    clock = null,
+    clock,
+    fishDatabase,
     logger,
   }) {
     this.#messages = messages;
-    if (clock) this.#clock = clock;
+    this.#clock = clock;
+    this.#fishDatabase = fishDatabase;
     this.#logger = logger;
     this.#canvasMetrics = canvasMetrics;
     this.#config = new ConfigProvider(config);
@@ -286,13 +286,7 @@ export class GameApplication {
     this.#chumController = services.chumController;
     this.#stateMachine = services.stateMachine;
     this.#renderCoordinator = services.renderCoordinator;
-    this.#viewportFacade = new GameViewportFacade({
-      world: this.#world,
-      projector: this.#projector,
-      canvasMetrics: this.#canvasMetrics,
-      config: this.#config,
-      biteEnvironmentService: services.biteEnvironmentService,
-    });
+    this.#viewportFacade = services.viewportFacade;
     this.#fishingFacade = new GameFishingFacade({
       inventory: this.#inventory,
       chum: this.#chum,
@@ -491,7 +485,7 @@ export class GameApplication {
   }
 
   #handleFishDatabaseUpdate() {
-    this.#bite?.setFishDatabase?.(FISH_DB);
+    this.#bite?.setFishDatabase?.(this.#fishDatabase);
   }
 
   #handleHookedFishRuntimeUpdate(event) {

@@ -32,6 +32,11 @@ switches it on for balance testing. Fixed Catch exists only in DEV: Development 
 the optional hooked-fish override of the waiting state, and production composes none. The full fight diagnostics
 snapshot is likewise composed only for DEV (`collectFightDiagnostics`); gameplay, HUD and render read the fight frame.
 
+Bootstrap only composes. The running game session is `game/application/session/GameApplication` (state machine,
+update/draw order, casting and chum flow, inventory reactions) with `GameDebugFacade`; `GameFishingFacade` lives in
+`game/application/fishing` and `GameViewportFacade` (bounds, rod position, rod visual offset) in
+`game/presentation/viewport`. `GameCompositionRoot` builds them and injects the clock, fish database and viewport facade.
+
 Styles live in `src/game/presentation/styles/`; DEV metric/parameter descriptions in `src/dev/metadata/`.
 
 ## Inventory

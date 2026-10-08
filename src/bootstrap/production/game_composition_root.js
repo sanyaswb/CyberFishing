@@ -75,7 +75,9 @@ import { FishingSceneRenderer } from "../../game/presentation/fishing/fishing_sc
 import { FishRarityResolver } from "../../game/domain/fish/fish_rarity_resolver.js";
 import { FishVisualVariantResolver } from "../../game/presentation/fish/fish_visual_variant_resolver.js";
 import { FloatRenderer } from "../../game/presentation/fishing/float_renderer.js";
-import { GameApplication } from "./game_application.js";
+import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { GameApplication } from "../../game/application/session/game_application.js";
+import { GameViewportFacade } from "../../game/presentation/viewport/game_viewport_facade.js";
 import { GameClock } from "../../platform/browser/time/game_clock.js";
 import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
 import { GameOverRenderer } from "../../game/presentation/screens/game_over_renderer.js";
@@ -290,6 +292,7 @@ export class GameCompositionRoot {
       documentTarget: this.#documentTarget,
       runtime,
       clock,
+      fishDatabase: FISH_DB,
       logger: new ConsoleLogger(),
     });
   }
@@ -1248,11 +1251,20 @@ export class GameCompositionRoot {
       () => appPorts.draw(),
     );
 
+    const viewportFacade = new GameViewportFacade({
+      world: runtime.world,
+      projector: runtime.projector,
+      canvasMetrics,
+      config,
+      biteEnvironmentService,
+    });
+
     return {
       castService,
       fightService,
       debugService,
       biteEnvironmentService,
+      viewportFacade,
       stateDepsFactory,
       stateMachine,
       chumController,

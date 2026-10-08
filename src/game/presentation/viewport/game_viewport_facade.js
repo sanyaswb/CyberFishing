@@ -1,5 +1,5 @@
-import { RodVisualOffsetSystem } from "../../game/presentation/fishing/rod_visual_offset_system.js";
-import { Vector2 } from "../../engine/math/vector2.js";
+import { RodVisualOffsetSystem } from "../fishing/rod_visual_offset_system.js";
+import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class GameViewportFacade {
   #world;

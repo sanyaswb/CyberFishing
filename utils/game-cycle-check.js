@@ -132,7 +132,7 @@ const GAMEPLAY_FILES = [
   "src/platform/browser/runtime/browser_debug_adapter.js",
   "src/platform/browser/runtime/browser_event_target_adapter.js",
   "src/platform/browser/runtime/canvas_metrics_provider.js",
-  "src/platform/browser/runtime/config_provider.js",
+  "src/game/config/runtime/config_provider.js",
   "src/game/application/input/pull_input_mapper.js",
   "src/game/application/fishing/drag_control_service.js",
   "src/game/domain/fishing/line_system.js",

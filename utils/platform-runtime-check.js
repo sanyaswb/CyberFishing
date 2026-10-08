@@ -392,7 +392,7 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/browser_debug_adapter.js", { expose: ["BrowserDebugAdapter"] });
   runtime.load("src/platform/browser/runtime/browser_event_target_adapter.js", { expose: ["BrowserEventTargetAdapter"] });
   runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
-  runtime.load("src/platform/browser/runtime/config_provider.js", { expose: ["ConfigProvider"] });
+  runtime.load("src/game/config/runtime/config_provider.js", { expose: ["ConfigProvider"] });
   runtime.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
   const json=value=>JSON.stringify(value);
