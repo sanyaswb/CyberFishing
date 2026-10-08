@@ -577,6 +577,20 @@ for(let reload=0;reload<2;reload++) {
   assert.equal(new GameplayOverrideReader(context.runtimeConfig).noEquipmentLoss,false);
   assert.equal(context.overrideStore.entries().length,0,'DEV settings never leak into the production realm');
   assert.equal(createProductionConfigContext(),context,'one config context');
+  // Normalized physics settings are computed once per runtime config revision and follow every live override.
+  const physics = context.runtimeConfig.fightPhysicsConfig;
+  const water = physics.getWaterConfig(), rodControl = physics.getRodControlConfig();
+  assert.equal(physics.getWaterConfig(), water, 'unchanged config reuses the normalized water settings');
+  assert.equal(physics.getRodControlConfig(), rodControl, 'unchanged config reuses the normalized rod control settings');
+  const path = 'physics.water.motionResistance', original = water.motionResistance;
+  context.set(path, original + 7);
+  assert.equal(physics.getWaterConfig().motionResistance, original + 7, 'a live override reaches the adapter');
+  assert.notEqual(physics.getRodControlConfig(), rodControl, 'an override recomputes dependent settings');
+  assert.equal(physics.getRodControlConfig().water.motionResistance, original + 7);
+  context.reset(path);
+  assert.equal(physics.getWaterConfig().motionResistance, original, 'resetting the override restores the setting');
+  context.set(path, original + 1);context.resetAll();
+  assert.equal(physics.getWaterConfig().motionResistance, original, 'reset all restores the setting');
 }
 console.log("Config runtime passed: structured-clone and JSON fallback; frozen base, authoritative override identity, detached reads, live set/reset/import/export, root/adapter replacements and injected DEV base metrics.");
 }).catch(error => { console.error(error);process.exitCode = 1; });

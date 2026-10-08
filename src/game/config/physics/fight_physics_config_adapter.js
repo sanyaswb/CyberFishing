@@ -1,8 +1,41 @@
 import { firstFinite } from "../../../engine/math/number_normalization.js";
 
 export class FightPhysicsConfigAdapter {
-  constructor(config) {
+  #revision;
+  #cachedRevision;
+  #cache = new Map();
+
+  // revision: the runtime config's change counter (the override store revision). With it, each getter computes its
+  // normalized result once per revision instead of on every call; every runtime config write goes through the
+  // override store and advances it. Without it (plain config objects) every call recomputes.
+  constructor(config, { revision = null } = {}) {
     this.config = config || {};
+    this.#revision = revision;
+  }
+
+  // Getters take no arguments and only read config, so their results can be shared until the revision changes.
+  static {
+    const prototype = FightPhysicsConfigAdapter.prototype;
+    for (const name of Object.getOwnPropertyNames(prototype)) {
+      const compute = prototype[name];
+      if (!name.startsWith("get") || typeof compute !== "function" || compute.length !== 0) continue;
+      prototype[name] = function cachedConfigGetter() {
+        return this.#cached(name, compute);
+      };
+    }
+  }
+
+  #cached(name, compute) {
+    if (!this.#revision) return compute.call(this);
+    const revision = this.#revision();
+    if (revision !== this.#cachedRevision) {
+      this.#cache.clear();
+      this.#cachedRevision = revision;
+    }
+    if (this.#cache.has(name)) return this.#cache.get(name);
+    const value = compute.call(this);
+    this.#cache.set(name, value);
+    return value;
   }
 
   getPixelsPerMeter() {

@@ -12,7 +12,8 @@ export function createProductionConfigContext(initializeBase = null) {
   CONFIG.rarity.visual = RARITY_VISUAL_CONFIG;
   CONFIG.degradationColors = DEGRADATION_COLOR_CONFIG;
   Object.defineProperty(CONFIG, "fightPhysicsConfig", {
-    value: new FightPhysicsConfigAdapter(CONFIG),
+    // Normalized physics settings are recomputed only when a runtime override changes the config.
+    value: new FightPhysicsConfigAdapter(CONFIG, { revision: () => configRuntime?.overrideStore.revision ?? -1 }),
     enumerable: false,
     configurable: true,
   });
