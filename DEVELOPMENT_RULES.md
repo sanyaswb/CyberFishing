@@ -31,6 +31,9 @@ Modules:
 - explicit `.js` imports;
 - avoid cyclic imports and mass barrel files;
 - do not mix gameplay, Canvas, DOM, storage, audio and debug logic in one module.
+- composition: a class may create its own stateless, configuration-free Domain/engine calculators; everything stateful, configurable, host-dependent, DEV-only or shared is created in bootstrap and injected (when production always injects a collaborator, its constructor default is removed and tests compose it);
+- reuse before copying: shared numeric normalization lives in `engine/math/number_normalization.js`; DEV tools compose production classes instead of copying them;
+- DEV-only behavior (GodMode effects, Fixed Catch, fight diagnostics snapshot, overlays) reaches production code only through injected ports whose production implementation is inactive or absent.
 
 Performance:
 - no unnecessary allocations in hot loops;
@@ -41,6 +44,8 @@ Performance:
 - cache/reuse data where justified;
 - use pooling only for proven high-frequency allocation problems;
 - avoid transport/global lookups in hot paths.
+- hot-loop read models (for example the fight frame) are reused objects written in place; diagnostics snapshots are built only when DEV composes them;
+- normalized configuration is computed once per runtime config revision, not per frame.
 
 For large structural changes: first inspect actual dependencies/consumers, define target boundary and folder structure, then implement. For small changes, do not redesign unrelated architecture.
 
