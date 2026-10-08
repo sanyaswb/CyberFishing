@@ -3433,17 +3433,13 @@ export class FightPhysicsOrchestrator {
       playerPullMovementMode,
       fishMovementMode,
       fishPressureRelation: fishPressureSummary.relation,
-      fishPressureRelationLabel: fishPressureSummary.relationLabel,
       fishPressureDirection: fishPressureSummary.direction,
-      fishPressureDirectionLabel: fishPressureSummary.directionLabel,
       fishPressureStrengthKg: fishPressureSummary.strengthKg,
       fishPressureSpeedPxPerSec: fishPressureSummary.speedPxPerSec,
       fishPressureDirX: fishPressureSummary.dirX,
       fishPressureDirY: fishPressureSummary.dirY,
       fishMovementRelation: fishMovementSummary.relation,
-      fishMovementRelationLabel: fishMovementSummary.relationLabel,
       fishMovementDirection: fishMovementSummary.direction,
-      fishMovementDirectionLabel: fishMovementSummary.directionLabel,
       fishMovementStrengthKg: fishMovementSummary.strengthKg,
       fishMovementActualSpeedPxPerSec: fishMovementSummary.actualSpeedPxPerSec,
       fishMovementActualDirX: fishMovementSummary.dirX,
@@ -4099,9 +4095,7 @@ export class FightPhysicsOrchestrator {
     if (magnitude <= 0.000001 || actualSpeedPxPerSec <= 0.001) {
       return {
         relation: "none",
-        relationLabel: "немає руху",
         direction: "none",
-        directionLabel: "немає",
         strengthKg: 0,
         actualSpeedPxPerSec,
         dirX: 0,
@@ -4119,9 +4113,7 @@ export class FightPhysicsOrchestrator {
 
     return {
       relation,
-      relationLabel: this.#fishMovementRelationLabel(relation),
       direction: this.#resolveEightWayDirection(dirX, dirY),
-      directionLabel: this.#eightWayDirectionLabel(dirX, dirY),
       strengthKg: this.#resolveFishMovementStrengthKg({
         relation,
         fishWonForceKg,
@@ -4163,9 +4155,7 @@ export class FightPhysicsOrchestrator {
     if (!hasVelocity && fallbackForce <= 0.000001) {
       return {
         relation: "none",
-        relationLabel: "немає тиску",
         direction: "none",
-        directionLabel: "немає",
         strengthKg: 0,
         speedPxPerSec: 0,
         dirX: 0,
@@ -4183,9 +4173,7 @@ export class FightPhysicsOrchestrator {
 
     return {
       relation,
-      relationLabel: this.#fishMovementRelationLabel(relation),
       direction: this.#resolveEightWayDirection(dirX, dirY),
-      directionLabel: this.#eightWayDirectionLabel(dirX, dirY),
       strengthKg: this.#resolveFishMovementStrengthKg({
         relation,
         fishWonForceKg,
@@ -4202,13 +4190,6 @@ export class FightPhysicsOrchestrator {
     if (radialDot > 0.25) return "away_from_player";
     if (radialDot < -0.25) return "toward_player";
     return "sideways";
-  }
-
-  #fishMovementRelationLabel(relation) {
-    if (relation === "away_from_player") return "від гравця";
-    if (relation === "toward_player") return "до гравця";
-    if (relation === "sideways") return "поперек";
-    return "немає руху";
   }
 
   #resolveFishMovementStrengthKg({
@@ -4236,22 +4217,6 @@ export class FightPhysicsOrchestrator {
     const vertical = this.#directionAxis(dirY, "up", "down");
     if (vertical && horizontal) return `${vertical}_${horizontal}`;
     return vertical || horizontal || "none";
-  }
-
-  #eightWayDirectionLabel(dirX, dirY) {
-    const direction = this.#resolveEightWayDirection(dirX, dirY);
-    const labels = {
-      up: "вгору",
-      up_left: "вгору-вліво",
-      up_right: "вгору-вправо",
-      left: "вліво",
-      right: "вправо",
-      down: "вниз",
-      down_left: "вниз-вліво",
-      down_right: "вниз-вправо",
-      none: "немає",
-    };
-    return labels[direction] || labels.none;
   }
 
   #directionAxis(value, negativeName, positiveName) {

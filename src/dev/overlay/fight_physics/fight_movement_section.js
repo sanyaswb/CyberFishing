@@ -1,3 +1,4 @@
+import { formatEightWayDirection, formatMovementRelation, formatPressureRelation } from "../../formatting/fish_movement_labels.js";
 import { FightSectionBase } from "./fight_section_base.js";
 
 export class FightMovementSection extends FightSectionBase {
@@ -15,22 +16,22 @@ export class FightMovementSection extends FightSectionBase {
     return [
       this.row(
         "Fish pressure",
-        `${d.fishPressureRelationLabel || "немає тиску"} · ${f.kg(d.fishPressureStrengthKg, 3)} · ${f.num(d.fishPressureSpeedPxPerSec, 1)}px/s`,
+        `${formatPressureRelation(d.fishPressureRelation)} · ${f.kg(d.fishPressureStrengthKg, 3)} · ${f.num(d.fishPressureSpeedPxPerSec, 1)}px/s`,
         pressureColor,
       ),
       this.row(
         "Pressure direction",
-        d.fishPressureDirectionLabel || "немає",
+        formatEightWayDirection(d.fishPressureDirection),
         pressureColor,
       ),
       this.row(
         "Fish actual move",
-        `${d.fishMovementRelationLabel || "немає руху"} · ${f.kg(d.fishMovementStrengthKg, 3)} · ${f.num(d.fishMovementActualSpeedPxPerSec, 1)}px/s`,
+        `${formatMovementRelation(d.fishMovementRelation)} · ${f.kg(d.fishMovementStrengthKg, 3)} · ${f.num(d.fishMovementActualSpeedPxPerSec, 1)}px/s`,
         relationColor,
       ),
       this.row(
         "Actual direction",
-        d.fishMovementDirectionLabel || "немає",
+        formatEightWayDirection(d.fishMovementDirection),
         relationColor,
       ),
       this.row(

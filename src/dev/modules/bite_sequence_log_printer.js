@@ -1,3 +1,4 @@
+import { formatBiteResult } from "../formatting/bite_log_labels.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 
 export class BiteSequenceLogPrinter {
@@ -73,7 +74,7 @@ export class BiteSequenceLogPrinter {
       console.table(
         detail.iterations.map((iter) => ({
           Iteration: iter.index,
-          Result: iter.result,
+          Result: formatBiteResult(iter.result),
           "Animation steps": iter.stepCount,
           Fallback: DebugFormatters.ms(iter.fallbackMs),
         })),

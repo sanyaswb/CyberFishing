@@ -473,7 +473,7 @@ export class BiteSystem {
         chancePercent: this.#formatPercent(chance),
         roll: rollResult ? rollResult.roll : null,
         rollPercent: rollResult ? this.#formatPercent(rollResult.roll) : "—",
-        result: success ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+        result: success ? "bite" : "no-bite",
         skipped: chance <= 0,
       });
 
@@ -501,7 +501,7 @@ export class BiteSystem {
       mode: "WAITING",
       tickIndex: this.#tickIndex,
       tickRateMs: this.#tickRate,
-      result: selected ? "КЛЮНУЛО" : "НЕ КЛЮНУЛО",
+      result: selected ? "bite" : "no-bite",
       checkedFishCount: this.#fishDatabase.length,
       fishRolls,
       bitesCount: this.#possibleBitesBuffer.length,

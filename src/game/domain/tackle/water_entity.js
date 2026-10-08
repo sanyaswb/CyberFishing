@@ -788,7 +788,7 @@ export class WaterEntity {
       });
       debugIterations.push({
         index: i + 1,
-        result: "успішно",
+        result: "success",
         stepCount: steps.length,
         fallbackMs: intervalMs,
       });

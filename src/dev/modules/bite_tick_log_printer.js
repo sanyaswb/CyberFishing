@@ -1,3 +1,4 @@
+import { formatBiteResult } from "../formatting/bite_log_labels.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 
 export class BiteTickLogPrinter {
@@ -11,7 +12,7 @@ export class BiteTickLogPrinter {
     if (!this.#debugModulesSource().biteTicks) return;
 
     const tick = detail.tickIndex ?? "?";
-    const result = detail.result || "n/a";
+    const result = formatBiteResult(detail.result) || "n/a";
     const cooldown = detail.cooldown || {};
     const title =
       cooldown.active && result === "COOLDOWN"
@@ -48,7 +49,7 @@ export class BiteTickLogPrinter {
           Fish: fish.name || fish.id,
           Chance: fish.chancePercent,
           Roll: fish.rollPercent,
-          Result: fish.skipped ? "skip: chance 0%" : fish.result,
+          Result: fish.skipped ? "skip: chance 0%" : formatBiteResult(fish.result),
         })),
       );
     }

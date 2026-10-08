@@ -863,14 +863,14 @@
     "formula": "fishPressureRelation + force + raw speed",
     "description": "Куди риба тисне до constraints.",
     "paths": [
-      "DEBUG_DATA.fishPressureRelationLabel"
+      "DEBUG_DATA.fishPressureRelation"
     ]
   },
   "fishMovementSummary.actualMove": {
     "formula": "fishMovementRelation after constraints",
     "description": "Фактичний рух риби після constraints.",
     "paths": [
-      "DEBUG_DATA.fishMovementRelationLabel"
+      "DEBUG_DATA.fishMovementRelation"
     ]
   },
   "fishMovementSummary.blocker": {

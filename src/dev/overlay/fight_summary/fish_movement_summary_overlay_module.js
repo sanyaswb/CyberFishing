@@ -1,3 +1,4 @@
+import { formatEightWayDirection, formatMovementRelation, formatPressureRelation } from "../../formatting/fish_movement_labels.js";
 import { OverlayModule } from "../overlay_module.js";
 
 export class FishMovementSummaryOverlayModule extends OverlayModule {
@@ -21,19 +22,19 @@ export class FishMovementSummaryOverlayModule extends OverlayModule {
     let html = this.formatHeader("FISH MOVEMENT SUMMARY", "#73c2fb");
     html += this.metricRow(
       "Fish pressure",
-      `${data.fishPressureRelationLabel || "немає тиску"} · ${f.kg(data.fishPressureStrengthKg, 3)} · ${f.num(data.fishPressureSpeedPxPerSec, 1)}px/s`,
+      `${formatPressureRelation(data.fishPressureRelation)} · ${f.kg(data.fishPressureStrengthKg, 3)} · ${f.num(data.fishPressureSpeedPxPerSec, 1)}px/s`,
       { metricKey: "fishMovementSummary.pressure", color: pressureColor },
     );
-    html += this.metricRow("Pressure direction", data.fishPressureDirectionLabel || "немає", {
+    html += this.metricRow("Pressure direction", formatEightWayDirection(data.fishPressureDirection), {
       metricKey: "fishMovementSummary.pressureDirection",
       color: pressureColor,
     });
     html += this.metricRow(
       "Actual move",
-      `${data.fishMovementRelationLabel || "немає руху"} · ${f.kg(data.fishMovementStrengthKg, 3)} · ${f.num(data.fishMovementActualSpeedPxPerSec, 1)}px/s`,
+      `${formatMovementRelation(data.fishMovementRelation)} · ${f.kg(data.fishMovementStrengthKg, 3)} · ${f.num(data.fishMovementActualSpeedPxPerSec, 1)}px/s`,
       { metricKey: "fishMovementSummary.actualMove", color: moveColor },
     );
-    html += this.metricRow("Actual direction", data.fishMovementDirectionLabel || "немає", {
+    html += this.metricRow("Actual direction", formatEightWayDirection(data.fishMovementDirection), {
       metricKey: "fishMovementSummary.actualDirection",
       color: moveColor,
     });
