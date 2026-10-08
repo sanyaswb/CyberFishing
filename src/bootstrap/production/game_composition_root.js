@@ -1,3 +1,4 @@
+import { GameRenderComposition } from "./game_render_composition.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { ITEM_PROGRESSION_LABELS } from "../../game/presentation/inventory/item_progression_labels.js";
 import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
@@ -27,8 +28,6 @@ import { StateDepsFactory } from "../../game/application/state/state_deps_factor
 import { StateMachine } from "../../game/application/state/state_machine.js";
 import { VictoryState } from "../../game/application/state/victory_state.js";
 import { WaitingState } from "../../game/application/state/waiting_state.js";
-import { BoatChumRenderer } from "../../game/presentation/world/boat_chum_renderer.js";
-import { BoatChumRenderFrameBuilder } from "../../game/presentation/rendering/boat_chum_render_frame_builder.js";
 import { BrowserAudioAdapter } from "../../platform/browser/runtime/browser_audio_adapter.js";
 import { BrowserDebugAdapter } from "../../platform/browser/runtime/browser_debug_adapter.js";
 import { CanvasMetricsProvider } from "../../platform/browser/runtime/canvas_metrics_provider.js";
@@ -36,9 +35,6 @@ import { LocalStorageCache } from "../../platform/browser/storage/local_storage_
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
 import { CanvasPrimitives } from "../../platform/browser/canvas/canvas_primitives.js";
 import { CastDistanceCalculator } from "../../game/domain/casting/cast_distance_calculator.js";
-import { CastingRenderFrameBuilder } from "../../game/presentation/rendering/casting_render_frame_builder.js";
-import { CastingRenderPass } from "../../game/presentation/rendering/casting_render_pass.js";
-import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
 import { CastService } from "../../game/application/fishing/cast_service.js";
 import { CatchResolutionService } from "../../game/application/fishing/catch_resolution_service.js";
 import { FightService } from "../../game/application/fishing/fight_service.js";
@@ -59,35 +55,18 @@ import { EnvironmentSystem } from "../../game/application/world/environment_syst
 import { GameWorld } from "../../game/application/world/game_world.js";
 import { CurrentLocation } from "../../game/application/world/current_location.js";
 import { EquipmentService } from "../../game/application/inventory/equipment_service.js";
-import { FightAreaRenderer } from "../../game/presentation/fishing/fight_area_renderer.js";
-import { FightAreaRenderFrameBuilder } from "../../game/presentation/rendering/fight_area_render_frame_builder.js";
 import { FightAreaStyleResolver } from "../../game/presentation/styles/fight_area_style_resolver.js";
-import { FightHudFrameBuilder } from "../../game/presentation/hud/fight_hud_frame_builder.js";
-import { FightHudRenderer } from "../../game/presentation/hud/fight_hud_renderer.js";
 import { FightInputActionComposer } from "../../game/application/input/fight_input_action_composer.js";
 import { FightPhysicsConfigAdapter } from "../../game/config/physics/fight_physics_config_adapter.js";
-import { FightStatusBarsRenderer } from "../../game/presentation/hud/fight_status_bars_renderer.js";
 import { FishAnomalyVariantResolver } from "../../game/domain/fish/fish_anomaly_variant_resolver.js";
-import { FishingEquipmentRenderModelBuilder } from "../../game/presentation/fishing/fishing_equipment_render_model_builder.js";
-import { FishingRenderFrameBuilder } from "../../game/presentation/rendering/fishing_render_frame_builder.js";
-import { FishingRenderPass } from "../../game/presentation/rendering/fishing_render_pass.js";
-import { FishingSceneRenderer } from "../../game/presentation/fishing/fishing_scene_renderer.js";
 import { FishRarityResolver } from "../../game/domain/fish/fish_rarity_resolver.js";
 import { FishVisualVariantResolver } from "../../game/presentation/fish/fish_visual_variant_resolver.js";
-import { FloatRenderer } from "../../game/presentation/fishing/float_renderer.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
 import { GameApplication } from "../../game/application/session/game_application.js";
 import { GameViewportFacade } from "../../game/presentation/viewport/game_viewport_facade.js";
 import { GameClock } from "../../platform/browser/time/game_clock.js";
 import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
-import { GameOverRenderer } from "../../game/presentation/screens/game_over_renderer.js";
-import { GameRenderCoordinator } from "../../game/presentation/rendering/game_render_coordinator.js";
-import { GameRenderFrameBuilder } from "../../game/presentation/rendering/game_render_frame_builder.js";
-import { GameRenderPipeline } from "../../game/presentation/rendering/game_render_pipeline.js";
-import { HoldChargesRenderer } from "../../game/presentation/hud/hold_charges_renderer.js";
 import { HoldCharges } from "../../platform/browser/ui/hold_charges.js";
-import { HudBarRenderer } from "../../game/presentation/hud/hud_bar_renderer.js";
-import { HudRenderPass } from "../../game/presentation/rendering/hud_render_pass.js";
 import { HudStyleResolver } from "../../game/presentation/styles/hud_style_resolver.js";
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
 import { InputController } from "../../platform/browser/input/input_controller.js";
@@ -118,42 +97,25 @@ import { ItemRarityStrategyRegistry } from "../../game/domain/items/rarity/item_
 import { ItemRatingResolver } from "../../game/domain/items/progression/item_rating_resolver.js";
 import { ItemRatingTierResolver } from "../../game/domain/items/progression/item_rating_tier_resolver.js";
 import { ItemStatOverridePolicy } from "../../game/domain/items/item_stat_override_policy.js";
-import { LandingAreaRenderFrameBuilder } from "../../game/presentation/rendering/landing_area_render_frame_builder.js";
-import { LandingPolicyResolver } from "../../game/domain/fishing/landing_policy_resolver.js";
-import { LineVisualStateController } from "../../game/presentation/fishing/line_visual_state_controller.js";
 import { LocationAssetLoader } from "../../platform/browser/location/location_asset_loader.js";
 import { LocationMap } from "../../game/domain/locations/location_map.js";
 import { Net } from "../../game/domain/tackle/net.js";
 import { NumericStatMetricStrategy } from "../../game/domain/items/progression/numeric_stat_metric_strategy.js";
 import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_canvas_factory.js";
-import { OutcomeRenderFrameBuilder } from "../../game/presentation/screens/outcome_render_frame_builder.js";
-import { OutcomeRenderPass } from "../../game/presentation/rendering/outcome_render_pass.js";
 import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_style_resolver.js";
-import { PlayerPressureFatigueIndicatorRenderer } from "../../game/presentation/hud/player_pressure_fatigue_indicator_renderer.js";
 import { createPlayerInventory } from "./player_inventory_composition.js";
-import { PoleFightSectorGeometry } from "../../game/domain/fishing/pole_fight_sector_geometry.js";
 import { RarityAnimationResolver } from "../../game/presentation/screens/rarity_animation_resolver.js";
 import { RarityConfigValidator } from "../../game/config/validation/rarity_config_validator.js";
 import { RarityVisualResolver } from "../../game/presentation/styles/rarity_visual_resolver.js";
 import { ReelRetrieveSpeedCalculator } from "../../game/domain/fishing/reel_retrieve_speed_calculator.js";
-import { RenderComponent } from "../../engine/rendering/render_component.js";
-import { RenderFrameBuffer } from "../../game/presentation/rendering/render_frame_buffer.js";
-import { GameRenderOrder } from "../../game/presentation/rendering/game_render_order.js";
-import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
-import { StarRatingRenderer } from "../../game/presentation/screens/star_rating_renderer.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
 import { VictoryLayoutResolver } from "../../game/presentation/screens/victory_layout_resolver.js";
-import { VictoryRenderer } from "../../game/presentation/screens/victory_renderer.js";
-import { VictoryThemeResolver } from "../../game/presentation/screens/victory_theme_resolver.js";
 import { ViewportProjector } from "../../game/application/viewport/viewport_projector.js";
 import { WorldPerspective } from "../../game/domain/locations/world_perspective.js";
-import { WorldRenderFrameBuilder } from "../../game/presentation/rendering/world_render_frame_builder.js";
-import { WorldRenderPass } from "../../game/presentation/rendering/world_render_pass.js";
-import { WorldSceneRenderer } from "../../game/presentation/world/world_scene_renderer.js";
 
 export class GameCompositionRoot {
   #config;
@@ -171,13 +133,12 @@ export class GameCompositionRoot {
   #documentTarget;
   #windowTarget;
   #createDevFlags;
-  #createWorldDebugRenderer;
   #createDevTools;
-  #createLocationDebugRenderFrameBuilder;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
   #collectFightDiagnostics;
   #storageCache;
+  #rendering;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -230,12 +191,17 @@ export class GameCompositionRoot {
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
     this.#createDevFlags = createDevFlags;
-    this.#createWorldDebugRenderer = createWorldDebugRenderer;
     this.#createDevTools = createDevTools;
-    this.#createLocationDebugRenderFrameBuilder = createLocationDebugRenderFrameBuilder;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
     this.#collectFightDiagnostics = collectFightDiagnostics === true;
+    this.#rendering = new GameRenderComposition({
+      readRenderDiagnostics: () => this.#readRenderDiagnostics(),
+      createOptionalDiagnostic: (factory, name, args, methods) =>
+        this.#createOptionalDiagnostic(factory, name, args, methods),
+      createWorldDebugRenderer,
+      createLocationDebugRenderFrameBuilder,
+    });
     this.#storageCache = new LocalStorageCache({ storage: windowTarget?.localStorage, logger: new ConsoleLogger() });
     this.#config = config || {};
     this.#itemDb = itemDb;
@@ -315,6 +281,120 @@ export class GameCompositionRoot {
       stage: "bootstrap",
       consumer: "GameCompositionRoot.create",
     });
+    const {
+      surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder,
+    } = this.#composeRenderingInfrastructure({ canvas, contracts });
+    const {
+      rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver,
+      outcomeStyleResolver,
+    } = this.#composeStyleResolvers();
+    const {
+      itemFreshnessResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver,
+      itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter,
+    } = this.#composeItemModels({
+      rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
+    });
+    const { victoryLayoutResolver, victoryActionGestureResolver } = this.#composeOutcomeInteraction({
+      contracts,
+    });
+    const {
+      baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver,
+      fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver,
+    } = this.#composeFishModels({ contracts, itemFreshnessResolver });
+    const { pipeline } = this.#rendering.composePipeline({
+      surface, imageAssets, primitives, hudStyleResolver, fightAreaStyleResolver, contracts,
+      rarityVisualResolver,
+    });
+    const { projector, locId, rng, locationResources, locCfg, location } = await this.#composeLocation({
+      assetPreloadCoordinator, locationAssetLoader,
+    });
+    const {
+      inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
+    } = await this.#composePlayerInventory({
+      own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
+      baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+    });
+    const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
+    const { systems } = this.#composeWorldSystems({
+      projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
+      itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, fishRarityResolver,
+      fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
+    });
+    this.#composeInventoryUi({
+      inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
+      itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
+      physicsConfig,
+    });
+    const {
+      world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules,
+      castRules, biteRules, chumRules, boatRules, playerCastRules,
+    } = this.#composeRulesAndWorld({
+      castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq,
+      physicsConfig, own,
+    });
+    return {
+      location,
+      rng,
+      projector: systems.projector,
+      map: systems.map,
+      env: systems.env,
+      input: systems.input,
+      ui: systems.ui,
+      chum: systems.chum,
+      bite: systems.bite,
+      inventory: systems.inventory,
+      inventoryUI: systems.inventoryUI,
+      world,
+      rendering: {
+        imageAssets,
+        assetPreloadCoordinator,
+        locationAssetLoader,
+        pipeline,
+        locationDebugMapBuilder,
+        hudStyleResolver,
+        fightAreaStyleResolver,
+        outcomeStyleResolver,
+        rarityVisualResolver,
+        victoryLayoutResolver,
+      },
+      interaction: {
+        victoryActionGestureResolver,
+      },
+      fishRarityResolver,
+      itemRarityResolver,
+      fishAnomalyVariantResolver,
+      fishVisualVariantResolver,
+      fishing,
+      equipment,
+      net,
+      castPenalty,
+      depthUI,
+      timeUI,
+      holdUI,
+      debugEvents,
+      devFlags,
+      audio,
+      canvasMetrics,
+      castDistanceCalculator,
+      equipmentRules,
+      baitRules,
+      castRules,
+      biteRules,
+      chumRules,
+      boatRules,
+      playerCastRules,
+    };
+  
+    } catch (error) {
+      for (let index = owned.length - 1; index >= 0; index--) {
+        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+      }
+      throw error;
+    }
+}
+
+  // Canvas surface, image assets, offscreen canvases and the location asset loaders.
+  #composeRenderingInfrastructure({ canvas, contracts }) {
     const surface = new Canvas2DSurface(canvas, {
       contextAttributes: { alpha: false },
     });
@@ -343,6 +423,11 @@ export class GameCompositionRoot {
     const locationDebugMapBuilder = this.#createOptionalDiagnostic(
       this.#createLocationDebugMapBuilder, "locationDebugMapBuilder", [{ canvasFactory }], ["build"],
     );
+    return { surface, imageAssets, primitives, assetPreloadCoordinator, locationAssetLoader, locationDebugMapBuilder };
+  }
+
+  // Config-driven HUD, fight area, outcome, rarity and degradation styles.
+  #composeStyleResolvers() {
     const hudStyleResolver = new HudStyleResolver({
       hudStylesProvider: () => this.#config.ui?.hudStyles || {},
     });
@@ -360,6 +445,13 @@ export class GameCompositionRoot {
     const degradationColorResolver = new DegradationColorResolver({
       configProvider: () => this.#config.degradationColors || {},
     });
+    return { rarityVisualResolver, degradationColorResolver, hudStyleResolver, fightAreaStyleResolver, outcomeStyleResolver };
+  }
+
+  // Item rarity, condition, freshness and progression read models with their DOM adapters.
+  #composeItemModels({
+    rarityVisualResolver, effectiveItemStatsResolver, contracts, degradationColorResolver,
+  }) {
     const itemRarityStrategyRegistry = new ItemRarityStrategyRegistry([
       new AuthoredItemRarityStrategy(),
     ]);
@@ -457,6 +549,11 @@ export class GameCompositionRoot {
       "itemProgressionDomAdapter",
       ["apply", "clear"],
     );
+    return { itemFreshnessResolver, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemProgressionDebugProvider, itemRarityDomAdapter, itemProgressionDomAdapter, itemConditionDomAdapter };
+  }
+
+  // Victory layout and the victory action gesture.
+  #composeOutcomeInteraction({ contracts }) {
     const victoryLayoutResolver = new VictoryLayoutResolver({
       diagnostics: this.#readRenderDiagnostics(),
     });
@@ -469,6 +566,11 @@ export class GameCompositionRoot {
       "victoryActionGestureResolver",
       ["resolve"],
     );
+    return { victoryLayoutResolver, victoryActionGestureResolver };
+  }
+
+  // Fish rarity, visual and anomaly variants, bait effectiveness and the DEV hooked fish synchronizer.
+  #composeFishModels({ contracts, itemFreshnessResolver }) {
     const fishRarityResolver = new FishRarityResolver(
       this.#config.rarity,
     );
@@ -512,156 +614,12 @@ export class GameCompositionRoot {
         fishVisualVariantResolver,
       }], ["synchronize"],
     );
-    const hudBarRenderer = new HudBarRenderer(surface);
-    const worldSceneRenderer = new WorldSceneRenderer({
-      surface,
-      assets: imageAssets,
-    });
-    const worldDebugRenderer = this.#createOptionalDiagnostic(
-      this.#createWorldDebugRenderer, "worldDebugRenderer", [{ surface }], ["render"],
-    );
-    const boatChumRenderer = new BoatChumRenderer({
-      surface,
-      primitives,
-    });
-    const castSceneRenderer = new CastSceneRenderer({
-      surface,
-      primitives,
-      hudBarRenderer,
-      hudStyleResolver,
-    });
-    const fightAreaRenderer = new FightAreaRenderer({
-      surface,
-      primitives,
-      styleResolver: fightAreaStyleResolver,
-    });
-    const rodLineRenderer = new RodLineRenderer({ surface });
-    const floatRenderer = new FloatRenderer({ surface });
-    const fishingSceneRenderer = new FishingSceneRenderer({
-      components: [
-        new RenderComponent({
-          id: "fight-area",
-          order: GameRenderOrder.values.FIGHT_AREAS,
-          renderer: fightAreaRenderer,
-          selectModel: (model) => model.fightAreas,
-        }),
-        new RenderComponent({
-          id: "rod-line",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT,
-          renderer: rodLineRenderer,
-          selectModel: (model) => model.rodLine,
-        }),
-        new RenderComponent({
-          id: "float",
-          order: GameRenderOrder.values.FISHING_EQUIPMENT + 1,
-          renderer: floatRenderer,
-          selectModel: (model) => model.float,
-        }),
-      ],
-    });
-    const statusBarsRenderer = new FightStatusBarsRenderer({
-      surface,
-      hudBarRenderer,
-      styleResolver: hudStyleResolver,
-    });
-    const holdChargesRenderer = new HoldChargesRenderer({ surface });
-    const playerPressureFatigueIndicatorRenderer =
-      new PlayerPressureFatigueIndicatorRenderer({ surface });
-    const fightHudRenderer = new FightHudRenderer({
-      components: [
-        new RenderComponent({
-          id: "status-bars",
-          order: GameRenderOrder.values.HUD,
-          renderer: statusBarsRenderer,
-          selectModel: (model) => model,
-        }),
-        new RenderComponent({
-          id: "hold-charges",
-          order: GameRenderOrder.values.HUD + 1,
-          renderer: holdChargesRenderer,
-          selectModel: (model) => model.holdCharges,
-        }),
-        new RenderComponent({
-          id: "player-pressure-fatigue",
-          order: GameRenderOrder.values.HUD + 2,
-          renderer: playerPressureFatigueIndicatorRenderer,
-          selectModel: (model) => model.playerPressureFatigue,
-        }),
-      ],
-    });
-    const invalidCastMarkerRenderer = {
-      render: (model) => worldSceneRenderer.renderInvalidCastMarker(model),
-    };
-    this.#validateRenderContracts(contracts, {
-      worldSceneRenderer,
-      ...(worldDebugRenderer == null ? {} : { worldDebugRenderer }),
-      boatChumRenderer,
-      castSceneRenderer,
-      fightAreaRenderer,
-      rodLineRenderer,
-      floatRenderer,
-      fishingSceneRenderer,
-      statusBarsRenderer,
-      holdChargesRenderer,
-      fightHudRenderer,
-      invalidCastMarkerRenderer,
-    });
-    const pipeline = new GameRenderPipeline({
-      diagnostics: this.#readRenderDiagnostics(),
-      passes: GameRenderOrder.createPassList({
-        world: new WorldRenderPass({
-          components: [
-            new RenderComponent({
-              id: "world-background",
-              order: GameRenderOrder.values.BACKGROUND,
-              renderer: worldSceneRenderer,
-              selectModel: (frame) => frame.world,
-            }),
-            ...(worldDebugRenderer == null ? [] : [new RenderComponent({
-              id: "world-debug",
-              order: GameRenderOrder.values.WORLD_DEBUG,
-              renderer: worldDebugRenderer,
-              selectModel: (frame) => frame.world,
-            })]),
-            new RenderComponent({
-              id: "boat-chum",
-              order: GameRenderOrder.values.WORLD_ENTITIES,
-              renderer: boatChumRenderer,
-              selectModel: (frame) => frame.world,
-            }),
-            new RenderComponent({
-              id: "invalid-cast-marker",
-              order: GameRenderOrder.values.WORLD_ENTITIES + 1,
-              renderer: invalidCastMarkerRenderer,
-              selectModel: (frame) => frame.world.invalidCastMarker,
-            }),
-          ],
-        }),
-        casting: new CastingRenderPass({ renderer: castSceneRenderer }),
-        fishing: new FishingRenderPass({ renderer: fishingSceneRenderer }),
-        hud: new HudRenderPass({ renderer: fightHudRenderer }),
-        outcome: new OutcomeRenderPass({
-          gameOverRenderer: new GameOverRenderer({ surface }),
-          victoryRenderer: new VictoryRenderer({
-            surface,
-            primitives,
-            assets: imageAssets,
-            themeResolver: new VictoryThemeResolver({
-              rarityVisualResolver,
-            }),
-            starRatingRenderer: new StarRatingRenderer({
-              surface,
-              primitives,
-            }),
-          }),
-        }),
-      }),
-    });
-    contracts.requireMethods(pipeline, "rendering.pipeline", [
-      "render",
-      "getPassCount",
-      "copyPassIdsInto",
-    ]);
+    return { baitEffectivenessCatalogResolver, hookedFishProfileSynchronizer, fishRarityResolver, fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver };
+  }
+
+
+  // Current location, RNG, preloaded location resources and the viewport projector.
+  async #composeLocation({ assetPreloadCoordinator, locationAssetLoader }) {
     const location = new CurrentLocation(
       this.#config.locations,
       this.#config.player?.locationId,
@@ -683,6 +641,14 @@ export class GameCompositionRoot {
       locId,
       worldPerspective.getPerspective.bind(worldPerspective),
     );
+    return { projector, locId, rng, locationResources, locCfg, location };
+  }
+
+  // Physics-backed line and cast rules and the player's inventory.
+  async #composePlayerInventory({
+    own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
+    baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+  }) {
     const physicsConfig =
       this.#config.fightPhysicsConfig ||
       new FightPhysicsConfigAdapter(this.#config);
@@ -718,6 +684,11 @@ export class GameCompositionRoot {
       makeRandomId: createRandomInventoryId,
       now: () => Date.now(),
     }));
+    return { inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig };
+  }
+
+  // Equipped items at startup and the chum service catalog projected through effective stats.
+  #composeChumConfig({ inventory, effectiveItemStatsResolver }) {
     const eq = inventory.getEquipped();
     const chumConfigObj = { baits: {}, deliveryMethods: {} };
     const bootstrapItemDatabase = new ItemDatabase(this.#itemDb);
@@ -744,6 +715,15 @@ export class GameCompositionRoot {
         );
       }
     }
+    return { chumConfigObj, eq };
+  }
+
+  // Map, environment, input, game controls, chum service and bite system; the inventory reads boat charge from the chum service.
+  #composeWorldSystems({
+    projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
+    itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, fishRarityResolver,
+    fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
+  }) {
     const systems = {
       projector,
       map: new LocationMap(
@@ -810,6 +790,15 @@ export class GameCompositionRoot {
         ),
       };
     });
+    return { systems };
+  }
+
+  // Inventory UI over the composed facade and item read-model adapters.
+  #composeInventoryUi({
+    inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
+    itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
+    physicsConfig,
+  }) {
     const inventoryFacade = inventory.inventoryFacade;
     if (!inventoryFacade) {
       throw new Error("Inventory composition is required");
@@ -834,6 +823,14 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
+    return {  };
+  }
+
+  // Gameplay rules, the game world, fishing controller and HUD widgets.
+  #composeRulesAndWorld({
+    castDistanceCalculator, systems, location, canvasMetrics, clock, devFlags, debugEvents, eq, physicsConfig,
+    own,
+  }) {
     const equipmentRules = new EquipmentRules(castDistanceCalculator, this.#config, INVENTORY_RULE_MESSAGES);
     const baitRules = new BaitRules();
     const castRules = new CastRules(equipmentRules);
@@ -869,66 +866,8 @@ export class GameCompositionRoot {
     const depthUI = own(new DepthSelector({ labels: HUD_LABELS }));
     const timeUI = own(new TimeDisplay());
     const holdUI = own(new HoldCharges({ labels: HUD_LABELS }));
-    return {
-      location,
-      rng,
-      projector: systems.projector,
-      map: systems.map,
-      env: systems.env,
-      input: systems.input,
-      ui: systems.ui,
-      chum: systems.chum,
-      bite: systems.bite,
-      inventory: systems.inventory,
-      inventoryUI: systems.inventoryUI,
-      world,
-      rendering: {
-        imageAssets,
-        assetPreloadCoordinator,
-        locationAssetLoader,
-        pipeline,
-        locationDebugMapBuilder,
-        hudStyleResolver,
-        fightAreaStyleResolver,
-        outcomeStyleResolver,
-        rarityVisualResolver,
-        victoryLayoutResolver,
-      },
-      interaction: {
-        victoryActionGestureResolver,
-      },
-      fishRarityResolver,
-      itemRarityResolver,
-      fishAnomalyVariantResolver,
-      fishVisualVariantResolver,
-      fishing,
-      equipment,
-      net,
-      castPenalty,
-      depthUI,
-      timeUI,
-      holdUI,
-      debugEvents,
-      devFlags,
-      audio,
-      canvasMetrics,
-      castDistanceCalculator,
-      equipmentRules,
-      baitRules,
-      castRules,
-      biteRules,
-      chumRules,
-      boatRules,
-      playerCastRules,
-    };
-  
-    } catch (error) {
-      for (let index = owned.length - 1; index >= 0; index--) {
-        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
-      }
-      throw error;
-    }
-}
+    return { world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules, castRules, biteRules, chumRules, boatRules, playerCastRules };
+  }
 
   createApplicationServices({
     runtime,
@@ -952,6 +891,65 @@ export class GameCompositionRoot {
       stage: "bootstrap",
       consumer: "GameCompositionRoot.createApplicationServices",
     });
+    const { fightService, castService, debugService } = this.#composeFishingServices({
+      config, rng, clock, runtime, appPorts, debugEvents, devFlags, runtimeConfig,
+    });
+
+    const { biteEnvironmentService } = this.#composeBiteEnvironment({
+      runtime, appPorts, clock, biteEnvData, config,
+    });
+
+    const { stateMachine, stateDepsFactory } = this.#composeStateMachine({
+      runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own,
+    });
+
+    const { chumController } = this.#composeChumController({ own, runtime, clock, config, rng, appPorts });
+
+    const { frameBuilder } = this.#rendering.composeFrameBuilders({
+      runtime, config, canvasMetrics, appPorts, clock, contracts, fightService,
+    });
+    const { renderCoordinator } = this.#rendering.composeCoordinator({
+      stateMachine, frameBuilder, runtime, appPorts, contracts,
+    });
+
+    const loop = new GameLoop(
+      clock,
+      (dt) => appPorts.update(dt),
+      () => appPorts.draw(),
+    );
+
+    const viewportFacade = new GameViewportFacade({
+      world: runtime.world,
+      projector: runtime.projector,
+      canvasMetrics,
+      config,
+      biteEnvironmentService,
+    });
+
+    return {
+      castService,
+      fightService,
+      debugService,
+      biteEnvironmentService,
+      viewportFacade,
+      stateDepsFactory,
+      stateMachine,
+      chumController,
+      renderCoordinator,
+      loop,
+      debugEvents,
+    };
+  
+    } catch (error) {
+      for (let index = owned.length - 1; index >= 0; index--) {
+        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
+      }
+      throw error;
+    }
+}
+
+  // Casting and fight services and the optional DEV debug service.
+  #composeFishingServices({ config, rng, clock, runtime, appPorts, debugEvents, devFlags, runtimeConfig }) {
     const castService = new CastService({
       messages: FISHING_MESSAGES,
       config,
@@ -991,7 +989,11 @@ export class GameCompositionRoot {
     const debugService = this.#createOptionalDiagnostic(
       this.#createDebugService, "debugService", [config], ["update"],
     );
+    return { fightService, castService, debugService };
+  }
 
+  // Bite environment queries over the world, location and live bite data.
+  #composeBiteEnvironment({ runtime, appPorts, clock, biteEnvData, config }) {
     const biteEnvironmentService = new BiteEnvironmentService({
       world: runtime.world,
       env: runtime.env,
@@ -1010,7 +1012,11 @@ export class GameCompositionRoot {
         runtime.fishing.consumeExpiredFeederChum(eq),
       biteEnvData,
     });
+    return { biteEnvironmentService };
+  }
 
+  // Game states with their dependency factory.
+  #composeStateMachine({ runtime, config, devFlags, audio, fightService, appPorts, rng, clock, own }) {
     const stateFactoryRoot = {
       logger: new ConsoleLogger(),
       inventory: runtime.inventory,
@@ -1093,7 +1099,11 @@ export class GameCompositionRoot {
       },
       onStateChanged: appPorts.onStateChanged,
     }));
+    return { stateMachine, stateDepsFactory };
+  }
 
+  // Chum and bait boat control with its HUD button.
+  #composeChumController({ own, runtime, clock, config, rng, appPorts }) {
     const chumController = own(new ChumController({
       messages: FISHING_MESSAGES,
       inventory: runtime.inventory,
@@ -1118,178 +1128,11 @@ export class GameCompositionRoot {
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
     }));
-
-    const worldBuilder = new WorldRenderFrameBuilder({
-      map: runtime.map,
-      projector: runtime.projector,
-      config,
-      canvasMetrics,
-      locationId: runtime.location.id,
-      boatChumBuilder: new BoatChumRenderFrameBuilder({
-        chum: runtime.chum,
-        projector: runtime.projector,
-        config,
-      }),
-      debugBuilder: this.#createOptionalDiagnostic(
-        this.#createLocationDebugRenderFrameBuilder, "locationDebugRenderFrameBuilder", [{
-          map: runtime.map,
-          projector: runtime.projector,
-          config,
-          debugMapBuilder: runtime.rendering.locationDebugMapBuilder,
-        }], ["buildInto"],
-      ),
-    });
-    const castingBuilder = new CastingRenderFrameBuilder({
-      projector: runtime.projector,
-      config,
-      canvasMetrics,
-      hudStyleResolver: runtime.rendering.hudStyleResolver,
-      chumSource: {
-        isAiming: appPorts.isAimingChum,
-        getEquipment: () => runtime.inventory.getEquipped(),
-        getGameStateName: appPorts.getGameStateName,
-        getCastDistance: appPorts.getChumCastDistance,
-        getPowerAimVisual: appPorts.getChumPowerAimVisual,
-        getAccuracyPreview: appPorts.getChumAccuracyPreview,
-        getBounds: appPorts.getDynamicBounds,
-        getNow: () => clock.now,
-      },
-    });
-    const fightAreaBuilder = new FightAreaRenderFrameBuilder({
-      projector: runtime.projector,
-      config,
-      canvasMetrics,
-      getRodScreenX: appPorts.getRodScreenX,
-      landingAreaBuilder: new LandingAreaRenderFrameBuilder({
-        projector: runtime.projector,
-        config,
-        canvasMetrics,
-        getNet: appPorts.getNet,
-        getRodScreenX: appPorts.getRodScreenX,
-        landingPolicyResolver: new LandingPolicyResolver(),
-      }),
-      sectorGeometry: new PoleFightSectorGeometry(),
-    });
-    const hudBuilder = new FightHudFrameBuilder({
-      config,
-      canvasMetrics,
-    });
-    const fishingBuilder = new FishingRenderFrameBuilder({
-      inventory: runtime.inventory,
-      projector: runtime.projector,
-      canvasMetrics,
-      clock,
-      config,
-      equipmentRules: runtime.equipmentRules,
-      baitRules: runtime.baitRules,
-      getFloat: appPorts.getFloat,
-      getInputState: appPorts.getInputState,
-      getCastDistanceRatio: appPorts.getCastDistanceRatio,
-      getCurrentHookDepth: appPorts.getCurrentHookDepth,
-      getHoldState: () => fightService.getHoldUiState(),
-      lineVisualState: new LineVisualStateController(),
-      fightAreaBuilder,
-      hudBuilder,
-      equipmentModelBuilder: new FishingEquipmentRenderModelBuilder({
-        projector: runtime.projector,
-        canvasMetrics,
-        clock,
-        config,
-        getRodScreenX: appPorts.getRodScreenX,
-      }),
-    });
-    const outcomeBuilder = new OutcomeRenderFrameBuilder({
-      canvasMetrics,
-      clock,
-      styleResolver: runtime.rendering.outcomeStyleResolver,
-      layoutResolver: runtime.rendering.victoryLayoutResolver,
-      assetIdForSource: (source, namespace) => ImageAssetProvider.assetIdForSource(source, namespace),
-    });
-    runtime.inventory.setLineCapacityStateProvider?.(
-      () => fightService.getLineCapacityState(),
-    );
-    const frameBuilder = new GameRenderFrameBuilder({
-      canvasMetrics,
-      projector: runtime.projector,
-      worldBuilder,
-      castingBuilder,
-      fishingBuilder,
-      outcomeBuilder,
-    });
-    this.#validateFrameBuilderContracts(contracts, {
-      worldBuilder,
-      castingBuilder,
-      fightAreaBuilder,
-      hudBuilder,
-      fishingBuilder,
-      outcomeBuilder,
-      frameBuilder,
-    });
-    const renderCoordinator = new GameRenderCoordinator({
-      stateMachine,
-      frameBuffer: new RenderFrameBuffer({
-        diagnostics: this.#readRenderDiagnostics(),
-      }),
-      frameBuilder,
-      pipeline: runtime.rendering.pipeline,
-      getBounds: appPorts.getDynamicBounds,
-      getInvalidCastMarker: appPorts.getInvalidCastMarker,
-      isDebugEnabled: appPorts.isDebugEnabled,
-      invalidateStyles: () => {
-        runtime.rendering.hudStyleResolver.invalidate();
-        runtime.rendering.fightAreaStyleResolver.invalidate();
-        runtime.rendering.outcomeStyleResolver.invalidate();
-        runtime.rendering.rarityVisualResolver.invalidate();
-      },
-    });
-    contracts.requireMethods(renderCoordinator, "renderCoordinator", [
-      "render",
-      "invalidateStyles",
-    ]);
-
-    const loop = new GameLoop(
-      clock,
-      (dt) => appPorts.update(dt),
-      () => appPorts.draw(),
-    );
-
-    const viewportFacade = new GameViewportFacade({
-      world: runtime.world,
-      projector: runtime.projector,
-      canvasMetrics,
-      config,
-      biteEnvironmentService,
-    });
-
-    return {
-      castService,
-      fightService,
-      debugService,
-      biteEnvironmentService,
-      viewportFacade,
-      stateDepsFactory,
-      stateMachine,
-      chumController,
-      renderCoordinator,
-      loop,
-      debugEvents,
-    };
-  
-    } catch (error) {
-      for (let index = owned.length - 1; index >= 0; index--) {
-        try { owned[index].dispose?.(); } catch (cleanupError) { new ConsoleLogger().error(cleanupError); }
-      }
-      throw error;
-    }
-}
-
-  #validateRenderContracts(contracts, renderers) {
-    const names = Object.keys(renderers);
-    for (let index = 0; index < names.length; index += 1) {
-      const name = names[index];
-      contracts.requireMethods(renderers[name], name, ["render"]);
-    }
+    return { chumController };
   }
+
+
+
 
   #validateRarityConfiguration() {
     new RarityConfigValidator().assertValid({
@@ -1313,13 +1156,6 @@ export class GameCompositionRoot {
     );
   }
 
-  #validateFrameBuilderContracts(contracts, builders) {
-    const names = Object.keys(builders);
-    for (let index = 0; index < names.length; index += 1) {
-      const name = names[index];
-      contracts.requireMethods(builders[name], name, ["buildInto"]);
-    }
-  }
   #createOptionalDiagnostic(factory, name, args, methods) {
     if (factory == null) return null;
     const value = factory.apply(this, args);
