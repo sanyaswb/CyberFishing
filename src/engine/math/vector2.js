@@ -4,14 +4,14 @@ export class Vector2 {
     this.y = y;
   }
 
-  // Потрібен для скидання або встановлення значень без створення нового об'єкта
+  // Reset coordinates without allocating another vector.
   set(x, y) {
     this.x = x;
     this.y = y;
     return this;
   }
 
-  // Копіювання значень з іншого вектора (дуже корисно для оптимізації)
+  // Copy coordinates while reusing this vector.
   copy(v) {
     this.x = v.x;
     this.y = v.y;
@@ -24,7 +24,7 @@ export class Vector2 {
     return this;
   }
 
-  // Віднімання (часто потрібне у фізиці)
+
   sub(v) {
     this.x -= v.x;
     this.y -= v.y;

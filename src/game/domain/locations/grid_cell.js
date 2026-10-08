@@ -4,7 +4,7 @@ export class GridCell {
     this.y = y;
     this.size = size;
     this.depth = 0;
-    this.isWater = false; // <--- ДОДАНО: Прапорець для води
+    this.isWater = false;
     this.isCastable = false;
     this.hasCollision = false;
     this.hasSnag = false;

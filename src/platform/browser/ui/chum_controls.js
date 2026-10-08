@@ -48,7 +48,7 @@ export class ChumControls {
   }
 
   setState(state, method = "hand", count = 0, isManual = false) {
-    // 1. Форматуємо потрібний текст залежно від стану та методу
+
     let text = "";
     if (state === "empty") {
       text = "🔘";
@@ -57,7 +57,7 @@ export class ChumControls {
     } else if (state === "aiming") {
       text = "🚫";
     } else {
-      // Якщо кораблик - показуємо ТІЛЬКИ емодзі. Якщо рука - емодзі + кількість.
+      // The boat shows only its icon; hand chum also shows the remaining amount.
       if (method === "boat") {
         text = "🚤";
       } else {
@@ -65,7 +65,7 @@ export class ChumControls {
       }
     }
 
-    // 2. Перевіряємо, чи потрібно взагалі оновлювати кнопку (оптимізація)
+    // Skip DOM updates when the displayed state has not changed.
     if (
       this.currentState === state &&
       this.currentMethod === method &&
@@ -74,12 +74,12 @@ export class ChumControls {
       return;
     }
 
-    // 3. Зберігаємо нові стани та оновлюємо текст
+
     this.currentState = state;
     this.currentMethod = method;
     this.button.innerText = text;
 
-    // 4. Оновлюємо стилі
+
     switch (state) {
       case "disabled":
         this.button.style.backgroundColor = "#555555";

@@ -34,7 +34,7 @@ export class GameControls {
   hideNetButton() {
     if (this.#netBtn) {
       this.#netBtn.style.display = "none";
-      // Важливо скинути стан, щоб анімація появи спрацювала наступного разу
+      // Reset the state so the entrance animation can run again.
       this.#netBtn.style.transform = "scale(0)";
     }
   }

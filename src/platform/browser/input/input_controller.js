@@ -267,13 +267,13 @@ export class InputController {
             this.#hasPointerRelease = true;
           }
 
-          // ВАЖЛИВО: Реєструємо клік ТІЛЬКИ якщо це був короткий pending-click,
-          // а не long-hold виважування або drag-control жест.
+          // Only a short pending click becomes a click;
+          // a fight hold or drag-control gesture does not.
           if (pointerWasClickCandidate && !this.#isDragging && !this.#hasLongPressed) {
             if (now - this.#lastClickTime < 300) {
               this.#isDoubleClick = true;
             } else {
-              // Записуємо позицію кліку!
+
               if (clientX !== undefined && clientY !== undefined) {
                 this.#clickPos = { x: clientX, y: clientY };
               }
@@ -320,25 +320,25 @@ export class InputController {
       resetInput();
     });
 
-    // === КЛАВІАТУРА ===
+
     this.#addEventListener(window, "keydown", (e) => {
       this.#keys[e.code] = true;
       this.#keys[e.key] = true;
 
       const keys = this.#runtimeConfig.input?.keys || {};
 
-      // 1. Тяга
+
       if (this.#isKeyMatch(e, keys.pull)) {
         this.#isPulling = true;
         if (e.code === "Space" || e.key === " ") e.preventDefault();
       }
 
-      // 2. Блокування
+
       if (this.#isKeyMatch(e, keys.hold)) {
         if (!e.repeat) this.#holdToggleFlag = true;
       }
 
-      // 3. Підтяжка
+
       if (this.#isKeyMatch(e, keys.pump)) {
         if (!e.repeat) this.#pumpFlag = true;
       }
@@ -360,9 +360,9 @@ export class InputController {
 
       const keys = this.#runtimeConfig.input?.keys || {};
 
-      // Якщо відпустили кнопку тяги
+
       if (this.#isKeyMatch(e, keys.pull)) {
-        // Перевіряємо, чи не затиснута інша кнопка тяги
+        // Keep pulling while another pull key is still pressed.
         if (!this.#checkKeyHeld(keys.pull)) {
           this.#updatePointerPullState(Date.now());
           this.#isPulling = this.#pointerAction === PointerAction.PULL;
@@ -382,7 +382,7 @@ export class InputController {
     if (e && e.clientX !== undefined) {
       if (this.#isDragging) {
         const dx = e.clientX - this.#startX;
-        // Чутливість із конфігу (за замовчуванням 200)
+
         const dy = this.#runtimeConfig.input?.swipeResistanceY ?? 200;
 
         const length = Math.hypot(dx, dy);
@@ -609,8 +609,8 @@ export class InputController {
       keyboardRodControlX,
     );
 
-    // Space/інша pull-клавіша має гарантовано працювати кожен кадр,
-    // pointer-pull стартує тільки після pullHoldMinMs, якщо жест не став drag-control.
+    // Keyboard pull stays active each frame;
+    // pointer pull waits for pullHoldMinMs unless the gesture becomes drag control.
     const now = Date.now();
     this.#updatePointerPullState(now);
     const pointerHoldActive = this.#isPointerHoldActive(now);
@@ -640,8 +640,8 @@ export class InputController {
     state.aimLeft = this.#checkKeyHeld(keys.left);
     state.aimRight = this.#checkKeyHeld(keys.right);
 
-    // retrieve/recover не має бути активним у той самий кадр, що й pull.
-    // На PC: Space = pull, відпускання Space = автоматичний recover.
+    // Retrieve/recover must not overlap pull in the same frame.
+    // On PC, Space pulls; releasing it enables automatic recovery.
     state.retrieve = !state.isPulling && this.#checkKeyHeld(keys.retrieve);
     state.clickPos = this.#clickPos;
     state.isDoubleClick = this.#isDoubleClick;

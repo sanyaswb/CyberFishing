@@ -17,7 +17,7 @@ export class Reel extends Equipment {
   #durabilityMaxLoadLossPerPercent;
 
   constructor(equipmentPowerLevel, power, options = {}) {
-    super(equipmentPowerLevel, power); // Стара логіка відпрацьовує як і раніше!
+    super(equipmentPowerLevel, power);
     this.#holdConfig = null;
     this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
     this.#lineCapacityMeters = Reel.#numberOrDefault(

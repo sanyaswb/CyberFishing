@@ -349,7 +349,7 @@ export class BiteSystem {
   }
 
   #generateFishInstance(fish, currentDepth, playerGear, locationId) {
-    // <-- ДОДАНО playerGear
+
     const { depthConfig: dc, weightConfig: wc } = fish;
 
     let t = Math.max(
@@ -526,7 +526,7 @@ export class BiteSystem {
     });
 
     if (selected) {
-      // <-- ЗМІНЕНО: тепер передаємо playerGear сюди
+
       return this.#generateFishInstance(
         selected,
         envData.hookDepth,

@@ -9,8 +9,8 @@ export class WaterEntity {
   _currentHookDepth;
   _targetHookDepth;
 
-  _velocityDamping; // Для тертя фізичного рушія
-  _lureResistance; // Для опору самої приманки
+  _velocityDamping; // Physical movement friction.
+  _lureResistance; // Resistance of the bait itself.
 
   _isBiting = false;
   _isGuaranteed = false;
@@ -83,7 +83,7 @@ export class WaterEntity {
     this._currentHookDepth = 0.1;
     this._targetHookDepth = 0.1;
 
-    // ВАЖЛИВО: Розділяємо фізичне гальмування і опір наживки
+    // Keep physical deceleration separate from bait resistance.
     this._velocityDamping = config.friction || 0.85;
     this._lureResistance = config.waterFriction || 0;
 
@@ -623,7 +623,7 @@ export class WaterEntity {
     this._isBiting = true;
     this._isHooked = false;
 
-    // 1. БЕРЕМО КОНФІГ ВІД РИБИ
+
     const baseSeq = fishBiteSequence || this._runtimeConfig.float.biteSequence;
     const seqCfg = this._applyGodModeBiteSequence({ ...baseSeq });
 
@@ -638,7 +638,7 @@ export class WaterEntity {
 
     this._applyGodModeBiteSequence(seqCfg);
 
-    // 2. ЗАПАМ'ЯТОВУЄМО КОНФІГ ДЛЯ НАСТУПНИХ ІТЕРАЦІЙ
+    // Retain this bite sequence configuration for subsequent updates.
     this._activeBiteSequence = seqCfg;
 
     this._currentSequenceCount = 1;
@@ -665,7 +665,7 @@ export class WaterEntity {
       },
     });
 
-    // Більше не передаємо seqCfg сюди, метод візьме його з this._activeBiteSequence
+
     this._rollBiteSequence();
   }
 
@@ -738,14 +738,14 @@ export class WaterEntity {
         this.stopBite();
       } else {
         this._currentSequenceCount++;
-        // 3. ВИПРАВЛЕНО: більше не читаємо з this._config, просто викликаємо метод
+
         this._rollBiteSequence();
       }
     }
   }
 
   _rollBiteSequence() {
-    // 4. ЧИТАЄМО ЗБЕРЕЖЕНИЙ КОНФІГ
+
     const seqCfg = this._activeBiteSequence;
 
     const rollResult = this._rollChance(seqCfg.chanceGuaranteed);
@@ -770,7 +770,7 @@ export class WaterEntity {
     }
 
     for (let i = 0; i < iters; i++) {
-      const steps = this._generateRandomAnim(isRed, seqCfg); // Передаємо seqCfg сюди
+      const steps = this._generateRandomAnim(isRed, seqCfg);
       for (let j = 0; j < steps.length; j++) {
         const s = steps[j];
         s.color = color;

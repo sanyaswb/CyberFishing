@@ -17,7 +17,7 @@ export class HoldCharges {
       flex-direction: row;
     `;
 
-    // Текст "УТРИМАННЯ", який з'являється при активації
+
     this.textLabel = document.createElement("div");
     this.textLabel.style.cssText = `
       position: absolute;
@@ -40,7 +40,7 @@ export class HoldCharges {
   }
 
   update(holdState) {
-    // Якщо стану немає, утримання немає або заряди = 0 -> ховаємо весь UI
+    // Hide the UI when the hold is inactive or no charges remain.
     if (!holdState || !holdState.hasHold || holdState.max <= 0) {
       this.container.style.display = "none";
       return;
@@ -48,7 +48,7 @@ export class HoldCharges {
 
     this.container.style.display = "flex";
 
-    // Якщо змінилася максимальна кількість зарядів (наприклад, гравець змінив котушку)
+    // Rebuild charge indicators when their maximum count changes.
     if (this.maxCharges !== holdState.max) {
       this.circles.forEach((c) => c.remove());
       this.circles = [];
@@ -73,7 +73,7 @@ export class HoldCharges {
     let active = holdState.isActive ? 1 : 0;
     let restoringCount = holdState.restoring.length;
 
-    // Показуємо або ховаємо текст
+
     if (holdState.isActive) {
       this.textLabel.innerText = this.#labels.holdActive;
       this.textLabel.style.display = "block";
@@ -81,30 +81,30 @@ export class HoldCharges {
       this.textLabel.style.display = "none";
     }
 
-    // Оновлюємо стан кожного кружечка
+
     for (let i = 0; i < this.maxCharges; i++) {
       const circle = this.circles[i];
 
       if (active > 0) {
-        // АКТИВНИЙ БЛОК: пустий всередині, світиться неоном
+        // Active charge: hollow with a neon glow.
         circle.style.background = "transparent";
         circle.style.borderColor = "#00ff80";
         circle.style.boxShadow = "0 0 12px #00ff80, inset 0 0 8px #00ff80";
         active--;
       } else if (available > 0) {
-        // ДОСТУПНИЙ БЛОК: повністю зафарбований зеленим
+        // Available charge: filled green.
         circle.style.background = "#00ff80";
         circle.style.borderColor = "#00cc66";
         circle.style.boxShadow = "none";
         available--;
       } else if (restoringCount > 0) {
-        // ВІДНОВЛЮЄТЬСЯ: червоний, заповнюється знизу
+        // Recovering charge: red, filling from the bottom.
         const timer = holdState.restoring[restoringCount - 1];
         let progress = 1.0 - timer / holdState.restoreMaxTime;
         progress = Math.max(0, Math.min(1, progress));
-        const percent = (progress * 100).toFixed(1); // До 1 знака після коми для плавності
+        const percent = (progress * 100).toFixed(1); // Keep one decimal place for a smooth fill transition.
 
-        // Магія CSS: градієнт, який робить чітку межу заповнення
+        // The gradient gives the fill a sharp boundary.
         circle.style.background = `linear-gradient(to top, rgba(255, 0, 85, 0.8) ${percent}%, transparent ${percent}%)`;
         circle.style.borderColor = "#ff0055";
         circle.style.boxShadow = "none";

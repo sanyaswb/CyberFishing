@@ -40,13 +40,13 @@ export class DynamicZone {
       this.dirTimer = this.#range(2000, 5000);
     }
 
-    // Запобіжник: якщо зона вилетіла, повертаємо її в стартову точку
+    // Return escaped zones to their starting position.
     if (isNaN(this.x) || isNaN(this.y)) {
       this.x = 10;
       this.y = 15;
     }
 
-    // Логіка перевірки масиву зон
+
     const isInside = (px, py) => {
       if (!this.bounds) return true;
       const bArr = Array.isArray(this.bounds) ? this.bounds : [this.bounds];
@@ -65,7 +65,7 @@ export class DynamicZone {
 
     let bounced = false;
 
-    // Рух по X
+
     const nextX = this.x + this.speedX * timeScale;
     if (isInside(nextX, this.y)) {
       this.x = nextX;
@@ -74,7 +74,7 @@ export class DynamicZone {
       bounced = true;
     }
 
-    // Рух по Y
+
     const nextY = this.y + this.speedY * timeScale;
     if (isInside(this.x, nextY)) {
       this.y = nextY;

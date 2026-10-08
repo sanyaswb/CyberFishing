@@ -30,7 +30,7 @@ export class ChumService {
     this.#storageKey = `chum_active_${locationId}`;
     this.#locationMemoryKey = `chum_memory_${locationId}`;
 
-    // Безпечні перевірки та дефолтні значення
+
     this.handUses = chumConfig?.deliveryMethods?.hand?.maxUses ?? 999;
 
     this.loadFromStorage();
@@ -41,11 +41,11 @@ export class ChumService {
     this.#configEvents?.addEventListener("config-updated", this.#onConfigUpdateBind);
   }
 
-  // Метод для оновлення існуючих зон у реальному часі
+  // Apply configuration edits to existing zones.
   #onConfigUpdate({ path, value }) {
-    // Тепер ми шукаємо в "chums", а не в "baits", оскільки в ITEM_DB це категорія "chums"
+
     if (path.includes("chums") && path.includes("radius")) {
-      // +1 бере назву самої прикормки (наприклад: 'carp_mix_basic')
+      // The next path segment identifies the chum catalog item.
       const baitId = path[path.indexOf("chums") + 1];
       for (const zone of this.#zones) {
         if (zone.baitId === baitId) {
@@ -68,7 +68,7 @@ export class ChumService {
   }
 
   spawnIdleBoat(startX, startY, boatItem = {}) {
-    // Енергія та характеристики тепер беруться з екіпірованого предмета (boatItem)
+    // Energy and performance come from the equipped boat item.
     const currentEnergy = boatItem.maxEnergy || 100;
     const boat = new BaitBoat(startX, startY, boatItem, null, currentEnergy);
     this.#boats.push(boat);

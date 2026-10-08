@@ -3,7 +3,7 @@ import { EQUIPMENT_MAIN_SLOT_IDS } from "../equipment/equipment_slot_catalog.js"
 import { LOADOUT_DISPLAY_NAME } from "./persisted_loadout_names.js";
 
 /**
- * A Комплект owns only the five main equipment roots. Child assembly items are
+ * A loadout owns only the five main equipment roots. Child assembly items are
  * reached through their root and auxiliary equipment never belongs here.
  */
 export class EquipmentLoadout {

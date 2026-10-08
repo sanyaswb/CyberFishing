@@ -17,14 +17,14 @@ export class UiEventShield {
     ];
 
     eventsToBlock.forEach((evt) => {
-      // ВИПРАВЛЕННЯ: Використовуємо capture: false (Bubbling)
-      // Це дозволяє дітям (+ / -) та власним обробникам перетягування спрацювати першими.
+      // Bubble so child controls and drag handlers can run first.
+
       element.addEventListener(
         evt,
         (e) => {
           e.stopPropagation();
-          // Ми видалили stopImmediatePropagation, щоб не блокувати
-          // інші скрипти на цьому ж елементі.
+          // Allow other handlers on this element to run as well.
+
         },
         { capture: false },
       );

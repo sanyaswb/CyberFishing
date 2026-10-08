@@ -11,7 +11,7 @@ export class DraggableButton {
   #startY;
   #offsetX;
   #offsetY;
-  #id; // Унікальний ідентифікатор для кешу
+  #id; // Unique key for the cached position.
   #onClickShield = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -24,7 +24,7 @@ export class DraggableButton {
     this.#config = config;
     this.#options = options;
 
-    // Визначаємо ID (пріоритет: options.id -> element.id -> дефолтна назва)
+    // Prefer the explicit ID, then the element ID, then the default name.
     this.#id = options.id || element.id || "default_draggable";
 
     this.#holdTimer = null;
@@ -37,10 +37,10 @@ export class DraggableButton {
     this.onPointerUp = this.onPointerUp.bind(this);
 
     this.#initEvents();
-    this.#restorePosition(); // Відновлюємо позицію при створенні
+    this.#restorePosition();
   }
 
-  // --- МАГІЯ КЕШУ ---
+
   #restorePosition() {
     if (!this.#options.cache) return;
 
@@ -50,14 +50,14 @@ export class DraggableButton {
       this.#element.style.margin = "0";
       this.#element.style.transition = "none";
 
-      // Якщо це старий кеш (де ми зберігали x та y), для сумісності
+      // Support the previous cache format with absolute x/y coordinates.
       if (savedPos.x !== undefined) {
         this.#element.style.left = savedPos.x;
         this.#element.style.top = savedPos.y;
         this.#element.style.right = "auto";
         this.#element.style.bottom = "auto";
       } else {
-        // Новий розумний кеш з прив'язкою до країв
+        // Restore the position relative to its nearest viewport edges.
         this.#element.style.left = savedPos.left || "auto";
         this.#element.style.right = savedPos.right || "auto";
         this.#element.style.top = savedPos.top || "auto";
@@ -73,7 +73,7 @@ export class DraggableButton {
     const winWidth = window.innerWidth;
     const winHeight = window.innerHeight;
 
-    // Рахуємо відстань до всіх чотирьох країв екрана
+
     const distLeft = rect.left;
     const distRight = winWidth - rect.right;
     const distTop = rect.top;
@@ -81,7 +81,7 @@ export class DraggableButton {
 
     const pos = {};
 
-    // По горизонталі: прив'язуємо до того краю, який ближче
+    // Anchor horizontally to the nearer edge.
     if (distLeft <= distRight) {
       pos.left = `${Math.max(0, distLeft)}px`;
       pos.right = "auto";
@@ -90,7 +90,7 @@ export class DraggableButton {
       pos.left = "auto";
     }
 
-    // По вертикалі: прив'язуємо до верху або до низу
+    // Anchor vertically to the nearer edge.
     if (distTop <= distBottom) {
       pos.top = `${Math.max(0, distTop)}px`;
       pos.bottom = "auto";
@@ -99,13 +99,13 @@ export class DraggableButton {
       pos.top = "auto";
     }
 
-    // Застосовуємо ці "розумні" координати одразу до елемента
+
     this.#element.style.left = pos.left;
     this.#element.style.right = pos.right;
     this.#element.style.top = pos.top;
     this.#element.style.bottom = pos.bottom;
 
-    // Зберігаємо в кеш
+
     this.#options.cache.set(`drag_pos_${this.#id}`, pos);
   }
   // -------------------
@@ -222,7 +222,7 @@ export class DraggableButton {
         this.#element.style.boxShadow = "";
         this.#element.style.transition = "";
       }
-      // Зберігаємо позицію після того, як кинули кнопку
+      // Save the position when the drag ends.
       this.#savePosition();
     } else {
       const dist = Math.hypot(

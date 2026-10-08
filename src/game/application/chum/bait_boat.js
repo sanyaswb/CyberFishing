@@ -46,7 +46,7 @@ export class BaitBoat {
     this.maneuverTimer = 0;
   }
 
-  // Знайди і заміни гетер
+
   get sensorRays() {
     if (this.config.showSensors === false) return [];
     return this.#sensorRays;
@@ -206,7 +206,7 @@ export class BaitBoat {
     );
     const rangeFactor = this.config.sensorRangeFactor || 1.5;
 
-    // Розраховуємо дистанцію: базова дальність + динамічний бонус від швидкості
+    // Range combines the base distance and the speed-dependent bonus.
     const lookDist = cellSize * rangeFactor + speedRatio * cellSize * 2.0;
     const currentSpread = Math.PI / 2 - (Math.PI / 3) * speedRatio;
 
@@ -232,7 +232,7 @@ export class BaitBoat {
 
       obstacleWeights[i] = isRayBlocked;
 
-      // Перевикористовуємо існуючі об'єкти замість створення нових
+      // Reuse the existing vectors instead of allocating new ones.
       const ray = this.#sensorRays[i];
       ray.startX = this.pos.x;
       ray.startY = this.pos.y;
@@ -307,13 +307,13 @@ export class BaitBoat {
       (dx / dist) * Math.cos(this.angle) + (dy / dist) * Math.sin(this.angle);
     const isGoingTowardsWall = targetAlignment > -0.2;
 
-    // ЛОГІКА УХИЛЯННЯ/РЕВЕРСУ ДЛЯ ОБОХ РЕЖИМІВ
+    // Avoidance and reversing apply to both control modes.
     if (this.avoidanceState === "none") {
-      const reverseTime = this.config.maneuver?.reverseTimeSec || 1.2; // <--- ДОДАНО
+      const reverseTime = this.config.maneuver?.reverseTimeSec || 1.2;
 
       if (isManual) {
         if (sensors.isBumperHit && !isGoingTowardsWall) {
-          this.#setAvoidance("reversing", reverseTime, this.angle); // <--- ЗМІНЕНО
+          this.#setAvoidance("reversing", reverseTime, this.angle);
         }
       } else {
         if (!isBlindZone) {
@@ -322,7 +322,7 @@ export class BaitBoat {
             sensors.isForwardBlocked &&
             isGoingTowardsWall;
           if (sensors.isBumperHit || isStuck) {
-            this.#setAvoidance("reversing", reverseTime, this.angle); // <--- ЗМІНЕНО
+            this.#setAvoidance("reversing", reverseTime, this.angle);
           } else if (sensors.isForwardBlocked && isGoingTowardsWall) {
             const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
             this.#setAvoidance(
@@ -354,32 +354,32 @@ export class BaitBoat {
     let steerY = (dy / dist) * arrivalRatio;
     let hazardBrake = 0;
 
-    // 2. AVOIDANCE (Оновлено: використання persistenceTimer та параметрів конфігу)
+    // Obstacle avoidance persists for the configured duration.
     const isForwardBlocked = sensors.isForwardBlocked;
     const isParking = this.state === "returning";
 
-    // Визначаємо вільний кут для об'їзду (якщо один з боків вільний)
+    // Choose an open side for steering around the obstacle.
     const turnDir = sensors.obstacleWeights[1] ? 1 : -1;
     const clearAngle =
       sensors.obstacleWeights[1] && sensors.obstacleWeights[2]
         ? null
         : this.angle + (Math.PI / 2) * turnDir;
 
-    // Читаємо налаштування з CONFIG
+
     const persistenceTime = (this.config.avoidancePersistenceMs || 300) / 1000;
     const thrustMult = this.config.avoidanceThrustMultiplier || 0.1;
 
-    // Активуємо таймер, якщо бачимо перешкоду
+
     if (isForwardBlocked) {
       this.persistenceTimer = persistenceTime;
     }
 
-    // Кораблик вважає, що він у режимі "об'їзду", поки бачить стіну АБО поки не вичерпано таймер
+    // Keep avoiding while the wall is visible or the persistence timer is active.
     const inAvoidanceMode =
       (isForwardBlocked || this.persistenceTimer > 0) && !isParking;
 
     if (!isManual && inAvoidanceMode && this.avoidanceState === "none") {
-      // Використовуємо динамічну тягу з конфігу замість жорсткого 0.1
+
       steerX *= thrustMult;
       steerY *= thrustMult;
 
@@ -387,7 +387,7 @@ export class BaitBoat {
         steerX += Math.cos(clearAngle) * 4;
         steerY += Math.sin(clearAngle) * 4;
       } else {
-        // Якщо шлях зовсім заблокований - здаємо назад
+        // Reverse when neither side offers an escape route.
         steerX -= Math.cos(this.angle) * 4;
         steerY -= Math.sin(this.angle) * 4;
       }
@@ -514,14 +514,14 @@ export class BaitBoat {
       while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
-      // ПРЯМЕ КЕРУВАННЯ (Ваш оригінальний підхід)
+
       const maxTurn = (this.config.turnSpeedRad || 3.0) * dtSec;
       this.angle +=
         Math.sign(angleDiff) * Math.min(Math.abs(angleDiff), maxTurn);
 
       if (isReversing) {
         const reverseMult = this.config.maneuver?.reverseThrustMult || 0.8;
-        const reverseThrust = accel * dtSec * reverseMult; // <--- ЗМІНЕНО
+        const reverseThrust = accel * dtSec * reverseMult;
         this.velocity.x -= noseX * reverseThrust;
         this.velocity.y -= noseY * reverseThrust;
       } else {
@@ -532,7 +532,7 @@ export class BaitBoat {
         const alignFactor = Math.max(0.3, alignment);
 
         const maneuverThrust = this.config.maneuver?.maneuverThrustMult || 0.3;
-        const maneuverPenalty = this.maneuverTimer > 0 ? maneuverThrust : 1.0; // <--- ЗМІНЕНО
+        const maneuverPenalty = this.maneuverTimer > 0 ? maneuverThrust : 1.0;
 
         const thrustMultiplier =
           steeringMag < 0.5 && alignment < 0.7 ? 0.1 : 1.0;
@@ -567,7 +567,7 @@ export class BaitBoat {
     const maneuverSpeed = this.config.maneuver?.maneuverSpeedMult || 0.4;
     const maxSpeed =
       this.maneuverTimer > 0
-        ? this.stats.speedPxPerSec * maneuverSpeed // <--- ЗМІНЕНО
+        ? this.stats.speedPxPerSec * maneuverSpeed
         : this.stats.speedPxPerSec;
 
     const vMag = Math.hypot(this.velocity.x, this.velocity.y);

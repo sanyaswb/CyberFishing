@@ -20,8 +20,8 @@ export class Net {
     return this.#config.active;
   }
 
-  // Переводимо стару логіку "length * 10" у віртуальну дистанцію.
-  // Наприклад, length 15 = 150 віртуальних пікселів від берега.
+  // Convert net length to virtual distance using the existing factor of 10.
+  // For example, length 15 reaches 150 virtual pixels from the shore.
   // Current model: length is meters; virtual reach is pixels via DistanceUnitConverter.
   getReachMeters() {
     const reachMeters = Number(
@@ -44,30 +44,30 @@ export class Net {
     return Math.max(0, Number(this.#config.maxWeight) || 0);
   }
 
-  // Отримуємо віртуальну Y-координату, де починається зона підсаки
+
   getTriggerVirtualY(virtualBottomY) {
-    // Якщо підсаки немає, базова зона вилову (наприклад, 50 віртуальних пікселів біля самого берега)
+    // Without a net, use the base landing zone near the shore.
     const baseReach = 50;
     const reach = this.isActive ? this.virtualReach : baseReach;
     return virtualBottomY - reach;
   }
 
-  // Перевірка, чи знаходиться поплавець/риба у зоні дії підсаки
+
   isFloatInZone(floatVirtualY, virtualBottomY) {
     if (!this.isActive) return false;
     const triggerY = this.getTriggerVirtualY(virtualBottomY);
     return floatVirtualY >= triggerY && floatVirtualY < virtualBottomY;
   }
 
-  // Розрахунок шансу успішного вилову риби
+
   calculateCatchChance(fishWeight) {
-    if (!this.isActive) return 100; // Якщо механіка підсаки вимкнена
+    if (!this.isActive) return 100;
 
     const maxWeight = this.getMaxWeight();
     if (maxWeight <= 0) return 0;
     if (fishWeight <= maxWeight) return 100;
 
-    // Якщо риба важча за ліміт підсаки:
+
     const diffPercent = ((fishWeight - maxWeight) / maxWeight) * 100;
     let baseChance = 50;
 
