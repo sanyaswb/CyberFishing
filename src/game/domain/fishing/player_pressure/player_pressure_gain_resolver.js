@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PlayerPressureGainResolver {
   #config;
 
@@ -17,21 +19,21 @@ export class PlayerPressureGainResolver {
     const thresholds = cfg.inputThresholds || {};
     const multipliers = cfg.multipliers || {};
     const enabled = cfg.enabled === true;
-    const holdThresholdKg = this.#positive(thresholds.holdForceKg, 0.01);
-    const controlInputThreshold = this.#clamp01(
+    const holdThresholdKg = nonNegativeOr(thresholds.holdForceKg, 0.01);
+    const controlInputThreshold = clampUnitFinite(
       thresholds.controlInputRatio ?? 0.05,
     );
-    const controlForceThresholdKg = this.#positive(
+    const controlForceThresholdKg = nonNegativeOr(
       thresholds.controlForceKg,
       0.01,
     );
     const resolvedHoldActive =
       holdActive === true &&
-      this.#positive(holdForceKg) >= holdThresholdKg;
+      nonNegativeOr(holdForceKg) >= holdThresholdKg;
     const resolvedControlActive =
       controlActive === true &&
-      this.#clamp01(controlInputRatio) >= controlInputThreshold &&
-      this.#positive(controlForceKg) >= controlForceThresholdKg;
+      clampUnitFinite(controlInputRatio) >= controlInputThreshold &&
+      nonNegativeOr(controlForceKg) >= controlForceThresholdKg;
     const mode = this.#mode({
       holdActive: resolvedHoldActive,
       controlActive: resolvedControlActive,
@@ -47,9 +49,9 @@ export class PlayerPressureGainResolver {
       multiplier,
       holdActive: resolvedHoldActive,
       controlActive: resolvedControlActive,
-      holdForceKg: this.#positive(holdForceKg),
-      controlForceKg: this.#positive(controlForceKg),
-      controlInputRatio: this.#clamp01(controlInputRatio),
+      holdForceKg: nonNegativeOr(holdForceKg),
+      controlForceKg: nonNegativeOr(controlForceKg),
+      controlInputRatio: clampUnitFinite(controlInputRatio),
       holdForceThresholdKg: holdThresholdKg,
       controlInputThreshold,
       controlForceThresholdKg,
@@ -65,29 +67,14 @@ export class PlayerPressureGainResolver {
 
   #multiplier({ mode, multipliers }) {
     if (mode === "hold_and_control") {
-      return this.#positive(multipliers.holdAndControl, 1.5);
+      return nonNegativeOr(multipliers.holdAndControl, 1.5);
     }
     if (mode === "hold_only") {
-      return this.#positive(multipliers.holdOnly, 1.0);
+      return nonNegativeOr(multipliers.holdOnly, 1.0);
     }
     if (mode === "control_only") {
-      return this.#positive(multipliers.controlOnly, 1.0);
+      return nonNegativeOr(multipliers.controlOnly, 1.0);
     }
     return 1;
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

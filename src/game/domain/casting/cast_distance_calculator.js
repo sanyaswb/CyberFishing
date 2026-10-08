@@ -1,5 +1,6 @@
 import { DistanceUnitConverter } from "./distance_unit_converter.js";
 import { FloatTackleLineBudgetPolicy } from "../fishing/float_tackle_line_budget_policy.js";
+import { finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class CastDistanceCalculator {
   #config;
@@ -36,19 +37,19 @@ export class CastDistanceCalculator {
   }
 
   getRodBaseReachMeters(rod, hasReel = true) {
-    const rodLength = this.#numberOrDefault(
+    const rodLength = finiteOr(
       this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
       2.0,
     );
     if (hasReel) {
-      const multiplier = this.#numberOrDefault(
+      const multiplier = finiteOr(
         this.#lineConfig.rodLengthReserveMultiplier,
         2.0,
       );
       return Math.max(0, rodLength * multiplier);
     }
 
-    const multiplier = this.#numberOrDefault(
+    const multiplier = finiteOr(
       this.#lineConfig.noReelMinRodLengthMultiplier,
       2.0,
     );
@@ -58,7 +59,7 @@ export class CastDistanceCalculator {
   getLineMeters(lineStats = null) {
     return Math.max(
       0,
-      this.#numberOrDefault(lineStats?.effectiveStats?.lengthMeters, 0),
+      finiteOr(lineStats?.effectiveStats?.lengthMeters, 0),
     );
   }
 
@@ -84,7 +85,7 @@ export class CastDistanceCalculator {
       return this.pixelsToMeters(legacyPixels);
     }
 
-    return this.#numberOrDefault(fallbackMeters, 0);
+    return finiteOr(fallbackMeters, 0);
   }
 
   getMaxCastDistancePx(equipment, fallbackPx = Infinity, options = {}) {
@@ -114,7 +115,7 @@ export class CastDistanceCalculator {
 
   getBuildCastPowerCoefficient(equipment, fallback = null) {
     const castingPowerConfig = this.#getCastingPowerConfig();
-    const fallbackCoefficient = this.#numberOrDefault(
+    const fallbackCoefficient = finiteOr(
       fallback ??
         castingPowerConfig.fallbackCoefficient ??
         this.#config.casting?.inventoryPreviewPowerCoefficient ??
@@ -131,24 +132,24 @@ export class CastDistanceCalculator {
       "castPowerCoefficient",
       "getCastPowerCoefficient",
     );
-    const rodLengthMeters = this.#numberOrDefault(
+    const rodLengthMeters = finiteOr(
       this.#readNumber(rod, "lengthMeters", "getLengthMeters"),
       0,
     );
     const rodLengthCoefficient =
       Number.isFinite(explicitRodCoefficient)
         ? explicitRodCoefficient
-        : this.#numberOrDefault(
+        : finiteOr(
             castingPowerConfig.rodLengthCoefficientPerMeter,
             0,
           ) * rodLengthMeters;
 
     const reel = equipment?.reel || null;
     const bearingCount = this.#isReelAvailable(reel)
-      ? this.#numberOrDefault(this.#readNumber(reel, "bearingCount"), 0)
+      ? finiteOr(this.#readNumber(reel, "bearingCount"), 0)
       : 0;
     const reelCoefficient =
-      this.#numberOrDefault(castingPowerConfig.reelBearingCoefficient, 0) *
+      finiteOr(castingPowerConfig.reelBearingCoefficient, 0) *
       bearingCount;
 
     return this.#clampCastPower(rodLengthCoefficient + reelCoefficient);
@@ -237,11 +238,6 @@ export class CastDistanceCalculator {
     return Number(source.effectiveStats?.[propertyName]);
   }
 
-  #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
   #clamp01(value) {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 0;
@@ -250,8 +246,8 @@ export class CastDistanceCalculator {
 
   #clampCastPower(value) {
     const castingPowerConfig = this.#getCastingPowerConfig();
-    const min = this.#numberOrDefault(castingPowerConfig.minCoefficient, 0);
-    const max = this.#numberOrDefault(castingPowerConfig.maxCoefficient, 1);
+    const min = finiteOr(castingPowerConfig.minCoefficient, 0);
+    const max = finiteOr(castingPowerConfig.maxCoefficient, 1);
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return this.#clamp01(0);
     return Math.max(min, Math.min(max, parsed));

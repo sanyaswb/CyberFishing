@@ -1,3 +1,5 @@
+import { finiteOr } from "../../../engine/math/number_normalization.js";
+
 export class FloatTackleLineBudgetPolicy {
   #config;
 
@@ -71,14 +73,14 @@ export class FloatTackleLineBudgetPolicy {
   #minimumDepthMeters() {
     return Math.max(
       0,
-      this.#numberOrDefault(this.#config.minimumDepthMeters, 0.1),
+      finiteOr(this.#config.minimumDepthMeters, 0.1),
     );
   }
 
   #isSurfaceDepth(depthMeters) {
     const tolerance = Math.max(
       0,
-      this.#numberOrDefault(this.#config.surfaceDepthToleranceMeters, 0.001),
+      finiteOr(this.#config.surfaceDepthToleranceMeters, 0.001),
     );
     return depthMeters <= this.#minimumDepthMeters() + tolerance;
   }
@@ -86,7 +88,7 @@ export class FloatTackleLineBudgetPolicy {
   #readMeters(source, propertyName) {
     return Math.max(
       0,
-      this.#numberOrDefault(
+      finiteOr(
         source?.effectiveStats?.[propertyName],
         0,
       ),
@@ -97,10 +99,5 @@ export class FloatTackleLineBudgetPolicy {
     const parsed = Number(value);
     const fallback = Number.isFinite(parsed) ? parsed : min;
     return Math.max(min, Math.min(max, fallback));
-  }
-
-  #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 }

@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class StaminaDrainCalculator {
   calculate({
     playerStaminaPressureKg = 0,
@@ -8,19 +10,19 @@ export class StaminaDrainCalculator {
     config = {},
   } = {}) {
     const enabled = config.enabled !== false;
-    const pressure = this.#positive(playerStaminaPressureKg);
-    const resistance = this.#positive(fishStaminaResistanceKg);
-    const threshold = this.#positive(pressureThresholdKg, 0.01);
+    const pressure = nonNegativeOr(playerStaminaPressureKg);
+    const resistance = nonNegativeOr(fishStaminaResistanceKg);
+    const threshold = nonNegativeOr(pressureThresholdKg, 0.01);
     const shouldDrain = enabled && pressure > threshold;
     const advantageConfig = config.advantageDrain || {};
     const denominator = Math.max(0.000001, pressure + resistance);
     const playerAdvantageRatio = pressure / denominator;
-    const minAdvantageRatio = this.#clamp01(
+    const minAdvantageRatio = clampUnitFinite(
       advantageConfig.minAdvantageRatio ?? 0.1,
     );
     const maxAdvantageRatio = Math.max(
       minAdvantageRatio + 0.000001,
-      this.#clamp01(advantageConfig.maxAdvantageRatio ?? 0.9),
+      clampUnitFinite(advantageConfig.maxAdvantageRatio ?? 0.9),
     );
     const clampedAdvantageRatio = Math.max(
       minAdvantageRatio,
@@ -29,17 +31,17 @@ export class StaminaDrainCalculator {
     const normalizedRatio =
       (clampedAdvantageRatio - minAdvantageRatio) /
       (maxAdvantageRatio - minAdvantageRatio);
-    const minDrainMultiplier = this.#positive(
+    const minDrainMultiplier = nonNegativeOr(
       advantageConfig.minDrainMultiplier,
       0.25,
     );
     const maxDrainMultiplier = Math.max(
       minDrainMultiplier,
-      this.#positive(advantageConfig.maxDrainMultiplier, 1),
+      nonNegativeOr(advantageConfig.maxDrainMultiplier, 1),
     );
     const curvePower = Math.max(
       0.001,
-      this.#positive(advantageConfig.curvePower, 1),
+      nonNegativeOr(advantageConfig.curvePower, 1),
     );
     const drainMultiplier =
       shouldDrain && advantageConfig.enabled !== false
@@ -50,9 +52,9 @@ export class StaminaDrainCalculator {
           ? 1
           : 0;
     const drainPerSecond = shouldDrain
-      ? this.#positive(baseDrainPerSecond, 100) * drainMultiplier
+      ? nonNegativeOr(baseDrainPerSecond, 100) * drainMultiplier
       : 0;
-    const staminaDrain = drainPerSecond * this.#positive(dtSec);
+    const staminaDrain = drainPerSecond * nonNegativeOr(dtSec);
 
     return Object.freeze({
       shouldDrain,
@@ -66,20 +68,5 @@ export class StaminaDrainCalculator {
       playerStaminaPressureKg: pressure,
       fishStaminaResistanceKg: resistance,
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

@@ -1,3 +1,5 @@
+import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+
 export class ReelRecoveryFishSlowdownPolicy {
   createState() {
     return {
@@ -24,8 +26,8 @@ export class ReelRecoveryFishSlowdownPolicy {
     config = {},
   } = {}) {
     const state = target || this.createState();
-    const autoRecovered = this.#positive(autoRecoveredMeters);
-    const holdRecovered = this.#positive(holdRecoveredMeters);
+    const autoRecovered = nonNegativeFinite(autoRecoveredMeters);
+    const holdRecovered = nonNegativeFinite(holdRecoveredMeters);
     const recoveredMeters = autoRecovered + holdRecovered;
 
     if (recoveredMeters <= 0.000001) {
@@ -56,10 +58,5 @@ export class ReelRecoveryFishSlowdownPolicy {
   #resolveMultiplier(config = {}) {
     const multiplier = Number(config.fishSpeedMultiplier);
     return Number.isFinite(multiplier) ? Math.max(0, multiplier) : 0.5;
-  }
-
-  #positive(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? Math.max(0, number) : 0;
   }
 }

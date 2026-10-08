@@ -1,6 +1,7 @@
 import { ActiveEnduranceDrainCalculator } from "./active_endurance_drain_calculator.js";
 import { PassiveEnduranceDrainCalculator } from "./passive_endurance_drain_calculator.js";
 import { StaminaPhaseMachine } from "./stamina_phase_machine.js";
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
 
 export class StaminaBalanceFrame {
   #phaseMachine;
@@ -49,19 +50,19 @@ export class StaminaBalanceFrame {
     nowMs = null,
     config = {},
   } = {}) {
-    const dt = this.#positive(dtSec);
+    const dt = nonNegativeOr(dtSec);
     const resolvedNowMs = this.#resolveNowMs({ nowMs, dtSec: dt });
     const mechanics = config || {};
     const resolvedPhase = this.#normalizePhase(phase);
-    const physicalAppliedRodHoldKg = this.#positive(appliedRodHoldKg);
-    const physicalAppliedReelHoldKg = this.#positive(appliedReelHoldKg);
-    const physicalAppliedControlKg = this.#positive(appliedControlKg);
+    const physicalAppliedRodHoldKg = nonNegativeOr(appliedRodHoldKg);
+    const physicalAppliedReelHoldKg = nonNegativeOr(appliedReelHoldKg);
+    const physicalAppliedControlKg = nonNegativeOr(appliedControlKg);
     const controlExhausted = playerPressureControlExhausted === true;
-    const frameMaxStamina = this.#positive(maxStamina, 1);
+    const frameMaxStamina = nonNegativeOr(maxStamina, 1);
     const frameCurrentStamina =
       currentStamina === null || currentStamina === undefined
         ? frameMaxStamina
-        : this.#positive(currentStamina, frameMaxStamina);
+        : nonNegativeOr(currentStamina, frameMaxStamina);
     const staminaModel = this.#phaseMachine.createFrame({
       phase: resolvedPhase,
       currentStamina: frameCurrentStamina,
@@ -105,17 +106,17 @@ export class StaminaBalanceFrame {
     const totalEnduranceDrainPerSecond =
       activeEndurance.activeEnduranceDrainPerSecond +
       passiveEndurance.passiveEnduranceDrainPerSecond;
-    const enduranceTotalDrainRatio = this.#clamp01(
+    const enduranceTotalDrainRatio = clampUnitFinite(
       activeEndurance.activeEnduranceDrainRatio +
         passiveEndurance.passiveEnduranceDrainRatio,
     );
-    const frameMaxEndurance = this.#positive(maxEndurance);
+    const frameMaxEndurance = nonNegativeOr(maxEndurance);
     const frameCurrentExhaustion =
       currentExhaustion === null || currentExhaustion === undefined
         ? frameMaxEndurance
-        : this.#positive(currentExhaustion, frameMaxEndurance);
+        : nonNegativeOr(currentExhaustion, frameMaxEndurance);
     const frameEnduranceProgress = frameMaxEndurance > 0
-      ? this.#clamp01(1 - frameCurrentExhaustion / frameMaxEndurance)
+      ? clampUnitFinite(1 - frameCurrentExhaustion / frameMaxEndurance)
       : 0;
     const netStaminaChange = staminaModel.staminaDelta;
     const netStaminaPerSecond = dt > 0 ? netStaminaChange / dt : 0;
@@ -150,7 +151,7 @@ export class StaminaBalanceFrame {
       frameEnduranceProgress,
       playerIsPulling: !!playerIsPulling,
       playerPowerIsPulling: !!playerIsPulling,
-      fishTensionKg: this.#positive(fishTensionKg),
+      fishTensionKg: nonNegativeOr(fishTensionKg),
       appliedRodHoldKg: physicalAppliedRodHoldKg,
       appliedReelHoldKg: physicalAppliedReelHoldKg,
       appliedControlKg: physicalAppliedControlKg,
@@ -166,8 +167,8 @@ export class StaminaBalanceFrame {
       budgetedRodHoldKg: physicalAppliedRodHoldKg,
       budgetedReelHoldKg: physicalAppliedReelHoldKg,
       budgetedControlKg: physicalAppliedControlKg,
-      weakestTackleLimitKg: this.#positive(weakestTackleLimitKg),
-      lineAngleDeg: staminaModel.lineAngleDeg ?? this.#positive(lineAngleDeg),
+      weakestTackleLimitKg: nonNegativeOr(weakestTackleLimitKg),
+      lineAngleDeg: staminaModel.lineAngleDeg ?? nonNegativeOr(lineAngleDeg),
       isLineFullyExtended: !!isLineFullyExtended,
       fishWonRadialForceKg: passiveEndurance.fishWonRadialForceKg,
       dragBlockedForceKg: passiveEndurance.dragBlockedForceKg,
@@ -201,7 +202,7 @@ export class StaminaBalanceFrame {
       rawAppliedPlayerPressureKg,
       availablePlayerPressureKg: Math.max(
         0,
-        this.#positive(weakestTackleLimitKg) - this.#positive(fishTensionKg),
+        nonNegativeOr(weakestTackleLimitKg) - nonNegativeOr(fishTensionKg),
       ),
       usedPlayerPressureKg: staminaModel.playerStaminaPressureKg,
       activeDrainRatio: staminaModel.playerAdvantageRatio,
@@ -266,7 +267,7 @@ export class StaminaBalanceFrame {
       activeEndurance,
       passiveEndurance,
       angleMultiplier: {
-        lineAngleDeg: staminaModel.lineAngleDeg ?? this.#positive(lineAngleDeg),
+        lineAngleDeg: staminaModel.lineAngleDeg ?? nonNegativeOr(lineAngleDeg),
         angleRegenMultiplier: staminaModel.angleRegenMultiplier,
       },
       angleStressRatio: 0,
@@ -280,27 +281,12 @@ export class StaminaBalanceFrame {
       this.#elapsedMs = explicit;
       return explicit;
     }
-    this.#elapsedMs += this.#positive(dtSec) * 1000;
+    this.#elapsedMs += nonNegativeOr(dtSec) * 1000;
     return this.#elapsedMs;
   }
 
   #normalizePhase(value) {
     const text = String(value || "stamina").trim().toLowerCase();
     return text === "exhaustion" ? "exhaustion" : "stamina";
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

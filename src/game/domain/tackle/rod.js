@@ -1,4 +1,5 @@
 import { Equipment } from "./equipment.js";
+import { finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class Rod extends Equipment {
   #maxDistance;
@@ -22,15 +23,15 @@ export class Rod extends Equipment {
     super(equipmentPowerLevel, power);
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
-    this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);
+    this.#lengthMeters = finiteOr(options.lengthMeters, 2.0);
     this.#castPowerCoefficient = Rod.#nullableNumber(
       options.castPowerCoefficient,
     );
-    this.#maxLoadKg = Rod.#numberOrDefault(options.maxLoadKg, 8.0);
-    this.#holdTensionRatio = Rod.#numberOrDefault(options.holdTensionRatio, 1.0);
-    this.#durability = Rod.#numberOrDefault(options.durability, 100);
+    this.#maxLoadKg = finiteOr(options.maxLoadKg, 8.0);
+    this.#holdTensionRatio = finiteOr(options.holdTensionRatio, 1.0);
+    this.#durability = finiteOr(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
-      Rod.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
+      finiteOr(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   getMaxDistance() {
@@ -62,11 +63,6 @@ export class Rod extends Equipment {
 
   getHoldTensionRatio() {
     return Math.max(0, Math.min(1, this.#holdTensionRatio));
-  }
-
-  static #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   static #nullableNumber(value) {

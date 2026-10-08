@@ -1,9 +1,11 @@
+import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+
 export class LineSpoolState {
   #totalLineMeters = 0;
   #releasedLineMeters = 0;
 
   constructor({ totalLineMeters = 0, releasedLineMeters = 0 } = {}) {
-    this.#totalLineMeters = this.#positive(totalLineMeters);
+    this.#totalLineMeters = nonNegativeFinite(totalLineMeters);
     this.#releasedLineMeters = this.#clamp(
       releasedLineMeters,
       0,
@@ -51,11 +53,6 @@ export class LineSpoolState {
     const recovered = this.#clamp(meters, 0, maxRecover);
     this.#releasedLineMeters -= recovered;
     return recovered;
-  }
-
-  #positive(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? Math.max(0, number) : 0;
   }
 
   #clamp(value, min, max) {

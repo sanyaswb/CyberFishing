@@ -1,3 +1,5 @@
+import { nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PlayerPressureFatigueSourceResolver {
   #config;
 
@@ -92,16 +94,7 @@ export class PlayerPressureFatigueSourceResolver {
       reelHoldSessionActive: reelHoldSessionActive === true,
       rodHoldActive: rodHoldActive === true,
       controlActive: controlActive === true,
-      effectivePressureKg: this.#positive(effectivePressureKg),
+      effectivePressureKg: nonNegativeOr(effectivePressureKg),
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
   }
 }

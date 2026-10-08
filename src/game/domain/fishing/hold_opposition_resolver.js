@@ -1,3 +1,5 @@
+import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+
 export class HoldOppositionResolver {
   resolve({
     activeRodHoldKg = 0,
@@ -20,13 +22,8 @@ export class HoldOppositionResolver {
     return Object.freeze({
       direction,
       ratio,
-      forceKg: this.#positive(activeRodHoldKg) * ratio,
+      forceKg: nonNegativeFinite(activeRodHoldKg) * ratio,
     });
-  }
-
-  #positive(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? Math.max(0, number) : 0;
   }
 
   #ratio(value, fallback) {

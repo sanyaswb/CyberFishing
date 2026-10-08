@@ -1,4 +1,5 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { clampUnit } from "../../../engine/math/number_normalization.js";
 
 export class PlayerForceSystem {
   #playerVector = new Vector2(0, 0);
@@ -48,7 +49,7 @@ export class PlayerForceSystem {
       {};
     const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
     const maxPenaltyAngle = angleCfg.maxPenaltyAngleDeg ?? 75;
-    const angleStressRatio = this.#clamp01(
+    const angleStressRatio = clampUnit(
       (angleDeg - noPenalty) / Math.max(1, maxPenaltyAngle - noPenalty),
     );
     const maxPenaltyMult = angleCfg.maxPenaltyMultiplier ?? 0.9;
@@ -68,7 +69,7 @@ export class PlayerForceSystem {
       anglePenalty,
     });
 
-    const clampedDrag = this.#clamp01(dragRatio);
+    const clampedDrag = clampUnit(dragRatio);
     const rawDragLimitKg = reelHasDrag
       ? this.#calculateDragLimitKg(reel, clampedDrag)
       : maxPlayerForceKg;
@@ -128,14 +129,10 @@ export class PlayerForceSystem {
       Number(reel?.getMaxLoadKg?.()) ||
       0;
     const maxKg = Math.max(0, Number.isFinite(maxFromRange) ? maxFromRange : fallbackMax);
-    return maxKg * this.#clamp01(dragRatio);
+    return maxKg * clampUnit(dragRatio);
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
+    return a + (b - a) * clampUnit(t);
   }
 }

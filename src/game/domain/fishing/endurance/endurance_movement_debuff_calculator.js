@@ -1,3 +1,5 @@
+import { clampUnit } from "../../../../engine/math/number_normalization.js";
+
 export class EnduranceMovementDebuffCalculator {
   static DEFAULT_RADIAL_RANGE = Object.freeze([0.35, 1]);
 
@@ -69,7 +71,7 @@ export class EnduranceMovementDebuffCalculator {
   #calculateProgress({ currentExhaustion, maxEndurance }) {
     const max = Number(maxEndurance);
     if (!Number.isFinite(max) || max <= 0) return 0;
-    return this.#clamp01(1 - (Number(currentExhaustion) || 0) / max);
+    return clampUnit(1 - (Number(currentExhaustion) || 0) / max);
   }
 
   #calculateRadialRangeOverride({ baseRadialRange, debuffPower, config }) {
@@ -112,10 +114,6 @@ export class EnduranceMovementDebuffCalculator {
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
+    return a + (b - a) * clampUnit(t);
   }
 }

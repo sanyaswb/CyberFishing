@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class ActiveEnduranceDrainCalculator {
   calculate({
     activePressureRatio = 0,
@@ -5,13 +7,13 @@ export class ActiveEnduranceDrainCalculator {
     config = {},
   } = {}) {
     const enabled = config.enabled !== false;
-    const ratio = this.#clamp01(activePressureRatio);
-    const curvePower = Math.max(0.001, this.#positive(config.curvePower, 1));
+    const ratio = clampUnitFinite(activePressureRatio);
+    const curvePower = Math.max(0.001, nonNegativeOr(config.curvePower, 1));
     const curvedRatio = Math.pow(ratio, curvePower);
     const drainPerSecondBase = enabled
-      ? this.#positive(config.drainPerSecond, 80)
+      ? nonNegativeOr(config.drainPerSecond, 80)
       : 0;
-    const dt = this.#positive(dtSec);
+    const dt = nonNegativeOr(dtSec);
     const activeEnduranceDrainPerSecond = drainPerSecondBase * curvedRatio;
     const activeEnduranceDrain = activeEnduranceDrainPerSecond * dt;
 
@@ -25,20 +27,5 @@ export class ActiveEnduranceDrainCalculator {
       curvePower,
       dtSec: dt,
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

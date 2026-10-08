@@ -1,3 +1,5 @@
+import { clampUnit } from "../../../engine/math/number_normalization.js";
+
 export class DragControlService {
   #value = 0;
   #targetValue = 0;
@@ -161,11 +163,7 @@ export class DragControlService {
 
     const ratio = Number(this.#config.powerDeadzoneRatio ?? 0);
     if (!Number.isFinite(ratio) || ratio <= 0) return 0;
-    return swipePx * this.#clamp01(ratio);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
+    return swipePx * clampUnit(ratio);
   }
 
   #min() {

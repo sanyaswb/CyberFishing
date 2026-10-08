@@ -2,6 +2,7 @@ import { StaminaDrainCalculator } from "./stamina_drain_calculator.js";
 import { StaminaPressureResolver } from "./stamina_pressure_resolver.js";
 import { StaminaRegenCalculator } from "./stamina_regen_calculator.js";
 import { StaminaTransitionResolver } from "./stamina_transition_resolver.js";
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
 
 export class StaminaPhaseMachine {
   #pressureResolver;
@@ -59,11 +60,11 @@ export class StaminaPhaseMachine {
       controlDirectionX,
       config: pressureConfig,
     });
-    const pressureThresholdKg = this.#positive(
+    const pressureThresholdKg = nonNegativeOr(
       pressureConfig.thresholdKg,
       0.01,
     );
-    const playerFatigue = this.#clamp01(playerFatigueProgress);
+    const playerFatigue = clampUnitFinite(playerFatigueProgress);
     const playerFatigueFull =
       playerFatigue >= 1;
     const noInputFrame = this.#updateNoInputState({
@@ -124,8 +125,8 @@ export class StaminaPhaseMachine {
       dtSec,
       config: regenConfig,
     });
-    const staminaBefore = this.#positive(currentStamina);
-    const max = Math.max(0.001, this.#positive(maxStamina, 1));
+    const staminaBefore = nonNegativeOr(currentStamina);
+    const max = Math.max(0.001, nonNegativeOr(maxStamina, 1));
     const staminaMode = canDrain && drainFrame.shouldDrain
       ? "drain"
       : regenFrame.shouldRegen
@@ -165,7 +166,7 @@ export class StaminaPhaseMachine {
       currentStamina: staminaBefore,
       maxStamina: max,
       playerStaminaPressureKg: pressureFrame.playerStaminaPressureKg,
-      fishStaminaResistanceKg: this.#positive(fishStaminaResistanceKg),
+      fishStaminaResistanceKg: nonNegativeOr(fishStaminaResistanceKg),
       pressureThresholdKg,
       pressureActive,
       drainPerSecond: staminaMode === "drain" ? drainFrame.drainPerSecond : 0,
@@ -210,13 +211,13 @@ export class StaminaPhaseMachine {
     config,
   }) {
     const enabled = config.enabled === true;
-    const timeoutMs = this.#positive(config.noInputTimeoutMs, 5000);
+    const timeoutMs = nonNegativeOr(config.noInputTimeoutMs, 5000);
     if (phase !== "exhaustion") {
       this.#staminaNoInputElapsedMs = 0;
     } else if (rawStaminaInputActive === true) {
       this.#staminaNoInputElapsedMs = 0;
     } else {
-      this.#staminaNoInputElapsedMs += this.#positive(dtSec) * 1000;
+      this.#staminaNoInputElapsedMs += nonNegativeOr(dtSec) * 1000;
     }
     return Object.freeze({
       staminaNoInputElapsedMs: this.#staminaNoInputElapsedMs,
@@ -242,20 +243,5 @@ export class StaminaPhaseMachine {
   #normalizePhase(value) {
     const text = String(value || "stamina").trim().toLowerCase();
     return text === "exhaustion" ? "exhaustion" : "stamina";
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

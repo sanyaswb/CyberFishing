@@ -1,3 +1,5 @@
+import { positiveFinite } from "../../../../engine/math/number_normalization.js";
+
 export class BaitEffectivenessGradePolicy {
   static DEFAULT_MAXIMUM_STARS = 5;
 
@@ -13,8 +15,8 @@ export class BaitEffectivenessGradePolicy {
   }
 
   resolve({ multiplier, referenceMultiplier } = {}) {
-    const value = this.#positiveNumber(multiplier);
-    const reference = this.#positiveNumber(referenceMultiplier);
+    const value = positiveFinite(multiplier);
+    const reference = positiveFinite(referenceMultiplier);
     if (value === 0 || reference === 0) {
       return Object.freeze({
         relativeEffectiveness: 0,
@@ -38,11 +40,6 @@ export class BaitEffectivenessGradePolicy {
       maximumStars: this.#maximumStars,
       gradeId: this.#gradeId(stars),
     });
-  }
-
-  #positiveNumber(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   }
 
   #gradeId(stars) {

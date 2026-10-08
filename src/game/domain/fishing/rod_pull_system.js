@@ -1,6 +1,7 @@
 import { RodPullCalculator } from "./rod_pull_calculator.js";
 import { RodPullState } from "./rod_pull_state.js";
 import { RodStrokeState } from "./rod_stroke_state.js";
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
 
 export class RodPullSystem {
   #calculator;
@@ -180,10 +181,10 @@ export class RodPullSystem {
       0,
       Number(budget.controlBudgetKg) || 0,
     );
-    this.#result.playerForceHoldShare = this.#clamp01(
+    this.#result.playerForceHoldShare = clampUnitFinite(
       budget.holdShare,
     );
-    this.#result.playerForceControlShare = this.#clamp01(
+    this.#result.playerForceControlShare = clampUnitFinite(
       budget.controlShare,
     );
     this.#result.playerForceCombinedCeilingMultiplier = Math.max(
@@ -370,12 +371,6 @@ export class RodPullSystem {
     this.#result.strokeDistanceLostMeters = 0;
     this.#result.strokeDistanceReason = "none";
     this.#result.strokeResetReason = "none";
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 
   #rodLengthMeters(rod) {

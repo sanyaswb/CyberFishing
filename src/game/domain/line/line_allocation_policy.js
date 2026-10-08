@@ -1,3 +1,5 @@
+import { finiteOr } from "../../../engine/math/number_normalization.js";
+
 export class LineAllocationPolicy {
   #lineConfig;
   #messages;
@@ -80,7 +82,7 @@ export class LineAllocationPolicy {
     if (sourceLength <= 0) {
       return this.#invalid(this.#messages.lineLengthUnavailable);
     }
-    const maximumLength = this.#numberOrDefault(
+    const maximumLength = finiteOr(
       reel?.effectiveStats?.lineCapacityMeters,
       Infinity,
     );
@@ -108,7 +110,7 @@ export class LineAllocationPolicy {
   }
 
   getLineLengthMeters(lineItem) {
-    return this.#numberOrDefault(
+    return finiteOr(
       lineItem?.effectiveStats?.lengthMeters,
       0,
     );
@@ -117,14 +119,14 @@ export class LineAllocationPolicy {
   getMinimumLineLengthMeters(rod) {
     const rodLength = this.#rodLengthMeters(rod);
     if (this.rodRequiresReel(rod)) {
-      const multiplier = this.#numberOrDefault(
+      const multiplier = finiteOr(
         this.#lineConfig.rodLengthReserveMultiplier,
         2,
       );
       return Math.max(0, rodLength * multiplier);
     }
 
-    const multiplier = this.#numberOrDefault(
+    const multiplier = finiteOr(
       this.#lineConfig.noReelMinRodLengthMultiplier,
       2,
     );
@@ -133,18 +135,18 @@ export class LineAllocationPolicy {
 
   getMaximumLineLengthMeters({ rod, reel } = {}) {
     if (this.rodRequiresReel(rod)) {
-      return this.#numberOrDefault(
+      return finiteOr(
         reel?.effectiveStats?.lineCapacityMeters,
         Infinity,
       );
     }
 
     const rodLength = this.#rodLengthMeters(rod);
-    const rodLengthMultiplier = this.#numberOrDefault(
+    const rodLengthMultiplier = finiteOr(
       this.#lineConfig.noReelRodLengthMultiplier,
       2,
     );
-    const extraMeters = this.#numberOrDefault(
+    const extraMeters = finiteOr(
       this.#lineConfig.noReelExtraLengthMeters,
       0,
     );
@@ -161,14 +163,9 @@ export class LineAllocationPolicy {
   }
 
   #rodLengthMeters(rod) {
-    return this.#numberOrDefault(
+    return finiteOr(
       rod?.effectiveStats?.lengthMeters,
       0,
     );
-  }
-
-  #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 }

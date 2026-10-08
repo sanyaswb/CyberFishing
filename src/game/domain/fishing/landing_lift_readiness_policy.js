@@ -1,3 +1,5 @@
+import { nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
+
 /**
  * Decides whether landing lift has enough real-weight support to resolve catch.
  *
@@ -26,15 +28,15 @@ export class LandingLiftReadinessPolicy {
       });
     }
 
-    const liftRequiredKg = this.#positive(landingLiftFrame?.liftMaxKg);
-    const liftHoldKg = this.#positive(landingLiftFrame?.liftHoldKg);
-    const supportedTensionKg = this.#positive(
+    const liftRequiredKg = nonNegativeFiniteOr(landingLiftFrame?.liftMaxKg);
+    const liftHoldKg = nonNegativeFiniteOr(landingLiftFrame?.liftHoldKg);
+    const supportedTensionKg = nonNegativeFiniteOr(
       tensionFrame?.supportedTensionKg ?? tensionFrame?.totalTensionKg,
     );
-    const rawTensionKg = this.#positive(
+    const rawTensionKg = nonNegativeFiniteOr(
       tensionFrame?.rawTensionKg ?? tensionFrame?.rawTotalTensionKg,
     );
-    const visibleTensionKg = this.#positive(
+    const visibleTensionKg = nonNegativeFiniteOr(
       tensionFrame?.visibleTensionKg ?? tensionFrame?.tensionKg,
     );
     const dragSlipping =
@@ -119,12 +121,6 @@ export class LandingLiftReadinessPolicy {
       ready: false,
       ...data,
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number)) return Math.max(0, number);
-    return Math.max(0, Number(fallback) || 0);
   }
 
   #freeze(data) {

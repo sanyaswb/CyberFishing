@@ -1,3 +1,5 @@
+import { clampUnit } from "../../../engine/math/number_normalization.js";
+
 export class RarityVisualResolver {
   static EMPTY_DASH = Object.freeze([]);
 
@@ -98,7 +100,7 @@ export class RarityVisualResolver {
 
   resolvePosition(position) {
     this.#ensureConfig();
-    const normalized = this.#clamp01(position);
+    const normalized = clampUnit(position);
     const cacheKey = normalized.toFixed(6);
     const cached = this.#resolvedByPosition.get(cacheKey);
     if (cached) return cached;
@@ -276,7 +278,7 @@ export class RarityVisualResolver {
     const normalized = sourceStops
       .map((stop, index) => ({
         id: String(stop?.id || `rarity-${index}`),
-        position: this.#clamp01(stop?.position),
+        position: clampUnit(stop?.position),
         color: this.#normalizeRgb(stop?.color),
       }))
       .sort((left, right) => left.position - right.position);
@@ -287,10 +289,10 @@ export class RarityVisualResolver {
     const frame = config.frame || {};
     this.#frame = {
       borderWidth: this.#number(frame.borderWidth),
-      backgroundAlpha: this.#clamp01(frame.backgroundAlpha),
+      backgroundAlpha: clampUnit(frame.backgroundAlpha),
       panelGlow: this.#number(frame.panelGlow),
-      panelGlowAlpha: this.#clamp01(frame.panelGlowAlpha),
-      strokeAlpha: this.#clamp01(frame.strokeAlpha),
+      panelGlowAlpha: clampUnit(frame.panelGlowAlpha),
+      strokeAlpha: clampUnit(frame.strokeAlpha),
     };
     const uniqueEffects = config.uniqueEffects || {};
     this.#uniqueEffects = {
@@ -307,13 +309,13 @@ export class RarityVisualResolver {
       borderWidthMax: this.#number(uniqueEffects.borderWidthMax),
       panelGlowMin: this.#number(uniqueEffects.panelGlowMin),
       panelGlowMax: this.#number(uniqueEffects.panelGlowMax),
-      panelGlowAlpha: this.#clamp01(uniqueEffects.panelGlowAlpha),
+      panelGlowAlpha: clampUnit(uniqueEffects.panelGlowAlpha),
       imageGlowMin: this.#number(uniqueEffects.imageGlowMin),
       imageGlowMax: this.#number(uniqueEffects.imageGlowMax),
-      imageGlowAlpha: this.#clamp01(uniqueEffects.imageGlowAlpha),
-      backgroundAlphaMin: this.#clamp01(uniqueEffects.backgroundAlphaMin),
-      backgroundAlphaMax: this.#clamp01(uniqueEffects.backgroundAlphaMax),
-      strokeAlpha: this.#clamp01(uniqueEffects.strokeAlpha),
+      imageGlowAlpha: clampUnit(uniqueEffects.imageGlowAlpha),
+      backgroundAlphaMin: clampUnit(uniqueEffects.backgroundAlphaMin),
+      backgroundAlphaMax: clampUnit(uniqueEffects.backgroundAlphaMax),
+      strokeAlpha: clampUnit(uniqueEffects.strokeAlpha),
     };
   }
 
@@ -325,14 +327,14 @@ export class RarityVisualResolver {
   }
 
   #mixRgb(from, to, ratio) {
-    const t = this.#clamp01(ratio);
+    const t = clampUnit(ratio);
     return [0, 1, 2].map((index) =>
       Math.round(from[index] + (to[index] - from[index]) * t),
     );
   }
 
   #mixNumber(from, to, ratio) {
-    return from + (to - from) * this.#clamp01(ratio);
+    return from + (to - from) * clampUnit(ratio);
   }
 
   #toCssColor(color) {
@@ -341,9 +343,5 @@ export class RarityVisualResolver {
 
   #number(value, fallback = 0) {
     return Number.isFinite(Number(value)) ? Number(value) : fallback;
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

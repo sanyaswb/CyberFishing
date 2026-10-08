@@ -1,3 +1,5 @@
+import { clampUnit, nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
+
 /**
  * Resolves reel drag only against outward radial fish movement.
  *
@@ -47,11 +49,11 @@ export class DragForceCalculator {
     const outwardRadialSpeed = Math.max(0, radialSpeed);
     const projectedOutwardRatio =
       targetSpeed > 0.000001
-        ? this.#clamp01(outwardRadialSpeed / targetSpeed)
+        ? clampUnit(outwardRadialSpeed / targetSpeed)
         : 0;
     const outwardRatio =
       !hasExplicitAwayDirection && yAwayRatio !== null
-        ? this.#clamp01(yAwayRatio)
+        ? clampUnit(yAwayRatio)
         : projectedOutwardRatio;
     const radialVelocityX = direction.x * radialSpeed;
     const radialVelocityY = direction.y * radialSpeed;
@@ -64,12 +66,12 @@ export class DragForceCalculator {
 
     const fishWonForceKg = Math.max(
       0,
-      this.#positive(fishOppositionKg) -
-        this.#positive(effectiveRodHoldKg),
+      nonNegativeFiniteOr(fishOppositionKg) -
+        nonNegativeFiniteOr(effectiveRodHoldKg),
     );
     const fishWonRadialForceKg = fishWonForceKg * outwardRatio;
-    const resolvedDragRatio = this.#clamp01(dragRatio);
-    const resolvedDragLimitKg = this.#positive(dragLimitKg);
+    const resolvedDragRatio = clampUnit(dragRatio);
+    const resolvedDragLimitKg = nonNegativeFiniteOr(dragLimitKg);
     const dragEngaged = !!lineTaut && outwardRadialSpeed > 0.000001;
     const canSlipTautLine =
       !!lineHasReserve &&
@@ -176,14 +178,14 @@ export class DragForceCalculator {
   } = {}) {
     const resistance = Math.max(
       0.000001,
-      this.#positive(waterMotionResistance, 1000),
+      nonNegativeFiniteOr(waterMotionResistance, 1000),
     );
     return (
-      Math.sqrt(this.#positive(forceKg) / resistance) *
-      this.#positive(waterSpeedMultiplier, 64) *
-      this.#positive(fishBaseSpeed, 1) *
-      this.#positive(fishStateSpeedMultiplier, 1) *
-      Math.max(1, this.#positive(pixelsPerMeter, 50))
+      Math.sqrt(nonNegativeFiniteOr(forceKg) / resistance) *
+      nonNegativeFiniteOr(waterSpeedMultiplier, 64) *
+      nonNegativeFiniteOr(fishBaseSpeed, 1) *
+      nonNegativeFiniteOr(fishStateSpeedMultiplier, 1) *
+      Math.max(1, nonNegativeFiniteOr(pixelsPerMeter, 50))
     );
   }
 
@@ -196,20 +198,10 @@ export class DragForceCalculator {
     }
 
     // Compatibility for old callers that supplied only Y escape data.
-    const legacyAway = this.#clamp01(yAwayRatio);
+    const legacyAway = clampUnit(yAwayRatio);
     if (legacyAway > 0) {
       return { x: 0, y: Math.sign(targetY) || -1 };
     }
     return { x: 0, y: -(Math.sign(targetY) || 1) };
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number)) return Math.max(0, number);
-    return Math.max(0, Number(fallback) || 0);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

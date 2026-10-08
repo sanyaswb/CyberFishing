@@ -1,3 +1,5 @@
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
+
 export class FightInputActionComposer {
   #state = Object.freeze({
     hold: Object.freeze({ active: false, ratio: 0, source: "none" }),
@@ -80,7 +82,7 @@ export class FightInputActionComposer {
     }
 
     const directionX = Math.sign(Number(input.rodControlDirectionX) || 0);
-    const inputRatio = this.#clamp01(input.rodControlInputRatio);
+    const inputRatio = clampUnitFinite(input.rodControlInputRatio);
     if (directionX === 0 || inputRatio <= 0) {
       return this.#emptyControl("legacy");
     }
@@ -101,7 +103,7 @@ export class FightInputActionComposer {
     directionX = Math.sign(directionX);
     if (directionX === 0) return this.#emptyControl("keyboard");
 
-    const fallbackRatio = this.#clamp01(
+    const fallbackRatio = clampUnitFinite(
       Number(input?.keyboardRodControlRatio ?? input?.rodControlInputRatio ?? 1),
     ) || 1;
 
@@ -136,7 +138,7 @@ export class FightInputActionComposer {
     const deadZone = Math.max(0, Number(config.directionDeadZonePx) || 12);
     const inputRatio = absX < deadZone
       ? 0
-      : this.#clamp01(absX / fullPowerDistance);
+      : clampUnitFinite(absX / fullPowerDistance);
 
     if (directionX === 0 || inputRatio <= 0) {
       return this.#emptyControl("pointer");
@@ -191,11 +193,5 @@ export class FightInputActionComposer {
       if (keys[key] === true || input?.[key] === true) return true;
     }
     return false;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

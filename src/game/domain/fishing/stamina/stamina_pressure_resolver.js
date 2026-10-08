@@ -1,4 +1,5 @@
 import { StaminaLateralPositionResolver } from "./stamina_lateral_position_resolver.js";
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
 
 export class StaminaPressureResolver {
   #lateralPositionResolver;
@@ -34,22 +35,22 @@ export class StaminaPressureResolver {
     });
     const edgeCurve = Math.pow(
       lateralFrame.lateralEdgeRatio,
-      Math.max(0.001, this.#positive(lateralWeights.curvePower, 1)),
+      Math.max(0.001, nonNegativeOr(lateralWeights.curvePower, 1)),
     );
     const holdDrainMultiplier =
       lateralWeights.enabled === false
         ? 1
         : this.#lerp(
-            this.#positive(lateralWeights.centerHoldMultiplier, 1),
-            this.#positive(lateralWeights.edgeHoldMultiplier, 0.1),
+            nonNegativeOr(lateralWeights.centerHoldMultiplier, 1),
+            nonNegativeOr(lateralWeights.edgeHoldMultiplier, 0.1),
             edgeCurve,
           );
     const controlDrainMultiplier =
       lateralWeights.enabled === false
         ? 1
         : this.#lerp(
-            this.#positive(lateralWeights.centerControlMultiplier, 0.1),
-            this.#positive(lateralWeights.edgeControlMultiplier, 1),
+            nonNegativeOr(lateralWeights.centerControlMultiplier, 0.1),
+            nonNegativeOr(lateralWeights.edgeControlMultiplier, 1),
             edgeCurve,
           );
     const directionFrame = this.#resolveControlDirection({
@@ -60,18 +61,18 @@ export class StaminaPressureResolver {
     const disabledByFatigue = controlExhausted === true;
     const rodHoldPressureKg = disabledByFatigue
       ? 0
-      : this.#positive(rodHoldKg) *
-        this.#positive(inputWeights.rodHold, 1) *
+      : nonNegativeOr(rodHoldKg) *
+        nonNegativeOr(inputWeights.rodHold, 1) *
         holdDrainMultiplier;
     const reelHoldPressureKg = disabledByFatigue
       ? 0
-      : this.#positive(reelHoldKg) *
-        this.#positive(inputWeights.reelHold, 1) *
+      : nonNegativeOr(reelHoldKg) *
+        nonNegativeOr(inputWeights.reelHold, 1) *
         holdDrainMultiplier;
     const controlPressureKg = disabledByFatigue
       ? 0
-      : this.#positive(controlKg) *
-        this.#positive(inputWeights.control, 1) *
+      : nonNegativeOr(controlKg) *
+        nonNegativeOr(inputWeights.control, 1) *
         controlDrainMultiplier *
         directionFrame.controlCenteringFactor;
     const playerStaminaPressureKg =
@@ -107,41 +108,26 @@ export class StaminaPressureResolver {
     const expectedDirection = lateralFrame.expectedControlDirectionToCenter;
     if (expectedDirection === 0) {
       return Object.freeze({
-        controlCenteringFactor: this.#positive(config.neutralMultiplier, 0.5),
+        controlCenteringFactor: nonNegativeOr(config.neutralMultiplier, 0.5),
         controlDirectionState: "neutral",
       });
     }
     if (inputDirection === 0) {
       return Object.freeze({
-        controlCenteringFactor: this.#positive(config.neutralMultiplier, 0.5),
+        controlCenteringFactor: nonNegativeOr(config.neutralMultiplier, 0.5),
         controlDirectionState: "no_input",
       });
     }
     const centering = inputDirection === expectedDirection;
     return Object.freeze({
       controlCenteringFactor: centering
-        ? this.#positive(config.centeringMultiplier, 1)
-        : this.#positive(config.wrongDirectionMultiplier, 0.15),
+        ? nonNegativeOr(config.centeringMultiplier, 1)
+        : nonNegativeOr(config.wrongDirectionMultiplier, 0.15),
       controlDirectionState: centering ? "centering" : "wrong",
     });
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
+    return a + (b - a) * clampUnitFinite(t);
   }
 }

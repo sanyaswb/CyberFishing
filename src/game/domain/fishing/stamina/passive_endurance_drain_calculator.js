@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PassiveEnduranceDrainCalculator {
   calculate({
     fishWonRadialForceKg = 0,
@@ -10,14 +12,14 @@ export class PassiveEnduranceDrainCalculator {
     config = {},
   } = {}) {
     const enabled = config.enabled !== false;
-    const fishEffortKg = this.#positive(fishWonRadialForceKg);
-    const blockedForceKg = this.#positive(dragBlockedForceKg);
-    const weakestLimit = this.#positive(weakestTackleLimitKg);
-    const dt = this.#positive(dtSec);
+    const fishEffortKg = nonNegativeOr(fishWonRadialForceKg);
+    const blockedForceKg = nonNegativeOr(dragBlockedForceKg);
+    const weakestLimit = nonNegativeOr(weakestTackleLimitKg);
+    const dt = nonNegativeOr(dtSec);
     const drainPerSecondBase = enabled
-      ? this.#positive(config.drainPerSecond, 15)
+      ? nonNegativeOr(config.drainPerSecond, 15)
       : 0;
-    const curvePower = Math.max(0.001, this.#positive(config.curvePower, 1));
+    const curvePower = Math.max(0.001, nonNegativeOr(config.curvePower, 1));
     const resolvedLineTautRatio = this.#resolveLineTautRatio({
       lineTaut,
       lineTautRatio,
@@ -28,10 +30,10 @@ export class PassiveEnduranceDrainCalculator {
       config,
     });
     const fishEffortRatio = weakestLimit > 0
-      ? this.#clamp01(fishEffortKg / weakestLimit)
+      ? clampUnitFinite(fishEffortKg / weakestLimit)
       : 0;
     const resistanceRatio = fishEffortKg > 0.000001
-      ? this.#clamp01(blockedForceKg / Math.max(fishEffortKg, 0.000001))
+      ? clampUnitFinite(blockedForceKg / Math.max(fishEffortKg, 0.000001))
       : 0;
     const rawPassiveEnduranceDrainRatio = enabled
       ? fishEffortRatio *
@@ -39,7 +41,7 @@ export class PassiveEnduranceDrainCalculator {
         resolvedLineTautRatio *
         behaviorMultiplier
       : 0;
-    const passiveEnduranceDrainRatio = this.#clamp01(
+    const passiveEnduranceDrainRatio = clampUnitFinite(
       rawPassiveEnduranceDrainRatio,
     );
     const curvedPassiveEnduranceDrainRatio = Math.pow(
@@ -79,7 +81,7 @@ export class PassiveEnduranceDrainCalculator {
   #rawLineTautRatio({ lineTaut, lineTautRatio }) {
     if (lineTautRatio !== null && lineTautRatio !== undefined) {
       const explicit = Number(lineTautRatio);
-      if (Number.isFinite(explicit)) return this.#clamp01(explicit);
+      if (Number.isFinite(explicit)) return clampUnitFinite(explicit);
     }
     return lineTaut ? 1 : 0;
   }
@@ -88,26 +90,11 @@ export class PassiveEnduranceDrainCalculator {
     const multipliers = config.behaviorMultipliers || {};
     const specific = Number(multipliers[behaviorName]);
     if (Number.isFinite(specific) && specific >= 0) return specific;
-    return this.#positive(config.defaultBehaviorMultiplier, 0.5);
+    return nonNegativeOr(config.defaultBehaviorMultiplier, 0.5);
   }
 
   #normalizeBehaviorName(value) {
     const text = String(value || "unknown").trim().toLowerCase();
     return text || "unknown";
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

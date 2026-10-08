@@ -1,3 +1,5 @@
+import { clampUnit, nonNegative } from "../../../engine/math/number_normalization.js";
+
 /**
  * Runtime result for the simplified rodHold/reelHold fight model.
  *
@@ -6,78 +8,78 @@
  */
 export class FishRetrieveResult {
   constructor(data = {}) {
-    this.holdRatio = this.#ratio(data.holdRatio);
+    this.holdRatio = clampUnit(data.holdRatio);
 
-    this.playerPullPressureKg = this.#positive(data.playerPullPressureKg);
-    this.fishPassiveKg = this.#positive(data.fishPassiveKg);
-    this.fishActiveKg = this.#positive(data.fishActiveKg);
-    this.fishOppositionKg = this.#positive(data.fishOppositionKg);
-    this.fishTensionKg = this.#positive(data.fishTensionKg);
+    this.playerPullPressureKg = nonNegative(data.playerPullPressureKg);
+    this.fishPassiveKg = nonNegative(data.fishPassiveKg);
+    this.fishActiveKg = nonNegative(data.fishActiveKg);
+    this.fishOppositionKg = nonNegative(data.fishOppositionKg);
+    this.fishTensionKg = nonNegative(data.fishTensionKg);
 
-    this.rodHoldTensionCeilingMultiplier = this.#positive(
+    this.rodHoldTensionCeilingMultiplier = nonNegative(
       data.rodHoldTensionCeilingMultiplier ?? 1,
     );
-    this.rodHoldTensionCeilingKg = this.#positive(
+    this.rodHoldTensionCeilingKg = nonNegative(
       data.rodHoldTensionCeilingKg,
     );
-    this.rodHoldMaxKg = this.#positive(data.rodHoldMaxKg);
-    this.effectiveRodHoldKg = this.#positive(data.effectiveRodHoldKg);
-    this.rawPlayerHoldTensionKg = this.#positive(
+    this.rodHoldMaxKg = nonNegative(data.rodHoldMaxKg);
+    this.effectiveRodHoldKg = nonNegative(data.effectiveRodHoldKg);
+    this.rawPlayerHoldTensionKg = nonNegative(
       data.rawPlayerHoldTensionKg ?? data.playerHoldTensionKg,
     );
-    this.movableHoldTensionCapKg = this.#positive(
+    this.movableHoldTensionCapKg = nonNegative(
       data.movableHoldTensionCapKg,
     );
-    this.movableHoldTensionCapRatio = this.#positive(
+    this.movableHoldTensionCapRatio = nonNegative(
       data.movableHoldTensionCapRatio ?? 1,
     );
     this.movableHoldTensionCapApplied =
       !!data.movableHoldTensionCapApplied;
     this.fishCanMoveTowardPlayer = data.fishCanMoveTowardPlayer !== false;
-    this.playerHoldTensionKg = this.#positive(data.playerHoldTensionKg);
-    this.totalTensionKg = this.#positive(data.totalTensionKg);
+    this.playerHoldTensionKg = nonNegative(data.playerHoldTensionKg);
+    this.totalTensionKg = nonNegative(data.totalTensionKg);
 
     this.netForceKg = Number.isFinite(Number(data.netForceKg))
       ? Number(data.netForceKg)
       : 0;
-    this.fishWonForceKg = this.#positive(data.fishWonForceKg);
-    this.fishWonRadialForceKg = this.#positive(
+    this.fishWonForceKg = nonNegative(data.fishWonForceKg);
+    this.fishWonRadialForceKg = nonNegative(
       data.fishWonRadialForceKg ?? data.fishWonYForceKg,
     );
-    this.fishWonYForceKg = this.#positive(data.fishWonYForceKg);
-    this.radialAwayRatio = this.#ratio(
+    this.fishWonYForceKg = nonNegative(data.fishWonYForceKg);
+    this.radialAwayRatio = clampUnit(
       data.radialAwayRatio ?? data.yAwayRatio ?? 1,
     );
     this.yAwayRatio = this.radialAwayRatio;
-    this.dragBlockedForceKg = this.#positive(
+    this.dragBlockedForceKg = nonNegative(
       data.dragBlockedForceKg ?? data.fishTensionKg,
     );
-    this.excessYForceKg = this.#positive(data.excessYForceKg);
-    this.yEscapeForceKg = this.#positive(data.yEscapeForceKg ?? data.excessYForceKg);
-    this.radialEscapeForceKg = this.#positive(
+    this.excessYForceKg = nonNegative(data.excessYForceKg);
+    this.yEscapeForceKg = nonNegative(data.yEscapeForceKg ?? data.excessYForceKg);
+    this.radialEscapeForceKg = nonNegative(
       data.radialEscapeForceKg ?? data.yEscapeForceKg ?? data.excessYForceKg,
     );
     this.radialSpeedPxPerSec = Number(data.radialSpeedPxPerSec) || 0;
     this.finalRadialSpeedPxPerSec =
       Number(data.finalRadialSpeedPxPerSec) || 0;
-    this.outwardRadialSpeedPxPerSec = this.#positive(
+    this.outwardRadialSpeedPxPerSec = nonNegative(
       data.outwardRadialSpeedPxPerSec,
     );
-    this.tangentSpeedPxPerSec = this.#positive(
+    this.tangentSpeedPxPerSec = nonNegative(
       data.tangentSpeedPxPerSec,
     );
     this.shouldSlipDrag = !!data.shouldSlipDrag;
-    this.speedMps = this.#positive(data.speedMps);
-    this.towardPlayerSpeedMps = this.#positive(data.towardPlayerSpeedMps);
-    this.awaySpeedMps = this.#positive(data.awaySpeedMps);
+    this.speedMps = nonNegative(data.speedMps);
+    this.towardPlayerSpeedMps = nonNegative(data.towardPlayerSpeedMps);
+    this.awaySpeedMps = nonNegative(data.awaySpeedMps);
 
-    this.desiredMoveMeters = this.#positive(data.desiredMoveMeters);
-    this.appliedMoveMeters = this.#positive(data.appliedMoveMeters);
-    this.movementControlRatio = this.#ratio(data.movementControlRatio);
+    this.desiredMoveMeters = nonNegative(data.desiredMoveMeters);
+    this.appliedMoveMeters = nonNegative(data.appliedMoveMeters);
+    this.movementControlRatio = clampUnit(data.movementControlRatio);
     this.movementBlocked = !!data.movementBlocked;
     this.tensionBlocked = !!data.tensionBlocked;
     this.balanceState = data.balanceState || "idle";
-    this.actualSlackMeters = this.#positive(data.actualSlackMeters);
+    this.actualSlackMeters = nonNegative(data.actualSlackMeters);
     this.lineTaut = data.lineTaut !== false;
 
     // Narrow compatibility aliases used by the existing pipeline/debug names.
@@ -117,13 +119,5 @@ export class FishRetrieveResult {
       movementBlocked,
       tensionBlocked: capDisabled,
     });
-  }
-
-  #positive(value) {
-    return Math.max(0, Number(value) || 0);
-  }
-
-  #ratio(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

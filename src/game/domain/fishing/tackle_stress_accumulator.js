@@ -1,3 +1,5 @@
+import { clampNumber } from "../../../engine/math/number_normalization.js";
+
 export class TackleStressAccumulator {
   #stressValue = 0;
   #rollTimerMs = 0;
@@ -49,7 +51,7 @@ export class TackleStressAccumulator {
     } else {
       this.#stressValue -= recoveryPerSecond * dt;
     }
-    this.#stressValue = this.#clamp(this.#stressValue, 0, capacity);
+    this.#stressValue = clampNumber(this.#stressValue, 0, capacity);
 
     const stressRatio = this.getStressRatio(capacity);
     const failureChance = this.calculateFailureChance({
@@ -110,12 +112,12 @@ export class TackleStressAccumulator {
   }
 
   getStressRatio(capacity = 1) {
-    return this.#clamp(this.#stressValue / this.#positive(capacity, 1), 0, 1);
+    return clampNumber(this.#stressValue / this.#positive(capacity, 1), 0, 1);
   }
 
   calculateFailureChance({ stressRatio = null, chanceScale = 1 } = {}) {
     const ratio = stressRatio === null ? this.getStressRatio() : Number(stressRatio);
-    return this.#clamp((Number(ratio) || 0) * this.#nonNegative(chanceScale, 1), 0, 1);
+    return clampNumber((Number(ratio) || 0) * this.#nonNegative(chanceScale, 1), 0, 1);
   }
 
   getDiagnostics({
@@ -162,7 +164,7 @@ export class TackleStressAccumulator {
       : typeof rng?.next === "function"
         ? rng.next()
         : Math.random();
-    return this.#clamp(Number(value) || 0, 0, 1);
+    return clampNumber(Number(value) || 0, 0, 1);
   }
 
   #positive(value, fallback) {
@@ -173,9 +175,5 @@ export class TackleStressAccumulator {
   #nonNegative(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-  }
-
-  #clamp(value, min, max) {
-    return Math.max(min, Math.min(max, Number(value) || 0));
   }
 }

@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../engine/math/number_normalization.js";
+
 /**
  * Resolves per-frame player force budgets for Rod Hold and Rod Control.
  *
@@ -16,14 +18,14 @@ export class PlayerForceBudgetAllocator {
     config = {},
   } = {}) {
     const enabled = config.enabled !== false;
-    const rodLimit = this.#positive(rodLimitKg);
-    const fishTension = this.#positive(fishTensionKg);
+    const rodLimit = nonNegativeOr(rodLimitKg);
+    const fishTension = nonNegativeOr(fishTensionKg);
     const holdActive = !!holdAction?.active;
     const controlConfig = config.control || {};
     const rawControlInputRatio = controlAction?.active
-      ? this.#clamp01(controlAction?.inputRatio)
+      ? clampUnitFinite(controlAction?.inputRatio)
       : 0;
-    const minControlInputRatio = this.#clamp01(
+    const minControlInputRatio = clampUnitFinite(
       controlConfig.minInputRatio ?? 0.001,
     );
     const controlRequested =
@@ -66,19 +68,19 @@ export class PlayerForceBudgetAllocator {
     }
 
     const ceiling = config.tensionCeiling || {};
-    const holdMultiplier = this.#positive(
+    const holdMultiplier = nonNegativeOr(
       ceiling.holdMultiplier,
-      this.#positive(config.holdMultiplier, 1),
+      nonNegativeOr(config.holdMultiplier, 1),
     );
-    const controlMultiplier = this.#positive(
+    const controlMultiplier = nonNegativeOr(
       ceiling.controlMultiplier,
-      this.#positive(config.controlMultiplier, 1),
+      nonNegativeOr(config.controlMultiplier, 1),
     );
     const maxCombinedMultiplier = Math.max(
       1,
-      this.#positive(
+      nonNegativeOr(
         ceiling.maxCombinedMultiplier,
-        this.#positive(config.maxCombinedMultiplier, 1.0),
+        nonNegativeOr(config.maxCombinedMultiplier, 1.0),
       ),
     );
 
@@ -158,12 +160,12 @@ export class PlayerForceBudgetAllocator {
       return { holdShare: 1, controlShare: 1 };
     }
 
-    const maxBudgetShare = this.#clamp01(
+    const maxBudgetShare = clampUnitFinite(
       Number(controlConfig.maxBudgetShare ?? 0.5),
     );
-    const controlShare = this.#clamp01(controlInputRatio * maxBudgetShare);
+    const controlShare = clampUnitFinite(controlInputRatio * maxBudgetShare);
     return {
-      holdShare: this.#clamp01(1 - controlShare),
+      holdShare: clampUnitFinite(1 - controlShare),
       controlShare,
     };
   }
@@ -173,21 +175,6 @@ export class PlayerForceBudgetAllocator {
     if (holdActive) return "hold_only";
     if (controlActive) return "control_only";
     return "no_player_force";
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 
   #freeze(data) {

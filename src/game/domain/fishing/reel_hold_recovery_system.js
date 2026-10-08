@@ -1,4 +1,5 @@
 import { ReelHoldLoadPolicy } from "./reel_hold_load_policy.js";
+import { nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
 
 export class ReelHoldRecoverySystem {
   #timerMs = 0;
@@ -22,12 +23,12 @@ export class ReelHoldRecoverySystem {
   } = {}) {
     const delayMs = this.#resolveDelayMs(config);
     const requiredStrokeRatio = this.#ratio(config.strokeRatio, 1);
-    const strokeRatioTolerance = this.#positive(
+    const strokeRatioTolerance = nonNegativeFiniteOr(
       config.strokeRatioTolerance,
       0.001,
     );
     const inputStrokeRatio = this.#ratio(strokeRatio, 0);
-    const recoverableLine = this.#positive(lineRecoverableMeters);
+    const recoverableLine = nonNegativeFiniteOr(lineRecoverableMeters);
     const loadFrame = this.#loadPolicy.evaluate({
       dtMs,
       config,
@@ -59,7 +60,7 @@ export class ReelHoldRecoverySystem {
     });
 
     this.#timerMs = eligible
-      ? Math.min(delayMs, this.#timerMs + this.#positive(dtMs))
+      ? Math.min(delayMs, this.#timerMs + nonNegativeFiniteOr(dtMs))
       : 0;
 
     const engaged = eligible && this.#timerMs >= delayMs;
@@ -126,7 +127,7 @@ export class ReelHoldRecoverySystem {
   }) {
     if (!requireStrokeFull) return true;
     return this.#ratio(strokeRatio, 0) >=
-      requiredStrokeRatio - this.#positive(strokeRatioTolerance, 0.001);
+      requiredStrokeRatio - nonNegativeFiniteOr(strokeRatioTolerance, 0.001);
   }
 
   #blockedReason({
@@ -194,13 +195,7 @@ export class ReelHoldRecoverySystem {
     };
   }
 
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number)) return Math.max(0, number);
-    return Math.max(0, Number(fallback) || 0);
-  }
-
   #ratio(value, fallback = 0) {
-    return Math.max(0, Math.min(1, this.#positive(value, fallback)));
+    return Math.max(0, Math.min(1, nonNegativeFiniteOr(value, fallback)));
   }
 }

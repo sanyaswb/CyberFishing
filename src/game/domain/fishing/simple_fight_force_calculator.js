@@ -1,3 +1,5 @@
+import { nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
+
 /**
  * Calculates the simplified fish fight force model.
  *
@@ -91,7 +93,7 @@ export class SimpleFightForceCalculator {
       fishActiveKg,
       fishOppositionKg,
       fishTensionKg,
-      rodHoldTensionCeilingMultiplier: this.#positive(
+      rodHoldTensionCeilingMultiplier: nonNegativeFiniteOr(
         rodHoldTensionCeilingMultiplier,
         1,
       ),
@@ -120,9 +122,9 @@ export class SimpleFightForceCalculator {
     fishBasePower = 1,
   } = {}) {
     return (
-      this.#positive(fishWeightKg) *
-      this.#positive(tautBodyResistancePerKg) *
-      this.#positive(fishBasePower, 1)
+      nonNegativeFiniteOr(fishWeightKg) *
+      nonNegativeFiniteOr(tautBodyResistancePerKg) *
+      nonNegativeFiniteOr(fishBasePower, 1)
     );
   }
 
@@ -132,14 +134,14 @@ export class SimpleFightForceCalculator {
     directionMultiplier = 1,
   } = {}) {
     return (
-      this.#positive(fishPassiveKg) *
-      this.#positive(fishStateForceMultiplier, 1) *
-      this.#positive(directionMultiplier, 1)
+      nonNegativeFiniteOr(fishPassiveKg) *
+      nonNegativeFiniteOr(fishStateForceMultiplier, 1) *
+      nonNegativeFiniteOr(directionMultiplier, 1)
     );
   }
 
   calculateFishOppositionKg({ fishPassiveKg, fishActiveKg } = {}) {
-    return this.#positive(fishPassiveKg) + this.#positive(fishActiveKg);
+    return nonNegativeFiniteOr(fishPassiveKg) + nonNegativeFiniteOr(fishActiveKg);
   }
 
   calculateRodHoldMaxKg({
@@ -152,7 +154,7 @@ export class SimpleFightForceCalculator {
       this.calculateTensionCeilingKg({
         rodLimitKg,
         tensionCeilingMultiplier,
-      }) - this.#positive(fishTensionKg),
+      }) - nonNegativeFiniteOr(fishTensionKg),
     );
   }
 
@@ -161,8 +163,8 @@ export class SimpleFightForceCalculator {
     tensionCeilingMultiplier = 1,
   } = {}) {
     return (
-      this.#positive(rodLimitKg) *
-      this.#positive(tensionCeilingMultiplier, 1)
+      nonNegativeFiniteOr(rodLimitKg) *
+      nonNegativeFiniteOr(tensionCeilingMultiplier, 1)
     );
   }
 
@@ -172,8 +174,8 @@ export class SimpleFightForceCalculator {
     rodAngleMultiplier = 1,
   } = {}) {
     const cappedHold = Math.min(
-      this.#positive(rodHoldKg),
-      this.#positive(rodHoldMaxKg),
+      nonNegativeFiniteOr(rodHoldKg),
+      nonNegativeFiniteOr(rodHoldMaxKg),
     );
     return cappedHold * this.#ratio(rodAngleMultiplier, 1);
   }
@@ -204,7 +206,7 @@ export class SimpleFightForceCalculator {
     effectiveRodHoldKg,
     holdTensionRatio = 1,
   } = {}) {
-    return this.#positive(effectiveRodHoldKg) * this.#ratio(holdTensionRatio, 1);
+    return nonNegativeFiniteOr(effectiveRodHoldKg) * this.#ratio(holdTensionRatio, 1);
   }
 
   calculateMovableHoldTensionCapKg({
@@ -214,17 +216,17 @@ export class SimpleFightForceCalculator {
     // Cap is based on current fish opposition, not passive water weight.
     // This keeps small movable fish safe, but lets active fish transfer more tension.
     return (
-      this.#positive(fishOppositionKg) *
-      this.#positive(movableHoldTensionCapRatio, 1)
+      nonNegativeFiniteOr(fishOppositionKg) *
+      nonNegativeFiniteOr(movableHoldTensionCapRatio, 1)
     );
   }
 
   calculateTotalTensionKg({ fishTensionKg, playerHoldTensionKg } = {}) {
-    return this.#positive(fishTensionKg) + this.#positive(playerHoldTensionKg);
+    return nonNegativeFiniteOr(fishTensionKg) + nonNegativeFiniteOr(playerHoldTensionKg);
   }
 
   calculateNetForceKg({ effectiveRodHoldKg, fishOppositionKg } = {}) {
-    return this.#positive(effectiveRodHoldKg) - this.#positive(fishOppositionKg);
+    return nonNegativeFiniteOr(effectiveRodHoldKg) - nonNegativeFiniteOr(fishOppositionKg);
   }
 
   calculateSpeedMps({
@@ -235,15 +237,15 @@ export class SimpleFightForceCalculator {
     fishStateSpeedMultiplier = 1,
   } = {}) {
     const netForce = Number(netForceKg) || 0;
-    const resistance = Math.max(0.000001, this.#positive(waterMotionResistance, 1000));
-    const speedMultiplier = this.#positive(waterSpeedMultiplier, 64);
+    const resistance = Math.max(0.000001, nonNegativeFiniteOr(waterMotionResistance, 1000));
+    const speedMultiplier = nonNegativeFiniteOr(waterSpeedMultiplier, 64);
     const towardPlayerSpeedMps =
       Math.sqrt(Math.max(netForce, 0) / resistance) * speedMultiplier;
     const awaySpeedMps =
       Math.sqrt(Math.max(-netForce, 0) / resistance) *
       speedMultiplier *
-      this.#positive(fishBaseSpeed, 1) *
-      this.#positive(fishStateSpeedMultiplier, 1);
+      nonNegativeFiniteOr(fishBaseSpeed, 1) *
+      nonNegativeFiniteOr(fishStateSpeedMultiplier, 1);
 
     if (towardPlayerSpeedMps > 0) {
       return Object.freeze({
@@ -271,13 +273,7 @@ export class SimpleFightForceCalculator {
     });
   }
 
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number)) return Math.max(0, number);
-    return Math.max(0, Number(fallback) || 0);
-  }
-
   #ratio(value, fallback = 1) {
-    return Math.max(0, Math.min(1, this.#positive(value, fallback)));
+    return Math.max(0, Math.min(1, nonNegativeFiniteOr(value, fallback)));
   }
 }

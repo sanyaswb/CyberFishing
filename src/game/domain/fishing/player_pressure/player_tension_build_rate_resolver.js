@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PlayerTensionBuildRateResolver {
   #config;
 
@@ -18,28 +20,28 @@ export class PlayerTensionBuildRateResolver {
     const thresholds = cfg.inputThresholds || {};
     const multipliers = cfg.multipliers || {};
     const enabled = cfg.enabled === true;
-    const holdForceThresholdKg = this.#positive(
+    const holdForceThresholdKg = nonNegativeOr(
       thresholds.holdForceKg,
       0.01,
     );
-    const controlForceThresholdKg = this.#positive(
+    const controlForceThresholdKg = nonNegativeOr(
       thresholds.controlForceKg,
       0.01,
     );
-    const holdInputThreshold = this.#clamp01(
+    const holdInputThreshold = clampUnitFinite(
       thresholds.holdInputRatio ?? 0.05,
     );
-    const controlInputThreshold = this.#clamp01(
+    const controlInputThreshold = clampUnitFinite(
       thresholds.controlInputRatio ?? 0.05,
     );
     const resolvedHoldActive =
       holdActive === true &&
-      this.#positive(holdForceKg) >= holdForceThresholdKg &&
-      this.#clamp01(holdInputRatio) >= holdInputThreshold;
+      nonNegativeOr(holdForceKg) >= holdForceThresholdKg &&
+      clampUnitFinite(holdInputRatio) >= holdInputThreshold;
     const resolvedControlActive =
       controlActive === true &&
-      this.#positive(controlForceKg) >= controlForceThresholdKg &&
-      this.#clamp01(controlInputRatio) >= controlInputThreshold;
+      nonNegativeOr(controlForceKg) >= controlForceThresholdKg &&
+      clampUnitFinite(controlInputRatio) >= controlInputThreshold;
     const mode = this.#mode({
       holdActive: resolvedHoldActive,
       controlActive: resolvedControlActive,
@@ -55,11 +57,11 @@ export class PlayerTensionBuildRateResolver {
       buildRateMultiplier,
       holdActive: resolvedHoldActive,
       controlActive: resolvedControlActive,
-      holdForceKg: this.#positive(holdForceKg),
-      controlForceKg: this.#positive(controlForceKg),
-      holdInputRatio: this.#clamp01(holdInputRatio),
-      controlInputRatio: this.#clamp01(controlInputRatio),
-      rodControlBuildPerSecond: this.#positive(
+      holdForceKg: nonNegativeOr(holdForceKg),
+      controlForceKg: nonNegativeOr(controlForceKg),
+      holdInputRatio: clampUnitFinite(holdInputRatio),
+      controlInputRatio: clampUnitFinite(controlInputRatio),
+      rodControlBuildPerSecond: nonNegativeOr(
         cfg.rodControlBuildPerSecond,
         4,
       ),
@@ -83,29 +85,14 @@ export class PlayerTensionBuildRateResolver {
 
   #multiplier({ mode, multipliers }) {
     if (mode === "hold_and_control") {
-      return this.#positive(multipliers.holdAndControl, 1.5);
+      return nonNegativeOr(multipliers.holdAndControl, 1.5);
     }
     if (mode === "hold_only") {
-      return this.#positive(multipliers.holdOnly, 1.0);
+      return nonNegativeOr(multipliers.holdOnly, 1.0);
     }
     if (mode === "control_only") {
-      return this.#positive(multipliers.controlOnly, 1.0);
+      return nonNegativeOr(multipliers.controlOnly, 1.0);
     }
-    return this.#positive(multipliers.none, 1.0);
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
+    return nonNegativeOr(multipliers.none, 1.0);
   }
 }

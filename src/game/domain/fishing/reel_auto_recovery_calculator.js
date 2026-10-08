@@ -1,3 +1,5 @@
+import { clampUnit, nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+
 export class ReelAutoRecoveryCalculator {
   calculate({
     hasReel,
@@ -10,22 +12,22 @@ export class ReelAutoRecoveryCalculator {
     fishDistanceMeters,
     dtSec,
   } = {}) {
-    const strokeWon = this.#positive(strokeWonMeters);
-    const retrieveSpeed = this.#positive(retrieveSpeedMetersPerSec);
-    const reelMaxLoad = this.#positive(reelMaxLoadKg);
-    const tension = this.#positive(totalTensionKg);
-    const releasedLine = this.#positive(releasedLineMeters);
-    const fishDistance = this.#positive(fishDistanceMeters);
+    const strokeWon = nonNegativeFinite(strokeWonMeters);
+    const retrieveSpeed = nonNegativeFinite(retrieveSpeedMetersPerSec);
+    const reelMaxLoad = nonNegativeFinite(reelMaxLoadKg);
+    const tension = nonNegativeFinite(totalTensionKg);
+    const releasedLine = nonNegativeFinite(releasedLineMeters);
+    const fishDistance = nonNegativeFinite(fishDistanceMeters);
     const maxRecoverByLineMeters = Math.max(0, releasedLine - fishDistance);
     const reelLoadRatio = reelMaxLoad > 0
-      ? this.#clamp01(tension / reelMaxLoad)
+      ? clampUnit(tension / reelMaxLoad)
       : 1;
     const reelEfficiency = reelMaxLoad > 0 && tension < reelMaxLoad - 0.000001
       ? 1
       : 0;
     const recoverSpeedMetersPerSec = retrieveSpeed;
     const desiredRecoverMeters =
-      recoverSpeedMetersPerSec * this.#positive(dtSec);
+      recoverSpeedMetersPerSec * nonNegativeFinite(dtSec);
 
     const blockedReason = this.#blockedReason({
       hasReel,
@@ -77,14 +79,5 @@ export class ReelAutoRecoveryCalculator {
     if (maxRecoverByLineMeters <= 0.000001) return "stroke_line_desync";
     if (desiredRecoverMeters <= 0.000001) return "zero_recover_speed";
     return "none";
-  }
-
-  #positive(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? Math.max(0, number) : 0;
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

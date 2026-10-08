@@ -1,5 +1,6 @@
 import { DEFAULT_FISH_LATERAL_RANGE, DEFAULT_FISH_RADIAL_RANGE, FishDirectionIntentSampler } from "../fishing/fish_direction_intent_sampler.js";
 import { FISH_FIGHT_EVENT } from "./fish_fight_event.js";
+import { clampUnit, nonNegative } from "../../../engine/math/number_normalization.js";
 
 export class FishBehavior {
   #config;
@@ -116,7 +117,7 @@ export class FishBehavior {
     this.#currentStateName = selectedKey;
     const state = states[this.#currentStateName];
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
-    this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
+    this.#targetMove = nonNegative(state.speedMultiplier ?? 0);
     this.#pickDirectionTarget(state, runtimeMovementModifier);
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
   }
@@ -138,7 +139,7 @@ export class FishBehavior {
 
     this.#currentStateName = stateName;
     this.#targetPull = Math.max(0, Number(state.forceMultiplier ?? 1) || 0);
-    this.#targetMove = this.#clampNonNegative(state.speedMultiplier ?? 0);
+    this.#targetMove = nonNegative(state.speedMultiplier ?? 0);
     this.#pickDirectionTarget(state, this.#runtimeMovementModifier);
     this.#isLocked = isLocked;
     this.#stateTimer = this.#range(state.minTime, state.maxTime);
@@ -416,7 +417,7 @@ export class FishBehavior {
   #lerpRange(baseRange, targetRange, ratio) {
     const base = this.#normalizeRange(baseRange, DEFAULT_FISH_RADIAL_RANGE);
     const target = this.#normalizeRange(targetRange, base);
-    const t = this.#clamp01(ratio);
+    const t = clampUnit(ratio);
     return [
       base[0] + (target[0] - base[0]) * t,
       base[1] + (target[1] - base[1]) * t,
@@ -444,14 +445,6 @@ export class FishBehavior {
     );
     if (!Number.isFinite(multiplier)) return baseWeight;
     return baseWeight * Math.max(0, multiplier);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
-  }
-
-  #clampNonNegative(value) {
-    return Math.max(0, Number(value) || 0);
   }
 
   #resolveLastDashTriggerDistance(trigger, landingDistanceMeters) {
@@ -504,8 +497,8 @@ export class FishBehavior {
 
   getStateData() {
     const stateConfig = this.#config.behaviors[this.#currentStateName];
-    const speedRatio = this.#clampNonNegative(Math.abs(this.#currentMove));
-    const targetForceMultiplier = this.#clampNonNegative(
+    const speedRatio = nonNegative(Math.abs(this.#currentMove));
+    const targetForceMultiplier = nonNegative(
       stateConfig.forceMultiplier ?? this.#targetPull ?? this.#currentPull,
     );
     return {

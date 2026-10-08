@@ -1,3 +1,5 @@
+import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+
 export class ReelRetrieveSpeedCalculator {
   calculate({
     baseSpeedMetersPerSec,
@@ -5,14 +7,9 @@ export class ReelRetrieveSpeedCalculator {
     bearingBonusMetersPerSec,
   } = {}) {
     return (
-      this.#positive(baseSpeedMetersPerSec) +
-      this.#positive(bearingCount) *
-        this.#positive(bearingBonusMetersPerSec)
+      nonNegativeFinite(baseSpeedMetersPerSec) +
+      nonNegativeFinite(bearingCount) *
+        nonNegativeFinite(bearingBonusMetersPerSec)
     );
-  }
-
-  #positive(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
   }
 }

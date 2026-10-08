@@ -1,3 +1,5 @@
+import { nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PlayerPressureFatigueState {
   enabled = false;
   efficiency = 1;
@@ -68,38 +70,38 @@ export class PlayerPressureFatigueState {
   applyFrame(frame = {}) {
     this.enabled = frame.enabled === true;
     this.efficiency = this.#ratio(frame.efficiency, 1);
-    this.pressureHoldMs = this.#positive(frame.pressureHoldMs);
-    this.recoveryIdleMs = this.#positive(frame.recoveryIdleMs);
+    this.pressureHoldMs = nonNegativeOr(frame.pressureHoldMs);
+    this.recoveryIdleMs = nonNegativeOr(frame.recoveryIdleMs);
     this.recoveryState = frame.recoveryState || "full";
     this.stateName = frame.stateName || "idle";
     this.pressureActive = frame.pressureActive === true;
-    this.pressureKg = this.#positive(frame.pressureKg);
+    this.pressureKg = nonNegativeOr(frame.pressureKg);
     this.fatigueRatio = this.#ratio(frame.fatigueRatio);
     this.fatigueProgress = this.#ratio(frame.fatigueProgress);
     this.sourceMode = frame.sourceMode || "reel_hold_session";
     this.sourceActive = frame.sourceActive === true;
     this.sourceReason = frame.sourceReason || "reel_hold_session_inactive";
-    this.holdElapsedMs = this.#positive(
+    this.holdElapsedMs = nonNegativeOr(
       frame.holdElapsedMs ?? frame.pressureHoldMs,
     );
-    this.graceElapsedMs = this.#positive(frame.graceElapsedMs);
-    this.graceDurationMs = this.#positive(frame.graceDurationMs, 3000);
-    this.graceRemainingMs = this.#positive(frame.graceRemainingMs);
-    this.fatigueElapsedMs = this.#positive(frame.fatigueElapsedMs);
-    this.fatigueDurationMs = this.#positive(frame.fatigueDurationMs, 6000);
-    this.fatigueRemainingMs = this.#positive(frame.fatigueRemainingMs);
-    this.recoveryDelayElapsedMs = this.#positive(
+    this.graceElapsedMs = nonNegativeOr(frame.graceElapsedMs);
+    this.graceDurationMs = nonNegativeOr(frame.graceDurationMs, 3000);
+    this.graceRemainingMs = nonNegativeOr(frame.graceRemainingMs);
+    this.fatigueElapsedMs = nonNegativeOr(frame.fatigueElapsedMs);
+    this.fatigueDurationMs = nonNegativeOr(frame.fatigueDurationMs, 6000);
+    this.fatigueRemainingMs = nonNegativeOr(frame.fatigueRemainingMs);
+    this.recoveryDelayElapsedMs = nonNegativeOr(
       frame.recoveryDelayElapsedMs,
     );
-    this.recoveryDelayMs = this.#positive(
+    this.recoveryDelayMs = nonNegativeOr(
       frame.recoveryDelayMs ?? frame.delayAfterPressureMs,
       400,
     );
-    this.recoveryDelayRemainingMs = this.#positive(
+    this.recoveryDelayRemainingMs = nonNegativeOr(
       frame.recoveryDelayRemainingMs,
     );
     this.recoveryProgress = this.#ratio(frame.recoveryProgress);
-    this.recoveryRemainingMs = this.#positive(frame.recoveryRemainingMs);
+    this.recoveryRemainingMs = nonNegativeOr(frame.recoveryRemainingMs);
     this.controlBreakEnabled = frame.controlBreakEnabled === true;
     this.isControlExhausted = frame.isControlExhausted === true;
     this.controlBreakFatigueProgressThreshold = this.#ratio(
@@ -107,12 +109,12 @@ export class PlayerPressureFatigueState {
         frame.controlBreakFatigueRatioThreshold,
       0.9,
     );
-    this.controlBreakMinContinuousPressureMs = this.#positive(
+    this.controlBreakMinContinuousPressureMs = nonNegativeOr(
       frame.controlBreakMinContinuousPressureMs,
       8000,
     );
-    this.delayAfterPressureMs = this.#positive(frame.delayAfterPressureMs);
-    this.recoveryPerSecond = this.#positive(frame.recoveryPerSecond);
+    this.delayAfterPressureMs = nonNegativeOr(frame.delayAfterPressureMs);
+    this.recoveryPerSecond = nonNegativeOr(frame.recoveryPerSecond);
   }
 
   toFrame() {
@@ -153,15 +155,6 @@ export class PlayerPressureFatigueState {
       delayAfterPressureMs: this.delayAfterPressureMs,
       recoveryPerSecond: this.recoveryPerSecond,
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
   }
 
   #ratio(value, fallback = 0) {

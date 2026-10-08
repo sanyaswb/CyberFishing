@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class StaminaLateralPositionResolver {
   resolve({
     fishLateralOffsetPx = 0,
@@ -7,16 +9,16 @@ export class StaminaLateralPositionResolver {
   } = {}) {
     const offset = Number(fishLateralOffsetPx) || 0;
     const absOffset = Math.abs(offset);
-    const maxOffset = this.#positive(maxAllowedLateralOffsetPx);
+    const maxOffset = nonNegativeOr(maxAllowedLateralOffsetPx);
     const explicitRatio = Number(angleRatio);
     const lateralEdgeRatio =
       maxOffset > 0
-        ? this.#clamp01(absOffset / maxOffset)
+        ? clampUnitFinite(absOffset / maxOffset)
         : Number.isFinite(explicitRatio)
-          ? this.#clamp01(explicitRatio)
+          ? clampUnitFinite(explicitRatio)
           : 0;
     const fishSide = offset > 0 ? "right" : offset < 0 ? "left" : "center";
-    const centerDeadZoneRatio = this.#clamp01(config.centerDeadZoneRatio ?? 0);
+    const centerDeadZoneRatio = clampUnitFinite(config.centerDeadZoneRatio ?? 0);
     const expectedControlDirectionToCenter =
       lateralEdgeRatio <= centerDeadZoneRatio ? 0 : -Math.sign(offset);
 
@@ -27,20 +29,5 @@ export class StaminaLateralPositionResolver {
       fishLateralOffsetPx: offset,
       maxAllowedLateralOffsetPx: maxOffset,
     });
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

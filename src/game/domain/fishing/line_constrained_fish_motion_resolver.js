@@ -1,3 +1,5 @@
+import { nonNegative } from "../../../engine/math/number_normalization.js";
+
 export class LineConstrainedFishMotionResolver {
   #frame = this.#createFrame();
 
@@ -32,7 +34,7 @@ export class LineConstrainedFishMotionResolver {
         allowedTangentSpeedPxPerSec: Math.hypot(rawX, rawY),
         rawVelocityX: rawX,
         rawVelocityY: rawY,
-        dtSec: this.#nonNegative(dtSec),
+        dtSec: nonNegative(dtSec),
       });
     }
 
@@ -51,7 +53,7 @@ export class LineConstrainedFishMotionResolver {
         allowedTangentSpeedPxPerSec: Math.hypot(rawX, rawY),
         rawVelocityX: rawX,
         rawVelocityY: rawY,
-        dtSec: this.#nonNegative(dtSec),
+        dtSec: nonNegative(dtSec),
       });
     }
 
@@ -73,7 +75,7 @@ export class LineConstrainedFishMotionResolver {
         allowedTangentSpeedPxPerSec: Math.hypot(rawX, rawY),
         rawVelocityX: rawX,
         rawVelocityY: rawY,
-        dtSec: this.#nonNegative(dtSec),
+        dtSec: nonNegative(dtSec),
       });
     }
 
@@ -95,12 +97,8 @@ export class LineConstrainedFishMotionResolver {
       allowedTangentSpeedPxPerSec: Math.hypot(allowedX, allowedY),
       rawVelocityX: rawX,
       rawVelocityY: rawY,
-      dtSec: this.#nonNegative(dtSec),
+      dtSec: nonNegative(dtSec),
     });
-  }
-
-  #nonNegative(value) {
-    return Math.max(0, Number(value) || 0);
   }
 
   #createFrame() {

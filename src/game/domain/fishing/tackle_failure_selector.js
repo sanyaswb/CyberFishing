@@ -1,3 +1,5 @@
+import { positiveFinite } from "../../../engine/math/number_normalization.js";
+
 export class TackleFailureSelector {
   static DEFAULT_TIE_BREAK_PRIORITY = Object.freeze([
     "leader",
@@ -24,11 +26,11 @@ export class TackleFailureSelector {
   } = {}) {
     const priority = this.#buildPriorityMap(tieBreakPriority);
     const candidates = [
-      { component: "leader", maxLoadKg: this.#positiveFinite(leaderMaxLoadKg) },
-      { component: "line", maxLoadKg: this.#positiveFinite(lineMaxLoadKg) },
-      { component: "hook", maxLoadKg: this.#positiveFinite(hookMaxLoadKg) },
-      { component: "rod", maxLoadKg: this.#positiveFinite(rodMaxLoadKg) },
-      { component: "reel", maxLoadKg: this.#positiveFinite(reelMaxLoadKg) },
+      { component: "leader", maxLoadKg: positiveFinite(leaderMaxLoadKg) },
+      { component: "line", maxLoadKg: positiveFinite(lineMaxLoadKg) },
+      { component: "hook", maxLoadKg: positiveFinite(hookMaxLoadKg) },
+      { component: "rod", maxLoadKg: positiveFinite(rodMaxLoadKg) },
+      { component: "reel", maxLoadKg: positiveFinite(reelMaxLoadKg) },
     ]
       .filter((candidate) => candidate.maxLoadKg > 0)
       .sort((a, b) => {
@@ -75,10 +77,5 @@ export class TackleFailureSelector {
 
   #priorityOf(priorityMap, component) {
     return priorityMap.has(component) ? priorityMap.get(component) : 999;
-  }
-
-  #positiveFinite(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   }
 }

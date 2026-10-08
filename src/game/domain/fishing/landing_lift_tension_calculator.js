@@ -1,3 +1,5 @@
+import { clampNumber } from "../../../engine/math/number_normalization.js";
+
 /**
  * Calculates real-weight tension transfer while lifting fish in the landing zone.
  *
@@ -25,12 +27,12 @@ export class LandingLiftTensionCalculator {
       this.#positive(config.liftTimeSeconds, 0.25),
     );
     const releaseTimeSeconds = this.#positive(config.releaseTimeSeconds, 0.2);
-    const slowdownStartRatio = this.#clamp(
+    const slowdownStartRatio = clampNumber(
       this.#number(config.slowdownStartRatio, 0.75),
       0,
       0.999999,
     );
-    const endSpeedRatio = this.#clamp(
+    const endSpeedRatio = clampNumber(
       this.#number(config.endSpeedRatio, 0.08),
       0.000001,
       1,
@@ -51,16 +53,16 @@ export class LandingLiftTensionCalculator {
       liftMaxKg,
     );
     const progressRatio = liftMaxKg > 0
-      ? this.#clamp(liftHoldKg / liftMaxKg, 0, 1)
+      ? clampNumber(liftHoldKg / liftMaxKg, 0, 1)
       : 0;
     const tackleLoadProgressRatio =
       maxLoadKg > 0
-        ? this.#clamp(liftHoldKg / maxLoadKg, 0, 1)
+        ? clampNumber(liftHoldKg / maxLoadKg, 0, 1)
         : progressRatio;
     const slowdownRatio =
       tackleLoadProgressRatio <= slowdownStartRatio
         ? 0
-        : this.#clamp(
+        : clampNumber(
             (tackleLoadProgressRatio - slowdownStartRatio) /
               Math.max(0.000001, 1 - slowdownStartRatio),
             0,
@@ -72,7 +74,7 @@ export class LandingLiftTensionCalculator {
         : 0.5 - 0.5 * Math.cos(Math.PI * slowdownRatio);
     const slowdownCurve = Math.pow(smoothSlowdown, slowdownCurvePower);
     const speedRatio =
-      1 + (endSpeedRatio - 1) * this.#clamp(slowdownCurve, 0, 1);
+      1 + (endSpeedRatio - 1) * clampNumber(slowdownCurve, 0, 1);
     const gainKgPerSecond =
       liftMaxKg > 0 && fastLiftTimeSeconds > 0
         ? (liftMaxKg / fastLiftTimeSeconds) * speedRatio
@@ -86,7 +88,7 @@ export class LandingLiftTensionCalculator {
       liftHoldKg -= (releaseMax / releaseTime) * dt;
     }
 
-    liftHoldKg = this.#clamp(liftHoldKg, 0, liftMaxKg);
+    liftHoldKg = clampNumber(liftHoldKg, 0, liftMaxKg);
     const active = enabled && inLandingZone && liftHoldKg > 0;
     const fishTensionKg = active ? liftHoldKg : waterTension;
 
@@ -124,10 +126,6 @@ export class LandingLiftTensionCalculator {
     const number = Number(value);
     if (Number.isFinite(number)) return number;
     return Math.max(0, Number(fallback) || 0);
-  }
-
-  #clamp(value, min, max) {
-    return Math.max(min, Math.min(max, Number(value) || 0));
   }
 
 }

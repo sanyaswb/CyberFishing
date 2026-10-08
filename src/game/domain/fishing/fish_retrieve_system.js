@@ -1,6 +1,7 @@
 import { DragForceCalculator } from "./drag_force_calculator.js";
 import { FishRetrieveResult } from "./fish_retrieve_result.js";
 import { SimpleFightForceCalculator } from "./simple_fight_force_calculator.js";
+import { nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
 
 export class FishRetrieveSystem {
   #configSource;
@@ -32,24 +33,24 @@ export class FishRetrieveSystem {
     const rodHold = this.#resolveRodHoldConfig();
     const frame = this.#calculator.calculate({
       fishWeightKg: this.#resolveFishWeight(forceData),
-      fishBasePower: this.#positive(forceData?.fishBasePower, 1),
-      fishBaseSpeed: this.#positive(forceData?.fishBaseSpeed, 1),
-      fishStateForceMultiplier: this.#positive(
+      fishBasePower: nonNegativeFiniteOr(forceData?.fishBasePower, 1),
+      fishBaseSpeed: nonNegativeFiniteOr(forceData?.fishBaseSpeed, 1),
+      fishStateForceMultiplier: nonNegativeFiniteOr(
         forceData?.fishStateForceMultiplier,
         1,
       ),
-      fishStateSpeedMultiplier: this.#positive(
+      fishStateSpeedMultiplier: nonNegativeFiniteOr(
         forceData?.fishStateSpeedMultiplier,
         1,
       ),
-      directionMultiplier: this.#positive(
+      directionMultiplier: nonNegativeFiniteOr(
         forceData?.directionResistanceMultiplier,
         1,
       ),
       tautBodyResistancePerKg: water.tautBodyResistancePerKg,
-      rodLimitKg: this.#positive(rodPullResult?.rodLimitKg),
+      rodLimitKg: nonNegativeFiniteOr(rodPullResult?.rodLimitKg),
       rodHoldTensionCeilingMultiplier:
-        this.#positive(
+        nonNegativeFiniteOr(
           rodPullResult?.tensionCeilingMultiplier,
           rodHold.tensionCeilingMultiplier,
         ),
@@ -81,8 +82,8 @@ export class FishRetrieveSystem {
       },
       waterMotionResistance: water.motionResistance,
       waterSpeedMultiplier: water.speedMultiplier,
-      fishBaseSpeed: this.#positive(forceData?.fishBaseSpeed, 1),
-      fishStateSpeedMultiplier: this.#positive(
+      fishBaseSpeed: nonNegativeFiniteOr(forceData?.fishBaseSpeed, 1),
+      fishStateSpeedMultiplier: nonNegativeFiniteOr(
         forceData?.fishStateSpeedMultiplier,
         1,
       ),
@@ -161,12 +162,12 @@ export class FishRetrieveSystem {
     const source = this.#configSource;
     const water = source?.getWaterConfig?.() || source?.water || {};
     return {
-      tautBodyResistancePerKg: this.#positive(
+      tautBodyResistancePerKg: nonNegativeFiniteOr(
         water.tautBodyResistancePerKg,
         0.2,
       ),
-      motionResistance: this.#positive(water.motionResistance, 1000),
-      speedMultiplier: this.#positive(water.speedMultiplier, 64),
+      motionResistance: nonNegativeFiniteOr(water.motionResistance, 1000),
+      speedMultiplier: nonNegativeFiniteOr(water.speedMultiplier, 64),
     };
   }
 
@@ -174,7 +175,7 @@ export class FishRetrieveSystem {
     const source = this.#configSource;
     const tension = source?.getFightTensionConfig?.() || source?.tension || {};
     return {
-      movableHoldTensionCapRatio: this.#positive(
+      movableHoldTensionCapRatio: nonNegativeFiniteOr(
         tension.movableHoldTensionCapRatio,
         1,
       ),
@@ -185,7 +186,7 @@ export class FishRetrieveSystem {
     const source = this.#configSource;
     const rodHold = source?.getRodHoldConfig?.() || source?.rodHold || {};
     return {
-      tensionCeilingMultiplier: this.#positive(
+      tensionCeilingMultiplier: nonNegativeFiniteOr(
         rodHold.tensionCeilingMultiplier,
         1,
       ),
@@ -225,13 +226,7 @@ export class FishRetrieveSystem {
     return Math.max(0, Number(rodPullResult.forceKg) || 0);
   }
 
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number)) return Math.max(0, number);
-    return Math.max(0, Number(fallback) || 0);
-  }
-
   #ratio(value, fallback = 1) {
-    return Math.max(0, Math.min(1, this.#positive(value, fallback)));
+    return Math.max(0, Math.min(1, nonNegativeFiniteOr(value, fallback)));
   }
 }

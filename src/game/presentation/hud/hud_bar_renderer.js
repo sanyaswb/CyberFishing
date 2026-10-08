@@ -1,3 +1,5 @@
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
+
 export class HudBarRenderer {
   #surface;
 
@@ -21,9 +23,9 @@ export class HudBarRenderer {
     marker = null,
   }) {
     const ctx = this.#surface;
-    const clampedRatio = this.#clampRatio(ratio);
-    const padding = this.#number(style.padding, 2);
-    const borderWidth = this.#number(style.borderWidth, 1);
+    const clampedRatio = clampUnit(ratio);
+    const padding = finiteOr(style.padding, 2);
+    const borderWidth = finiteOr(style.borderWidth, 1);
     const fillWidth = width * clampedRatio;
     const resolvedFillColor = fillColor || style.fillColor || "#00ccff";
 
@@ -38,24 +40,24 @@ export class HudBarRenderer {
     ctx.fillStyle = resolvedFillColor;
     ctx.fillRect(x, y, fillWidth, height);
 
-    const glowIntensity = this.#number(style.glowIntensity, 0);
+    const glowIntensity = finiteOr(style.glowIntensity, 0);
     if (glowIntensity > 0 && fillWidth > 0) {
       ctx.shadowColor = style.glowColor || resolvedFillColor;
-      ctx.shadowBlur = this.#number(style.glowBlur, 10) * glowIntensity;
+      ctx.shadowBlur = finiteOr(style.glowBlur, 10) * glowIntensity;
       ctx.strokeStyle = style.glowStrokeColor || resolvedFillColor;
-      ctx.lineWidth = this.#number(style.glowLineWidth, 2);
+      ctx.lineWidth = finiteOr(style.glowLineWidth, 2);
       ctx.strokeRect(x, y, fillWidth, height);
       ctx.shadowBlur = 0;
     }
 
     if (marker?.enabled) {
-      const markerRatio = this.#clampRatio(marker.ratio);
+      const markerRatio = clampUnit(marker.ratio);
       const markerX = x + width * markerRatio;
       ctx.strokeStyle = marker.color || style.markerColor || "#73c2fb";
-      ctx.lineWidth = this.#number(marker.width, 2);
+      ctx.lineWidth = finiteOr(marker.width, 2);
       ctx.beginPath();
-      ctx.moveTo(markerX, y - this.#number(marker.extendPx, 4));
-      ctx.lineTo(markerX, y + height + this.#number(marker.extendPx, 4));
+      ctx.moveTo(markerX, y - finiteOr(marker.extendPx, 4));
+      ctx.lineTo(markerX, y + height + finiteOr(marker.extendPx, 4));
       ctx.stroke();
     }
 
@@ -82,7 +84,7 @@ export class HudBarRenderer {
     value = null,
   }) {
     const ctx = this.#surface;
-    const clampedRatio = this.#clampRatio(ratio);
+    const clampedRatio = clampUnit(ratio);
 
     ctx.save();
     if (style.backgroundColor) {
@@ -94,7 +96,7 @@ export class HudBarRenderer {
     ctx.fillRect(x, y, width * clampedRatio, height);
 
     ctx.strokeStyle = style.strokeColor || style.borderColor || "#ff0000";
-    ctx.lineWidth = this.#number(style.borderWidth, 1);
+    ctx.lineWidth = finiteOr(style.borderWidth, 1);
     ctx.strokeRect(x, y, width, height);
 
     if (label) {
@@ -102,7 +104,7 @@ export class HudBarRenderer {
       ctx.font = style.labelFont || "bold 10px monospace";
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
-      ctx.fillText(label, x + width / 2, y - this.#number(style.labelGap, 4));
+      ctx.fillText(label, x + width / 2, y - finiteOr(style.labelGap, 4));
     }
     if (value) {
       ctx.fillStyle = style.valueColor || style.labelColor || "#ff0000";
@@ -136,7 +138,7 @@ export class HudBarRenderer {
     if (topLabel) {
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
-      ctx.fillText(topLabel, x + width / 2, y - this.#number(style.labelGap, 4));
+      ctx.fillText(topLabel, x + width / 2, y - finiteOr(style.labelGap, 4));
     }
     if (rightValue) {
       ctx.fillStyle = style.valueColor || style.labelColor || "#8a9bac";
@@ -153,22 +155,13 @@ export class HudBarRenderer {
     }
   }
 
-  #clampRatio(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
-  }
-
   #resolveValueX(x, width, style) {
     return style.valuePlacement === "center"
       ? x + width / 2
-      : x + width - this.#number(style.valueGap, 6);
+      : x + width - finiteOr(style.valueGap, 6);
   }
 
   #resolveValueAlign(style) {
     return style.valuePlacement === "center" ? "center" : "right";
-  }
-
-  #number(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 }

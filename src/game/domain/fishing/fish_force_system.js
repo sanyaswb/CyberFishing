@@ -6,6 +6,7 @@ import { HoldOppositionResolver } from "./hold_opposition_resolver.js";
 import { PlayerForceSystem } from "./player_force_system.js";
 import { SimpleFightForceCalculator } from "./simple_fight_force_calculator.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { clampUnit } from "../../../engine/math/number_normalization.js";
 
 export class FishForceSystem {
   #fish;
@@ -67,10 +68,10 @@ export class FishForceSystem {
       0,
     );
     const staminaRatio = maxStamina
-      ? this.#clamp01(fishCondition.currentStamina / maxStamina)
+      ? clampUnit(fishCondition.currentStamina / maxStamina)
       : 1;
     const exhaustionProgress = maxEndurance
-      ? this.#clamp01(1 - fishCondition.currentExhaustion / maxEndurance)
+      ? clampUnit(1 - fishCondition.currentExhaustion / maxEndurance)
       : 0;
     const enduranceMovementDebuff = this.#calculateEnduranceMovementDebuff({
       fishCondition,
@@ -278,7 +279,7 @@ export class FishForceSystem {
       fishOppositionKg: totalFishForceKg,
       effectiveRodHoldKg: holdOpposition.forceKg,
       awayDir,
-      dragRatio: this.#clamp01(dragRatio),
+      dragRatio: clampUnit(dragRatio),
       dragLimitKg: playerData.effectiveDragLimitKg,
       lineHasReserve,
       lineTaut,
@@ -310,7 +311,7 @@ export class FishForceSystem {
         : 0;
     const staminaPressureRatio =
       playerData.isPulling && dragFrame.fishWonRadialForceKg > 0
-        ? this.#clamp01(
+        ? clampUnit(
             dragFrame.dragBlockedForceKg /
               dragFrame.fishWonRadialForceKg,
           )
@@ -424,7 +425,7 @@ export class FishForceSystem {
       escapeOpposingHoldKg: holdOpposition.forceKg,
       holdOppositionRatio: holdOpposition.ratio,
       awayFromPlayerRatio: outwardRatio,
-      dragRatio: this.#clamp01(dragRatio),
+      dragRatio: clampUnit(dragRatio),
       dragLimitKg: playerData.dragLimitKg,
       effectiveDragLimitKg: playerData.effectiveDragLimitKg,
       dragLocked,
@@ -707,7 +708,7 @@ export class FishForceSystem {
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
+    return a + (b - a) * clampUnit(t);
   }
 
   #numberOrDefault(value, fallback) {
@@ -725,10 +726,6 @@ export class FishForceSystem {
     const number = Number(value);
     if (Number.isFinite(number)) return Math.max(0, number);
     return Math.max(0, Number(fallback) || 0);
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 
   // Composition passes a config carrying its FightPhysicsConfigAdapter (CONFIG or ConfigProvider).

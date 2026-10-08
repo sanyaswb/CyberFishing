@@ -1,3 +1,5 @@
+import { firstFinite } from "../../../engine/math/number_normalization.js";
+
 export class RodVisualOffsetSystem {
   #offsetPx = 0;
   #clamped = false;
@@ -210,7 +212,7 @@ export class RodVisualOffsetSystem {
     fightDebug,
     lineModeFrame,
   }) {
-    const fishMoveX = this.#firstFiniteNumber(
+    const fishMoveX = firstFinite(
       fightDebug?.fishVelocityX,
       fightDebug?.fishMoveX,
       fightDebug?.targetVelocityX,
@@ -328,14 +330,6 @@ export class RodVisualOffsetSystem {
     const delta = target - current;
     if (Math.abs(delta) <= maxStep) return target;
     return current + Math.sign(delta) * maxStep;
-  }
-
-  #firstFiniteNumber(...values) {
-    for (const value of values) {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-    return 0;
   }
 
   #clamp(value, min, max) {

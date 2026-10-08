@@ -28,6 +28,7 @@ import { RodStrokeDistanceTracker } from "../../domain/fishing/rod_stroke_distan
 import { RodStrokeTracker } from "../../domain/fishing/rod_stroke_tracker.js";
 import { StaminaBalanceFrame } from "../../domain/fishing/stamina/stamina_balance_frame.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { clampUnitFinite, nonNegativeOr } from "../../../engine/math/number_normalization.js";
 
 export class FightPhysicsOrchestrator {
   #config;
@@ -829,8 +830,8 @@ export class FightPhysicsOrchestrator {
   } = {}) {
     const config = this.#resolvePlayerPressureFatigueConfig(physics);
     const effectivePressureKg =
-      this.#positive(rodPullResult?.forceKg) +
-      this.#positive(rodControlResult?.forceKg);
+      nonNegativeOr(rodPullResult?.forceKg) +
+      nonNegativeOr(rodControlResult?.forceKg);
     const fallback = Object.freeze({
       source: "player_pressure_fatigue_source",
       sourceMode: config?.source?.mode || "reel_hold_session",
@@ -884,15 +885,15 @@ export class FightPhysicsOrchestrator {
       !!this.#playerPressureFatigueCalculator &&
       !!this.#playerPressureFatigueState;
     const state = this.#playerPressureFatigueState?.toFrame?.() || {};
-    const efficiency = enabled ? this.#clamp01(state.efficiency ?? 1) : 1;
+    const efficiency = enabled ? clampUnitFinite(state.efficiency ?? 1) : 1;
     return Object.freeze({
       source: "player_pressure_fatigue_application",
       enabled,
       efficiency,
       appliedEfficiency: efficiency,
-      pressureHoldMs: enabled ? this.#positive(state.pressureHoldMs) : 0,
-      holdElapsedMs: enabled ? this.#positive(state.holdElapsedMs) : 0,
-      recoveryIdleMs: enabled ? this.#positive(state.recoveryIdleMs) : 0,
+      pressureHoldMs: enabled ? nonNegativeOr(state.pressureHoldMs) : 0,
+      holdElapsedMs: enabled ? nonNegativeOr(state.holdElapsedMs) : 0,
+      recoveryIdleMs: enabled ? nonNegativeOr(state.recoveryIdleMs) : 0,
       recoveryState: enabled ? state.recoveryState || "full" : "disabled",
       stateName: enabled ? state.stateName || "idle" : "idle",
       sourceMode: enabled
@@ -903,44 +904,44 @@ export class FightPhysicsOrchestrator {
         ? state.sourceReason || "reel_hold_session_inactive"
         : "disabled",
       pressureActive: enabled && state.pressureActive === true,
-      pressureKg: enabled ? this.#positive(state.pressureKg) : 0,
-      fatigueRatio: enabled ? this.#clamp01(1 - efficiency) : 0,
-      fatigueProgress: enabled ? this.#clamp01(state.fatigueProgress) : 0,
-      graceElapsedMs: enabled ? this.#positive(state.graceElapsedMs) : 0,
-      graceDurationMs: enabled ? this.#positive(state.graceDurationMs) : 0,
-      graceRemainingMs: enabled ? this.#positive(state.graceRemainingMs) : 0,
-      fatigueElapsedMs: enabled ? this.#positive(state.fatigueElapsedMs) : 0,
-      fatigueDurationMs: enabled ? this.#positive(state.fatigueDurationMs) : 0,
-      fatigueRemainingMs: enabled ? this.#positive(state.fatigueRemainingMs) : 0,
+      pressureKg: enabled ? nonNegativeOr(state.pressureKg) : 0,
+      fatigueRatio: enabled ? clampUnitFinite(1 - efficiency) : 0,
+      fatigueProgress: enabled ? clampUnitFinite(state.fatigueProgress) : 0,
+      graceElapsedMs: enabled ? nonNegativeOr(state.graceElapsedMs) : 0,
+      graceDurationMs: enabled ? nonNegativeOr(state.graceDurationMs) : 0,
+      graceRemainingMs: enabled ? nonNegativeOr(state.graceRemainingMs) : 0,
+      fatigueElapsedMs: enabled ? nonNegativeOr(state.fatigueElapsedMs) : 0,
+      fatigueDurationMs: enabled ? nonNegativeOr(state.fatigueDurationMs) : 0,
+      fatigueRemainingMs: enabled ? nonNegativeOr(state.fatigueRemainingMs) : 0,
       recoveryDelayElapsedMs: enabled
-        ? this.#positive(state.recoveryDelayElapsedMs)
+        ? nonNegativeOr(state.recoveryDelayElapsedMs)
         : 0,
-      recoveryDelayMs: enabled ? this.#positive(state.recoveryDelayMs) : 0,
+      recoveryDelayMs: enabled ? nonNegativeOr(state.recoveryDelayMs) : 0,
       recoveryDelayRemainingMs: enabled
-        ? this.#positive(state.recoveryDelayRemainingMs)
+        ? nonNegativeOr(state.recoveryDelayRemainingMs)
         : 0,
-      recoveryProgress: enabled ? this.#clamp01(state.recoveryProgress) : 0,
+      recoveryProgress: enabled ? clampUnitFinite(state.recoveryProgress) : 0,
       recoveryRemainingMs: enabled
-        ? this.#positive(state.recoveryRemainingMs)
+        ? nonNegativeOr(state.recoveryRemainingMs)
         : 0,
       controlBreakEnabled: enabled && state.controlBreakEnabled === true,
       isControlExhausted: enabled && state.isControlExhausted === true,
       controlBreakFatigueProgressThreshold: enabled
-        ? this.#clamp01(
+        ? clampUnitFinite(
             state.controlBreakFatigueProgressThreshold ??
               state.controlBreakFatigueRatioThreshold ??
               0.9,
           )
         : 0,
       controlBreakFatigueRatioThreshold: enabled
-        ? this.#clamp01(
+        ? clampUnitFinite(
             state.controlBreakFatigueProgressThreshold ??
               state.controlBreakFatigueRatioThreshold ??
               0.9,
           )
         : 0,
       controlBreakMinContinuousPressureMs: enabled
-        ? this.#positive(state.controlBreakMinContinuousPressureMs)
+        ? nonNegativeOr(state.controlBreakMinContinuousPressureMs)
         : 0,
       channels: this.#resolvePlayerPressureFatigueChannels(config),
     });
@@ -960,14 +961,14 @@ export class FightPhysicsOrchestrator {
       !!this.#playerPressureFatigueCalculator &&
       !!this.#playerPressureFatigueState;
     const channels = this.#resolvePlayerPressureFatigueChannels(config);
-    const rawRodHoldKg = this.#positive(
+    const rawRodHoldKg = nonNegativeOr(
       rodPullResult?.rawForceKg ?? rodPullResult?.forceKg,
     );
-    const rawControlKg = this.#positive(
+    const rawControlKg = nonNegativeOr(
       rodControlResult?.rawForceKg ?? rodControlResult?.forceKg,
     );
-    const fatiguedRodHoldKg = this.#positive(rodPullResult?.forceKg);
-    const fatiguedControlKg = this.#positive(rodControlResult?.forceKg);
+    const fatiguedRodHoldKg = nonNegativeOr(rodPullResult?.forceKg);
+    const fatiguedControlKg = nonNegativeOr(rodControlResult?.forceKg);
     const pressureKg =
       (channels.rodHold ? fatiguedRodHoldKg : 0) +
       (channels.rodControl ? fatiguedControlKg : 0);
@@ -993,32 +994,32 @@ export class FightPhysicsOrchestrator {
         fatigueRatio: 0,
         fatigueProgress: 0,
         graceElapsedMs: 0,
-        graceDurationMs: this.#positive(config.graceDurationMs),
+        graceDurationMs: nonNegativeOr(config.graceDurationMs),
         graceRemainingMs: 0,
         fatigueElapsedMs: 0,
-        fatigueDurationMs: this.#positive(config.fatigueDurationMs),
+        fatigueDurationMs: nonNegativeOr(config.fatigueDurationMs),
         fatigueRemainingMs: 0,
         recoveryDelayElapsedMs: 0,
-        recoveryDelayMs: this.#positive(config.recovery?.delayAfterPressureMs),
+        recoveryDelayMs: nonNegativeOr(config.recovery?.delayAfterPressureMs),
         recoveryDelayRemainingMs: 0,
         recoveryProgress: 0,
         recoveryRemainingMs: 0,
         controlBreakEnabled: config.controlBreak?.enabled === true,
         isControlExhausted: false,
         controlBreakFatigueProgressThreshold:
-          this.#clamp01(
+          clampUnitFinite(
             config.controlBreak?.fatigueProgressThreshold ??
               config.controlBreak?.fatigueRatioThreshold ??
               0.9,
           ),
         controlBreakFatigueRatioThreshold:
-          this.#clamp01(
+          clampUnitFinite(
             config.controlBreak?.fatigueProgressThreshold ??
               config.controlBreak?.fatigueRatioThreshold ??
               0.9,
           ),
         controlBreakMinContinuousPressureMs:
-          this.#positive(config.controlBreak?.minContinuousPressureMs),
+          nonNegativeOr(config.controlBreak?.minContinuousPressureMs),
         channels,
         rawRodHoldKg,
         rawControlKg,
@@ -1042,7 +1043,7 @@ export class FightPhysicsOrchestrator {
     return Object.freeze({
       ...nextFrame,
       source: "player_pressure_fatigue",
-      appliedEfficiency: this.#clamp01(
+      appliedEfficiency: clampUnitFinite(
         appliedFrame?.appliedEfficiency ?? appliedFrame?.efficiency ?? 1,
       ),
       nextEfficiency: nextFrame.efficiency,
@@ -4649,21 +4650,6 @@ export class FightPhysicsOrchestrator {
 
   #getRuntimePhysicsConfig() {
     return this.#config.physics || {};
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 
 }

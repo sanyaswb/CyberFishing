@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class StaminaRegenCalculator {
   calculate({
     recoveryAllowed = false,
@@ -18,11 +20,11 @@ export class StaminaRegenCalculator {
       config: config.fatigueMultiplier || {},
     });
     const regenPerSecond = shouldRegen
-      ? this.#positive(baseRegenPerSecond, 20) *
+      ? nonNegativeOr(baseRegenPerSecond, 20) *
         angleFrame.angleRegenMultiplier *
         fatigueFrame.fatigueRegenMultiplier
       : 0;
-    const staminaRegen = regenPerSecond * this.#positive(dtSec);
+    const staminaRegen = regenPerSecond * nonNegativeOr(dtSec);
 
     return Object.freeze({
       shouldRegen,
@@ -36,31 +38,31 @@ export class StaminaRegenCalculator {
   }
 
   #angleMultiplier({ lineAngleDeg, config }) {
-    const angle = this.#positive(lineAngleDeg);
+    const angle = nonNegativeOr(lineAngleDeg);
     if (config.enabled === false) {
       return Object.freeze({
         lineAngleDeg: angle,
         angleRegenMultiplier: 1,
       });
     }
-    const centerAngle = this.#positive(config.centerAngleDeg, 15);
+    const centerAngle = nonNegativeOr(config.centerAngleDeg, 15);
     const sideAngle = Math.max(
       centerAngle,
-      this.#positive(config.sideAngleDeg ?? config.badAngleDeg, 75),
+      nonNegativeOr(config.sideAngleDeg ?? config.badAngleDeg, 75),
     );
     const edgeAngle = Math.max(
       sideAngle,
-      this.#positive(config.edgeAngleDeg ?? config.extremeAngleDeg, 90),
+      nonNegativeOr(config.edgeAngleDeg ?? config.extremeAngleDeg, 90),
     );
-    const centerMultiplier = this.#positive(
+    const centerMultiplier = nonNegativeOr(
       config.centerMultiplier ?? config.minCenterMultiplier,
       1,
     );
-    const sideMultiplier = this.#positive(
+    const sideMultiplier = nonNegativeOr(
       config.sideMultiplier ?? config.badAngleMultiplier,
       1.5,
     );
-    const edgeMultiplier = this.#positive(
+    const edgeMultiplier = nonNegativeOr(
       config.edgeMultiplier ?? config.extremeAngleMultiplier,
       2,
     );
@@ -93,7 +95,7 @@ export class StaminaRegenCalculator {
   }
 
   #fatigueMultiplier({ playerFatigueProgress, config }) {
-    const progress = this.#clamp01(playerFatigueProgress);
+    const progress = clampUnitFinite(playerFatigueProgress);
     if (config.enabled === false) {
       return Object.freeze({
         playerFatigueProgress: progress,
@@ -103,26 +105,11 @@ export class StaminaRegenCalculator {
     return Object.freeze({
       playerFatigueProgress: progress,
       fatigueRegenMultiplier:
-        1 + progress * this.#positive(config.maxBonusMultiplier, 1),
+        1 + progress * nonNegativeOr(config.maxBonusMultiplier, 1),
     });
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
+    return a + (b - a) * clampUnitFinite(t);
   }
 }

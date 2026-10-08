@@ -1,3 +1,5 @@
+import { clampUnit, nonNegativeOr } from "../../../engine/math/number_normalization.js";
+
 export class StaminaSystem {
   #condition;
   #mechanicsConfig;
@@ -132,11 +134,11 @@ export class StaminaSystem {
       return;
     }
 
-    const recoveryPerSecond = this.#positive(recovery.recoveryPerSecond, 30);
-    const recoveryAmount = recoveryPerSecond * this.#positive(frame.dtSec, 0);
+    const recoveryPerSecond = nonNegativeOr(recovery.recoveryPerSecond, 30);
+    const recoveryAmount = recoveryPerSecond * nonNegativeOr(frame.dtSec, 0);
     if (recoveryAmount <= 0) return;
 
-    const capRatio = this.#clamp01(recovery.maxRecoveryRatio ?? 0.8);
+    const capRatio = clampUnit(recovery.maxRecoveryRatio ?? 0.8);
     const recoveryCap = this.#maxEndurance() * capRatio;
     if (this.#condition.currentExhaustion >= recoveryCap) return;
     if (typeof this.#condition.applyExhaustionRegen !== "function") return;
@@ -199,12 +201,12 @@ export class StaminaSystem {
   }
 
   #syncFramePowerDebuffWithEndurance() {
-    const enduranceRatio = this.#clamp01(
+    const enduranceRatio = clampUnit(
       this.#condition.currentExhaustion / this.#maxEndurance(),
     );
     const powerDebuffConfig = this.#mechanicsConfig.powerDebuff || {};
     const enabled = powerDebuffConfig.enabled !== false;
-    const minBasePowerRatio = this.#clamp01(
+    const minBasePowerRatio = clampUnit(
       powerDebuffConfig.minBasePowerRatio ?? 0.2,
     );
     const curvePower = Math.max(
@@ -229,10 +231,6 @@ export class StaminaSystem {
     }
   }
 
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
-  }
-
   #expectedEnduranceDrainPerSecond() {
     const enduranceDrain = this.#mechanicsConfig.enduranceDrain || {};
     const active = enduranceDrain.active || {};
@@ -240,22 +238,13 @@ export class StaminaSystem {
     const activeDps =
       active.enabled === false
         ? 0
-        : this.#positive(active.drainPerSecond, 80);
+        : nonNegativeOr(active.drainPerSecond, 80);
     const passiveDps =
       passive.enabled === false
         ? 0
-        : this.#positive(passive.drainPerSecond, 15) *
-          this.#positive(passive.defaultBehaviorMultiplier, 0.5);
+        : nonNegativeOr(passive.drainPerSecond, 15) *
+          nonNegativeOr(passive.defaultBehaviorMultiplier, 0.5);
     return Math.max(0, activeDps + passiveDps);
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
   }
 
   #maxStamina() {

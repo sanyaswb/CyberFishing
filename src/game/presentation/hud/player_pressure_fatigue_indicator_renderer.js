@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../engine/math/number_normalization.js";
+
 export class PlayerPressureFatigueIndicatorRenderer {
   #surface;
   #fallbackConfig;
@@ -20,12 +22,12 @@ export class PlayerPressureFatigueIndicatorRenderer {
     const stateName = state.stateName || "idle";
     if (stateName === "idle" && config.idleVisible !== true) return;
 
-    const radius = this.#positive(config.radius, 16);
-    const ringWidth = this.#positive(config.ringWidth, 4);
-    const width = this.#positive(model.viewportWidth);
+    const radius = nonNegativeOr(config.radius, 16);
+    const ringWidth = nonNegativeOr(config.ringWidth, 4);
+    const width = nonNegativeOr(model.viewportWidth);
     const position = config.position || {};
-    const offsetX = this.#positive(position.offsetX, 24);
-    const offsetY = this.#positive(position.offsetY, 24);
+    const offsetX = nonNegativeOr(position.offsetX, 24);
+    const offsetY = nonNegativeOr(position.offsetY, 24);
     const x = width - offsetX - radius;
     const y = offsetY + radius;
     const progress = this.#progress({ state, stateName });
@@ -69,18 +71,18 @@ export class PlayerPressureFatigueIndicatorRenderer {
 
   #progress({ state, stateName }) {
     if (stateName === "grace") {
-      const duration = this.#positive(state.graceDurationMs);
+      const duration = nonNegativeOr(state.graceDurationMs);
       if (duration <= 0) return 0;
-      return this.#clamp01(this.#positive(state.graceElapsedMs) / duration);
+      return clampUnitFinite(nonNegativeOr(state.graceElapsedMs) / duration);
     }
-    return this.#clamp01(state.fatigueProgress);
+    return clampUnitFinite(state.fatigueProgress);
   }
 
   #color({ state, stateName, config }) {
     const colors = config.colors || {};
     if (stateName === "grace") return colors.grace || "#ffffff";
     if (stateName === "recovered") return colors.ready || "#2ecc71";
-    const progress = this.#clamp01(state.fatigueProgress);
+    const progress = clampUnitFinite(state.fatigueProgress);
     if (progress < 0.5) {
       return this.#lerpColor(
         colors.ready || "#2ecc71",
@@ -98,7 +100,7 @@ export class PlayerPressureFatigueIndicatorRenderer {
   #lerpColor(left, right, t) {
     const a = this.#parseColor(left);
     const b = this.#parseColor(right);
-    const ratio = this.#clamp01(t);
+    const ratio = clampUnitFinite(t);
     const r = Math.round(a.r + (b.r - a.r) * ratio);
     const g = Math.round(a.g + (b.g - a.g) * ratio);
     const bl = Math.round(a.b + (b.b - a.b) * ratio);
@@ -118,20 +120,5 @@ export class PlayerPressureFatigueIndicatorRenderer {
     }
     this.#colorCache.set(source, parsed);
     return parsed;
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
   }
 }

@@ -1,3 +1,5 @@
+import { clampNumber, finiteOr } from "../../../engine/math/number_normalization.js";
+
 export class PoleFightSectorGeometry {
   #frame = this.#createFrame();
 
@@ -11,7 +13,7 @@ export class PoleFightSectorGeometry {
     const center = this.#point(origin);
     const fish = this.#point(position);
     const enabled = config.enabled !== false;
-    const maxAngleFromCenterDeg = this.#clamp(
+    const maxAngleFromCenterDeg = clampNumber(
       Math.abs(Number(config.maxAngleFromCenterDeg) || 60),
       0,
       89.9,
@@ -19,7 +21,7 @@ export class PoleFightSectorGeometry {
     const radiusPx = Math.max(0, Number(limitRadiusPx) || 0);
     const shoreOpeningWidthMeters = Math.max(
       0,
-      this.#finiteNumber(config.shoreOpeningWidthMeters, 1),
+      finiteOr(config.shoreOpeningWidthMeters, 1),
     );
     const scale = Math.max(1, Number(pixelsPerMeter) || 50);
     const maxAngleRad = maxAngleFromCenterDeg * Math.PI / 180;
@@ -244,14 +246,5 @@ export class PoleFightSectorGeometry {
       left: resolveSide(-1),
       right: resolveSide(1),
     };
-  }
-
-  #finiteNumber(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  #clamp(value, min, max) {
-    return Math.max(min, Math.min(max, Number(value) || 0));
   }
 }

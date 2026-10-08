@@ -1,4 +1,5 @@
 import { FishPhysicsProfile } from "./fish_physics_profile.js";
+import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
 
 export class FishEndurancePointsCalculator {
   calculate({
@@ -13,7 +14,7 @@ export class FishEndurancePointsCalculator {
     const staminaProfile = physics.staminaProfile || {};
     const baseStamina = this.#resolveBaseStamina(staminaProfile, staminaFishConfig);
     const levelMultiplier = this.#positiveLevel(level);
-    const weightGrams = this.#positiveNumber(weightKg) * 1000;
+    const weightGrams = nonNegativeFinite(weightKg) * 1000;
     const bossMultiplier = this.#resolveBossMultiplier(
       staminaProfile,
       staminaFishConfig,
@@ -64,10 +65,5 @@ export class FishEndurancePointsCalculator {
   #positiveLevel(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? Math.max(1, Math.round(parsed)) : 1;
-  }
-
-  #positiveNumber(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
   }
 }

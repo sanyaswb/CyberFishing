@@ -1,3 +1,5 @@
+import { clampUnitFinite, nonNegativeOr } from "../../../../engine/math/number_normalization.js";
+
 export class PlayerPressureFatigueCalculator {
   calculate({
     state = null,
@@ -10,22 +12,22 @@ export class PlayerPressureFatigueCalculator {
     config = {},
   } = {}) {
     const enabled = config?.enabled === true;
-    const dtMs = this.#positive(dtSec) * 1000;
-    const minEfficiency = this.#clamp01(config?.minEfficiency ?? 0.45);
-    const pressureThresholdKg = this.#positive(
+    const dtMs = nonNegativeOr(dtSec) * 1000;
+    const minEfficiency = clampUnitFinite(config?.minEfficiency ?? 0.45);
+    const pressureThresholdKg = nonNegativeOr(
       config?.pressureThresholdKg,
       0.01,
     );
     const recovery = config?.recovery || {};
-    const delayAfterPressureMs = this.#positive(
+    const delayAfterPressureMs = nonNegativeOr(
       recovery.delayAfterPressureMs,
       400,
     );
-    const recoveryPerSecond = this.#positive(
+    const recoveryPerSecond = nonNegativeOr(
       recovery.recoveryPerSecond,
       0.8,
     );
-    const pressure = this.#positive(pressureKg);
+    const pressure = nonNegativeOr(pressureKg);
     const resolvedSourceActive =
       typeof sourceActive === "boolean"
         ? sourceActive
@@ -78,7 +80,7 @@ export class PlayerPressureFatigueCalculator {
 
     return this.#recoveryFrame({
       state,
-      dtSec: this.#positive(dtSec),
+      dtSec: nonNegativeOr(dtSec),
       dtMs,
       pressure,
       minEfficiency,
@@ -101,13 +103,13 @@ export class PlayerPressureFatigueCalculator {
     recoveryPerSecond,
     sourceFrame,
   }) {
-    const graceDurationMs = this.#positive(config?.graceDurationMs, 3000);
+    const graceDurationMs = nonNegativeOr(config?.graceDurationMs, 3000);
     const fatigueDurationMs = Math.max(
       1,
-      this.#positive(config?.fatigueDurationMs, 6000),
+      nonNegativeOr(config?.fatigueDurationMs, 6000),
     );
-    const curvePower = Math.max(0.000001, this.#positive(config?.curvePower, 1.2));
-    const previousHoldMs = this.#positive(state?.pressureHoldMs);
+    const curvePower = Math.max(0.000001, nonNegativeOr(config?.curvePower, 1.2));
+    const previousHoldMs = nonNegativeOr(state?.pressureHoldMs);
     const pressureHoldMs = previousHoldMs + Math.max(0, dtMs);
     const graceElapsedMs = Math.min(pressureHoldMs, graceDurationMs);
     const graceRemainingMs = Math.max(0, graceDurationMs - graceElapsedMs);
@@ -116,7 +118,7 @@ export class PlayerPressureFatigueCalculator {
       0,
       fatigueDurationMs - fatigueElapsedMs,
     );
-    const fatigueProgress = this.#clamp01(
+    const fatigueProgress = clampUnitFinite(
       (pressureHoldMs - graceDurationMs) / fatigueDurationMs,
     );
     const curvedProgress = Math.pow(fatigueProgress, curvePower);
@@ -178,20 +180,20 @@ export class PlayerPressureFatigueCalculator {
   } = {}) {
     const controlBreak = config?.controlBreak || {};
     const enabled = controlBreak.enabled === true;
-    const fatigueProgressThreshold = this.#clamp01(
+    const fatigueProgressThreshold = clampUnitFinite(
       controlBreak.fatigueProgressThreshold ??
         controlBreak.fatigueRatioThreshold ??
         0.9,
     );
-    const minContinuousPressureMs = this.#positive(
+    const minContinuousPressureMs = nonNegativeOr(
       controlBreak.minContinuousPressureMs,
       8000,
     );
     const isControlExhausted =
       enabled &&
       pressureActive === true &&
-      this.#positive(pressureHoldMs) >= minContinuousPressureMs &&
-      this.#clamp01(fatigueProgress) >= fatigueProgressThreshold;
+      nonNegativeOr(pressureHoldMs) >= minContinuousPressureMs &&
+      clampUnitFinite(fatigueProgress) >= fatigueProgressThreshold;
 
     return Object.freeze({
       enabled,
@@ -214,8 +216,8 @@ export class PlayerPressureFatigueCalculator {
     config,
     sourceFrame,
   }) {
-    const previousEfficiency = this.#clamp01(state?.efficiency ?? 1);
-    const previousIdleMs = this.#positive(state?.recoveryIdleMs);
+    const previousEfficiency = clampUnitFinite(state?.efficiency ?? 1);
+    const previousIdleMs = nonNegativeOr(state?.recoveryIdleMs);
     const recoveryIdleMs = previousIdleMs + Math.max(0, dtMs);
     const waiting = previousEfficiency < 1 && recoveryIdleMs < delayAfterPressureMs;
     const recoveredEfficiency = waiting
@@ -224,7 +226,7 @@ export class PlayerPressureFatigueCalculator {
     const fatigueProgress = this.#fatigueProgressFromEfficiency({
       efficiency: recoveredEfficiency,
       minEfficiency,
-      curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
+      curvePower: Math.max(0.000001, nonNegativeOr(config?.curvePower, 1.2)),
     });
     const recoveryDelayElapsedMs = Math.min(
       recoveryIdleMs,
@@ -238,16 +240,16 @@ export class PlayerPressureFatigueCalculator {
       recoveredEfficiency >= 0.999999 || recoveryPerSecond <= 0
         ? 0
         : Math.ceil(((1 - recoveredEfficiency) / recoveryPerSecond) * 1000);
-    const recoveryProgress = this.#clamp01(1 - fatigueProgress);
+    const recoveryProgress = clampUnitFinite(1 - fatigueProgress);
     const pressureHoldMs = this.#holdMsFromEfficiency({
       efficiency: recoveredEfficiency,
       minEfficiency,
-      graceDurationMs: this.#positive(config?.graceDurationMs, 3000),
+      graceDurationMs: nonNegativeOr(config?.graceDurationMs, 3000),
       fatigueDurationMs: Math.max(
         1,
-        this.#positive(config?.fatigueDurationMs, 6000),
+        nonNegativeOr(config?.fatigueDurationMs, 6000),
       ),
-      curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
+      curvePower: Math.max(0.000001, nonNegativeOr(config?.curvePower, 1.2)),
     });
     const recoveryState = recoveredEfficiency >= 0.999999
       ? "full"
@@ -271,12 +273,12 @@ export class PlayerPressureFatigueCalculator {
       fatigueProgress,
       pressureThresholdKg,
       minEfficiency,
-      graceDurationMs: this.#positive(config?.graceDurationMs, 3000),
+      graceDurationMs: nonNegativeOr(config?.graceDurationMs, 3000),
       fatigueDurationMs: Math.max(
         1,
-        this.#positive(config?.fatigueDurationMs, 6000),
+        nonNegativeOr(config?.fatigueDurationMs, 6000),
       ),
-      curvePower: Math.max(0.000001, this.#positive(config?.curvePower, 1.2)),
+      curvePower: Math.max(0.000001, nonNegativeOr(config?.curvePower, 1.2)),
       delayAfterPressureMs,
       recoveryDelayMs: delayAfterPressureMs,
       recoveryDelayElapsedMs,
@@ -311,26 +313,26 @@ export class PlayerPressureFatigueCalculator {
 
   #fatigueProgressFromEfficiency({ efficiency, minEfficiency, curvePower }) {
     if (efficiency >= 0.999999 || minEfficiency >= 0.999999) return 0;
-    const fatigueRatio = this.#clamp01((1 - efficiency) / (1 - minEfficiency));
+    const fatigueRatio = clampUnitFinite((1 - efficiency) / (1 - minEfficiency));
     return Math.pow(fatigueRatio, 1 / Math.max(0.000001, curvePower));
   }
 
   #frame(data = {}) {
-    const efficiency = this.#clamp01(data.efficiency ?? 1);
-    const graceDurationMs = this.#positive(data.graceDurationMs, 3000);
-    const fatigueDurationMs = this.#positive(data.fatigueDurationMs, 6000);
-    const holdElapsedMs = this.#positive(
+    const efficiency = clampUnitFinite(data.efficiency ?? 1);
+    const graceDurationMs = nonNegativeOr(data.graceDurationMs, 3000);
+    const fatigueDurationMs = nonNegativeOr(data.fatigueDurationMs, 6000);
+    const holdElapsedMs = nonNegativeOr(
       data.holdElapsedMs ?? data.pressureHoldMs,
     );
-    const graceElapsedMs = this.#positive(
+    const graceElapsedMs = nonNegativeOr(
       data.graceElapsedMs,
       Math.min(holdElapsedMs, graceDurationMs),
     );
-    const fatigueElapsedMs = this.#positive(
+    const fatigueElapsedMs = nonNegativeOr(
       data.fatigueElapsedMs,
       Math.max(0, holdElapsedMs - graceDurationMs),
     );
-    const recoveryDelayMs = this.#positive(
+    const recoveryDelayMs = nonNegativeOr(
       data.recoveryDelayMs ?? data.delayAfterPressureMs,
       400,
     );
@@ -342,75 +344,60 @@ export class PlayerPressureFatigueCalculator {
       sourceActive: data.sourceActive === true,
       sourceReason:
         data.sourceReason || "reel_hold_session_inactive",
-      pressureHoldMs: this.#positive(data.pressureHoldMs ?? holdElapsedMs),
+      pressureHoldMs: nonNegativeOr(data.pressureHoldMs ?? holdElapsedMs),
       holdElapsedMs,
-      recoveryIdleMs: this.#positive(data.recoveryIdleMs),
+      recoveryIdleMs: nonNegativeOr(data.recoveryIdleMs),
       recoveryState: data.recoveryState || "full",
       pressureActive: data.pressureActive === true,
-      pressureKg: this.#positive(data.pressureKg),
-      pressureThresholdKg: this.#positive(data.pressureThresholdKg, 0.01),
-      fatigueRatio: this.#clamp01(data.fatigueRatio ?? (1 - efficiency)),
-      fatigueProgress: this.#clamp01(data.fatigueProgress),
+      pressureKg: nonNegativeOr(data.pressureKg),
+      pressureThresholdKg: nonNegativeOr(data.pressureThresholdKg, 0.01),
+      fatigueRatio: clampUnitFinite(data.fatigueRatio ?? (1 - efficiency)),
+      fatigueProgress: clampUnitFinite(data.fatigueProgress),
       graceElapsedMs,
       graceDurationMs,
-      graceRemainingMs: this.#positive(
+      graceRemainingMs: nonNegativeOr(
         data.graceRemainingMs,
         Math.max(0, graceDurationMs - graceElapsedMs),
       ),
       fatigueElapsedMs,
       fatigueDurationMs,
-      fatigueRemainingMs: this.#positive(
+      fatigueRemainingMs: nonNegativeOr(
         data.fatigueRemainingMs,
         Math.max(0, fatigueDurationMs - fatigueElapsedMs),
       ),
-      recoveryDelayElapsedMs: this.#positive(data.recoveryDelayElapsedMs),
+      recoveryDelayElapsedMs: nonNegativeOr(data.recoveryDelayElapsedMs),
       recoveryDelayMs,
-      recoveryDelayRemainingMs: this.#positive(
+      recoveryDelayRemainingMs: nonNegativeOr(
         data.recoveryDelayRemainingMs,
-        Math.max(0, recoveryDelayMs - this.#positive(data.recoveryDelayElapsedMs)),
+        Math.max(0, recoveryDelayMs - nonNegativeOr(data.recoveryDelayElapsedMs)),
       ),
-      recoveryProgress: this.#clamp01(data.recoveryProgress),
-      recoveryRemainingMs: this.#positive(data.recoveryRemainingMs),
+      recoveryProgress: clampUnitFinite(data.recoveryProgress),
+      recoveryRemainingMs: nonNegativeOr(data.recoveryRemainingMs),
       controlBreakEnabled: data.controlBreakEnabled === true,
       isControlExhausted: data.isControlExhausted === true,
-      controlBreakFatigueProgressThreshold: this.#clamp01(
+      controlBreakFatigueProgressThreshold: clampUnitFinite(
         data.controlBreakFatigueProgressThreshold ??
           data.controlBreakFatigueRatioThreshold ??
           0.9,
       ),
-      controlBreakFatigueRatioThreshold: this.#clamp01(
+      controlBreakFatigueRatioThreshold: clampUnitFinite(
         data.controlBreakFatigueProgressThreshold ??
           data.controlBreakFatigueRatioThreshold ??
           0.9,
       ),
-      controlBreakMinContinuousPressureMs: this.#positive(
+      controlBreakMinContinuousPressureMs: nonNegativeOr(
         data.controlBreakMinContinuousPressureMs,
         8000,
       ),
-      minEfficiency: this.#clamp01(data.minEfficiency ?? 0.45),
-      curvePower: this.#positive(data.curvePower, 1.2),
-      delayAfterPressureMs: this.#positive(data.delayAfterPressureMs, 400),
-      recoveryPerSecond: this.#positive(data.recoveryPerSecond, 0.8),
+      minEfficiency: clampUnitFinite(data.minEfficiency ?? 0.45),
+      curvePower: nonNegativeOr(data.curvePower, 1.2),
+      delayAfterPressureMs: nonNegativeOr(data.delayAfterPressureMs, 400),
+      recoveryPerSecond: nonNegativeOr(data.recoveryPerSecond, 0.8),
     });
   }
 
   #lerp(a, b, t) {
-    return a + (b - a) * this.#clamp01(t);
-  }
-
-  #positive(value, fallback = 0) {
-    const number = Number(value);
-    if (Number.isFinite(number) && number >= 0) return number;
-    const safeFallback = Number(fallback);
-    return Number.isFinite(safeFallback) && safeFallback >= 0
-      ? safeFallback
-      : 0;
-  }
-
-  #clamp01(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(0, Math.min(1, number));
+    return a + (b - a) * clampUnitFinite(t);
   }
 
   #sourceFrame({

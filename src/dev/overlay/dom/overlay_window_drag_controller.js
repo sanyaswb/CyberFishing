@@ -1,5 +1,6 @@
 import { LocalStorageCache } from "../../../platform/browser/storage/local_storage_cache.js";
 import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js";
+import { clampNumber } from "../../../engine/math/number_normalization.js";
 
 export class OverlayWindowDragController {
   #element;
@@ -63,8 +64,8 @@ export class OverlayWindowDragController {
     const maxLeft = Math.max(0, this.#windowTarget.innerWidth - rect.width);
     const maxTop = Math.max(0, this.#windowTarget.innerHeight - rect.height);
     this.#placeVisualAt(
-      this.#clamp(rect.left, 0, maxLeft),
-      this.#clamp(rect.top, 0, maxTop),
+      clampNumber(rect.left, 0, maxLeft),
+      clampNumber(rect.top, 0, maxTop),
     );
   }
 
@@ -136,8 +137,8 @@ export class OverlayWindowDragController {
     if (!this.#windowTarget) return;
     const maxLeft = Math.max(0, this.#windowTarget.innerWidth - rect.width);
     const maxTop = Math.max(0, this.#windowTarget.innerHeight - rect.height);
-    const nextLeft = this.#clamp(clientX - this.#offsetX, 0, maxLeft);
-    const nextTop = this.#clamp(clientY - this.#offsetY, 0, maxTop);
+    const nextLeft = clampNumber(clientX - this.#offsetX, 0, maxLeft);
+    const nextTop = clampNumber(clientY - this.#offsetY, 0, maxTop);
     this.#placeVisualAt(nextLeft, nextTop);
   }
 
@@ -191,9 +192,5 @@ export class OverlayWindowDragController {
   #readStylePx(property, fallback) {
     const value = Number.parseFloat(this.#element.style[property]);
     return Number.isFinite(value) ? value : fallback;
-  }
-
-  #clamp(value, min, max) {
-    return Math.max(min, Math.min(max, Number(value) || 0));
   }
 }

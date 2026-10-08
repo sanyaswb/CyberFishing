@@ -1,3 +1,5 @@
+import { positiveFinite } from "../../../engine/math/number_normalization.js";
+
 export class WeakestTackleLimitResolver {
   resolve({
     rod = null,
@@ -35,7 +37,7 @@ export class WeakestTackleLimitResolver {
   #candidate(component, maxLoadKg) {
     return Object.freeze({
       component,
-      maxLoadKg: this.#positiveFinite(maxLoadKg),
+      maxLoadKg: positiveFinite(maxLoadKg),
     });
   }
 
@@ -54,11 +56,6 @@ export class WeakestTackleLimitResolver {
       item.getMaxLoadKg?.() ||
       WeakestTackleLimitResolver.effectiveItemMaxLoadKg(item, fallback)
     );
-  }
-
-  #positiveFinite(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   }
 
   static effectiveItemMaxLoadKg(item, fallback = 0) {

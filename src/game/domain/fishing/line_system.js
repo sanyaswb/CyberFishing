@@ -1,5 +1,6 @@
 import { CastDistanceCalculator } from "../casting/cast_distance_calculator.js";
 import { LineSpoolState } from "./line_spool_state.js";
+import { clampUnit, finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class LineSystem {
   #config;
@@ -77,15 +78,15 @@ export class LineSystem {
     this.#remainingMeters = this.#spoolState.remainingLineMeters;
     this.#distanceMeters = 0;
 
-    this.#lineMaxLoadKg = this.#numberOrDefault(
+    this.#lineMaxLoadKg = finiteOr(
       resolvedLineStats.maxLoadKg,
-      this.#numberOrDefault(lineConfig.defaultMaxLoadKg, 8),
+      finiteOr(lineConfig.defaultMaxLoadKg, 8),
     );
-    this.#lineDurability = this.#numberOrDefault(
+    this.#lineDurability = finiteOr(
       resolvedLineStats.durability,
       100,
     );
-    this.#durabilityLossPerPercent = this.#numberOrDefault(
+    this.#durabilityLossPerPercent = finiteOr(
       resolvedLineStats.durabilityMaxLoadLossPerPercent,
       lineConfig.durabilityMaxLoadLossPerPercent ?? 0.001,
     );
@@ -149,22 +150,22 @@ export class LineSystem {
 
     let releaseRatio = 0;
     if (typeof control === "object" && control !== null) {
-      const dragRatio = this.#clamp01(control.dragRatio);
+      const dragRatio = clampUnit(control.dragRatio);
       const shouldSlip = !!control.shouldSlip;
-      const slipReleaseRatio = this.#clamp01(
+      const slipReleaseRatio = clampUnit(
         control.slipReleaseRatio ?? (shouldSlip ? 1 : 0),
       );
-      const creepRatio = this.#clamp01(control.creepReleaseRatio ?? 0);
+      const creepRatio = clampUnit(control.creepReleaseRatio ?? 0);
 
       releaseRatio = shouldSlip ? slipReleaseRatio : creepRatio;
       if (dragRatio <= 0.0001) releaseRatio = 1;
     } else {
-      const clampedDrag = this.#clamp01(control);
+      const clampedDrag = clampUnit(control);
       releaseRatio = 1 - clampedDrag;
     }
 
     const released = this.#spoolState.release(
-      Math.min(availableToRelease, excess * this.#clamp01(releaseRatio)),
+      Math.min(availableToRelease, excess * clampUnit(releaseRatio)),
     );
     this.#lastReleasedMeters = released;
     this.#refreshState();
@@ -222,7 +223,7 @@ export class LineSystem {
     const limit = Number.isFinite(configuredLoadLimit) && configuredLoadLimit > 0
       ? Math.max(0.001, configuredLoadLimit)
       : Math.min(reelLimit, lineLimit);
-    const efficiency = this.#clamp01(1 - (Number(tensionKg) || 0) / limit);
+    const efficiency = clampUnit(1 - (Number(tensionKg) || 0) / limit);
     const rawAmount = speed * efficiency * Math.max(0, Number(dtSec) || 0);
     const configuredMaxRecover = Number(maxRecoverMeters);
     const hasMaxRecover =
@@ -355,17 +356,12 @@ export class LineSystem {
     this.#remainingMeters = this.#spoolState.remainingLineMeters;
     this.#lineExtensionRatio =
       this.#releasedMeters > 0
-        ? this.#clamp01(this.#distanceMeters / this.#releasedMeters)
+        ? clampUnit(this.#distanceMeters / this.#releasedMeters)
         : 1;
 
     const isAtReleasedLimit =
       this.#distanceMeters >= this.#releasedMeters * 0.995;
     this.#isFullyExtended = this.#remainingMeters <= 0.001 && isAtReleasedLimit;
-  }
-
-  #numberOrDefault(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   #constraintTolerancePx() {
@@ -397,9 +393,5 @@ export class LineSystem {
     this.#lastConstraintResult.correctionPx = result.correctionPx ?? 0;
     this.#lastConstraintResult.hardLimit = !!result.hardLimit;
     return this.#lastConstraintResult;
-  }
-
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, Number(value) || 0));
   }
 }

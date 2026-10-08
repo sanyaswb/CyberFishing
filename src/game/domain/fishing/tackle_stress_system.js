@@ -1,6 +1,7 @@
 import { TackleFailureSelector } from "./tackle_failure_selector.js";
 import { TackleStressAccumulator } from "./tackle_stress_accumulator.js";
 import { WeakestTackleLimitResolver } from "./weakest_tackle_limit_resolver.js";
+import { finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class TackleStressSystem {
   #rod;
@@ -74,12 +75,12 @@ export class TackleStressSystem {
   } = {}) {
     if (this.#isBroken) return this.#frameResult();
     const config = tensionConfig || this.#config || {};
-    this.#targetTensionKg = this.#safeNumber(
+    this.#targetTensionKg = finiteOr(
       visibleTensionKg,
-      this.#safeNumber(tensionKg, 0),
+      finiteOr(tensionKg, 0),
     );
     const smooth = config?.kgSmoothPerSecond ?? 18;
-    const dt = this.#safeNumber(dtSec, 0);
+    const dt = finiteOr(dtSec, 0);
     const alpha = 1 - Math.exp(-Math.max(0, smooth) * Math.max(0, dt));
     this.#currentTensionKg +=
       (this.#targetTensionKg - this.#currentTensionKg) * alpha;
@@ -91,13 +92,13 @@ export class TackleStressSystem {
     this.#effectiveTensionKg = this.#tensionStressSource === "visible"
       ? Math.max(
           this.#targetTensionKg,
-          this.#safeNumber(totalTensionKg, this.#targetTensionKg),
+          finiteOr(totalTensionKg, this.#targetTensionKg),
         )
       : Math.max(
-          this.#safeNumber(totalTensionKg, this.#targetTensionKg),
-          this.#safeNumber(rawTotalTensionKg, 0),
-          this.#safeNumber(rawTensionKg, 0),
-          this.#safeNumber(fishTensionKg, 0),
+          finiteOr(totalTensionKg, this.#targetTensionKg),
+          finiteOr(rawTotalTensionKg, 0),
+          finiteOr(rawTensionKg, 0),
+          finiteOr(fishTensionKg, 0),
         );
     this.#selectedFailureComponent = this.#selectFailureComponent();
 
@@ -440,11 +441,6 @@ export class TackleStressSystem {
     const limit = Number(limitKg);
     if (!Number.isFinite(limit) || limit <= 0) return 0;
     return Math.max(0, Number(tensionKg) || 0) / limit;
-  }
-
-  #safeNumber(value, fallback) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : fallback;
   }
 
   static effectiveItemMaxLoadKg(item, fallback = 0) {

@@ -1,5 +1,6 @@
 import { Equipment } from "./equipment.js";
 import { ReelRetrieveSpeedCalculator } from "../fishing/reel_retrieve_speed_calculator.js";
+import { firstFinite } from "../../../engine/math/number_normalization.js";
 
 export class Reel extends Equipment {
   #retrieveSpeedCalculator = new ReelRetrieveSpeedCalculator();
@@ -17,36 +18,36 @@ export class Reel extends Equipment {
 
   constructor(equipmentPowerLevel, power, options = {}) {
     super(equipmentPowerLevel, power);
-    this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
-    this.#lineCapacityMeters = Reel.#numberOrDefault(
+    this.#maxLoadKg = firstFinite(options.maxLoadKg, 10);
+    this.#lineCapacityMeters = firstFinite(
       options.lineCapacityMeters,
       50,
     );
     this.#baseRetrieveSpeedMetersPerSec =
-      Reel.#numberOrDefault(options.retrieveSpeedMetersPerSec, 0.8);
-    this.#bearingCount = Reel.#numberOrDefault(options.bearingCount, 0);
-    this.#bearingRetrieveSpeedBonusMetersPerSec = Reel.#numberOrDefault(
+      firstFinite(options.retrieveSpeedMetersPerSec, 0.8);
+    this.#bearingCount = firstFinite(options.bearingCount, 0);
+    this.#bearingRetrieveSpeedBonusMetersPerSec = firstFinite(
       options.bearingRetrieveSpeedBonusMetersPerSec,
       // The composition passes the live runtime config object.
       (options.runtimeConfig?.fightPhysicsConfig?.getReelConfig?.() || {}).bearingRetrieveSpeedBonusMetersPerSec,
       0,
     );
-    this.#dragMinKg = Reel.#numberOrDefault(options.dragMinKg, 0);
-    this.#dragMaxKg = Reel.#numberOrDefault(
+    this.#dragMinKg = firstFinite(options.dragMinKg, 0);
+    this.#dragMaxKg = firstFinite(
       options.dragMaxKg,
       this.#maxLoadKg,
     );
     this.#dragChangeSpeedPerSec =
-      Reel.#numberOrDefault(options.dragChangeSpeedPerSec, 1.5);
+      firstFinite(options.dragChangeSpeedPerSec, 1.5);
     this.#hasDrag = options.hasDrag !== false;
     if (!this.#hasDrag) {
       this.#dragMinKg = 0;
       this.#dragMaxKg = 0;
       this.#dragChangeSpeedPerSec = 0;
     }
-    this.#durability = Reel.#numberOrDefault(options.durability, 100);
+    this.#durability = firstFinite(options.durability, 100);
     this.#durabilityMaxLoadLossPerPercent =
-      Reel.#numberOrDefault(options.durabilityMaxLoadLossPerPercent, 0.001);
+      firstFinite(options.durabilityMaxLoadLossPerPercent, 0.001);
   }
 
   hasReel() {
@@ -82,13 +83,5 @@ export class Reel extends Equipment {
 
   getDragRangeKg() {
     return { min: this.#dragMinKg, max: this.#dragMaxKg };
-  }
-
-  static #numberOrDefault(...values) {
-    for (const value of values) {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-    return 0;
   }
 }
