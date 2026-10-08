@@ -812,17 +812,7 @@ class ItemProgressionCheck {
         `${stop.id} color is not duplicated in CSS`,
       );
     }
-    for (const selector of [
-      ".inv-slot__rating-tier-badge",
-      ".inv-tooltip__rating-scale",
-      ".inv-tooltip__rating-fill",
-      ".inv-slot__capacity-bar",
-      ".inv-tooltip__capacity-scale",
-      ".inv-tooltip__capacity-fill",
-      ".inv-tooltip__quality-scale",
-    ]) {
-      Assertion.that(css.includes(selector), `${selector} is styled`);
-    }
+    Assertion.that(css.includes(".inv-slot__rating-tier-badge"), ".inv-slot__rating-tier-badge is styled");
     const adapter = new SourceRuntime().readAuthoredSource("src/platform/browser/dom/item_progression_dom_adapter.js");
     Assertion.that(
       !adapter.includes('className = "inv-slot__rating-bar"') &&
@@ -830,29 +820,15 @@ class ItemProgressionCheck {
       "Rating and Quality scales are absent from item thumbnails",
     );
     Assertion.that(
-      adapter.includes("section.appendChild(this.#createTooltipRatingScale(") &&
-        adapter.includes("section.appendChild(this.#createTooltipQualityScale("),
-      "Rating and Quality scales are appended to the detailed tooltip",
+      !adapter.includes("appendTooltip") &&
+        !adapter.includes("inv-tooltip") &&
+        !adapter.includes("inv-slot__capacity-bar"),
+      "progression adds only the rating-tier badge; the balance tooltip and the line resource meter show the rest",
     );
     Assertion.that(
-      adapter.includes('className = "inv-slot__capacity-bar"') &&
-        adapter.includes("section.appendChild(this.#createTooltipCapacityScale("),
-      "line capacity is rendered in thumbnails and detailed tooltips",
-    );
-    Assertion.that(
-      adapter.includes('className = "inv-tooltip__rating-fill"') &&
-        !adapter.includes('className = "inv-tooltip__rating-marker"'),
-      "Rating uses loader-style fill instead of a marker",
-    );
-    Assertion.that(
-      css.includes("background: var(--item-rating-color)") &&
-        !css.includes("background-image: var(--item-rating-gradient)"),
-      "Rating fill uses one color resolved at the current rating position",
-    );
-    Assertion.that(
-      css.includes("background: var(--item-capacity-color)") &&
+      !css.includes("background-image: var(--item-rating-gradient)") &&
         !css.includes("background-image: var(--item-capacity-gradient)"),
-      "Capacity fills use one color resolved at the current Capacity position",
+      "no gradient progression fills",
     );
     Assertion.that(
       adapter.includes(
@@ -865,7 +841,7 @@ class ItemProgressionCheck {
     );
     const labels = new SourceRuntime().readAuthoredSource("src/game/presentation/inventory/item_progression_labels.js");
     Assertion.that(
-      labels.includes('ratingTier: "Клас рейтингу"') &&
+      labels.includes("Клас рейтингу ${current} з ${maximum}") &&
         !labels.includes("Прогресійний рівень") &&
         !adapter.includes("Прогресійний рівень"),
       "rating segmentation is no longer named as a generic level",

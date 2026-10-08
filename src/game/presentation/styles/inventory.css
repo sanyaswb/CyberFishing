@@ -21,35 +21,6 @@
   pointer-events: none;
 }
 
-.inv-slot__capacity-bar {
-  position: absolute;
-  right: calc(var(--inventory-slot-size) * 0.04);
-  bottom: calc(var(--inventory-slot-size) * 0.04);
-  left: calc(var(--inventory-slot-size) * 0.04);
-  z-index: 2;
-  height: calc(var(--inventory-slot-size) * 0.08);
-  overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.24);
-  box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.62);
-  pointer-events: none;
-}
-
-.inv-slot__capacity-track,
-.inv-slot__capacity-fill {
-  position: absolute;
-  inset: 0;
-}
-
-.inv-slot__capacity-track {
-  background: rgba(135, 143, 151, 0.42);
-}
-
-.inv-slot__capacity-fill {
-  background: var(--item-capacity-color);
-  clip-path: inset(0 calc(100% - var(--item-capacity-percent)) 0 0);
-}
-
 .inv-tooltip {
   position: absolute;
   display: none;
@@ -80,16 +51,6 @@
   font-weight: bold;
 }
 
-.inv-tooltip-stat {
-  font-size: 12px;
-  margin-bottom: 2px;
-  color: #aaaaaa; /* <--- ЗМІНИ ЦЕЙ КОЛІР (зараз світло-сірий) */
-}
-
-.inv-tooltip-stat b {
-  color: #73c2fb; /* Можна окремо виділити назву параметра (напр. синім) */
-}
-
 .inv-tooltip-section {
   margin-top: 8px;
   padding-top: 8px;
@@ -102,87 +63,6 @@
   font-size: 12px;
   font-weight: bold;
   text-transform: uppercase;
-}
-
-.inv-tooltip-progression .inv-tooltip-section-title,
-.inv-tooltip-progression .inv-tooltip-stat b {
-  color: var(--item-rating-color);
-}
-
-.inv-tooltip__scale-block {
-  margin: 7px 0;
-}
-
-.inv-tooltip__scale-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 3px;
-  font-size: 10px;
-}
-
-.inv-tooltip__scale-header b {
-  color: var(--item-rating-color);
-}
-
-.inv-tooltip__scale-block--capacity .inv-tooltip__scale-header b {
-  color: var(--item-capacity-color);
-}
-
-.inv-tooltip__rating-scale,
-.inv-tooltip__capacity-scale,
-.inv-tooltip__quality-scale {
-  width: 100%;
-  height: 7px;
-  box-sizing: border-box;
-}
-
-.inv-tooltip__rating-scale,
-.inv-tooltip__capacity-scale {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.55);
-}
-
-.inv-tooltip__rating-track,
-.inv-tooltip__rating-fill,
-.inv-tooltip__capacity-track,
-.inv-tooltip__capacity-fill {
-  position: absolute;
-  inset: 1px;
-}
-
-.inv-tooltip__rating-track,
-.inv-tooltip__capacity-track {
-  background: rgba(135, 143, 151, 0.42);
-}
-
-.inv-tooltip__rating-fill {
-  background: var(--item-rating-color);
-  clip-path: inset(0 calc(100% - var(--item-rating-percent)) 0 0);
-}
-
-.inv-tooltip__capacity-fill {
-  background: var(--item-capacity-color);
-  clip-path: inset(0 calc(100% - var(--item-capacity-percent)) 0 0);
-}
-
-.inv-tooltip__quality-scale {
-  display: grid;
-  grid-template-columns: repeat(var(--item-quality-sections), minmax(0, 1fr));
-  gap: 2px;
-}
-
-.inv-tooltip__quality-segment {
-  min-width: 0;
-  border: 1px solid color-mix(in srgb, var(--item-quality-color) 58%, transparent);
-  background: rgba(0, 0, 0, 0.55);
-}
-
-.inv-tooltip__quality-segment.is-filled {
-  background: var(--item-quality-color);
 }
 
 @keyframes inventory-rarity-tooltip-pulse {

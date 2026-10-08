@@ -244,7 +244,6 @@ export class InventoryItemCardRenderer {
         item.progression,
         null,
         {
-          renderCapacityBar: false,
           renderLevelBadge: showMetadata,
         },
       );

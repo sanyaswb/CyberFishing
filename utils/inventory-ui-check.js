@@ -1459,11 +1459,6 @@ class InventoryStaticContractCheck {
         badge.className = "inv-slot__rating-tier-badge";
         badge.textContent = "4";
         card.appendChild(badge);
-        if (options.renderCapacityBar !== false) {
-          const capacity = document.createElement("span");
-          capacity.className = "inv-slot__capacity-bar";
-          card.appendChild(capacity);
-        }
       },
     };
     const isolatedDom = new sandbox.InventoryDomFactory(document);

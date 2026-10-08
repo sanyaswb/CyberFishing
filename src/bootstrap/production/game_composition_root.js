@@ -447,7 +447,7 @@ export class GameCompositionRoot {
     contracts.requireMethods(
       itemProgressionDomAdapter,
       "itemProgressionDomAdapter",
-      ["apply", "appendTooltip", "updateCapacity", "clear"],
+      ["apply", "clear"],
     );
     const victoryLayoutResolver = new VictoryLayoutResolver({
       diagnostics: this.#readRenderDiagnostics(),

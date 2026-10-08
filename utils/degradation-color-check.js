@@ -115,8 +115,8 @@ class DegradationColorCheck {
       "Capacity delegates color selection to the degradation system",
     );
     Assertion.that(
-      css.includes("background: var(--item-capacity-color)"),
-      "Capacity loaders use the resolved solid degradation color",
+      !css.includes("inv-slot__capacity-bar") && css.includes(".inventory-resource-meter__fill"),
+      "line capacity is shown by the inventory resource meter; the unreachable capacity loaders stay removed",
     );
   }
 }
