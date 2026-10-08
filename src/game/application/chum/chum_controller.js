@@ -1,6 +1,7 @@
 import { CastPowerAim } from "../casting/cast_power_aim.js";
 
 export class ChumController {
+  #messages;
   #inventory;
   #chum;
   #projector;
@@ -29,6 +30,7 @@ export class ChumController {
   #pendingHandDrop = null;
 
   constructor({
+    messages,
     inventory,
     chum,
     projector,
@@ -49,6 +51,7 @@ export class ChumController {
     getGameStateName,
     createUi,
   }) {
+    this.#messages = messages;
     this.#inventory = inventory;
     this.#chum = chum;
     this.#projector = projector;
@@ -170,7 +173,7 @@ export class ChumController {
       if (this.#activeHandChum) {
         this.toggleAim();
       } else {
-        this.#warn("У вас немає прикормки в інвентарі!");
+        this.#warn(this.#messages.noChumInInventory);
       }
       return;
     }
@@ -182,7 +185,7 @@ export class ChumController {
       if (this.#countLoadedChums(eq.deliveryChums) > 0) {
         this.toggleAim();
       } else {
-        this.#warn("Завантажте прикормку в бункери кораблика через інвентар!");
+        this.#warn(this.#messages.loadChumIntoBoat);
       }
       return;
     }
@@ -353,7 +356,7 @@ export class ChumController {
         if (consumed) {
           this.#chum.deployBait(drop.x, drop.y, drop.chumId);
         } else {
-          this.#warn("Обрана прикормка більше недоступна.");
+          this.#warn(this.#messages.selectedChumUnavailable);
         }
         input.clickPos = null;
         this.toggleAim();
@@ -432,7 +435,7 @@ export class ChumController {
       this.#markInvalidCast(input.clickPos);
       input.clickPos = null;
       this.toggleAim();
-      this.#warn("Занадто далеко для ручного закидання!");
+      this.#warn(this.#messages.tooFarForHandCast);
       return;
     }
 

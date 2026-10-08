@@ -391,6 +391,9 @@ runtime.load("src/game/domain/rules/equipment_rules.js");
     runtime.load("src/game/domain/rules/player_cast_rules.js");
 runtime.load("src/game/application/fishing/fishing_controller.js");
     runtime.load("src/game/application/fishing/cast_service.js");
+    runtime.load("src/game/presentation/fishing/fishing_messages.js", { expose: ["FISHING_MESSAGES"] });
+    runtime.context.CastService = require("./testing/runtime/constructor_defaults").bindConstructorDefaults(
+      runtime.context.CastService, { messages: runtime.context.FISHING_MESSAGES });
     runtime.load("src/game/application/fishing/fight_session_factory.js");
     runtime.load("src/game/application/fishing/fishing_force_service.js");
     runtime.load("src/game/application/fishing/catch_resolution_service.js");

@@ -50,7 +50,11 @@ const files = [
   "src/game/application/fishing/cast_penalty.js",
 ];
 
-new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
+new NativeEsmTestLoader({ projectRoot: root, context }).loadAll([...files, "src/game/presentation/fishing/fishing_messages.js"]);
+// Player-facing chum and casting messages are injected the way GameCompositionRoot injects them.
+for (const name of ["ChumController", "CastService"]) {
+  if (context[name]) context[name] = require("./testing/runtime/constructor_defaults").bindConstructorDefaults(context[name], { messages: context.FISHING_MESSAGES });
+}
 
 vm.runInContext(
   `

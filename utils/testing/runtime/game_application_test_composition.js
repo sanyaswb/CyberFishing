@@ -16,6 +16,8 @@ async function checkGameApplicationComposition(diagnostics = true) {
   }
   source.load('src/game/config/databases/fish_database.js',{expose:['FISH_DB']});
   source.load('src/bootstrap/production/game_application.js', { expose: ['GameApplication'] });
+  source.load('src/game/presentation/fishing/fishing_messages.js',{expose:['FISHING_MESSAGES']});
+  source.context.GameApplication=require('./constructor_defaults').bindConstructorDefaults(source.context.GameApplication,{messages:source.context.FISHING_MESSAGES});
     source.load('src/bootstrap/production/game_viewport_facade.js', { expose: ['GameViewportFacade'] });
     source.load('src/bootstrap/production/game_debug_facade.js', { expose: ['GameDebugFacade'] });
     source.load('src/bootstrap/production/game_fishing_facade.js', { expose: ['GameFishingFacade'] });

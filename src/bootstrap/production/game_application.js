@@ -11,6 +11,7 @@ import { GameViewportFacade } from "./game_viewport_facade.js";
 import { InventoryItemLocation } from "../../game/domain/inventory/inventory_item_location.js";
 
 export class GameApplication {
+  #messages;
   #projector;
   #map;
   #env;
@@ -119,6 +120,7 @@ export class GameApplication {
   lastTime = 0;
 
   constructor({
+    messages,
     canvas,
     canvasMetrics,
     config,
@@ -132,6 +134,7 @@ export class GameApplication {
     clock = null,
     logger,
   }) {
+    this.#messages = messages;
     if (clock) this.#clock = clock;
     this.#logger = logger;
     this.#canvasMetrics = canvasMetrics;
@@ -826,21 +829,21 @@ export class GameApplication {
 
   #showMissingRodInventoryWarning() {
     this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.("Спочатку споряди вудку для закидання.");
+    this.#inventoryUI?.showWarning?.(this.#messages.equipRodToCast);
   }
 
   #showMissingReelInventoryWarning() {
     const eq = this.#inventory?.getEquipped?.();
-    const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || "Ця";
+    const rodName = this.#equipmentRules?.getRodDisplayName?.(eq) || this.#messages.unnamedRod;
     this.#inventoryUI?.open?.();
     this.#inventoryUI?.showWarning?.(
-      `${rodName}: потрібна котушка для закидання.`,
+      this.#messages.rodNeedsReelToCast(rodName),
     );
   }
 
   #showMissingLineInventoryWarning() {
     this.#inventoryUI?.open?.();
-    this.#inventoryUI?.showWarning?.("Спочатку споряди ліску для закидання.");
+    this.#inventoryUI?.showWarning?.(this.#messages.equipLineToCast);
   }
 
   start() {

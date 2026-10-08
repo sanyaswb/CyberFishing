@@ -1,6 +1,7 @@
 import { BaitFactory } from "../../domain/tackle/bait_factory.js";
 
 export class CastService {
+  #messages;
   #config;
   #rng;
   #clock;
@@ -14,6 +15,7 @@ export class CastService {
   #runtimeConfig;
 
   constructor({
+    messages,
     config,
     rng,
     clock,
@@ -26,6 +28,7 @@ export class CastService {
     devFlags = null,
     runtimeConfig = null,
   }) {
+    this.#messages = messages;
     this.#config = config;
     this.#rng = rng;
     this.#clock = clock;
@@ -131,7 +134,7 @@ export class CastService {
         canCast: false,
         shouldOpenInventory: true,
         warningCode: "rod-required",
-        warning: "Спочатку спорядіть вудилище.",
+        warning: this.#messages.castRodRequired,
       };
     }
     if (this.#equipmentRules.requiresReel(equipment) && !equipment.reel) {
@@ -139,7 +142,7 @@ export class CastService {
         canCast: false,
         shouldOpenInventory: true,
         warningCode: "reel-required",
-        warning: "Для цієї вудки потрібна котушка.",
+        warning: this.#messages.castReelRequired,
       };
     }
     if (!this.#equipmentRules.hasEquippedLine(equipment)) {
@@ -147,7 +150,7 @@ export class CastService {
         canCast: false,
         shouldOpenInventory: true,
         warningCode: "line-required",
-        warning: "Для закидання потрібна ліска.",
+        warning: this.#messages.castLineRequired,
       };
     }
     return {

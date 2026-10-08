@@ -190,6 +190,9 @@ context.nativeTestExport=(file,name)=>moduleLoader.getExports(file)[name];
 moduleLoader.loadAll(CONFIG_FILES);
 composeTestConfig(file => moduleLoader.getExports(file), context);
 moduleLoader.loadAll(GAMEPLAY_FILES);
+// Player-facing casting messages are injected the way GameCompositionRoot injects them.
+context.CastService = require("./testing/runtime/constructor_defaults").bindConstructorDefaults(context.CastService,
+  { messages: moduleLoader.getExports("src/game/presentation/fishing/fishing_messages.js").FISHING_MESSAGES });
 
 vm.runInContext(`
 const checks = [];

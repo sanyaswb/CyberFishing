@@ -1,3 +1,4 @@
+import { FISHING_MESSAGES } from "../../game/presentation/fishing/fishing_messages.js";
 import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
@@ -271,6 +272,7 @@ export class GameCompositionRoot {
       audio,
     );
     return new GameApplication({
+      messages: FISHING_MESSAGES,
       canvas,
       canvasMetrics,
       config: this.#runtimeConfig,
@@ -942,6 +944,7 @@ export class GameCompositionRoot {
       consumer: "GameCompositionRoot.createApplicationServices",
     });
     const castService = new CastService({
+      messages: FISHING_MESSAGES,
       config,
       rng,
       clock,
@@ -1073,6 +1076,7 @@ export class GameCompositionRoot {
     }));
 
     const chumController = own(new ChumController({
+      messages: FISHING_MESSAGES,
       inventory: runtime.inventory,
       chum: runtime.chum,
       projector: runtime.projector,
