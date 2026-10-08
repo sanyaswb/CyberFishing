@@ -28,10 +28,24 @@ commit with facts → push. Behavior, saves, formulas and timing stay unchanged 
 5. **Developer notes in production comments (optional, 009).** About 30 files in engine/domain/application/platform/
    bootstrap keep Ukrainian edit notes such as `// <--- ЗМІНЕНО` or `/* Можеш змінити висоту… */`. The guard ignores
    comments; rewrite the useful ones in English and drop edit markers. No code change; digest must stay identical.
-6. **Patch release 0.30.1.** CHANGELOG (1–3 lines), version in `package.json`, `package-lock.json` (2 places),
+Open items carried over from the archived plan (`refactor_Task.txt` §6 at tag `migration-final-archive`; the rest
+of §6 is done: tooling archive and LF portability in 0.28.0, repository id fallback and `getDebugRevision` retired):
+
+6. **Unused gameplay-bridge readiness methods (§6 "coverage/API review").** `InventoryGameplayBridge.evaluateBiteReadiness`
+   / `evaluateChumBonus` (and `FishingReadinessPolicy.evaluateChumBonus` behind them) have no caller in `src/`; only
+   `inventory-integration-check` and `inventory-equipment-check` call them. Remove with those assertions, or keep with
+   a written reason. (`BuffManager` from the same item was removed in 0.29.0.)
+7. **"debug" → diagnostics naming (§6, 017).** Public accessors are already `getDiagnostics`; `FishForceSystem` and
+   `TackleStressSystem` still name the snapshot `#debug` and expose a `debug:` key. Rename, preserving every reader.
+8. **ViewportProjector (§6).** It still holds camera state (`#cameraX/Y`, `pan`, `focusOnVirtualPos`) next to world
+   perspective (`getPerspective`). Split only with hot-loop evidence (allocations, call counts, game-cycle digest).
+9. **`struct` script (§6, owner decision).** `npm run struct` also lists untracked local files (CLAUDE.md, CODEX.md),
+   so `project-structure.txt` is generated from `git ls-files`. Decide: keep manual generation or make the script
+   use tracked files only.
+10. **Patch release 0.30.1.** CHANGELOG (1–3 lines), version in `package.json`, `package-lock.json` (2 places),
    `project_version.js` (version, codename, notes), `index.html`/`dev.html` `?v=`; regenerate `project-structure.txt`
    from `git ls-files` (not `npm run struct`); fresh clone `npm ci` + `npm run check`; tag `v0.30.1`; push.
-7. **Local housekeeping (never committed).** Shrink the local `CLAUDE.md` to the current light process (most of its
+11. **Local housekeeping (never committed).** Shrink the local `CLAUDE.md` to the current light process (most of its
    Stage 3–6 tooling rules are historical) and update the resume point and memory.
 
 Owner-side: spec-kit CLI does not install in the agent sandbox; run
