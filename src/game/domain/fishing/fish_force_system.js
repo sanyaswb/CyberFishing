@@ -20,7 +20,7 @@ export class FishForceSystem {
   #dragForceCalculator = new DragForceCalculator();
   #enduranceMovementDebuffCalculator = new EnduranceMovementDebuffCalculator();
   #physicsConfig;
-  #debug = {};
+  #diagnostics = {};
 
   constructor({ fish, config }) {
     this.#fish = fish;
@@ -318,7 +318,7 @@ export class FishForceSystem {
           )
         : 0;
 
-    this.#debug = {
+    this.#diagnostics = {
       fishState: behavior.name,
       fishWeightKg: this.#fish.getWeight(),
       fishBasePower,
@@ -548,7 +548,7 @@ export class FishForceSystem {
       modelFishEscapeVelocityY: modelVelocityY,
       awayFromPlayerRatio: outwardRatio,
       player: playerData,
-      debug: this.#debug,
+      diagnostics: this.#diagnostics,
     };
   }
 
@@ -580,7 +580,7 @@ export class FishForceSystem {
   }
 
   getDiagnostics() {
-    return this.#debug;
+    return this.#diagnostics;
   }
 
   evaluateLastDashTrigger(context = {}) {

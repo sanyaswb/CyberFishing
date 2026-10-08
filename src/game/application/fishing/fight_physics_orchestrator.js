@@ -2353,7 +2353,7 @@ export class FightPhysicsOrchestrator {
   #resolveFishBehaviorName(forceData) {
     const value =
       forceData?.behavior?.name ??
-      forceData?.debug?.fishState ??
+      forceData?.diagnostics?.fishState ??
       forceData?.fishState ??
       forceData?.fishBehaviorName ??
       "unknown";
@@ -2402,7 +2402,7 @@ export class FightPhysicsOrchestrator {
   #resolveFishStaminaResistanceKg({ forceData, fishRetrieveResult } = {}) {
     const candidates = [
       forceData?.fishCurrentStateMaxForceKg,
-      forceData?.debug?.fishCurrentStateMaxForceKg,
+      forceData?.diagnostics?.fishCurrentStateMaxForceKg,
       forceData?.fishStateMaxForceWithoutPowerDebuffKg,
       fishRetrieveResult?.fishOppositionKg,
       forceData?.fishOppositionKg,
@@ -3017,7 +3017,7 @@ export class FightPhysicsOrchestrator {
     };
 
     return {
-      ...forceData.debug,
+      ...forceData.diagnostics,
       ...dragSystem.getDiagnostics(),
       dragSupported: !!dragContext.dragSupported,
       lineDebug,

@@ -25,12 +25,12 @@ export class TackleStressSystem {
   #breakInfo = null;
   #lastBreakProgress = 0;
   #preventedBreakReason = null;
-  #debug = {};
+  #diagnostics = {};
   #devFlags;
   #accumulator;
   #failureSelector;
   #weakestLimitResolver;
-  #stressDebug = {};
+  #stressDiagnostics = {};
   #selectedFailureComponent = null;
 
   constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null, weakestLimitResolver = null }) {
@@ -112,7 +112,7 @@ export class TackleStressSystem {
         config: stressConfig,
         rng: this.#rng,
       });
-      this.#stressDebug = stressFrame;
+      this.#stressDiagnostics = stressFrame;
       this.#lastBreakProgress = stressFrame.stressRatio || 0;
       if (stressFrame.failureTriggered) {
         this.#triggerTackleFailure({
@@ -123,8 +123,8 @@ export class TackleStressSystem {
         this.#preventedBreakReason = null;
       }
     } else {
-      this.#stressDebug = this.#accumulator.getDiagnostics(
-        this.#stressDebugDefaults(stressConfig),
+      this.#stressDiagnostics = this.#accumulator.getDiagnostics(
+        this.#stressDiagnosticsDefaults(stressConfig),
       );
       this.#lastBreakProgress = 0;
     }
@@ -134,7 +134,7 @@ export class TackleStressSystem {
   }
 
   setDiagnostics(data) {
-    this.#debug = data || {};
+    this.#diagnostics = data || {};
   }
 
   getDiagnostics() {
@@ -142,7 +142,7 @@ export class TackleStressSystem {
     const selected = this.#selectedFailureComponent || this.#selectFailureComponent();
     const weakestLimit = this.getWeakestTackleLimitFrame();
     return {
-      ...this.#debug,
+      ...this.#diagnostics,
       tensionKg: this.#currentTensionKg,
       targetTensionKg: this.#targetTensionKg,
       visibleTensionKg: this.#currentTensionKg,
@@ -169,7 +169,7 @@ export class TackleStressSystem {
       breakPrevented: this.#preventedBreakReason !== null,
       preventedBreakReason: this.#preventedBreakReason,
       breakInfo: this.#breakInfo,
-      ...this.#stressDebugWithDefaults(stressConfig),
+      ...this.#stressDiagnosticsWithDefaults(stressConfig),
       selectedFailureComponent: selected.component,
       selectedFailureResult: selected.result,
       failureTieBreakPriority: selected.tieBreakPriority,
@@ -241,7 +241,7 @@ export class TackleStressSystem {
   }
 
   getStressRatio() {
-    return Math.max(0, Math.min(1, this.#stressDebug?.stressRatio || 0));
+    return Math.max(0, Math.min(1, this.#stressDiagnostics?.stressRatio || 0));
   }
 
   getTensionKg() {
@@ -300,8 +300,8 @@ export class TackleStressSystem {
   resetStress() {
     this.#accumulator?.reset?.();
     const stressConfig = this.#resolveTackleStressConfig(this.#config);
-    this.#stressDebug = this.#accumulator?.getDiagnostics?.(
-      this.#stressDebugDefaults(stressConfig),
+    this.#stressDiagnostics = this.#accumulator?.getDiagnostics?.(
+      this.#stressDiagnosticsDefaults(stressConfig),
     ) || {};
     this.#lastBreakProgress = 0;
   }
@@ -336,13 +336,13 @@ export class TackleStressSystem {
       component: this.#breakInfo?.failureComponent || this.#breakReason || null,
       result: this.#breakInfo?.result || null,
       stressRatio: this.getStressRatio(),
-      failureChance: this.#stressDebug?.failureChance || 0,
+      failureChance: this.#stressDiagnostics?.failureChance || 0,
       failureSource: this.#breakInfo?.failureSource ||
-        this.#stressDebug?.failureSource ||
+        this.#stressDiagnostics?.failureSource ||
         null,
       guaranteedFailure: !!(
         this.#breakInfo?.guaranteed ||
-        this.#stressDebug?.guaranteedFailure
+        this.#stressDiagnostics?.guaranteedFailure
       ),
     };
   }
@@ -444,7 +444,7 @@ export class TackleStressSystem {
     };
   }
 
-  #stressDebugDefaults(stressConfig) {
+  #stressDiagnosticsDefaults(stressConfig) {
     return {
       capacity: stressConfig?.stress?.capacity ?? 1,
       recoveryPerSecond: stressConfig?.stress?.recoveryPerSecond ?? 0.35,
@@ -452,11 +452,11 @@ export class TackleStressSystem {
     };
   }
 
-  #stressDebugWithDefaults(stressConfig) {
-    const defaults = this.#stressDebugDefaults(stressConfig);
+  #stressDiagnosticsWithDefaults(stressConfig) {
+    const defaults = this.#stressDiagnosticsDefaults(stressConfig);
     return {
       ...this.#accumulator.getDiagnostics(defaults),
-      ...this.#stressDebug,
+      ...this.#stressDiagnostics,
     };
   }
 
