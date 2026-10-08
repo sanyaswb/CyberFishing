@@ -1,4 +1,3 @@
-import { ITEM_PROGRESSION_CONFIG } from "../../../config/items/item_progression_config.js";
 import { ItemFreshnessStatePolicy } from "../../../domain/items/freshness/item_freshness_state_policy.js";
 
 /**
@@ -49,12 +48,8 @@ export class InventoryItemSnapshotMapper {
     this.#definitionResolver = itemDefinitionResolver;
     this.#overridePolicy = overridePolicy;
     this.#freshnessStatePolicy = freshnessStatePolicy;
-    this.#freshnessCapabilityProvider =
-      freshnessCapabilityProvider || ((definition) => {
-        const groupId = definition?.progressionProfile?.groupId;
-        const config = ITEM_PROGRESSION_CONFIG;
-        return config?.groups?.[groupId]?.freshness || null;
-      });
+    // freshnessCapabilityProvider(definition): the item's freshness capability or null; composition injects it.
+    this.#freshnessCapabilityProvider = freshnessCapabilityProvider;
   }
 
   toSnapshot(item) {

@@ -1,4 +1,3 @@
-import { ITEM_PROGRESSION_CONFIG } from "../../../config/items/item_progression_config.js";
 import { ItemFreshnessStatePolicy } from "../../../domain/items/freshness/item_freshness_state_policy.js";
 
 /**
@@ -30,10 +29,13 @@ export class LegacyItemStateMigration {
 
   #overridePolicy;
   #freshnessStatePolicy;
+  #freshnessCapabilityProvider;
 
+  // freshnessCapabilityProvider(definition): the item's freshness capability or null; composition injects it.
   constructor({
     overridePolicy,
     freshnessStatePolicy = new ItemFreshnessStatePolicy(),
+    freshnessCapabilityProvider,
   } = {}) {
     if (!overridePolicy || typeof overridePolicy.normalize !== "function") {
       throw new TypeError(
@@ -42,6 +44,7 @@ export class LegacyItemStateMigration {
     }
     this.#overridePolicy = overridePolicy;
     this.#freshnessStatePolicy = freshnessStatePolicy;
+    this.#freshnessCapabilityProvider = freshnessCapabilityProvider;
   }
 
   migrate(source, definition = {}, { warnings = null } = {}) {
@@ -85,9 +88,7 @@ export class LegacyItemStateMigration {
   }
 
   #migrateFreshnessState(source, definition, normalized, warnings) {
-    const groupId = definition?.progressionProfile?.groupId;
-    const config = ITEM_PROGRESSION_CONFIG;
-    const capability = config?.groups?.[groupId]?.freshness;
+    const capability = this.#freshnessCapabilityProvider(definition);
     if (!capability) {
       warnings?.push?.(
         `Dropped unsupported legacy freshnessState for ${source.instanceId || source.itemId}.`,

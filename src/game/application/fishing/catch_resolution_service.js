@@ -1,4 +1,3 @@
-import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { LandingPolicyResolver } from "../../domain/fishing/landing_policy_resolver.js";
 
 export class CatchResolutionService {
@@ -26,9 +25,7 @@ export class CatchResolutionService {
     landingFrame = null,
     fightDebug = null,
   }) {
-    const physicsConfig =
-      config?.fightPhysicsConfig ||
-      new FightPhysicsConfigAdapter(config);
+    const physicsConfig = config?.fightPhysicsConfig;
     const cfg = physicsConfig?.getCatchZoneConfig?.() || {};
     const landingPolicy = this.#landingPolicyResolver.resolve({ rod, reel });
     const landingDistanceMeters = landingPolicy.getLandingDistanceMeters({

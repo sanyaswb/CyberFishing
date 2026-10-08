@@ -1,5 +1,4 @@
 import { FightInputActionComposer } from "../input/fight_input_action_composer.js";
-import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { FightPhysicsPipeline } from "./fight_physics_pipeline.js";
 import { FISH_FIGHT_EVENT } from "../../domain/fish/fish_fight_event.js";
 import { FishRetrieveSystem } from "../../domain/fishing/fish_retrieve_system.js";
@@ -105,7 +104,7 @@ export class FightPhysicsOrchestrator {
     this.#diagnosticsEnabled = diagnosticsEnabled === true;
     this.#pipeline = new FightPhysicsPipeline({ now: stepClock });
     this.#config = config || {};
-    this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
+    this.#physicsConfig = this.#config.fightPhysicsConfig;
     this.#fishRetrieveSystem = new FishRetrieveSystem(this.#physicsConfig);
   }
 
@@ -4732,11 +4731,6 @@ export class FightPhysicsOrchestrator {
 
   getDiagnostics() {
     return this.#debug;
-  }
-
-  #resolvePhysicsConfigAdapter(config) {
-    if (config?.fightPhysicsConfig) return config.fightPhysicsConfig;
-    return new FightPhysicsConfigAdapter(config);
   }
 
   #getRuntimePhysicsConfig() {

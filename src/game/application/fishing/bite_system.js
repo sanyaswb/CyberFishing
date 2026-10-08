@@ -1,4 +1,3 @@
-import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { FishPhysicsProfile } from "../../domain/fish/fish_physics_profile.js";
 
 export class BiteSystem {
@@ -84,8 +83,7 @@ export class BiteSystem {
   }
 
   #resolvePhysicsConfig(runtimeConfig) {
-    if (runtimeConfig?.fightPhysicsConfig) return runtimeConfig.fightPhysicsConfig;
-    return new FightPhysicsConfigAdapter(runtimeConfig);
+    return runtimeConfig?.fightPhysicsConfig;
   }
 
   reset() {

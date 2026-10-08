@@ -10,6 +10,7 @@ const files = [
   "src/game/config/raw/inventory/item_assembly_profiles.js",
   "src/game/domain/equipment/equipment_slot_catalog.js",
   "src/game/config/raw/items/item_stat_overrides.js",
+  "src/game/config/items/item_progression_config.js",
   "src/game/domain/items/item_stat_override_policy.js",
   "src/game/domain/items/effective_item_stats_resolver.js",
   "src/game/domain/items/freshness/item_freshness_state_policy.js",
@@ -66,11 +67,14 @@ vm.runInContext(
   let sequence = 0;
   // Item stat collaborators composed the way the inventory composition root composes them.
   const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: ITEM_STAT_OVERRIDE_CONFIG });
+  const freshnessCapabilityProvider = (definition) =>
+    ITEM_PROGRESSION_CONFIG?.groups?.[definition?.progressionProfile?.groupId]?.freshness || null;
   globalThis.itemStatCollaborators = Object.freeze({
-    itemStateMigration: new LegacyItemStateMigration({ overridePolicy: itemStatOverridePolicy }),
+    itemStateMigration: new LegacyItemStateMigration({ overridePolicy: itemStatOverridePolicy, freshnessCapabilityProvider }),
     effectiveStatsResolver: new EffectiveItemStatsResolver({ overridePolicy: itemStatOverridePolicy }),
     itemSnapshotMapper: new InventoryItemSnapshotMapper({
-      itemDefinitionResolver: (itemId) => definitions[itemId] || null, overridePolicy: itemStatOverridePolicy }),
+      itemDefinitionResolver: (itemId) => definitions[itemId] || null, overridePolicy: itemStatOverridePolicy,
+      freshnessCapabilityProvider }),
   });
   const migration = new InventoryLegacyMigration({
     ...itemStatCollaborators,

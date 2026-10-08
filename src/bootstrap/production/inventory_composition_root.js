@@ -1,3 +1,4 @@
+import { ITEM_PROGRESSION_CONFIG } from "../../game/config/items/item_progression_config.js";
 import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_messages.js";
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
 import { AssemblyAttachmentTargetResolver } from "../../game/domain/assemblies/assembly_attachment_target_resolver.js";
@@ -98,7 +99,10 @@ export class InventoryCompositionRoot {
   } = {}) {
     // The composed item stat override policy is shared by every item-state collaborator.
     const overridePolicy = itemStatOverridePolicy;
-    const itemStateMigration = new LegacyItemStateMigration({ overridePolicy });
+    // Freshness capability per item definition from the authored item progression groups (save mapping and migration).
+    const freshnessCapabilityProvider = (definition) =>
+      ITEM_PROGRESSION_CONFIG?.groups?.[definition?.progressionProfile?.groupId]?.freshness || null;
+    const itemStateMigration = new LegacyItemStateMigration({ overridePolicy, freshnessCapabilityProvider });
     const definitions = itemDefinitionResolver || null;
     const hydrator = new InventoryItemHydrator({
       itemDefinitionResolver: definitions,
@@ -108,6 +112,7 @@ export class InventoryCompositionRoot {
     const itemSnapshotMapper = new InventoryItemSnapshotMapper({
       itemDefinitionResolver: definitionLookup,
       overridePolicy,
+      freshnessCapabilityProvider,
     });
     const store =
       stateStore ||

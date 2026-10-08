@@ -1,6 +1,5 @@
 import { CastDistanceCalculator } from "../../domain/casting/cast_distance_calculator.js";
 import { DragControlService } from "./drag_control_service.js";
-import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { FightPhysicsOrchestrator } from "./fight_physics_orchestrator.js";
 import { Fish } from "../../domain/fish/fish.js";
 import { FishCondition } from "../../domain/fish/fish_condition.js";
@@ -31,9 +30,7 @@ export class FightSessionFactory {
     this.logger = logger;
     this.rng = rng;
     this.devFlags = devFlags;
-    this.physicsConfig =
-      config?.fightPhysicsConfig ||
-      new FightPhysicsConfigAdapter(config);
+    this.physicsConfig = config?.fightPhysicsConfig;
     this.castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }

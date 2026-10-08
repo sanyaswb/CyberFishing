@@ -1,5 +1,4 @@
 import { CatchResolutionService } from "./catch_resolution_service.js";
-import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { FightSessionFactory } from "./fight_session_factory.js";
 import { FishingForceService } from "./fishing_force_service.js";
 
@@ -44,9 +43,7 @@ export class FightService {
     catchResolver = null,
   }) {
     this.#config = config;
-    this.#physicsConfig =
-      config?.fightPhysicsConfig ||
-      new FightPhysicsConfigAdapter(config);
+    this.#physicsConfig = config?.fightPhysicsConfig;
     this.#rng = rng;
     this.#devFlags = devFlags;
     this.#fightSessionFactory =
