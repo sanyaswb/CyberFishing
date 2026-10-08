@@ -1,5 +1,16 @@
 # CyberFishing changelog
 
+## v0.30.0 - Clear Responsibilities
+
+### Fixed
+
+- Line capacity shown in item views follows the currently equipped reel and line.
+
+### Changed
+
+- One exported class per module, named after its responsibility (no Manager/Utils/Helper names); classic inventory styles removed; DEV owns fight and bite diagnostic labels.
+- Player-facing texts live in injected presentation catalogs; the architecture guard rejects them in engine, domain, application, platform and bootstrap.
+
 ## v0.29.0 - Stage 7 Closed
 
 ### Changed

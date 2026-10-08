@@ -52,7 +52,9 @@
 │  │  └── spec.md
 │  ├── 003-names-and-placement
 │  │  └── spec.md
-│  └── 004-css-cleanup
+│  ├── 004-css-cleanup
+│  │  └── spec.md
+│  └── 005-player-texts
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -90,8 +92,10 @@
 │  │  │  ├── hooked_fish_profile_synchronizer.js
 │  │  │  └── worst_case_force_debug_selector.js
 │  │  ├── formatting
+│  │  │  ├── bite_log_labels.js
 │  │  │  ├── debuff_name_formatter.js
-│  │  │  └── debug_formatters.js
+│  │  │  ├── debug_formatters.js
+│  │  │  └── fish_movement_labels.js
 │  │  ├── god_mode.js
 │  │  ├── items
 │  │  │  └── item_progression_debug_snapshot_provider.js
@@ -553,7 +557,8 @@
 │  │  │  ├── loadouts
 │  │  │  │  ├── equipment_loadout.js
 │  │  │  │  ├── equipment_loadout_repository.js
-│  │  │  │  └── loadout_equipment_transition_planner.js
+│  │  │  │  ├── loadout_equipment_transition_planner.js
+│  │  │  │  └── persisted_loadout_names.js
 │  │  │  ├── locations
 │  │  │  │  ├── dynamic_zone.js
 │  │  │  │  ├── grid_cell.js
@@ -587,6 +592,7 @@
 │  │     ├── fishing
 │  │     │  ├── fight_area_renderer.js
 │  │     │  ├── fishing_equipment_render_model_builder.js
+│  │     │  ├── fishing_messages.js
 │  │     │  ├── fishing_scene_renderer.js
 │  │     │  ├── float_renderer.js
 │  │     │  ├── line_visual_state_controller.js
@@ -598,6 +604,7 @@
 │  │     │  ├── fight_status_bars_renderer.js
 │  │     │  ├── hold_charges_renderer.js
 │  │     │  ├── hud_bar_renderer.js
+│  │     │  ├── hud_labels.js
 │  │     │  └── player_pressure_fatigue_indicator_renderer.js
 │  │     ├── input
 │  │     │  └── victory_action_gesture_resolver.js
@@ -623,6 +630,7 @@
 │  │     │  ├── inventory_item_tree_view_factory.js
 │  │     │  ├── inventory_item_view_factory.js
 │  │     │  ├── inventory_loadout_panel_renderer.js
+│  │     │  ├── inventory_messages.js
 │  │     │  ├── inventory_resource_meter_renderer.js
 │  │     │  ├── inventory_resource_meter_resolver.js
 │  │     │  ├── inventory_rule_messages.js
@@ -635,6 +643,7 @@
 │  │     │  ├── inventory_view_model_normalizer.js
 │  │     │  ├── item_condition_descriptor.js
 │  │     │  ├── item_freshness_descriptor.js
+│  │     │  ├── item_progression_labels.js
 │  │     │  ├── item_progression_visual_resolver.js
 │  │     │  ├── item_quality_resolver.js
 │  │     │  ├── rod_cast_display_labels.js
