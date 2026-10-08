@@ -6,9 +6,9 @@ function checkChumComposition() {
   const nodes=[];
   const document={createElement(){const node={style:{},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
   const runtime=new SourceRuntime({globals:{document,console:{log(){}}}});
-  runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumUI']});
+  runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumControls']});
   runtime.load('src/game/application/casting/cast_power_aim.js');
-  runtime.load('src/bootstrap/production/chum_feature_bootstrap.js',{expose:['ChumController']});
+  runtime.load('src/game/application/chum/chum_controller.js',{expose:['ChumController']});
   const bounds={left:0,right:800,top:0,bottom:600},clock={now:1000},boats=[],drops=[],consumed=[],warnings=[],invalid=[];
   const hand={id:'hand',instanceId:'hand-1',quantity:3};
   const equipped={handChum:hand,delivery:null,deliveryChums:[{id:'first'},null,{id:'second'}]};
@@ -21,7 +21,8 @@ function checkChumComposition() {
   const controller=new runtime.context.ChumController({inventory:{getEquipped:()=>equipped},chum,projector,inventoryUI:{showWarning(message){warnings.push(message);}},
     fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);}},location:{chumCastDistance:300},clock,config,
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,
-    getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state});
+    getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,
+    createUi:(onClick)=>new runtime.context.ChumControls(onClick)});
   const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');
   controller.handleClick();assert.equal(controller.isAiming,true);assert.equal(hidden,1);
   input.clickPos={x:400,y:500};controller.handleAiming(input,bounds,16);assert.equal(input.clickPos,null);assert.equal(drops.length,0);

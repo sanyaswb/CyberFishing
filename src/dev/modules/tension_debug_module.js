@@ -1,4 +1,4 @@
-import { ConsoleTableDebugModule } from "./base_debug_module.js";
+import { ConsoleTableDebugModule } from "./console_table_debug_module.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 
 export class TensionDebugModule extends ConsoleTableDebugModule {
@@ -75,7 +75,7 @@ export class TensionDebugModule extends ConsoleTableDebugModule {
       ),
       "Break threshold %": DebugFormatters.number(config.breakThreshold, 2),
       "Formula source":
-        "FightPhysicsSystem.calculateTensionKg + TackleStressSystem",
+        "FightPhysicsOrchestrator.calculateTensionKg + TackleStressSystem",
     });
   }
 }

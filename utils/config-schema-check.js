@@ -13,7 +13,7 @@ const LABELS = JSON.parse(fs.readFileSync(path.join(ROOT, "src/dev/metadata/para
 function compose({ development }) {
   const runtime = new SourceRuntime();
   const { createProductionConfigContext } = runtime.importModule("src/bootstrap/production/game_config_composition.js");
-  const { ConfigSchemaValidator } = runtime.importModule("src/game/config/validation/config_schema_validator.js");
+  const { ConfigSchemaValidator } = ({ ...runtime.importModule("src/game/config/validation/config_validation_result.js"), ...runtime.importModule("src/game/config/validation/config_schema_validator.js") });
   const { FISH_DB } = runtime.importModule("src/game/config/databases/fish_database.js");
   const { ITEM_DB } = runtime.importModule("src/game/config/databases/item_catalog.js");
   const { PROJECT_VERSION_CONFIG } = runtime.importModule("src/game/presentation/version/project_version.js");

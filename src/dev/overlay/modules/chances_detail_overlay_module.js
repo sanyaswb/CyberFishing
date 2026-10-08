@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class ChancesDetailModule extends OverlayModule {
+export class ChancesDetailOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("chancesDetail", options);
   }

@@ -1,4 +1,4 @@
-import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/bait_effectiveness_knowledge_policy.js";
+import { AlwaysKnownBaitEffectivenessPolicy } from "../../game/domain/items/bait/always_known_bait_effectiveness_policy.js";
 import { AssetPreloadCoordinator } from "../../platform/browser/assets/asset_preload_coordinator.js";
 import { AuthoredItemRarityStrategy } from "../../game/domain/items/rarity/authored_item_rarity_strategy.js";
 import { BaitEffectivenessCatalogResolver } from "../../game/presentation/inventory/bait_effectiveness_catalog_resolver.js";
@@ -6,32 +6,55 @@ import { BaitEffectivenessDescriptor } from "../../game/presentation/inventory/b
 import { BaitEffectivenessGradePolicy } from "../../game/domain/items/bait/bait_effectiveness_grade_policy.js";
 import { BaitEffectivenessResolver } from "../../game/domain/items/bait/bait_effectiveness_resolver.js";
 import { BaitFreshnessModifier } from "../../game/domain/items/freshness/bait_freshness_modifier.js";
-import { BaitRules, BiteRules, BoatRules, CastRules, ChumRules, EquipmentRules, PlayerCastRules } from "../../game/domain/rules/gameplay_rules.js";
+import { BaitRules } from "../../game/domain/rules/bait_rules.js";
+import { BiteRules } from "../../game/domain/rules/bite_rules.js";
+import { BoatRules } from "../../game/domain/rules/boat_rules.js";
+import { CastRules } from "../../game/domain/rules/cast_rules.js";
+import { ChumRules } from "../../game/domain/rules/chum_rules.js";
+import { EquipmentRules } from "../../game/domain/rules/equipment_rules.js";
+import { PlayerCastRules } from "../../game/domain/rules/player_cast_rules.js";
 import { BiteEnvironmentService } from "../../game/application/fishing/bite_environment_service.js";
-import { BiteSystem, CastManager } from "../../game/application/fishing/bite_service.js";
-import { BitingState, FailedState, PlayingState, ScoutingState, StateDepsFactory, StateMachine, VictoryState, WaitingState } from "../../game/application/state/game_state_machine.js";
+import { BiteSystem } from "../../game/application/fishing/bite_system.js";
+import { CastPenalty } from "../../game/application/fishing/cast_penalty.js";
+import { BitingState } from "../../game/application/state/biting_state.js";
+import { FailedState } from "../../game/application/state/failed_state.js";
+import { PlayingState } from "../../game/application/state/playing_state.js";
+import { ScoutingState } from "../../game/application/state/scouting_state.js";
+import { StateDepsFactory } from "../../game/application/state/state_deps_factory.js";
+import { StateMachine } from "../../game/application/state/state_machine.js";
+import { VictoryState } from "../../game/application/state/victory_state.js";
+import { WaitingState } from "../../game/application/state/waiting_state.js";
 import { BoatChumRenderer } from "../../game/presentation/world/boat_chum_renderer.js";
 import { BoatChumRenderFrameBuilder } from "../../game/presentation/rendering/boat_chum_render_frame_builder.js";
-import { BrowserAudioAdapter, BrowserDebugAdapter, CanvasMetricsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
-import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
+import { BrowserAudioAdapter } from "../../platform/browser/runtime/browser_audio_adapter.js";
+import { BrowserDebugAdapter } from "../../platform/browser/runtime/browser_debug_adapter.js";
+import { CanvasMetricsProvider } from "../../platform/browser/runtime/canvas_metrics_provider.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
 import { CanvasPrimitives } from "../../platform/browser/canvas/canvas_primitives.js";
 import { CastDistanceCalculator } from "../../game/domain/casting/cast_distance_calculator.js";
 import { CastingRenderFrameBuilder } from "../../game/presentation/rendering/casting_render_frame_builder.js";
 import { CastingRenderPass } from "../../game/presentation/rendering/casting_render_pass.js";
 import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
-import { CastService, CatchResolutionService, FightService, FightSessionFactory, FishingController } from "../../game/application/fishing/fishing_runtime_services.js";
-import { ChumController } from "./chum_feature_bootstrap.js";
-import { ChumManager } from "../../game/application/chum/chum_service.js";
+import { CastService } from "../../game/application/fishing/cast_service.js";
+import { CatchResolutionService } from "../../game/application/fishing/catch_resolution_service.js";
+import { FightService } from "../../game/application/fishing/fight_service.js";
+import { FightSessionFactory } from "../../game/application/fishing/fight_session_factory.js";
+import { FishingController } from "../../game/application/fishing/fishing_controller.js";
+import { ChumController } from "../../game/application/chum/chum_controller.js";
+import { ChumControls } from "../../platform/browser/ui/chum_controls.js";
+import { ChumService } from "../../game/application/chum/chum_service.js";
 import { CompositeMetricStrategy } from "../../game/domain/items/progression/composite_metric_strategy.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { DegradationColorConfigValidator } from "../../game/presentation/visual/degradation_color_config_validator.js";
 import { DegradationColorResolver } from "../../game/presentation/styles/degradation_color_resolver.js";
 import { DependencyContractValidator } from "../../engine/di/dependency_contract_validator.js";
-import { DepthSelectorUI } from "../../platform/browser/ui/depth_selector.js";
+import { DepthSelector } from "../../platform/browser/ui/depth_selector.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
-import { EnvironmentSystem, GameWorld, LocationManager } from "../../game/application/world/game_world_service.js";
+import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
+import { GameWorld } from "../../game/application/world/game_world.js";
+import { CurrentLocation } from "../../game/application/world/current_location.js";
 import { EquipmentService } from "../../game/application/inventory/equipment_service.js";
 import { FightAreaRenderer } from "../../game/presentation/fishing/fight_area_renderer.js";
 import { FightAreaRenderFrameBuilder } from "../../game/presentation/rendering/fight_area_render_frame_builder.js";
@@ -57,12 +80,12 @@ import { GameRenderCoordinator } from "../../game/presentation/rendering/game_re
 import { GameRenderFrameBuilder } from "../../game/presentation/rendering/game_render_frame_builder.js";
 import { GameRenderPipeline } from "../../game/presentation/rendering/game_render_pipeline.js";
 import { HoldChargesRenderer } from "../../game/presentation/hud/hold_charges_renderer.js";
-import { HoldChargesUI } from "../../platform/browser/ui/hold_charges.js";
+import { HoldCharges } from "../../platform/browser/ui/hold_charges.js";
 import { HudBarRenderer } from "../../game/presentation/hud/hud_bar_renderer.js";
 import { HudRenderPass } from "../../game/presentation/rendering/hud_render_pass.js";
 import { HudStyleResolver } from "../../game/presentation/styles/hud_style_resolver.js";
 import { ImageAssetProvider } from "../../platform/browser/assets/image_asset_provider.js";
-import { InputManager } from "../../platform/browser/input/input_manager.js";
+import { InputController } from "../../platform/browser/input/input_controller.js";
 import { INVENTORY_RULE_MESSAGES } from "../../game/presentation/inventory/inventory_rule_messages.js";
 import { InventoryEventBridge } from "../../game/application/inventory/inventory_event_bridge.js";
 import { InventoryRuntimeConfigProvider } from "../../game/application/inventory/inventory_runtime_config_provider.js";
@@ -91,11 +114,11 @@ import { ItemRatingResolver } from "../../game/domain/items/progression/item_rat
 import { ItemRatingTierResolver } from "../../game/domain/items/progression/item_rating_tier_resolver.js";
 import { ItemStatOverridePolicy } from "../../game/domain/items/item_stat_override_policy.js";
 import { LandingAreaRenderFrameBuilder } from "../../game/presentation/rendering/landing_area_render_frame_builder.js";
-import { LandingPolicyResolver } from "../../game/domain/fishing/landing_policy.js";
+import { LandingPolicyResolver } from "../../game/domain/fishing/landing_policy_resolver.js";
 import { LineVisualStateController } from "../../game/presentation/fishing/line_visual_state_controller.js";
 import { LocationAssetLoader } from "../../platform/browser/location/location_asset_loader.js";
-import { LocationMap } from "../../game/domain/locations/location_world.js";
-import { Net } from "../../game/domain/tackle/tackle.js";
+import { LocationMap } from "../../game/domain/locations/location_map.js";
+import { Net } from "../../game/domain/tackle/net.js";
 import { NumericStatMetricStrategy } from "../../game/domain/items/progression/numeric_stat_metric_strategy.js";
 import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_canvas_factory.js";
 import { OutcomeRenderFrameBuilder } from "../../game/presentation/screens/outcome_render_frame_builder.js";
@@ -110,13 +133,13 @@ import { RarityVisualResolver } from "../../game/presentation/styles/rarity_visu
 import { ReelRetrieveSpeedCalculator } from "../../game/domain/fishing/reel_retrieve_speed_calculator.js";
 import { RenderComponent } from "../../engine/rendering/render_component.js";
 import { RenderFrameBuffer } from "../../game/presentation/rendering/render_frame_buffer.js";
-import { RenderOrder } from "../../game/presentation/rendering/game_render_order.js";
+import { GameRenderOrder } from "../../game/presentation/rendering/game_render_order.js";
 import { RodLineRenderer } from "../../game/presentation/fishing/rod_line_renderer.js";
 import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { StarRatingRenderer } from "../../game/presentation/screens/star_rating_renderer.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
-import { TimeDisplayUI } from "../../platform/browser/ui/time_display.js";
-import { UIManager } from "../../platform/browser/ui/game_controls.js";
+import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
+import { GameControls } from "../../platform/browser/ui/game_controls.js";
 import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
 import { VictoryLayoutResolver } from "../../game/presentation/screens/victory_layout_resolver.js";
 import { VictoryRenderer } from "../../game/presentation/screens/victory_renderer.js";
@@ -219,7 +242,7 @@ export class GameCompositionRoot {
   }
 
   printStorageUsage() {
-    if (CacheManager.printStorageUsage) CacheManager.printStorageUsage();
+    if (LocalStorageCache.printStorageUsage) LocalStorageCache.printStorageUsage();
   }
 
   getMemoryWatchdogConfig() {
@@ -511,19 +534,19 @@ export class GameCompositionRoot {
       components: [
         new RenderComponent({
           id: "fight-area",
-          order: RenderOrder.values.FIGHT_AREAS,
+          order: GameRenderOrder.values.FIGHT_AREAS,
           renderer: fightAreaRenderer,
           selectModel: (model) => model.fightAreas,
         }),
         new RenderComponent({
           id: "rod-line",
-          order: RenderOrder.values.FISHING_EQUIPMENT,
+          order: GameRenderOrder.values.FISHING_EQUIPMENT,
           renderer: rodLineRenderer,
           selectModel: (model) => model.rodLine,
         }),
         new RenderComponent({
           id: "float",
-          order: RenderOrder.values.FISHING_EQUIPMENT + 1,
+          order: GameRenderOrder.values.FISHING_EQUIPMENT + 1,
           renderer: floatRenderer,
           selectModel: (model) => model.float,
         }),
@@ -541,19 +564,19 @@ export class GameCompositionRoot {
       components: [
         new RenderComponent({
           id: "status-bars",
-          order: RenderOrder.values.HUD,
+          order: GameRenderOrder.values.HUD,
           renderer: statusBarsRenderer,
           selectModel: (model) => model,
         }),
         new RenderComponent({
           id: "hold-charges",
-          order: RenderOrder.values.HUD + 1,
+          order: GameRenderOrder.values.HUD + 1,
           renderer: holdChargesRenderer,
           selectModel: (model) => model.holdCharges,
         }),
         new RenderComponent({
           id: "player-pressure-fatigue",
-          order: RenderOrder.values.HUD + 2,
+          order: GameRenderOrder.values.HUD + 2,
           renderer: playerPressureFatigueIndicatorRenderer,
           selectModel: (model) => model.playerPressureFatigue,
         }),
@@ -578,30 +601,30 @@ export class GameCompositionRoot {
     });
     const pipeline = new GameRenderPipeline({
       diagnostics: this.#readRenderDiagnostics(),
-      passes: RenderOrder.createPassList({
+      passes: GameRenderOrder.createPassList({
         world: new WorldRenderPass({
           components: [
             new RenderComponent({
               id: "world-background",
-              order: RenderOrder.values.BACKGROUND,
+              order: GameRenderOrder.values.BACKGROUND,
               renderer: worldSceneRenderer,
               selectModel: (frame) => frame.world,
             }),
             ...(worldDebugRenderer == null ? [] : [new RenderComponent({
               id: "world-debug",
-              order: RenderOrder.values.WORLD_DEBUG,
+              order: GameRenderOrder.values.WORLD_DEBUG,
               renderer: worldDebugRenderer,
               selectModel: (frame) => frame.world,
             })]),
             new RenderComponent({
               id: "boat-chum",
-              order: RenderOrder.values.WORLD_ENTITIES,
+              order: GameRenderOrder.values.WORLD_ENTITIES,
               renderer: boatChumRenderer,
               selectModel: (frame) => frame.world,
             }),
             new RenderComponent({
               id: "invalid-cast-marker",
-              order: RenderOrder.values.WORLD_ENTITIES + 1,
+              order: GameRenderOrder.values.WORLD_ENTITIES + 1,
               renderer: invalidCastMarkerRenderer,
               selectModel: (frame) => frame.world.invalidCastMarker,
             }),
@@ -632,7 +655,7 @@ export class GameCompositionRoot {
       "getPassCount",
       "copyPassIdsInto",
     ]);
-    const location = new LocationManager(
+    const location = new CurrentLocation(
       this.#config.locations,
       this.#config.player?.locationId,
     );
@@ -678,7 +701,7 @@ export class GameCompositionRoot {
       baitEffectivenessCatalogResolver,
       effectiveStatsResolver: effectiveItemStatsResolver,
       itemStatOverridePolicy,
-      cache: CacheManager,
+      cache: LocalStorageCache,
       assemblyProfileConfig: getInventoryAssemblyProfileConfig(),
       makeRandomId: createRandomInventoryId,
       now: () => Date.now(),
@@ -724,11 +747,11 @@ export class GameCompositionRoot {
         rng,
         this.#config.spawns,
       ),
-      input: own(new InputManager(canvas, Number(this.#config.ui?.rod?.x) || null, {
+      input: own(new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
         fightInputActionComposer: new FightInputActionComposer(),
       })),
-      ui: own(new UIManager(
+      ui: own(new GameControls(
         this.#config,
         this.#createUiLifecycle(own(this.#createOptionalDiagnostic(
           this.#createDevTools, "devTools", [this.#config, hookedFishProfileSynchronizer, {
@@ -736,10 +759,10 @@ export class GameCompositionRoot {
             itemProgressionResolver,
           }], ["dispose"],
         ))),
-        { cache: CacheManager },
+        { cache: LocalStorageCache },
       )),
-      chum: own(new ChumManager(locId, chumConfigObj, projector, {
-        cache: CacheManager,
+      chum: own(new ChumService(locId, chumConfigObj, projector, {
+        cache: LocalStorageCache,
         configEvents: this.#documentTarget,
         rng,
         now: () => clock.realNow,
@@ -830,10 +853,10 @@ export class GameCompositionRoot {
       eq.net || { active: false, maxWeight: 0, length: 10 },
       physicsConfig?.getDistanceConfig?.() || {},
     );
-    const castManager = new CastManager();
-    const depthUI = own(new DepthSelectorUI());
-    const timeUI = own(new TimeDisplayUI());
-    const holdUI = own(new HoldChargesUI());
+    const castPenalty = new CastPenalty();
+    const depthUI = own(new DepthSelector());
+    const timeUI = own(new TimeDisplay());
+    const holdUI = own(new HoldCharges());
     return {
       location,
       rng,
@@ -870,7 +893,7 @@ export class GameCompositionRoot {
       fishing,
       equipment,
       net,
-      castManager,
+      castPenalty,
       depthUI,
       timeUI,
       holdUI,
@@ -963,7 +986,7 @@ export class GameCompositionRoot {
       inventory: runtime.inventory,
       floatRef: appPorts.getFloat,
       clock,
-      castManager: runtime.castManager,
+      castPenalty: runtime.castPenalty,
       equipmentRules: runtime.equipmentRules,
       getCurrentHookDepth: appPorts.getCurrentHookDepth,
       getCastStartTime: appPorts.getCastStartTime,
@@ -999,7 +1022,7 @@ export class GameCompositionRoot {
       netRef: appPorts.getNet,
       rng,
       clock,
-      castManager: runtime.castManager,
+      castPenalty: runtime.castPenalty,
       getCastStartTime: appPorts.getCastStartTime,
       getChumCastDistance: appPorts.getChumCastDistance,
       isAimingChum: appPorts.isAimingChum,
@@ -1068,6 +1091,7 @@ export class GameCompositionRoot {
       markInvalidCast: appPorts.markInvalidCast,
       canPlayerCast: appPorts.canPlayerCast,
       getGameStateName: appPorts.getGameStateName,
+      createUi: (onClick) => new ChumControls(onClick),
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
     }));

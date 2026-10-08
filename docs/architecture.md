@@ -56,6 +56,8 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 - a production module (reachable from `game.entry.js`) in `dev` or `bootstrap/development`;
 - a host global outside `platform`/`dev`;
 - a page that does not load exactly its one module entry.
+- a module exporting more than one class, a module not named after its class (`snake_case(Class).js`), or a
+  class named `*Manager`, `*Util(s)` or `*Helper(s)`.
 
 It reports the production and DEV graph sizes and runs its own negative fixtures first.
 

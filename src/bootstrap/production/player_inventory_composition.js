@@ -4,7 +4,7 @@ import { InventoryItemFactory } from "../../game/application/inventory/inventory
 import { InventoryItemViewContext } from "../../game/application/inventory/inventory_item_view_context.js";
 import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
 import { InventoryRuntimeDisplayStatsResolver } from "../../game/application/inventory/inventory_runtime_display_stats_resolver.js";
-import { InventoryActionType } from "../../game/presentation/inventory/inventory_view_model.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryCompositionRoot } from "./inventory_composition_root.js";
 import { ItemDatabase } from "../../game/application/inventory/item_database.js";
 import { LegacyInventorySaveSource } from "../../game/application/inventory/persistence/legacy_inventory_save_source.js";

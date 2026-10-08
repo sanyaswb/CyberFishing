@@ -81,7 +81,7 @@ From `v0.19.7`, hooked fish movement is authoritative from the simplified fight 
 ```txt
 Fish behavior state smoothing happens inside `Fish.getBehavior()`.
 FishForceSystem calculates target velocity from the simplified formulas.
-FightPhysicsSystem applies that target velocity directly through `WaterEntity.applyHookedFightMovement()`.
+FightPhysicsOrchestrator applies that target velocity directly through `WaterEntity.applyHookedFightMovement()`.
 WaterEntity generic velocity damping is not applied to hooked fight movement.
 ```
 

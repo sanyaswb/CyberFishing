@@ -1,4 +1,4 @@
-import { RenderOrder } from "./game_render_order.js";
+import { GameRenderOrder } from "./game_render_order.js";
 
 export class GameRenderPipeline {
   #passes;
@@ -17,7 +17,7 @@ export class GameRenderPipeline {
           `GameRenderPipeline pass ${index} must implement render(frame)`,
         );
       }
-      const id = String(pass.id || pass.renderPassId || RenderOrder.sequence[index] || `pass:${index}`);
+      const id = String(pass.id || pass.renderPassId || GameRenderOrder.sequence[index] || `pass:${index}`);
       if (seenIds.has(id)) {
         throw new Error(`Duplicate render pass id: ${id}`);
       }

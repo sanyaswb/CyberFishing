@@ -55,7 +55,7 @@ class RuntimeLoader {
       },
     });
     this.#run(runtime, "src/engine/math/vector2.js", ["Vector2"]);
-    this.#run(runtime, "src/platform/browser/input/input_manager.js", ["InputManager"]);
+    this.#run(runtime, "src/platform/browser/input/input_controller.js", ["InputController"]);
     this.#run(
       runtime,
       "src/game/presentation/input/victory_action_gesture_resolver.js",
@@ -66,7 +66,7 @@ class RuntimeLoader {
       "src/game/presentation/screens/victory_layout_resolver.js",
       ["VictoryLayoutResolver"],
     );
-    this.#run(runtime, "src/game/application/state/game_state_machine.js", ["VictoryState"]);
+    this.#run(runtime, "src/game/application/state/victory_state.js", ["VictoryState"]);
     return runtime.context;
   }
 
@@ -137,7 +137,7 @@ class VictoryInputCheck {
     const canvas = new EventTargetStub();
     return {
       canvas,
-      manager: new this.runtime.InputManager(canvas, null, { runtimeConfig: this.runtime.CONFIG }),
+      manager: new this.runtime.InputController(canvas, null, { runtimeConfig: this.runtime.CONFIG }),
     };
   }
 

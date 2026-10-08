@@ -14,7 +14,10 @@ const COMMAND_SERVICE_FILE = path.join(ROOT, "src/game/application/inventory/inv
 const INVENTORY_COMPOSITION_FILE = path.join(ROOT, "src/bootstrap/production/inventory_ui_bootstrap.js");
 
 const UI_SCRIPT_ORDER = Object.freeze([
-  ["inventory_view_model.js", "src/game/presentation/inventory/inventory_view_model.js"],
+  ["inventory_action_type.js", "src/game/presentation/inventory/inventory_action_type.js"],
+  ["inventory_facade_contract.js", "src/game/presentation/inventory/inventory_facade_contract.js"],
+  ["inventory_action_contract.js", "src/game/presentation/inventory/inventory_action_contract.js"],
+  ["inventory_view_model_normalizer.js", "src/game/presentation/inventory/inventory_view_model_normalizer.js"],
   ["inventory_dom_factory.js", "src/platform/browser/dom/inventory_dom_factory.js"],
   ["inventory_long_press_controller.js", "src/platform/browser/dom/inventory_long_press_controller.js"],
   ["inventory_attachment_badge_renderer.js", "src/game/presentation/inventory/inventory_attachment_badge_renderer.js"],
@@ -807,7 +810,7 @@ class InventoryStaticContractCheck {
   #assertViewModelContract() {
     const sandbox = { console };
     sandbox.globalThis = sandbox;
-    new SourceRuntime({ globals: sandbox }).load("src/game/presentation/inventory/inventory_view_model.js");
+    new SourceRuntime({ globals: sandbox }).load("src/game/presentation/inventory/inventory_action_type.js").load("src/game/presentation/inventory/inventory_facade_contract.js").load("src/game/presentation/inventory/inventory_action_contract.js").load("src/game/presentation/inventory/inventory_view_model_normalizer.js");
     const Normalizer = sandbox.InventoryViewModelNormalizer;
     const actions = sandbox.InventoryActionType;
     const ActionContract = sandbox.InventoryActionContract;

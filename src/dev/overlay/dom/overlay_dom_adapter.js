@@ -1,4 +1,4 @@
-import { UIUtils } from "../../../platform/browser/dom/ui_event_shield.js";
+import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js";
 
 export class OverlayDomAdapter {
   #documentTarget;
@@ -38,8 +38,8 @@ export class OverlayDomAdapter {
       touch-action: none; pointer-events: all;
     `;
 
-    if (UIUtils.makeSolid) {
-      UIUtils.makeSolid(this.#container);
+    if (UiEventShield.makeSolid) {
+      UiEventShield.makeSolid(this.#container);
     }
 
     this.#content = this.#documentTarget.createElement("div");

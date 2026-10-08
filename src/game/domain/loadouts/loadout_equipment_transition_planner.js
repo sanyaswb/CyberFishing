@@ -1,5 +1,5 @@
 import { EQUIPMENT_MAIN_SLOT_IDS } from "../equipment/equipment_slot_catalog.js";
-import { UnlimitedInventoryCapacityPolicy } from "../inventory/inventory_capacity_policy.js";
+import { UnlimitedInventoryCapacityPolicy } from "../inventory/unlimited_inventory_capacity_policy.js";
 
 export class LoadoutEquipmentTransitionPlanner {
   #capacityPolicy;

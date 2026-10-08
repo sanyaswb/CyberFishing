@@ -5,7 +5,7 @@ export class BiteEnvironmentService {
   #inventory;
   #floatRef;
   #clock;
-  #castManager;
+  #castPenalty;
   #equipmentRules;
   #getCurrentHookDepth;
   #getCastStartTime;
@@ -22,7 +22,7 @@ export class BiteEnvironmentService {
     inventory,
     floatRef,
     clock,
-    castManager,
+    castPenalty,
     equipmentRules,
     getCurrentHookDepth,
     getCastStartTime,
@@ -38,7 +38,7 @@ export class BiteEnvironmentService {
     this.#inventory = inventory;
     this.#floatRef = floatRef;
     this.#clock = clock;
-    this.#castManager = castManager;
+    this.#castPenalty = castPenalty;
     this.#equipmentRules = equipmentRules;
     this.#getCurrentHookDepth = getCurrentHookDepth;
     this.#getCastStartTime = getCastStartTime;
@@ -122,7 +122,7 @@ export class BiteEnvironmentService {
     biteEnv.chumBonus = selectedChumBonus;
     biteEnv.isRaining = env.isRaining;
     biteEnv.isFoggy = env.isFoggy;
-    biteEnv.castSpamMultiplier = this.#castManager.getBiteChanceMultiplier();
+    biteEnv.castSpamMultiplier = this.#castPenalty.getBiteChanceMultiplier();
 
     const targets = biteEnv.chumTargets;
     targets.length = 0;

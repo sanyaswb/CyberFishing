@@ -1,4 +1,4 @@
-import { AutoRefillScope } from "../../domain/equipment/auto_refill_policy.js";
+import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
 
 export class EquipmentAutoRefillTargetProvider {
   #equipmentState;

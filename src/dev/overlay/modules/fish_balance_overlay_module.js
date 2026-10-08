@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class FishBalanceModule extends OverlayModule {
+export class FishBalanceOverlayModule extends OverlayModule {
   #liveForceSection;
   #forcePreviewSection;
 

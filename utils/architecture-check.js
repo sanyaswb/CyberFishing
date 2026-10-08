@@ -104,6 +104,26 @@ class ArchitectureRules {
     return count;
   }
 
+  // One exported class per module, named after it; class names state a responsibility, not a catch-all role.
+  #checkClassNaming(file, ast) {
+    const classes = ast.body
+      .filter((node) => node.type === "ExportNamedDeclaration" && node.declaration?.type === "ClassDeclaration")
+      .map((node) => node.declaration.id.name);
+    if (classes.length > 1) this.#fail(`${file} exports ${classes.length} classes (${classes.join(", ")}); one class per module`);
+    const base = path.posix.basename(file, ".js");
+    if (classes.length === 1 && ArchitectureRules.snakeCase(classes[0]) !== base) {
+      this.#fail(`${file} must be named ${ArchitectureRules.snakeCase(classes[0])}.js after its class ${classes[0]}`);
+    }
+    for (const name of classes) {
+      if (/(Manager|Utils?|Helpers?)$/u.test(name)) this.#fail(`${file}: class ${name} has a catch-all name`);
+    }
+  }
+
+  static snakeCase(name) {
+    return name.replace(/([a-z])([0-9]+[A-Z])/gu, "$1_$2").replace(/([a-z])([A-Z])/gu, "$1_$2")
+      .replace(/([A-Z])([A-Z][a-z])/gu, "$1_$2").toLowerCase();
+  }
+
   #fail(message) {
     this.violations.push(message);
   }
@@ -130,6 +150,7 @@ class ArchitectureRules {
       }
     }
     this.graph.set(file, targets);
+    this.#checkClassNaming(file, ast);
     if (layer && !HOST_LAYERS.has(layer)) {
       const scope = eslintScope.analyze(ast, { ecmaVersion: 2022, sourceType: "module" });
       const names = new Set(scope.globalScope.through.map((reference) => reference.identifier.name));
@@ -258,6 +279,9 @@ function checkFixtures() {
     ["outside layers", { "src/misc.js": "" }, /outside every layer/u],
     ["second page script", { "index.html": pages["index.html"] + "<script>start()</script>" }, /index\.html must load exactly one module script/u],
     ["inline module", { "dev.html": '<script type="module">import "./src/entrypoints/dev.entry.js";</script>' }, /dev\.html must load exactly one module script/u],
+    ["two classes", { "src/engine/math.js": "export class Math2 {}\nexport class Clamp {}\nexport const clamp = (v) => v;" }, /exports 2 classes/u],
+    ["file not named after class", { "src/engine/math.js": "export class Clamp {}\nexport const clamp = (v) => v;" }, /must be named clamp\.js after its class Clamp/u],
+    ["catch-all class name", { "src/engine/input_manager.js": "export class InputManager {}" }, /class InputManager has a catch-all name/u],
   ];
   for (const [name, overrides, expected] of cases) {
     const violations = new ArchitectureRules({ ...base, ...overrides }).analyse();

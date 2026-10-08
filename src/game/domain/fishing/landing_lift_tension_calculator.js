@@ -1,7 +1,7 @@
 /**
  * Calculates real-weight tension transfer while lifting fish in the landing zone.
  *
- * This calculator is intentionally stateless: FightPhysicsSystem owns the
+ * This calculator is intentionally stateless: FightPhysicsOrchestrator owns the
  * accumulated lift pressure for the current fight session.
  */
 export class LandingLiftTensionCalculator {

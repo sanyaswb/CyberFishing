@@ -88,7 +88,7 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
         rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
-          gameplayConsumer: "ReelSystem",
+          gameplayConsumer: "ReelService",
           components: [
             component("effectiveStats.maxLoadKg", 0.35, 0.5, 5, "Навантаження"),
             component("effectiveStats.dragMaxKg", 0.25, 0, 4, "Фрикціон"),
@@ -115,7 +115,7 @@ export const ITEM_PROGRESSION_CONFIG = (() => {
         rating: {
           strategyId: "composite",
           metricLabel: "Композитний рейтинг",
-          gameplayConsumer: "ReelSystem",
+          gameplayConsumer: "ReelService",
           components: [
             component("effectiveStats.maxLoadKg", 0.45, 0.5, 5, "Навантаження"),
             component(

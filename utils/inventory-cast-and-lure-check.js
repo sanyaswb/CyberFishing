@@ -352,7 +352,7 @@ class StateLifecycleCheck {
 class CompositionSeamCheck {
   run() {
     const bootstrap = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_composition_root.js");
-    const application = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_application.js");
+    const application = ["src/bootstrap/production/game_viewport_facade.js", "src/bootstrap/production/game_debug_facade.js", "src/bootstrap/production/game_fishing_facade.js", "src/bootstrap/production/game_application.js"].map((file) => new SourceRuntime().readAuthoredSource(file)).join("\n");
     const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/player_inventory.js");
 
     Assertion.that(
@@ -382,21 +382,47 @@ class CompositionSeamCheck {
 
 const runtime = new InventorySourceRuntime();
 runtime.load("src/game/application/inventory/equipment_read_model_factory.js");
-runtime.load("src/game/domain/rules/gameplay_rules.js");
-runtime.load("src/game/application/fishing/fishing_runtime_services.js");
+runtime.load("src/game/domain/rules/equipment_rules.js");
+    runtime.load("src/game/domain/rules/bait_rules.js");
+    runtime.load("src/game/domain/rules/cast_rules.js");
+    runtime.load("src/game/domain/rules/bite_rules.js");
+    runtime.load("src/game/domain/rules/chum_rules.js");
+    runtime.load("src/game/domain/rules/boat_rules.js");
+    runtime.load("src/game/domain/rules/player_cast_rules.js");
+runtime.load("src/game/application/fishing/fishing_controller.js");
+    runtime.load("src/game/application/fishing/cast_service.js");
+    runtime.load("src/game/application/fishing/fight_session_factory.js");
+    runtime.load("src/game/application/fishing/fishing_force_service.js");
+    runtime.load("src/game/application/fishing/catch_resolution_service.js");
+    runtime.load("src/game/application/fishing/fight_service.js");
 runtime.load("src/engine/math/vector2.js");
 runtime.load("src/game/domain/fishing/fishing_cast_exposure_resolver.js");
 runtime.load("src/game/domain/fishing/retrieve_policy.js");
+    runtime.load("src/game/domain/fishing/passive_lure_retrieve_policy.js");
+    runtime.load("src/game/domain/fishing/pole_idle_retrieve_policy.js");
+    runtime.load("src/game/domain/fishing/idle_retrieve_policy_resolver.js");
 runtime.load("src/game/domain/fishing/landing_policy.js");
+    runtime.load("src/game/domain/fishing/reel_landing_policy.js");
+    runtime.load("src/game/domain/fishing/pole_landing_policy.js");
+    runtime.load("src/game/domain/fishing/resolve_fight_physics_config.js");
+    runtime.load("src/game/domain/fishing/landing_policy_resolver.js");
 runtime.load("src/game/application/fishing/mutable_fight_frame_context.js");
-runtime.load("src/game/application/state/game_state_machine.js");
+runtime.load("src/game/application/state/state_machine.js");
+    runtime.load("src/game/application/state/state_deps_factory.js");
+    runtime.load("src/game/application/state/game_state.js");
+    runtime.load("src/game/application/state/scouting_state.js");
+    runtime.load("src/game/application/state/waiting_state.js");
+    runtime.load("src/game/application/state/biting_state.js");
+    runtime.load("src/game/application/state/playing_state.js");
+    runtime.load("src/game/application/state/failed_state.js");
+    runtime.load("src/game/application/state/victory_state.js");
 
 function checkFixedCatchBaitCompatibility() {
   const assert = require('node:assert/strict');
   const source = new SourceRuntime();
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
-  const {WaitingState} = source.importModule('src/game/application/state/game_state_machine.js');
-  const {BiteRules,BaitRules} = source.importModule('src/game/domain/rules/gameplay_rules.js');
+  const {WaitingState} = ({ ...source.importModule('src/game/application/state/state_machine.js'), ...source.importModule('src/game/application/state/state_deps_factory.js'), ...source.importModule('src/game/application/state/game_state.js'), ...source.importModule('src/game/application/state/scouting_state.js'), ...source.importModule('src/game/application/state/waiting_state.js'), ...source.importModule('src/game/application/state/biting_state.js'), ...source.importModule('src/game/application/state/playing_state.js'), ...source.importModule('src/game/application/state/failed_state.js'), ...source.importModule('src/game/application/state/victory_state.js') });
+  const {BiteRules,BaitRules} = ({ ...source.importModule('src/game/domain/rules/equipment_rules.js'), ...source.importModule('src/game/domain/rules/bait_rules.js'), ...source.importModule('src/game/domain/rules/cast_rules.js'), ...source.importModule('src/game/domain/rules/bite_rules.js'), ...source.importModule('src/game/domain/rules/chum_rules.js'), ...source.importModule('src/game/domain/rules/boat_rules.js'), ...source.importModule('src/game/domain/rules/player_cast_rules.js') });
   const {FixedCatchFishFactory} = source.importModule('src/game/application/fishing/fixed_catch_fish_factory.js');
   const template = CONFIG.spawns.fishes.find(fish=>fish.id==='crucian_stalker');
   const rules = new BiteRules(new BaitRules());

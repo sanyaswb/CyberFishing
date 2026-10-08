@@ -1115,7 +1115,7 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["FishPhysicsProfile"],
   },
   {
-    relativePath: "src/game/application/fishing/bite_service.js",
+    relativePath: "src/game/application/fishing/bite_system.js",
     classNames: ["BiteSystem"],
   },
   {
@@ -1143,7 +1143,7 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["ImageAssetProvider"],
   },
   {
-    relativePath: "src/game/presentation/rendering/render_frame_buffer.js",
+    relativePath: "src/game/presentation/rendering/game_render_frame.js",
     classNames: ["GameRenderFrame"],
   },
   {

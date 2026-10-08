@@ -1,7 +1,7 @@
-import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { DevToolsControlBindingRegistry } from "../services/dev_tools_control_binding_registry.js";
-import { UIDraggableButton } from "../../platform/browser/dom/draggable_button.js";
-import { UIUtils } from "../../platform/browser/dom/ui_event_shield.js";
+import { DraggableButton } from "../../platform/browser/dom/draggable_button.js";
+import { UiEventShield } from "../../platform/browser/dom/ui_event_shield.js";
 
 export class DevToolsUI {
   #panel;
@@ -304,11 +304,11 @@ export class DevToolsUI {
       () => (this.#btn.style.transform = "scale(1)"),
     );
 
-    UIUtils.makeSolid(this.#btn);
+    UiEventShield.makeSolid(this.#btn);
 
-    this.#dragButton = new UIDraggableButton(this.#btn, this.#onToggleCallback, config, {
+    this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
       id: "devtools_btn",
-      cache: CacheManager,
+      cache: LocalStorageCache,
       noTransform: true,
     });
 
@@ -330,7 +330,7 @@ export class DevToolsUI {
     document.body.appendChild(this.#panel);
     this.#body = this.#panel.querySelector(".devtools-body");
 
-    UIUtils.makeSolid(this.#panel);
+    UiEventShield.makeSolid(this.#panel);
 
     this.#panel
       .querySelector(".devtools-close")

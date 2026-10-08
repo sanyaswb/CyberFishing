@@ -1,6 +1,6 @@
-import { UIUtils } from "../dom/ui_event_shield.js";
+import { UiEventShield } from "../dom/ui_event_shield.js";
 
-export class ChumUI {
+export class ChumControls {
   constructor(onClickCallback) {
     this.button = document.createElement("button");
     this.button.className = "ui-fade-target";
@@ -27,11 +27,11 @@ export class ChumUI {
       touchAction: "none",
     });
 
-    UIUtils.makeSolid(this.button);
+    UiEventShield.makeSolid(this.button);
 
     this.button.addEventListener("click", (e) => {
       console.log(
-        "--- DEBUG 1: ChumUI клік! Поточний стан:",
+        "--- DEBUG 1: ChumControls клік! Поточний стан:",
         this.currentState,
       );
       if (

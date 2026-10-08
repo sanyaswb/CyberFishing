@@ -1,7 +1,7 @@
-import { UIDraggableButton } from "../dom/draggable_button.js";
-import { UIUtils } from "../dom/ui_event_shield.js";
+import { DraggableButton } from "../dom/draggable_button.js";
+import { UiEventShield } from "../dom/ui_event_shield.js";
 
-export class UIManager {
+export class GameControls {
   #config;
   #cache;
   #fullscreenBtn;
@@ -19,7 +19,7 @@ export class UIManager {
   constructor(config, lifecycle, { cache } = {}) {
     this.#cache = cache;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
-      throw new TypeError("UIManager requires devTools");
+      throw new TypeError("GameControls requires devTools");
     }
     this.#config = config;
     this.#initFullscreenBtn();
@@ -67,7 +67,7 @@ export class UIManager {
       this.#fullscreenBtn.style.backgroundColor = "rgba(15, 23, 30, 0.8)";
     });
 
-    new UIDraggableButton(
+    new DraggableButton(
       this.#fullscreenBtn,
       () => {
         if (!document.fullscreenElement) {
@@ -115,7 +115,7 @@ export class UIManager {
       borderStyle: "solid",
     });
 
-    new UIDraggableButton(
+    new DraggableButton(
       this.#netBtn,
       () => {
         if (this.#isNetReady && this.onNetClick) {
@@ -204,7 +204,7 @@ export class UIManager {
       this.#continueBtn.style.transform = "translate(-50%, -50%) scale(1)";
     });
 
-    UIUtils.makeSolid(this.#continueBtn);
+    UiEventShield.makeSolid(this.#continueBtn);
 
     this.#continueBtn.addEventListener("click", () => {
       if (this.onContinueClick) this.onContinueClick();

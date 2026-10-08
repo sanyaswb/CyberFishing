@@ -1,330 +1,14 @@
-import { BaitFactory, Net } from "../../game/domain/tackle/tackle.js";
-import { ConfigProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
+import { BaitFactory } from "../../game/domain/tackle/bait_factory.js";
+import { Net } from "../../game/domain/tackle/net.js";
+import { ConfigProvider } from "../../platform/browser/runtime/config_provider.js";
 import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
 import { FishingCastExposureResolver } from "../../game/domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameClock } from "../../platform/browser/time/game_clock.js";
+import { GameDebugFacade } from "./game_debug_facade.js";
+import { GameFishingFacade } from "./game_fishing_facade.js";
+import { GameViewportFacade } from "./game_viewport_facade.js";
 import { InventoryItemLocation } from "../../game/domain/inventory/inventory_item_location.js";
-import { RodVisualOffsetSystem } from "../../game/presentation/fishing/rod_visual_offset_system.js";
-import { Vector2 } from "../../engine/math/vector2.js";
-
-export class GameViewportFacade {
-  #world;
-  #projector;
-  #canvasMetrics;
-  #config;
-  #biteEnvironmentService;
-  #rodVirtualPos = new Vector2(0, 0);
-  #baseRodVirtualPos = new Vector2(0, 0);
-  #screenScratch = new Vector2(0, 0);
-  #playableScratch = new Vector2(0, 0);
-  #viewportSize = { width: 0, height: 0 };
-  #rodVisualOffsetSystem = new RodVisualOffsetSystem();
-
-  constructor({
-    world,
-    projector,
-    canvasMetrics,
-    config,
-    biteEnvironmentService,
-  }) {
-    try {
-
-    this.#world = world;
-    this.#projector = projector;
-    this.#canvasMetrics = canvasMetrics;
-    this.#config = config;
-    this.#biteEnvironmentService = biteEnvironmentService;
-  
-    } catch (error) { this.dispose(); throw error; }
-}
-
-  refreshViewport(recalculateMap = true) {
-    this.#world.refreshViewport(recalculateMap);
-  }
-
-  refreshLocationConfig(locationsConfig, locationResources) {
-    this.#world.refreshLocationConfig(locationsConfig, locationResources);
-  }
-
-  applyPan(input, stateName, isAimingChum) {
-    if (!input.panDeltaX && !input.panDeltaY) return;
-    if (stateName !== "scouting" && !isAimingChum) return;
-    if (
-      this.#config.casting?.enabled !== false &&
-      input.pointerDown &&
-      (stateName === "scouting" || isAimingChum)
-    ) {
-      return;
-    }
-    this.#world.pan(input.panDeltaX, 0);
-  }
-
-  getDynamicBounds() {
-    return this.#biteEnvironmentService.getDynamicBounds();
-  }
-
-  checkWater(vx, vy) {
-    return this.#biteEnvironmentService.checkWater(vx, vy);
-  }
-
-  getRodVirtualPos(bounds, screenXOverride = null) {
-    const screenX = this.getRodScreenX(screenXOverride, bounds);
-
-    this.#projector.screenToVirtual(screenX, 0, this.#rodVirtualPos);
-    this.#rodVirtualPos.y = bounds.bottom;
-    return this.#rodVirtualPos;
-  }
-
-  getBaseRodVirtualPos(bounds, screenXOverride = null) {
-    const screenX = this.#resolveBaseRodScreenX(screenXOverride);
-
-    this.#projector.screenToVirtual(screenX, 0, this.#baseRodVirtualPos);
-    this.#baseRodVirtualPos.y = bounds.bottom;
-    return this.#baseRodVirtualPos;
-  }
-
-  getScreenOffsetRatio(floatPos, screenXOverride = null) {
-    const sPos = this.#projector.virtualToScreen(
-      floatPos.x,
-      floatPos.y,
-      this.#screenScratch,
-    );
-    const screenX = this.getRodScreenX(screenXOverride, null);
-    const halfWidth = Math.max(1, this.#canvasMetrics.width / 2);
-    return Math.min(1, Math.abs(sPos.x - screenX) / halfWidth);
-  }
-
-  updateRodVisualOffset({ dtMs, input, fightDebug, bounds, stateName } = {}) {
-    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
-      this.#config.physics?.fight?.rodControl ||
-      {};
-    const activeInput =
-      stateName === "playing"
-        ? input
-        : {
-            ...input,
-            rodControlActive: false,
-            rodControlDirectionX: 0,
-            rodControlInputRatio: 0,
-          };
-    const offsetX = this.#rodVisualOffsetSystem.update({
-      dtSec: Math.max(0, Number(dtMs) || 0) / 1000,
-      inputState: activeInput,
-      fightDebug,
-      config: rodControlConfig,
-      canvasWidth: this.#canvasMetrics.width,
-    });
-    if (fightDebug) {
-      const visualFrame = this.#rodVisualOffsetSystem.getFrame();
-      fightDebug.rodVisualOffsetX = offsetX;
-      fightDebug.rodVisualClamped = this.#rodVisualOffsetSystem.isClamped();
-      fightDebug.rodVisualDeltaX = visualFrame.deltaPx;
-      fightDebug.rodVisualMaxOffsetX = visualFrame.maxOffsetPx;
-      fightDebug.rodVisualStrokeRatio = visualFrame.strokeRatio;
-      fightDebug.rodVisualAtLimit =
-        visualFrame.atLimit || fightDebug.rodVisualClamped;
-      fightDebug.rodVisualTargetOffsetX = visualFrame.targetOffsetPx;
-      fightDebug.rodVisualWeightSpeedRatio = visualFrame.weightSpeedRatio;
-      fightDebug.rodAimWeightSpeedRatio = visualFrame.weightSpeedRatio;
-      fightDebug.rodAimFishLoadRatio = visualFrame.weightLoadRatio;
-      fightDebug.rodAimEffectiveFishLoadKg = visualFrame.effectiveFishLoadKg;
-      fightDebug.rodAimLoadLimitKg = visualFrame.weightLoadLimitKg;
-      fightDebug.rodAimWeightCurvePower = visualFrame.weightCurvePower;
-      fightDebug.rodAimWeightMinSpeedRatio = visualFrame.weightSpeedMinRatio;
-      fightDebug.rodAimWeightMaxSpeedRatio = visualFrame.weightSpeedMaxRatio;
-      fightDebug.rodAimLoadSpeedRatio = visualFrame.loadSpeedRatio;
-      fightDebug.rodAimLineSpeedRatio = visualFrame.lineSpeedRatio;
-      fightDebug.rodAimDirectionSpeedRatio = visualFrame.directionSpeedRatio;
-      fightDebug.rodAimDirectionSpeedMode = visualFrame.directionSpeedMode;
-      fightDebug.rodAimFishMoveX = visualFrame.fishMoveX;
-      fightDebug.rodAimFishDirectionX = visualFrame.fishMoveDirectionX;
-      fightDebug.rodAimSpeedPxPerSecond = visualFrame.aimSpeedPxPerSecond;
-      fightDebug.rodAimLineMode = visualFrame.lineMode;
-      fightDebug.rodControlVisualDrivenByInput = visualFrame.drivenByInput;
-      fightDebug.rodControlVisualMode = visualFrame.mode;
-      fightDebug.rodControlFreeLineVisualMode = visualFrame.freeLineMode;
-    }
-  }
-
-  getRodScreenX(screenXOverride = null, bounds = null) {
-    const baseX = this.#resolveBaseRodScreenX(screenXOverride);
-    const playable = this.#resolvePlayableScreenBounds(bounds);
-    const rodControlConfig = this.#config.fightPhysicsConfig?.getRodControlConfig?.() ||
-      this.#config.physics?.fight?.rodControl ||
-      {};
-    return this.#rodVisualOffsetSystem.resolveScreenX({
-      baseX,
-      canvasWidth: this.#canvasMetrics.width,
-      playableLeft: playable.left,
-      playableRight: playable.right,
-      config: rodControlConfig,
-    });
-  }
-
-  #resolveBaseRodScreenX(screenXOverride = null) {
-    const rodConfig = this.#config.ui?.rod || {};
-    const rodX =
-      Number.isFinite(screenXOverride)
-        ? screenXOverride
-        : rodConfig.x === "center"
-          ? this.#canvasMetrics.width / 2
-          : Number(rodConfig.x);
-    return Number.isFinite(rodX)
-      ? rodX
-      : this.#canvasMetrics.width / 2;
-  }
-
-  #resolvePlayableScreenBounds(bounds) {
-    if (!bounds) return { left: null, right: null };
-    const left = Number(bounds.left);
-    const right = Number(bounds.right);
-    if (!Number.isFinite(left) || !Number.isFinite(right)) {
-      return { left: null, right: null };
-    }
-    const leftScreen = this.#projector.virtualToScreen(
-      left,
-      Number(bounds.bottom) || 0,
-      this.#playableScratch,
-    ).x;
-    const rightScreen = this.#projector.virtualToScreen(
-      right,
-      Number(bounds.bottom) || 0,
-      this.#playableScratch,
-    ).x;
-    return {
-      left: Math.min(leftScreen, rightScreen),
-      right: Math.max(leftScreen, rightScreen),
-    };
-  }
-
-  getViewportSize() {
-    this.#viewportSize.width = this.#canvasMetrics.width;
-    this.#viewportSize.height = this.#canvasMetrics.height;
-    return this.#viewportSize;
-  }
-}
-
-export class GameDebugFacade {
-  #devFlags;
-  #debugEvents;
-  #listeners;
-  #documentTarget;
-
-  constructor({ devFlags, debugEvents, listeners, documentTarget }) {
-    this.#devFlags = devFlags;
-    this.#debugEvents = debugEvents;
-    this.#listeners = listeners;
-    this.#documentTarget = documentTarget;
-  }
-
-  isDebugEnabled() {
-    return this.#devFlags.isDebugEnabled();
-  }
-
-  emit(type, detail) {
-    this.#debugEvents.emit(type, detail);
-  }
-
-  on(type, handler) {
-    return this.#debugEvents.on(type, handler);
-  }
-
-  subscribeConfigUpdated(handler) {
-    return this.#listeners.add(this.#documentTarget, "config-updated", handler);
-  }
-
-  subscribeHookedFishRuntimeUpdated(handler) {
-    return this.#listeners.add(
-      this.#documentTarget,
-      "debug-hooked-fish-updated",
-      handler,
-    );
-  }
-
-  clear() {
-    this.#debugEvents.clear();
-  }
-}
-
-export class GameFishingFacade {
-  #inventory;
-  #chum;
-  #playerCastRules;
-  #equipmentRules;
-  #config;
-  #castService;
-  #biteEnvironmentService;
-  #getCurrentHookDepth;
-  #setCurrentHookDepth;
-  #setFloat;
-  #setCastDistanceRatio;
-  #setCastStartTime;
-  #setState;
-
-  constructor({
-    inventory,
-    chum,
-    playerCastRules,
-    equipmentRules,
-    config,
-    castService,
-    biteEnvironmentService,
-    getCurrentHookDepth,
-    setCurrentHookDepth,
-    setFloat,
-    setCastDistanceRatio,
-    setCastStartTime,
-    setState,
-  }) {
-    this.#inventory = inventory;
-    this.#chum = chum;
-    this.#playerCastRules = playerCastRules;
-    this.#equipmentRules = equipmentRules;
-    this.#config = config;
-    this.#castService = castService;
-    this.#biteEnvironmentService = biteEnvironmentService;
-    this.#getCurrentHookDepth = getCurrentHookDepth;
-    this.#setCurrentHookDepth = setCurrentHookDepth;
-    this.#setFloat = setFloat;
-    this.#setCastDistanceRatio = setCastDistanceRatio;
-    this.#setCastStartTime = setCastStartTime;
-    this.#setState = setState;
-  }
-
-  castLine(vx, vy, cellDepth, options = {}) {
-    const result = this.#castService.cast(vx, vy, cellDepth, {
-      equipment: this.#inventory.getEquipped(),
-      currentHookDepth: this.#getCurrentHookDepth(),
-      rodVirtualPos: options.rodVirtualPos || null,
-    });
-    if (!result.success) return result;
-
-    this.#setFloat(result.floatEntity);
-    this.#setCastDistanceRatio(result.castDistanceRatio);
-    this.#setCastStartTime(result.castStartTime);
-    this.#setCurrentHookDepth(result.currentHookDepth);
-    this.#setState(result.nextState);
-    return result;
-  }
-
-  canPlayerCast() {
-    const equipment = this.#inventory.getEquipped();
-    const activeBoat = this.#chum.getBoats()[0] || null;
-    return this.#playerCastRules.canPlayerCast(equipment, activeBoat);
-  }
-
-  getMaxHookDepth() {
-    return this.#equipmentRules.getMaxHookDepth(
-      this.#inventory.getEquipped(),
-      this.#config,
-    );
-  }
-
-  getEnvDataForBite() {
-    return this.#biteEnvironmentService.getBiteEnvData();
-  }
-}
 
 export class GameApplication {
   #projector;
@@ -340,7 +24,7 @@ export class GameApplication {
   #canvasMetrics;
   #float;
   #net;
-  #castManager;
+  #castPenalty;
   #depthUI;
   #timeUI;
   #holdUI;
@@ -508,7 +192,7 @@ export class GameApplication {
     }
     this.#fishingController = runtime.fishing;
     this.#net = runtime.net;
-    this.#castManager = runtime.castManager;
+    this.#castPenalty = runtime.castPenalty;
     this.#equipmentRules = runtime.equipmentRules;
     this.#baitRules = runtime.baitRules;
     this.#depthUI = runtime.depthUI;
@@ -913,7 +597,7 @@ export class GameApplication {
     const bounds = this.getDynamicBounds();
 
     const envSnapshot = this.#world.update(dt, timeScale, bounds);
-    this.#castManager.update(dt);
+    this.#castPenalty.update(dt);
     this.#timeUI.update(envSnapshot.time);
     this.updateChumUI();
 
@@ -1225,8 +909,8 @@ export class GameApplication {
   get float() {
     return this.#float;
   }
-  get castManager() {
-    return this.#castManager;
+  get castPenalty() {
+    return this.#castPenalty;
   }
   get fishing() {
     return this.#fishingController;

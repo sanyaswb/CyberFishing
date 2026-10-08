@@ -1,4 +1,4 @@
-import { ConsoleTableDebugModule } from "./base_debug_module.js";
+import { ConsoleTableDebugModule } from "./console_table_debug_module.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 
 export class StaminaDebugModule extends ConsoleTableDebugModule {

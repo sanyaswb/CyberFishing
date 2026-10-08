@@ -24,7 +24,8 @@ Structural refactoring must not be mixed with gameplay changes. Preserve behavio
 The runtime is native ESM: every page loads one module entry. Do not add globals, compatibility bridges or classic scripts.
 
 Modules:
-- one logical responsibility per file;
+- one logical responsibility per file: at most one exported class, and the file is named after it;
+- class names state the responsibility (no `Manager`, `Utils`, `Helper`);
 - named exports preferred;
 - explicit `.js` imports;
 - avoid cyclic imports and mass barrel files;

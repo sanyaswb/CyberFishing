@@ -1,4 +1,4 @@
-export class StaminaController {
+export class StaminaSystem {
   #condition;
   #mechanicsConfig;
   #fish;

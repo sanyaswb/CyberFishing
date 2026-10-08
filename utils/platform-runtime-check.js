@@ -75,8 +75,10 @@ function checkCanvasScenes() {
 // Repeated render-frame storage and ordering checks; no drawing or gameplay state ownership.
 function checkRenderStorage() {
   const runtime=new SourceRuntime();
-  runtime.load('src/game/presentation/rendering/render_frame_buffer.js',{expose:['ReusableRenderList','GameRenderFrame','RenderFrameBuffer']});
-  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['RenderOrder','RENDER_ORDER','RENDER_SEQUENCE','NO_RENDER_EXPORT']});
+  runtime.load('src/game/presentation/rendering/reusable_render_list.js', { expose: ['ReusableRenderList'] });
+    runtime.load('src/game/presentation/rendering/game_render_frame.js', { expose: ['GameRenderFrame'] });
+    runtime.load('src/game/presentation/rendering/render_frame_buffer.js', { expose: ['RenderFrameBuffer'] });
+  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['GameRenderOrder','RENDER_ORDER','RENDER_SEQUENCE','NO_RENDER_EXPORT']});
   assert.equal(runtime.context.NO_RENDER_EXPORT,undefined,'unknown explicit names do not create exports');
   runtime.load('src/game/presentation/rendering/game_render_intent.js',{expose:['GameRenderIntent']});
   const c=runtime.context, growth=[],diagnostics={recordFrameCreated(){growth.push('frame');},recordBufferGrowth(id){growth.push(id);}};
@@ -85,12 +87,12 @@ function checkRenderStorage() {
     'fishing.fightAreas.clipRegions','fishing.fightAreas.sectorPoints','fishing.fightAreas.lineRadiusPoints','outcome.victory.stats'];
   const lists=names.map(path=>path.split('.').reduce((value,key)=>value[key],frame)),records=lists.map(list=>list.acquire());
   const casting=intent.casting,fishing=intent.fishing,outcome=intent.outcome;
-  assert.equal(c.RenderOrder.values,c.RENDER_ORDER);assert.equal(c.RenderOrder.sequence,c.RENDER_SEQUENCE);
-  assert(Object.isFrozen(c.RenderOrder.values)&&Object.isFrozen(c.RenderOrder.sequence));
-  assert.equal(c.RenderOrder.compare(100,400),-300);assert.equal(c.RenderOrder.compare('bad',null),0);
+  assert.equal(c.GameRenderOrder.values,c.RENDER_ORDER);assert.equal(c.GameRenderOrder.sequence,c.RENDER_SEQUENCE);
+  assert(Object.isFrozen(c.GameRenderOrder.values)&&Object.isFrozen(c.GameRenderOrder.sequence));
+  assert.equal(c.GameRenderOrder.compare(100,400),-300);assert.equal(c.GameRenderOrder.compare('bad',null),0);
   const passByName=Object.fromEntries(Array.from(c.RENDER_SEQUENCE,name=>[name,{id:name,render(){}}]));
-  const passes=c.RenderOrder.createPassList(passByName);assert.deepEqual(Array.from(passes,p=>p.id),['world','casting','fishing','hud','outcome']);
-  assert.throws(()=>c.RenderOrder.createPassList({}),/requires the "world" pass/);
+  const passes=c.GameRenderOrder.createPassList(passByName);assert.deepEqual(Array.from(passes,p=>p.id),['world','casting','fishing','hud','outcome']);
+  assert.throws(()=>c.GameRenderOrder.createPassList({}),/requires the "world" pass/);
   for(let index=1;index<=120;index++) {
     const result=index%2?buffer.acquire(index,1/60,'fishing'):buffer.acquire({frameNumber:index,dt:1/30,stateName:'victory'});
     assert.equal(result,frame);assert.equal(buffer.current,frame);assert.equal(frame.frameNumber,index);assert.equal(frame.dt,index%2?1/60:1/30);
@@ -173,14 +175,14 @@ function checkBrowserWidgets() {
   const runtime=new SourceRuntime({globals:{document,window:{innerWidth:300,innerHeight:200},console:{log(){},warn(){}},
     ...document.defaultView,
     setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id)}});
-  const definitions=[["src/platform/browser/dom/engine_interface.js",'UI_EXCEPTIONS','initEngineInterface'],["src/platform/browser/dom/ui_event_shield.js",'UIUtils'],["src/platform/browser/dom/draggable_button.js",'UIDraggableButton'],
-    ["src/platform/browser/ui/game_controls.js",'UIManager'],["src/platform/browser/ui/chum_controls.js",'ChumUI'],["src/platform/browser/ui/depth_selector.js",'DepthSelectorUI'],["src/platform/browser/ui/time_display.js",'TimeDisplayUI'],["src/platform/browser/ui/hold_charges.js",'HoldChargesUI']];
+  const definitions=[["src/platform/browser/dom/engine_interface.js",'UI_EXCEPTIONS','initEngineInterface'],["src/platform/browser/dom/ui_event_shield.js",'UiEventShield'],["src/platform/browser/dom/draggable_button.js",'DraggableButton'],
+    ["src/platform/browser/ui/game_controls.js",'GameControls'],["src/platform/browser/ui/chum_controls.js",'ChumControls'],["src/platform/browser/ui/depth_selector.js",'DepthSelector'],["src/platform/browser/ui/time_display.js",'TimeDisplay'],["src/platform/browser/ui/hold_charges.js",'HoldCharges']];
   for(const [file,...expose]of definitions)runtime.load(file,{expose});
   const c=runtime.context;c.initEngineInterface();assert.equal(document.head.children.length,1);
   let blocked=false;document.emit('contextmenu',{target:{tagName:'DIV',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(blocked);
   blocked=false;document.emit('contextmenu',{target:{tagName:'INPUT',classList:{contains:()=>false},id:''},preventDefault(){blocked=true;}});assert(!blocked);
   const button=makeNode(),cache={get:key=>saved.get(key),set:(key,value)=>saved.set(key,value)};
-  c.UIUtils.makeSolid(null);const drag=new c.UIDraggableButton(button,()=>clicks++,{ui:{draggableButtons:true,dragHoldTimeMs:10}},{id:'probe',cache});
+  c.UiEventShield.makeSolid(null);const drag=new c.DraggableButton(button,()=>clicks++,{ui:{draggableButtons:true,dragHoldTimeMs:10}},{id:'probe',cache});
   assert.equal(button.listeners.get('pointerdown')[0].opts.capture,false,'shield remains bubbling');
   drag.onPointerDown({button:1,pointerType:'mouse',stopPropagation(){}});assert.equal(timers.size,0);
   const point={button:0,pointerType:'mouse',pointerId:1,clientX:25,clientY:25,stopPropagation(){}};
@@ -188,8 +190,8 @@ function checkBrowserWidgets() {
   drag.onPointerDown(point);for(const fn of timers.values())fn();timers.clear();
   for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
-  const controls=new c.UIManager({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache});
-  const depth=new c.DepthSelectorUI(),time=new c.TimeDisplayUI(),hold=new c.HoldChargesUI(),chum=new c.ChumUI(()=>clicks++);
+  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache});
+  const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++);
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
   for(let frame=0;frame<120;frame++) {
     controls.updateNetButtonState(frame>=30,frame>=60);controls.updateContinueButtonState(frame>=90);controls.setOutcomeOverlayActive(frame>=100);
@@ -219,7 +221,7 @@ function checkBrowserWidgets() {
   slider.emit('input');input.emit('input');input.emit('change');
   depth.show(10,1,()=>{throw Error('disposed callback');});depth.updateMax(9);depth.updateCastDistance({availableMeters:1,maximumMeters:2});depth.hide();
   assert.equal(positions,3,'late callbacks/events and public operations do nothing after dispose');assert.equal(frames.size,0);
-  const reentrant=new c.DepthSelectorUI();
+  const reentrant=new c.DepthSelector();
   reentrant.show(10,5,()=>reentrant.dispose());reentrant.updateMax(1);
   assert.equal(frames.size,0,'dispose from onChange also prevents subsequent scheduling');
 }
@@ -381,10 +383,15 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
-  runtime.load("src/platform/browser/runtime/browser_runtime_adapters.js",{expose:["BrowserAudioAdapter","BrowserBufferedAudioPlayer","BrowserDebugAdapter",
-    "BrowserEventTargetAdapter","CanvasMetricsProvider","ConfigProvider","DevFlagsProvider"]});
+  runtime.load("src/platform/browser/runtime/browser_buffered_audio_player.js", { expose: ["BrowserBufferedAudioPlayer"] });
+  runtime.load("src/platform/browser/runtime/browser_audio_adapter.js", { expose: ["BrowserAudioAdapter"] });
+  runtime.load("src/platform/browser/runtime/browser_debug_adapter.js", { expose: ["BrowserDebugAdapter"] });
+  runtime.load("src/platform/browser/runtime/browser_event_target_adapter.js", { expose: ["BrowserEventTargetAdapter"] });
+  runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
+  runtime.load("src/platform/browser/runtime/config_provider.js", { expose: ["ConfigProvider"] });
+  runtime.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
-  const adapters=runtime.importModule('src/platform/browser/runtime/browser_runtime_adapters.js')||{};
+  const adapters=({ ...runtime.importModule('src/platform/browser/runtime/dev_flags_provider.js'), ...runtime.importModule('src/platform/browser/runtime/browser_audio_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/browser_buffered_audio_player.js'), ...runtime.importModule('src/platform/browser/runtime/browser_debug_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/browser_event_target_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/canvas_metrics_provider.js'), ...runtime.importModule('src/platform/browser/runtime/config_provider.js') })||{};
   const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter}=runtime.context;
   const BrowserEventTargetAdapter=runtime.context.BrowserEventTargetAdapter||adapters.BrowserEventTargetAdapter;
   const json=value=>JSON.stringify(value);
@@ -500,7 +507,7 @@ async function main() {
     ["src/platform/browser/location/location_asset_loader.js","LocationAssetLoader"],
     ["src/platform/browser/time/game_clock.js","GameClock"],
     ["src/platform/browser/assets/asset_preload_coordinator.js","AssetPreloadCoordinator"],
-    ["src/platform/browser/storage/cache_manager.js","CacheManager"],
+    ["src/platform/browser/storage/local_storage_cache.js","LocalStorageCache"],
   ]) runtime.load(file,{expose:[name]});
   for (const module of ['src/engine/assets/asset_manifest.js','src/engine/assets/asset_load_result.js']) runtime.load(module);
   const {GameClock,ImageAssetProvider,OffscreenCanvasFactory,LocationAssetLoader} = runtime.context;
@@ -566,19 +573,19 @@ async function main() {
   const saved=new Map([["foreign","keep"]]);
   runtime.context.localStorage={get length(){return saved.size;},key:index=>[...saved.keys()][index],
     setItem:(key,value)=>saved.set(key,value),getItem:key=>saved.get(key)||null,removeItem:key=>saved.delete(key)};
-  const CacheManager=runtime.context.CacheManager;
+  const LocalStorageCache=runtime.context.LocalStorageCache;
   const save={version:1,items:[{id:"item-1",condition:0.73}],equipped:{rodId:"item-1"}};
-  CacheManager.set("save",save);
+  LocalStorageCache.set("save",save);
   assert.equal(saved.get("fishing_game_save"),JSON.stringify(save),"save prefix and JSON bytes are unchanged");
-  assert.equal(JSON.stringify(CacheManager.get("save")),JSON.stringify(save));
-  assert.notEqual(CacheManager.get("save"),save);
-  CacheManager.remove("save");assert.equal(CacheManager.get("save","default"),"default");
+  assert.equal(JSON.stringify(LocalStorageCache.get("save")),JSON.stringify(save));
+  assert.notEqual(LocalStorageCache.get("save"),save);
+  LocalStorageCache.remove("save");assert.equal(LocalStorageCache.get("save","default"),"default");
   saved.set("fishing_game_broken","invalid JSON");
   const warnings=[];
   runtime.context.console={log(){},warn:(...args)=>warnings.push(args),error:console.error};
-  assert.equal(CacheManager.get("broken","safe fallback"),"safe fallback");
+  assert.equal(LocalStorageCache.get("broken","safe fallback"),"safe fallback");
   assert.equal(warnings.length,1,"failed reads retain their warning and caller fallback");
-  CacheManager.set("one",save);CacheManager.set("two",[]);CacheManager.clearAll();
+  LocalStorageCache.set("one",save);LocalStorageCache.set("two",[]);LocalStorageCache.clearAll();
   assert.deepEqual([...saved],[ ["foreign","keep"] ],"clearAll preserves other applications' keys");
 
   const factory = new OffscreenCanvasFactory();

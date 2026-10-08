@@ -1,17 +1,9 @@
 import { ExactAssemblyRefillSignaturePolicy } from "./exact_assembly_refill_signature_policy.js";
 import { InventoryItemLocation } from "../inventory/inventory_item_location.js";
+import { ItemAssemblyDomainError } from "./item_assembly_domain_error.js";
 import { ItemAssemblyReader } from "./item_assembly_reader.js";
 import { ItemAssemblyStackingPolicy } from "../inventory/item_assembly_stacking_policy.js";
 import { UnlimitedAssemblyCapacityPolicy } from "../inventory/unlimited_assembly_capacity_policy.js";
-
-export class ItemAssemblyDomainError extends Error {
-  constructor(code, message, details = {}) {
-    super(message);
-    this.name = "ItemAssemblyDomainError";
-    this.code = code;
-    this.details = details;
-  }
-}
 
 export class ItemAssemblyService {
   #repository;

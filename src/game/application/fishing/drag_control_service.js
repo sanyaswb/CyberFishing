@@ -1,4 +1,4 @@
-export class DragSystem {
+export class DragControlService {
   #value = 0;
   #targetValue = 0;
   #changeSpeed = 1.5;

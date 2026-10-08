@@ -1,5 +1,5 @@
 import { formatDebuffName } from "../formatting/debuff_name_formatter.js";
-import { ConsoleTableDebugModule } from "./base_debug_module.js";
+import { ConsoleTableDebugModule } from "./console_table_debug_module.js";
 import { DebugDataSelectors } from "../services/debug_data_selectors.js";
 import { DebugFormatters } from "../formatting/debug_formatters.js";
 

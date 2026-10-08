@@ -1,12 +1,17 @@
 import { ApplyBaitExposureService } from "../../game/application/inventory/apply_bait_exposure_service.js";
 import { AssemblyAttachmentTargetResolver } from "../../game/domain/assemblies/assembly_attachment_target_resolver.js";
 import { AssemblyCompletionPolicy } from "../../game/domain/assemblies/assembly_completion_policy.js";
-import { AssemblyInventoryContextFilterStrategy, EquipmentInventoryContextFilterStrategy, InventoryContextItemFilter } from "../../game/application/inventory/inventory_context_item_filter.js";
+import { AssemblyInventoryContextFilterStrategy } from "../../game/application/inventory/assembly_inventory_context_filter_strategy.js";
+import { EquipmentInventoryContextFilterStrategy } from "../../game/application/inventory/equipment_inventory_context_filter_strategy.js";
+import { InventoryContextItemFilter } from "../../game/application/inventory/inventory_context_item_filter.js";
 import { AssemblyProfileRegistry } from "../../game/domain/assemblies/assembly_profile_registry.js";
 import { AssemblyStateRepository } from "../../game/domain/assemblies/assembly_state_repository.js";
-import { AutoRefillCoordinator, ExactInventoryAutoRefillPort } from "../../game/application/inventory/auto_refill_coordinator.js";
-import { AutoRefillMemory, AutoRefillPolicy, AutoRefillSettings } from "../../game/domain/equipment/auto_refill_policy.js";
-import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
+import { AutoRefillCoordinator } from "../../game/application/inventory/auto_refill_coordinator.js";
+import { ExactInventoryAutoRefillPort } from "../../game/application/inventory/exact_inventory_auto_refill_port.js";
+import { AutoRefillMemory } from "../../game/domain/equipment/auto_refill_memory.js";
+import { AutoRefillPolicy } from "../../game/domain/equipment/auto_refill_policy.js";
+import { AutoRefillSettings } from "../../game/domain/equipment/auto_refill_settings.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_SLOT_CONFIG } from "../../game/domain/equipment/equipment_slot_catalog.js";
 import { EQUIPMENT_SLOT_PRESENTATION } from "../../game/presentation/inventory/equipment_slot_presentation.js";
 import { EquipmentAutoRefillTargetProvider } from "../../game/application/inventory/equipment_auto_refill_target_provider.js";
@@ -25,13 +30,13 @@ import { INVENTORY_SCHEMA_VERSION, InventoryStateStore } from "../../game/applic
 import { INVENTORY_SORT_CONFIG } from "../../game/presentation/inventory/inventory_sort_config.js";
 import { InventoryItemReservationPolicy } from "../../game/domain/inventory/inventory_item_reservation_policy.js";
 import { InventoryItemSnapshotMapper } from "../../game/application/inventory/persistence/inventory_item_snapshot_mapper.js";
-import { InventoryActionType } from "../../game/presentation/inventory/inventory_view_model.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryCommandService } from "../../game/application/inventory/inventory_command_service.js";
 import { InventoryGameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
 import { InventoryItemRemovalService } from "../../game/application/inventory/inventory_item_removal_service.js";
 import { InventoryUiState } from "../../game/application/inventory/inventory_ui_state.js";
 import { InventoryEquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
-import { InventoryEquipmentTransitionPort } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
+import { InventoryEquipmentTransitionAdapter } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
 import { InventoryFacade } from "../../game/application/inventory/inventory_facade.js";
 import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_bridge.js";
 import { InventoryItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
@@ -39,9 +44,11 @@ import { InventoryItemOrderResolver } from "../../game/presentation/inventory/in
 import { InventoryItemTreeViewFactory } from "../../game/presentation/inventory/inventory_item_tree_view_factory.js";
 import { InventoryLegacyMigration } from "../../game/application/inventory/persistence/inventory_legacy_migration.js";
 import { InventoryLineAllocationService } from "../../game/application/inventory/inventory_line_allocation_service.js";
-import { InventoryLoadoutPort } from "../../game/application/inventory/inventory_loadout_adapter.js";
-import { InventoryRefillInventoryPort, InventoryRefillTargetWriter } from "../../game/application/inventory/inventory_refill_adapters.js";
-import { InventoryRefillMemoryTransactionParticipant, InventorySettingsTransactionParticipant } from "../../game/application/inventory/inventory_transaction_participants.js";
+import { InventoryLoadoutAdapter } from "../../game/application/inventory/inventory_loadout_adapter.js";
+import { InventoryRefillInventoryPort } from "../../game/application/inventory/inventory_refill_inventory_port.js";
+import { InventoryRefillTargetWriter } from "../../game/application/inventory/inventory_refill_target_writer.js";
+import { InventoryRefillMemoryTransactionParticipant } from "../../game/application/inventory/inventory_refill_memory_transaction_participant.js";
+import { InventorySettingsTransactionParticipant } from "../../game/application/inventory/inventory_settings_transaction_participant.js";
 import { InventorySnapshotFactory } from "../../game/application/inventory/persistence/inventory_snapshot_factory.js";
 import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
 import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
@@ -54,13 +61,13 @@ import { LegacyItemStateMigration } from "../../game/application/inventory/persi
 import { LineAllocationPolicy } from "../../game/domain/line/line_allocation_policy.js";
 import { LoadoutApplicationService } from "../../game/application/inventory/loadout_application_service.js";
 import { LoadoutEquipmentTransitionPlanner } from "../../game/domain/loadouts/loadout_equipment_transition_planner.js";
-import { ManualRodChangePlanner } from "../../game/domain/equipment/equipment_transition_planner.js";
+import { ManualRodChangePlanner } from "../../game/domain/equipment/manual_rod_change_planner.js";
 import { RefillCompatibleSignaturePolicy } from "../../game/domain/assemblies/refill_compatible_signature_policy.js";
 import { RodCapabilityResolver } from "../../game/domain/equipment/rod_capability_resolver.js";
 import { TerminalLineSlotLabelResolver } from "../../game/presentation/inventory/terminal_line_slot_label_resolver.js";
 import { TerminalLineSlotResolver } from "../../game/domain/equipment/terminal_line_slot_resolver.js";
 import { UnlimitedAssemblyCapacityPolicy } from "../../game/domain/inventory/unlimited_assembly_capacity_policy.js";
-import { UnlimitedInventoryCapacityPolicy } from "../../game/domain/inventory/inventory_capacity_policy.js";
+import { UnlimitedInventoryCapacityPolicy } from "../../game/domain/inventory/unlimited_inventory_capacity_policy.js";
 
 export class InventoryCompositionRoot {
   static create(options = {}) {
@@ -106,7 +113,7 @@ export class InventoryCompositionRoot {
       new InventoryStateStore({
         cache:
           cache ||
-          CacheManager,
+          LocalStorageCache,
         itemSnapshotMapper,
       });
 
@@ -255,7 +262,7 @@ export class InventoryCompositionRoot {
       capacityPolicy,
       messages: INVENTORY_RULE_MESSAGES,
     });
-    const equipmentTransitionPort = new InventoryEquipmentTransitionPort({
+    const equipmentTransitionPort = new InventoryEquipmentTransitionAdapter({
       transaction,
     });
     const equipmentTransitionExecutor = new EquipmentTransitionExecutor({
@@ -282,7 +289,7 @@ export class InventoryCompositionRoot {
         lineAllocationService,
       });
 
-    const loadoutPort = new InventoryLoadoutPort({
+    const loadoutPort = new InventoryLoadoutAdapter({
       repository,
       loadouts,
       transaction,
@@ -535,7 +542,7 @@ export class InventoryCompositionRoot {
         ? legacyStateProvider() || {}
         : legacyStateProvider || {};
     const cacheAdapter =
-      cache || CacheManager;
+      cache || LocalStorageCache;
     const sourceItems =
       legacyItems ||
       provided.legacyItems ||

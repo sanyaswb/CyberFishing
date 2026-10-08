@@ -32,7 +32,7 @@ function compose({ cache = new MemoryCache(), playerConfig = null, makeRandomId 
   const { EffectiveItemStatsResolver } = load("src/game/domain/items/effective_item_stats_resolver.js");
   const { ITEM_STAT_OVERRIDE_CONFIG } = load("src/game/config/raw/items/item_stat_overrides.js");
   const { getInventoryAssemblyProfileConfig } = load("src/game/config/inventory/inventory_composition_config.js");
-  const { InventoryActionType } = load("src/game/presentation/inventory/inventory_view_model.js");
+  const { InventoryActionType } = load("src/game/presentation/inventory/inventory_action_type.js");
   const { TackleLoadLimitPolicy } = load("src/game/domain/equipment/tackle_load_limit_policy.js");
   const physicsConfig = new FightPhysicsConfigAdapter(CONFIG);
   const itemStatOverridePolicy = new ItemStatOverridePolicy({ config: ITEM_STAT_OVERRIDE_CONFIG });

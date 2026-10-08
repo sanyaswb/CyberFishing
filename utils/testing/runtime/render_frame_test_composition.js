@@ -7,8 +7,9 @@ function checkRenderFrameComposition() {
   runtime.load('src/engine/math/vector2.js',{expose:['Vector2']});
   runtime.load('src/engine/rendering/render_math.js');
   runtime.load('src/platform/browser/assets/image_asset_provider.js',{expose:['ImageAssetProvider']});
-  runtime.load('src/game/presentation/rendering/render_frame_buffer.js',{expose:['GameRenderFrame','RenderFrameBuffer']});
-  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['RenderOrder']});
+  runtime.load('src/game/presentation/rendering/game_render_frame.js', { expose: ['GameRenderFrame'] });
+    runtime.load('src/game/presentation/rendering/render_frame_buffer.js', { expose: ['RenderFrameBuffer'] });
+  runtime.load('src/game/presentation/rendering/game_render_order.js',{expose:['GameRenderOrder']});
   runtime.load('src/game/presentation/rendering/game_render_pipeline.js',{expose:['GameRenderPipeline']});
   const definitions=[["src/game/presentation/rendering/boat_chum_render_frame_builder.js",'BoatChumRenderFrameBuilder'],["src/game/presentation/rendering/casting_render_frame_builder.js",'CastingRenderFrameBuilder'],
     ["src/game/presentation/rendering/fight_area_render_frame_builder.js",'FightAreaRenderFrameBuilder'],["src/game/presentation/hud/fight_hud_frame_builder.js",'FightHudFrameBuilder'],

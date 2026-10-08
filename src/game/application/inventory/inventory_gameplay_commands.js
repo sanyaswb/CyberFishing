@@ -1,4 +1,4 @@
-import { AutoRefillTrigger } from "../../domain/equipment/auto_refill_policy.js";
+import { AutoRefillTrigger } from "../../domain/equipment/auto_refill_trigger.js";
 import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
 
 // Inventory changes driven by the fishing game rather than the inventory UI: consuming items and equipped

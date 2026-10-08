@@ -4,7 +4,7 @@ import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { ConfigSchemaValidator } from "../../game/config/validation/config_schema_validator.js";
 import { ConfigValidationReporter } from "../../dev/diagnostics/config_validation_reporter.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
-import { DevFlagsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
+import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
 import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
 import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
@@ -19,7 +19,7 @@ import { GameVersionBadge } from "../production/game_version_badge.js";
 import { GodMode } from "../../dev/god_mode.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
-import { InputManager } from "../../platform/browser/input/input_manager.js";
+import { InputController } from "../../platform/browser/input/input_controller.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
@@ -89,7 +89,7 @@ async function startGame() {
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
-      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_runtime_adapters.js"),
+      loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
       documentTarget, windowTarget,
@@ -124,7 +124,7 @@ async function startGame() {
       metricsProvider: () => {
         const loop = GameLoop.getDiagnostics();
         return {activeGameLoops: loop.activeCount, duplicateLoopStarts: loop.duplicateStartAttempts,
-          managedListeners: EventLifecycle.getActiveListenerCount() + EventBus.getActiveListenerCount() + InputManager.getActiveListenerCount()};
+          managedListeners: EventLifecycle.getActiveListenerCount() + EventBus.getActiveListenerCount() + InputController.getActiveListenerCount()};
       }}) : null;
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);

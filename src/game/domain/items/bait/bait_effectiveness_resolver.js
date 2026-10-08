@@ -1,4 +1,4 @@
-import { AlwaysKnownBaitEffectivenessPolicy } from "./bait_effectiveness_knowledge_policy.js";
+import { AlwaysKnownBaitEffectivenessPolicy } from "./always_known_bait_effectiveness_policy.js";
 import { BaitEffectivenessGradePolicy } from "./bait_effectiveness_grade_policy.js";
 import { BaitEffectivenessMatch } from "./bait_effectiveness_match.js";
 import { BaitFreshnessModifier } from "../freshness/bait_freshness_modifier.js";

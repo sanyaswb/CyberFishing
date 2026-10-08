@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class FishPowerModule extends OverlayModule {
+export class FishPowerOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("fishBase", options);
   }

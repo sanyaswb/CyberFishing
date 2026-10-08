@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class BehaviorModule extends OverlayModule {
+export class BehaviorOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("state", options);
   }

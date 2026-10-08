@@ -1,7 +1,7 @@
 import { formatDebuffName } from "../../formatting/debuff_name_formatter.js";
 import { OverlayModule } from "../overlay_module.js";
 
-export class DebuffsModule extends OverlayModule {
+export class DebuffsOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("debuffsLive", options);
   }

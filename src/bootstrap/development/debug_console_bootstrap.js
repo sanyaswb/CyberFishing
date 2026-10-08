@@ -1,4 +1,6 @@
-import { BiteSequenceLogPrinter, BiteTickLogPrinter, BiteTicksDebugModule } from "../../dev/modules/bite_ticks_debug_module.js";
+import { BiteSequenceLogPrinter } from "../../dev/modules/bite_sequence_log_printer.js";
+import { BiteTickLogPrinter } from "../../dev/modules/bite_tick_log_printer.js";
+import { BiteTicksDebugModule } from "../../dev/modules/bite_ticks_debug_module.js";
 import { CatchTimeDebugModule } from "../../dev/modules/catch_time_debug_module.js";
 import { DebugConsole } from "../../dev/core/debug_console.js";
 import { DebugContext } from "../../dev/core/debug_context.js";
@@ -7,7 +9,8 @@ import { DebugModuleRegistry } from "../../dev/core/debug_module_registry.js";
 import { DeviationsDebugModule } from "../../dev/modules/deviations_debug_module.js";
 import { ExhaustionDebugModule } from "../../dev/modules/exhaustion_debug_module.js";
 import { ForcesDebugModule } from "../../dev/modules/forces_debug_module.js";
-import { LocationDebugDataProvider, LocationDebugPrinter } from "../../dev/location/location_debug_data_provider.js";
+import { LocationDebugDataProvider } from "../../dev/location/location_debug_data_provider.js";
+import { LocationDebugPrinter } from "../../dev/location/location_debug_printer.js";
 import { LocationDebugModule } from "../../dev/modules/location_debug_module.js";
 import { MapDebugModule } from "../../dev/modules/map_debug_module.js";
 import { NetDebugModule } from "../../dev/modules/net_debug_module.js";

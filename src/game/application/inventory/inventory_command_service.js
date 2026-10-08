@@ -1,15 +1,7 @@
 import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS } from "../../domain/equipment/equipment_slot_catalog.js";
+import { InventoryApplicationError } from "./inventory_application_error.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { inventoryCommandFailure, inventoryCommandSuccess } from "./inventory_command_result.js";
-
-export class InventoryApplicationError extends Error {
-  constructor(code, message, details = {}) {
-    super(message);
-    this.name = "InventoryApplicationError";
-    this.code = code;
-    this.details = details;
-  }
-}
 
 export class InventoryCommandService {
   #repository;

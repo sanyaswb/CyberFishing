@@ -345,7 +345,7 @@
   },
   "physics.tackle.reelDrag.autoRetrieveEnabled": {
     "label": "Автоматична підмотка котушки",
-    "description": "Дозволяє котушці автоматично відновлювати виграну/слабку ліску за умовами ReelSystem."
+    "description": "Дозволяє котушці автоматично відновлювати виграну/слабку ліску за умовами ReelService."
   },
   "physics.tackle.reelDrag.creepReleaseRatio": {
     "label": "Мікро-прослизання фрикціону",

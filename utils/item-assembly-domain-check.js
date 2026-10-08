@@ -43,14 +43,10 @@ class AssemblyRuntimeLoader {
       "src/game/domain/assemblies/exact_assembly_refill_signature_policy.js",
       ["ExactAssemblyRefillSignaturePolicy"],
     );
-    loader.load("src/game/domain/assemblies/item_assembly_reader.js", [
-      "ItemAssemblyPath",
-      "ItemAssemblyReader",
-    ]);
-    loader.load("src/game/domain/assemblies/item_assembly_service.js", [
-      "ItemAssemblyDomainError",
-      "ItemAssemblyService",
-    ]);
+    loader.load("src/game/domain/assemblies/item_assembly_path.js", ["ItemAssemblyPath"]);
+    loader.load("src/game/domain/assemblies/item_assembly_reader.js", ["ItemAssemblyReader"]);
+    loader.load("src/game/domain/assemblies/item_assembly_domain_error.js", ["ItemAssemblyDomainError"]);
+    loader.load("src/game/domain/assemblies/item_assembly_service.js", ["ItemAssemblyService"]);
     return this.#context;
   }
 }

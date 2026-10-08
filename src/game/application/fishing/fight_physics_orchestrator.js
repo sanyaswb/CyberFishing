@@ -1,15 +1,16 @@
 import { FightInputActionComposer } from "../input/fight_input_action_composer.js";
 import { FightPhysicsConfigAdapter } from "../../config/physics/fight_physics_config_adapter.js";
 import { FightPhysicsPipeline } from "./fight_physics_pipeline.js";
-import { FISH_FIGHT_EVENT } from "../../domain/fish/fish.js";
+import { FISH_FIGHT_EVENT } from "../../domain/fish/fish_fight_event.js";
 import { FishRetrieveSystem } from "../../domain/fishing/fish_retrieve_system.js";
 import { LandingLiftReadinessPolicy } from "../../domain/fishing/landing_lift_readiness_policy.js";
 import { LandingLiftTensionCalculator } from "../../domain/fishing/landing_lift_tension_calculator.js";
-import { LandingPolicyResolver } from "../../domain/fishing/landing_policy.js";
+import { LandingPolicyResolver } from "../../domain/fishing/landing_policy_resolver.js";
 import { LineConstrainedFishMotionResolver } from "../../domain/fishing/line_constrained_fish_motion_resolver.js";
 import { LineConstraintStateResolver } from "../../domain/fishing/line_constraint_state_resolver.js";
 import { LineRadialMovementSplitter } from "../../domain/fishing/line_radial_movement_splitter.js";
-import { LooseLineCalculator, RecoverableLineCalculator } from "../../domain/fishing/recoverable_line_calculator.js";
+import { LooseLineCalculator } from "../../domain/fishing/loose_line_calculator.js";
+import { RecoverableLineCalculator } from "../../domain/fishing/recoverable_line_calculator.js";
 import { PlayerForceBudgetAllocator } from "../../domain/fishing/player_force_budget_allocator.js";
 import { PlayerPressureFatigueCalculator } from "../../domain/fishing/player_pressure/player_pressure_fatigue_calculator.js";
 import { PlayerPressureFatigueSourceResolver } from "../../domain/fishing/player_pressure/player_pressure_fatigue_source_resolver.js";
@@ -28,7 +29,7 @@ import { RodStrokeTracker } from "../../domain/fishing/rod_stroke_tracker.js";
 import { StaminaBalanceFrame } from "../../domain/fishing/stamina/stamina_balance_frame.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 
-export class FightPhysicsSystem {
+export class FightPhysicsOrchestrator {
   #config;
   #physicsConfig;
   #velocityScratch = new Vector2(0, 0);

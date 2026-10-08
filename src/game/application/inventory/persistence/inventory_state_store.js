@@ -4,7 +4,7 @@ export const INVENTORY_SCHEMA_VERSION = 4;
  * Persistence boundary for inventory.
  *
  * Domain services receive plain snapshots and never depend on localStorage or
- * CacheManager directly. This keeps persistence replaceable and makes a failed
+ * LocalStorageCache directly. This keeps persistence replaceable and makes a failed
  * migration recoverable without mutating the legacy cache keys.
  */
 export class InventoryStateStore {

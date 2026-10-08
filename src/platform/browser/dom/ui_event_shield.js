@@ -1,4 +1,4 @@
-export class UIUtils {
+export class UiEventShield {
   static makeSolid(element) {
     if (!element) return;
 

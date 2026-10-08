@@ -1,4 +1,4 @@
-export class TimeDisplayUI {
+export class TimeDisplay {
   constructor() {
     this.container = document.createElement("div");
     this.container.style.cssText = `

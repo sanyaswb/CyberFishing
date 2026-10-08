@@ -51,7 +51,7 @@ export class RodPullCalculator {
   }
 
   // New-model contract: RodPullCalculator owns only player demand + rod stroke.
-  // Drag slip and final line tension are resolved later by FishRetrieveSystem + TensionSystem.
+  // Drag slip and final line tension are resolved later by FishRetrieveSystem + TensionService.
   calculateForceLimit({
     maxTackleLoadKg,
     rodLimitKg,

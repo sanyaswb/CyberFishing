@@ -1,7 +1,7 @@
 import { DragForceCalculator } from "./drag_force_calculator.js";
 import { EnduranceMovementDebuffCalculator } from "./endurance/endurance_movement_debuff_calculator.js";
 import { FishFightDirectionResolver } from "./fish_fight_direction_resolver.js";
-import { FishPhysicsProfile } from "../fish/fish.js";
+import { FishPhysicsProfile } from "../fish/fish_physics_profile.js";
 import { HoldOppositionResolver } from "./hold_opposition_resolver.js";
 import { PlayerForceSystem } from "./player_force_system.js";
 import { SimpleFightForceCalculator } from "./simple_fight_force_calculator.js";

@@ -17,7 +17,7 @@ export const RENDER_SEQUENCE = Object.freeze([
   "outcome",
 ]);
 
-export class RenderOrder {
+export class GameRenderOrder {
   static get values() {
     return RENDER_ORDER;
   }
@@ -34,7 +34,7 @@ export class RenderOrder {
     return RENDER_SEQUENCE.map((name) => {
       const pass = passByName?.[name];
       if (!pass || typeof pass.render !== "function") {
-        throw new TypeError(`RenderOrder requires the "${name}" pass`);
+        throw new TypeError(`GameRenderOrder requires the "${name}" pass`);
       }
       return pass;
     });

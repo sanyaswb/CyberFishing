@@ -35,7 +35,7 @@ class RuntimeLoader {
   }
 
   #loadRules(runtime) {
-    runtime.load("src/game/domain/rules/gameplay_rules.js", { expose: ["EquipmentRules"] });
+    runtime.load("src/game/domain/rules/equipment_rules.js", { expose: ["EquipmentRules"] });
   }
 }
 

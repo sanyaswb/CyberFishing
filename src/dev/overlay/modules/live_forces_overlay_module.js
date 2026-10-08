@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class LiveForcesModule extends OverlayModule {
+export class LiveForcesOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("liveY", options);
   }

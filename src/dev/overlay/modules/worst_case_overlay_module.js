@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class WorstCaseModule extends OverlayModule {
+export class WorstCaseOverlayModule extends OverlayModule {
   #selector;
 
   constructor({ selector, ...options } = {}) {

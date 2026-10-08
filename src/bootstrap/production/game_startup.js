@@ -3,7 +3,7 @@ import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_
 import { FixedCatchFishFactory } from "../../game/application/fishing/fixed_catch_fish_factory.js";
 import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
-import { DevFlagsProvider } from "../../platform/browser/runtime/browser_runtime_adapters.js";
+import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
 import { createProductionConfigContext } from "./game_config_composition.js";
@@ -32,7 +32,7 @@ async function startGame() {
   const overrides = new GameplayOverrideReader(CONFIG);
   const compositionRoot = new GameCompositionRoot(CONFIG, {
     loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
-    loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_runtime_adapters.js"),
+    loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
     loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
     loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
     documentTarget,

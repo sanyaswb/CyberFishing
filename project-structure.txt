@@ -44,10 +44,14 @@
 ├── package.json
 ├── README.md
 ├── specs
-│  └── 001-inventory-decomposition
-│     ├── plan.md
-│     ├── spec.md
-│     └── tasks.md
+│  ├── 001-inventory-decomposition
+│  │  ├── plan.md
+│  │  ├── spec.md
+│  │  └── tasks.md
+│  ├── 002-line-capacity-context
+│  │  └── spec.md
+│  └── 003-names-and-placement
+│     └── spec.md
 ├── src
 │  ├── bootstrap
 │  │  ├── development
@@ -55,14 +59,16 @@
 │  │  │  ├── debug_overlay_bootstrap.js
 │  │  │  └── development_game_startup.js
 │  │  └── production
-│  │     ├── chum_feature_bootstrap.js
 │  │     ├── config_context.js
 │  │     ├── game.js
 │  │     ├── game_application.js
 │  │     ├── game_composition_root.js
 │  │     ├── game_config_composition.js
+│  │     ├── game_debug_facade.js
+│  │     ├── game_fishing_facade.js
 │  │     ├── game_startup.js
 │  │     ├── game_version_badge.js
+│  │     ├── game_viewport_facade.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_ui_bootstrap.js
 │  │     └── player_inventory_composition.js
@@ -78,7 +84,7 @@
 │  │  │  ├── config_validation_reporter.js
 │  │  │  └── render_allocation_diagnostics.js
 │  │  ├── fishing
-│  │  │  ├── active_fish_dev_tools_schema.js
+│  │  │  ├── active_fish_dev_tools_visibility_policy.js
 │  │  │  ├── hooked_fish_profile_synchronizer.js
 │  │  │  └── worst_case_force_debug_selector.js
 │  │  ├── formatting
@@ -90,6 +96,7 @@
 │  │  ├── location
 │  │  │  ├── location_debug_data_provider.js
 │  │  │  ├── location_debug_map_builder.js
+│  │  │  ├── location_debug_printer.js
 │  │  │  └── location_debug_render_frame_builder.js
 │  │  ├── metadata
 │  │  │  ├── dev_tool_parameter_descriptions.json
@@ -97,8 +104,11 @@
 │  │  │  └── parameter_labels.json
 │  │  ├── modules
 │  │  │  ├── base_debug_module.js
+│  │  │  ├── bite_sequence_log_printer.js
+│  │  │  ├── bite_tick_log_printer.js
 │  │  │  ├── bite_ticks_debug_module.js
 │  │  │  ├── catch_time_debug_module.js
+│  │  │  ├── console_table_debug_module.js
 │  │  │  ├── deviations_debug_module.js
 │  │  │  ├── exhaustion_debug_module.js
 │  │  │  ├── forces_debug_module.js
@@ -216,14 +226,24 @@
 │  │  │  ├── casting
 │  │  │  │  └── cast_power_aim.js
 │  │  │  ├── chum
-│  │  │  │  └── chum_service.js
+│  │  │  │  ├── bait_boat.js
+│  │  │  │  ├── chum_controller.js
+│  │  │  │  ├── chum_service.js
+│  │  │  │  └── chum_zone.js
 │  │  │  ├── fishing
 │  │  │  │  ├── bite_environment_service.js
-│  │  │  │  ├── bite_service.js
+│  │  │  │  ├── bite_system.js
+│  │  │  │  ├── cast_penalty.js
+│  │  │  │  ├── cast_service.js
+│  │  │  │  ├── catch_resolution_service.js
 │  │  │  │  ├── drag_control_service.js
 │  │  │  │  ├── fight_physics_orchestrator.js
 │  │  │  │  ├── fight_physics_pipeline.js
-│  │  │  │  ├── fishing_runtime_services.js
+│  │  │  │  ├── fight_physics_pipeline_frame.js
+│  │  │  │  ├── fight_service.js
+│  │  │  │  ├── fight_session_factory.js
+│  │  │  │  ├── fishing_controller.js
+│  │  │  │  ├── fishing_force_service.js
 │  │  │  │  ├── fixed_catch_fish_factory.js
 │  │  │  │  ├── gameplay_override_reader.js
 │  │  │  │  ├── mutable_fight_frame_context.js
@@ -234,14 +254,20 @@
 │  │  │  │  └── pull_input_mapper.js
 │  │  │  ├── inventory
 │  │  │  │  ├── apply_bait_exposure_service.js
+│  │  │  │  ├── assembly_inventory_context_filter_strategy.js
 │  │  │  │  ├── auto_refill_coordinator.js
+│  │  │  │  ├── auto_refill_port.js
 │  │  │  │  ├── configured_inventory_seeder.js
 │  │  │  │  ├── display_stats_resolver.js
 │  │  │  │  ├── equipment_auto_refill_target_provider.js
+│  │  │  │  ├── equipment_inventory_context_filter_strategy.js
 │  │  │  │  ├── equipment_read_model_factory.js
 │  │  │  │  ├── equipment_service.js
 │  │  │  │  ├── equipment_transition_executor.js
+│  │  │  │  ├── equipment_transition_port.js
+│  │  │  │  ├── exact_inventory_auto_refill_port.js
 │  │  │  │  ├── freshest_refill_candidate_policy.js
+│  │  │  │  ├── inventory_application_error.js
 │  │  │  │  ├── inventory_command_result.js
 │  │  │  │  ├── inventory_command_service.js
 │  │  │  │  ├── inventory_context_item_filter.js
@@ -258,16 +284,19 @@
 │  │  │  │  ├── inventory_item_view_context.js
 │  │  │  │  ├── inventory_line_allocation_service.js
 │  │  │  │  ├── inventory_loadout_adapter.js
-│  │  │  │  ├── inventory_refill_adapters.js
+│  │  │  │  ├── inventory_refill_inventory_port.js
+│  │  │  │  ├── inventory_refill_memory_transaction_participant.js
+│  │  │  │  ├── inventory_refill_target_writer.js
 │  │  │  │  ├── inventory_runtime_config_provider.js
 │  │  │  │  ├── inventory_runtime_display_stats_resolver.js
+│  │  │  │  ├── inventory_settings_transaction_participant.js
 │  │  │  │  ├── inventory_transaction_coordinator.js
-│  │  │  │  ├── inventory_transaction_participants.js
 │  │  │  │  ├── inventory_ui_state.js
 │  │  │  │  ├── item_database.js
 │  │  │  │  ├── legacy_inventory_unit_allocator.js
 │  │  │  │  ├── line_compatibility_rules.js
 │  │  │  │  ├── line_runtime_display_stats_resolver.js
+│  │  │  │  ├── loadout_application_port.js
 │  │  │  │  ├── loadout_application_service.js
 │  │  │  │  ├── persistence
 │  │  │  │  │  ├── equipment_state_migration_policy.js
@@ -286,11 +315,21 @@
 │  │  │  │  ├── runtime_display_stat_formatter.js
 │  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── state
-│  │  │  │  └── game_state_machine.js
+│  │  │  │  ├── biting_state.js
+│  │  │  │  ├── failed_state.js
+│  │  │  │  ├── game_state.js
+│  │  │  │  ├── playing_state.js
+│  │  │  │  ├── scouting_state.js
+│  │  │  │  ├── state_deps_factory.js
+│  │  │  │  ├── state_machine.js
+│  │  │  │  ├── victory_state.js
+│  │  │  │  └── waiting_state.js
 │  │  │  ├── viewport
 │  │  │  │  └── viewport_projector.js
 │  │  │  └── world
-│  │  │     └── game_world_service.js
+│  │  │     ├── current_location.js
+│  │  │     ├── environment_system.js
+│  │  │     └── game_world.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish
@@ -331,6 +370,7 @@
 │  │  │  │  └── resolved_config_provider.js
 │  │  │  └── validation
 │  │  │     ├── config_schema_validator.js
+│  │  │     ├── config_validation_result.js
 │  │  │     ├── item_progression_config_validator.js
 │  │  │     ├── item_rarity_config_validator.js
 │  │  │     └── rarity_config_validator.js
@@ -342,6 +382,8 @@
 │  │  │  │  ├── assembly_state.js
 │  │  │  │  ├── assembly_state_repository.js
 │  │  │  │  ├── exact_assembly_refill_signature_policy.js
+│  │  │  │  ├── item_assembly_domain_error.js
+│  │  │  │  ├── item_assembly_path.js
 │  │  │  │  ├── item_assembly_reader.js
 │  │  │  │  ├── item_assembly_service.js
 │  │  │  │  └── refill_compatible_signature_policy.js
@@ -349,20 +391,31 @@
 │  │  │  │  ├── cast_distance_calculator.js
 │  │  │  │  └── distance_unit_converter.js
 │  │  │  ├── equipment
+│  │  │  │  ├── auto_refill_memory.js
 │  │  │  │  ├── auto_refill_policy.js
+│  │  │  │  ├── auto_refill_scope.js
+│  │  │  │  ├── auto_refill_settings.js
+│  │  │  │  ├── auto_refill_trigger.js
 │  │  │  │  ├── equipment_compatibility_policy.js
 │  │  │  │  ├── equipment_slot_catalog.js
 │  │  │  │  ├── equipment_slot_visibility_policy.js
 │  │  │  │  ├── equipment_state.js
-│  │  │  │  ├── equipment_transition_planner.js
+│  │  │  │  ├── equipment_transition_plan.js
 │  │  │  │  ├── fishing_readiness_policy.js
+│  │  │  │  ├── manual_rod_change_planner.js
 │  │  │  │  ├── rod_capability_resolver.js
 │  │  │  │  ├── tackle_load_limit_policy.js
 │  │  │  │  └── terminal_line_slot_resolver.js
 │  │  │  ├── fish
 │  │  │  │  ├── fish.js
 │  │  │  │  ├── fish_anomaly_variant_resolver.js
-│  │  │  │  └── fish_rarity_resolver.js
+│  │  │  │  ├── fish_behavior.js
+│  │  │  │  ├── fish_condition.js
+│  │  │  │  ├── fish_endurance_points_calculator.js
+│  │  │  │  ├── fish_fight_event.js
+│  │  │  │  ├── fish_physics_profile.js
+│  │  │  │  ├── fish_rarity_resolver.js
+│  │  │  │  └── fish_stamina_points_calculator.js
 │  │  │  ├── fishing
 │  │  │  │  ├── drag_force_calculator.js
 │  │  │  │  ├── endurance
@@ -375,15 +428,19 @@
 │  │  │  │  ├── fishing_cast_exposure_resolver.js
 │  │  │  │  ├── float_tackle_line_budget_policy.js
 │  │  │  │  ├── hold_opposition_resolver.js
+│  │  │  │  ├── idle_retrieve_policy_resolver.js
 │  │  │  │  ├── landing_lift_readiness_policy.js
 │  │  │  │  ├── landing_lift_tension_calculator.js
 │  │  │  │  ├── landing_policy.js
+│  │  │  │  ├── landing_policy_resolver.js
 │  │  │  │  ├── line_constrained_fish_motion_resolver.js
 │  │  │  │  ├── line_constraint_state_resolver.js
 │  │  │  │  ├── line_radial_movement_splitter.js
 │  │  │  │  ├── line_spool_state.js
 │  │  │  │  ├── line_system.js
 │  │  │  │  ├── line_tension_calculator.js
+│  │  │  │  ├── loose_line_calculator.js
+│  │  │  │  ├── passive_lure_retrieve_policy.js
 │  │  │  │  ├── player_force_budget_allocator.js
 │  │  │  │  ├── player_force_system.js
 │  │  │  │  ├── player_pressure
@@ -397,12 +454,16 @@
 │  │  │  │  ├── pole_fight_sector_angle_constraint.js
 │  │  │  │  ├── pole_fight_sector_constraint.js
 │  │  │  │  ├── pole_fight_sector_geometry.js
+│  │  │  │  ├── pole_idle_retrieve_policy.js
+│  │  │  │  ├── pole_landing_policy.js
 │  │  │  │  ├── recoverable_line_calculator.js
 │  │  │  │  ├── reel_auto_recovery_calculator.js
 │  │  │  │  ├── reel_hold_load_policy.js
 │  │  │  │  ├── reel_hold_recovery_system.js
+│  │  │  │  ├── reel_landing_policy.js
 │  │  │  │  ├── reel_recovery_fish_slowdown_policy.js
 │  │  │  │  ├── reel_retrieve_speed_calculator.js
+│  │  │  │  ├── resolve_fight_physics_config.js
 │  │  │  │  ├── retrieve_policy.js
 │  │  │  │  ├── rod_control_angle_resolver.js
 │  │  │  │  ├── rod_control_movement_projector.js
@@ -432,14 +493,17 @@
 │  │  │  │  ├── tackle_stress_system.js
 │  │  │  │  └── weakest_tackle_limit_resolver.js
 │  │  │  ├── inventory
+│  │  │  │  ├── delegating_inventory_capacity_policy.js
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
 │  │  │  │  ├── inventory_item_location.js
 │  │  │  │  ├── inventory_item_reservation_policy.js
 │  │  │  │  ├── item_assembly_stacking_policy.js
-│  │  │  │  └── unlimited_assembly_capacity_policy.js
+│  │  │  │  ├── unlimited_assembly_capacity_policy.js
+│  │  │  │  └── unlimited_inventory_capacity_policy.js
 │  │  │  ├── items
 │  │  │  │  ├── bait
+│  │  │  │  │  ├── always_known_bait_effectiveness_policy.js
 │  │  │  │  │  ├── bait_effectiveness_grade_policy.js
 │  │  │  │  │  ├── bait_effectiveness_knowledge_policy.js
 │  │  │  │  │  ├── bait_effectiveness_match.js
@@ -489,11 +553,30 @@
 │  │  │  │  ├── equipment_loadout_repository.js
 │  │  │  │  └── loadout_equipment_transition_planner.js
 │  │  │  ├── locations
-│  │  │  │  └── location_world.js
+│  │  │  │  ├── dynamic_zone.js
+│  │  │  │  ├── grid_cell.js
+│  │  │  │  └── location_map.js
 │  │  │  ├── rules
-│  │  │  │  └── gameplay_rules.js
+│  │  │  │  ├── bait_rules.js
+│  │  │  │  ├── bite_rules.js
+│  │  │  │  ├── boat_rules.js
+│  │  │  │  ├── cast_rules.js
+│  │  │  │  ├── chum_rules.js
+│  │  │  │  ├── equipment_rules.js
+│  │  │  │  └── player_cast_rules.js
 │  │  │  └── tackle
-│  │  │     └── tackle.js
+│  │  │     ├── bait_factory.js
+│  │  │     ├── equipment.js
+│  │  │     ├── feeder_entity.js
+│  │  │     ├── float_entity.js
+│  │  │     ├── hook.js
+│  │  │     ├── jig_entity.js
+│  │  │     ├── net.js
+│  │  │     ├── reel.js
+│  │  │     ├── rod.js
+│  │  │     ├── spinner_entity.js
+│  │  │     ├── water_entity.js
+│  │  │     └── wobbler_entity.js
 │  │  └── presentation
 │  │     ├── casting
 │  │     │  └── cast_scene_renderer.js
@@ -521,10 +604,13 @@
 │  │     │  ├── bait_effectiveness_descriptor.js
 │  │     │  ├── equipment_slot_availability_policy.js
 │  │     │  ├── equipment_slot_presentation.js
+│  │     │  ├── inventory_action_contract.js
+│  │     │  ├── inventory_action_type.js
 │  │     │  ├── inventory_assembly_editor_renderer.js
 │  │     │  ├── inventory_assembly_parameter_section_resolver.js
 │  │     │  ├── inventory_attachment_badge_renderer.js
 │  │     │  ├── inventory_balance_parameter_resolver.js
+│  │     │  ├── inventory_facade_contract.js
 │  │     │  ├── inventory_grid_renderer.js
 │  │     │  ├── inventory_header_renderer.js
 │  │     │  ├── inventory_item_card_renderer.js
@@ -543,8 +629,8 @@
 │  │     │  ├── inventory_subfilter_resolver.js
 │  │     │  ├── inventory_tooltip_presenter.js
 │  │     │  ├── inventory_ui.js
-│  │     │  ├── inventory_view_model.js
 │  │     │  ├── inventory_view_model_factory.js
+│  │     │  ├── inventory_view_model_normalizer.js
 │  │     │  ├── item_condition_descriptor.js
 │  │     │  ├── item_freshness_descriptor.js
 │  │     │  ├── item_progression_visual_resolver.js
@@ -561,6 +647,7 @@
 │  │     │  ├── fishing_render_frame_builder.js
 │  │     │  ├── fishing_render_pass.js
 │  │     │  ├── game_render_coordinator.js
+│  │     │  ├── game_render_frame.js
 │  │     │  ├── game_render_frame_builder.js
 │  │     │  ├── game_render_intent.js
 │  │     │  ├── game_render_order.js
@@ -569,6 +656,7 @@
 │  │     │  ├── landing_area_render_frame_builder.js
 │  │     │  ├── outcome_render_pass.js
 │  │     │  ├── render_frame_buffer.js
+│  │     │  ├── reusable_render_list.js
 │  │     │  ├── world_render_frame_builder.js
 │  │     │  └── world_render_pass.js
 │  │     ├── screens
@@ -619,19 +707,25 @@
 │        │  ├── item_rarity_dom_adapter.js
 │        │  └── ui_event_shield.js
 │        ├── input
-│        │  └── input_manager.js
+│        │  └── input_controller.js
 │        ├── inventory
 │        │  └── random_inventory_id.js
 │        ├── location
 │        │  ├── depth_map_reader.js
 │        │  └── location_asset_loader.js
 │        ├── runtime
+│        │  ├── browser_audio_adapter.js
+│        │  ├── browser_buffered_audio_player.js
+│        │  ├── browser_debug_adapter.js
+│        │  ├── browser_event_target_adapter.js
 │        │  ├── browser_game_lifecycle.js
-│        │  ├── browser_runtime_adapters.js
 │        │  ├── browser_startup_environment.js
+│        │  ├── canvas_metrics_provider.js
+│        │  ├── config_provider.js
+│        │  ├── dev_flags_provider.js
 │        │  └── game_loop.js
 │        ├── storage
-│        │  └── cache_manager.js
+│        │  └── local_storage_cache.js
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
 │        │  └── game_clock.js

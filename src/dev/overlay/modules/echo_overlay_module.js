@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class EchoModule extends OverlayModule {
+export class EchoOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("echo", options);
   }

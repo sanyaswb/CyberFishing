@@ -1,5 +1,8 @@
 import { HorizontalScrollController } from "../../platform/browser/dom/horizontal_scroll_controller.js";
-import { InventoryActionContract, InventoryActionType, InventoryFacadeContract, InventoryViewModelNormalizer } from "../../game/presentation/inventory/inventory_view_model.js";
+import { InventoryActionContract } from "../../game/presentation/inventory/inventory_action_contract.js";
+import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
+import { InventoryFacadeContract } from "../../game/presentation/inventory/inventory_facade_contract.js";
+import { InventoryViewModelNormalizer } from "../../game/presentation/inventory/inventory_view_model_normalizer.js";
 import { InventoryAssemblyEditorRenderer } from "../../game/presentation/inventory/inventory_assembly_editor_renderer.js";
 import { InventoryAssemblyParameterSectionResolver } from "../../game/presentation/inventory/inventory_assembly_parameter_section_resolver.js";
 import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/inventory/inventory_attachment_badge_renderer.js";

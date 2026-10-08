@@ -1,4 +1,4 @@
-export class DepthSelectorUI {
+export class DepthSelector {
   #pendingFrames = new Set();
   #disposed = false;
   #animationFrameHost;

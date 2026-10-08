@@ -1,6 +1,6 @@
 import { ReelAutoRecoveryCalculator } from "../../domain/fishing/reel_auto_recovery_calculator.js";
 
-export class ReelSystem {
+export class ReelService {
   #config;
   #autoRecoveryCalculator = new ReelAutoRecoveryCalculator();
 

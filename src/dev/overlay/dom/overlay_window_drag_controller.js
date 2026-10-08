@@ -1,5 +1,5 @@
-import { CacheManager } from "../../../platform/browser/storage/cache_manager.js";
-import { UIUtils } from "../../../platform/browser/dom/ui_event_shield.js";
+import { LocalStorageCache } from "../../../platform/browser/storage/local_storage_cache.js";
+import { UiEventShield } from "../../../platform/browser/dom/ui_event_shield.js";
 
 export class OverlayWindowDragController {
   #element;
@@ -31,8 +31,8 @@ export class OverlayWindowDragController {
 
   attach() {
     if (!this.#element) return;
-    if (UIUtils.makeSolid) {
-      UIUtils.makeSolid(this.#element);
+    if (UiEventShield.makeSolid) {
+      UiEventShield.makeSolid(this.#element);
     }
     this.#restorePosition();
     this.#element.addEventListener("pointerdown", this.#onPointerDown);
@@ -153,7 +153,7 @@ export class OverlayWindowDragController {
 
   #restorePosition() {
     if (!this.#element) return;
-    const savedPosition = CacheManager.get(`drag_pos_${this.#id}`);
+    const savedPosition = LocalStorageCache.get(`drag_pos_${this.#id}`);
     if (!savedPosition) return;
 
     this.#element.style.position = "absolute";
@@ -168,7 +168,7 @@ export class OverlayWindowDragController {
   #savePosition() {
     if (!this.#element) return;
     const rect = this.#element.getBoundingClientRect();
-    CacheManager.set(`drag_pos_${this.#id}`, {
+    LocalStorageCache.set(`drag_pos_${this.#id}`, {
       left: `${Math.max(0, rect.left)}px`,
       top: `${Math.max(0, rect.top)}px`,
       right: "auto",

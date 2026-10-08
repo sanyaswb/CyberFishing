@@ -27,6 +27,7 @@ class BaitEffectivenessCheck {
       "src/game/domain/items/bait/bait_effectiveness_match.js",
       "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
       "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/always_known_bait_effectiveness_policy.js",
       "src/game/domain/items/bait/bait_effectiveness_resolver.js",
       "src/game/presentation/inventory/bait_effectiveness_catalog_resolver.js",
       "src/game/domain/items/rarity/item_rarity_descriptor.js",
@@ -184,7 +185,7 @@ class BaitEffectivenessCheck {
 
   #checkSingleGameplaySource() {
     const itemSource = this.#sourceRuntime.read("src/game/config/raw/items/item_database.js");
-    const biteSource = this.#sourceRuntime.readAuthoredSource("src/game/application/fishing/bite_service.js");
+    const biteSource = this.#sourceRuntime.readAuthoredSource("src/game/application/fishing/bite_system.js");
     Assertion.that(
       !itemSource.includes("attractionPower") && !itemSource.includes("jigPower"),
       "fake global lure power stats are removed",

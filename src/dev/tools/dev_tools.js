@@ -1,5 +1,5 @@
-import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_schema.js";
-import { CacheManager } from "../../platform/browser/storage/cache_manager.js";
+import { ActiveFishDevToolsVisibilityPolicy } from "../fishing/active_fish_dev_tools_visibility_policy.js";
+import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { DevToolsParameterAliasRegistry } from "../services/dev_tools_parameter_alias_registry.js";
 import { LocationDevToolsSchema } from "../services/location_dev_tools_schema.js";
 import { OVERLAY_MODULE_GROUPS, OVERLAY_MODULE_LABELS } from "../overlay/config/overlay_modules_config.js";
@@ -482,7 +482,7 @@ export class DevTools {
   }
 
   #createSectionWithCache(labelStr, parentElement, path = null) {
-    let savedStates = CacheManager.get("dev_tools_sections_state", {});
+    let savedStates = LocalStorageCache.get("dev_tools_sections_state", {});
     let isExpanded = savedStates[labelStr] || false;
 
     return this.#ui.createSection(
@@ -490,9 +490,9 @@ export class DevTools {
       parentElement,
       isExpanded,
       (isNowExpanded) => {
-        savedStates = CacheManager.get("dev_tools_sections_state", {});
+        savedStates = LocalStorageCache.get("dev_tools_sections_state", {});
         savedStates[labelStr] = isNowExpanded;
-        CacheManager.set("dev_tools_sections_state", savedStates);
+        LocalStorageCache.set("dev_tools_sections_state", savedStates);
       },
       path,
     );

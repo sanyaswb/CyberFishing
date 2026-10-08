@@ -1,6 +1,6 @@
-import { UIUtils } from "./ui_event_shield.js";
+import { UiEventShield } from "./ui_event_shield.js";
 
-export class UIDraggableButton {
+export class DraggableButton {
   #element;
   #onClickCallback;
   #config;
@@ -30,7 +30,7 @@ export class UIDraggableButton {
     this.#holdTimer = null;
     this.#isDragging = false;
 
-    UIUtils.makeSolid(this.#element);
+    UiEventShield.makeSolid(this.#element);
 
     this.onPointerDown = this.onPointerDown.bind(this);
     this.onPointerMove = this.onPointerMove.bind(this);

@@ -54,7 +54,7 @@ class EquipmentHydrationRuntime {
     load("src/game/domain/casting/cast_distance_calculator.js", ["CastDistanceCalculator"]);
     load("src/game/domain/fishing/line_spool_state.js", ["LineSpoolState"]);
     load("src/game/domain/fishing/line_system.js", ["LineSystem"]);
-    load("src/game/application/fishing/fishing_runtime_services.js", ["FightSessionFactory"]);
+    load("src/game/application/fishing/fight_session_factory.js", ["FightSessionFactory"]);
   }
 }
 

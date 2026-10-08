@@ -29,6 +29,7 @@ class ItemFreshnessGameplayCheck {
       "src/game/domain/items/bait/bait_effectiveness_match.js",
       "src/game/domain/items/bait/bait_effectiveness_grade_policy.js",
       "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
+      "src/game/domain/items/bait/always_known_bait_effectiveness_policy.js",
       "src/game/domain/items/bait/bait_effectiveness_resolver.js",
       "src/game/domain/inventory/inventory_item_location.js",
       "src/game/domain/inventory/flat_inventory_item_repository.js",
@@ -37,7 +38,8 @@ class ItemFreshnessGameplayCheck {
       "src/game/domain/assemblies/refill_compatible_signature_policy.js",
       "src/game/application/inventory/freshest_refill_candidate_policy.js",
       "src/game/application/inventory/apply_bait_exposure_service.js",
-      "src/game/application/inventory/inventory_refill_adapters.js",
+      "src/game/application/inventory/inventory_refill_inventory_port.js",
+      "src/game/application/inventory/inventory_refill_target_writer.js",
       "src/game/application/inventory/persistence/inventory_item_snapshot_mapper.js",
     ]).expose({
       CONFIGURATION: "ITEM_PROGRESSION_CONFIG",

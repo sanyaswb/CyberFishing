@@ -1,4 +1,4 @@
-export class HoldChargesUI {
+export class HoldCharges {
   constructor() {
     this.container = document.createElement("div");
     this.container.style.cssText = `

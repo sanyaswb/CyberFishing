@@ -39,7 +39,7 @@ class HookDomainSemanticsCheck {
       "hook power preserves the previous numeric balance",
     );
 
-    const states = this.#sourceRuntime.readAuthoredSource("src/game/application/state/game_state_machine.js");
+    const states = ["src/game/application/state/state_machine.js", "src/game/application/state/state_deps_factory.js", "src/game/application/state/game_state.js", "src/game/application/state/scouting_state.js", "src/game/application/state/waiting_state.js", "src/game/application/state/biting_state.js", "src/game/application/state/playing_state.js", "src/game/application/state/failed_state.js", "src/game/application/state/victory_state.js"].map((file) => this.#sourceRuntime.readAuthoredSource(file)).join("\n");
     const debug = this.#sourceRuntime.read("src/dev/runtime/debug_service.js");
     const formatter = this.#sourceRuntime.read("src/dev/formatting/debug_formatters.js");
     Assertion.that(

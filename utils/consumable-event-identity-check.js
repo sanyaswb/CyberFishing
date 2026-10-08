@@ -5,7 +5,7 @@ const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loade
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({
   console,
-  CacheManager: {
+  LocalStorageCache: {
     get(_key, fallback) {
       return fallback;
     },
@@ -28,13 +28,26 @@ const context = vm.createContext({
 // Migrated classic paths are activation shims (or retired ones): the loader runs the runtime first and renders
 // retired activations test-only, so the check keeps naming the same classes.
 const files = [
+  "src/game/domain/equipment/auto_refill_trigger.js",
+  "src/game/domain/equipment/auto_refill_scope.js",
+  "src/game/domain/equipment/auto_refill_settings.js",
+  "src/game/domain/equipment/auto_refill_memory.js",
   "src/game/domain/equipment/auto_refill_policy.js",
   "src/game/application/inventory/equipment_auto_refill_target_provider.js",
   "src/game/application/inventory/equipment_service.js",
-  "src/game/application/fishing/fishing_runtime_services.js",
-  "src/bootstrap/production/chum_feature_bootstrap.js",
+  "src/game/application/fishing/fishing_controller.js",
+  "src/game/application/fishing/cast_service.js",
+  "src/game/application/fishing/fight_session_factory.js",
+  "src/game/application/fishing/fishing_force_service.js",
+  "src/game/application/fishing/catch_resolution_service.js",
+  "src/game/application/fishing/fight_service.js",
+  "src/platform/browser/ui/chum_controls.js",
+  "src/game/application/chum/chum_controller.js",
+  "src/game/application/chum/chum_zone.js",
+  "src/game/application/chum/bait_boat.js",
   "src/game/application/chum/chum_service.js",
-  "src/game/application/fishing/bite_service.js",
+  "src/game/application/fishing/bite_system.js",
+  "src/game/application/fishing/cast_penalty.js",
 ];
 
 new NativeEsmTestLoader({ projectRoot: root, context }).loadAll(files);
@@ -50,7 +63,7 @@ vm.runInContext(
   // A boat carries its originating assembly identity until the physical
   // return event, independent of the currently equipped delivery item.
   const boatReturnEvents = [];
-  const chumManager = new ChumManager(
+  const chumManager = new ChumService(
     "identity-test",
     {
       baits: {},
@@ -62,7 +75,7 @@ vm.runInContext(
       },
     },
     {},
-    { cache: CacheManager, configEvents: document, onBoatReturned: (event) => boatReturnEvents.push(event) },
+    { cache: LocalStorageCache, configEvents: document, onBoatReturned: (event) => boatReturnEvents.push(event) },
   );
   const tripBoat = chumManager.spawnIdleBoat(0, 0, {
     instanceId: "boat-trip-root",
@@ -178,6 +191,7 @@ vm.runInContext(
       markInvalidCast() {},
       canPlayerCast: () => true,
       getGameStateName: () => "scouting",
+      createUi: (onClick) => new ChumControls(onClick),
     });
 
     controller.toggleAim();
@@ -243,12 +257,12 @@ vm.runInContext(
   );
 
   // Cast spam penalty and chum zone bonus curves (Stage 4 cluster 027 hot-loop evidence).
-  const castManager = new CastManager();
+  const castPenalty = new CastPenalty();
   const multipliers = [];
   for (let frame = 0; frame < 120; frame++) {
-    if (frame % 20 === 0 && castManager.canCast()) castManager.registerCast(frame * 100);
-    castManager.update(100);
-    multipliers.push(castManager.getBiteChanceMultiplier());
+    if (frame % 20 === 0 && castPenalty.canCast()) castPenalty.registerCast(frame * 100);
+    castPenalty.update(100);
+    multipliers.push(castPenalty.getBiteChanceMultiplier());
   }
   assertIdentity(Math.min(...multipliers) < 1 && multipliers.every((value) => value >= 0 && value <= 1),
     "cast spam penalty stays a bounded bite multiplier");
@@ -256,8 +270,8 @@ vm.runInContext(
     totalBonusTimeMs: 4000, minBonusDurationHours: 0.001, maxBonus: 2, minBonus: 1.2 };
   // Zones are created by their owner (ChumZone has no global of its own once migrated).
   const flatProjector = { getPerspective: () => ({ scale: 1, squashY: 0.5 }) };
-  const zoneManager = new ChumManager("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
-    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, flatProjector, { cache: CacheManager, rng: { next: () => 0.5 },
+  const zoneManager = new ChumService("zone-probe", { baits: { probe_mix: zoneConfig }, deliveryMethods: { boat: {
+    level: 1, statsByLevel: { 1: { maxEnergy: 100 } } } } }, flatProjector, { cache: LocalStorageCache, rng: { next: () => 0.5 },
     now: () => 0 });
   zoneManager.deployBait(50, 50, "probe_mix");
   zoneManager.deployBait(400, 50, "probe_mix");

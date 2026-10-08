@@ -47,29 +47,23 @@ class RuntimeLoader {
       "EquipmentSlotWarningCode",
       "EquipmentSlotAvailabilityPolicy",
     ]);
-    loader.load("src/game/domain/inventory/inventory_capacity_policy.js", [
-      "InventoryCapacityPolicy",
-      "UnlimitedInventoryCapacityPolicy",
-      "DelegatingInventoryCapacityPolicy",
-    ]);
+    loader.load("src/game/domain/inventory/inventory_capacity_policy.js", ["InventoryCapacityPolicy"]);
+    loader.load("src/game/domain/inventory/unlimited_inventory_capacity_policy.js", ["UnlimitedInventoryCapacityPolicy"]);
+    loader.load("src/game/domain/inventory/delegating_inventory_capacity_policy.js", ["DelegatingInventoryCapacityPolicy"]);
     // Production activates only the export with legacy consumers. This legacy-shaped test also
     // exercises the other two named exports through their exact identity in the loaded ESM module.
     const capacityModule = loader.getExports('src/game/domain/inventory/inventory_capacity_policy.js');
     context.InventoryCapacityPolicy = capacityModule.InventoryCapacityPolicy;
-    context.DelegatingInventoryCapacityPolicy = capacityModule.DelegatingInventoryCapacityPolicy;
-    loader.load("src/game/domain/equipment/equipment_transition_planner.js", [
-      "EquipmentTransitionPlan",
-      "ManualRodChangePlanner",
-    ]);
-    loader.load("src/game/application/inventory/equipment_transition_executor.js", [
-      "EquipmentTransitionPort",
-      "EquipmentTransitionExecutor",
-    ]);
+    context.DelegatingInventoryCapacityPolicy = loader.getExports('src/game/domain/inventory/delegating_inventory_capacity_policy.js').DelegatingInventoryCapacityPolicy;
+    loader.load("src/game/domain/equipment/equipment_transition_plan.js", ["EquipmentTransitionPlan"]);
+    loader.load("src/game/domain/equipment/manual_rod_change_planner.js", ["ManualRodChangePlanner"]);
+    loader.load("src/game/application/inventory/equipment_transition_port.js", ["EquipmentTransitionPort"]);
+    loader.load("src/game/application/inventory/equipment_transition_executor.js", ["EquipmentTransitionExecutor"]);
     loader.load("src/game/application/inventory/inventory_equipment_transition_adapter.js", [
-      "InventoryEquipmentTransitionPort",
+      "InventoryEquipmentTransitionAdapter",
     ]);
     loader.load("src/game/application/inventory/inventory_loadout_adapter.js", [
-      "InventoryLoadoutPort",
+      "InventoryLoadoutAdapter",
     ]);
     loader.load("src/game/domain/loadouts/equipment_loadout.js", [
       "LOADOUT_DISPLAY_NAME",
@@ -78,28 +72,22 @@ class RuntimeLoader {
     loader.load("src/game/domain/loadouts/loadout_equipment_transition_planner.js", [
       "LoadoutEquipmentTransitionPlanner",
     ]);
-    loader.load("src/game/application/inventory/loadout_application_service.js", [
-      "LoadoutApplicationPort",
-      "LoadoutApplicationService",
-    ]);
+    loader.load("src/game/application/inventory/loadout_application_port.js", ["LoadoutApplicationPort"]);
+    loader.load("src/game/application/inventory/loadout_application_service.js", ["LoadoutApplicationService"]);
     loader.load("src/game/domain/assemblies/exact_assembly_refill_signature_policy.js", [
       "ExactAssemblyRefillSignaturePolicy",
     ]);
-    loader.load("src/game/domain/equipment/auto_refill_policy.js", [
-      "AutoRefillTrigger",
-      "AutoRefillScope",
-      "AutoRefillSettings",
-      "AutoRefillMemory",
-      "AutoRefillPolicy",
-    ]);
+    loader.load("src/game/domain/equipment/auto_refill_trigger.js", ["AutoRefillTrigger"]);
+    loader.load("src/game/domain/equipment/auto_refill_scope.js", ["AutoRefillScope"]);
+    loader.load("src/game/domain/equipment/auto_refill_settings.js", ["AutoRefillSettings"]);
+    loader.load("src/game/domain/equipment/auto_refill_memory.js", ["AutoRefillMemory"]);
+    loader.load("src/game/domain/equipment/auto_refill_policy.js", ["AutoRefillPolicy"]);
     loader.load("src/game/application/inventory/equipment_auto_refill_target_provider.js", [
       "EquipmentAutoRefillTargetProvider",
     ]);
-    loader.load("src/game/application/inventory/auto_refill_coordinator.js", [
-      "AutoRefillPort",
-      "ExactInventoryAutoRefillPort",
-      "AutoRefillCoordinator",
-    ]);
+    loader.load("src/game/application/inventory/auto_refill_port.js", ["AutoRefillPort"]);
+    loader.load("src/game/application/inventory/exact_inventory_auto_refill_port.js", ["ExactInventoryAutoRefillPort"]);
+    loader.load("src/game/application/inventory/auto_refill_coordinator.js", ["AutoRefillCoordinator"]);
     loader.load("src/game/domain/equipment/fishing_readiness_policy.js", [
       "FishingReadinessPolicy",
     ]);
@@ -195,15 +183,15 @@ class InventoryEquipmentCheck {
   #checkPortContracts() {
     const r = this.#runtime;
     // The base ports have no classic consumer (no activation): reach them through their adapters.
-    const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryEquipmentTransitionPort);
-    const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryLoadoutPort);
+    const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryEquipmentTransitionAdapter);
+    const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryLoadoutAdapter);
     const transitionPort = new EquipmentTransitionPort();
     for (const name of ["runAtomic", "moveRootToInventory", "moveRootToEquipment", "commitEquipmentState"]) {
       Assertion.throws(() => transitionPort[name](), `EquipmentTransitionPort.${name} requires an implementation`);
     }
     // The inventory adapter delegates atomicity to its transaction; root moves are no-ops (state lives in EquipmentState).
     const operations = [];
-    const adapter = new r.InventoryEquipmentTransitionPort({
+    const adapter = new r.InventoryEquipmentTransitionAdapter({
       transaction: { runAtomic: (operation) => { operations.push(operation); return operation(); } },
     });
     Assertion.that(adapter instanceof EquipmentTransitionPort, "inventory adapter implements EquipmentTransitionPort");

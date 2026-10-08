@@ -14,7 +14,7 @@ const CONFIG_FILES = [
   "src/game/domain/items/quality/net_quality_modifier.js",
   "src/game/domain/items/quality/environmental_compensation_modifier.js",
   "src/engine/math/vector2.js",
-  "src/platform/browser/input/input_manager.js",
+  "src/platform/browser/input/input_controller.js",
   "src/game/config/raw/fish/peaceful_fish.js",
   "src/game/config/raw/fish/predator_fish.js",
   "src/game/config/raw/fish/rare_fish.js",
@@ -48,6 +48,10 @@ const GAMEPLAY_FILES = [
   "src/game/domain/casting/cast_distance_calculator.js",
   "src/game/domain/fishing/line_spool_state.js",
   "src/game/domain/fishing/landing_policy.js",
+  "src/game/domain/fishing/reel_landing_policy.js",
+  "src/game/domain/fishing/pole_landing_policy.js",
+  "src/game/domain/fishing/resolve_fight_physics_config.js",
+  "src/game/domain/fishing/landing_policy_resolver.js",
   "src/game/domain/fishing/simple_fight_force_calculator.js",
   "src/game/domain/fishing/hold_opposition_resolver.js",
   "src/game/domain/fishing/fish_direction_intent_sampler.js",
@@ -94,11 +98,41 @@ const GAMEPLAY_FILES = [
   "src/game/domain/fishing/rod_pull_calculator.js",
   "src/game/domain/fishing/fish_retrieve_result.js",
   "src/game/domain/fishing/recoverable_line_calculator.js",
+  "src/game/domain/fishing/loose_line_calculator.js",
   "src/game/domain/fishing/reel_retrieve_speed_calculator.js",
-  "src/game/domain/tackle/tackle.js",
+  "src/game/domain/tackle/equipment.js",
+  "src/game/domain/tackle/rod.js",
+  "src/game/domain/tackle/reel.js",
+  "src/game/domain/tackle/hook.js",
+  "src/game/domain/tackle/net.js",
+  "src/game/domain/tackle/water_entity.js",
+  "src/game/domain/tackle/spinner_entity.js",
+  "src/game/domain/tackle/wobbler_entity.js",
+  "src/game/domain/tackle/jig_entity.js",
+  "src/game/domain/tackle/feeder_entity.js",
+  "src/game/domain/tackle/float_entity.js",
+  "src/game/domain/tackle/bait_factory.js",
+  "src/game/domain/fish/fish_fight_event.js",
+  "src/game/domain/fish/fish_physics_profile.js",
   "src/game/domain/fish/fish.js",
-  "src/game/domain/rules/gameplay_rules.js",
-  "src/platform/browser/runtime/browser_runtime_adapters.js",
+  "src/game/domain/fish/fish_behavior.js",
+  "src/game/domain/fish/fish_condition.js",
+  "src/game/domain/fish/fish_endurance_points_calculator.js",
+  "src/game/domain/fish/fish_stamina_points_calculator.js",
+  "src/game/domain/rules/equipment_rules.js",
+  "src/game/domain/rules/bait_rules.js",
+  "src/game/domain/rules/cast_rules.js",
+  "src/game/domain/rules/bite_rules.js",
+  "src/game/domain/rules/chum_rules.js",
+  "src/game/domain/rules/boat_rules.js",
+  "src/game/domain/rules/player_cast_rules.js",
+  "src/platform/browser/runtime/dev_flags_provider.js",
+  "src/platform/browser/runtime/browser_audio_adapter.js",
+  "src/platform/browser/runtime/browser_buffered_audio_player.js",
+  "src/platform/browser/runtime/browser_debug_adapter.js",
+  "src/platform/browser/runtime/browser_event_target_adapter.js",
+  "src/platform/browser/runtime/canvas_metrics_provider.js",
+  "src/platform/browser/runtime/config_provider.js",
   "src/game/application/input/pull_input_mapper.js",
   "src/game/application/fishing/drag_control_service.js",
   "src/game/domain/fishing/line_system.js",
@@ -115,14 +149,24 @@ const GAMEPLAY_FILES = [
   "src/game/domain/fishing/weakest_tackle_limit_resolver.js",
   "src/game/domain/fishing/tackle_stress_system.js",
   "src/game/application/fishing/fight_physics_pipeline.js",
+  "src/game/application/fishing/fight_physics_pipeline_frame.js",
   "src/game/application/fishing/fight_physics_orchestrator.js",
   "src/game/domain/fishing/stamina_system.js",
-  "src/game/application/fishing/fishing_runtime_services.js",
+  "src/game/application/fishing/fishing_controller.js",
+  "src/game/application/fishing/cast_service.js",
+  "src/game/application/fishing/fight_session_factory.js",
+  "src/game/application/fishing/fishing_force_service.js",
+  "src/game/application/fishing/catch_resolution_service.js",
+  "src/game/application/fishing/fight_service.js",
   "src/game/domain/inventory/inventory_item_location.js",
   "src/game/domain/inventory/flat_inventory_item_repository.js",
-  "src/game/domain/locations/location_world.js",
+  "src/game/domain/locations/grid_cell.js",
+  "src/game/domain/locations/dynamic_zone.js",
+  "src/game/domain/locations/location_map.js",
   "src/game/application/viewport/viewport_projector.js",
-  "src/game/application/world/game_world_service.js",
+  "src/game/application/world/current_location.js",
+  "src/game/application/world/environment_system.js",
+  "src/game/application/world/game_world.js",
   "src/game/application/fishing/mutable_fight_frame_context.js",
   "src/game/application/fishing/bite_environment_service.js",
 ];
@@ -1254,7 +1298,7 @@ function runReelHoldConfigSourceCheck() {
 runReelHoldConfigSourceCheck();
 
 function runRodStrokeRecoverySourceCheck() {
-  const reelSystem = new ReelSystem({ autoRecoverLineCredit: true });
+  const reelSystem = new ReelService({ autoRecoverLineCredit: true });
   const lineState = {
     releasedMeters: 2,
     distanceMeters: 1,
@@ -1932,7 +1976,7 @@ inventory.restoreSnapshot(inventorySnapshot.filter(item => item.instanceId !== "
 assert(inventory.size === 3 && inventory.getChildren("inv_reel").length === 0,
   "inventory repository restores a snapshot and rebuilds its child index");
 
-const WorldMap = domainClass("LocationMap", "src/game/domain/locations/location_world.js");
+const WorldMap = domainClass("LocationMap", "src/game/domain/locations/location_map.js");
 const worldConfig = {
   map: { lake: {
     zones: {
@@ -1975,12 +2019,12 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const verify = (condition, message) => { if (!condition) throw new Error(message); };
   const viewConfig = { ...worldConfig, map: { lake: { ...worldConfig.map.lake, initialAlignment: { x: "center", y: "center" },
     safeZone: { top: 0, bottom: 60 }, perspective: { angleTop: 0, angleBottom: 30 } } } };
-  const location = new LocationManager(viewConfig);
+  const location = new CurrentLocation(viewConfig);
   verify(location.id === "lake" && location.config === viewConfig.map.lake && location.chumCastDistance === 300 &&
     location.currentEnvironment === null, "location manager resolves the configured location");
   const projector = new ViewportProjector(viewConfig, location.id);
   const gameConfig = createConfig();
-  const environment = new EnvironmentSystem(new LocationManager(gameConfig.locations).config, 6, new SeededRng(7),
+  const environment = new EnvironmentSystem(new CurrentLocation(gameConfig.locations).config, 6, new SeededRng(7),
     gameConfig.spawns);
   const chum = { update() {}, updateBoats() {}, getChumDataAt() { return null; } };
   const canvasMetrics = { width: 100, height: 60 };
@@ -1992,7 +2036,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const floatEntity = { getPosition: () => ({ x: 35, y: 35 }), getCurrentHookDepth: () => 2 };
   const biteService = new BiteEnvironmentService({ world: gameWorld, env: environment, chum,
     inventory: { getEquipped: () => ({}) }, floatRef: () => floatEntity, clock,
-    castManager: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => false },
+    castPenalty: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => false },
     getCurrentHookDepth: () => 2, getCastStartTime: () => 0, getDayOfWeek: () => 3, getTimeScale: () => 1,
     getGameStateName: () => "waiting", consumeExpiredFeederChum: () => {}, biteEnvData: { chumTargets: [] } });
   let lastBounds = null;
@@ -2024,7 +2068,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const feederFloat = { ...floatEntity, getChumBonus: elapsed => ({ isExpired: elapsed >= 1, bonus: 2, targets: ["fish"] }) };
   const feederEnvironment = new BiteEnvironmentService({ world: gameWorld, env: environment, chum,
     inventory: { getEquipped: () => equipped }, floatRef: () => feederFloat, clock,
-    castManager: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => true },
+    castPenalty: { getBiteChanceMultiplier: () => 1 }, equipmentRules: { isFeeder: () => true },
     getCurrentHookDepth: () => 2, getCastStartTime: () => castStartedAt, getDayOfWeek: () => 3, getTimeScale: () => 1,
     getGameStateName: () => state, consumeExpiredFeederChum: eq => controller.consumeExpiredFeederChum(eq), biteEnvData: sharedEnv });
   for (const query of [1, 2]) verify(feederEnvironment.getBiteEnvData() === sharedEnv && sharedEnv.chumTargets === targets,

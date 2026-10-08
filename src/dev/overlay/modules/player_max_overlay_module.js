@@ -1,6 +1,6 @@
 import { OverlayModule } from "../overlay_module.js";
 
-export class PlayerMaxModule extends OverlayModule {
+export class PlayerMaxOverlayModule extends OverlayModule {
   constructor(options = {}) {
     super("playerMax", options);
   }

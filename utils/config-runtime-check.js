@@ -16,7 +16,7 @@ function check(structured) {
     ["src/game/config/runtime/immutable_config.js",["deepFreezeConfig","setRuntimeConfigPath","getRuntimeConfigPath"]],
     ["src/bootstrap/production/config_context.js",["createRuntimeConfigContext"]],
     ["src/bootstrap/production/game_composition_root.js",["GameCompositionRoot"]],
-    ["src/platform/browser/runtime/browser_runtime_adapters.js",["ConfigProvider"]],
+    ["src/platform/browser/runtime/config_provider.js",["ConfigProvider"]],
     ["src/game/config/validation/config_schema_validator.js",["ConfigSchemaValidator"]],
     ["src/dev/overlay/overlay_metric_resolver.js",["OverlayMetricResolver"]],
   ]) runtime.load(file,{expose});
@@ -137,7 +137,7 @@ function checkDevelopmentInputs() {
   assert.equal(options?.type, "ObjectExpression");
   // Preserve each original serial await; only its importer moves to Development Bootstrap.
   const rootSource = fs.readFileSync(require("node:path").join(__dirname, "../src/bootstrap/production/game_composition_root.js"), "utf8");
-  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/browser_runtime_adapters.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
+  for (const [name, symbol, specifier] of [["loadRandomInventoryId","createRandomInventoryId","../../platform/browser/inventory/random_inventory_id.js"],["loadBrowserEventTargetAdapter","BrowserEventTargetAdapter","../../platform/browser/runtime/browser_event_target_adapter.js"],["loadBrowserTimeoutScheduler","BrowserTimeoutScheduler","../../platform/browser/time/browser_timeout_scheduler.js"],["loadInventoryAssemblyProfileConfig","getInventoryAssemblyProfileConfig","../../game/config/inventory/inventory_composition_config.js"]]) {
     const property = options.properties.find(item => item.key.name === name);
     assert.equal(property.value.type, "ArrowFunctionExpression");
     assert.equal(property.value.body.type, "ImportExpression");
@@ -225,7 +225,7 @@ function checkProductionOverrideReader() {
   const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
   const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
   source.load("src/dev/god_mode.js", { expose: ["GodMode"] });
-  source.load("src/platform/browser/runtime/browser_runtime_adapters.js", { expose: ["DevFlagsProvider"] });
+  source.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   source.load("src/bootstrap/production/game_composition_root.js", { expose: ["GameCompositionRoot"] });
   const reader = new GameplayOverrideReader(config), original = new source.context.GodMode(config);
   const names = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(original))).filter(([, value]) => value.get).map(([name]) => name);
@@ -295,14 +295,14 @@ async function checkNativeProductionStartup() {
       evaluated = evaluated.slice(0, start) + replacement + evaluated.slice(end);
     return new SourceRuntime({ globals: bindings }).run("(function(){\n" + evaluated + "\nreturn {" + names.join(",") + "};})()", file);
   }
-  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/browser_runtime_adapters.js", ["DevFlagsProvider"], { EventBus });
+  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/dev_flags_provider.js", ["DevFlagsProvider"], { EventBus });
   const { createRuntimeConfigContext } = evaluate("src/bootstrap/production/config_context.js", ["createRuntimeConfigContext"], {
     ...require("../src/game/config/runtime/config_override_store.js"), ...require("../src/game/config/runtime/resolved_config_provider.js"),
     ...require("../src/platform/browser/config/deep_clone_config.js"), ...require("../src/game/config/runtime/immutable_config.js"),
   });
   const loaders = {
     loadRandomInventoryId: "../../platform/browser/inventory/random_inventory_id.js",
-    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/browser_runtime_adapters.js",
+    loadBrowserEventTargetAdapter: "../../platform/browser/runtime/browser_event_target_adapter.js",
     loadBrowserTimeoutScheduler: "../../platform/browser/time/browser_timeout_scheduler.js",
     loadInventoryAssemblyProfileConfig: "../../game/config/inventory/inventory_composition_config.js",
   };
@@ -445,10 +445,10 @@ function checkNativeDevelopmentDisplays() {
 function checkLocationMapConfigChanges() {
   const source = new SourceRuntime({globals:{document:{addEventListener(){},removeEventListener(){},dispatchEvent(){}},
     CustomEvent:class {constructor(type,options){this.type=type;this.detail=options.detail;}}, console:{...console,log(){}}},
-    moduleStubs:{'src/platform/browser/storage/cache_manager.js':{CacheManager:{get:()=>({}),set(){}}}}});
+    moduleStubs:{'src/platform/browser/storage/local_storage_cache.js':{LocalStorageCache:{get:()=>({}),set(){}}}}});
   const {CONFIG} = source.importModule('src/game/config/runtime/game_config.js');
   const {createRuntimeConfigContext} = source.importModule('src/bootstrap/production/config_context.js');
-  const {LocationMap} = source.importModule('src/game/domain/locations/location_world.js');
+  const {LocationMap} = ({ ...source.importModule('src/game/domain/locations/grid_cell.js'), ...source.importModule('src/game/domain/locations/dynamic_zone.js'), ...source.importModule('src/game/domain/locations/location_map.js') });
   const fields = ['debugGrid','debugDepthText','debugZones','enableCastable','enableCollisions','enableSnags','enableDynamicZones'];
   const config = JSON.parse(JSON.stringify(CONFIG));
   const context = createRuntimeConfigContext(config);

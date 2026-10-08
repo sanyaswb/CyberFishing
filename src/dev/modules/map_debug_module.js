@@ -1,4 +1,4 @@
-import { ConsoleTableDebugModule } from "./base_debug_module.js";
+import { ConsoleTableDebugModule } from "./console_table_debug_module.js";
 
 export class MapDebugModule extends ConsoleTableDebugModule {
   #printer;
