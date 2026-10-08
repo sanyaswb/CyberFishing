@@ -1,6 +1,6 @@
 # ТЗ 018: реструктуризація Presentation CSS
 
-Дата: 2026-10-08. Статус: **задача підготовлена; реалізація не розпочата**.
+Дата: 2026-10-08. Статус: **реалізовано та прийнято**; [results.md](results.md).
 Тип: структурна зміна зі збереженням вигляду та поведінки.
 Baseline: `d065f0c`, реліз 0.30.1. Stage 7 залишається закритим; це окреме покращення Presentation.
 
@@ -11,7 +11,7 @@ Production має завантажувати тільки потрібні йо�
 Розподіл повинен спиратися на реальних DOM writers і cascade dependencies, а не на кількість
 рядків або довільну кількість файлів. Вигляд усіх чинних UI-станів має залишитися незмінним.
 
-Зараз є два external stylesheets, які в однаковому порядку читають обидві сторінки:
+У початковому baseline були два external stylesheets, які в однаковому порядку читали обидві сторінки:
 
 | Baseline-файл | Рядків / bytes | Відповідальності |
 | --- | --- | --- |
@@ -63,7 +63,6 @@ src/game/presentation/styles/
   game-shell.css
   version-badge.css
   inventory/
-    theme.css
     modal.css
     header.css
     shared-controls.css
@@ -82,8 +81,9 @@ src/dev/styles/
   dev-tools.css
 ```
 
-Це вихідна карта відповідальностей, а не обов'язковий file-count KPI. До перенесення
-уточнити її за повним selector → DOM writer → cascade consumers inventory. Наприклад,
+Це карта відповідальностей, а не обов'язковий file-count KPI. Реалізована структура
+зафіксована в [ownership.md](ownership.md); theme scope залишено в modal owner.
+Під час майбутніх змін уточнювати її за selector → DOM writer → cascade consumers inventory. Наприклад,
 attachments можна залишити поруч із cards, якщо audit підтвердить єдиного власника;
 окремий shared component виправданий лише реальними споживачами. Не дробити stylesheet
 на файли для кожного modifier або declaration і не створювати catch-all `utils.css`.
@@ -147,7 +147,7 @@ Named container і query повинні працювати з тим самим 
 
 ## Адаптація checks
 
-Шість чинних checks мають literal references до старих stylesheet paths:
+Шість чинних checks мали literal references до старих stylesheet paths; тепер читають HTML composition:
 
 1. `utils/css-usage-check.js`;
 2. `utils/inventory-ui-check.js`;
@@ -212,8 +212,8 @@ UI інтеракції працюють; cold/warm stylesheet request count, tr
 
 ## Definition of done
 
-Завдання завершене після виконання [tasks.md](tasks.md), visual/cascade parity, checks і записаного
-приймання на одному stable source snapshot. Окремий commit/release decision фіксується за чинним
-процесом проєкту. Підготовка цього ТЗ не означає, що CSS уже реструктуризовано.
+Завдання завершене: [tasks.md](tasks.md), [ownership.md](ownership.md), [results.md](results.md).
+Приймання містить межі visual evidence та виміряний request-overhead tradeoff.
+Factual commit/push виконуються за чинним процесом без нового release/tag.
 
 Пов'язаний аудит: [Stage 7 post-closure audit](../../docs/audits/2026-10-08-stage7-post-closure.md).

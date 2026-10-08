@@ -1,0 +1,53 @@
+/* Attached item badge placement and visuals. */
+
+.inventory-attachments {
+  position: absolute;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.inventory-attachments--reel-line {
+  right: -10px;
+  bottom: 0;
+}
+
+.inventory-attachments--hook {
+  top: 0;
+  right: -10px;
+}
+
+.inventory-attachments--bottom,
+.inventory-attachments--boat-cargo {
+  right: -10px;
+  bottom: 0;
+}
+
+.inventory-attachment-badge {
+  position: absolute;
+  top: -16px;
+  right: calc(var(--inventory-badge-index) * 15px);
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid #00e49a;
+  border-radius: 50%;
+  background: rgba(7, 23, 20, 0.96);
+  box-shadow: 0 1px 4px #000;
+}
+
+.inventory-attachment-badge__image {
+  max-width: 82%;
+  max-height: 82%;
+  object-fit: contain;
+}
+
+.inventory-attachment-badge__icon {
+  font:
+    20px/1 system-ui,
+    sans-serif;
+}

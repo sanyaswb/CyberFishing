@@ -208,3 +208,11 @@ CSS vocabulary check доводить згадку class names у code, але �
 Код у пунктах 1–3 не реалізований цим аудитом. P0/P1 runtime blocker у перевіреному обсязі
 не виявлено. Деталі актуальних шарів і прийнятого cleanup: [architecture](../architecture.md),
 [cleanup closure](../refactoring_remaining.md).
+
+## Follow-up closure
+
+Початковий аудит вище збережений як snapshot до реалізації. За наступним дорученням
+власника виконано [019 cleanup](../../specs/019-post-closure-dead-code/results.md)
+(commit `67da207`) і [018 CSS restructure](../../specs/018-presentation-css-restructure/results.md).
+Consumer review, збережені contracts, removals, differential/browser evidence і network
+tradeoff записані у results. Stage 7 не відкривався повторно; версію 0.30.1 не змінено.

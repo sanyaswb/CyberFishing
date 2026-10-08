@@ -4,9 +4,9 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const espree = require("espree");
+const { readPageStylesheets, validatePageStyleComposition } = require("./testing/styles/page_stylesheet_reader");
 
 const ROOT = path.resolve(__dirname, "..");
-const STYLES = ["src/game/presentation/styles/style.css", "src/game/presentation/styles/inventory.css"];
 
 // Class names the code can put on elements: every token of a string literal or template text, plus the
 // static prefix before a dynamic part (`is-${tone}`, "slot--" + kind).
@@ -18,9 +18,14 @@ class ClassVocabulary {
     for (const token of text.split(/[^A-Za-z0-9_-]+/)) this.tokens.add(token);
   }
 
-  addModule(text) {
+  addModule(text, onInjectedStyle = () => {}) {
     const visit = (node) => {
       if (!node || typeof node.type !== "string") return;
+      if (node.type === "AssignmentExpression" && node.left.type === "MemberExpression" &&
+          node.left.object.name === "style" && ["textContent", "innerHTML"].includes(node.left.property.name) &&
+          node.right.type === "TemplateLiteral" && node.right.expressions.length === 0) {
+        onInjectedStyle(node.right.quasis[0].value.cooked);
+      }
       if (node.type === "Literal" && typeof node.value === "string") this.#addText(node.value);
       if (node.type === "TemplateLiteral") {
         node.quasis.forEach((quasi, index) => {
@@ -62,17 +67,25 @@ function unusedClasses(css, vocabulary) {
 }
 
 function projectVocabulary() {
-  const vocabulary = new ClassVocabulary();
+  const production = new ClassVocabulary();
+  const development = new ClassVocabulary();
+  const injected = [];
   const walk = (directory) => {
     for (const entry of fs.readdirSync(path.join(ROOT, directory), { withFileTypes: true })) {
       const relative = `${directory}/${entry.name}`;
       if (entry.isDirectory()) walk(relative);
-      else if (relative.endsWith(".js")) vocabulary.addModule(fs.readFileSync(path.join(ROOT, relative), "utf8"));
+      else if (relative.endsWith(".js")) {
+        const text = fs.readFileSync(path.join(ROOT, relative), "utf8");
+        const dev = relative.startsWith("src/dev/") || relative.startsWith("src/bootstrap/development/");
+        development.addModule(text, (css) => injected.push({ file: relative, css, dev }));
+        if (!dev) production.addModule(text);
+      }
     }
   };
   walk("src");
-  for (const page of ["index.html", "dev.html"]) vocabulary.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
-  return vocabulary;
+  production.addHtml(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"));
+  for (const page of ["index.html", "dev.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
+  return { production, development, injected };
 }
 
 // Negative fixtures: an unknown class is reported; static and dynamic uses are accepted.
@@ -81,12 +94,22 @@ fixture.addModule('const card = `item-card is-${tone}`; const slot = "slot--" + 
 assert.deepEqual(unusedClasses(".panel { } .item-card .is-positive { } .slot--rod { } .old-grid { }", fixture), ["old-grid"],
   "a class nobody uses is reported, static and dynamic uses are accepted");
 
+const link = (href) => `<link rel="stylesheet" href="${href}">`;
+const fixturePath = "src/game/presentation/styles/game-shell.css";
+assert.throws(() => readPageStylesheets({ html: link(fixturePath) + link(`${fixturePath}?different=1`) }), /Duplicate stylesheet/);
+assert.throws(() => readPageStylesheets({ html: link("src/game/presentation/styles/missing.css") }), /Missing stylesheet/);
+assert.throws(() => readPageStylesheets({ html: link("src/dev/styles/dev-tools.css") }), /Production loads DEV CSS/);
+assert.throws(() => readPageStylesheets({ html: link("../../outside.css") }), /escapes project/);
+assert.throws(() => readPageStylesheets({ html: link("https://external.example/styles.css") }), /relative project path/);
+
+const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
+const stylesheets = composition.development;
 let total = 0;
-for (const file of STYLES) {
-  const css = fs.readFileSync(path.join(ROOT, file), "utf8");
-  const unused = unusedClasses(css, vocabulary);
+for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
+  const dev = file.startsWith("src/dev/");
+  const unused = unusedClasses(css, dev ? vocabulary.development : vocabulary.production);
   total += classSelectors(css).length;
   assert.deepEqual(unused, [], `${file} styles classes that no code uses: ${unused.join(", ")}`);
 }
-console.log(`CSS usage passed: ${total} class selectors in ${STYLES.length} stylesheets are all used by code; unused-class fixture rejected.`);
+console.log(`CSS usage passed: ${total} class selectors across ${stylesheets.length} linked stylesheets and ${vocabulary.injected.length} injected blocks; native order/version/ownership/reachability valid; 6 negative fixtures rejected.`);

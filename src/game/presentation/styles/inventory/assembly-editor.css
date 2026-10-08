@@ -1,0 +1,103 @@
+/* Assembly workspace container, root/sockets and actions. */
+
+.inventory-assembly-editor {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.inventory-assembly-editor__workspace {
+  display: flex;
+  width: var(--inventory-assembly-content-width);
+  max-width: 100%;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 14px;
+  container-name: inventory-assembly-workspace;
+  container-type: inline-size;
+}
+
+.inventory-assembly-editor__visual {
+  width: var(--inventory-assembly-card-width);
+  max-width: 100%;
+  align-self: center;
+  aspect-ratio: 1;
+}
+
+.inventory-assembly-editor__visual .inventory-item-card {
+  width: 100%;
+  height: 100%;
+  cursor: help;
+  pointer-events: auto;
+}
+
+.inventory-assembly-editor__visual .inventory-item-card__visual {
+  inset: 8%;
+}
+
+.inventory-assembly-editor__visual .inventory-item-card__icon {
+  font-size: clamp(80px, 11vw, 148px);
+}
+
+.inventory-assembly-editor__sockets {
+  display: grid;
+  width: var(--inventory-assembly-card-width);
+  max-width: 100%;
+  align-self: center;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--inventory-socket-size), var(--inventory-socket-size))
+  );
+  gap: 10px;
+  align-content: start;
+  justify-content: center;
+}
+
+.inventory-assembly-editor__sockets .inventory-field--socket {
+  width: var(--inventory-socket-size);
+}
+
+.inventory-assembly-editor__sockets .inventory-field__label {
+  min-height: 28px;
+  justify-content: center;
+  text-align: center;
+}
+
+.inventory-assembly-editor__actions {
+  display: grid;
+  width: var(--inventory-assembly-card-width);
+  max-width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.inventory-assembly-editor__button {
+  min-height: 37px;
+  padding: 7px 8px;
+  border: 1px solid #627077;
+  border-radius: 4px;
+  background: #29343a;
+  color: #f1f5f6;
+  cursor: pointer;
+  font: 700 11px inherit;
+}
+
+.inventory-assembly-editor__button.is-primary {
+  border-color: var(--inventory-success);
+  background: rgba(0, 245, 138, 0.2);
+  color: #6affbd;
+}
+
+.inventory-assembly-editor__button.is-danger {
+  border-color: var(--inventory-danger);
+  background: rgba(255, 66, 87, 0.16);
+  color: #ff8e9b;
+}
+
+.inventory-assembly-editor__button.is-muted {
+  color: #c2c9cc;
+}

@@ -1,0 +1,99 @@
+/* Warnings, disabled actions and shared scrolling surfaces. */
+
+.inventory-warning {
+  width: min(620px, calc(100% - 40px));
+  max-height: 0;
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0 16px;
+  overflow: hidden;
+  border: 0 solid var(--inventory-danger);
+  border-radius: 5px;
+  margin: 0;
+  opacity: 0;
+  background: rgba(54, 4, 10, 0.96);
+  color: #ffb9c1;
+  font-weight: 700;
+  line-height: 1.35;
+  pointer-events: none;
+  transform: translateY(-8px);
+  visibility: hidden;
+  transition:
+    max-height 150ms ease,
+    padding 150ms ease,
+    border-width 150ms ease,
+    margin 150ms ease,
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.inventory-warning.is-visible {
+  max-height: 120px;
+  padding: 9px 16px;
+  border-width: 1px;
+  margin-top: 10px;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.inventory-loadout-save__button.is-disabled,
+.inventory-assembly-editor__button.is-disabled,
+.inventory-saved-loadout-preview__button.is-disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+}
+
+.inventory-categories,
+.inventory-subfilters,
+.inventory-sort-options,
+.inventory-loadout-panel,
+.inventory-assembly-editor,
+.inventory-saved-loadout-preview,
+.inventory-tooltip {
+  scrollbar-width: thin;
+  scrollbar-color: var(--inventory-scrollbar-thumb)
+    var(--inventory-scrollbar-track);
+}
+
+.inventory-categories::-webkit-scrollbar,
+.inventory-subfilters::-webkit-scrollbar,
+.inventory-sort-options::-webkit-scrollbar,
+.inventory-loadout-panel::-webkit-scrollbar,
+.inventory-assembly-editor::-webkit-scrollbar,
+.inventory-saved-loadout-preview::-webkit-scrollbar,
+.inventory-tooltip::-webkit-scrollbar {
+  width: var(--inventory-scrollbar-size);
+  height: var(--inventory-scrollbar-size);
+}
+
+.inventory-categories::-webkit-scrollbar-track,
+.inventory-subfilters::-webkit-scrollbar-track,
+.inventory-sort-options::-webkit-scrollbar-track,
+.inventory-loadout-panel::-webkit-scrollbar-track,
+.inventory-assembly-editor::-webkit-scrollbar-track,
+.inventory-saved-loadout-preview::-webkit-scrollbar-track,
+.inventory-tooltip::-webkit-scrollbar-track {
+  background: var(--inventory-scrollbar-track);
+}
+
+.inventory-categories::-webkit-scrollbar-thumb,
+.inventory-subfilters::-webkit-scrollbar-thumb,
+.inventory-sort-options::-webkit-scrollbar-thumb,
+.inventory-loadout-panel::-webkit-scrollbar-thumb,
+.inventory-assembly-editor::-webkit-scrollbar-thumb,
+.inventory-saved-loadout-preview::-webkit-scrollbar-thumb,
+.inventory-tooltip::-webkit-scrollbar-thumb {
+  border-radius: calc(var(--inventory-scrollbar-size) / 2);
+  background: var(--inventory-scrollbar-thumb);
+}
+
+.inventory-categories::-webkit-scrollbar-thumb:hover,
+.inventory-subfilters::-webkit-scrollbar-thumb:hover,
+.inventory-sort-options::-webkit-scrollbar-thumb:hover,
+.inventory-loadout-panel::-webkit-scrollbar-thumb:hover,
+.inventory-assembly-editor::-webkit-scrollbar-thumb:hover,
+.inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,
+.inventory-tooltip::-webkit-scrollbar-thumb:hover {
+  background: var(--inventory-scrollbar-thumb-hover);
+}

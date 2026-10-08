@@ -1,3 +1,4 @@
+const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
@@ -6,7 +7,6 @@ const { BrowserTimeoutScheduler } = require("../src/platform/browser/time/browse
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
-const STYLE_FILE = path.join(ROOT, "src", "game", "presentation", "styles", "inventory.css");
 const ITEM_PARAMETER_CONFIG_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_item_parameter_config.js");
 const VIEW_MODEL_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_view_model_factory.js");
 const ITEM_VIEW_FACTORY_FILE = path.join(ROOT, "src/game/presentation/inventory/inventory_item_tree_view_factory.js");
@@ -50,7 +50,7 @@ class InventorySourceReader {
   }
 
   readStyle() {
-    return fs.readFileSync(STYLE_FILE, "utf8");
+    return readPageCss();
   }
 
   readConfig() {

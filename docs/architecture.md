@@ -65,6 +65,23 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 
 It reports the production and DEV graph sizes and runs its own negative fixtures first.
 
+## Presentation styles
+
+Native HTML pages are the CSS composition roots. `index.html` loads 15 component stylesheets
+from `game/presentation/styles`; `dev.html` reuses that exact ordered prefix and appends
+`dev/styles/dev-tools.css`. Each link uses the package version query. There are no CSS imports,
+compatibility wrappers or build requirements. Theme scope belongs to inventory modal; shared
+controls have one owner; responsive/reduced-motion overrides follow the component rules.
+
+The final file/DOM-writer map and cascade contracts are documented in
+[CSS ownership](../specs/018-presentation-css-restructure/ownership.md). Dynamic visual writes
+and existing injected styles retain their current owners. Domain/Application do not know CSS.
+
+Six CSS checks read the actual HTML composition through the read-only
+`utils/testing/styles/page_stylesheet_reader.js`. The usage guard checks owner boundaries,
+versions, existence, duplicate loads, unlinked CSS and the identical production prefix in DEV;
+it also reads the retained static injected blocks in `OverlayStyleInstaller` and `EngineInterface`.
+
 ## Checks
 
 ```text

@@ -15,7 +15,6 @@ export class DevToolsUI {
   constructor(onToggleCallback, config, tooltipProvider = null) {
     this.#onToggleCallback = onToggleCallback;
     this.#tooltipProvider = tooltipProvider;
-    this.#initStyles();
     this.#initBtn(config);
     this.#initPanel();
   }
@@ -267,14 +266,6 @@ export class DevToolsUI {
 
   #getParameterTooltip(labelText) {
     return this.#tooltipProvider?.getTooltip(labelText) || "";
-  }
-
-  #initStyles() {
-    if (document.getElementById("devtools-styles")) return;
-
-    const style = document.createElement("style");
-    style.id = "devtools-styles";
-    document.head.appendChild(style);
   }
 
   #initBtn(config) {

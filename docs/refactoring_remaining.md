@@ -72,9 +72,18 @@ The completed cleanup checklist above stays closed. New work does not reopen Sta
 - [018 — Presentation CSS restructure](../specs/018-presentation-css-restructure/spec.md),
   [plan](../specs/018-presentation-css-restructure/plan.md),
   [tasks](../specs/018-presentation-css-restructure/tasks.md): component ownership, DEV style isolation,
-  native load order and visual/cascade parity. Planned, not implemented.
+  native load order and visual/cascade parity. **Completed**: [results](../specs/018-presentation-css-restructure/results.md),
+  [ownership](../specs/018-presentation-css-restructure/ownership.md). 250 unchanged authored blocks,
+  15 production stylesheets + one DEV stylesheet; 39 visual scenarios / seven pixel pairs pass.
+  Request-overhead tradeoff measured and recorded; version/tag unchanged.
 
 - [019 — Post-closure dead code](../specs/019-post-closure-dead-code/results.md): implemented;
   24 unused private fields, unused locals/12 methods, null-only buffs and missing bite-config
   fallback retired. Native test assertions strengthened; live/test/manual contracts retained.
   Full 38/38, Quick 13/13, Architecture 2/2; 4,837 differential records and game-cycle/save parity.
+
+Both follow-up tasks are complete. The audit's initial findings remain a historical snapshot;
+019 records their consumer decisions/removals, and 018 records the completed CSS cutover.
+No classic compatibility transport or unreachable source modules remain. Live bridges/save migration
+contracts are retained intentionally. Static inline styling and Canvas decomposition are optional future
+tasks, not unfinished migration acceptance work.

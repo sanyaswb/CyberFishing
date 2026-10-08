@@ -1,32 +1,4 @@
-body {
-  margin: 0;
-  overflow: hidden;
-  background-color: #1a1a1a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100dvh;
-  touch-action: none;
-}
-
-canvas {
-  background-color: #0f171e;
-}
-
-body.victory-outcome-active canvas#gameCanvas {
-  position: relative;
-  z-index: 20000;
-}
-
-body.scouting-pointer-hold .ui-fade-target {
-  opacity: 0.18 !important;
-  transition: opacity 180ms ease-out !important;
-}
-
-body.scouting-pointer-release .ui-fade-target {
-  opacity: 1 !important;
-  transition: none !important;
-}
+/* DEV Tools panel, editor fields, switches and scrollbars. */
 
 .devtools-panel {
   position: fixed;
@@ -205,21 +177,4 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(18px);
-}
-
-.game-version-badge {
-  position: fixed;
-  left: 10px;
-  bottom: 8px;
-  z-index: 9800;
-  padding: 4px 7px;
-  border: 1px solid rgba(0, 204, 255, 0.35);
-  border-radius: 6px;
-  background: rgba(15, 23, 30, 0.65);
-  color: rgba(210, 245, 255, 0.82);
-  font-family: monospace;
-  font-size: 11px;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
 }

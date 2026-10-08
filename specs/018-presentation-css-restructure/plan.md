@@ -1,6 +1,7 @@
 # План: Presentation CSS restructure
 
-Статус: підготовлений, реалізація не розпочата. Канонічні вимоги: [spec.md](spec.md).
+Статус: виконано. Канонічні вимоги: [spec.md](spec.md); фактичне приймання:
+[results.md](results.md), фінальні owners/order: [ownership.md](ownership.md).
 
 ## 1. Зафіксувати візуальний і каскадний baseline
 

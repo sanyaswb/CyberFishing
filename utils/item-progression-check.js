@@ -1,11 +1,9 @@
-const fs = require("node:fs");
-const path = require("node:path");
+const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
 const { bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
-const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item progression check");
 
 class RuntimeLoader {
@@ -785,9 +783,7 @@ class ItemProgressionCheck {
         tierVisual.ratingTier.cssColor === "",
       "explicit ratingTier is supported as rating segmentation",
     );
-    const css = ["style.css", "inventory.css"]
-      .map((file) => fs.readFileSync(path.join(ROOT, "src/game/presentation/styles", file), "utf8"))
-      .join("\n");
+    const css = readPageCss();
     for (const stop of this.#runtime.VISUAL_CONFIG.colorStops) {
       const channels = stop.color.join(", ");
       const hex = `#${stop.color

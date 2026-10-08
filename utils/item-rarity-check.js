@@ -1,9 +1,7 @@
-const fs = require("node:fs");
-const path = require("node:path");
+const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item rarity check");
 
 class ItemRarityRuntimeLoader {
@@ -322,10 +320,7 @@ class ItemRarityCheck {
   }
 
   #checkCssLayering() {
-    const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
-      "utf8",
-    );
+    const css = readPageCss();
     Assertion.that(
       css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
       "item cards draw the rarity frame from the rarity color",

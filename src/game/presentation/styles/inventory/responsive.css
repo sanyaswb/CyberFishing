@@ -1,0 +1,117 @@
+/* Viewport breakpoints and reduced-motion overrides; loaded after every component. */
+
+@media (max-width: 1180px) {
+  .inventory-header {
+    grid-template-columns: minmax(180px, 1fr) auto auto auto;
+    gap: 10px;
+  }
+
+  .inventory-main {
+    grid-template-columns: minmax(370px, 0.9fr) minmax(0, 1.35fr);
+  }
+}
+
+@media (max-width: 820px) {
+  .inventory-modal {
+    --inventory-card-size: 82px;
+    padding: 9px;
+    overflow-y: auto;
+  }
+
+  .inventory-loadout-panel__auxiliary {
+    --inventory-auxiliary-card-size: var(--inventory-card-size);
+  }
+
+  .inventory-header {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .inventory-header__close {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .inventory-active-tackle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: center;
+  }
+
+  .inventory-auto-settings {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: center;
+  }
+
+  .inventory-main {
+    display: flex;
+    overflow: visible;
+    flex-direction: column;
+  }
+
+  .inventory-main__left,
+  .inventory-main__right {
+    flex: 0 0 auto;
+  }
+
+  .inventory-loadout-panel,
+  .inventory-assembly-editor,
+  .inventory-saved-loadout-preview {
+    min-height: 560px;
+  }
+
+  .inventory-list-panel {
+    min-height: 440px;
+  }
+}
+
+@media (max-width: 520px) {
+  .inventory-load__label,
+  .inventory-toggle__label {
+    display: none;
+  }
+
+  .inventory-loadout-save {
+    flex-direction: column;
+  }
+
+  .inventory-loadout-panel__primary {
+    grid-template-columns: 1fr 104px;
+    gap: 14px;
+  }
+
+  .inventory-assembly-editor {
+    padding: 14px;
+  }
+
+  .inventory-assembly-editor__actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inventory-saved-loadout-preview__slots {
+    grid-template-columns: repeat(auto-fill, var(--inventory-card-size));
+  }
+
+  .inventory-saved-loadout-preview__actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-item-card.rarity-unique.rarity-pulse,
+  .inv-tooltip.rarity-unique.rarity-pulse {
+    animation: none;
+  }
+
+  .inventory-slot.is-highlighted::after {
+    opacity: 0.35;
+    animation: none;
+  }
+
+  .inventory-toggle__control,
+  .inventory-toggle__control::after,
+  .inventory-warning {
+    transition: none;
+  }
+}

@@ -1,3 +1,4 @@
+const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const fs = require("node:fs");
 const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
@@ -221,10 +222,7 @@ class ItemConditionCheck {
   }
 
   #checkCssContract() {
-    const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
-      "utf8",
-    );
+    const css = readPageCss();
     Assertion.that(
       css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
       "the item card rarity frame stays full and independent from condition",

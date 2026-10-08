@@ -1,0 +1,31 @@
+/* Browser game surface, victory stacking and scouting fade. */
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  touch-action: none;
+}
+
+canvas {
+  background-color: #0f171e;
+}
+
+body.victory-outcome-active canvas#gameCanvas {
+  position: relative;
+  z-index: 20000;
+}
+
+body.scouting-pointer-hold .ui-fade-target {
+  opacity: 0.18 !important;
+  transition: opacity 180ms ease-out !important;
+}
+
+body.scouting-pointer-release .ui-fade-target {
+  opacity: 1 !important;
+  transition: none !important;
+}

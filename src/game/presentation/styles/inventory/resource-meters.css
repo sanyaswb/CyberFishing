@@ -1,0 +1,55 @@
+/* Thumbnail and parameter resource meters. */
+
+.inventory-resource-meter {
+  display: block;
+  pointer-events: none;
+}
+
+.inventory-resource-meter--thumbnail {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+  z-index: 6;
+  height: var(--inventory-parameter-meter-height);
+}
+
+.inventory-resource-meter--thumbnail .inventory-resource-meter__icon {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 0;
+  color: var(--inventory-resource-icon);
+  font:
+    12px/1 system-ui,
+    sans-serif;
+  filter: drop-shadow(0 1px 2px #000);
+}
+
+.inventory-resource-meter--parameter {
+  width: 100%;
+  height: var(--inventory-parameter-meter-height);
+}
+
+.inventory-resource-meter__track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--inventory-parameter-meter-height);
+  overflow: hidden;
+  border: 1px solid var(--inventory-resource-border);
+  background: var(--inventory-resource-track);
+}
+
+.inventory-resource-meter__fill {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  left: 1px;
+  background: linear-gradient(
+    to right,
+    var(--inventory-resource-fill-start),
+    var(--inventory-resource-fill-end)
+  );
+  clip-path: inset(0 calc(100% - var(--inventory-resource-percent)) 0 0);
+}

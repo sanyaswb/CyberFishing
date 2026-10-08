@@ -82,7 +82,10 @@
 │  ├── 017-force-diagnostics
 │  │  └── spec.md
 │  ├── 018-presentation-css-restructure
+│  │  ├── ownership.md
 │  │  ├── plan.md
+│  │  ├── results.md
+│  │  ├── rule-map.json
 │  │  ├── spec.md
 │  │  └── tasks.md
 │  └── 019-post-closure-dead-code
@@ -233,6 +236,8 @@
 │  │  │  ├── dev_tools_parameter_alias_registry.js
 │  │  │  ├── location_dev_tools_schema.js
 │  │  │  └── memory_leak_watchdog.js
+│  │  ├── styles
+│  │  │  └── dev-tools.css
 │  │  └── tools
 │  │     ├── dev_tools.js
 │  │     ├── dev_tools_parameter_tooltip_provider.js
@@ -713,11 +718,25 @@
 │  │     ├── styles
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
+│  │     │  ├── game-shell.css
 │  │     │  ├── hud_style_resolver.js
-│  │     │  ├── inventory.css
+│  │     │  ├── inventory
+│  │     │  │  ├── assembly-editor.css
+│  │     │  │  ├── attachments.css
+│  │     │  │  ├── header.css
+│  │     │  │  ├── item-cards.css
+│  │     │  │  ├── item-parameters.css
+│  │     │  │  ├── list-and-filters.css
+│  │     │  │  ├── loadout.css
+│  │     │  │  ├── modal.css
+│  │     │  │  ├── resource-meters.css
+│  │     │  │  ├── responsive.css
+│  │     │  │  ├── shared-controls.css
+│  │     │  │  ├── slots.css
+│  │     │  │  └── tooltips.css
 │  │     │  ├── outcome_style_resolver.js
 │  │     │  ├── rarity_visual_resolver.js
-│  │     │  └── style.css
+│  │     │  └── version-badge.css
 │  │     ├── version
 │  │     │  └── project_version.js
 │  │     ├── visual
@@ -837,6 +856,8 @@
    │  │  ├── item_stat_test_composition.js
    │  │  ├── native_esm_test_loader.js
    │  │  └── render_frame_test_composition.js
+   │  ├── styles
+   │  │  └── page_stylesheet_reader.js
    │  └── suites
    │     └── check_manifest.js
    ├── victory-input-check.js

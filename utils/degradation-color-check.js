@@ -1,9 +1,7 @@
-const fs = require("node:fs");
-const path = require("node:path");
+const { readPageCss } = require("./testing/styles/page_stylesheet_reader");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Degradation color check");
 
 class RuntimeLoader {
@@ -102,10 +100,7 @@ class DegradationColorCheck {
   }
 
   #checkCapacityIntegration() {
-    const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
-      "utf8",
-    );
+    const css = readPageCss();
     Assertion.that(
       !css.includes("inv-slot__capacity-bar") && css.includes(".inventory-resource-meter__fill"),
       "line capacity is shown by the inventory resource meter; the unreachable capacity loaders stay removed",
