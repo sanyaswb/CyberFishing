@@ -9,7 +9,6 @@ export class InventoryGameplayBridge {
   #gameplayCommands;
   #itemViews;
   #afterMutation = null;
-  #lastResult = null;
 
   constructor({
     repository,
@@ -126,13 +125,11 @@ export class InventoryGameplayBridge {
   }
 
   #booleanMutation(result) {
-    this.#lastResult = result;
     if (result?.success) this.#afterMutation?.(result);
     return result?.success === true;
   }
 
   #reportMutation(result) {
-    this.#lastResult = result;
     if (result?.success) this.#afterMutation?.(result);
     return result?.report || result;
   }

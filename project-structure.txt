@@ -31,6 +31,8 @@
 ├── dev.html
 ├── docs
 │  ├── architecture.md
+│  ├── audits
+│  │  └── 2026-10-08-stage7-post-closure.md
 │  ├── balance_simulator.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
@@ -77,7 +79,14 @@
 │  │  └── spec.md
 │  ├── 016-converter-location
 │  │  └── spec.md
-│  └── 017-force-diagnostics
+│  ├── 017-force-diagnostics
+│  │  └── spec.md
+│  ├── 018-presentation-css-restructure
+│  │  ├── plan.md
+│  │  ├── spec.md
+│  │  └── tasks.md
+│  └── 019-post-closure-dead-code
+│     ├── results.md
 │     └── spec.md
 ├── src
 │  ├── bootstrap

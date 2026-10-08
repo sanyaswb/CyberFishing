@@ -4,7 +4,6 @@ export class StaminaSystem {
   #fish;
   #masteryTimer = 0;
   #isMasteryActive = false;
-  #lastStaminaBalanceFrame = null;
 
   constructor(condition, fish, mechanicsConfig) {
     this.#condition = condition;
@@ -59,7 +58,6 @@ export class StaminaSystem {
   }
 
   #evaluateSimplifiedStaminaFrame(frame) {
-    this.#lastStaminaBalanceFrame = frame;
     const mode = frame.staminaMode || "idle";
     if (mode === "drain") {
       const damage = Math.max(
@@ -78,7 +76,6 @@ export class StaminaSystem {
   }
 
   #evaluateSimplifiedEnduranceFrame(frame, dt) {
-    this.#lastStaminaBalanceFrame = frame;
     if (this.#condition.currentExhaustion <= 0) {
       this.#applyFinalDebuffIfExhausted();
       return;

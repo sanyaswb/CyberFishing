@@ -1,12 +1,4 @@
 export class FishingForceService {
-  #config;
-  #upDirection = { x: 0, y: 1 };
-  #forces = { pX: 0, pY: 0, fX: 0, fY: 0 };
-
-  constructor(config) {
-    this.#config = config;
-  }
-
   applyForces(dt, context) {
     const {
       floatEntity,
@@ -30,7 +22,6 @@ export class FishingForceService {
       stressSystem,
       fightPhysicsSystem,
       fishCondition,
-      buffs,
     } = context;
     return fightPhysicsSystem.step({
       dtMs: dt,
@@ -55,7 +46,6 @@ export class FishingForceService {
       tensionSystem,
       stressSystem,
       fishCondition,
-      buffs,
     });
   }
 }

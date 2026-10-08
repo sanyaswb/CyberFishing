@@ -16,7 +16,6 @@ export class PlayerForceSystem {
     input,
     rod,
     reel,
-    buffs,
     physics,
     totalFishForceKg,
     playerMaxLoadKg,
@@ -67,7 +66,6 @@ export class PlayerForceSystem {
       hasReel,
       playerMaxLoadKg,
       anglePenalty,
-      buffs,
     });
 
     const clampedDrag = this.#clamp01(dragRatio);
@@ -99,7 +97,7 @@ export class PlayerForceSystem {
     };
   }
 
-  #calculateMaxPlayerForceKg({ rod, reel, hasReel, playerMaxLoadKg, anglePenalty, buffs }) {
+  #calculateMaxPlayerForceKg({ rod, reel, hasReel, playerMaxLoadKg, anglePenalty }) {
     const fallbackRodKg =
       Number(rod?.getEffectiveMaxLoadKg?.()) ||
       Number(rod?.getMaxLoadKg?.()) ||
@@ -119,7 +117,7 @@ export class PlayerForceSystem {
       Number(playerMaxLoadKg) ||
         (Number.isFinite(fallbackWeakestKg) ? fallbackWeakestKg : fallbackRodKg),
     );
-    return baseForceKg * anglePenalty * (buffs?.getTotalMultiplier?.() || 1);
+    return baseForceKg * anglePenalty;
   }
 
   #calculateDragLimitKg(reel, dragRatio) {

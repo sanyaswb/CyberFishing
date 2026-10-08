@@ -624,8 +624,7 @@ export class WaterEntity {
     this._isHooked = false;
 
 
-    const baseSeq = fishBiteSequence || this._runtimeConfig.float.biteSequence;
-    const seqCfg = this._applyGodModeBiteSequence({ ...baseSeq });
+    const seqCfg = this._applyGodModeBiteSequence({ ...fishBiteSequence });
 
     const isSpinningLure = ["spinner", "wobbler", "jig"].includes(
       this._config.type,

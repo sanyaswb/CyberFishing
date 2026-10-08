@@ -26,7 +26,6 @@ export class InventoryUI {
   #warningTimers;
   #isOpen = false;
   #isMounted = false;
-  #lastViewModel = null;
   #dynamicRefreshElapsedMs = 0;
 
   constructor({
@@ -173,13 +172,11 @@ export class InventoryUI {
     const viewModel = this.#normalizer.normalize(
       this.#facade.getViewModel(),
     );
-    this.#lastViewModel = viewModel;
     this.#updateDynamicVisuals(viewModel);
   }
 
   render(source) {
     const viewModel = this.#normalizer.normalize(source);
-    this.#lastViewModel = viewModel;
     this.#longPressController.clear();
     this.#tooltipPresenter.hide();
     this.#tooltipPresenter.setContext(viewModel.tooltipContext);

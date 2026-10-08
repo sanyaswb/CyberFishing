@@ -2,7 +2,6 @@ import { FishBehavior } from "./fish_behavior.js";
 import { FishPhysicsProfile } from "./fish_physics_profile.js";
 
 export class Fish {
-  #level;
   #weight;
   #fishConfig;
   #powerDebuff;
@@ -23,7 +22,6 @@ export class Fish {
       get active() { return owner.#hasActiveDebuff; },
       get type() { return owner.#lastDebuffName; },
     });
-    this.#level = level;
     this.#weight = weight;
     this.#fishConfig = FishPhysicsProfile.toRuntimeConfig(fishConfig);
     this.#rng = rng || { next: () => Math.random() };
@@ -42,10 +40,7 @@ export class Fish {
     return this.#weight;
   }
 
-  updateRuntimeStats({ level, weight, physics } = {}) {
-    if (Number.isFinite(Number(level))) {
-      this.#level = Math.max(1, Math.round(Number(level)));
-    }
+  updateRuntimeStats({ weight, physics } = {}) {
     if (Number.isFinite(Number(weight))) {
       this.#weight = Math.max(0, Number(weight));
     }

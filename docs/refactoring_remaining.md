@@ -61,3 +61,20 @@ For the next task, inspect current Git status and follow the owner's current ins
 Post-release follow-up: the owner authorized committing `convert-images.js` → `utils/convert-images.js`
 ([016](../specs/016-converter-location/spec.md)). Its base directory still points at the project root;
 source/startup/search parity and Architecture/Quick/Full pass. The published v0.30.1 tag is unchanged.
+
+## Separate follow-up tasks (2026-10-08)
+
+The completed cleanup checklist above stays closed. New work does not reopen Stage 7.
+
+- [Post-closure audit](audits/2026-10-08-stage7-post-closure.md): current checks/graphs/browser pass;
+  no classic runtime transport or unreachable source files; remaining private-field/local-value,
+  DEV fallback and test-harness candidates are recorded with evidence. No runtime cleanup was performed by the audit.
+- [018 — Presentation CSS restructure](../specs/018-presentation-css-restructure/spec.md),
+  [plan](../specs/018-presentation-css-restructure/plan.md),
+  [tasks](../specs/018-presentation-css-restructure/tasks.md): component ownership, DEV style isolation,
+  native load order and visual/cascade parity. Planned, not implemented.
+
+- [019 — Post-closure dead code](../specs/019-post-closure-dead-code/results.md): implemented;
+  24 unused private fields, unused locals/12 methods, null-only buffs and missing bite-config
+  fallback retired. Native test assertions strengthened; live/test/manual contracts retained.
+  Full 38/38, Quick 13/13, Architecture 2/2; 4,837 differential records and game-cycle/save parity.

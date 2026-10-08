@@ -2,7 +2,6 @@ import { BaitFactory } from "../../domain/tackle/bait_factory.js";
 
 export class CastService {
   #messages;
-  #config;
   #rng;
   #clock;
   #equipmentRules;
@@ -29,7 +28,6 @@ export class CastService {
     runtimeConfig = null,
   }) {
     this.#messages = messages;
-    this.#config = config;
     this.#rng = rng;
     this.#clock = clock;
     this.#equipmentRules = equipmentRules;

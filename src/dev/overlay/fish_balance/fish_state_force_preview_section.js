@@ -104,16 +104,6 @@ export class FishStateForcePreviewSection {
     );
   }
 
-  resolveActualDirection(data) {
-    return this.#normalizeDirection(
-      data.fishDirectionState ||
-        data.directionCategory ||
-        data.fishDirectionCategory ||
-        data.fishDirection ||
-        "side",
-    );
-  }
-
   resolveDirectionModeLabel(mode) {
     return this.#formatDirection(mode);
   }

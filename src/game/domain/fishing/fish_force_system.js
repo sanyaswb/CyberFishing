@@ -46,7 +46,6 @@ export class FishForceSystem {
     lineHasReserve = true,
     lineTaut = true,
     env,
-    buffs,
     fishSpeedMultiplier = 1,
   }) {
     const physics = this.#getRuntimePhysicsConfig();
@@ -236,7 +235,6 @@ export class FishForceSystem {
       input,
       rod,
       reel,
-      buffs,
       physics,
       totalFishForceKg,
       playerMaxLoadKg,
@@ -558,7 +556,6 @@ export class FishForceSystem {
     input,
     rod,
     reel,
-    buffs,
     physics,
     totalFishForceKg,
     playerMaxLoadKg,
@@ -570,7 +567,6 @@ export class FishForceSystem {
       input,
       rod,
       reel,
-      buffs,
       physics,
       physicsConfig: this.#physicsConfig,
       totalFishForceKg,

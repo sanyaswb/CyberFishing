@@ -3,13 +3,11 @@ export class InventoryFacade {
   #viewModels;
   #gameplayBridge;
   #listeners = new Set();
-  #migrationWarnings;
 
   constructor({
     commands,
     viewModels,
     gameplayBridge,
-    migrationWarnings = [],
   } = {}) {
     if (typeof commands?.dispatch !== "function") {
       throw new TypeError("InventoryFacade requires InventoryCommandService");
@@ -20,7 +18,6 @@ export class InventoryFacade {
     this.#commands = commands;
     this.#viewModels = viewModels;
     this.#gameplayBridge = gameplayBridge;
-    this.#migrationWarnings = Object.freeze([...(migrationWarnings || [])]);
     this.#gameplayBridge?.setAfterMutation?.((result) =>
       this.notify({ warning: result?.warning || result?.report?.warning || null }),
     );

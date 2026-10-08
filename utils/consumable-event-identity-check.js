@@ -25,8 +25,7 @@ const context = vm.createContext({
   },
 });
 
-// Migrated classic paths are activation shims (or retired ones): the loader runs the runtime first and renders
-// retired activations test-only, so the check keeps naming the same classes.
+// Load native modules into one test realm to preserve constructor and event identity.
 const files = [
   "src/game/domain/equipment/auto_refill_trigger.js",
   "src/game/domain/equipment/auto_refill_scope.js",

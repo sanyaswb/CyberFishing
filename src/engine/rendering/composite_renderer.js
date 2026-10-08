@@ -31,12 +31,4 @@ export class CompositeRenderer {
     }
   }
 
-  getComponentCount() {
-    return componentsByRenderer.get(this).length;
-  }
-
-  getComponentIdAt(index) {
-    const component = componentsByRenderer.get(this)[index];
-    return component ? component.id : null;
-  }
 }

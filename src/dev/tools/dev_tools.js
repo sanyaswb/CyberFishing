@@ -143,12 +143,8 @@ export class DevTools {
     this.#renderItemProgressionSection(body);
 
     // 1. OVERLAY MODULES
-    const overlaySettings =
-      this.#settingsStore;
-    const legacyOverlayModules =
-      typeof this.#settingsStore?.getSnapshot() !== "undefined" ? this.#settingsStore?.getSnapshot() : null;
-    const overlayModules =
-      overlaySettings?.getSnapshot?.() || legacyOverlayModules;
+    const overlaySettings = this.#settingsStore;
+    const overlayModules = overlaySettings?.getSnapshot?.();
     const overlayKeys =
       overlaySettings?.keys?.() || Object.keys(overlayModules || {});
     if (overlayModules && overlayKeys.length > 0) {

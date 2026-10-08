@@ -13,7 +13,6 @@ import { InventoryItemLocation } from "../../game/domain/inventory/inventory_ite
 export class GameApplication {
   #messages;
   #projector;
-  #map;
   #env;
   #input;
   #ui;
@@ -165,7 +164,6 @@ export class GameApplication {
     this.#location = runtime.location;
     this.#rng = runtime.rng;
     this.#projector = runtime.projector;
-    this.#map = runtime.map;
     this.#env = runtime.env;
     this.#input = runtime.input;
     this.#ui = runtime.ui;
@@ -629,7 +627,6 @@ export class GameApplication {
     // Reuse the pre-built debug context object — no per-frame allocation.
     this.#debugService?.update(this.#debugContext);
   }
-
 
   #syncDragControlAvailability() {
     const eq = this.#inventory?.getEquipped?.() || {};

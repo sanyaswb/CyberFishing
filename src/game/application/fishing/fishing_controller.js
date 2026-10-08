@@ -4,7 +4,6 @@ export class FishingController {
   #devFlags;
   #equipmentRules;
   #baitRules;
-  #debugEvents;
   #logger;
 
   // logger: the platform diagnostics logger (GodMode notices); without it the notices are skipped.
@@ -15,7 +14,6 @@ export class FishingController {
     this.#devFlags = devFlags;
     this.#equipmentRules = equipmentRules;
     this.#baitRules = baitRules;
-    this.#debugEvents = debugEvents;
   }
 
   consumeFirstBaitForFight(eq) {

@@ -1931,12 +1931,9 @@ const spinningVictory = runFightScenario({
 });
 assert(spinningVictory.transition?.name === "victory", "spinning rod lands a light fish");
 
-// Review queue 049 scenarios (hot-loop evidence for the non-fight Domain sources). A migrated class
-// without an activation is read from the cumulative runtime exports.
+// Non-fight Domain hot-loop scenarios use the same native module exports as gameplay.
 function domainClass(name, targetModule) {
-  try { return eval(name); } catch (error) {
-    return nativeTestExport(targetModule,name);
-  }
+  return nativeTestExport(targetModule, name);
 }
 
 const InventoryRepository = domainClass("FlatInventoryItemRepository",

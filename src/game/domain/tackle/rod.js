@@ -1,8 +1,6 @@
 import { Equipment } from "./equipment.js";
 
 export class Rod extends Equipment {
-  #compensation;
-  #variant;
   #maxDistance;
   #hasReel;
   #lengthMeters;
@@ -22,8 +20,6 @@ export class Rod extends Equipment {
     options = {},
   ) {
     super(equipmentPowerLevel, power);
-    this.#compensation = compensation;
-    this.#variant = variant;
     this.#maxDistance = maxDistance;
     this.#hasReel = hasReel;
     this.#lengthMeters = Rod.#numberOrDefault(options.lengthMeters, 2.0);

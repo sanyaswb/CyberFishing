@@ -387,8 +387,8 @@ class InventoryStaticContractCheck {
     ];
     for (const className of expected) {
       assert.ok(
-        source.includes(`globalThis.${className} =`) || source.includes(`export class ${className} `),
-        `${className} must be exposed by the classic provider or its named ESM export`,
+        source.includes(`export class ${className} `),
+        `${className} must have its named ESM export`,
       );
     }
   }

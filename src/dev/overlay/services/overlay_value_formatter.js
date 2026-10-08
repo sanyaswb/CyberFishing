@@ -8,14 +8,6 @@ export class OverlayValueFormatter {
     return `${this.num(value, digits)}кг`;
   }
 
-  kgPerKg(value) {
-    return `${this.num(value, 3)}кг/кг`;
-  }
-
-  kgPerKgMps(value) {
-    return `${this.num(value, 3)}кг/кг/м·с⁻¹`;
-  }
-
   meters(value, digits = 2) {
     return `${this.num(value, digits)}м`;
   }

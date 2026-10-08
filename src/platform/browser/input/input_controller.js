@@ -44,7 +44,6 @@ export class InputController {
   #hasSwipedThisTouch = false;
   #clickPos;
   #pointerGestureId;
-  #anchorX;
   #keys = {};
   #isDoubleClick = false;
   #longPressPos = null;
@@ -60,7 +59,6 @@ export class InputController {
   constructor(canvas, anchorX = null, { runtimeConfig, fightInputActionComposer = null } = {}) {
     this.#runtimeConfig = runtimeConfig;
     this.#canvas = canvas;
-    this.#anchorX = anchorX;
     this.#isPulling = false;
     this.#pullDirection = new Vector2(0, 1);
     this.#isDragging = false;
@@ -320,24 +318,20 @@ export class InputController {
       resetInput();
     });
 
-
     this.#addEventListener(window, "keydown", (e) => {
       this.#keys[e.code] = true;
       this.#keys[e.key] = true;
 
       const keys = this.#runtimeConfig.input?.keys || {};
 
-
       if (this.#isKeyMatch(e, keys.pull)) {
         this.#isPulling = true;
         if (e.code === "Space" || e.key === " ") e.preventDefault();
       }
 
-
       if (this.#isKeyMatch(e, keys.hold)) {
         if (!e.repeat) this.#holdToggleFlag = true;
       }
-
 
       if (this.#isKeyMatch(e, keys.pump)) {
         if (!e.repeat) this.#pumpFlag = true;
@@ -359,7 +353,6 @@ export class InputController {
       this.#keys[e.key] = false;
 
       const keys = this.#runtimeConfig.input?.keys || {};
-
 
       if (this.#isKeyMatch(e, keys.pull)) {
         // Keep pulling while another pull key is still pressed.

@@ -184,7 +184,7 @@ class InventoryEquipmentCheck {
   // The base ports are contracts: every operation an adapter must provide throws until it is overridden.
   #checkPortContracts() {
     const r = this.#runtime;
-    // The base ports have no classic consumer (no activation): reach them through their adapters.
+    // Verify inherited port contracts through their concrete native adapters.
     const EquipmentTransitionPort = Object.getPrototypeOf(r.InventoryEquipmentTransitionAdapter);
     const LoadoutApplicationPort = Object.getPrototypeOf(r.InventoryLoadoutAdapter);
     const transitionPort = new EquipmentTransitionPort();

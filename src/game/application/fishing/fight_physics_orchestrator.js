@@ -124,7 +124,6 @@ export class FightPhysicsOrchestrator {
     tensionSystem,
     stressSystem,
     fishCondition,
-    buffs,
   }) {
     const pipelineFrame = this.#pipeline.startFrame();
     const physics = pipelineFrame.run(
@@ -174,7 +173,6 @@ export class FightPhysicsOrchestrator {
       dragSystem,
       rodPullSystem,
       fishCondition,
-      buffs,
       playerMaxLoadKg: maxTackleLoadKg,
       lineRecoveryFishSlowdown: this.#lineRecoveryFishSlowdownState,
     }));
@@ -1089,7 +1087,6 @@ export class FightPhysicsOrchestrator {
     dragSystem,
     rodPullSystem,
     fishCondition,
-    buffs,
     playerMaxLoadKg,
     lineRecoveryFishSlowdown,
   }) {
@@ -1151,7 +1148,6 @@ export class FightPhysicsOrchestrator {
       lineHasReserve: this.#lineHasReserve(lineState),
       lineTaut: this.#isLineTaut(lineState),
       env,
-      buffs,
       fishSpeedMultiplier:
         this.#recoveryFishSlowdownPolicy?.getMotionMultiplier?.(
           lineRecoveryFishSlowdown,

@@ -7,7 +7,6 @@ export class FightRodControlSection {
     htmlBuilder,
     sections = null,
   } = {}) {
-    const sectionOptions = { settingsStore, formatter, htmlBuilder };
     this.#sections = sections;
   }
 

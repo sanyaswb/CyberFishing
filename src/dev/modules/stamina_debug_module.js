@@ -8,9 +8,6 @@ export class StaminaDebugModule extends ConsoleTableDebugModule {
 
   render(context) {
     const live = context.live || {};
-    const config =
-      typeof this.configSource() !== "undefined" ? this.configSource().stamina?.mechanics || {} : {};
-
     console.table({
       "Fish condition phase": live.fishConditionPhase || "n/a",
       "Stamina frame phase": live.staminaPhase || "n/a",

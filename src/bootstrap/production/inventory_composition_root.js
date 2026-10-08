@@ -452,7 +452,6 @@ export class InventoryCompositionRoot {
       commands,
       viewModels,
       gameplayBridge,
-      migrationWarnings: resolvedState.warnings,
     });
 
     return Object.freeze({

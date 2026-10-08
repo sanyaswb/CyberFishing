@@ -15,7 +15,7 @@ export class InventoryItemHydrator {
       typeof itemDefinitionResolver.getItemData !== "function" &&
       typeof itemDefinitionResolver.get !== "function"
     ) {
-      for (const [categoryId, category] of Object.entries(itemDefinitionResolver)) {
+      for (const category of Object.values(itemDefinitionResolver)) {
         if (!category || typeof category !== "object" || Array.isArray(category)) {
           continue;
         }

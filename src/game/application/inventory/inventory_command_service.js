@@ -28,7 +28,6 @@ export class InventoryCommandService {
   #reservationPolicy;
   #sortConfig;
   #actionTypes;
-  #now;
   #fallbackSequence = 0;
   #uiState;
   #itemRemoval;
@@ -86,7 +85,6 @@ export class InventoryCommandService {
     this.#instanceIdFactory = instanceIdFactory;
     this.#sortConfig = sortConfig;
     this.#actionTypes = actionTypes;
-    this.#now = now;
     this.#uiState = uiState;
     this.#itemRemoval = itemRemoval;
     this.#assertDependencies();

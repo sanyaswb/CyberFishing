@@ -1,7 +1,6 @@
 export class InventoryItemTreeViewFactory {
   #repository;
   #assemblyStates;
-  #assemblyReader;
   #completionPolicy;
   #hydrate;
   #boatChargeProvider;
@@ -16,7 +15,6 @@ export class InventoryItemTreeViewFactory {
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
-    this.#assemblyReader = assemblyReader;
     this.#completionPolicy = completionPolicy;
     this.#hydrate = hydrate;
     this.#boatChargeProvider = boatChargeProvider;

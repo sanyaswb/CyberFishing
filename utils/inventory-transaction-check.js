@@ -4,7 +4,7 @@ const { NativeEsmTestLoader } = require("./testing/runtime/native_esm_test_loade
 
 const root = path.resolve(__dirname, "..");
 const context = vm.createContext({ console });
-// The coordinator is an ESM module since Stage 4 cluster 020: its classic path is an activation shim.
+// Exercise the native coordinator in the test realm.
 new NativeEsmTestLoader({ projectRoot: root, context })
   .load("src/game/application/inventory/inventory_transaction_coordinator.js");
 

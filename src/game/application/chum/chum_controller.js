@@ -10,9 +10,6 @@ export class ChumController {
   #location;
   #clock;
   #config;
-  #rng;
-  #getViewportSize;
-  #panViewport;
   #depthUI;
   #getDynamicBounds;
   #getRodVirtualPos;
@@ -60,9 +57,6 @@ export class ChumController {
     this.#location = location;
     this.#clock = clock;
     this.#config = config;
-    this.#rng = rng;
-    this.#getViewportSize = getViewportSize;
-    this.#panViewport = panViewport;
     this.#depthUI = depthUI;
     this.#getDynamicBounds = getDynamicBounds;
     this.#getRodVirtualPos = getRodVirtualPos;

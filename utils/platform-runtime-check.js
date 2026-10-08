@@ -395,10 +395,7 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
   runtime.load("src/platform/browser/runtime/config_provider.js", { expose: ["ConfigProvider"] });
   runtime.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
-  // Adapters without a classic consumer have no activation: they are read from the cumulative-runtime export.
-  const adapters=({ ...runtime.importModule('src/platform/browser/runtime/dev_flags_provider.js'), ...runtime.importModule('src/platform/browser/runtime/browser_audio_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/browser_buffered_audio_player.js'), ...runtime.importModule('src/platform/browser/runtime/browser_debug_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/browser_event_target_adapter.js'), ...runtime.importModule('src/platform/browser/runtime/canvas_metrics_provider.js'), ...runtime.importModule('src/platform/browser/runtime/config_provider.js') })||{};
-  const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter}=runtime.context;
-  const BrowserEventTargetAdapter=runtime.context.BrowserEventTargetAdapter||adapters.BrowserEventTargetAdapter;
+  const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
   const json=value=>JSON.stringify(value);
 
   const clockCalls=[],updates=[];let draws=0;

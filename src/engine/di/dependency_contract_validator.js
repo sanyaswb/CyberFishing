@@ -27,20 +27,4 @@ export class DependencyContractValidator {
     return value;
   }
 
-  requireProperties(value, dependencyName, properties) {
-    if (!value) {
-      throw createDependencyContractError(
-        this,
-        dependencyName,
-        properties[0] || "value",
-      );
-    }
-    for (let index = 0; index < properties.length; index += 1) {
-      const property = properties[index];
-      if (!(property in value)) {
-        throw createDependencyContractError(this, dependencyName, property);
-      }
-    }
-    return value;
-  }
 }

@@ -3,7 +3,6 @@ import { ReelRetrieveSpeedCalculator } from "../fishing/reel_retrieve_speed_calc
 
 export class Reel extends Equipment {
   #retrieveSpeedCalculator = new ReelRetrieveSpeedCalculator();
-  #holdConfig;
   #maxLoadKg;
   #lineCapacityMeters;
   #baseRetrieveSpeedMetersPerSec;
@@ -18,7 +17,6 @@ export class Reel extends Equipment {
 
   constructor(equipmentPowerLevel, power, options = {}) {
     super(equipmentPowerLevel, power);
-    this.#holdConfig = null;
     this.#maxLoadKg = Reel.#numberOrDefault(options.maxLoadKg, 10);
     this.#lineCapacityMeters = Reel.#numberOrDefault(
       options.lineCapacityMeters,

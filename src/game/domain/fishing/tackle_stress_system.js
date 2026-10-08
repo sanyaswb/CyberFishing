@@ -17,9 +17,6 @@ export class TackleStressSystem {
   #tensionRatio = 0;
   #tensionPercent = 0;
   #pulsePhase = 0;
-  #currentColor = "rgb(0, 0, 255)";
-  #currentStatusLabel = "Idle";
-  #currentStatusColor = "#4a5b6c";
   #isBroken = false;
   #breakReason = null;
   #breakInfo = null;
@@ -129,7 +126,6 @@ export class TackleStressSystem {
       this.#lastBreakProgress = 0;
     }
 
-    this.#updateVisualStates(config);
     return this.#frameResult();
   }
 
@@ -401,26 +397,6 @@ export class TackleStressSystem {
     return info;
   }
 
-  #updateVisualStates(tensionConfig) {
-    const statuses = tensionConfig?.statuses || [
-      { threshold: 0, label: "Idle", color: "#4a5b6c" },
-      { threshold: 80, label: "CRITICAL", color: "#ff4444" },
-    ];
-    let status = statuses[0];
-    for (let i = statuses.length - 1; i >= 0; i--) {
-      if (this.#tensionPercent >= statuses[i].threshold) {
-        status = statuses[i];
-        break;
-      }
-    }
-    this.#currentStatusLabel = status.label;
-    this.#currentStatusColor = status.color;
-    this.#currentColor = TackleStressSystem.ratioGradientColor(
-      this.#tensionPercent,
-      tensionConfig?.colorGradient,
-    );
-  }
-
   #resolveTackleStressConfig(tensionConfig) {
     const raw = tensionConfig?.tackleStress || {};
     return {
@@ -482,38 +458,5 @@ export class TackleStressSystem {
     if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;
     const lostPercent = Math.max(0, 100 - (Number.isFinite(durability) ? durability : 100));
     return maxLoadKg * Math.max(0.1, 1 - lostPercent * lossPerPercent);
-  }
-
-  static ratioGradientColor(value, gradient) {
-    if (!gradient) return "#00ccff";
-    const tension = Math.max(0, Math.min(100, value));
-    const lowPoint = gradient.breakpoints?.low ?? 33;
-    const midPoint = gradient.breakpoints?.mid ?? 66;
-    const mix = (start, end, ratio) => {
-      const t = Math.max(0, Math.min(1, ratio));
-      const r = Math.round(start[0] + (end[0] - start[0]) * t);
-      const g = Math.round(start[1] + (end[1] - start[1]) * t);
-      const b = Math.round(start[2] + (end[2] - start[2]) * t);
-      return `rgb(${r}, ${g}, ${b})`;
-    };
-    if (tension < lowPoint) {
-      return mix(
-        gradient.low?.start || [0, 0, 255],
-        gradient.low?.end || [255, 255, 0],
-        tension / lowPoint,
-      );
-    }
-    if (tension < midPoint) {
-      return mix(
-        gradient.mid?.start || [255, 255, 0],
-        gradient.mid?.end || [255, 128, 0],
-        (tension - lowPoint) / Math.max(1, midPoint - lowPoint),
-      );
-    }
-    return mix(
-      gradient.high?.start || [255, 128, 0],
-      gradient.high?.end || [255, 0, 0],
-      (tension - midPoint) / Math.max(1, 100 - midPoint),
-    );
   }
 }

@@ -138,13 +138,7 @@ export class FightService {
       };
     }
     this.#syncGodModeStamina();
-    const {
-      floatEntity,
-      bounds,
-      input,
-      net,
-      fishData,
-    } = context;
+    const { fishData } = context;
     const forceData = this.#forceService.applyForces(dt, {
       ...context,
       rod: this.#rod,
@@ -160,7 +154,6 @@ export class FightService {
       stressSystem: this.#tensionMeter,
       fightPhysicsSystem: this.#fightPhysicsSystem,
       fishCondition: this.#fishCondition,
-      buffs: null,
     });
     this.#forces = forceData.forces;
     const fightDebug = this.#tensionMeter.getDiagnostics?.() || {};

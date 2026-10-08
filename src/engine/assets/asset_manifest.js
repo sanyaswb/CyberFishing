@@ -28,13 +28,4 @@ export class AssetManifest {
       : null;
   }
 
-  toProviderManifest() {
-    const manifest = {};
-    const records = recordsByManifest.get(this);
-    for (let index = 0; index < records.length; index += 1) {
-      const record = records[index];
-      manifest[record.id] = record.src;
-    }
-    return manifest;
-  }
 }

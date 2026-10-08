@@ -9,14 +9,6 @@ export class EquipmentService {
     return this.#inventory.getEquipped();
   }
 
-  getPrimaryHook(eq = this.getEquipped()) {
-    return eq?.hooks?.[0] || null;
-  }
-
-  getActiveBaits(eq = this.getEquipped()) {
-    return eq?.baits || [];
-  }
-
   consumeFirstBait(eq = this.getEquipped()) {
     const hooks = eq?.hooks || [];
     const baits = eq?.baits || [];
@@ -55,11 +47,6 @@ export class EquipmentService {
   consumeRod(eq = this.getEquipped()) {
     if (!eq?.rod) return false;
     return this.#inventory.consumeEquipped("rod", 1);
-  }
-
-  consumeReel(eq = this.getEquipped()) {
-    if (!eq?.reel) return false;
-    return this.#inventory.consumeEquipped("reel", 1);
   }
 
   consumeLine(eq = this.getEquipped()) {

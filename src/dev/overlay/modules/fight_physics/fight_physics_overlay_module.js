@@ -10,7 +10,6 @@ export class FightPhysicsOverlayModule extends OverlayModule {
     groups = null,
   } = {}) {
     super("fightPhysics", { settingsStore, htmlBuilder });
-    const sectionOptions = { settingsStore, htmlBuilder };
     this.#groups = groups;
   }
 
