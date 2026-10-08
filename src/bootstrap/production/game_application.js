@@ -764,7 +764,7 @@ export class GameApplication {
 
   #updateRodVisualOffset(dt, input, bounds) {
     const stateName = this.#stateMachine?.currentName || this.#gameStateName;
-    const fightDebug = this.#fightService?.tensionMeter?.getDiagnostics?.() || {};
+    const fightDebug = this.#fightService?.tensionMeter?.getFightFrame?.() || {};
     this.#viewportFacade.updateRodVisualOffset({
       dtMs: dt,
       input,

@@ -25,6 +25,7 @@ export class TackleStressSystem {
   #lastBreakProgress = 0;
   #preventedBreakReason = null;
   #diagnostics = {};
+  #fightFrame = {};
   #devFlags;
   #accumulator;
   #failureSelector;
@@ -133,6 +134,25 @@ export class TackleStressSystem {
 
   setDiagnostics(data) {
     this.#diagnostics = data || {};
+  }
+
+  setFightFrame(frame) {
+    this.#fightFrame = frame || {};
+  }
+
+  // The orchestrator's fight frame with the tension and load values that override it in getDiagnostics (same
+  // expressions), refreshed on every read. Gameplay, HUD and render read this instead of the DEV diagnostics.
+  getFightFrame() {
+    const frame = this.#fightFrame;
+    frame.tensionKg = this.#currentTensionKg;
+    frame.targetTensionKg = this.#targetTensionKg;
+    frame.visibleTensionKg = this.#currentTensionKg;
+    frame.maxTackleLoadKg = this.getEffectiveMaxTackleLoadKg();
+    frame.rodMaxLoadKg = this.getEffectiveRodMaxLoadKg();
+    frame.rodStressRatio = this.#stressRatio(this.#effectiveTensionKg, frame.rodMaxLoadKg);
+    frame.lineStressRatio = this.#stressRatio(this.#effectiveTensionKg, this.getEffectiveLineSystemMaxLoadKg());
+    frame.hookStressRatio = this.#stressRatio(this.#effectiveTensionKg, this.getEffectiveHookMaxLoadKg());
+    return frame;
   }
 
   getDiagnostics() {

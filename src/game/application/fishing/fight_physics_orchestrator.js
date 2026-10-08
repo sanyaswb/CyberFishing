@@ -92,11 +92,17 @@ export class FightPhysicsOrchestrator {
     recoveredMeters: 0,
   };
   #debug = {};
+  #fightFrame = {};
+  #playerMaxPowerY = 0;
+  #diagnosticsEnabled;
 
   // stepClock: high-resolution clock for the pipeline's diagnostic step durations (injected by bootstrap).
   // logger: the platform diagnostics logger (stamina budget invariant warnings); without it they are skipped.
-  constructor(config, { stepClock = null, logger = null } = {}) {
+  // diagnosticsEnabled: build the full DEV fight snapshot each step (Development composition and checks);
+  // production keeps only the fight frame.
+  constructor(config, { stepClock = null, logger = null, diagnosticsEnabled = false } = {}) {
     this.#logger = logger;
+    this.#diagnosticsEnabled = diagnosticsEnabled === true;
     this.#pipeline = new FightPhysicsPipeline({ now: stepClock });
     this.#config = config || {};
     this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
@@ -477,9 +483,7 @@ export class FightPhysicsOrchestrator {
     );
     const rodPullDisplay = rodPullSystem.getState();
 
-    this.#debug = pipelineFrame.run(
-      "write_debug_snapshot",
-      () => this.#buildDebugSnapshot({
+    const snapshotInput = {
       dtSec,
       forceData,
       dragSystem,
@@ -528,10 +532,16 @@ export class FightPhysicsOrchestrator {
       playerPressureFatigue: playerPressureFatigueFrame,
       poleFightSectorFrame: sectorFrame,
       fishCondition,
-    }),
-    );
-    this.#debug.fightPipeline = pipelineFrame.toDebugData();
-    stressSystem.setDiagnostics(this.#debug);
+    };
+    pipelineFrame.run("write_debug_snapshot", () => {
+      this.#writeFightFrame(snapshotInput);
+      if (this.#diagnosticsEnabled) this.#debug = this.#buildDebugSnapshot(snapshotInput);
+    });
+    stressSystem.setFightFrame(this.#fightFrame);
+    if (this.#diagnosticsEnabled) {
+      this.#debug.fightPipeline = pipelineFrame.toDebugData();
+      stressSystem.setDiagnostics(this.#debug);
+    }
 
     return {
       consumedSwipe: false,
@@ -541,7 +551,7 @@ export class FightPhysicsOrchestrator {
         fX: forceData.targetVelocity.x,
         fY: forceData.targetVelocity.y,
       },
-      pMax: this.#debug.playerMaxPowerY,
+      pMax: this.#playerMaxPowerY,
       fMag: forceData.totalFishForceKg,
       forceData,
       fightFrame: {
@@ -2794,6 +2804,90 @@ export class FightPhysicsOrchestrator {
     return frame;
   }
 
+  // Production read model of the fight frame: every value that gameplay, HUD and render read, written in place
+  // each step. The DEV snapshot reads these same values instead of recomputing them.
+  #writeFightFrame({
+    forceData,
+    lineState,
+    releaseResult,
+    hardLineLimit,
+    rodPullDisplay,
+    rodPullResult,
+    rodControlResult,
+    rodControlMovementBlockReason,
+    fishRetrieveResult,
+    landingLiftResult,
+    tensionResult,
+    stressSystem,
+    dragContext,
+    playerPressureFatigue,
+    poleFightSectorFrame,
+  }) {
+    const frame = this.#fightFrame;
+    // Fish force values the snapshot takes from its first spread source.
+    frame.fishWeightKg = forceData.diagnostics?.fishWeightKg;
+    frame.lastDash = forceData.diagnostics?.lastDash;
+    frame.activeRodPullForceKg = rodPullResult.forceKg;
+    frame.dragLimitKg = dragContext.effectiveDragLimitKg;
+    frame.dragLocked = dragContext.dragLocked;
+    frame.dragSupported = !!dragContext.dragSupported;
+    frame.effectiveRodHoldKg = fishRetrieveResult?.effectiveRodHoldKg ?? rodPullResult.effectiveForceKg;
+    frame.fishTensionKg = tensionResult.fishTensionKg;
+    frame.hardLineLimit = hardLineLimit;
+    frame.holdTensionRatio = rodPullResult.holdTensionRatio;
+    frame.landingLiftActive = !!landingLiftResult?.active;
+    frame.landingLiftFishTensionKg = landingLiftResult?.fishTensionKg ?? 0;
+    frame.landingLiftGainKgPerSecond = landingLiftResult?.gainKgPerSecond ?? 0;
+    frame.landingLiftHoldKg = landingLiftResult?.liftHoldKg ?? 0;
+    frame.landingLiftInZone = !!landingLiftResult?.inLandingZone;
+    frame.landingLiftMaxKg = landingLiftResult?.liftMaxKg ?? 0;
+    frame.landingLiftProgressRatio = landingLiftResult?.progressRatio ?? 0;
+    frame.landingLiftSlowdownRatio = landingLiftResult?.slowdownRatio ?? 0;
+    frame.landingLiftSpeedRatio = landingLiftResult?.speedRatio ?? 0;
+    frame.landingLiftTackleLoadProgressRatio = landingLiftResult?.tackleLoadProgressRatio ?? 0;
+    frame.landingLiftWaterTensionKg = landingLiftResult?.waterFightTensionKg ?? 0;
+    frame.lineCanRelease = this.#lineHasReserve(lineState);
+    frame.lineDistanceMeters = lineState.distanceMeters;
+    frame.lineReleasedThisFrameMeters = releaseResult.releasedMeters;
+    frame.lineRemainingMeters = lineState.remainingMeters;
+    frame.playerHoldTensionKg = tensionResult.playerHoldTensionKg;
+    frame.playerPressureFatigueEfficiency = playerPressureFatigue?.appliedEfficiency ??
+      playerPressureFatigue?.efficiency ??
+      1;
+    frame.playerPressureFatigueEnabled = playerPressureFatigue?.enabled === true;
+    frame.playerPressureFatigueGraceDurationMs = playerPressureFatigue?.graceDurationMs ?? 0;
+    frame.playerPressureFatigueGraceElapsedMs = playerPressureFatigue?.graceElapsedMs ?? 0;
+    frame.playerPressureFatigueProgress = playerPressureFatigue?.fatigueProgress ?? 0;
+    frame.playerPressureFatigueRecoveryProgress = playerPressureFatigue?.recoveryProgress ?? 0;
+    frame.playerPressureFatigueSourceActive = playerPressureFatigue?.sourceActive === true;
+    frame.playerPressureFatigueSourceMode = playerPressureFatigue?.sourceMode || "reel_hold_session";
+    frame.playerPressureFatigueState = playerPressureFatigue?.stateName || "idle";
+    frame.poleFightSectorActive = poleFightSectorFrame?.active === true;
+    frame.poleFightSectorLimitRadiusPx = Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0);
+    frame.rawTensionKg = tensionResult.rawTensionKg;
+    frame.reelSlip = releaseResult.didSlip;
+    frame.rodControlActive = !!rodControlResult?.active;
+    frame.rodControlBlockedReason = rodControlResult?.blockedReason || "none";
+    frame.rodControlDirectionFactor = rodControlResult?.directionFactor ?? 0;
+    frame.rodControlDirectionX = rodControlResult?.directionX ?? 0;
+    frame.rodControlInputDirectionX = rodControlResult?.inputDirectionX ?? 0;
+    frame.rodControlInputRatio = rodControlResult?.inputRatio ?? 0;
+    frame.rodControlLoadReserveRatio = rodControlResult?.loadReserveRatio ?? 0;
+    frame.rodControlMovementBlockReason = rodControlMovementBlockReason ||
+      rodControlResult?.blockedReason ||
+      "none";
+    frame.rodControlPlayerTensionKg = rodControlResult?.playerTensionKg ?? 0;
+    frame.rodHoldMaxKg = rodPullResult.rodHoldMaxKg;
+    frame.rodPullBlockedReason = rodPullDisplay.blockedReason;
+    frame.rodPullDragSlipping = rodPullDisplay.dragSlipping;
+    frame.rodStrokeCapacityMeters = rodPullDisplay.rodStrokeCapacityMeters;
+    frame.rodStrokeRatio = rodPullDisplay.rodStrokeRatio;
+    frame.rodStrokeUnrecoveredMeters = rodPullDisplay.rodStrokeUnrecoveredMeters;
+    frame.shouldSlipDrag = !!fishRetrieveResult?.shouldSlipDrag;
+    frame.totalTensionKg = tensionResult.totalTensionKg;
+    this.#playerMaxPowerY = stressSystem.getEffectiveMaxTackleLoadKg?.() || 0;
+  }
+
   #buildDebugSnapshot({
     dtSec,
     forceData,
@@ -2844,6 +2938,7 @@ export class FightPhysicsOrchestrator {
     poleFightSectorFrame,
     fishCondition,
   }) {
+    const frame = this.#fightFrame;
     const lineHasReserve = this.#lineHasReserve(lineState);
     const frameDtSec = Math.max(0, Number(dtSec) || 0);
     const appliedRodPullMoveMeters = Math.max(0, Number(rodPullMoveMeters) || 0);
@@ -3016,12 +3111,12 @@ export class FightPhysicsOrchestrator {
     return {
       ...forceData.diagnostics,
       ...dragSystem.getDiagnostics(),
-      dragSupported: !!dragContext.dragSupported,
+      dragSupported: frame.dragSupported,
       lineDebug,
       lineTotalMeters: lineState.totalLineMeters ?? lineState.totalLengthMeters,
       lineReleasedMeters: lineState.releasedMeters,
-      lineRemainingMeters: lineState.remainingMeters,
-      lineCanRelease: lineHasReserve,
+      lineRemainingMeters: frame.lineRemainingMeters,
+      lineCanRelease: frame.lineCanRelease,
       lineSpoolEmpty: !lineHasReserve,
       lineReserveEmpty: !lineHasReserve,
       physicalLineLimit: !!lineState.isFullyExtended,
@@ -3031,12 +3126,12 @@ export class FightPhysicsOrchestrator {
       lineRecoverableMeters: lineState.recoverableLineMeters,
       isLineFullyExtended: lineState.isFullyExtended,
       lineExtensionRatio: lineState.lineExtensionRatio,
-      lineDistanceMeters: lineState.distanceMeters,
+      lineDistanceMeters: frame.lineDistanceMeters,
       shoreLandingDistanceMeters:
         Math.max(0, Number(forceData.shoreLandingDistanceMeters) || 0),
       landingDistanceMode: "shore",
       actualSlackMeters,
-      lineReleasedThisFrameMeters: releaseResult.releasedMeters,
+      lineReleasedThisFrameMeters: frame.lineReleasedThisFrameMeters,
       lineDemandedThisFrameMeters: releaseResult.demandedMeters,
       lineUnsatisfiedThisFrameMeters: releaseResult.unsatisfiedMeters,
       lineLengthLocked:
@@ -3050,9 +3145,9 @@ export class FightPhysicsOrchestrator {
       lineConstraintReason: lineConstraintState?.reason || "none",
       lineReleaseBlockedReason:
         releaseResult.releaseBlockedReason || "none",
-      reelSlip: releaseResult.didSlip,
+      reelSlip: frame.reelSlip,
       lineRecoveredThisFrameMeters: recoveredMeters,
-      hardLineLimit,
+      hardLineLimit: frame.hardLineLimit,
       constraintCorrectionPx: constraintResult.correctionPx,
       playerForceBudgetEnabled: !!playerForceBudget?.enabled,
       playerForceTotalBudgetKg:
@@ -3136,21 +3231,19 @@ export class FightPhysicsOrchestrator {
       playerReelFatigueSessionEnded:
         playerReelFatigueSession?.endedThisFrame === true,
       playerPressureFatigueEnabled:
-        playerPressureFatigue?.enabled === true,
+        frame.playerPressureFatigueEnabled,
       playerPressureFatigueEfficiency:
-        playerPressureFatigue?.appliedEfficiency ??
-        playerPressureFatigue?.efficiency ??
-        1,
+        frame.playerPressureFatigueEfficiency,
       playerPressureFatigueNextEfficiency:
         playerPressureFatigue?.nextEfficiency ??
         playerPressureFatigue?.efficiency ??
         1,
       playerPressureFatigueState:
-        playerPressureFatigue?.stateName || "idle",
+        frame.playerPressureFatigueState,
       playerPressureFatigueSourceMode:
-        playerPressureFatigue?.sourceMode || "reel_hold_session",
+        frame.playerPressureFatigueSourceMode,
       playerPressureFatigueSourceActive:
-        playerPressureFatigue?.sourceActive === true,
+        frame.playerPressureFatigueSourceActive,
       playerPressureFatigueSourceReason:
         playerPressureFatigue?.sourceReason ||
         "reel_hold_session_inactive",
@@ -3178,11 +3271,11 @@ export class FightPhysicsOrchestrator {
       playerPressureFatigueFatigueRatio:
         playerPressureFatigue?.fatigueRatio ?? 0,
       playerPressureFatigueProgress:
-        playerPressureFatigue?.fatigueProgress ?? 0,
+        frame.playerPressureFatigueProgress,
       playerPressureFatigueGraceElapsedMs:
-        playerPressureFatigue?.graceElapsedMs ?? 0,
+        frame.playerPressureFatigueGraceElapsedMs,
       playerPressureFatigueGraceDurationMs:
-        playerPressureFatigue?.graceDurationMs ?? 0,
+        frame.playerPressureFatigueGraceDurationMs,
       playerPressureFatigueGraceRemainingMs:
         playerPressureFatigue?.graceRemainingMs ?? 0,
       playerPressureFatigueFatigueElapsedMs:
@@ -3200,7 +3293,7 @@ export class FightPhysicsOrchestrator {
       playerPressureFatigueRecoveryDelayRemainingMs:
         playerPressureFatigue?.recoveryDelayRemainingMs ?? 0,
       playerPressureFatigueRecoveryProgress:
-        playerPressureFatigue?.recoveryProgress ?? 0,
+        frame.playerPressureFatigueRecoveryProgress,
       playerPressureFatigueRecoveryRemainingMs:
         playerPressureFatigue?.recoveryRemainingMs ?? 0,
       playerPressureFatigueControlBreakEnabled:
@@ -3228,7 +3321,7 @@ export class FightPhysicsOrchestrator {
       poleFightSectorEnabled:
         poleFightSectorFrame?.enabled === true,
       poleFightSectorActive:
-        poleFightSectorFrame?.active === true,
+        frame.poleFightSectorActive,
       poleFightSectorClamped:
         poleFightSectorFrame?.clamped === true,
       poleFightSectorSide:
@@ -3244,7 +3337,7 @@ export class FightPhysicsOrchestrator {
       poleFightSectorRadiusPx:
         Math.max(0, Number(poleFightSectorFrame?.radiusPx) || 0),
       poleFightSectorLimitRadiusPx:
-        Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0),
+        frame.poleFightSectorLimitRadiusPx,
       poleFightSectorLimitRadiusMeters:
         Math.max(0, Number(poleFightSectorFrame?.limitRadiusPx) || 0) /
         Math.max(1, this.#physicsConfig?.getPixelsPerMeter?.() || 50),
@@ -3308,14 +3401,14 @@ export class FightPhysicsOrchestrator {
       rodPullRawForceKg: rodPullResult.rawForceKg ?? rodPullResult.forceKg,
       rodPullForceKg: rodPullResult.forceKg,
       rodLimitKg: rodPullResult.rodLimitKg,
-      rodHoldMaxKg: rodPullResult.rodHoldMaxKg,
+      rodHoldMaxKg: frame.rodHoldMaxKg,
       rodHoldTensionCeilingMultiplier:
         rodPullResult.tensionCeilingMultiplier ?? 1,
       rodHoldTensionCeilingKg:
         rodPullResult.tensionCeilingKg ?? rodPullResult.rodLimitKg,
-      effectiveRodHoldKg: fishRetrieveResult?.effectiveRodHoldKg ?? rodPullResult.effectiveForceKg,
-      holdTensionRatio: rodPullResult.holdTensionRatio,
-      playerHoldTensionKg: fishRetrieveResult?.playerHoldTensionKg ?? rodPullResult.playerHoldTensionKg,
+      effectiveRodHoldKg: frame.effectiveRodHoldKg,
+      holdTensionRatio: frame.holdTensionRatio,
+      playerHoldTensionKg: frame.playerHoldTensionKg,
       rawPlayerHoldTensionKg: fishRetrieveResult?.rawPlayerHoldTensionKg ?? 0,
       movableHoldTensionCapKg: fishRetrieveResult?.movableHoldTensionCapKg ?? 0,
       movableHoldTensionCapRatio:
@@ -3329,7 +3422,7 @@ export class FightPhysicsOrchestrator {
       actualFishPullSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       targetFishPullSpeedMps: fishRetrieveResult?.towardPlayerSpeedMps,
       fishOppositionKg: fishRetrieveResult?.fishOppositionKg,
-      fishTensionKg: fishRetrieveResult?.fishTensionKg ?? forceData.fishTensionKg,
+      fishTensionKg: frame.fishTensionKg,
       fishPassiveKg: fishRetrieveResult?.fishPassiveKg ?? forceData.fishPassiveKg,
       fishActiveKg: fishRetrieveResult?.fishActiveKg ?? forceData.fishActiveKg,
       fishWonForceKg:
@@ -3471,27 +3564,27 @@ export class FightPhysicsOrchestrator {
       fishRetrieveDesiredMoveMeters: fishRetrieveResult?.desiredMoveMeters,
       fishRetrieveAppliedMoveMeters: fishRetrieveResult?.appliedMoveMeters,
       landingLiftEnabled: !!landingLiftResult?.enabled,
-      landingLiftInZone: !!landingLiftResult?.inLandingZone,
+      landingLiftInZone: frame.landingLiftInZone,
       landingLiftPlayerHoldActive: !!landingLiftResult?.playerHoldActive,
-      landingLiftActive: !!landingLiftResult?.active,
-      landingLiftHoldKg: landingLiftResult?.liftHoldKg ?? 0,
-      landingLiftMaxKg: landingLiftResult?.liftMaxKg ?? 0,
+      landingLiftActive: frame.landingLiftActive,
+      landingLiftHoldKg: frame.landingLiftHoldKg,
+      landingLiftMaxKg: frame.landingLiftMaxKg,
       landingLiftWaterTensionKg:
-        landingLiftResult?.waterFightTensionKg ?? 0,
-      landingLiftFishTensionKg: landingLiftResult?.fishTensionKg ?? 0,
+        frame.landingLiftWaterTensionKg,
+      landingLiftFishTensionKg: frame.landingLiftFishTensionKg,
       landingLiftWeightTensionRatio:
         landingLiftResult?.liftWeightTensionRatio ?? 0,
       landingLiftFastTimeSeconds:
         landingLiftResult?.fastLiftTimeSeconds ?? 0,
       landingLiftReleaseTimeSeconds:
         landingLiftResult?.releaseTimeSeconds ?? 0,
-      landingLiftProgressRatio: landingLiftResult?.progressRatio ?? 0,
+      landingLiftProgressRatio: frame.landingLiftProgressRatio,
       landingLiftTackleLoadProgressRatio:
-        landingLiftResult?.tackleLoadProgressRatio ?? 0,
-      landingLiftSlowdownRatio: landingLiftResult?.slowdownRatio ?? 0,
-      landingLiftSpeedRatio: landingLiftResult?.speedRatio ?? 0,
+        frame.landingLiftTackleLoadProgressRatio,
+      landingLiftSlowdownRatio: frame.landingLiftSlowdownRatio,
+      landingLiftSpeedRatio: frame.landingLiftSpeedRatio,
       landingLiftGainKgPerSecond:
-        landingLiftResult?.gainKgPerSecond ?? 0,
+        frame.landingLiftGainKgPerSecond,
       landingReady: !!landingFrame?.readiness?.ready,
       landingReadyReason: landingFrame?.readiness?.reason || "not_checked",
       landingSupportedTensionKg:
@@ -3516,26 +3609,26 @@ export class FightPhysicsOrchestrator {
       playerPullVelocityY: playerPullMotion.velocityY,
       rodPullMovementBlockReason: rodPullMovementBlockReason || "none",
       rodPullCanMoveFish: rodPullResult.canMoveFish,
-      rodPullBlockedReason: rodPullDisplay.blockedReason,
-      rodPullDragSlipping: rodPullDisplay.dragSlipping,
+      rodPullBlockedReason: frame.rodPullBlockedReason,
+      rodPullDragSlipping: frame.rodPullDragSlipping,
       rodPullReleaseRecovering: rodPullDisplay.releaseRecovering,
       rodPullReleaseRecoveryRatio: rodPullDisplay.releaseRecoveryRatio,
       rodPullChargeSpeedMultiplier: rodPullDisplay.chargeSpeedMultiplier,
       rodPullChargePerSecond: rodPullDisplay.chargePerSecond,
-      activeRodPullForceKg: rodPullResult.forceKg,
+      activeRodPullForceKg: frame.activeRodPullForceKg,
       rodPullPlayerPressureEfficiency:
         rodPullResult.playerPressureEfficiency ?? 1,
       rodPullPlayerPressureFatigueEnabled:
         rodPullResult.playerPressureFatigueEnabled === true,
-      rodControlActive: !!rodControlResult?.active,
+      rodControlActive: frame.rodControlActive,
       rodControlCanApply: !!rodControlResult?.canApply,
-      rodControlDirectionX: rodControlResult?.directionX ?? 0,
-      rodControlInputDirectionX: rodControlResult?.inputDirectionX ?? 0,
-      rodControlInputRatio: rodControlResult?.inputRatio ?? 0,
+      rodControlDirectionX: frame.rodControlDirectionX,
+      rodControlInputDirectionX: frame.rodControlInputDirectionX,
+      rodControlInputRatio: frame.rodControlInputRatio,
       rodControlRequestedForceRatio:
         rodControlResult?.requestedForceRatio ?? 0,
       rodControlLoadReserveKg: rodControlResult?.loadReserveKg ?? 0,
-      rodControlLoadReserveRatio: rodControlResult?.loadReserveRatio ?? 0,
+      rodControlLoadReserveRatio: frame.rodControlLoadReserveRatio,
       rodControlTensionCeilingMultiplier:
         rodControlResult?.tensionCeilingMultiplier ?? 1,
       rodControlTensionCeilingKg:
@@ -3563,7 +3656,7 @@ export class FightPhysicsOrchestrator {
       rodControlMaxEffectiveAngleDeg:
         rodControlResult?.maxEffectiveAngleDeg ?? 0,
       rodControlAngleRatio: rodControlResult?.angleRatio ?? 0,
-      rodControlDirectionFactor: rodControlResult?.directionFactor ?? 0,
+      rodControlDirectionFactor: frame.rodControlDirectionFactor,
       rodControlAligned: !!rodControlResult?.aligned,
       rodControlCentered: !!rodControlResult?.centered,
       rodControlStartedCentered:
@@ -3583,7 +3676,7 @@ export class FightPhysicsOrchestrator {
         rodControlResult?.playerPressureEfficiency ?? 1,
       rodControlPlayerPressureFatigueEnabled:
         rodControlResult?.playerPressureFatigueEnabled === true,
-      rodControlPlayerTensionKg: rodControlResult?.playerTensionKg ?? 0,
+      rodControlPlayerTensionKg: frame.rodControlPlayerTensionKg,
       rodControlTensionMultiplier: rodControlResult?.tensionMultiplier ?? 0,
       rodControlTensionMode:
         rodControlResult?.tensionMode || "side",
@@ -3609,15 +3702,13 @@ export class FightPhysicsOrchestrator {
       rodControlRadialConstraintActive:
         !!rodControlResult?.radialConstraintActive,
       rodControlMovementBlockReason:
-        rodControlMovementBlockReason ||
-        rodControlResult?.blockedReason ||
-        "none",
-      rodControlBlockedReason: rodControlResult?.blockedReason || "none",
-      rodStrokeCapacityMeters: rodPullDisplay.rodStrokeCapacityMeters,
+        frame.rodControlMovementBlockReason,
+      rodControlBlockedReason: frame.rodControlBlockedReason,
+      rodStrokeCapacityMeters: frame.rodStrokeCapacityMeters,
       rodStrokeWonMeters: rodPullDisplay.rodStrokeWonMeters,
       rodStrokeUsedMeters: rodPullDisplay.rodStrokeUsedMeters,
-      rodStrokeUnrecoveredMeters: rodPullDisplay.rodStrokeUnrecoveredMeters,
-      rodStrokeRatio: rodPullDisplay.rodStrokeRatio,
+      rodStrokeUnrecoveredMeters: frame.rodStrokeUnrecoveredMeters,
+      rodStrokeRatio: frame.rodStrokeRatio,
       strokeRecoveredMeters: rodPullDisplay.strokeRecoveredMeters ?? 0,
       strokeDistancePreviousMeters:
         rodPullDisplay.strokeDistancePreviousMeters ?? 0,
@@ -3725,10 +3816,10 @@ export class FightPhysicsOrchestrator {
       holdReelRecoverSource:
         holdReelRecover?.source || "none",
       tensionMode: tensionResult.mode,
-      rawTensionKg: tensionResult.rawTensionKg,
-      fishTensionKg: tensionResult.fishTensionKg,
-      playerHoldTensionKg: tensionResult.playerHoldTensionKg,
-      totalTensionKg: tensionResult.totalTensionKg,
+      rawTensionKg: frame.rawTensionKg,
+      fishTensionKg: frame.fishTensionKg,
+      playerHoldTensionKg: frame.playerHoldTensionKg,
+      totalTensionKg: frame.totalTensionKg,
       rodStressRatio: tensionResult.rodStressRatio,
       lineStressRatio: tensionResult.lineStressRatio,
       hookStressRatio: tensionResult.hookStressRatio,
@@ -3740,11 +3831,11 @@ export class FightPhysicsOrchestrator {
       activeNetPullKg: Math.max(0, Number(fishRetrieveResult?.netForceKg) || 0),
       effectivePullKg: fishRetrieveResult?.usefulPullForceKg ?? 0,
       netPullKg: fishRetrieveResult?.netForceKg ?? 0,
-      dragLimitKg: dragContext.effectiveDragLimitKg,
+      dragLimitKg: frame.dragLimitKg,
       rawDragLimitKg: forceData.player.dragLimitKg,
-      dragLocked: dragContext.dragLocked,
+      dragLocked: frame.dragLocked,
       rodPullCanWinDistance: rodPullResult.canMoveFish,
-      shouldSlipDrag: !!fishRetrieveResult?.shouldSlipDrag,
+      shouldSlipDrag: frame.shouldSlipDrag,
       fishConditionPhase: fishCondition?.phase || "n/a",
       currentStamina: fishCondition?.currentStamina ?? 0,
       currentExhaustion: fishCondition?.currentExhaustion ?? 0,
@@ -3958,7 +4049,7 @@ export class FightPhysicsOrchestrator {
       playerForceX: Math.abs(rodControlResult?.forceKg || 0),
       fishForceY: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.y < 0 ? -1 : 1)),
       fishForceX: Math.abs(forceData.totalFishForceKg * (forceData.targetVelocity.x ? Math.sign(forceData.targetVelocity.x) : 0)),
-      playerMaxPowerY: stressSystem.getEffectiveMaxTackleLoadKg?.() || 0,
+      playerMaxPowerY: this.#playerMaxPowerY,
       playerMaxPowerX:
         (stressSystem.getEffectiveMaxTackleLoadKg?.() || 0) *
         (

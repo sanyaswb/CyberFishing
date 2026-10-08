@@ -156,7 +156,7 @@ export class FightService {
       fishCondition: this.#fishCondition,
     });
     this.#forces = forceData.forces;
-    const fightDebug = this.#tensionMeter.getDiagnostics?.() || {};
+    const fightDebug = this.#tensionMeter.getFightFrame();
     const staminaFrame = forceData.fightFrame?.stamina || {};
     if (this.#isFishStaminaLocked()) {
       this.#syncGodModeStamina();

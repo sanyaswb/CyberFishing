@@ -99,6 +99,7 @@ async function startGame() {
       createFixedCatchFishFactory: options => new FixedCatchFishFactory(options),
       createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
       createDebugService: config => new DebugService(config, debugModulesSource),
+      collectFightDiagnostics: true,
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource,

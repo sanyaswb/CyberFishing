@@ -174,6 +174,7 @@ export class GameCompositionRoot {
   #createLocationDebugRenderFrameBuilder;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
+  #collectFightDiagnostics;
   constructor(config, {
     createLocationDebugMapBuilder,
     createItemProgressionDebugSnapshotProvider,
@@ -193,6 +194,7 @@ export class GameCompositionRoot {
     createLocationDebugRenderFrameBuilder,
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
+    collectFightDiagnostics = false,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider,
@@ -230,6 +232,7 @@ export class GameCompositionRoot {
     this.#createLocationDebugRenderFrameBuilder = createLocationDebugRenderFrameBuilder;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
+    this.#collectFightDiagnostics = collectFightDiagnostics === true;
     this.#config = config || {};
     this.#itemDb = itemDb;
     this.#runtimeConfig = {};
@@ -983,6 +986,7 @@ export class GameCompositionRoot {
         castDistanceCalculator: runtime.castDistanceCalculator,
         logger: new ConsoleLogger(),
         stepClock: () => clock.highResolutionNow(),
+        fightDiagnostics: this.#collectFightDiagnostics,
       }),
     });
 

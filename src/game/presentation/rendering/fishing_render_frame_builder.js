@@ -150,7 +150,7 @@ export class FishingRenderFrameBuilder {
       this.#assertTensionMeter(tensionMeter);
     }
     const tension = hasTensionMeter ? tensionMeter.getTension() : 0;
-    const fightDebug = hasTensionMeter ? tensionMeter.getDiagnostics() : null;
+    const fightDebug = hasTensionMeter ? tensionMeter.getFightFrame() : null;
     const lineFrame = this.#resolveLineFrame(
       intent,
       equipment,
@@ -240,7 +240,7 @@ export class FishingRenderFrameBuilder {
   }
 
   #assertTensionMeter(tensionMeter) {
-    const methods = ["getDiagnostics", "getTension"];
+    const methods = ["getFightFrame", "getTension"];
     for (let index = 0; index < methods.length; index += 1) {
       const method = methods[index];
       if (!tensionMeter || typeof tensionMeter[method] !== "function") {

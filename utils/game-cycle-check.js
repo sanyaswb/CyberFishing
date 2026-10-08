@@ -568,6 +568,7 @@ function runFloatDepthIntegrationChecks() {
     runtimeConfig: CONFIG,
     // Deterministic stand-in for the platform high-resolution clock bootstrap injects (pipeline step durations).
     stepClock: createStepClock(),
+    fightDiagnostics: true,
   }).create(
     createFish({ weightKg: 0.25 }),
     equipment,
@@ -1713,10 +1714,23 @@ function createStepClock() {
 }
 
 // FightService with its default fight session factory (same config, rng and DEV flags objects) plus the step clock.
-function createFightService({ config, rng }) {
+function createFightService({ config, rng, fightDiagnostics = true }) {
   const devFlags = createDevFlags();
   return new FightService({ config, rng, devFlags,
-    fightSessionFactory: new FightSessionFactory({ config, rng, devFlags, stepClock: createStepClock() }) });
+    fightSessionFactory: new FightSessionFactory({ config, rng, devFlags, stepClock: createStepClock(),
+      fightDiagnostics }) });
+}
+
+// Every value of the production fight frame equals the same key of the full DEV diagnostics at the same moment.
+// Silent per frame (throws on the first difference) so the reported check list stays the behavior reference.
+function assertFightFrameMatchesDiagnostics(fight, frameIndex) {
+  const diagnostics = fight.tensionMeter.getDiagnostics();
+  const frame = fight.tensionMeter.getFightFrame();
+  for (const key of Object.keys(frame)) {
+    if (!Object.is(frame[key], diagnostics[key])) {
+      throw new Error("fight frame " + key + " differs from diagnostics at frame " + frameIndex);
+    }
+  }
 }
 
 function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters, frames, checkWater = () => true, closeDrag = true }) {
@@ -1753,6 +1767,7 @@ function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters,
       screenOffset: 0,
       equipment,
     });
+    assertFightFrameMatchesDiagnostics(fight, frame);
     phases.add(lastDebug.staminaPhase);
     peakEnduranceDrain = Math.max(peakEnduranceDrain, Number(lastDebug.enduranceTotalDrain) || 0);
     if (debuffFrame === null && lastDebug.enduranceMovementDebuffActive === true) {
@@ -1765,6 +1780,44 @@ function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters,
   }
   return { phases, debuffFrame, peakEnduranceDrain, transition, lastDebug };
 }
+
+// Production composes fights without the DEV snapshot: the fight frames, step results and outcome are identical.
+// Silent: the helpers it reuses record their own assertions, which are removed again to keep the reported list.
+function runFightFrameModeParityCheck() {
+  const recorded = checks.length;
+  const run = (fightDiagnostics) => {
+    const equipment = createTestBuild({ rodMaxLoadKg: 50, reelMaxLoadKg: 50, lineMaxLoadKg: 50, hookMaxLoadKg: 50 });
+    const fishData = createFish({ weightKg: 2, basePower: 1.5, baseSpeed: 1, forceMultiplier: 1, speedMultiplier: 1 });
+    const config = createConfig();
+    const cast = createCast({ config, equipment, distanceMeters: 15 });
+    const fight = createFightService({ config, rng: createRng(), fightDiagnostics });
+    fight.startFight(fishData, equipment);
+    const trace = [];
+    for (let frame = 0; frame < 900; frame++) {
+      const result = fight.updateFight(1000 / 30, {
+        floatEntity: cast.floatEntity,
+        bounds: cast.bounds,
+        input: { isPulling: frame % 90 < 60, retrieve: false, pointerDown: false, dragIncrease: frame < 30,
+          pullDirection: { x: frame % 120 < 60 ? 0.3 : -0.3, y: 1 } },
+        env: {},
+        net: null,
+        fishData,
+        getRodVirtualPos: () => cast.rodVirtualPos,
+        checkWater: () => true,
+      });
+      trace.push(JSON.stringify(fight.tensionMeter.getFightFrame()), JSON.stringify(result));
+      if (result.transition) break;
+    }
+    return trace;
+  };
+  const production = run(false), development = run(true);
+  const firstDifference = production.findIndex((entry, index) => entry !== development[index]);
+  checks.length = recorded;
+  if (production.length < 100 || production.length !== development.length || firstDifference !== -1) {
+    throw new Error("fight frames differ with and without the DEV snapshot (first difference " + firstDifference + ")");
+  }
+}
+runFightFrameModeParityCheck();
 
 const exhaustionCase = runLongFightUntilTransition({
   equipment: createTestBuild({
