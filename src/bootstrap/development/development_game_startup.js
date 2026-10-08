@@ -1,3 +1,4 @@
+import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
@@ -16,7 +17,6 @@ import { Game } from "../production/game.js";
 import { GameCompositionRoot } from "../production/game_composition_root.js";
 import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
 import { GameVersionBadge } from "../production/game_version_badge.js";
-import { GodMode } from "../../dev/god_mode.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
 import { InputController } from "../../platform/browser/input/input_controller.js";
@@ -58,7 +58,7 @@ async function startGame() {
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
-  const godMode = new GodMode(CONFIG);
+  const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = createDevItemCatalog(ITEM_DB);
   const mapCatalog = CONFIG.locations.map;
   const configValidation = new ConfigValidationReporter({

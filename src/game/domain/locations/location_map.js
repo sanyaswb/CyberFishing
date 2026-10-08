@@ -57,32 +57,7 @@ export class LocationMap {
     this.#rows = Math.ceil(baseRes.height / actualCellSize);
 
     const ratio = designCellSize / actualCellSize;
-    if (ratio !== 1) {
-      const scaleZone = (z) => {
-        if (z.x !== undefined) z.x = Math.round(z.x * ratio);
-        if (z.y !== undefined) z.y = Math.round(z.y * ratio);
-        if (z.w !== undefined) z.w = Math.round(z.w * ratio);
-        if (z.h !== undefined) z.h = Math.round(z.h * ratio);
-
-        if (z.bounds) {
-          const bArr = Array.isArray(z.bounds) ? z.bounds : [z.bounds];
-          bArr.forEach((b) => {
-            if (b.x !== undefined) b.x = Math.round(b.x * ratio);
-            if (b.y !== undefined) b.y = Math.round(b.y * ratio);
-            if (b.w !== undefined) b.w = Math.round(b.w * ratio);
-            if (b.h !== undefined) b.h = Math.round(b.h * ratio);
-          });
-        }
-      };
-
-      if (this.#config.zones.castable)
-        this.#config.zones.castable.forEach(scaleZone);
-      if (this.#config.zones.collisions)
-        this.#config.zones.collisions.forEach(scaleZone);
-      if (this.#config.zones.snags) this.#config.zones.snags.forEach(scaleZone);
-      if (this.#config.zones.dynamic)
-        this.#config.zones.dynamic.forEach(scaleZone);
-    }
+    this.#scaleZones(ratio);
 
     this.#buildGrid(actualCellSize);
     this.#applyLocationResources(resources, actualCellSize);
@@ -108,6 +83,28 @@ export class LocationMap {
     const designCellSize = locationsConfig.designCellSize || actualCellSize;
     const ratio = designCellSize / actualCellSize;
 
+    this.#scaleZones(ratio);
+
+    this.#dynamicZones = [];
+    if (
+      this.#locationsConfig.enableDynamicZones !== false &&
+      this.#config.zones.dynamic
+    ) {
+      for (const dzConfig of this.#config.zones.dynamic) {
+        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
+      }
+    }
+
+    const baseRes = locationsConfig.baseResolution;
+    this.#cols = Math.ceil(baseRes.width / actualCellSize);
+    this.#rows = Math.ceil(baseRes.height / actualCellSize);
+    this.#buildGrid(actualCellSize);
+    this.#applyLocationResources(resources, actualCellSize);
+    this.recalculateZones(null, actualCellSize);
+  }
+
+  // Scales design-grid zone coordinates to the actual cell size (in place on the map's own config copy).
+  #scaleZones(ratio) {
     if (ratio !== 1) {
       const scaleZone = (z) => {
         if (z.x !== undefined) z.x = Math.round(z.x * ratio);
@@ -133,23 +130,6 @@ export class LocationMap {
       if (this.#config.zones.dynamic)
         this.#config.zones.dynamic.forEach(scaleZone);
     }
-
-    this.#dynamicZones = [];
-    if (
-      this.#locationsConfig.enableDynamicZones !== false &&
-      this.#config.zones.dynamic
-    ) {
-      for (const dzConfig of this.#config.zones.dynamic) {
-        this.#dynamicZones.push(new DynamicZone(dzConfig, this.#rng));
-      }
-    }
-
-    const baseRes = locationsConfig.baseResolution;
-    this.#cols = Math.ceil(baseRes.width / actualCellSize);
-    this.#rows = Math.ceil(baseRes.height / actualCellSize);
-    this.#buildGrid(actualCellSize);
-    this.#applyLocationResources(resources, actualCellSize);
-    this.recalculateZones(null, actualCellSize);
   }
 
   getCastableBoundsVirtual(cellSize) {

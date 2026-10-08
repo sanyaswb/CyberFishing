@@ -37,58 +37,7 @@ export class FightSessionFactory {
   }
 
   create(fishData, equipment, options = {}) {
-    const lineSystemConfig = this.#getLineSystemConfig();
-    const castOptions = this.#getCastOptions(options);
-    const activeLineStats = this.#resolveActiveLineStats(equipment, options);
-    const rodStats = equipment.rod?.effectiveStats || {};
-    const reelStats = equipment.reel?.effectiveStats || {};
-    const rod = new Rod(
-      rodStats.equipmentPowerLevel || 1,
-      rodStats.basePower || 1.0,
-      rodStats.compensation || 0,
-      equipment.rod?.variant || "float",
-      this.castDistanceCalculator.getMaxCastDistancePx(
-        equipment,
-        100,
-        castOptions,
-      ),
-      rodStats.hasReel !== false,
-      {
-        lengthMeters: rodStats.lengthMeters,
-        castPowerCoefficient: rodStats.castPowerCoefficient,
-        maxLoadKg: rodStats.maxLoadKg,
-        holdTensionRatio: rodStats.holdTensionRatio,
-        durability: rodStats.durability,
-        durabilityMaxLoadLossPerPercent:
-          rodStats.durabilityMaxLoadLossPerPercent,
-      },
-    );
-    const reel = equipment.reel
-      ? new Reel(
-          reelStats.equipmentPowerLevel || 1,
-          reelStats.basePower || 1.0,
-          {
-            maxLoadKg: reelStats.maxLoadKg,
-            lineCapacityMeters: reelStats.lineCapacityMeters,
-            retrieveSpeedMetersPerSec: reelStats.retrieveSpeedMetersPerSec,
-            bearingCount: reelStats.bearingCount,
-            bearingRetrieveSpeedBonusMetersPerSec:
-              this.physicsConfig?.getReelConfig?.()
-                ?.bearingRetrieveSpeedBonusMetersPerSec,
-            dragMinKg: reelStats.dragMinKg,
-            dragMaxKg: reelStats.dragMaxKg,
-            dragChangeSpeedPerSec: reelStats.dragChangeSpeedPerSec,
-            hasDrag: reelStats.hasDrag,
-            durability: reelStats.durability,
-            durabilityMaxLoadLossPerPercent:
-              reelStats.durabilityMaxLoadLossPerPercent,
-            runtimeConfig: this.runtimeConfig,
-          },
-        )
-      : new Reel(0, 0, { lineCapacityMeters: 0, runtimeConfig: this.runtimeConfig });
-    const activeHook = equipment.hooks?.[0] || {};
-    const hookStats = activeHook.effectiveStats || {};
-    const hook = new Hook(hookStats);
+    const { rod, reel, hook, lineSystem } = this.createEquipment(equipment, options);
     const fish = new Fish(
       fishData.level,
       fishData.weight,
@@ -96,13 +45,6 @@ export class FightSessionFactory {
       this.rng,
       this.logger,
     );
-    const lineSystem = new LineSystem({
-      rod,
-      reel,
-      config: lineSystemConfig,
-      lineStats: activeLineStats,
-      castDistanceCalculator: this.castDistanceCalculator,
-    });
     const dragSystem = new DragControlService(
       this.physicsConfig?.getReelDragConfig?.() || {},
       reel,

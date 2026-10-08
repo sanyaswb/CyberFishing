@@ -175,7 +175,7 @@ function checkDevelopmentInputs() {
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
-    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, GodMode: godModeInstance, RenderAllocationDiagnostics: diagnostics,
+    LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, debugModulesSource: () => debugModules, debugModules,
@@ -188,7 +188,7 @@ function checkDevelopmentInputs() {
   assert.equal(ports.windowTarget, window);
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
-  assert.equal(flags.options.godModeSource(), runtime.context.GodMode);
+  assert.equal(flags.options.godModeSource(), runtime.context.godMode);
   assert.equal(flags.options.debugModulesSource(), runtime.context.debugModules);
   runtime.context.debugModules.catchResolution = false;
   assert.equal(flags.options.debugModulesSource().catchResolution, false, "flag source stays live");
@@ -224,30 +224,30 @@ checkDevelopmentInputs();
 function checkProductionOverrideReader() {
   const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
   const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
-  source.load("src/dev/god_mode.js", { expose: ["GodMode"] });
   source.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   source.load("src/bootstrap/production/game_composition_root.js", { expose: ["GameCompositionRoot"] });
-  const reader = new GameplayOverrideReader(config), original = new source.context.GodMode(config);
-  const names = Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(original))).filter(([, value]) => value.get).map(([name]) => name);
+  // DEV composes the same reader class as production.
+  const reader = new GameplayOverrideReader(config);
   const flags = new source.context.DevFlagsProvider({ config, godModeSource: () => reader });
   for (const enabled of [undefined, false, 0, true, 1, "enabled"]) {
     for (const value of [undefined, false, true, 1, "yes"]) {
       config.debug.godMode = { enabled, infiniteResources:value, noEquipmentLoss:value, noHookEscape:value,
         noLineBreak:value, noRodBreak:value, noFishStaminaLoss:value, infiniteCasting:value,
         fixedBiteChanceEnabled:value, fixedBiteChancePercent:-20, forceAnomalyChance:value, biteSequenceMode:"GUARANTEED" };
-      for (const name of names) assert.equal(reader[name], original[name], name + " accessor parity");
-      assert.equal(flags.isEnabled("noEquipmentLoss"), original.noEquipmentLoss === true);
-      assert.equal(flags.godModeValue("biteSequenceMode"), original.biteSequenceMode);
+      assert.equal(flags.isEnabled("noEquipmentLoss"), reader.noEquipmentLoss === true);
+      assert.equal(flags.godModeValue("biteSequenceMode"), reader.biteSequenceMode);
     }
   }
-  for (const percent of [-5,0,50,100,150,"42",NaN,Infinity]) {
+  const expectedPercents = [0,0,50,100,100,42,100,100];
+  [-5,0,50,100,150,"42",NaN,Infinity].forEach((percent, index) => {
     config.debug.godMode = { enabled:true,fixedBiteChanceEnabled:true,fixedBiteChancePercent:percent };
-    assert.equal(reader.fixedBiteChancePercent, original.fixedBiteChancePercent);
-  }
-  for (const mode of [undefined,"default","NORMAL","guaranteed","other"]) {
+    assert.equal(reader.fixedBiteChancePercent, expectedPercents[index], "fixed bite percent " + String(percent));
+  });
+  const expectedModes = ["default","default","normal","guaranteed","default"];
+  [undefined,"default","NORMAL","guaranteed","other"].forEach((mode, index) => {
     config.debug.godMode.biteSequenceMode = mode;
-    assert.equal(reader.biteSequenceMode, original.biteSequenceMode);
-  }
+    assert.equal(reader.biteSequenceMode, expectedModes[index], "bite sequence mode " + String(mode));
+  });
   config.debug.godMode = { enabled:true,noEquipmentLoss:true };
   assert.equal(flags.isEnabled("noEquipmentLoss"), true, "live owner replacement enables the production effect");
   config.debug.godMode.enabled = false;

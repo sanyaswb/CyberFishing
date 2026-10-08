@@ -249,24 +249,7 @@ export class ScoutingState extends GameState {
       return true;
     }
 
-    const canCastAnywhere =
-      this.deps.services.devFlags.isEnabled("infiniteCasting");
-    const maxDistance = this.getEffectiveCastDistance(eq);
-    const accuracyPx =
-      Number(eq?.rod?.effectiveStats?.accuracy) ||
-      this.deps.config.casting?.rodAccuracyFallbackPx ||
-      80;
-    const accuracyPercent = this.#getRodAccuracyPercent(eq);
-    const accuracyMultiplier = this.#getRodAccuracyMultiplier(eq);
-    const target = this.#castAim.resolveTarget(release, {
-      bounds,
-      maxDistance,
-      accuracyPx,
-      accuracyPercent,
-      accuracyMultiplier,
-      canCastAnywhere,
-      checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
-    });
+    const target = this.resolveCastTarget(this.#castAim, release, bounds, eq);
 
     if (!target?.success) {
       this.deps.commands.markInvalidCast({
@@ -330,16 +313,13 @@ export class ScoutingState extends GameState {
     if (!this.deps.config.debug?.casting?.showAccuracyArea) return;
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.getEffectiveCastDistance(eq);
-    const accuracyPx =
-      Number(eq?.rod?.effectiveStats?.accuracy) ||
-      this.deps.config.casting?.rodAccuracyFallbackPx ||
-      80;
+    const accuracyPx = this.getRodAccuracyPx(eq);
     const preview = aim.getAccuracyPreview(
       bounds,
       maxDistance,
       accuracyPx,
-      this.#getRodAccuracyPercent(eq),
-      this.#getRodAccuracyMultiplier(eq),
+      this.getRodAccuracyPercent(eq),
+      this.getRodAccuracyMultiplier(eq),
     );
     target.casting.accuracyPreview = preview;
   }
@@ -382,21 +362,5 @@ export class ScoutingState extends GameState {
     target.casting.virtualBottomY = bottom;
     target.casting.maxDistance = maxDistance;
     target.casting.mode = mode;
-  }
-
-  #getRodAccuracyPercent(eq) {
-    return (
-      Number(eq?.rod?.effectiveStats?.accuracyPercent) ||
-      this.deps.config.casting?.accuracyDistancePercent ||
-      null
-    );
-  }
-
-  #getRodAccuracyMultiplier(eq) {
-    return (
-      Number(eq?.rod?.effectiveStats?.accuracyMultiplier) ||
-      this.deps.config.casting?.accuracyDistanceMultiplier ||
-      1
-    );
   }
 }

@@ -1,5 +1,6 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { threeBandGradientColor } from "../styles/three_band_gradient_color.js";
 
 export class CastingRenderFrameBuilder {
   #projector;
@@ -204,7 +205,7 @@ export class CastingRenderFrameBuilder {
       visual.mode === "chum"
         ? lineConfig.chumColor || "rgba(255, 180, 0, 0.9)"
         : lineConfig.color || "rgba(0, 220, 255, 0.85)";
-    target.powerAim.powerColor = this.#gradientColor(
+    target.powerAim.powerColor = threeBandGradientColor(
       powerRatio * 100,
       tensionStyle.gradient,
     );
@@ -216,30 +217,5 @@ export class CastingRenderFrameBuilder {
         dashCycle);
     target.powerAim.glowBlur = lineConfig.glowBlur || 0;
     target.visible = true;
-  }
-
-  #gradientColor(value, gradient) {
-    if (!gradient) return "#00ccff";
-    const low = gradient.breakpoints?.low ?? 33;
-    const mid = gradient.breakpoints?.mid ?? 66;
-    if (value < low) {
-      return RenderMath.interpolateRgb(
-        gradient.low?.start || [0, 0, 255],
-        gradient.low?.end || [255, 255, 0],
-        value / low,
-      );
-    }
-    if (value < mid) {
-      return RenderMath.interpolateRgb(
-        gradient.mid?.start || [255, 255, 0],
-        gradient.mid?.end || [255, 128, 0],
-        (value - low) / Math.max(1, mid - low),
-      );
-    }
-    return RenderMath.interpolateRgb(
-      gradient.high?.start || [255, 128, 0],
-      gradient.high?.end || [255, 0, 0],
-      (value - mid) / Math.max(1, 100 - mid),
-    );
   }
 }

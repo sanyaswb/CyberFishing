@@ -2,6 +2,7 @@ import { TackleFailureSelector } from "./tackle_failure_selector.js";
 import { TackleStressAccumulator } from "./tackle_stress_accumulator.js";
 import { WeakestTackleLimitResolver } from "./weakest_tackle_limit_resolver.js";
 import { finiteOr } from "../../../engine/math/number_normalization.js";
+import { durabilityAdjustedMaxLoadKg } from "../items/condition/durability_max_load.js";
 
 export class TackleStressSystem {
   #rod;
@@ -216,7 +217,7 @@ export class TackleStressSystem {
 
   getEffectiveLeaderMaxLoadKg() {
     if (!this.#leader) return Infinity;
-    return TackleStressSystem.effectiveItemMaxLoadKg(this.#leader, Infinity);
+    return durabilityAdjustedMaxLoadKg(this.#leader, Infinity);
   }
 
   getEffectiveHookMaxLoadKg() {
@@ -224,7 +225,7 @@ export class TackleStressSystem {
     return (
       this.#hook.getEffectiveMaxLoadKg?.() ||
       this.#hook.getMaxLoadKg?.() ||
-      TackleStressSystem.effectiveItemMaxLoadKg(this.#hook, Infinity)
+      durabilityAdjustedMaxLoadKg(this.#hook, Infinity)
     );
   }
 
@@ -441,18 +442,5 @@ export class TackleStressSystem {
     const limit = Number(limitKg);
     if (!Number.isFinite(limit) || limit <= 0) return 0;
     return Math.max(0, Number(tensionKg) || 0) / limit;
-  }
-
-  static effectiveItemMaxLoadKg(item, fallback = 0) {
-    if (!item) return fallback;
-    const maxLoadKg = Number(item.effectiveStats?.maxLoadKg ?? fallback);
-    const durability = Number(item.effectiveStats?.durability ?? 100);
-    const lossPerPercent = Number(
-        item.effectiveStats?.durabilityMaxLoadLossPerPercent ??
-        0.001,
-    );
-    if (!Number.isFinite(maxLoadKg) || maxLoadKg <= 0) return fallback;
-    const lostPercent = Math.max(0, 100 - (Number.isFinite(durability) ? durability : 100));
-    return maxLoadKg * Math.max(0.1, 1 - lostPercent * lossPerPercent);
   }
 }

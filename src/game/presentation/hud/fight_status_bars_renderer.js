@@ -1,4 +1,5 @@
 import { RenderMath } from "../../../engine/rendering/render_math.js";
+import { threeBandGradientColor } from "../styles/three_band_gradient_color.js";
 
 export class FightStatusBarsRenderer {
   #surface;
@@ -209,7 +210,7 @@ export class FightStatusBarsRenderer {
   #drawTension(model, stress, layout) {
     if (!model.visible) return;
     const style = this.#styles.resolveBarStyle("tension");
-    const fillColor = this.#gradientColor(model.ratio * 100, style.gradient);
+    const fillColor = threeBandGradientColor(model.ratio * 100, style.gradient);
     const statusColor = this.#statusColor(model.ratio * 100, style.statuses);
     const resolvedStyle = this.#tensionStyle;
     Object.setPrototypeOf(resolvedStyle, style);
@@ -250,31 +251,6 @@ export class FightStatusBarsRenderer {
     options.label = model.label;
     options.value = model.value;
     this.#bars.drawThinProgressBar(options);
-  }
-
-  #gradientColor(value, gradient) {
-    if (!gradient) return "#00ccff";
-    const low = gradient.breakpoints?.low ?? 33;
-    const mid = gradient.breakpoints?.mid ?? 66;
-    if (value < low) {
-      return RenderMath.interpolateRgb(
-        gradient.low?.start || [0, 0, 255],
-        gradient.low?.end || [255, 255, 0],
-        value / low,
-      );
-    }
-    if (value < mid) {
-      return RenderMath.interpolateRgb(
-        gradient.mid?.start || [255, 255, 0],
-        gradient.mid?.end || [255, 128, 0],
-        (value - low) / Math.max(1, mid - low),
-      );
-    }
-    return RenderMath.interpolateRgb(
-      gradient.high?.start || [255, 128, 0],
-      gradient.high?.end || [255, 0, 0],
-      (value - mid) / Math.max(1, 100 - mid),
-    );
   }
 
   #statusColor(value, statuses) {
