@@ -13,14 +13,14 @@ Make fish fight balance readable and predictable:
 ## Active production classes
 
 ```txt
-src/core/fishing/simple_fight_force_calculator.js
-src/core/fishing/line_tension_calculator.js
-src/systems/fish_force_system.js
-src/systems/fish_retrieve_system.js
-src/systems/rod_pull_system.js
-src/systems/reel_system.js
-src/systems/tension_system.js
-src/systems/fight_physics_system.js
+src/game/domain/fishing/simple_fight_force_calculator.js
+src/game/domain/fishing/line_tension_calculator.js
+src/game/domain/fishing/fish_force_system.js
+src/game/domain/fishing/fish_retrieve_system.js
+src/game/domain/fishing/rod_pull_system.js
+src/game/application/fishing/reel_service.js
+src/game/application/fishing/tension_service.js
+src/game/application/fishing/fight_physics_orchestrator.js
 ```
 
 ## Removed legacy fight classes

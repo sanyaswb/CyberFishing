@@ -70,3 +70,21 @@
 1 → 3 → 4 → 2 → 6 → 7, далі 5, 8, 9–12. Кожен крок — окрема spec, без зміни геймплею, сейвів і таймінгу;
 доказ — checks, guard, незмінний game-cycle digest, browser smoke; для 1 і 2 — ще hot-loop allocations і call counts.
 Рішення власника: 3 (перегляд D4), 7 (спосіб деплою), 11 (політика сейвів).
+
+## Виконано після огляду (2026-10-08)
+
+| Spec | Що зроблено | Доказ |
+| --- | --- | --- |
+| 020 | Production console без DEV-логів (chum click, storage report) | checks, свіжа вкладка без логів |
+| 021 | 81 однаковий числовий хелпер → `engine/math/number_normalization.js` | digest, checks |
+| 022 | Перевикористання: GodMode-копія, fight equipment, gradient, zone scaling, durability load, cast target | digest, диференційний LocationMap |
+| 023 | Production fight frame без DEV-знімка (~675 полів щокадру, 3 копії) | parity по кадрах + mode parity, −23% часу бою |
+| 024 | Нормалізація фізики риби раз на об'єкт | −7% |
+| 025 | Fixed Catch лише в DEV (hook) | production −1 модуль |
+| 026 | Адаптер фізики та freshness provider компонуються один раз | −7 imports |
+| 027 | Кеш нормалізованих налаштувань фізики за ревізією конфігу | mutation probe, live override, −9% |
+| 028 | Сесія гри (GameApplication + фасади) вийшла з bootstrap | guard тепер перевіряє сесію як application |
+
+Залишилось: правило прихованої композиції (п.5), platform singletons (п.6), кеш модулів (п.7, рішення власника),
+optional contracts (п.8), тестова композиція (п.9), legacy-сейви (п.11, рішення власника), поділ
+`GameCompositionRoot` (1 300 рядків).
