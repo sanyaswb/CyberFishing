@@ -3,7 +3,7 @@ const path = require("node:path");
 const { CheckAssertion } = require("./testing/core/check_assertion");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 const { ItemStatTestComposition } = require("./testing/runtime/item_stat_test_composition");
-const { installDescriptorFactories } = require("./testing/runtime/constructor_defaults");
+const { installDescriptorFactories, bindConstructorDefaults } = require("./testing/runtime/constructor_defaults");
 
 const ROOT = path.resolve(__dirname, "..");
 const Assertion = CheckAssertion.create("Item freshness gameplay check");
@@ -62,6 +62,9 @@ class ItemFreshnessGameplayCheck {
     new ItemStatTestComposition(sourceRuntime.context).install({ withPolicy: ["SnapshotMapper"], withResolver: ["Hydrator"] });
     installDescriptorFactories(sourceRuntime.context, { FreshnessResolver: "ItemFreshnessDescriptor",
       EffectivenessResolver: "BaitEffectivenessDescriptor" });
+    // The knowledge policy is injected the way GameCompositionRoot composes it.
+    sourceRuntime.context.EffectivenessResolver = bindConstructorDefaults(sourceRuntime.context.EffectivenessResolver,
+      () => ({ knowledgePolicy: new sourceRuntime.context.AlwaysKnownBaitEffectivenessPolicy() }));
     this.#runtime = sourceRuntime.context;
   }
 

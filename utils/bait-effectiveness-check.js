@@ -49,6 +49,10 @@ class BaitEffectivenessCheck {
       BalanceResolver: "InventoryBalanceParameterResolver",
     });
     installDescriptorFactories(this.#sourceRuntime.context, { EffectivenessResolver: "BaitEffectivenessDescriptor" });
+    // The knowledge policy is injected the way GameCompositionRoot composes it.
+    const context = this.#sourceRuntime.context;
+    context.EffectivenessResolver = bindConstructorDefaults(context.EffectivenessResolver,
+      () => ({ knowledgePolicy: new context.AlwaysKnownBaitEffectivenessPolicy() }));
     this.#runtime = this.#sourceRuntime.context;
     this.#runtime.ViewFactory = bindConstructorDefaults(this.#runtime.ViewFactory,
       () => ({ effectiveRarityResolver: new this.#runtime.EffectiveItemRarityResolver() }));

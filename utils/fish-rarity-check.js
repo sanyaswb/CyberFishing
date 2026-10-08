@@ -1100,10 +1100,11 @@ const runtime = new RuntimeLoader().loadClasses([
   },
   {
     relativePath: "src/game/domain/items/bait/bait_effectiveness_knowledge_policy.js",
-    classNames: [
-      "BaitEffectivenessKnowledgePolicy",
-      "AlwaysKnownBaitEffectivenessPolicy",
-    ],
+    classNames: ["BaitEffectivenessKnowledgePolicy"],
+  },
+  {
+    relativePath: "src/game/domain/items/bait/always_known_bait_effectiveness_policy.js",
+    classNames: ["AlwaysKnownBaitEffectivenessPolicy"],
   },
   {
     relativePath: "src/game/domain/items/bait/bait_effectiveness_resolver.js",
@@ -1174,7 +1175,8 @@ new FishRarityCheck(
   runtime.RarityAnimationResolver,
   // The descriptor factory is injected the way GameCompositionRoot composes it.
   bindConstructorDefaults(runtime.BaitEffectivenessResolver,
-    { descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values) }),
+    () => ({ descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values),
+      knowledgePolicy: new runtime.AlwaysKnownBaitEffectivenessPolicy() })),
 ).run();
 require('./testing/runtime/render_frame_test_composition').checkRenderFrameComposition();
 require('./testing/runtime/chum_test_composition').checkChumComposition();
