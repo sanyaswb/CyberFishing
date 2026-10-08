@@ -106,7 +106,7 @@ class DegradationColorCheck {
       "src/game/presentation/inventory/item_progression_visual_resolver.js",
     );
     const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/style.css"),
+      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
       "utf8",
     );
     Assertion.that(

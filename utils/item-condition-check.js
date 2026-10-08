@@ -222,17 +222,12 @@ class ItemConditionCheck {
 
   #checkCssContract() {
     const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/style.css"),
+      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
       "utf8",
     );
     Assertion.that(
-      css.includes("background-position: bottom") &&
-        css.includes("background-size: 100% var(--item-condition-percent, 100%)"),
-      "rarity background fills vertically from the bottom",
-    );
-    Assertion.that(
-      css.includes("border: var(--rarity-border-width) solid var(--rarity-color)"),
-      "rarity frame remains full and independent from fill height",
+      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
+      "the item card rarity frame stays full and independent from condition",
     );
   }
 

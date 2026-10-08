@@ -50,7 +50,9 @@
 │  │  └── tasks.md
 │  ├── 002-line-capacity-context
 │  │  └── spec.md
-│  └── 003-names-and-placement
+│  ├── 003-names-and-placement
+│  │  └── spec.md
+│  └── 004-css-cleanup
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -743,6 +745,7 @@
    ├── config-schema-check.js
    ├── consumable-event-identity-check.js
    ├── create-version-copy.js
+   ├── css-usage-check.js
    ├── degradation-color-check.js
    ├── dev-server.js
    ├── dev-tools-linked-parameter-check.js

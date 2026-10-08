@@ -799,10 +799,9 @@ class ItemProgressionCheck {
       "full Capacity uses the safe degradation color",
     );
 
-    const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/style.css"),
-      "utf8",
-    );
+    const css = ["style.css", "inventory.css"]
+      .map((file) => fs.readFileSync(path.join(ROOT, "src/game/presentation/styles", file), "utf8"))
+      .join("\n");
     for (const stop of this.#runtime.VISUAL_CONFIG.colorStops) {
       const channels = stop.color.join(", ");
       const hex = `#${stop.color
@@ -877,8 +876,8 @@ class ItemProgressionCheck {
       "rating-tier badge inherits the item rarity frame color",
     );
     Assertion.that(
-      css.includes(".inv-slot.has-rarity::before") &&
-        css.includes(".inv-slot.selected::after"),
+      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)") &&
+        css.includes(".inventory-list-item.is-selected::after"),
       "rarity and interaction layers remain independent",
     );
   }

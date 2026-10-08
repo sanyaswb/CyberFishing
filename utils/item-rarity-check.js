@@ -323,46 +323,42 @@ class ItemRarityCheck {
 
   #checkCssLayering() {
     const css = fs.readFileSync(
-      path.join(ROOT, "src/game/presentation/styles/style.css"),
+      path.join(ROOT, "src/game/presentation/styles/inventory.css"),
       "utf8",
     );
     Assertion.that(
-      css.includes(".inv-slot.has-rarity::before"),
-      "rarity uses the slot before layer",
+      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
+      "item cards draw the rarity frame from the rarity color",
     );
     Assertion.that(
-      css.includes(".inv-slot.has-rarity.rarity-glow::before"),
+      css.includes(".inventory-item-card.rarity-glow"),
       "item glow CSS is gated by the config-driven class",
     );
     Assertion.that(
-      css.includes(".inv-slot.rarity-unique.rarity-pulse::before"),
+      css.includes(".inventory-item-card.rarity-unique.rarity-pulse"),
       "item pulse CSS is gated by the config-driven class",
     );
     Assertion.that(
       css.includes(".inv-tooltip.rarity-unique.rarity-glow.rarity-pulse"),
       "tooltip glow CSS is gated by the config-driven class",
     );
-    const pulseStart = css.indexOf("@keyframes inventory-rarity-pulse");
-    const pulseEnd = css.indexOf(".inv-slot.equipped::after", pulseStart);
+    const pulseStart = css.indexOf("@keyframes inventory-card-rarity-pulse");
+    const pulseEnd = css.indexOf("}\n}", pulseStart);
     const pulseCss = css.slice(pulseStart, pulseEnd);
     Assertion.that(
       pulseStart >= 0 && pulseEnd > pulseStart && !pulseCss.includes("box-shadow"),
       "unique item pulse keeps opacity animation independent from glow",
     );
-    for (const state of [
-      "equipped",
-      "selected",
-      "highlight-target",
-      "highlight-compatible",
+    for (const selector of [
+      ".inventory-slot.is-highlighted::after",
+      ".inventory-list-item.is-selected::after",
+      ".inventory-list-item.is-compatible:not(.is-selected)::after",
     ]) {
-      Assertion.that(
-        css.includes(`.inv-slot.${state}::after`),
-        `${state} uses the interaction after layer`,
-      );
+      Assertion.that(css.includes(selector), `${selector} uses the interaction after layer`);
     }
     Assertion.that(
-      css.includes("@media (prefers-reduced-motion: reduce)"),
-      "reduced motion disables unique pulse",
+      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.inventory-item-card\.rarity-unique\.rarity-pulse,\s*\.inv-tooltip\.rarity-unique\.rarity-pulse \{\s*animation: none;/u.test(css),
+      "reduced motion disables the card and tooltip pulse",
     );
     for (const color of this.#runtime.__VISUAL_CONFIG__.colorStops) {
       const channels = color.color;

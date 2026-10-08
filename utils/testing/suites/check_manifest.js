@@ -9,6 +9,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick"],
   },
   {
+    id: "css-usage",
+    title: "Every stylesheet class is used by code",
+    file: "utils/css-usage-check.js",
+    suites: ["quick", "architecture"],
+  },
+  {
     id: "architecture",
     title: "Layer boundaries, import graph and host globals",
     file: "utils/architecture-check.js",
