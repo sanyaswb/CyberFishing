@@ -442,10 +442,6 @@ class InventoryEquipmentCheck {
     assemblies.connect("reel", "line", 0, "line");
     Assertion.equal(readiness.evaluateCast({ equipmentState: state }).canCast, true, "cast is ready once line is attached");
     Assertion.equal(readiness.validateEquip({ slotId: "terminalLine", item: items.get("leader"), equipmentState: state }).isValid, true, "leader equips after reel line");
-    Assertion.equal(readiness.evaluateBite({ equipmentState: state }).canBite, false, "empty feeder assembly equips but cannot bite");
-    Assertion.equal(readiness.evaluateChumBonus({ equipmentState: state }).hasBonus, false, "missing chum only removes its bonus");
-    assemblies.connect("rig", "hook", 0, "hook");
-    Assertion.equal(readiness.evaluateBite({ equipmentState: state }).canBite, true, "feeder bite becomes eligible with a hook");
   }
 
   #checkExactAutoRefill() {

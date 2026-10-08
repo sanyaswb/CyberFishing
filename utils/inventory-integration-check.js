@@ -2001,10 +2001,8 @@ vm.runInContext(
       emptyStack.facade
         .getViewModel()
         .panel.loadout.mainSlots.find((slot) => slot.slotId === "tackle")
-        ?.item?.assemblyCompletion?.isComplete === false &&
-      emptyStack.gameplayBridge.evaluateBiteReadiness().canBite === false &&
-      emptyStack.gameplayBridge.evaluateChumBonus().hasBonus === false,
-    "completely empty feeder stack can equip but has no bite or chum bonus",
+        ?.item?.assemblyCompletion?.isComplete === false,
+    "completely empty feeder stack can equip and stays visibly incomplete",
   );
 
   // Empty reel is equippable, but casting and leader readiness remain guarded.

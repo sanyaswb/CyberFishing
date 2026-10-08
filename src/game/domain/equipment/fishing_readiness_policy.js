@@ -81,48 +81,6 @@ export class FishingReadinessPolicy {
     return this.#castResult(true);
   }
 
-  evaluateBite({ equipmentState } = {}) {
-    const rod = this.#item(
-      this.#root(equipmentState, this.#slotId("ROD", "rod")),
-    );
-    const isFeeder =
-      this.#capabilityResolver?.resolve?.(rod)?.supportsFeederRig === true;
-    if (!isFeeder) {
-      return Object.freeze({ canBite: true, warningCode: null, warning: null });
-    }
-
-    const tackleRootId = this.#root(
-      equipmentState,
-      this.#slotId("TACKLE", "tackle"),
-    );
-    const tackle = this.#item(tackleRootId);
-    const hooks = this.#isHook(tackle)
-      ? [tackle]
-      : this.#children(tackleRootId, ["hook", "hooks"]);
-    const canBite = hooks.some(Boolean);
-    return Object.freeze({
-      canBite,
-      warningCode: canBite ? null : "feeder-hook-missing",
-      warning: canBite
-        ? null
-        : this.#messages.feederHookMissing,
-    });
-  }
-
-  evaluateChumBonus({ equipmentState } = {}) {
-    const tackleRootId = this.#root(
-      equipmentState,
-      this.#slotId("TACKLE", "tackle"),
-    );
-    const chum =
-      this.#child(tackleRootId, "chum", 0) ||
-      this.#child(tackleRootId, "feederChum", 0);
-    return Object.freeze({
-      hasBonus: Boolean(chum),
-      warning: chum ? null : this.#messages.chumBonusMissing,
-    });
-  }
-
   #castResult(canCast, warning = null, warningCode = null) {
     return Object.freeze({
       canCast,
@@ -163,23 +121,8 @@ export class FishingReadinessPolicy {
     );
   }
 
-  #children(parentInstanceId, slotIds) {
-    if (!parentInstanceId) return [];
-    for (const slotId of slotIds) {
-      const children = this.#assemblyReader?.getChildren?.(parentInstanceId, slotId);
-      if (Array.isArray(children) && children.length > 0) {
-        return children.map((child) => this.#item(child));
-      }
-    }
-    return [];
-  }
-
   #isLeader(item) {
     return item?.itemType === "leader_line";
-  }
-
-  #isHook(item) {
-    return item?.itemType === "hook";
   }
 
   #slotId(key, fallback) {

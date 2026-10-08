@@ -30,8 +30,6 @@ export const INVENTORY_RULE_MESSAGES = (() => {
     reelRequired: "Для цієї вудки потрібна котушка.",
     reelLineRequired: "У котушку потрібно встановити ліску.",
     terminalLineRequired: "Для закидання потрібно спорядити ліску.",
-    feederHookMissing: "Снасть споряджена без гачків, тому клювання не буде.",
-    chumBonusMissing: "Прикормка відсутня: бонус прикормки не діє.",
     // Equipment transitions and inventory capacity.
     inventoryCapacityExceeded: "Недостатньо місця в інвентарі.",
     // Line allocation.

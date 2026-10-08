@@ -119,18 +119,6 @@ export class InventoryGameplayBridge {
     });
   }
 
-  evaluateBiteReadiness() {
-    return this.#readinessPolicy.evaluateBite({
-      equipmentState: this.#equipmentState,
-    });
-  }
-
-  evaluateChumBonus() {
-    return this.#readinessPolicy.evaluateChumBonus({
-      equipmentState: this.#equipmentState,
-    });
-  }
-
   setBoatChargeProvider(provider) {
     this.#itemViews?.setBoatChargeProvider?.(provider);
     this.#afterMutation?.();
