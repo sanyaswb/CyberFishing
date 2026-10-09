@@ -320,7 +320,7 @@ export class GameCompositionRoot {
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
     const { systems } = this.#composeWorldSystems({
       projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
-      itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, fishRarityResolver,
+      itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
     });
     this.#composeInventoryUi({
@@ -724,7 +724,7 @@ export class GameCompositionRoot {
   // Map, environment, input, game controls, chum service and bite system; the inventory reads boat charge from the chum service.
   #composeWorldSystems({
     projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
-    itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, fishRarityResolver,
+    itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
   }) {
     const systems = {
@@ -773,6 +773,7 @@ export class GameCompositionRoot {
         fishAnomalyVariantResolver,
         fishVisualVariantResolver,
         baitEffectivenessResolver,
+        devFlags,
       ),
       inventory,
     };

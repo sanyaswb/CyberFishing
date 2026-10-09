@@ -55,6 +55,9 @@ class FishRarityCheck {
     HookedFishProfileSynchronizer,
     RarityAnimationResolver,
     BaitEffectivenessResolver,
+    InactiveDevFlags,
+    DevFlagsProvider,
+    GameplayOverrideReader,
   ) {
     const rarityScale = Object.freeze({
       fishWeightBands: 7,
@@ -80,6 +83,12 @@ class FishRarityCheck {
       fishVisualVariantResolver: this.visualVariantResolver,
     });
     this.BiteSystem = BiteSystem;
+    // Production composes the inactive DEV flags; the God Mode case composes the DEV flags as dev.html does.
+    this.productionFlags = new InactiveDevFlags();
+    this.createDevFlags = (config) => {
+      const reader = new GameplayOverrideReader(config);
+      return new DevFlagsProvider({ config, godModeSource: () => reader });
+    };
     this.RarityVisualResolver = RarityVisualResolver;
     this.VictoryThemeResolver = VictoryThemeResolver;
     this.RarityConfigValidator = RarityConfigValidator;
@@ -387,6 +396,7 @@ class FishRarityCheck {
       this.anomalyVariantResolver,
       this.visualVariantResolver,
       this.baitEffectivenessResolver,
+      this.productionFlags,
     );
     const environment = {
       locationId: "test",
@@ -446,6 +456,7 @@ class FishRarityCheck {
       this.anomalyVariantResolver,
       this.visualVariantResolver,
       this.baitEffectivenessResolver,
+      this.productionFlags,
     );
     const uniqueCatch = uniqueBiteSystem.evaluateBite(1000, environment, gear);
     Assertion.that(uniqueCatch.hasAnomaly, "generated anomaly flag is true");
@@ -468,6 +479,7 @@ class FishRarityCheck {
       this.anomalyVariantResolver,
       this.visualVariantResolver,
       this.baitEffectivenessResolver,
+      this.productionFlags,
     );
     const ordinaryHighRollCatch = ordinaryBiteSystem.evaluateBite(
       1000,
@@ -479,25 +491,42 @@ class FishRarityCheck {
       "configured anomaly chance normally fails at a high roll",
     );
 
-    const godModeBiteSystem = new this.BiteSystem(
-      [fish],
-      {
-        fightPhysicsConfig: {},
-        ui: { line: {} },
-        debug: {
-          godMode: {
-            enabled: true,
-            fixedBiteChanceEnabled: false,
-            forceAnomalyChance: true,
-          },
+    const godModeConfig = {
+      fightPhysicsConfig: {},
+      ui: { line: {} },
+      debug: {
+        godMode: {
+          enabled: true,
+          fixedBiteChanceEnabled: false,
+          forceAnomalyChance: true,
         },
       },
+    };
+    const productionHighRollCatch = new this.BiteSystem(
+      [fish],
+      godModeConfig,
       highRollRng,
       null,
       this.resolver,
       this.anomalyVariantResolver,
       this.visualVariantResolver,
       this.baitEffectivenessResolver,
+      this.productionFlags,
+    ).evaluateBite(1000, environment, gear);
+    Assertion.that(
+      !productionHighRollCatch.isUnique,
+      "production ignores an enabled God Mode config",
+    );
+    const godModeBiteSystem = new this.BiteSystem(
+      [fish],
+      godModeConfig,
+      highRollRng,
+      null,
+      this.resolver,
+      this.anomalyVariantResolver,
+      this.visualVariantResolver,
+      this.baitEffectivenessResolver,
+      this.createDevFlags(godModeConfig),
     );
     const forcedAnomalyCatch = godModeBiteSystem.evaluateBite(
       1000,
@@ -1120,6 +1149,18 @@ const runtime = new RuntimeLoader().loadClasses([
     classNames: ["BiteSystem"],
   },
   {
+    relativePath: "src/game/application/session/inactive_dev_flags.js",
+    classNames: ["InactiveDevFlags"],
+  },
+  {
+    relativePath: "src/dev/runtime/dev_flags_provider.js",
+    classNames: ["DevFlagsProvider"],
+  },
+  {
+    relativePath: "src/dev/runtime/gameplay_override_reader.js",
+    classNames: ["GameplayOverrideReader"],
+  },
+  {
     relativePath: "src/game/presentation/screens/rarity_animation_resolver.js",
     classNames: ["RarityAnimationResolver"],
   },
@@ -1177,6 +1218,9 @@ new FishRarityCheck(
   bindConstructorDefaults(runtime.BaitEffectivenessResolver,
     () => ({ descriptorFactory: (values) => new runtime.BaitEffectivenessDescriptor(values),
       knowledgePolicy: new runtime.AlwaysKnownBaitEffectivenessPolicy() })),
+  runtime.InactiveDevFlags,
+  runtime.DevFlagsProvider,
+  runtime.GameplayOverrideReader,
 ).run();
 require('./testing/runtime/render_frame_test_composition').checkRenderFrameComposition();
 require('./testing/runtime/chum_test_composition').checkChumComposition();

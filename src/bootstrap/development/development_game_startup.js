@@ -1,13 +1,13 @@
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
-import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
+import { GameplayOverrideReader } from "../../dev/runtime/gameplay_override_reader.js";
 import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { ConfigSchemaValidator } from "../../game/config/validation/config_schema_validator.js";
 import { ConfigValidationReporter } from "../../dev/diagnostics/config_validation_reporter.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
-import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
+import { DevFlagsProvider } from "../../dev/runtime/dev_flags_provider.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
 import { DevToolsParameterTooltipProvider } from "../../dev/tools/dev_tools_parameter_tooltip_provider.js";
 import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";

@@ -187,9 +187,7 @@ export class FightService {
   }
 
   #isFishStaminaLocked() {
-    if (this.#devFlags?.isEnabled?.("noFishStaminaLoss")) return true;
-    const godMode = this.#config?.debug?.godMode;
-    return godMode?.enabled === true && godMode.noFishStaminaLoss === true;
+    return this.#devFlags?.isEnabled?.("noFishStaminaLoss") === true;
   }
 
   handlePlayerInput(input, equipment) {

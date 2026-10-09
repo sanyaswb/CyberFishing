@@ -394,8 +394,9 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/browser_event_target_adapter.js", { expose: ["BrowserEventTargetAdapter"] });
   runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
   runtime.load("src/game/config/runtime/config_provider.js", { expose: ["ConfigProvider"] });
-  runtime.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
-  const {ActiveGameLoopGuard,GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
+  runtime.load("src/dev/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
+  runtime.load("src/game/application/session/inactive_dev_flags.js", { expose: ["InactiveDevFlags"] });
+  const {ActiveGameLoopGuard,GameLoop,DevFlagsProvider,InactiveDevFlags,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
   const json=value=>JSON.stringify(value);
 
   const clockCalls=[],updates=[];let draws=0;
@@ -439,7 +440,14 @@ async function checkGameLoopAndAdapters() {
   for(const [config,expected] of [[{debug:{overlay:true}},true],[{debug:{events:true}},true],
     [{debug:{consoleModules:{fish:false}}},false],[{debug:{consoleModules:{fish:true}}},true]]) {
     assert.equal(new DevFlagsProvider({config}).isDebugEnabled(),expected,json(config));
+    const inactive=new InactiveDevFlags();
+    assert.equal(inactive.isDebugEnabled(),false,"production debug output stays off: "+json(config));
   }
+  const production=new InactiveDevFlags();
+  for(const name of ["noLineBreak","noRodBreak","noFishStaminaLoss","noEquipmentLoss","infiniteResources","infiniteCasting"])
+    assert.equal(production.isEnabled(name),false,"production GodMode flag "+name+" stays off");
+  for(const name of ["activeSettings","biteSequenceMode","fixedBiteChancePercent"])
+    assert.equal(production.godModeValue(name),undefined,"production GodMode value "+name+" is absent");
 
   let debugEnabled=false;const targetEvents=[],received=[];
   const debug=new BrowserDebugAdapter({dispatchEvent:event=>targetEvents.push(event)},()=>debugEnabled);

@@ -225,12 +225,12 @@ function checkDevelopmentInputs() {
 }
 checkDevelopmentInputs();
 
-function checkProductionOverrideReader() {
-  const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
+function checkDevOverrideReader() {
+  const { GameplayOverrideReader } = require("../src/dev/runtime/gameplay_override_reader.js");
   const config = { debug: {} }, source = new SourceRuntime({ globals: { CONFIG: config, window: {} } });
-  source.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
+  source.load("src/dev/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   source.load("src/bootstrap/production/game_composition_root.js", { expose: ["GameCompositionRoot"] });
-  // DEV composes the same reader class as production.
+  // DEV flags read GodMode through this reader; production composes InactiveDevFlags instead.
   const reader = new GameplayOverrideReader(config);
   const flags = new source.context.DevFlagsProvider({ config, godModeSource: () => reader });
   for (const enabled of [undefined, false, 0, true, 1, "enabled"]) {
@@ -240,6 +240,7 @@ function checkProductionOverrideReader() {
         fixedBiteChanceEnabled:value, fixedBiteChancePercent:-20, forceAnomalyChance:value, biteSequenceMode:"GUARANTEED" };
       assert.equal(flags.isEnabled("noEquipmentLoss"), reader.noEquipmentLoss === true);
       assert.equal(flags.godModeValue("biteSequenceMode"), reader.biteSequenceMode);
+      assert.equal(flags.godModeValue("activeSettings"), enabled ? config.debug.godMode : null, "BiteSystem reads the live settings only while GodMode is on");
     }
   }
   const expectedPercents = [0,0,50,100,100,42,100,100];
@@ -253,7 +254,7 @@ function checkProductionOverrideReader() {
     assert.equal(reader.biteSequenceMode, expectedModes[index], "bite sequence mode " + String(mode));
   });
   config.debug.godMode = { enabled:true,noEquipmentLoss:true };
-  assert.equal(flags.isEnabled("noEquipmentLoss"), true, "live owner replacement enables the production effect");
+  assert.equal(flags.isEnabled("noEquipmentLoss"), true, "live owner replacement enables the DEV effect");
   config.debug.godMode.enabled = false;
   assert.equal(flags.isEnabled("noEquipmentLoss"), false, "master setting is read live");
   const Root = source.context.GameCompositionRoot;
@@ -264,14 +265,12 @@ function checkProductionOverrideReader() {
   assert.throws(() => new Root(config, { createDevTools:()=>({dispose(){}}) }), /synchronizer/);
   assert.doesNotThrow(() => new Root(config, { createDebugService:null, getRenderDiagnostics:null }));
 }
-checkProductionOverrideReader();
+checkDevOverrideReader();
 
 async function checkNativeProductionStartup() {
   const acorn = require("acorn"), fs = require("node:fs"), path = require("node:path");
   const { Game } = require("../src/bootstrap/production/game.js");
   const { BrowserGameLifecycle } = require("../src/platform/browser/runtime/browser_game_lifecycle.js");
-  const { EventBus } = require("../src/engine/events/event_bus.js");
-  const { GameplayOverrideReader } = require("../src/game/application/fishing/gameplay_override_reader.js");
   const { FightPhysicsConfigAdapter } = require("../src/game/config/physics/fight_physics_config_adapter.js");
   // Evaluate the actual module bodies with controlled imported collaborators and import callbacks.
   function evaluate(file, names, bindings) {
@@ -298,7 +297,7 @@ async function checkNativeProductionStartup() {
       evaluated = evaluated.slice(0, start) + replacement + evaluated.slice(end);
     return new SourceRuntime({ globals: bindings }).run("(function(){\n" + evaluated + "\nreturn {" + names.join(",") + "};})()", file);
   }
-  const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/dev_flags_provider.js", ["DevFlagsProvider"], { EventBus });
+  const { InactiveDevFlags } = evaluate("src/game/application/session/inactive_dev_flags.js", ["InactiveDevFlags"], {});
   const { ActiveGameLoopGuard } = evaluate("src/platform/browser/runtime/active_game_loop_guard.js", ["ActiveGameLoopGuard"], {});
   const { createRuntimeConfigContext } = evaluate("src/bootstrap/production/config_context.js", ["createRuntimeConfigContext"], {
     ...require("../src/game/config/runtime/config_override_store.js"), ...require("../src/game/config/runtime/resolved_config_provider.js"),
@@ -315,7 +314,7 @@ async function checkNativeProductionStartup() {
     const config = { physics: physicsCatalog, spawns: { fishes: fishCatalog }, locations: { map: mapCatalog }, rarity: { visual: null }, degradationColors: null,
       debug: { godMode: { enabled: true, noEquipmentLoss: true } } };
     const visual = {}, degradation = {}, version = {}, windowListeners = new Map(), documentListeners = new Map();
-    let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0, reader;
+    let adapters = 0, contexts = 0, activations = 0, mounts = 0, roots = 0, builds = 0, starts = 0, disposals = 0, storage = 0, previous = 0, pagehideAdds = 0;
     const windowTarget = { addEventListener(type, fn, options) { assert.equal(type, "pagehide");assert.equal(options.once, true);pagehideAdds++;windowListeners.set(type, fn); },
       removeEventListener(type, fn) { assert.equal(windowListeners.get(type), fn);windowListeners.delete(type); },
       CYBER_FISHING_GAME_CLEANUP() { assert.equal(this, windowTarget);previous++; } };
@@ -330,7 +329,6 @@ async function checkNativeProductionStartup() {
     const platform = evaluate("src/platform/browser/runtime/browser_startup_environment.js",
       ["getBrowserStartupEnvironment", "publishBrowserStartupConfig", "activateBrowserStartupInterface"],
       { window: windowTarget, document: documentTarget, initEngineInterface() { activations++; } });
-    class Overrides extends GameplayOverrideReader { constructor(owner) { super(owner);assert.equal(owner, config);reader = this; } }
     const imports = [], modules = Object.fromEntries(Object.values(loaders).map(specifier => [specifier, {}]));
     let resolveBuild;
     const buildReady = new Promise(resolve => { resolveBuild = resolve; });
@@ -341,9 +339,9 @@ async function checkNativeProductionStartup() {
         assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
         assert(ports.gameLoopGuard instanceof ActiveGameLoopGuard, "startup composes the page loop guard");
         this.ports = ports;
-        const flags = ports.createDevFlags(owner);assert(flags instanceof DevFlagsProvider);assert.equal(flags.isEnabled("noEquipmentLoss"), true);
-        owner.debug.godMode.enabled = false;assert.equal(flags.isEnabled("noEquipmentLoss"), false);owner.debug.godMode.enabled = true;
-        assert(reader instanceof GameplayOverrideReader);
+        const flags = ports.createDevFlags(owner);assert(flags instanceof InactiveDevFlags, "production composes the inactive DEV flags");
+        assert.equal(owner.debug.godMode.enabled, true);assert.equal(flags.isEnabled("noEquipmentLoss"), false, "production ignores an enabled GodMode config");
+        assert.equal(flags.godModeValue("activeSettings"), undefined);assert.equal(flags.isDebugEnabled(), false);
       }
       async build(canvasId) {
         builds++;assert.equal(canvasId, "gameCanvas");
@@ -353,7 +351,7 @@ async function checkNativeProductionStartup() {
       printStorageUsage() { storage++; }
     }
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
-      CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, DevFlagsProvider, GameplayOverrideReader: Overrides,
+      CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, InactiveDevFlags,
       GameCompositionRoot: Root, ActiveGameLoopGuard, ...composition, ...platform,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
@@ -545,7 +543,7 @@ async function checkNativeDevelopmentLifecycle() {
   const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);assert.equal(listeners.size,1);
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
-  const {GameplayOverrideReader} = source.importModule('src/game/application/fishing/gameplay_override_reader.js');
+  const {GameplayOverrideReader} = source.importModule('src/dev/runtime/gameplay_override_reader.js');
   const reader = new GameplayOverrideReader(config);
   assert.equal(reader.noEquipmentLoss,true);
   configRuntime.set('debug.godMode.enabled',false);configRuntime.set('debug.fixedCatch.enabled',false);
@@ -574,7 +572,7 @@ for(let reload=0;reload<2;reload++) {
   const production = new SourceRuntime();
   const {createProductionConfigContext} = production.importModule('src/bootstrap/production/game_config_composition.js');
   const context = createProductionConfigContext();
-  const {GameplayOverrideReader} = production.importModule('src/game/application/fishing/gameplay_override_reader.js');
+  const {GameplayOverrideReader} = production.importModule('src/dev/runtime/gameplay_override_reader.js');
   assert.equal(context.runtimeConfig.debug.godMode.enabled,false,'actual production composition has safe defaults on startup/reload');
   assert.equal(context.runtimeConfig.debug.fixedCatch.enabled,false);
   assert.equal(new GameplayOverrideReader(context.runtimeConfig).noEquipmentLoss,false);

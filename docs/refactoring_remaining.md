@@ -11,12 +11,13 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
 
 1. ~~**Platform singletons** (review 6).~~ Done in [033](../specs/033-platform-singletons/spec.md): page loop guard,
    per-factory id counter, injected logger in `GameControls`.
-2. **Inactive production DEV ports** (review 3, decision 3). Production startup composes the real
-   `DevFlagsProvider` over GodMode overrides. Keep the D4 calling API behind a small contract; production composes
-   an inactive implementation, development the active one. Put `GameDebugFacade` behind a diagnostics port with an
-   inactive production implementation after separating gameplay lifecycle events from DEV-only hooks.
-   The module-level listener counters of `EventBus`, `EventLifecycle` and `InputController` serve only the DEV
-   memory watchdog and belong to this step.
+2. **Inactive production DEV ports** (review 3, decision 3).
+   - ~~Flags~~: done in [034](../specs/034-inactive-dev-flags/spec.md) — production composes `InactiveDevFlags`;
+     `BiteSystem`/`FightService` read GodMode only through the port.
+   - Diagnostics: put `GameDebugFacade` and the debug events behind a diagnostics port with an inactive production
+     implementation after separating the `config-updated` lifecycle subscription from DEV-only hooks.
+   - The module-level listener counters of `EventBus`, `EventLifecycle` and `InputController` serve only the DEV
+     memory watchdog.
 3. **Starting inventory without the legacy path** (decision 2). A new player's starting inventory is created
    through the legacy conversion path. Add a direct current-format initialization; legacy migration stays for
    old saves (no removal date).

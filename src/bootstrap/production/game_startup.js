@@ -1,8 +1,7 @@
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
-import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
-import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
+import { InactiveDevFlags } from "../../game/application/session/inactive_dev_flags.js";
 import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
@@ -32,7 +31,6 @@ async function startGame() {
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
   gameLoopGuard ??= new ActiveGameLoopGuard({ logger: new ConsoleLogger(), warningTarget: windowTarget });
-  const overrides = new GameplayOverrideReader(CONFIG);
   const compositionRoot = new GameCompositionRoot(CONFIG, {
     loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
     loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
@@ -41,7 +39,7 @@ async function startGame() {
     documentTarget,
     windowTarget,
     gameLoopGuard,
-    createDevFlags: config => new DevFlagsProvider({ config, godModeSource: () => overrides }),
+    createDevFlags: () => new InactiveDevFlags(),
   });
   const game = new Game("gameCanvas", compositionRoot);
   browserLifecycle.publishGame(game);

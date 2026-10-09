@@ -7,7 +7,6 @@ export class BiteSystem {
   #overDepthPenaltyMult;
   #passivePullBiteChanceMultiplier;
   #lineConfig;
-  #runtimeConfig;
   #guaranteedBiteCooldownRange;
   #guaranteedBiteCooldownRemaining = 0;
   #cooldownDebugTimer = 0;
@@ -19,6 +18,7 @@ export class BiteSystem {
   #fishAnomalyVariantResolver;
   #fishVisualVariantResolver;
   #baitEffectivenessResolver;
+  #devFlags;
   #tickIndex = 0;
 
   constructor(
@@ -30,6 +30,7 @@ export class BiteSystem {
     fishAnomalyVariantResolver = null,
     fishVisualVariantResolver = null,
     baitEffectivenessResolver = null,
+    devFlags = null,
   ) {
     if (
       !fishRarityResolver ||
@@ -55,9 +56,12 @@ export class BiteSystem {
     ) {
       throw new TypeError("BiteSystem requires baitEffectivenessResolver");
     }
+    if (!devFlags || typeof devFlags.godModeValue !== "function") {
+      throw new TypeError("BiteSystem requires devFlags");
+    }
+    this.#devFlags = devFlags;
     const physicsConfig = this.#resolvePhysicsConfig(runtimeConfig);
     const lineConfig = runtimeConfig?.ui?.line || runtimeConfig?.line || {};
-    this.#runtimeConfig = runtimeConfig || {};
     this.#fishDatabase = this.#resolveFishDatabase(biteConfig);
     this.#tickRate = biteConfig?.tickRateMs ?? 1000;
     this.#timer = 0;
@@ -108,9 +112,9 @@ export class BiteSystem {
     return Math.max(0, Math.min(1, parsed));
   }
 
+  // GodMode settings only through the injected DEV flag port (inactive in production).
   #getGodModeConfig() {
-    const godMode = this.#runtimeConfig?.debug?.godMode || null;
-    return godMode?.enabled ? godMode : null;
+    return this.#devFlags.godModeValue("activeSettings") ?? null;
   }
 
   #clampChance(chance) {

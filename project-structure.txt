@@ -116,7 +116,9 @@
 │  │  └── spec.md
 │  ├── 032-direct-calls
 │  │  └── spec.md
-│  └── 033-platform-singletons
+│  ├── 033-platform-singletons
+│  │  └── spec.md
+│  └── 034-inactive-dev-flags
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -253,7 +255,9 @@
 │  │  ├── rendering
 │  │  │  └── world_debug_renderer.js
 │  │  ├── runtime
-│  │  │  └── debug_service.js
+│  │  │  ├── debug_service.js
+│  │  │  ├── dev_flags_provider.js
+│  │  │  └── gameplay_override_reader.js
 │  │  ├── services
 │  │  │  ├── debug_data_selectors.js
 │  │  │  ├── dev_tools_control_binding_registry.js
@@ -315,7 +319,6 @@
 │  │  │  │  ├── fishing_controller.js
 │  │  │  │  ├── fishing_force_service.js
 │  │  │  │  ├── game_fishing_facade.js
-│  │  │  │  ├── gameplay_override_reader.js
 │  │  │  │  ├── mutable_fight_frame_context.js
 │  │  │  │  ├── reel_service.js
 │  │  │  │  └── tension_service.js
@@ -386,7 +389,8 @@
 │  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── session
 │  │  │  │  ├── game_application.js
-│  │  │  │  └── game_debug_facade.js
+│  │  │  │  ├── game_debug_facade.js
+│  │  │  │  └── inactive_dev_flags.js
 │  │  │  ├── state
 │  │  │  │  ├── biting_state.js
 │  │  │  │  ├── failed_state.js
@@ -827,7 +831,6 @@
 │        │  ├── browser_game_lifecycle.js
 │        │  ├── browser_startup_environment.js
 │        │  ├── canvas_metrics_provider.js
-│        │  ├── dev_flags_provider.js
 │        │  └── game_loop.js
 │        ├── storage
 │        │  └── local_storage_cache.js

@@ -126,7 +126,7 @@ const GAMEPLAY_FILES = [
   "src/game/domain/rules/chum_rules.js",
   "src/game/domain/rules/boat_rules.js",
   "src/game/domain/rules/player_cast_rules.js",
-  "src/platform/browser/runtime/dev_flags_provider.js",
+  "src/dev/runtime/dev_flags_provider.js",
   "src/platform/browser/runtime/browser_audio_adapter.js",
   "src/platform/browser/runtime/browser_buffered_audio_player.js",
   "src/platform/browser/runtime/browser_debug_adapter.js",
@@ -180,7 +180,7 @@ const context = vm.createContext({
   JSON,
   Date,
   window: { innerWidth: 1280, innerHeight: 720 },
-  GameplayOverrideReader: require("../src/game/application/fishing/gameplay_override_reader.js").GameplayOverrideReader,
+  GameplayOverrideReader: require("../src/dev/runtime/gameplay_override_reader.js").GameplayOverrideReader,
 });
 
 const moduleLoader = new NativeEsmTestLoader({
@@ -2110,16 +2110,16 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const load = { instanceId: "feeder-load", quantity: 2 }, equipped = { feederChum: load };
   let consumes = 0, losses = 0, state = "waiting", castStartedAt = 0;
   const overrideConfig = { debug: { godMode: { enabled: true, infiniteResources: false } } };
-  const productionFlags = new DevFlagsProvider({ config: overrideConfig, godModeSource: () => newReader });
+  const devFlags = new DevFlagsProvider({ config: overrideConfig, godModeSource: () => newReader });
   const newReader = new GameplayOverrideReader(overrideConfig);
   const controller = new FishingController({ inventory: {}, equipment: {
     consumeAllBaits(eq) { verify(eq === equipped, "failure uses the equipped owner");losses++; },
     consumeFeederChum(eq, unequip) { verify(eq === equipped && unequip === true, "expiry preserves receiver and unequip contract");
       eq.feederChum.quantity--;eq.feederChum = null;consumes++;return true; },
-  }, devFlags: productionFlags, equipmentRules: { isFeeder: () => true }, baitRules: {} });
+  }, devFlags, equipmentRules: { isFeeder: () => true }, baitRules: {} });
   controller.applyFailureEquipmentLoss("hook", equipped);verify(losses === 1, "disabled override preserves ordinary failure loss");
   overrideConfig.debug.godMode.noEquipmentLoss = true;controller.applyFailureEquipmentLoss("hook", equipped);
-  verify(losses === 1, "production noEquipmentLoss prevents failure consumption through the injected reader");
+  verify(losses === 1, "DEV noEquipmentLoss prevents failure consumption through the injected reader");
   const sharedEnv = { chumTargets: [] }, targets = sharedEnv.chumTargets;
   const feederFloat = { ...floatEntity, getChumBonus: elapsed => ({ isExpired: elapsed >= 1, bonus: 2, targets: ["fish"] }) };
   const feederEnvironment = new BiteEnvironmentService({ world: gameWorld, env: environment, chum,
@@ -2136,7 +2136,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   verify(consumes === 1 && sharedEnv.chumBonus === 2, "same-frame recast resets exposure before the optional diagnostic point");
   overrideConfig.debug.godMode.infiniteResources = true;castStartedAt = 0;
   for (const waterState of ["waiting", "biting", "playing"]) {state = waterState;feederEnvironment.getBiteEnvData();}
-  verify(consumes === 1 && load.quantity === 1, "production infiniteResources preserves repeated-query behavior");
+  verify(consumes === 1 && load.quantity === 1, "DEV infiniteResources preserves repeated-query behavior");
   const screen = projector.virtualToScreen(35, 35);
   const virtual = projector.screenToVirtual(screen.x, screen.y);
   verify(Number.isFinite(lastBounds.left + lastBounds.right + lastBounds.top + lastBounds.bottom) &&

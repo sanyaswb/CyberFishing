@@ -1,10 +1,5 @@
-/**
- * @typedef {Object} IDevFlagsProvider
- * @property {(flag: string) => boolean} isEnabled
- * @property {() => boolean} isDebugEnabled
- * @property {(name: string) => unknown} godModeValue
- */
-
+// Active DEV flags: GodMode values from the override reader and debug output from the console modules.
+// The port contract and the inactive production implementation live in game/application/session/inactive_dev_flags.js.
 /** @implements {IDevFlagsProvider} */
 export class DevFlagsProvider {
   #config;
