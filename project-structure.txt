@@ -120,7 +120,9 @@
 │  │  └── spec.md
 │  ├── 034-inactive-dev-flags
 │  │  └── spec.md
-│  └── 035-inactive-diagnostics
+│  ├── 035-inactive-diagnostics
+│  │  └── spec.md
+│  └── 036-listener-counter
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -267,6 +269,7 @@
 │  │  │  ├── dev_tools_control_binding_registry.js
 │  │  │  ├── dev_tools_parameter_alias_registry.js
 │  │  │  ├── location_dev_tools_schema.js
+│  │  │  ├── managed_listener_counter.js
 │  │  │  └── memory_leak_watchdog.js
 │  │  ├── styles
 │  │  │  ├── dev-tools.css

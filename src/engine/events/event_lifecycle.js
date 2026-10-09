@@ -1,20 +1,24 @@
-let activeListenerCount = 0;
 const cleanupsByLifecycle = new WeakMap();
 
+// Registers DOM-style listeners and removes them together. An optional listener counter (DEV diagnostics) sees
+// every add and remove.
 export class EventLifecycle {
-  constructor() {
+  #listenerCounter;
+
+  constructor(listenerCounter = null) {
     cleanupsByLifecycle.set(this, []);
+    this.#listenerCounter = listenerCounter;
   }
 
   add(target, type, handler, options) {
     target.addEventListener(type, handler, options);
-    activeListenerCount += 1;
+    this.#listenerCounter?.added();
     let active = true;
     const cleanup = () => {
       if (!active) return;
       active = false;
       target.removeEventListener(type, handler, options);
-      activeListenerCount = Math.max(0, activeListenerCount - 1);
+      this.#listenerCounter?.removed();
     };
     cleanupsByLifecycle.get(this).push(cleanup);
     return cleanup;
@@ -26,9 +30,5 @@ export class EventLifecycle {
       cleanups[index]();
     }
     cleanups.length = 0;
-  }
-
-  static getActiveListenerCount() {
-    return activeListenerCount;
   }
 }

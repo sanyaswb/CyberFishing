@@ -30,6 +30,7 @@ import { VictoryState } from "../../game/application/state/victory_state.js";
 import { WaitingState } from "../../game/application/state/waiting_state.js";
 import { BrowserAudioAdapter } from "../../platform/browser/runtime/browser_audio_adapter.js";
 import { CanvasMetricsProvider } from "../../platform/browser/runtime/canvas_metrics_provider.js";
+import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
 import { CanvasPrimitives } from "../../platform/browser/canvas/canvas_primitives.js";
@@ -134,6 +135,7 @@ export class GameCompositionRoot {
   #documentTarget;
   #windowTarget;
   #gameLoopGuard;
+  #listenerCounter;
   #createDevFlags;
   #createDebugEvents;
   #createGameDiagnostics;
@@ -157,6 +159,7 @@ export class GameCompositionRoot {
     documentTarget,
     windowTarget,
     gameLoopGuard,
+    listenerCounter = null,
     createDevFlags,
     createDebugEvents,
     createGameDiagnostics,
@@ -201,6 +204,8 @@ export class GameCompositionRoot {
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
     this.#gameLoopGuard = gameLoopGuard;
+    // DEV memory diagnostics only; production composes no counter.
+    this.#listenerCounter = listenerCounter;
     this.#createDevFlags = createDevFlags;
     this.#createDebugEvents = createDebugEvents;
     this.#createGameDiagnostics = createGameDiagnostics;
@@ -247,6 +252,9 @@ export class GameCompositionRoot {
     const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
     contracts.requireMethods(devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"]);
     contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", ["acquire", "release", "getDiagnostics"]);
+    if (this.#listenerCounter != null) {
+      contracts.requireMethods(this.#listenerCounter, "listenerCounter", ["added", "removed"]);
+    }
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
     // Debug events and session diagnostics exist only when DEV composes them; production gets inactive ports.
@@ -277,6 +285,7 @@ export class GameCompositionRoot {
       audio,
       debugEvents,
       diagnostics,
+      listeners: new EventLifecycle(this.#listenerCounter),
       windowTarget: this.#windowTarget,
       documentTarget: this.#documentTarget,
       runtime,
@@ -762,6 +771,7 @@ export class GameCompositionRoot {
       ),
       input: own(new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
+        listeners: new EventLifecycle(this.#listenerCounter),
         fightInputActionComposer: new FightInputActionComposer(),
       })),
       ui: own(new GameControls(

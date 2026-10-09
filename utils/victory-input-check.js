@@ -55,6 +55,7 @@ class RuntimeLoader {
       },
     });
     this.#run(runtime, "src/engine/math/vector2.js", ["Vector2"]);
+    this.#run(runtime, "src/engine/events/event_lifecycle.js", ["EventLifecycle"]);
     this.#run(runtime, "src/platform/browser/input/input_controller.js", ["InputController"]);
     this.#run(
       runtime,
@@ -137,7 +138,10 @@ class VictoryInputCheck {
     const canvas = new EventTargetStub();
     return {
       canvas,
-      manager: new this.runtime.InputController(canvas, null, { runtimeConfig: this.runtime.CONFIG }),
+      manager: new this.runtime.InputController(canvas, null, {
+        runtimeConfig: this.runtime.CONFIG,
+        listeners: new this.runtime.EventLifecycle(),
+      }),
     };
   }
 

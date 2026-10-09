@@ -9,8 +9,6 @@ export const PointerAction = Object.freeze({
 });
 
 export class InputController {
-  static #activeListenerCount = 0;
-
   #canvas;
   #isPulling;
   #pullDirection;
@@ -50,13 +48,14 @@ export class InputController {
   #hasLongPressed = false;
   #lastClickTime = 0;
   #longPressTimeout = null;
-  #eventCleanups = [];
+  #listeners;
   #dragControlEnabled = true;
   #fightInputActionComposer = null;
   #stateSnapshot;
   #runtimeConfig;
 
-  constructor(canvas, anchorX = null, { runtimeConfig, fightInputActionComposer = null } = {}) {
+  constructor(canvas, anchorX = null, { runtimeConfig, listeners, fightInputActionComposer = null } = {}) {
+    this.#listeners = listeners;
     this.#runtimeConfig = runtimeConfig;
     this.#canvas = canvas;
     this.#isPulling = false;
@@ -145,18 +144,7 @@ export class InputController {
   }
 
   #addEventListener(target, type, handler, options) {
-    target.addEventListener(type, handler, options);
-    InputController.#activeListenerCount += 1;
-    let active = true;
-    this.#eventCleanups.push(() => {
-      if (!active) return;
-      active = false;
-      target.removeEventListener(type, handler, options);
-      InputController.#activeListenerCount = Math.max(
-        0,
-        InputController.#activeListenerCount - 1,
-      );
-    });
+    this.#listeners.add(target, type, handler, options);
   }
 
   #bindEvents() {
@@ -721,14 +709,7 @@ export class InputController {
       clearTimeout(this.#longPressTimeout);
       this.#longPressTimeout = null;
     }
-    for (let i = this.#eventCleanups.length - 1; i >= 0; i--) {
-      this.#eventCleanups[i]();
-    }
-    this.#eventCleanups.length = 0;
-  }
-
-  static getActiveListenerCount() {
-    return InputController.#activeListenerCount;
+    this.#listeners.dispose();
   }
 }
 

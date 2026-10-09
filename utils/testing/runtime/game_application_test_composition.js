@@ -9,7 +9,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   source.load('src/engine/math/vector2.js');
   ({ ...source.importModule('src/game/presentation/viewport/game_viewport_facade.js'), ...source.importModule('src/dev/runtime/game_debug_facade.js'), ...source.importModule('src/game/application/session/inactive_game_diagnostics.js'), ...source.importModule('src/game/application/fishing/game_fishing_facade.js'), ...source.importModule('src/game/application/session/game_application.js') });
   source.importModule('src/platform/browser/diagnostics/console_logger.js');
-  for(const name of ['BaitFactory','Net','ConfigProvider','EventLifecycle','FishingCastExposureResolver','InventoryItemLocation','RodVisualOffsetSystem','ConsoleLogger']) {
+  for(const name of ['BaitFactory','Net','ConfigProvider','FishingCastExposureResolver','InventoryItemLocation','RodVisualOffsetSystem','ConsoleLogger']) {
     const owners=source.moduleNamespaces.filter(exports=>Object.hasOwn(exports,name));
     if(owners.length!==1)throw new Error('Expected one canonical export: '+name);
     source.context[name]=owners[0][name];
@@ -21,6 +21,8 @@ async function checkGameApplicationComposition(diagnostics = true) {
     source.load('src/game/presentation/viewport/game_viewport_facade.js', { expose: ['GameViewportFacade'] });
     source.load('src/dev/runtime/game_debug_facade.js', { expose: ['GameDebugFacade'] });
     source.load('src/game/application/session/inactive_game_diagnostics.js', { expose: ['InactiveGameDiagnostics'] });
+    source.load('src/engine/events/event_lifecycle.js', { expose: ['EventLifecycle'] });
+    source.load('src/dev/services/managed_listener_counter.js', { expose: ['ManagedListenerCounter'] });
     source.load('src/game/application/fishing/game_fishing_facade.js', { expose: ['GameFishingFacade'] });
   function target(){const handlers=new Map();return{handlers,addEventListener(type,fn){const list=handlers.get(type)||[];list.push(fn);handlers.set(type,list);},removeEventListener(type,fn){handlers.set(type,(handlers.get(type)||[]).filter(item=>item!==fn));},emit(type,detail){for(const fn of handlers.get(type)||[])fn({detail});}};}
   const windowTarget=target(),documentTarget=target(),clock={now:1000},bounds={left:0,right:800,top:0,bottom:600};
@@ -56,15 +58,17 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const devFlags={isDebugEnabled:()=>true,isEnabled:()=>false};
   // Session diagnostics as each startup composes them: GameDebugFacade in DEV, the inactive port in production.
   const dev=diagnostics!==false;
-  const sessionDiagnostics=dev?new source.context.GameDebugFacade({devFlags,debugEvents,listeners:new source.context.EventLifecycle(),documentTarget})
+  // The DEV listener counter observes the session and diagnostics lifecycles (production composes none).
+  const listenerCounter=new source.context.ManagedListenerCounter(),listeners=new source.context.EventLifecycle(listenerCounter);
+  const sessionDiagnostics=dev?new source.context.GameDebugFacade({devFlags,debugEvents,listeners:new source.context.EventLifecycle(listenerCounter),documentTarget})
     :new source.context.InactiveGameDiagnostics();
   if (diagnostics === 'malformed') {
-    assert.throws(() => new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()}), /optional debugService.update/);
+    assert.throws(() => new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,listeners,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()}), /optional debugService.update/);
     return;
   }
-  const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()});
+  const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,listeners,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()});
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
-  assert.equal(source.context.EventLifecycle.getActiveListenerCount(),dev?3:2,'production subscribes no DEV hook');
+  assert.equal(listenerCounter.getActiveCount(),dev?3:2,'production subscribes no DEV hook');
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);
   for(let frame=0;frame<120;frame++){events.length=0;clock.now+=16;appPorts.update(16);appPorts.draw();assert.equal(app.lastTime,clock.now);assert.equal(app.getViewportSize(),viewport);assert.equal(app.getRodVirtualPos(bounds),rod);assert.equal(app.getBaseRodVirtualPos(bounds),base);assert.deepEqual(events,['pan','world','cast','time','chum-ui','boat','input','state','inventory-ui',...(diagnostics?['debug']:[]),'draw']);}
   assert.equal(app.canPlayerCast(),true);assert.equal(app.getEnvDataForBite(),biteEnv);assert.equal(app.getMaxHookDepth(),8);assert.equal(app.getRodScreenX(),400);assert.equal(app.getScreenOffsetRatio({x:600,y:200}),1); // Preserve the existing null playable-bound clamp.
@@ -84,7 +88,7 @@ async function checkGameApplicationComposition(diagnostics = true) {
   documentTarget.emit('config-updated',{path:['ITEM_DB']});documentTarget.emit('config-updated',{path:['FISH_DB']});const fish={id:'runtime-fish'};documentTarget.emit('debug-hooked-fish-updated',{fish});assert.equal(events.some(value=>value[0]==='fish-runtime'&&value[1]===fish),dev);
   documentTarget.emit('config-updated',{path:['CONFIG','locations']});await new Promise(resolve=>setImmediate(resolve));assert.equal(events.includes('location'),true);
   locationFails=true;documentTarget.emit('config-updated',{path:['locations']});documentTarget.emit('config-updated',{path:['MAP_DB']});await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(errors.map(value=>value[0]),['[Location] Failed to reload location config','[Location] Failed to reload map config']);assert.equal(errors.every(value=>value[1].message==='location unavailable'),true);
-  const remove=app.subscribeConfigUpdated(()=>{});assert.equal(source.context.EventLifecycle.getActiveListenerCount(),dev?4:3);remove();assert.equal(source.context.EventLifecycle.getActiveListenerCount(),dev?3:2);assert.equal(app.isDebugEnabled(),dev);app.emitDebugEvent('test',{id:'same'});assert.equal(typeof app.onDebugEvent('test',()=>{}),'function');
-  disposed.length=0;app.dispose();assert.deepEqual(disposed,['loop','state','inventory-listener','input','controller','chum','inventory','inventory-ui','depth','time','hold','ui',...(dev?['debug']:[])]);assert.equal(source.context.EventLifecycle.getActiveListenerCount(),0);assert.equal(runtime.ui.onNetClick,null);assert.equal(runtime.ui.onContinueClick,null);assert.equal(onInventory,null);
+  const remove=app.subscribeConfigUpdated(()=>{});assert.equal(listenerCounter.getActiveCount(),dev?4:3);remove();assert.equal(listenerCounter.getActiveCount(),dev?3:2);assert.equal(app.isDebugEnabled(),dev);app.emitDebugEvent('test',{id:'same'});assert.equal(typeof app.onDebugEvent('test',()=>{}),'function');
+  disposed.length=0;app.dispose();assert.deepEqual(disposed,['loop','state','inventory-listener','input','controller','chum','inventory','inventory-ui','depth','time','hold','ui',...(dev?['debug']:[])]);assert.equal(listenerCounter.getActiveCount(),0);assert.equal(runtime.ui.onNetClick,null);assert.equal(runtime.ui.onContinueClick,null);assert.equal(onInventory,null);
 }
 module.exports={checkGameApplicationComposition};

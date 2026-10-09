@@ -386,6 +386,8 @@ async function checkGameLoopAndAdapters() {
     cancelAnimationFrame(id){cancelled.push(id);frames.delete(id);}}});
   runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
+  runtime.load('src/engine/events/event_lifecycle.js',{expose:['EventLifecycle']});
+  runtime.load('src/dev/services/managed_listener_counter.js',{expose:['ManagedListenerCounter']});
   runtime.load("src/platform/browser/runtime/active_game_loop_guard.js",{expose:["ActiveGameLoopGuard"]});
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
   runtime.load("src/platform/browser/runtime/browser_buffered_audio_player.js", { expose: ["BrowserBufferedAudioPlayer"] });
@@ -452,14 +454,24 @@ async function checkGameLoopAndAdapters() {
     assert.equal(production.godModeValue(name),undefined,"production GodMode value "+name+" is absent");
 
   let debugEnabled=false;const targetEvents=[],received=[];
-  const debug=new BrowserDebugAdapter({dispatchEvent:event=>targetEvents.push(event)},()=>debugEnabled);
+  const {EventBus,EventLifecycle,ManagedListenerCounter}=runtime.context;
+  const counter=new ManagedListenerCounter();
+  const debug=new BrowserDebugAdapter({dispatchEvent:event=>targetEvents.push(event)},()=>debugEnabled,new EventBus(counter));
   const unsubscribe=debug.on("bite",detail=>received.push(detail));
   debug.emit("bite",{n:1});
   assert.equal(received.length+targetEvents.length,0,"disabled debug events are dropped");
   debugEnabled=true;debug.emit("bite",{n:2});
   assert.equal(json(received),json([{n:2}]));assert.equal(targetEvents[0].type,"bite");assert.equal(targetEvents[0].detail.n,2);
   unsubscribe();debug.emit("bite",{n:3});assert.equal(received.length,1);assert.equal(targetEvents.length,2);
-  debug.on("bite",detail=>received.push(detail));debug.clear();debug.emit("bite",{n:4});assert.equal(received.length,1);
+  assert.equal(counter.getActiveCount(),0,"unsubscribe is counted");
+  debug.on("bite",detail=>received.push(detail));debug.on("tick",()=>{});assert.equal(counter.getActiveCount(),2);
+  debug.clear();debug.emit("bite",{n:4});assert.equal(received.length,1);assert.equal(counter.getActiveCount(),0,"clear removes every counted handler");
+  const domTarget={addEventListener(){},removeEventListener(){}},lifecycle=new EventLifecycle(counter);
+  const removeResize=lifecycle.add(domTarget,"resize",()=>{});lifecycle.add(domTarget,"keydown",()=>{});
+  assert.equal(counter.getActiveCount(),2);removeResize();removeResize();assert.equal(counter.getActiveCount(),1,"a cleanup counts once");
+  lifecycle.dispose();assert.equal(counter.getActiveCount(),0);
+  const uncounted=new EventLifecycle();uncounted.add(domTarget,"resize",()=>{});uncounted.dispose();
+  assert.equal(counter.getActiveCount(),0,"production lifecycles carry no counter");
   const quietEvents=new InactiveDebugEvents(),quiet=new InactiveGameDiagnostics();
   const quietOff=quietEvents.on("bite",detail=>received.push(detail));quietEvents.emit("bite",{n:5});quietEvents.clear();
   assert.equal(quietOff(),false);assert.equal(quietEvents.on("other",()=>{}),quietOff,"one shared unsubscribe, no allocation");

@@ -1,9 +1,12 @@
-let activeListenerCount = 0;
 const listenersByBus = new WeakMap();
 
+// In-page publish/subscribe. An optional listener counter (DEV diagnostics) sees every subscription and removal.
 export class EventBus {
-  constructor() {
+  #listenerCounter;
+
+  constructor(listenerCounter = null) {
     listenersByBus.set(this, new Map());
+    this.#listenerCounter = listenerCounter;
   }
 
   on(type, handler) {
@@ -15,14 +18,14 @@ export class EventBus {
     }
     const added = !handlers.has(handler);
     handlers.add(handler);
-    if (added) activeListenerCount += 1;
+    if (added) this.#listenerCounter?.added();
     let active = added;
     return () => {
       if (!active) return false;
       active = false;
       const removed = handlers.delete(handler);
       if (removed) {
-        activeListenerCount = Math.max(0, activeListenerCount - 1);
+        this.#listenerCounter?.removed();
       }
       if (handlers.size === 0) listeners.delete(type);
       return removed;
@@ -41,12 +44,8 @@ export class EventBus {
   clear() {
     const listeners = listenersByBus.get(this);
     for (const handlers of listeners.values()) {
-      activeListenerCount = Math.max(0, activeListenerCount - handlers.size);
+      this.#listenerCounter?.removed(handlers.size);
     }
     listeners.clear();
-  }
-
-  static getActiveListenerCount() {
-    return activeListenerCount;
   }
 }

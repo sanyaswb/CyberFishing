@@ -169,27 +169,29 @@ function checkDevelopmentInputs() {
   assert.equal(target.game, null); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, null);
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
-  const godModeInstance = { enabled: true }, gameLoopGuard = {};
+  const godModeInstance = { enabled: true }, gameLoopGuard = {}, listenerCounter = {};
   const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
-  class DebugAdapter { constructor(target, isEnabled) { Object.assign(this, { target, isEnabled }); } }
-  class ListenerLifecycle {}
+  class DebugAdapter { constructor(target, isEnabled, bus) { Object.assign(this, { target, isEnabled, bus }); } }
+  class ListenerLifecycle { constructor(counter) { this.counter = counter; } }
+  class Bus { constructor(counter) { this.counter = counter; } }
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
-    BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle,
-    documentTarget: document, windowTarget: window, gameLoopGuard, godMode: godModeInstance } });
+    BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus,
+    documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
   assert.equal(ports.documentTarget, document);
   assert.equal(ports.windowTarget, window);
   assert.equal(ports.gameLoopGuard, gameLoopGuard, "the page loop guard reaches the composition root");
+  assert.equal(ports.listenerCounter, listenerCounter, "the DEV listener counter reaches the composition root");
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.godMode);
@@ -221,11 +223,13 @@ function checkDevelopmentInputs() {
   assert.equal(ports.createDebugService(config).options, config);
   const isEnabled = () => true, debugEvents = ports.createDebugEvents({ documentTarget: document, isEnabled });
   assert(debugEvents instanceof DebugAdapter);assert.equal(debugEvents.target, document);assert.equal(debugEvents.isEnabled, isEnabled);
+  assert(debugEvents.bus instanceof Bus);assert.equal(debugEvents.bus.counter, listenerCounter, "the DEV debug bus is counted");
   const diagnosticsOptions = { devFlags: flags, debugEvents, documentTarget: document };
   const sessionDiagnostics = ports.createGameDiagnostics(diagnosticsOptions);
   assert.equal(sessionDiagnostics.options.devFlags, flags);assert.equal(sessionDiagnostics.options.debugEvents, debugEvents);
   assert.equal(sessionDiagnostics.options.documentTarget, document);
   assert(sessionDiagnostics.options.listeners instanceof ListenerLifecycle, "DEV session diagnostics own their listener lifecycle");
+  assert.equal(sessionDiagnostics.options.listeners.counter, listenerCounter, "DEV diagnostics listeners are counted");
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);

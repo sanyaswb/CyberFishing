@@ -11,13 +11,13 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
 
 1. ~~**Platform singletons** (review 6).~~ Done in [033](../specs/033-platform-singletons/spec.md): page loop guard,
    per-factory id counter, injected logger in `GameControls`.
-2. **Inactive production DEV ports** (review 3, decision 3).
+2. ~~**Inactive production DEV ports** (review 3, decision 3).~~ Done (034–036).
    - ~~Flags~~: done in [034](../specs/034-inactive-dev-flags/spec.md) — production composes `InactiveDevFlags`;
      `BiteSystem`/`FightService` read GodMode only through the port.
    - ~~Diagnostics~~: done in [035](../specs/035-inactive-diagnostics/spec.md) — production composes
      `InactiveDebugEvents`/`InactiveGameDiagnostics`; `config-updated` stays session lifecycle.
-   - The module-level listener counters of `EventBus`, `EventLifecycle` and `InputController` serve only the DEV
-     memory watchdog.
+   - ~~Listener counters~~: done in [036](../specs/036-listener-counter/spec.md) — an injected DEV
+     `ManagedListenerCounter` replaces the module-level/static counters.
 3. **Starting inventory without the legacy path** (decision 2). A new player's starting inventory is created
    through the legacy conversion path. Add a direct current-format initialization; legacy migration stays for
    old saves (no removal date).

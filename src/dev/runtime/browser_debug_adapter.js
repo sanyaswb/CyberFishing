@@ -1,16 +1,15 @@
-import { EventBus } from "../../engine/events/event_bus.js";
-
 // DEV debug events: an in-page bus plus document CustomEvents for the overlay, sent only while debug is enabled.
 // Production composes InactiveDebugEvents (game/application/session) instead.
 /** @implements {IDebugEvents} */
 export class BrowserDebugAdapter {
-  #bus = new EventBus();
+  #bus;
   #target;
   #isEnabled;
 
-  constructor(target, isEnabled) {
+  constructor(target, isEnabled, bus) {
     this.#target = target;
     this.#isEnabled = isEnabled;
+    this.#bus = bus;
   }
 
   on(type, handler) {

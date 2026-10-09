@@ -1,7 +1,6 @@
 import { BaitFactory } from "../../domain/tackle/bait_factory.js";
 import { Net } from "../../domain/tackle/net.js";
 import { ConfigProvider } from "../../config/runtime/config_provider.js";
-import { EventLifecycle } from "../../../engine/events/event_lifecycle.js";
 import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
@@ -36,7 +35,7 @@ export class GameApplication {
   #clock;
   #fishDatabase;
   #castExposureResolver = new FishingCastExposureResolver();
-  #listeners = new EventLifecycle();
+  #listeners;
   #disposed = false;
   #loop;
   #world;
@@ -125,6 +124,7 @@ export class GameApplication {
     audio,
     debugEvents,
     diagnostics,
+    listeners,
     windowTarget,
     documentTarget,
     runtime = null,
@@ -146,6 +146,7 @@ export class GameApplication {
     this.#windowTarget = windowTarget;
     this.#documentTarget = documentTarget;
     this.#diagnostics = diagnostics;
+    this.#listeners = listeners;
     runtime =
       runtime ||
       this.#composition.create(

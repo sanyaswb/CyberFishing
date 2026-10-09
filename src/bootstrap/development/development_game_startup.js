@@ -24,10 +24,10 @@ import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_
 import { GameVersionBadge } from "../production/game_version_badge.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
-import { InputController } from "../../platform/browser/input/input_controller.js";
 import { ItemProgressionDebugSnapshotProvider } from "../../dev/items/item_progression_debug_snapshot_provider.js";
 import { LocationDebugMapBuilder } from "../../dev/location/location_debug_map_builder.js";
 import { LocationDebugRenderFrameBuilder } from "../../dev/location/location_debug_render_frame_builder.js";
+import { ManagedListenerCounter } from "../../dev/services/managed_listener_counter.js";
 import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
 import { OVERLAY_MODULES } from "../../dev/overlay/config/overlay_modules_config.js";
 import { OverlaySettingsStore } from "../../dev/overlay/overlay_settings_store.js";
@@ -41,8 +41,9 @@ import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 
 let startup;
-// One loop guard per page: a restarted DEV game shares it with the previous one.
+// One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
 let gameLoopGuard;
+let listenerCounter;
 
 export function startDevelopmentGame() {
   if (startup) return startup;
@@ -63,6 +64,7 @@ async function startGame() {
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
   gameLoopGuard ??= new ActiveGameLoopGuard({logger: new ConsoleLogger(), warningTarget: windowTarget});
+  listenerCounter ??= new ManagedListenerCounter();
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
@@ -102,10 +104,10 @@ async function startGame() {
       loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
-      documentTarget, windowTarget, gameLoopGuard,
+      documentTarget, windowTarget, gameLoopGuard, listenerCounter,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
-      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled),
-      createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle()}),
+      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled, new EventBus(listenerCounter)),
+      createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle(listenerCounter)}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
       createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
       createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({
@@ -139,7 +141,7 @@ async function startGame() {
       metricsProvider: () => {
         const loop = gameLoopGuard.getDiagnostics();
         return {activeGameLoops: loop.activeCount, duplicateLoopStarts: loop.duplicateStartAttempts,
-          managedListeners: EventLifecycle.getActiveListenerCount() + EventBus.getActiveListenerCount() + InputController.getActiveListenerCount()};
+          managedListeners: listenerCounter.getActiveCount()};
       }}) : null;
     watchdog?.start();
     browserLifecycle.publishWatchdog(watchdog);
