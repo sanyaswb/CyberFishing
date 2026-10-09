@@ -1,7 +1,58 @@
-# Refactoring: cleanup closure (2026-10-08)
+# Refactoring: remaining work (2026-10-09)
+
+This is the single refactoring checklist. It replaces the open list of the
+[finalization review](audits/2026-10-08-finalization-review.md) (its numbers are given as "review N").
+Owner decisions for releases, legacy saves and DEV isolation:
+[follow-up decisions](../specs/029-backend-foundation/follow-up-decisions.md).
+Each step is a separate spec (new specs start at 033) with unchanged gameplay, saves and timing; evidence is
+focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and index/dev browser smoke.
+
+## Open, in the agreed order
+
+1. ~~**Platform singletons** (review 6).~~ Done in [033](../specs/033-platform-singletons/spec.md): page loop guard,
+   per-factory id counter, injected logger in `GameControls`.
+2. **Inactive production DEV ports** (review 3, decision 3). Production startup composes the real
+   `DevFlagsProvider` over GodMode overrides. Keep the D4 calling API behind a small contract; production composes
+   an inactive implementation, development the active one. Put `GameDebugFacade` behind a diagnostics port with an
+   inactive production implementation after separating gameplay lifecycle events from DEV-only hooks.
+   The module-level listener counters of `EventBus`, `EventLifecycle` and `InputController` serve only the DEV
+   memory watchdog and belong to this step.
+3. **Starting inventory without the legacy path** (decision 2). A new player's starting inventory is created
+   through the legacy conversion path. Add a direct current-format initialization; legacy migration stays for
+   old saves (no removal date).
+4. **Immutable release directories** (review 7, decision 1). Publish each release under
+   `releases/<version>-<commit>/` with its whole module/CSS/resource graph; root `index.html` points at that
+   entry; published directories are never overwritten. No import map or service worker.
+5. **Optional contracts, second pass** (review 8, spec 032 rule). ≈450 `?.(` calls and ≈95
+   `typeof … === "function"` checks remain in `src`.
+6. **Test composition** (review 9). `utils/game-cycle-check.js` keeps its own `GAMEPLAY_FILES` list and
+   composition; 17 files use `bindConstructorDefaults`. Build test graphs from production composition modules.
+7. **Private `clamp` copies** (review 10). About 33 definitions outside `engine/math`; merge only where NaN handling
+   and bound order match.
+8. **Personal utility path** (review 12). `utils/create-version-copy.js` hard-codes `D:\dev\cyber fishing\versions`.
+9. **Constructor defaults in inventory** (review 5). The rule is in `DEVELOPMENT_RULES.md`; verify the remaining
+   ≈11 `x = new Policy()` defaults are stateless and configuration-free, inject the rest.
+
+## Backend (spec 029): plan only
+
+No backend code yet; [spec 029](../specs/029-backend-foundation/plan.md) records the plan. Waiting for it:
+verify legacy → current → cloud import and recovery before any legacy-format support cutoff (decision 2).
+
+## Optional
+
+Split `FightPhysicsOrchestrator` (≈4,700 lines) by pipeline stage; static inline styling; Canvas decomposition.
+
+## Done after the finalization review
+
+Specs 020–028 (v0.31.0) and 030–032 plus the rarity resolver defaults; see the progress tables of the
+[finalization review](audits/2026-10-08-finalization-review.md).
+
+---
+
+# History: cleanup closure (2026-10-08)
 
 State: all 11 handoff steps implemented and accepted for **v0.30.1**. Classic-to-ESM migration and Stage 7
-remain closed; historical machinery stays at `migration-final-archive`. There is no next cleanup step in this list.
+remain closed; historical machinery stays at `migration-final-archive`.
 
 ## Completed steps and decisions
 
