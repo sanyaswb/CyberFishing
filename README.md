@@ -5,6 +5,8 @@ Browser fishing game (native ES modules, Canvas 2D). [Demo](https://sanyaswb.git
 - `npm run dev` — local server at http://127.0.0.1:4173/ (`index.html` game, `dev.html` with DEV tools)
 - `npm run check` — syntax, architecture guard and behavior tests
 - Architecture: [docs/architecture.md](docs/architecture.md); rules: [DEVELOPMENT_RULES.md](DEVELOPMENT_RULES.md)
+- `npm run copy:version` — copies the sources to `<versions dir>/scr_v<version>`; set `CYBER_FISHING_VERSIONS_DIR` (or pass
+  `-- --versions-dir <dir>`)
 
 ## Publishing (GitHub Pages)
 

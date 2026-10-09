@@ -4,8 +4,9 @@ const readline = require("node:readline/promises");
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 
+// The copies live outside the project: --versions-dir <dir> or the CYBER_FISHING_VERSIONS_DIR environment variable.
+const VERSIONS_DIR_VARIABLE = "CYBER_FISHING_VERSIONS_DIR";
 const VERSION_COPY_CONFIG = Object.freeze({
-  versionsDir: "D:\\dev\\cyber fishing\\versions",
   folderPrefix: "scr_v",
   versionFile: "src/game/presentation/version/project_version.js",
   entries: Object.freeze([
@@ -140,11 +141,19 @@ class VersionCopyWriter {
   }
 }
 
+function readVersionsDir(args, env) {
+  const versionsDir = args.getValue("--versions-dir") || env[VERSIONS_DIR_VARIABLE] || "";
+  if (!versionsDir) {
+    throw new Error(`Set ${VERSIONS_DIR_VARIABLE} or pass --versions-dir <dir> (the folder that keeps version copies).`);
+  }
+  return versionsDir;
+}
+
 class CreateVersionCopyCommand {
   constructor({
     rootDir = ROOT_DIR,
-    config = VERSION_COPY_CONFIG,
     args = new CliArguments(process.argv),
+    config = { ...VERSION_COPY_CONFIG, versionsDir: readVersionsDir(args, process.env) },
     resolver = new ConsoleConflictResolver(),
     writer = new VersionCopyWriter({ versionsDir: config.versionsDir }),
     versionReader = new ProjectVersionReader({ rootDir, versionFile: config.versionFile }),
@@ -216,7 +225,12 @@ class CreateVersionCopyCommand {
   }
 }
 
-new CreateVersionCopyCommand().run().catch((error) => {
+const reportFailure = (error) => {
   console.error(`Version copy failed: ${error.message}`);
   process.exitCode = 1;
-});
+};
+try {
+  new CreateVersionCopyCommand().run().catch(reportFailure);
+} catch (error) {
+  reportFailure(error);
+}

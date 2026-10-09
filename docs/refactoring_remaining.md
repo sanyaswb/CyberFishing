@@ -30,7 +30,8 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    composition; 17 files use `bindConstructorDefaults`. Build test graphs from production composition modules.
 7. **Private `clamp` copies** (review 10). About 33 definitions outside `engine/math`; merge only where NaN handling
    and bound order match.
-8. **Personal utility path** (review 12). `utils/create-version-copy.js` hard-codes `D:\dev\cyber fishing\versions`.
+8. ~~**Personal utility path** (review 12).~~ Done in [039](../specs/039-version-copy-path/spec.md):
+   `CYBER_FISHING_VERSIONS_DIR` / `--versions-dir`.
 9. **Constructor defaults in inventory** (review 5). The rule is in `DEVELOPMENT_RULES.md`; verify the remaining
    ≈11 `x = new Policy()` defaults are stateless and configuration-free, inject the rest.
 

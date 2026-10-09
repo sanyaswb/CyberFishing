@@ -84,6 +84,10 @@ class GitVersionCopyWorkflow {
   }
 
   run() {
+    // Fail before committing when the copy has nowhere to go (see utils/create-version-copy.js).
+    if (!process.env.CYBER_FISHING_VERSIONS_DIR) {
+      throw new Error("Set CYBER_FISHING_VERSIONS_DIR to the folder that keeps version copies.");
+    }
     const subject = this.#resolveCommitSubject();
 
     this.runner.run("npm", ["run", "git:add"]);
@@ -144,4 +148,9 @@ class GitVersionCopyWorkflow {
   }
 }
 
-new GitVersionCopyWorkflow({ rootDir: ROOT_DIR }).run();
+try {
+  new GitVersionCopyWorkflow({ rootDir: ROOT_DIR }).run();
+} catch (error) {
+  console.error(`Git version copy failed: ${error.message}`);
+  process.exitCode = 1;
+}

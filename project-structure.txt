@@ -126,7 +126,9 @@
 │  │  └── spec.md
 │  ├── 037-starting-inventory
 │  │  └── spec.md
-│  └── 038-pages-release
+│  ├── 038-pages-release
+│  │  └── spec.md
+│  └── 039-version-copy-path
 │     └── spec.md
 ├── src
 │  ├── bootstrap
