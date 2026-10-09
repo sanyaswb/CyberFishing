@@ -21,9 +21,9 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
 3. ~~**Starting inventory without the legacy path** (decision 2).~~ Done in
    [037](../specs/037-starting-inventory/spec.md): `StartingInventorySnapshotFactory`, same save bytes; the legacy
    conversion runs only for classic saves (no removal date).
-4. **Immutable release directories** (review 7, decision 1). Publish each release under
-   `releases/<version>-<commit>/` with its whole module/CSS/resource graph; root `index.html` points at that
-   entry; published directories are never overwritten. No import map or service worker.
+4. ~~**Immutable release directories** (review 7, decision 1).~~ Done in
+   [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check; the first publication
+   to `gh-pages` (commit + push of the site checkout) is the owner's step.
 5. **Optional contracts, second pass** (review 8, spec 032 rule). ≈450 `?.(` calls and ≈95
    `typeof … === "function"` checks remain in `src`.
 6. **Test composition** (review 9). `utils/game-cycle-check.js` keeps its own `GAMEPLAY_FILES` list and

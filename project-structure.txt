@@ -124,7 +124,9 @@
 │  │  └── spec.md
 │  ├── 036-listener-counter
 │  │  └── spec.md
-│  └── 037-starting-inventory
+│  ├── 037-starting-inventory
+│  │  └── spec.md
+│  └── 038-pages-release
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -856,6 +858,7 @@
 └── utils
    ├── architecture-check.js
    ├── bait-effectiveness-check.js
+   ├── build-pages-release.js
    ├── check-js.js
    ├── config-runtime-check.js
    ├── config-schema-check.js
@@ -890,6 +893,7 @@
    ├── item-stat-contract-check.js
    ├── item-state-hardening-check.js
    ├── line-allocation-check.js
+   ├── pages-release-check.js
    ├── platform-runtime-check.js
    ├── player-inventory-check.js
    ├── project-structure.js

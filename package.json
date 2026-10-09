@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "node utils/dev-server.js",
     "copy:version": "node utils/create-version-copy.js",
+    "release:pages": "node utils/build-pages-release.js",
     "check": "node utils/run-checks.js",
     "check:list": "node utils/run-checks.js --list",
     "check:quick": "node utils/run-checks.js --suite quick",

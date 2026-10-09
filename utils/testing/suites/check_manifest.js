@@ -207,6 +207,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["tools"],
   },
   {
+    id: "pages-release",
+    title: "Immutable Pages release of the committed game",
+    file: "utils/pages-release-check.js",
+    suites: ["tools"],
+  },
+  {
     id: "platform-runtime",
     title: "Platform assets and frame timing",
     file: "utils/platform-runtime-check.js",
