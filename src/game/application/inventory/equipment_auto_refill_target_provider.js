@@ -5,7 +5,15 @@ export class EquipmentAutoRefillTargetProvider {
   #assemblyReader;
   #memory;
 
-  constructor({ equipmentState, assemblyReader, memory = null } = {}) {
+  constructor({ equipmentState, assemblyReader, memory } = {}) {
+    for (const method of ["readPath", "getRefillSignature", "getAssemblyState"]) {
+      if (typeof assemblyReader?.[method] !== "function") {
+        throw new TypeError(`EquipmentAutoRefillTargetProvider requires ItemAssemblyReader.${method}`);
+      }
+    }
+    if (typeof memory?.get !== "function") {
+      throw new TypeError("EquipmentAutoRefillTargetProvider requires AutoRefillMemory");
+    }
     this.#equipmentState = equipmentState;
     this.#assemblyReader = assemblyReader;
     this.#memory = memory;
@@ -29,8 +37,8 @@ export class EquipmentAutoRefillTargetProvider {
       .sort((left, right) => this.#comparePaths(left, right));
     const targets = [];
     for (const path of paths) {
-      if (this.#assemblyReader?.readPath?.(rootInstanceId, path)) continue;
-      const signature = this.#assemblyReader?.getRefillSignature?.(
+      if (this.#assemblyReader.readPath(rootInstanceId, path)) continue;
+      const signature = this.#assemblyReader.getRefillSignature(
         rootInstanceId,
         path,
       ) || this.#readSignatureFromState(rootInstanceId, path);
@@ -50,8 +58,8 @@ export class EquipmentAutoRefillTargetProvider {
     if (this.#getRootInstanceId("handChum", context)) return [];
     const signature =
       context.handChumSignature ||
-      this.#memory?.get?.("handChum") ||
-      this.#memory?.get?.("equipment.handChum");
+      this.#memory.get("handChum") ||
+      this.#memory.get("equipment.handChum");
     if (!signature) return [];
     return [Object.freeze({
       targetType: "equipment-slot",
@@ -71,7 +79,7 @@ export class EquipmentAutoRefillTargetProvider {
   }
 
   #getRememberedPaths(rootInstanceId) {
-    const state = this.#assemblyReader?.getAssemblyState?.(rootInstanceId) || {};
+    const state = this.#assemblyReader.getAssemblyState(rootInstanceId) || {};
     const source =
       state.refillSignatures ||
       state.rememberedSignatures ||
@@ -85,7 +93,7 @@ export class EquipmentAutoRefillTargetProvider {
   }
 
   #readSignatureFromState(rootInstanceId, path) {
-    const state = this.#assemblyReader?.getAssemblyState?.(rootInstanceId) || {};
+    const state = this.#assemblyReader.getAssemblyState(rootInstanceId) || {};
     const source =
       state.refillSignatures ||
       state.rememberedSignatures ||

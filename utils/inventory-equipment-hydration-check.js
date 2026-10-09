@@ -273,7 +273,8 @@ class ProductionShapedEquipmentHydrationCheck {
       itemReader: () => {
         throw new Error("already hydrated items must not be read again");
       },
-      assemblyReader: { getChild: () => null },
+      // An empty assembly: the full reader contract with no children, state or capacity.
+      assemblyReader: { getChild: () => null, getChildren: () => [], getAssemblyState: () => null, getSlotCapacity: () => null },
       capabilityResolver: { resolve: () => ({ supportsFeederRig: false }) },
     });
     const equipment = factory.create({ rod: canonicalRod });
@@ -290,7 +291,8 @@ class ProductionShapedEquipmentHydrationCheck {
         typeof reference === "object"
           ? reference
           : { instanceId: reference, itemId: "raw" },
-      assemblyReader: { getChild: () => null },
+      // An empty assembly: the full reader contract with no children, state or capacity.
+      assemblyReader: { getChild: () => null, getChildren: () => [], getAssemblyState: () => null, getSlotCapacity: () => null },
       capabilityResolver: { resolve: () => ({ supportsFeederRig: false }) },
     });
     Assertion.throws(

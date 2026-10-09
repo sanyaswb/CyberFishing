@@ -24,8 +24,13 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
 4. ~~**Immutable release directories** (review 7, decision 1).~~ Done in
    [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check; the first publication
    to `gh-pages` (commit + push of the site checkout) is the owner's step.
-5. **Optional contracts, second pass** (review 8, spec 032 rule). ≈450 `?.(` calls and ≈95
-   `typeof … === "function"` checks remain in `src`.
+5. **Optional contracts, second pass** (review 8, spec 032 rule).
+   - Inventory collaborators are done in [041](../specs/041-direct-calls-inventory/spec.md); `?.(` in `src` went
+     450 → 435.
+   - Still open: the fight/physics domain receivers (`#fish`, `#physicsConfig`; hot loop, needs allocation and
+     call-count evidence) and ≈95 `typeof … === "function"` checks.
+   - The rest are optional by design: duck-typed items, alternative reader shapes, render callbacks, DOM/events,
+     fight-only fields, DEV and teardown.
 6. **Test composition** (review 9). `utils/game-cycle-check.js` keeps its own `GAMEPLAY_FILES` list and
    composition; 17 files use `bindConstructorDefaults`. Build test graphs from production composition modules.
 7. ~~**Private `clamp` copies** (review 10).~~ Done in [040](../specs/040-shared-clamp/spec.md): 14 private helpers in 11 modules →

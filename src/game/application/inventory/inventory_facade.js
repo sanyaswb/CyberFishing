@@ -15,10 +15,16 @@ export class InventoryFacade {
     if (typeof viewModels?.create !== "function") {
       throw new TypeError("InventoryFacade requires InventoryViewModelFactory");
     }
+    for (const method of ["setAfterMutation", "handleRodRetrieved", "handleHandChumUsed", "handleBoatReturned",
+      "setBoatChargeProvider"]) {
+      if (typeof gameplayBridge?.[method] !== "function") {
+        throw new TypeError(`InventoryFacade requires InventoryGameplayBridge.${method}`);
+      }
+    }
     this.#commands = commands;
     this.#viewModels = viewModels;
     this.#gameplayBridge = gameplayBridge;
-    this.#gameplayBridge?.setAfterMutation?.((result) =>
+    this.#gameplayBridge.setAfterMutation((result) =>
       this.notify({ warning: result?.warning || result?.report?.warning || null }),
     );
   }
@@ -51,19 +57,19 @@ export class InventoryFacade {
   }
 
   handleRodRetrieved(context = {}) {
-    return this.#gameplayBridge?.handleRodRetrieved?.(context);
+    return this.#gameplayBridge.handleRodRetrieved(context);
   }
 
   handleHandChumUsed(context = {}) {
-    return this.#gameplayBridge?.handleHandChumUsed?.(context);
+    return this.#gameplayBridge.handleHandChumUsed(context);
   }
 
   handleBoatReturned(context = {}) {
-    return this.#gameplayBridge?.handleBoatReturned?.(context);
+    return this.#gameplayBridge.handleBoatReturned(context);
   }
 
   setBoatChargeProvider(provider) {
-    this.#gameplayBridge?.setBoatChargeProvider?.(provider);
+    this.#gameplayBridge.setBoatChargeProvider(provider);
     return this;
   }
 }

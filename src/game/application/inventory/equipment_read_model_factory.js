@@ -12,6 +12,11 @@ export class EquipmentReadModelFactory {
     assemblyReader,
     capabilityResolver = null,
   } = {}) {
+    for (const method of ["getChild", "getChildren", "getAssemblyState", "getSlotCapacity"]) {
+      if (typeof assemblyReader?.[method] !== "function") {
+        throw new TypeError(`EquipmentReadModelFactory requires ItemAssemblyReader.${method}`);
+      }
+    }
     this.#itemReader = itemReader;
     this.#assemblyReader = assemblyReader;
     this.#capabilityResolver = capabilityResolver;
@@ -86,7 +91,7 @@ export class EquipmentReadModelFactory {
     let source = [];
     let selectedSlotId = slotAliases[0];
     for (const slotId of slotAliases) {
-      const children = this.#assemblyReader?.getChildren?.(rootInstanceId, slotId);
+      const children = this.#assemblyReader.getChildren(rootInstanceId, slotId);
       if (Array.isArray(children) && children.length > 0) {
         source = children;
         selectedSlotId = slotId;
@@ -100,7 +105,7 @@ export class EquipmentReadModelFactory {
       if (explicitIndex !== null) maxIndex = Math.max(maxIndex, explicitIndex);
     }
     const assemblyState =
-      this.#assemblyReader?.getAssemblyState?.(rootInstanceId) || null;
+      this.#assemblyReader.getAssemblyState(rootInstanceId) || null;
     const remembered = assemblyState?.refillSignatures || {};
     for (const path of Object.keys(remembered)) {
       const match = path.match(
@@ -109,7 +114,7 @@ export class EquipmentReadModelFactory {
       if (match) maxIndex = Math.max(maxIndex, Number(match[1]));
     }
     const assemblyCapacity = assemblyState
-      ? this.#assemblyReader?.getSlotCapacity?.(rootInstanceId, selectedSlotId)
+      ? this.#assemblyReader.getSlotCapacity(rootInstanceId, selectedSlotId)
       : null;
     const configuredCount = Number(
       assemblyCapacity ??
@@ -157,7 +162,7 @@ export class EquipmentReadModelFactory {
   #child(parentInstanceId, slotId, slotIndex) {
     if (!parentInstanceId) return null;
     return this.#item(
-      this.#assemblyReader?.getChild?.(parentInstanceId, slotId, slotIndex) || null,
+      this.#assemblyReader.getChild(parentInstanceId, slotId, slotIndex) || null,
     );
   }
 
