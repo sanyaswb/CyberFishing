@@ -1,0 +1,96 @@
+import { EQUIPMENT_AUXILIARY_SLOT_IDS } from "../equipment/equipment_slot_catalog.js";
+import { EQUIPMENT_MAIN_SLOT_IDS } from "../equipment/equipment_slot_catalog.js";
+import { LOADOUT_DISPLAY_NAME } from "./persisted_loadout_names.js";
+
+/**
+ * A loadout owns only the five main equipment roots. Child assembly items are
+ * reached through their root and auxiliary equipment never belongs here.
+ */
+export class EquipmentLoadout {
+  #mainSlotIds;
+  #rootInstanceIds;
+
+  constructor({
+    loadoutId,
+    name = LOADOUT_DISPLAY_NAME,
+    rootInstanceIds = {},
+    createdAt = null,
+    updatedAt = null,
+    mainSlotIds = null,
+    now = null,
+  } = {}) {
+    if (typeof loadoutId !== "string" || loadoutId.length === 0) {
+      throw new TypeError("EquipmentLoadout requires a loadoutId");
+    }
+    this.#mainSlotIds = Object.freeze([
+      ...(mainSlotIds || EQUIPMENT_MAIN_SLOT_IDS),
+    ]);
+    this.#assertNoAuxiliaryAssignments(rootInstanceIds);
+    this.#rootInstanceIds = Object.create(null);
+    for (const slotId of this.#mainSlotIds) {
+      this.#rootInstanceIds[slotId] = this.#normalizeRoot(
+        rootInstanceIds[slotId],
+        slotId,
+      );
+    }
+
+    this.loadoutId = loadoutId;
+    this.name = String(name || LOADOUT_DISPLAY_NAME);
+    this.type = "equipment_loadout";
+    this.displayType = LOADOUT_DISPLAY_NAME;
+    this.inventoryCellCost = 1;
+    this.createdAt = createdAt || (now ? new Date(now()) : new Date()).toISOString();
+    this.updatedAt = updatedAt || this.createdAt;
+  }
+
+  getRootInstanceId(slotId) {
+    if (!this.#mainSlotIds.includes(slotId)) return null;
+    return this.#rootInstanceIds[slotId];
+  }
+
+  getRootInstanceIds() {
+    return Object.freeze({ ...this.#rootInstanceIds });
+  }
+
+  getContainedRootIds() {
+    return this.#mainSlotIds
+      .map((slotId) => this.#rootInstanceIds[slotId])
+      .filter(Boolean);
+  }
+
+  containsRoot(instanceId) {
+    return this.getContainedRootIds().includes(instanceId);
+  }
+
+  snapshot() {
+    return Object.freeze({
+      loadoutId: this.loadoutId,
+      name: this.name,
+      type: this.type,
+      displayType: this.displayType,
+      inventoryCellCost: 1,
+      rootInstanceIds: this.getRootInstanceIds(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    });
+  }
+
+  #assertNoAuxiliaryAssignments(assignments) {
+    const auxiliaryIds = EQUIPMENT_AUXILIARY_SLOT_IDS;
+    for (const slotId of auxiliaryIds) {
+      if (assignments?.[slotId]) {
+        throw new RangeError(`A loadout cannot contain auxiliary slot ${slotId}`);
+      }
+    }
+  }
+
+  #normalizeRoot(instanceId, slotId) {
+    if (instanceId === null || instanceId === undefined || instanceId === "") {
+      return null;
+    }
+    if (typeof instanceId !== "string") {
+      throw new TypeError(`Loadout slot ${slotId} must contain a root instanceId`);
+    }
+    return instanceId;
+  }
+}

@@ -1,0 +1,51 @@
+export class FishingForceService {
+  applyForces(dt, context) {
+    const {
+      floatEntity,
+      bounds,
+      input,
+      env,
+      getRodVirtualPos,
+      getBaseRodVirtualPos,
+      rodControlCastAnchor,
+      checkWater,
+      rod,
+      reel,
+      fishForceSystem,
+      lineSystem,
+      dragSystem,
+      pullInputMapper,
+      rodPullSystem,
+      rodControlSystem,
+      reelSystem,
+      tensionSystem,
+      stressSystem,
+      fightPhysicsSystem,
+      fishCondition,
+    } = context;
+    return fightPhysicsSystem.step({
+      dtMs: dt,
+      floatEntity,
+      bounds,
+      input,
+      env,
+      checkWater,
+      rodTipPosition:
+        getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
+      actualRodTipPosition: getRodVirtualPos(bounds),
+      rodControlCastAnchor,
+      rod,
+      reel,
+      fishForceSystem,
+      lineSystem,
+      dragSystem,
+      pullInputMapper,
+      rodPullSystem,
+      rodControlSystem,
+      reelSystem,
+      tensionSystem,
+      stressSystem,
+      fishCondition,
+    });
+  }
+}

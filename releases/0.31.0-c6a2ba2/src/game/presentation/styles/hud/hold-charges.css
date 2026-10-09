@@ -1,0 +1,55 @@
+/* hold-charges DOM appearance. */
+
+.hold-charges {
+  position: fixed;
+  bottom: 25vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 12px;
+  z-index: var(--ui-layer-hud);
+  pointer-events: none;
+  align-items: center;
+  flex-direction: row;
+}
+
+.hold-charges__label {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ui-success);
+  font-family: var(--ui-font-mono);
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 5px var(--ui-success);
+  display: none;
+}
+
+.hold-charges__charge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--ui-success);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.hold-charges__charge--active {
+  background: transparent;
+  border-color: var(--ui-success);
+  box-shadow: 0 0 12px var(--ui-success), inset 0 0 8px var(--ui-success);
+}
+
+.hold-charges__charge--available {
+  background: var(--ui-success);
+  border-color: #00cc66;
+  box-shadow: none;
+}
+
+.hold-charges__charge--restoring {
+  background: linear-gradient(to top, rgba(255, 0, 85, 0.8) var(--hold-charge-progress), transparent var(--hold-charge-progress));
+  border-color: #ff0055;
+  box-shadow: none;
+}

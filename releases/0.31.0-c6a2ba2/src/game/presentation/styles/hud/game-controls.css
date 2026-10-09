@@ -1,0 +1,97 @@
+/* Shared game control appearance and component state variants. */
+
+.game-control--fullscreen,
+.game-control--net,
+.game-control--continue {
+  position: absolute;
+  font-family: var(--ui-font-mono);
+  font-weight: bold;
+  z-index: var(--ui-layer-controls);
+  transition: all 0.2s ease;
+}
+.game-control--fullscreen {
+  top: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  background-color: rgba(15, 23, 30, 0.8);
+  color: var(--ui-success);
+  border: 1px solid var(--ui-success);
+  border-radius: var(--ui-radius-control);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.game-control--net {
+  bottom: 20px;
+  right: 100px;
+  padding: 12px;
+  border-radius: var(--ui-radius-panel);
+  font-size: 16px;
+  display: none;
+  touch-action: none;
+  color: var(--ui-text);
+  border-width: 2px;
+  border-style: solid;
+  transform: scale(0);
+  justify-content: center;
+  align-items: center;
+}
+
+.game-control--continue {
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 15px 40px;
+  border-radius: var(--ui-radius-panel);
+  font-size: 24px;
+  display: none;
+  background-color: rgba(var(--ui-accent-rgb), 0.8);
+  color: var(--ui-text);
+  border: 2px solid var(--ui-accent);
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(var(--ui-accent-rgb), 0.4);
+}
+
+.game-control--fullscreen:hover {
+  background-color: rgba(var(--ui-success-rgb), 0.2);
+}
+
+.game-control--continue:hover {
+  background-color: rgba(var(--ui-accent-rgb), 1);
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.game-control--continue:active:not(:hover) {
+  transform: translate(-50%, -50%);
+}
+
+.game-control--net-visible {
+  display: flex;
+}
+
+.game-control--net-entered {
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
+}
+
+.game-control--net-entered:active {
+  transform: scale(1);
+}
+
+.game-control--net-ready {
+  background-color: rgba(var(--ui-success-rgb), 0.7);
+  border-color: var(--ui-success);
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(var(--ui-success-rgb), 0.5);
+}
+
+.game-control--net-unready {
+  background-color: rgba(128, 128, 128, 0.3);
+  border-color: #aaa;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.game-control--continue-visible {
+  display: block;
+}
