@@ -132,7 +132,9 @@
 │  │  └── spec.md
 │  ├── 040-shared-clamp
 │  │  └── spec.md
-│  └── 041-direct-calls-inventory
+│  ├── 041-direct-calls-inventory
+│  │  └── spec.md
+│  └── 042-src-module-type
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -811,6 +813,7 @@
 │  │     └── world
 │  │        ├── boat_chum_renderer.js
 │  │        └── world_scene_renderer.js
+│  ├── package.json
 │  └── platform
 │     └── browser
 │        ├── assets

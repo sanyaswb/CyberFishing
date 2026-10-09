@@ -31,8 +31,21 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
      call-count evidence) and ≈95 `typeof … === "function"` checks.
    - The rest are optional by design: duck-typed items, alternative reader shapes, render callbacks, DOM/events,
      fight-only fields, DEV and teardown.
-6. **Test composition** (review 9). `utils/game-cycle-check.js` keeps its own `GAMEPLAY_FILES` list and
-   composition; 17 files use `bindConstructorDefaults`. Build test graphs from production composition modules.
+6. **Test composition** (review 9). The Node module-type warning is done in
+   [042](../specs/042-src-module-type/spec.md) (`src/package.json`).
+   - Open: `utils/game-cycle-check.js` keeps its own composition of the fishing services (`CastService`,
+     `FightSessionFactory`, `FightService`, …) and a hand-kept `CONFIG_FILES`/`GAMEPLAY_FILES` list of names it
+     publishes into its VM.
+   - Proposed plan:
+     1. Extract the DOM-free composition steps of `GameCompositionRoot` (fishing services, fight session, state
+        dependencies) into exported bootstrap functions that production calls.
+     2. Have game-cycle call them with its deterministic clock/rng.
+     3. Derive the published names from the imported namespaces.
+
+     Step 2 can change the game-cycle stdout wherever the check composes differently from production, so it needs
+     an owner decision on re-baselining the digest.
+   - The 17 `bindConstructorDefaults` uses inject the same catalogs as production (messages, HUD labels,
+     descriptor factories). Replacing them with explicit options belongs to step 1.
 7. ~~**Private `clamp` copies** (review 10).~~ Done in [040](../specs/040-shared-clamp/spec.md): 14 private helpers in 11 modules →
    `clampUnitFinite` / `clampFinite` / `clampFiniteOrMin` / `clampNumber` (780-case differential, same digest); the
    NaN-propagating `CastPowerAim#clamp` and domain-specific clamps stay.
