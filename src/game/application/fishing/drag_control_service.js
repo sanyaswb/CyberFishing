@@ -1,4 +1,4 @@
-import { clampUnit } from "../../../engine/math/number_normalization.js";
+import { clampNumber, clampUnit } from "../../../engine/math/number_normalization.js";
 
 export class DragControlService {
   #value = 0;
@@ -177,6 +177,6 @@ export class DragControlService {
   }
 
   #clamp(value) {
-    return Math.max(this.#min(), Math.min(this.#max(), Number(value) || 0));
+    return clampNumber(value, this.#min(), this.#max());
   }
 }

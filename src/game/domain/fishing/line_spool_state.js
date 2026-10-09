@@ -1,4 +1,4 @@
-import { nonNegativeFinite } from "../../../engine/math/number_normalization.js";
+import { clampFiniteOrMin, nonNegativeFinite } from "../../../engine/math/number_normalization.js";
 
 export class LineSpoolState {
   #totalLineMeters = 0;
@@ -6,7 +6,7 @@ export class LineSpoolState {
 
   constructor({ totalLineMeters = 0, releasedLineMeters = 0 } = {}) {
     this.#totalLineMeters = nonNegativeFinite(totalLineMeters);
-    this.#releasedLineMeters = this.#clamp(
+    this.#releasedLineMeters = clampFiniteOrMin(
       releasedLineMeters,
       0,
       this.#totalLineMeters,
@@ -34,7 +34,7 @@ export class LineSpoolState {
   }
 
   setReleasedLineMeters(releasedLineMeters) {
-    this.#releasedLineMeters = this.#clamp(
+    this.#releasedLineMeters = clampFiniteOrMin(
       releasedLineMeters,
       0,
       this.#totalLineMeters,
@@ -42,22 +42,16 @@ export class LineSpoolState {
   }
 
   release(meters) {
-    const released = this.#clamp(meters, 0, this.remainingLineMeters);
+    const released = clampFiniteOrMin(meters, 0, this.remainingLineMeters);
     this.#releasedLineMeters += released;
     return released;
   }
 
   recover(meters, minReleasedMeters = 0) {
-    const minimum = this.#clamp(minReleasedMeters, 0, this.#totalLineMeters);
+    const minimum = clampFiniteOrMin(minReleasedMeters, 0, this.#totalLineMeters);
     const maxRecover = Math.max(0, this.#releasedLineMeters - minimum);
-    const recovered = this.#clamp(meters, 0, maxRecover);
+    const recovered = clampFiniteOrMin(meters, 0, maxRecover);
     this.#releasedLineMeters -= recovered;
     return recovered;
-  }
-
-  #clamp(value, min, max) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return min;
-    return Math.max(min, Math.min(max, number));
   }
 }

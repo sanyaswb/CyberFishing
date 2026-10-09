@@ -128,7 +128,9 @@
 │  │  └── spec.md
 │  ├── 038-pages-release
 │  │  └── spec.md
-│  └── 039-version-copy-path
+│  ├── 039-version-copy-path
+│  │  └── spec.md
+│  └── 040-shared-clamp
 │     └── spec.md
 ├── src
 │  ├── bootstrap

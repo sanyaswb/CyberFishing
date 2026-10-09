@@ -1,3 +1,5 @@
+import { clampUnitFinite } from "../../engine/math/number_normalization.js";
+
 export class LocationDebugDataProvider {
   #configSource;
 
@@ -69,7 +71,7 @@ export class LocationDebugDataProvider {
     const pConfig = map.perspective || { angleTop: 5, angleBottom: 60 };
     const topY = Number(map.safeZone?.top) || 0;
     const bottomY = Number(map.safeZone?.bottom) || 1;
-    const distRatio = this.clamp01(
+    const distRatio = clampUnitFinite(
       (virtualY - topY) / Math.max(1, bottomY - topY),
     );
     const angleDeg =
@@ -92,11 +94,5 @@ export class LocationDebugDataProvider {
   normalizeMultiplier(value) {
     const raw = Number(value);
     return Number.isFinite(raw) && raw > 0 ? raw : 1;
-  }
-
-  clamp01(value) {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return 0;
-    return Math.max(0, Math.min(1, n));
   }
 }

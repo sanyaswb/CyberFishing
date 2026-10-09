@@ -1,4 +1,5 @@
 import { FishPhysicsProfile } from "../../domain/fish/fish_physics_profile.js";
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
 
 export class BiteSystem {
   #fishDatabase;
@@ -106,28 +107,18 @@ export class BiteSystem {
     return start * (1 - t) + end * t;
   }
 
-  #clamp01(value) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 0;
-    return Math.max(0, Math.min(1, parsed));
-  }
-
   // GodMode settings only through the injected DEV flag port (inactive in production).
   #getGodModeConfig() {
     return this.#devFlags.godModeValue("activeSettings") ?? null;
   }
 
-  #clampChance(chance) {
-    return this.#clamp01(chance);
-  }
-
   #applyGodModeChanceOverride(chance) {
     const godMode = this.#getGodModeConfig();
-    if (!godMode?.fixedBiteChanceEnabled) return this.#clampChance(chance);
+    if (!godMode?.fixedBiteChanceEnabled) return clampUnitFinite(chance);
 
     const percent = Number(godMode.fixedBiteChancePercent);
     const normalized = Number.isFinite(percent) ? percent / 100 : 1;
-    return this.#clampChance(normalized);
+    return clampUnitFinite(normalized);
   }
 
   #applyGodModeBiteSequence(sequence) {
@@ -152,7 +143,7 @@ export class BiteSystem {
   #getDepthRatio(hookDepth, depthConfig) {
     const range = depthConfig.maxDepth - depthConfig.minDepth;
     if (!Number.isFinite(range) || range <= 0) return 0;
-    return this.#clamp01((hookDepth - depthConfig.minDepth) / range);
+    return clampUnitFinite((hookDepth - depthConfig.minDepth) / range);
   }
 
   #getDepthChanceMultiplier(hookDepth, depthConfig) {
@@ -232,7 +223,7 @@ export class BiteSystem {
   }
 
   #rollChance(probability) {
-    const normalized = this.#clamp01(probability);
+    const normalized = clampUnitFinite(probability);
     const roll = this.#next();
     return {
       probability: normalized,
@@ -242,7 +233,7 @@ export class BiteSystem {
   }
 
   #formatPercent(value) {
-    return `${(this.#clamp01(value) * 100).toFixed(2)}%`;
+    return `${(clampUnitFinite(value) * 100).toFixed(2)}%`;
   }
 
   #emitDebugEvent(type, detail) {

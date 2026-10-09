@@ -1,3 +1,5 @@
+import { clampFinite } from "../../../engine/math/number_normalization.js";
+
 export class RodControlTensionModeResolver {
   resolve({
     fishVelocity,
@@ -33,12 +35,13 @@ export class RodControlTensionModeResolver {
     const projectionSpeedPxPerSec =
       velocityX * normalizedAxisX +
       velocityY * normalizedAxisY;
-    const alignment = this.#clamp(
+    const alignment = clampFinite(
       projectionSpeedPxPerSec / fishSpeedPxPerSec,
       -1,
       1,
+      0,
     );
-    const sameDirectionThreshold = this.#clamp(
+    const sameDirectionThreshold = clampFinite(
       cfg.sameDirectionThreshold,
       -1,
       1,
@@ -46,7 +49,7 @@ export class RodControlTensionModeResolver {
     );
     const oppositeDirectionThreshold = Math.min(
       sameDirectionThreshold,
-      this.#clamp(
+      clampFinite(
         cfg.oppositeDirectionThreshold,
         -1,
         1,
@@ -79,11 +82,5 @@ export class RodControlTensionModeResolver {
       controlAxisY: 0,
       ...overrides,
     });
-  }
-
-  #clamp(value, min, max, fallback = 0) {
-    const number = Number(value);
-    const resolved = Number.isFinite(number) ? number : fallback;
-    return Math.max(min, Math.min(max, resolved));
   }
 }

@@ -1,5 +1,6 @@
 import { RodControlAngleResolver } from "./rod_control_angle_resolver.js";
 import { RodControlTensionModeResolver } from "./rod_control_tension_mode_resolver.js";
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
 
 export class RodLateralControlSystem {
   #result = this.#createResult();
@@ -65,7 +66,7 @@ export class RodLateralControlSystem {
     const inputRatio = intent.inputRatio;
     const hasFish = intent.hasFish;
     const targetFrame = intent.targetFrame;
-    const baseRequestedForceRatio = this.#clamp01(
+    const baseRequestedForceRatio = clampUnitFinite(
       inputRatio * targetFrame.angleRatio * targetFrame.directionFactor,
     );
     const tensionBuildRateMultiplier = this.#tensionBuildRateMultiplier({
@@ -91,7 +92,7 @@ export class RodLateralControlSystem {
     });
     const requestedForceRatio = playerTensionBuildRate?.enabled === true
       ? Math.min(baseRequestedForceRatio, controlBuildRatio)
-      : this.#clamp01(baseRequestedForceRatio * legacyPressureGainMultiplier);
+      : clampUnitFinite(baseRequestedForceRatio * legacyPressureGainMultiplier);
     const tensionModeFrame = this.#resolveTensionModeFrame({
       fishVelocity,
       fishVelocityX,
@@ -118,7 +119,7 @@ export class RodLateralControlSystem {
       playerPressureFatigue,
       config: cfg,
     });
-    const deliveredForceRatio = this.#clamp01(
+    const deliveredForceRatio = clampUnitFinite(
       requestedForceRatio *
         forceFrame.loadReserveRatio *
         forceFrame.playerPressureEfficiency,
@@ -233,7 +234,7 @@ export class RodLateralControlSystem {
       ? Math.sign(this.#number(inputState?.rodControlDirectionX))
       : 0;
     const inputRatio = active
-      ? this.#clamp01(inputState?.rodControlInputRatio)
+      ? clampUnitFinite(inputState?.rodControlInputRatio)
       : 0;
     const hasFish = this.#hasPoint(fishPosition);
     const targetFrame = Object.freeze(this.#resolveTargetFrame({
@@ -273,7 +274,7 @@ export class RodLateralControlSystem {
     this.#result.appliedMoveMeters = appliedMoveMeters;
     this.#result.appliedMovePx = Math.max(0, this.#number(movedPx));
     this.#result.actualMovementRatio = desiredMoveMeters > 0
-      ? this.#clamp01(appliedMoveMeters / desiredMoveMeters)
+      ? clampUnitFinite(appliedMoveMeters / desiredMoveMeters)
       : 0;
     return this.#result;
   }
@@ -492,14 +493,14 @@ export class RodLateralControlSystem {
     );
     const effectiveForceLimitKg = effectiveTensionReserveKg / tensionScale;
     const loadReserveRatio = loadReserveKg > 0
-      ? this.#clamp01(effectiveTensionReserveKg / loadReserveKg)
+      ? clampUnitFinite(effectiveTensionReserveKg / loadReserveKg)
       : 0;
     const playerPressureEfficiency = this.#pressureEfficiency({
       frame: playerPressureFatigue,
       channel: "rodControl",
     });
     const rawForceKg =
-      effectiveForceLimitKg * this.#clamp01(requestedForceRatio);
+      effectiveForceLimitKg * clampUnitFinite(requestedForceRatio);
     return {
       currentTensionKg: resolvedCurrentTensionKg,
       tensionCeilingMultiplier,
@@ -509,7 +510,7 @@ export class RodLateralControlSystem {
         ? Math.max(0, this.#number(budget.controlBudgetKg, 0))
         : 0,
       playerForceControlShare: hasExternalBudget
-        ? this.#clamp01(budget.controlShare)
+        ? clampUnitFinite(budget.controlShare)
         : 0,
       loadReserveKg,
       loadReserveRatio,
@@ -739,15 +740,11 @@ export class RodLateralControlSystem {
     return Number.isFinite(number) ? number : fallback;
   }
 
-  #clamp01(value) {
-    return Math.max(0, Math.min(1, this.#number(value)));
-  }
-
   #pressureEfficiency({ frame, channel }) {
     if (frame?.enabled !== true) return 1;
     const channels = frame.channels || {};
     if (channels[channel] === false) return 1;
-    return this.#clamp01(frame.efficiency ?? 1);
+    return clampUnitFinite(frame.efficiency ?? 1);
   }
 
   #pressureGainMultiplier({ frame, channel }) {
@@ -794,7 +791,7 @@ export class RodLateralControlSystem {
     buildPerSecond,
     dtSec,
   }) {
-    const target = this.#clamp01(requestedForceRatio);
+    const target = clampUnitFinite(requestedForceRatio);
     if (active !== true || target <= 0) {
       this.#controlBuildRatio = 0;
       return 0;

@@ -1,6 +1,8 @@
+import { clampNumber } from "../math/number_normalization.js";
+
 export class RenderMath {
   static clamp(value, min = 0, max = 1) {
-    return Math.max(min, Math.min(max, Number(value) || 0));
+    return clampNumber(value, min, max);
   }
 
   static rgba(rgb, alpha = 1) {

@@ -1,4 +1,4 @@
-import { finiteOr } from "../../../engine/math/number_normalization.js";
+import { clampFinite, finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class FloatTackleLineBudgetPolicy {
   #config;
@@ -42,7 +42,7 @@ export class FloatTackleLineBudgetPolicy {
       minDepthMeters,
       lineLengthMeters - rodLengthMeters,
     );
-    const selectedDepth = this.#clamp(
+    const selectedDepth = clampFinite(
       selectedDepthMeters,
       minDepthMeters,
       maxDepthMeters,
@@ -93,11 +93,5 @@ export class FloatTackleLineBudgetPolicy {
         0,
       ),
     );
-  }
-
-  #clamp(value, min, max) {
-    const parsed = Number(value);
-    const fallback = Number.isFinite(parsed) ? parsed : min;
-    return Math.max(min, Math.min(max, fallback));
   }
 }

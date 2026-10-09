@@ -1,3 +1,5 @@
+import { clampFinite } from "../../../engine/math/number_normalization.js";
+
 export class LineConstraintStateResolver {
   // Normalizes facts prepared by line and drag orchestration.
   // It deliberately does not calculate force, drag thresholds or payout.
@@ -10,7 +12,7 @@ export class LineConstraintStateResolver {
       0.000001,
       this.#number(config.epsilonMeters, 0.001),
     );
-    const tautThresholdRatio = this.#clamp(
+    const tautThresholdRatio = clampFinite(
       this.#number(config.tautThresholdRatio, 0.995),
       0,
       1,
@@ -33,7 +35,7 @@ export class LineConstraintStateResolver {
         : remainingMeters > epsilonMeters;
     const lineExtensionRatio =
       releasedMeters > epsilonMeters
-        ? this.#clamp(distanceMeters / releasedMeters, 0, 1.5)
+        ? clampFinite(distanceMeters / releasedMeters, 0, 1.5)
         : 1;
     const tautLine = lineExtensionRatio >= tautThresholdRatio;
 
@@ -76,9 +78,5 @@ export class LineConstraintStateResolver {
   #number(value, fallback = 0) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
-  }
-
-  #clamp(value, min, max) {
-    return Math.max(min, Math.min(max, this.#number(value, min)));
   }
 }

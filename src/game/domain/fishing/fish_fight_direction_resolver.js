@@ -1,4 +1,5 @@
 import { Vector2 } from "../../../engine/math/vector2.js";
+import { clampFinite } from "../../../engine/math/number_normalization.js";
 
 export class FishFightDirectionResolver {
   #result = new Vector2(0, 0);
@@ -24,8 +25,8 @@ export class FishFightDirectionResolver {
     }
 
     this.#lateral.set(-this.#away.y, this.#away.x);
-    const radial = this.#clamp(radialIntent, -1, 1);
-    const lateral = this.#clamp(lateralIntent, -1, 1);
+    const radial = clampFinite(radialIntent, -1, 1, 0);
+    const lateral = clampFinite(lateralIntent, -1, 1, 0);
     this.#result.set(
       this.#away.x * radial + this.#lateral.x * lateral,
       this.#away.y * radial + this.#lateral.y * lateral,
@@ -35,11 +36,5 @@ export class FishFightDirectionResolver {
       return this.#result.set(this.#away.x, this.#away.y);
     }
     return this.#result.normalize();
-  }
-
-  #clamp(value, min, max) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return 0;
-    return Math.max(min, Math.min(max, number));
   }
 }

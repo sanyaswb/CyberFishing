@@ -1,3 +1,4 @@
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
 /**
  * Resolves Rod Control X line angle and geometric force ratio.
  *
@@ -31,7 +32,7 @@ export class RodControlAngleResolver {
       ? 1
       : aligned
         ? 0
-        : this.#clamp01(lineAngleDeg / maxEffectiveAngleDeg);
+        : clampUnitFinite(lineAngleDeg / maxEffectiveAngleDeg);
 
     return Object.freeze({
       lineAngleDeg,
@@ -43,10 +44,5 @@ export class RodControlAngleResolver {
   #number(value, fallback = 0) {
     const number = Number(value);
     return Number.isFinite(number) ? number : fallback;
-  }
-
-  #clamp01(value) {
-    const number = this.#number(value);
-    return Math.max(0, Math.min(1, number));
   }
 }

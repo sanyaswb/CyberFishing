@@ -1,6 +1,6 @@
 import { DistanceUnitConverter } from "./distance_unit_converter.js";
 import { FloatTackleLineBudgetPolicy } from "../fishing/float_tackle_line_budget_policy.js";
-import { finiteOr } from "../../../engine/math/number_normalization.js";
+import { clampUnitFinite, finiteOr } from "../../../engine/math/number_normalization.js";
 
 export class CastDistanceCalculator {
   #config;
@@ -109,7 +109,7 @@ export class CastDistanceCalculator {
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
         ? this.getBuildCastPowerCoefficient(equipment)
-        : this.#clamp01(castPowerCoefficient);
+        : clampUnitFinite(castPowerCoefficient);
     return this.getMaxCastDistancePx(equipment, 0, options) * power;
   }
 
@@ -192,7 +192,7 @@ export class CastDistanceCalculator {
     const power =
       castPowerCoefficient === null || castPowerCoefficient === undefined
         ? this.getBuildCastPowerCoefficient(equipment)
-        : this.#clamp01(castPowerCoefficient);
+        : clampUnitFinite(castPowerCoefficient);
     const effectiveDistancePx = maxDistancePx * power;
     const baseReachMeters = this.getRodBaseReachMeters(
       equipment?.rod,
@@ -238,18 +238,12 @@ export class CastDistanceCalculator {
     return Number(source.effectiveStats?.[propertyName]);
   }
 
-  #clamp01(value) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return 0;
-    return Math.max(0, Math.min(1, parsed));
-  }
-
   #clampCastPower(value) {
     const castingPowerConfig = this.#getCastingPowerConfig();
     const min = finiteOr(castingPowerConfig.minCoefficient, 0);
     const max = finiteOr(castingPowerConfig.maxCoefficient, 1);
     const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return this.#clamp01(0);
+    if (!Number.isFinite(parsed)) return clampUnitFinite(0);
     return Math.max(min, Math.min(max, parsed));
   }
 

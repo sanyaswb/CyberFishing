@@ -1,4 +1,4 @@
-import { firstFinite } from "../../../engine/math/number_normalization.js";
+import { clampFiniteOrMin, clampUnitFinite, firstFinite } from "../../../engine/math/number_normalization.js";
 
 export class RodVisualOffsetSystem {
   #offsetPx = 0;
@@ -21,7 +21,7 @@ export class RodVisualOffsetSystem {
       ? Math.sign(Number(inputState?.rodControlDirectionX) || 0)
       : 0;
     const inputRatio = active
-      ? this.#clamp01(inputState?.rodControlInputRatio)
+      ? clampUnitFinite(inputState?.rodControlInputRatio)
       : 0;
     const direction = this.#resolveControlDirection({
       active,
@@ -97,7 +97,7 @@ export class RodVisualOffsetSystem {
       Math.min(maxOffsetPx, this.#offsetPx),
     );
     const strokeRatio = maxOffsetPx > 0
-      ? this.#clamp01(Math.abs(this.#offsetPx) / maxOffsetPx)
+      ? clampUnitFinite(Math.abs(this.#offsetPx) / maxOffsetPx)
       : 0;
     this.#frame = {
       offsetPx: this.#offsetPx,
@@ -278,7 +278,7 @@ export class RodVisualOffsetSystem {
     maxTackleLoadKg,
     config,
   }) {
-    const minRatio = this.#clamp01(config?.fishLoadMinSpeedRatio ?? 0.5);
+    const minRatio = clampUnitFinite(config?.fishLoadMinSpeedRatio ?? 0.5);
     const maxRatio = Math.max(minRatio, Number(config?.fishLoadMaxSpeedRatio) || 1.1);
     const curvePower = Math.max(0.1, Number(config?.fishLoadCurvePower) || 1.0);
     const fishWeight = Math.max(0, Number(fishWeightKg) || 0);
@@ -301,12 +301,12 @@ export class RodVisualOffsetSystem {
       };
     }
 
-    const loadRatio = this.#clamp01(effectiveFishLoadKg / loadLimitKg);
+    const loadRatio = clampUnitFinite(effectiveFishLoadKg / loadLimitKg);
     const curvedLoadRatio = Math.pow(loadRatio, curvePower);
     const ratio = maxRatio - (maxRatio - minRatio) * curvedLoadRatio;
 
     return {
-      ratio: this.#clamp(ratio, minRatio, maxRatio),
+      ratio: clampFiniteOrMin(ratio, minRatio, maxRatio),
       loadRatio,
       effectiveFishLoadKg,
       loadLimitKg,
@@ -317,10 +317,10 @@ export class RodVisualOffsetSystem {
   }
 
   #resolveLoadSpeedRatio({ loadReserveRatio, config }) {
-    const minRatio = this.#clamp01(config?.minimumLoadSpeedRatio ?? 0.35);
+    const minRatio = clampUnitFinite(config?.minimumLoadSpeedRatio ?? 0.35);
     const parsed = Number(loadReserveRatio);
     if (!Number.isFinite(parsed)) return 1;
-    return minRatio + (1 - minRatio) * this.#clamp01(parsed);
+    return minRatio + (1 - minRatio) * clampUnitFinite(parsed);
   }
 
   #approachBySpeed(current, target, speedPxPerSecond, dtSec) {
@@ -330,16 +330,6 @@ export class RodVisualOffsetSystem {
     const delta = target - current;
     if (Math.abs(delta) <= maxStep) return target;
     return current + Math.sign(delta) * maxStep;
-  }
-
-  #clamp(value, min, max) {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return min;
-    return Math.max(min, Math.min(max, parsed));
-  }
-
-  #clamp01(value) {
-    return this.#clamp(value, 0, 1);
   }
 
   #createFrame() {

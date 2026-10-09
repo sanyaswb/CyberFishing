@@ -28,8 +28,9 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    `typeof … === "function"` checks remain in `src`.
 6. **Test composition** (review 9). `utils/game-cycle-check.js` keeps its own `GAMEPLAY_FILES` list and
    composition; 17 files use `bindConstructorDefaults`. Build test graphs from production composition modules.
-7. **Private `clamp` copies** (review 10). About 33 definitions outside `engine/math`; merge only where NaN handling
-   and bound order match.
+7. ~~**Private `clamp` copies** (review 10).~~ Done in [040](../specs/040-shared-clamp/spec.md): 14 private helpers in 11 modules →
+   `clampUnitFinite` / `clampFinite` / `clampFiniteOrMin` / `clampNumber` (780-case differential, same digest); the
+   NaN-propagating `CastPowerAim#clamp` and domain-specific clamps stay.
 8. ~~**Personal utility path** (review 12).~~ Done in [039](../specs/039-version-copy-path/spec.md):
    `CYBER_FISHING_VERSIONS_DIR` / `--versions-dir`.
 9. ~~**Constructor defaults in inventory** (review 5).~~ Verified 2026-10-09, no change needed.

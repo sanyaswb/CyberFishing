@@ -28,6 +28,19 @@ export function clampNumber(value, min, max) {
   return Math.max(min, Math.min(max, Number(value) || 0));
 }
 
+// A number clamped to min..max; a non-finite value is replaced by the fallback (min by default) before clamping.
+export function clampFinite(value, min, max, fallback = min) {
+  const number = Number(value);
+  return Math.max(min, Math.min(max, Number.isFinite(number) ? number : fallback));
+}
+
+// A finite number clamped to min..max; a non-finite value returns min as given (not clamped).
+export function clampFiniteOrMin(value, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return min;
+  return Math.max(min, Math.min(max, number));
+}
+
 // A finite number, else the fallback as given.
 export function finiteOr(value, fallback) {
   const parsed = Number(value);
