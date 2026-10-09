@@ -111,7 +111,18 @@
 │  ├── 028-session-out-of-bootstrap
 │  │  └── spec.md
 │  ├── 029-backend-foundation
-│  │  └── follow-up-decisions.md
+│  │  ├── checklists
+│  │  │  └── requirements.md
+│  │  ├── contracts
+│  │  │  ├── client-sync.md
+│  │  │  ├── http-api.md
+│  │  │  └── progress-format.md
+│  │  ├── data-model.md
+│  │  ├── follow-up-decisions.md
+│  │  ├── plan.md
+│  │  ├── quickstart.md
+│  │  ├── research.md
+│  │  └── spec.md
 │  ├── 030-storage-cache-instance
 │  │  └── spec.md
 │  ├── 031-composition-root-split
