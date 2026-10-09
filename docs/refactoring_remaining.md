@@ -22,8 +22,9 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    [037](../specs/037-starting-inventory/spec.md): `StartingInventorySnapshotFactory`, same save bytes; the legacy
    conversion runs only for classic saves (no removal date).
 4. ~~**Immutable release directories** (review 7, decision 1).~~ Done in
-   [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check; the first publication
-   to `gh-pages` (commit + push of the site checkout) is the owner's step.
+   [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check.
+   - First publication (owner-approved) on 2026-10-09: `gh-pages` 1ca1c7f3 with `releases/0.31.0-c6a2ba2/`.
+   - Live demo: v0.31.0, every resource inside the release, 0 errors.
 5. **Optional contracts, second pass** (review 8, spec 032 rule).
    - Inventory collaborators are done in [041](../specs/041-direct-calls-inventory/spec.md); `?.(` in `src` went
      450 → 435.
