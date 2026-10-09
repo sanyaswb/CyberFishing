@@ -169,7 +169,7 @@ function checkDevelopmentInputs() {
   assert.equal(target.game, null); assert.equal(target.CYBER_FISHING_MEMORY_WATCHDOG, null);
   lifecycle.publishWatchdog(null); assert.equal(target.getCyberFishingMemoryReport(), null);
   const document = {}, window = { document, DEBUG_MODULES: { catchResolution: true } }, diagnostics = {}, configRuntime = {}, configValidation = {};
-  const godModeInstance = { enabled: true };
+  const godModeInstance = { enabled: true }, gameLoopGuard = {};
   const debugModules = { catchResolution: true };
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
@@ -180,12 +180,13 @@ function checkDevelopmentInputs() {
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
-    documentTarget: document, windowTarget: window, godMode: godModeInstance } });
+    documentTarget: document, windowTarget: window, gameLoopGuard, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
   const ports = runtime.run("(" + source.slice(options.start, options.end) + ")");
   assert.equal(ports.documentTarget, document);
   assert.equal(ports.windowTarget, window);
+  assert.equal(ports.gameLoopGuard, gameLoopGuard, "the page loop guard reaches the composition root");
   const config = {}, flags = ports.createDevFlags(config);
   assert.equal(flags.options.config, config);
   assert.equal(flags.options.godModeSource(), runtime.context.godMode);
@@ -298,6 +299,7 @@ async function checkNativeProductionStartup() {
     return new SourceRuntime({ globals: bindings }).run("(function(){\n" + evaluated + "\nreturn {" + names.join(",") + "};})()", file);
   }
   const { DevFlagsProvider } = evaluate("src/platform/browser/runtime/dev_flags_provider.js", ["DevFlagsProvider"], { EventBus });
+  const { ActiveGameLoopGuard } = evaluate("src/platform/browser/runtime/active_game_loop_guard.js", ["ActiveGameLoopGuard"], {});
   const { createRuntimeConfigContext } = evaluate("src/bootstrap/production/config_context.js", ["createRuntimeConfigContext"], {
     ...require("../src/game/config/runtime/config_override_store.js"), ...require("../src/game/config/runtime/resolved_config_provider.js"),
     ...require("../src/platform/browser/config/deep_clone_config.js"), ...require("../src/game/config/runtime/immutable_config.js"),
@@ -336,7 +338,8 @@ async function checkNativeProductionStartup() {
     class Root {
       constructor(owner, ports) {
         roots++;assert.equal(owner, config);assert.equal(ports.windowTarget, windowTarget);assert.equal(ports.documentTarget, documentTarget);
-        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "createDevFlags"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert.deepEqual(Object.keys(ports).sort(), [...Object.keys(loaders), "windowTarget", "documentTarget", "gameLoopGuard", "createDevFlags"].sort(), "production supplies only gameplay and platform ports (no Fixed Catch)");
+        assert(ports.gameLoopGuard instanceof ActiveGameLoopGuard, "startup composes the page loop guard");
         this.ports = ports;
         const flags = ports.createDevFlags(owner);assert(flags instanceof DevFlagsProvider);assert.equal(flags.isEnabled("noEquipmentLoss"), true);
         owner.debug.godMode.enabled = false;assert.equal(flags.isEnabled("noEquipmentLoss"), false);owner.debug.godMode.enabled = true;
@@ -351,7 +354,7 @@ async function checkNativeProductionStartup() {
     }
     const startup = evaluate("src/bootstrap/production/game_startup.js", ["startProductionGame"], {
       CONFIG: config, PROJECT_VERSION_CONFIG: version, Game, BrowserGameLifecycle, DevFlagsProvider, GameplayOverrideReader: Overrides,
-      GameCompositionRoot: Root, ...composition, ...platform,
+      GameCompositionRoot: Root, ActiveGameLoopGuard, ...composition, ...platform,
       GameVersionBadge: { mountById() { mounts++; } }, ConsoleLogger: class { error(error) { throw error; } },
       importModule(specifier) { imports.push(specifier);assert(Object.hasOwn(modules, specifier));return Promise.resolve(modules[specifier]); },
     });

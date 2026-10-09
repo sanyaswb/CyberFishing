@@ -193,7 +193,7 @@ function checkBrowserWidgets() {
   for(let frame=0;frame<120;frame++)drag.onPointerMove({...point,clientX:frame*4,clientY:frame*3});
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
   assert(!button.classList.contains('draggable-control--dragging'),'releasing clears drag feedback');
-  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS});
+  const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS,logger:{warn(){}}});
   const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++);
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
   for(let frame=0;frame<120;frame++) {
@@ -386,6 +386,7 @@ async function checkGameLoopAndAdapters() {
     cancelAnimationFrame(id){cancelled.push(id);frames.delete(id);}}});
   runtime.load("src/platform/browser/time/game_clock.js",{expose:["GameClock"]});
   runtime.load('src/engine/events/event_bus.js',{expose:['EventBus']});
+  runtime.load("src/platform/browser/runtime/active_game_loop_guard.js",{expose:["ActiveGameLoopGuard"]});
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
   runtime.load("src/platform/browser/runtime/browser_buffered_audio_player.js", { expose: ["BrowserBufferedAudioPlayer"] });
   runtime.load("src/platform/browser/runtime/browser_audio_adapter.js", { expose: ["BrowserAudioAdapter"] });
@@ -394,12 +395,14 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
   runtime.load("src/game/config/runtime/config_provider.js", { expose: ["ConfigProvider"] });
   runtime.load("src/platform/browser/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
-  const {GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
+  const {ActiveGameLoopGuard,GameLoop,DevFlagsProvider,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
   const json=value=>JSON.stringify(value);
 
   const clockCalls=[],updates=[];let draws=0;
   const clock={reset(){clockCalls.push("reset");},tick(time){clockCalls.push(time);return time/1000;}};
-  const loop=new GameLoop(clock,dt=>updates.push(dt),()=>draws++);
+  const loopLogger={error:error=>errors.push(error)};
+  const guard=new ActiveGameLoopGuard({logger:loopLogger,warningTarget:window});
+  const loop=new GameLoop(clock,dt=>updates.push(dt),()=>draws++,guard);
   assert.equal(loop.start(),true);assert.equal(loop.start(),true,"a running loop starts idempotently");
   assert.equal(loop.isRunning,true);assert.equal(frames.size,1);
   const callback=frames.get(1);
@@ -412,16 +415,18 @@ async function checkGameLoopAndAdapters() {
   assert.equal(updates.length,120);assert.equal(draws,120);
   assert.equal(updates[0],0.016);assert.equal(updates[119],1.92,"the clock's deltaTime is passed through unchanged");
   assert.equal(json(clockCalls.slice(0,3)),json(["reset",16,32]));
-  const second=new GameLoop(clock,()=>{},()=>{});
+  const second=new GameLoop(clock,()=>{},()=>{},guard);
   assert.equal(second.start(),false,"a second active loop is refused");
   assert.equal(errors.length,1);assert.equal(dispatched.length,1);
   assert.equal(dispatched[0].type,"cyber-fishing-memory-warning");
   assert.equal(json(dispatched[0].detail.issue),json({code:"duplicate_game_loop_start",severity:"critical",
     message:"[GameLoop] Refused to start a second active game loop."}));
-  assert.equal(json(GameLoop.getDiagnostics()),json({activeCount:1,duplicateStartAttempts:1}));
+  assert.equal(json(guard.getDiagnostics()),json({activeCount:1,duplicateStartAttempts:1}));
+  const otherPage=new ActiveGameLoopGuard({logger:loopLogger,warningTarget:window});
+  assert.equal(json(otherPage.getDiagnostics()),json({activeCount:0,duplicateStartAttempts:0}),"a guard counts only its own page's loops");
   loop.stop();loop.stop();
   assert.equal(loop.isRunning,false);assert.equal(json(cancelled),json([121]));assert.equal(frames.size,0);
-  assert.equal(json(GameLoop.getDiagnostics()),json({activeCount:0,duplicateStartAttempts:1}));
+  assert.equal(json(guard.getDiagnostics()),json({activeCount:0,duplicateStartAttempts:1}));
   assert.equal(second.start(),true,"a stopped loop releases the active slot");second.stop();
 
   const bare=new DevFlagsProvider({config:{}});

@@ -1,48 +1,22 @@
 export class GameLoop {
-  static #activeLoop = null;
-  static #duplicateStartAttempts = 0;
-
   #clock;
   #onUpdate;
   #onDraw;
+  #activeLoopGuard;
   #isRunning = false;
   #rafId = 0;
 
-  constructor(clock, onUpdate, onDraw) {
+  constructor(clock, onUpdate, onDraw, activeLoopGuard) {
     this.#clock = clock;
     this.#onUpdate = onUpdate;
     this.#onDraw = onDraw;
+    this.#activeLoopGuard = activeLoopGuard;
   }
 
   start() {
     if (this.#isRunning) return true;
-    if (GameLoop.#activeLoop && GameLoop.#activeLoop !== this) {
-      GameLoop.#duplicateStartAttempts += 1;
-      const error = new Error(
-        "[GameLoop] Refused to start a second active game loop.",
-      );
-      console.error(error);
-      if (
-        typeof window !== "undefined" &&
-        window.dispatchEvent &&
-        typeof CustomEvent !== "undefined"
-      ) {
-        window.dispatchEvent(
-          new CustomEvent("cyber-fishing-memory-warning", {
-            detail: {
-              issue: {
-                code: "duplicate_game_loop_start",
-                severity: "critical",
-                message: error.message,
-              },
-            },
-          }),
-        );
-      }
-      return false;
-    }
+    if (!this.#activeLoopGuard.acquire(this)) return false;
 
-    GameLoop.#activeLoop = this;
     this.#isRunning = true;
     this.#clock.reset();
 
@@ -65,16 +39,7 @@ export class GameLoop {
       cancelAnimationFrame(this.#rafId);
       this.#rafId = 0;
     }
-    if (GameLoop.#activeLoop === this) {
-      GameLoop.#activeLoop = null;
-    }
-  }
-
-  static getDiagnostics() {
-    return Object.freeze({
-      activeCount: GameLoop.#activeLoop ? 1 : 0,
-      duplicateStartAttempts: GameLoop.#duplicateStartAttempts,
-    });
+    this.#activeLoopGuard.release(this);
   }
 
   get isRunning() {

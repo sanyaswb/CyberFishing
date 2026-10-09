@@ -108,7 +108,15 @@
 │  │  └── spec.md
 │  ├── 027-physics-config-cache
 │  │  └── spec.md
-│  └── 028-session-out-of-bootstrap
+│  ├── 028-session-out-of-bootstrap
+│  │  └── spec.md
+│  ├── 030-storage-cache-instance
+│  │  └── spec.md
+│  ├── 031-composition-root-split
+│  │  └── spec.md
+│  ├── 032-direct-calls
+│  │  └── spec.md
+│  └── 033-platform-singletons
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -121,6 +129,7 @@
 │  │     ├── game.js
 │  │     ├── game_composition_root.js
 │  │     ├── game_config_composition.js
+│  │     ├── game_render_composition.js
 │  │     ├── game_startup.js
 │  │     ├── game_version_badge.js
 │  │     ├── inventory_composition_root.js
@@ -810,6 +819,7 @@
 │        │  ├── depth_map_reader.js
 │        │  └── location_asset_loader.js
 │        ├── runtime
+│        │  ├── active_game_loop_guard.js
 │        │  ├── browser_audio_adapter.js
 │        │  ├── browser_buffered_audio_player.js
 │        │  ├── browser_debug_adapter.js
@@ -886,6 +896,7 @@
    │  │  ├── constructor_defaults.js
    │  │  ├── game_application_test_composition.js
    │  │  ├── game_facade_test_composition.js
+   │  │  ├── item_rarity_test_composition.js
    │  │  ├── item_stat_test_composition.js
    │  │  ├── native_esm_test_loader.js
    │  │  └── render_frame_test_composition.js

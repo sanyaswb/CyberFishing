@@ -132,6 +132,7 @@ export class GameCompositionRoot {
   #loadInventoryAssemblyProfileConfig;
   #documentTarget;
   #windowTarget;
+  #gameLoopGuard;
   #createDevFlags;
   #createDevTools;
   #getRenderDiagnostics;
@@ -152,6 +153,7 @@ export class GameCompositionRoot {
     loadInventoryAssemblyProfileConfig,
     documentTarget,
     windowTarget,
+    gameLoopGuard,
     createDevFlags,
     createWorldDebugRenderer,
     createDevTools,
@@ -190,6 +192,7 @@ export class GameCompositionRoot {
     this.#loadInventoryAssemblyProfileConfig = loadInventoryAssemblyProfileConfig;
     this.#documentTarget = documentTarget;
     this.#windowTarget = windowTarget;
+    this.#gameLoopGuard = gameLoopGuard;
     this.#createDevFlags = createDevFlags;
     this.#createDevTools = createDevTools;
     this.#getRenderDiagnostics = getRenderDiagnostics;
@@ -231,9 +234,9 @@ export class GameCompositionRoot {
     const canvasMetrics = new CanvasMetricsProvider(canvas);
     canvasMetrics.resizeToViewport();
     const devFlags = this.#createDevFlags(this.#config);
-    new DependencyContractValidator({ consumer: "GameCompositionRoot.build" }).requireMethods(
-      devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"],
-    );
+    const contracts = new DependencyContractValidator({ consumer: "GameCompositionRoot.build" });
+    contracts.requireMethods(devFlags, "devFlags", ["isEnabled", "godModeValue", "isDebugEnabled"]);
+    contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", ["acquire", "release", "getDiagnostics"]);
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
     const debugEvents = new BrowserDebugAdapter(this.#documentTarget, () =>
@@ -751,7 +754,7 @@ export class GameCompositionRoot {
             itemProgressionResolver,
           }], ["dispose"],
         ))),
-        { cache: this.#storageCache, labels: HUD_LABELS },
+        { cache: this.#storageCache, labels: HUD_LABELS, logger: new ConsoleLogger() },
       )),
       chum: own(new ChumService(locId, chumConfigObj, projector, {
         cache: this.#storageCache,
@@ -916,6 +919,7 @@ export class GameCompositionRoot {
       clock,
       (dt) => appPorts.update(dt),
       () => appPorts.draw(),
+      this.#gameLoopGuard,
     );
 
     const viewportFacade = new GameViewportFacade({

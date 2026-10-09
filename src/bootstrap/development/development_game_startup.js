@@ -18,7 +18,7 @@ import { FixedCatchFishFactory } from "../../dev/fishing/fixed_catch_fish_factor
 import { FixedCatchHook } from "../../dev/fishing/fixed_catch_hook.js";
 import { Game } from "../production/game.js";
 import { GameCompositionRoot } from "../production/game_composition_root.js";
-import { GameLoop } from "../../platform/browser/runtime/game_loop.js";
+import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
 import { GameVersionBadge } from "../production/game_version_badge.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
 import { ITEM_DB } from "../../game/config/databases/item_catalog.js";
@@ -39,6 +39,8 @@ import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
 
 let startup;
+// One loop guard per page: a restarted DEV game shares it with the previous one.
+let gameLoopGuard;
 
 export function startDevelopmentGame() {
   if (startup) return startup;
@@ -58,6 +60,7 @@ async function startGame() {
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
+  gameLoopGuard ??= new ActiveGameLoopGuard({logger: new ConsoleLogger(), warningTarget: windowTarget});
   const debugModules = {...(CONFIG.debug?.consoleModules || {})};
   const debugModulesSource = () => debugModules;
   const settingsStore = new OverlaySettingsStore(OVERLAY_MODULES);
@@ -97,7 +100,7 @@ async function startGame() {
       loadBrowserEventTargetAdapter: () => import("../../platform/browser/runtime/browser_event_target_adapter.js"),
       loadBrowserTimeoutScheduler: () => import("../../platform/browser/time/browser_timeout_scheduler.js"),
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
-      documentTarget, windowTarget,
+      documentTarget, windowTarget, gameLoopGuard,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
       createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
@@ -130,7 +133,7 @@ async function startGame() {
     watchdog = memoryConfig.enabled === true ? new MemoryLeakWatchdog({intervalMs: memoryConfig.intervalMs,
       maxSamples: memoryConfig.maxSamples, minTrendSamples: memoryConfig.minTrendSamples, thresholds: memoryConfig.thresholds,
       metricsProvider: () => {
-        const loop = GameLoop.getDiagnostics();
+        const loop = gameLoopGuard.getDiagnostics();
         return {activeGameLoops: loop.activeCount, duplicateLoopStarts: loop.duplicateStartAttempts,
           managedListeners: EventLifecycle.getActiveListenerCount() + EventBus.getActiveListenerCount() + InputController.getActiveListenerCount()};
       }}) : null;

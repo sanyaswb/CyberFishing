@@ -186,6 +186,9 @@ function checkInstanceIds() {
   const second = fallback.create("loadout");
   assert.match(first, new RegExp(`^loadout_${NOW}_\\d+$`, "u"), "without crypto.randomUUID ids use time and a counter");
   assert.notEqual(first, second);
+  assert.equal(second, `loadout_${NOW}_2`, "the counter belongs to the factory instance");
+  const other = new InventoryInstanceIdFactory({ makeRandomId: () => null, now: () => NOW });
+  assert.equal(other.create("loadout"), `loadout_${NOW}_1`, "another factory starts its own counter");
 }
 
 checkFreshStart();

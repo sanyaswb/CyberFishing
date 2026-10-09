@@ -3,6 +3,7 @@ import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_
 import { GameplayOverrideReader } from "../../game/application/fishing/gameplay_override_reader.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { DevFlagsProvider } from "../../platform/browser/runtime/dev_flags_provider.js";
+import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
 import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
 import { createProductionConfigContext } from "./game_config_composition.js";
@@ -11,6 +12,8 @@ import { GameCompositionRoot } from "./game_composition_root.js";
 import { Game } from "./game.js";
 
 let startup;
+// One loop guard per page, shared by every game this realm starts.
+let gameLoopGuard;
 
 // One startup per ESM realm, including concurrent calls from the same entry module.
 export function startProductionGame() {
@@ -28,6 +31,7 @@ async function startGame() {
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
   const browserLifecycle = new BrowserGameLifecycle(windowTarget);
   browserLifecycle.cleanupPreviousGame();
+  gameLoopGuard ??= new ActiveGameLoopGuard({ logger: new ConsoleLogger(), warningTarget: windowTarget });
   const overrides = new GameplayOverrideReader(CONFIG);
   const compositionRoot = new GameCompositionRoot(CONFIG, {
     loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),
@@ -36,6 +40,7 @@ async function startGame() {
     loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
     documentTarget,
     windowTarget,
+    gameLoopGuard,
     createDevFlags: config => new DevFlagsProvider({ config, godModeSource: () => overrides }),
   });
   const game = new Game("gameCanvas", compositionRoot);

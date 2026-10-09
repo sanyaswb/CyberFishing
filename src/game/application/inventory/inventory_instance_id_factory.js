@@ -1,8 +1,8 @@
 // Creates inventory instance ids: the injected random id source when it yields one, otherwise a
 // timestamp/counter id (the production path when crypto.randomUUID is unavailable, e.g. an insecure context).
+// Production composes one factory per player inventory, so the counter is unique for that inventory.
 export class InventoryInstanceIdFactory {
-  static #fallbackId = 0;
-
+  #fallbackId = 0;
   #makeRandomId;
   #now;
 
@@ -15,7 +15,7 @@ export class InventoryInstanceIdFactory {
     const randomId = this.#makeRandomId?.(prefix);
     if (randomId != null) return randomId;
 
-    InventoryInstanceIdFactory.#fallbackId++;
-    return `${prefix}_${this.#now()}_${InventoryInstanceIdFactory.#fallbackId}`;
+    this.#fallbackId++;
+    return `${prefix}_${this.#now()}_${this.#fallbackId}`;
   }
 }

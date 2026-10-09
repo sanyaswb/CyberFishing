@@ -12,14 +12,16 @@ export class GameControls {
   onContinueClick;
   #lifecycle;
   #labels;
+  #logger;
   #onFullscreenChange = () => {
     if (!this.#fullscreenBtn) return;
     this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
   };
 
-  constructor(config, lifecycle, { cache, labels } = {}) {
+  constructor(config, lifecycle, { cache, labels, logger } = {}) {
     this.#cache = cache;
     this.#labels = labels;
+    this.#logger = logger;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("GameControls requires devTools");
     }
@@ -49,7 +51,7 @@ export class GameControls {
       () => {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch((err) => {
-            console.warn(
+            this.#logger.warn(
               `Error attempting to enable full-screen mode: ${err.message}`,
             );
           });
