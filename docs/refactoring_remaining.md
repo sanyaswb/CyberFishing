@@ -32,8 +32,13 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    and bound order match.
 8. ~~**Personal utility path** (review 12).~~ Done in [039](../specs/039-version-copy-path/spec.md):
    `CYBER_FISHING_VERSIONS_DIR` / `--versions-dir`.
-9. **Constructor defaults in inventory** (review 5). The rule is in `DEVELOPMENT_RULES.md`; verify the remaining
-   ≈11 `x = new Policy()` defaults are stateless and configuration-free, inject the rest.
+9. ~~**Constructor defaults in inventory** (review 5).~~ Verified 2026-10-09, no change needed.
+   - All 11 parameter defaults create stateless, configuration-free helpers:
+     - domain: `ItemFreshnessStatePolicy` (four copies, all with the default 0–100 bounds),
+       `BaitFreshnessDecayPolicy`, `ReelRetrieveSpeedCalculator`;
+     - application display helpers: `RuntimeDisplayStatWriter`/`Formatter`,
+       `Reel`/`LineRuntimeDisplayStatsResolver`.
+   - Neither production nor the checks pass these parameters, so they follow the composition rule as they are.
 
 ## Backend (spec 029): plan only
 
