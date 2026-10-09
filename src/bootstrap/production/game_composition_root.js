@@ -29,7 +29,6 @@ import { StateMachine } from "../../game/application/state/state_machine.js";
 import { VictoryState } from "../../game/application/state/victory_state.js";
 import { WaitingState } from "../../game/application/state/waiting_state.js";
 import { BrowserAudioAdapter } from "../../platform/browser/runtime/browser_audio_adapter.js";
-import { BrowserDebugAdapter } from "../../platform/browser/runtime/browser_debug_adapter.js";
 import { CanvasMetricsProvider } from "../../platform/browser/runtime/canvas_metrics_provider.js";
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
@@ -112,6 +111,8 @@ import { SeededRng } from "../../engine/random/seeded_rng.js";
 import { TargetRangeMetricStrategy } from "../../game/domain/items/progression/target_range_metric_strategy.js";
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { GameControls } from "../../platform/browser/ui/game_controls.js";
+import { InactiveDebugEvents } from "../../game/application/session/inactive_debug_events.js";
+import { InactiveGameDiagnostics } from "../../game/application/session/inactive_game_diagnostics.js";
 import { VictoryActionGestureResolver } from "../../game/presentation/input/victory_action_gesture_resolver.js";
 import { VictoryLayoutResolver } from "../../game/presentation/screens/victory_layout_resolver.js";
 import { ViewportProjector } from "../../game/application/viewport/viewport_projector.js";
@@ -134,6 +135,8 @@ export class GameCompositionRoot {
   #windowTarget;
   #gameLoopGuard;
   #createDevFlags;
+  #createDebugEvents;
+  #createGameDiagnostics;
   #createDevTools;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
@@ -155,6 +158,8 @@ export class GameCompositionRoot {
     windowTarget,
     gameLoopGuard,
     createDevFlags,
+    createDebugEvents,
+    createGameDiagnostics,
     createWorldDebugRenderer,
     createDevTools,
     createLocationDebugRenderFrameBuilder,
@@ -166,7 +171,7 @@ export class GameCompositionRoot {
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
-      isCatchResolutionLogEnabled,
+      isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -177,6 +182,9 @@ export class GameCompositionRoot {
     const worldDebugCount = worldDebugFactories.filter(factory => factory != null).length;
     if (worldDebugCount !== 0 && worldDebugCount !== worldDebugFactories.length) {
       throw new TypeError("GameCompositionRoot requires coherent world debug factories");
+    }
+    if ((createDebugEvents == null) !== (createGameDiagnostics == null)) {
+      throw new TypeError("GameCompositionRoot requires coherent diagnostics factories");
     }
     if (createDevTools != null && createHookedFishProfileSynchronizer == null) {
       throw new TypeError("GameCompositionRoot requires hooked fish synchronizer for DEV tools");
@@ -194,6 +202,8 @@ export class GameCompositionRoot {
     this.#windowTarget = windowTarget;
     this.#gameLoopGuard = gameLoopGuard;
     this.#createDevFlags = createDevFlags;
+    this.#createDebugEvents = createDebugEvents;
+    this.#createGameDiagnostics = createGameDiagnostics;
     this.#createDevTools = createDevTools;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
@@ -239,9 +249,16 @@ export class GameCompositionRoot {
     contracts.requireMethods(this.#gameLoopGuard, "gameLoopGuard", ["acquire", "release", "getDiagnostics"]);
     const audio = new BrowserAudioAdapter();
     const clock = new GameClock();
-    const debugEvents = new BrowserDebugAdapter(this.#documentTarget, () =>
-      devFlags.isDebugEnabled(),
-    );
+    // Debug events and session diagnostics exist only when DEV composes them; production gets inactive ports.
+    const debugEvents = this.#createDebugEvents == null
+      ? new InactiveDebugEvents()
+      : this.#createDebugEvents({ documentTarget: this.#documentTarget, isEnabled: () => devFlags.isDebugEnabled() });
+    const diagnostics = this.#createGameDiagnostics == null
+      ? new InactiveGameDiagnostics()
+      : this.#createGameDiagnostics({ devFlags, debugEvents, documentTarget: this.#documentTarget });
+    contracts.requireMethods(debugEvents, "debugEvents", ["on", "emit", "clear"]);
+    contracts.requireMethods(diagnostics, "diagnostics",
+      ["isDebugEnabled", "emit", "on", "subscribeHookedFishRuntimeUpdated", "dispose"]);
     const runtime = await this.create(
       canvas,
       canvasMetrics,
@@ -259,6 +276,7 @@ export class GameCompositionRoot {
       devFlags,
       audio,
       debugEvents,
+      diagnostics,
       windowTarget: this.#windowTarget,
       documentTarget: this.#documentTarget,
       runtime,

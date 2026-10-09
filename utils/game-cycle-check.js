@@ -129,7 +129,7 @@ const GAMEPLAY_FILES = [
   "src/dev/runtime/dev_flags_provider.js",
   "src/platform/browser/runtime/browser_audio_adapter.js",
   "src/platform/browser/runtime/browser_buffered_audio_player.js",
-  "src/platform/browser/runtime/browser_debug_adapter.js",
+  "src/dev/runtime/browser_debug_adapter.js",
   "src/platform/browser/runtime/browser_event_target_adapter.js",
   "src/platform/browser/runtime/canvas_metrics_provider.js",
   "src/game/config/runtime/config_provider.js",

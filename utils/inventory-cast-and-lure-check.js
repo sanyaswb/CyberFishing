@@ -352,7 +352,7 @@ class StateLifecycleCheck {
 class CompositionSeamCheck {
   run() {
     const bootstrap = new SourceRuntime().readAuthoredSource("src/bootstrap/production/game_composition_root.js");
-    const application = ["src/game/presentation/viewport/game_viewport_facade.js", "src/game/application/session/game_debug_facade.js", "src/game/application/fishing/game_fishing_facade.js", "src/game/application/session/game_application.js"].map((file) => new SourceRuntime().readAuthoredSource(file)).join("\n");
+    const application = ["src/game/presentation/viewport/game_viewport_facade.js", "src/game/application/fishing/game_fishing_facade.js", "src/game/application/session/game_application.js"].map((file) => new SourceRuntime().readAuthoredSource(file)).join("\n");
     const inventory = new SourceRuntime().readAuthoredSource("src/game/application/inventory/player_inventory.js");
 
     Assertion.that(

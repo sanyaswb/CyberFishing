@@ -390,13 +390,15 @@ async function checkGameLoopAndAdapters() {
   runtime.load("src/platform/browser/runtime/game_loop.js",{expose:["GameLoop"]});
   runtime.load("src/platform/browser/runtime/browser_buffered_audio_player.js", { expose: ["BrowserBufferedAudioPlayer"] });
   runtime.load("src/platform/browser/runtime/browser_audio_adapter.js", { expose: ["BrowserAudioAdapter"] });
-  runtime.load("src/platform/browser/runtime/browser_debug_adapter.js", { expose: ["BrowserDebugAdapter"] });
+  runtime.load("src/dev/runtime/browser_debug_adapter.js", { expose: ["BrowserDebugAdapter"] });
+  runtime.load("src/game/application/session/inactive_debug_events.js", { expose: ["InactiveDebugEvents"] });
+  runtime.load("src/game/application/session/inactive_game_diagnostics.js", { expose: ["InactiveGameDiagnostics"] });
   runtime.load("src/platform/browser/runtime/browser_event_target_adapter.js", { expose: ["BrowserEventTargetAdapter"] });
   runtime.load("src/platform/browser/runtime/canvas_metrics_provider.js", { expose: ["CanvasMetricsProvider"] });
   runtime.load("src/game/config/runtime/config_provider.js", { expose: ["ConfigProvider"] });
   runtime.load("src/dev/runtime/dev_flags_provider.js", { expose: ["DevFlagsProvider"] });
   runtime.load("src/game/application/session/inactive_dev_flags.js", { expose: ["InactiveDevFlags"] });
-  const {ActiveGameLoopGuard,GameLoop,DevFlagsProvider,InactiveDevFlags,BrowserDebugAdapter,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
+  const {ActiveGameLoopGuard,GameLoop,DevFlagsProvider,InactiveDevFlags,BrowserDebugAdapter,InactiveDebugEvents,InactiveGameDiagnostics,CanvasMetricsProvider,ConfigProvider,BrowserAudioAdapter,BrowserEventTargetAdapter}=runtime.context;
   const json=value=>JSON.stringify(value);
 
   const clockCalls=[],updates=[];let draws=0;
@@ -458,6 +460,13 @@ async function checkGameLoopAndAdapters() {
   assert.equal(json(received),json([{n:2}]));assert.equal(targetEvents[0].type,"bite");assert.equal(targetEvents[0].detail.n,2);
   unsubscribe();debug.emit("bite",{n:3});assert.equal(received.length,1);assert.equal(targetEvents.length,2);
   debug.on("bite",detail=>received.push(detail));debug.clear();debug.emit("bite",{n:4});assert.equal(received.length,1);
+  const quietEvents=new InactiveDebugEvents(),quiet=new InactiveGameDiagnostics();
+  const quietOff=quietEvents.on("bite",detail=>received.push(detail));quietEvents.emit("bite",{n:5});quietEvents.clear();
+  assert.equal(quietOff(),false);assert.equal(quietEvents.on("other",()=>{}),quietOff,"one shared unsubscribe, no allocation");
+  assert.equal(quiet.isDebugEnabled(),false,"production diagnostics stay off");quiet.emit("bite",{n:6});
+  assert.equal(quiet.on("bite",detail=>received.push(detail))(),false);
+  assert.equal(typeof quiet.subscribeHookedFishRuntimeUpdated(()=>received.push("hooked")),"function");quiet.dispose();
+  assert.equal(received.length,1,"inactive production ports never deliver debug events or DEV hooks");
 
   const listeners=[];
   const events=new BrowserEventTargetAdapter({addEventListener:(...args)=>listeners.push(["add",...args]),

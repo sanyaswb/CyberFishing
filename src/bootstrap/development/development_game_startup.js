@@ -2,6 +2,7 @@ import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger
 import { LocalStorageCache } from "../../platform/browser/storage/local_storage_cache.js";
 import { GameplayOverrideReader } from "../../dev/runtime/gameplay_override_reader.js";
 import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
+import { BrowserDebugAdapter } from "../../dev/runtime/browser_debug_adapter.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { ConfigSchemaValidator } from "../../game/config/validation/config_schema_validator.js";
@@ -18,6 +19,7 @@ import { FixedCatchFishFactory } from "../../dev/fishing/fixed_catch_fish_factor
 import { FixedCatchHook } from "../../dev/fishing/fixed_catch_hook.js";
 import { Game } from "../production/game.js";
 import { GameCompositionRoot } from "../production/game_composition_root.js";
+import { GameDebugFacade } from "../../dev/runtime/game_debug_facade.js";
 import { ActiveGameLoopGuard } from "../../platform/browser/runtime/active_game_loop_guard.js";
 import { GameVersionBadge } from "../production/game_version_badge.js";
 import { HookedFishProfileSynchronizer } from "../../dev/fishing/hooked_fish_profile_synchronizer.js";
@@ -102,6 +104,8 @@ async function startGame() {
       loadInventoryAssemblyProfileConfig: () => import("../../game/config/inventory/inventory_composition_config.js"),
       documentTarget, windowTarget, gameLoopGuard,
       createDevFlags: config => new DevFlagsProvider({config, godModeSource: () => godMode, debugModulesSource}),
+      createDebugEvents: ({documentTarget: target, isEnabled}) => new BrowserDebugAdapter(target, isEnabled),
+      createGameDiagnostics: options => new GameDebugFacade({...options, listeners: new EventLifecycle()}),
       createLocationDebugMapBuilder: options => new LocationDebugMapBuilder(options),
       createItemProgressionDebugSnapshotProvider: options => new ItemProgressionDebugSnapshotProvider(options),
       createHookedFishOverride: ({ config, biteRules, devFlags, ...resolvers }) => new FixedCatchHook({

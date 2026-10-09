@@ -14,8 +14,8 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
 2. **Inactive production DEV ports** (review 3, decision 3).
    - ~~Flags~~: done in [034](../specs/034-inactive-dev-flags/spec.md) — production composes `InactiveDevFlags`;
      `BiteSystem`/`FightService` read GodMode only through the port.
-   - Diagnostics: put `GameDebugFacade` and the debug events behind a diagnostics port with an inactive production
-     implementation after separating the `config-updated` lifecycle subscription from DEV-only hooks.
+   - ~~Diagnostics~~: done in [035](../specs/035-inactive-diagnostics/spec.md) — production composes
+     `InactiveDebugEvents`/`InactiveGameDiagnostics`; `config-updated` stays session lifecycle.
    - The module-level listener counters of `EventBus`, `EventLifecycle` and `InputController` serve only the DEV
      memory watchdog.
 3. **Starting inventory without the legacy path** (decision 2). A new player's starting inventory is created

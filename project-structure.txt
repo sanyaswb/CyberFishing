@@ -118,7 +118,9 @@
 │  │  └── spec.md
 │  ├── 033-platform-singletons
 │  │  └── spec.md
-│  └── 034-inactive-dev-flags
+│  ├── 034-inactive-dev-flags
+│  │  └── spec.md
+│  └── 035-inactive-diagnostics
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -255,8 +257,10 @@
 │  │  ├── rendering
 │  │  │  └── world_debug_renderer.js
 │  │  ├── runtime
+│  │  │  ├── browser_debug_adapter.js
 │  │  │  ├── debug_service.js
 │  │  │  ├── dev_flags_provider.js
+│  │  │  ├── game_debug_facade.js
 │  │  │  └── gameplay_override_reader.js
 │  │  ├── services
 │  │  │  ├── debug_data_selectors.js
@@ -389,8 +393,9 @@
 │  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── session
 │  │  │  │  ├── game_application.js
-│  │  │  │  ├── game_debug_facade.js
-│  │  │  │  └── inactive_dev_flags.js
+│  │  │  │  ├── inactive_debug_events.js
+│  │  │  │  ├── inactive_dev_flags.js
+│  │  │  │  └── inactive_game_diagnostics.js
 │  │  │  ├── state
 │  │  │  │  ├── biting_state.js
 │  │  │  │  ├── failed_state.js
@@ -826,7 +831,6 @@
 │        │  ├── active_game_loop_guard.js
 │        │  ├── browser_audio_adapter.js
 │        │  ├── browser_buffered_audio_player.js
-│        │  ├── browser_debug_adapter.js
 │        │  ├── browser_event_target_adapter.js
 │        │  ├── browser_game_lifecycle.js
 │        │  ├── browser_startup_environment.js

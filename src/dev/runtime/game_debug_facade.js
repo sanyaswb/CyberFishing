@@ -1,3 +1,6 @@
+// DEV session diagnostics: debug switch and events, plus the DEV tools' hooked-fish updates.
+// Production composes InactiveGameDiagnostics (game/application/session) instead.
+/** @implements {IGameDiagnostics} */
 export class GameDebugFacade {
   #devFlags;
   #debugEvents;
@@ -23,10 +26,6 @@ export class GameDebugFacade {
     return this.#debugEvents.on(type, handler);
   }
 
-  subscribeConfigUpdated(handler) {
-    return this.#listeners.add(this.#documentTarget, "config-updated", handler);
-  }
-
   subscribeHookedFishRuntimeUpdated(handler) {
     return this.#listeners.add(
       this.#documentTarget,
@@ -35,7 +34,8 @@ export class GameDebugFacade {
     );
   }
 
-  clear() {
+  dispose() {
+    this.#listeners.dispose();
     this.#debugEvents.clear();
   }
 }

@@ -174,12 +174,15 @@ function checkDevelopmentInputs() {
   class Flags { constructor(options) { this.options = options; } }
   class Renderer { constructor(options) { this.options = options; } }
   class Tools { constructor(config, synchronizer, options) { Object.assign(this, { config, synchronizer, options }); } }
+  class DebugAdapter { constructor(target, isEnabled) { Object.assign(this, { target, isEnabled }); } }
+  class ListenerLifecycle {}
   const runtime = new SourceRuntime({ globals: { window, DevFlagsProvider: Flags, WorldDebugRenderer: Renderer,
     LocationDebugRenderFrameBuilder: Renderer, DevTools: Tools, RenderAllocationDiagnostics: diagnostics,
     CONFIG_RUNTIME_CONTEXT: configRuntime, configRuntime, configValidation, LocationDebugMapBuilder: Renderer, ItemProgressionDebugSnapshotProvider: Renderer,
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
+    BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle,
     documentTarget: document, windowTarget: window, gameLoopGuard, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
@@ -216,6 +219,13 @@ function checkDevelopmentInputs() {
   assert.deepEqual(Object.keys(hook.options.fishFactory.options).sort(), ["fishAnomalyVariantResolver", "fishRarityResolver", "fishVisualVariantResolver"], "DEV Fixed Catch hook composes its fish factory");
   assert.equal(ports.createHookedFishProfileSynchronizer(rendererOptions).options, rendererOptions);
   assert.equal(ports.createDebugService(config).options, config);
+  const isEnabled = () => true, debugEvents = ports.createDebugEvents({ documentTarget: document, isEnabled });
+  assert(debugEvents instanceof DebugAdapter);assert.equal(debugEvents.target, document);assert.equal(debugEvents.isEnabled, isEnabled);
+  const diagnosticsOptions = { devFlags: flags, debugEvents, documentTarget: document };
+  const sessionDiagnostics = ports.createGameDiagnostics(diagnosticsOptions);
+  assert.equal(sessionDiagnostics.options.devFlags, flags);assert.equal(sessionDiagnostics.options.debugEvents, debugEvents);
+  assert.equal(sessionDiagnostics.options.documentTarget, document);
+  assert(sessionDiagnostics.options.listeners instanceof ListenerLifecycle, "DEV session diagnostics own their listener lifecycle");
   const tools = ports.createDevTools(config, synchronizer, { itemProgressionResolver: progression });
   assert.equal(tools.config, config);
   assert.equal(tools.synchronizer, synchronizer);
@@ -259,8 +269,10 @@ function checkDevOverrideReader() {
   assert.equal(flags.isEnabled("noEquipmentLoss"), false, "master setting is read live");
   const Root = source.context.GameCompositionRoot;
   assert.doesNotThrow(() => new Root(config));
-  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled"])
+  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled","createDebugEvents","createGameDiagnostics"])
     assert.throws(() => new Root(config, { [option]:false }), /optional callback/);
+  for (const option of ["createDebugEvents","createGameDiagnostics"])
+    assert.throws(() => new Root(config, { [option]:() => ({}) }), /coherent diagnostics/);
   assert.throws(() => new Root(config, { createWorldDebugRenderer:()=>({render(){}}) }), /coherent world debug/);
   assert.throws(() => new Root(config, { createDevTools:()=>({dispose(){}}) }), /synchronizer/);
   assert.doesNotThrow(() => new Root(config, { createDebugService:null, getRenderDiagnostics:null }));

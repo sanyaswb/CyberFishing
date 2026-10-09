@@ -34,7 +34,9 @@ the optional hooked-fish override of the waiting state, and production composes 
 snapshot is likewise composed only for DEV (`collectFightDiagnostics`); gameplay, HUD and render read the fight frame.
 
 Bootstrap only composes. The running game session is `game/application/session/GameApplication` (state machine,
-update/draw order, casting and chum flow, inventory reactions) with `GameDebugFacade`; `GameFishingFacade` lives in
+update/draw order, casting and chum flow, inventory reactions). Its debug events and diagnostics are injected ports:
+production composes `InactiveDebugEvents` and `InactiveGameDiagnostics`, DEV composes `dev/runtime/BrowserDebugAdapter`
+and `GameDebugFacade` (the `config-updated` subscription stays session lifecycle). `GameFishingFacade` lives in
 `game/application/fishing` and `GameViewportFacade` (bounds, rod position, rod visual offset) in
 `game/presentation/viewport`. `GameCompositionRoot` builds them and injects the clock, fish database and viewport facade.
 

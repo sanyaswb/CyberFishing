@@ -3,7 +3,6 @@ import { Net } from "../../domain/tackle/net.js";
 import { ConfigProvider } from "../../config/runtime/config_provider.js";
 import { EventLifecycle } from "../../../engine/events/event_lifecycle.js";
 import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
-import { GameDebugFacade } from "./game_debug_facade.js";
 import { GameFishingFacade } from "../fishing/game_fishing_facade.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 
@@ -52,7 +51,7 @@ export class GameApplication {
   #debugService;
   #fightService;
   #viewportFacade;
-  #debugFacade;
+  #diagnostics;
   #equipmentRules;
   #baitRules;
   #fishingFacade;
@@ -125,6 +124,7 @@ export class GameApplication {
     devFlags,
     audio,
     debugEvents,
+    diagnostics,
     windowTarget,
     documentTarget,
     runtime = null,
@@ -145,12 +145,7 @@ export class GameApplication {
     this.#debugEvents = debugEvents;
     this.#windowTarget = windowTarget;
     this.#documentTarget = documentTarget;
-    this.#debugFacade = new GameDebugFacade({
-      devFlags: this.#devFlags,
-      debugEvents: this.#debugEvents,
-      listeners: this.#listeners,
-      documentTarget: this.#documentTarget,
-    });
+    this.#diagnostics = diagnostics;
     runtime =
       runtime ||
       this.#composition.create(
@@ -446,7 +441,7 @@ export class GameApplication {
     this.#ui.onContinueClick = () => this.setState("scouting");
     this.#refreshViewport();
 
-    this.#debugFacade.subscribeConfigUpdated((e) => {
+    this.subscribeConfigUpdated((e) => {
       if (this.#isItemDatabaseUpdate(e)) {
         this.#handleItemDatabaseUpdate();
       }
@@ -463,7 +458,7 @@ export class GameApplication {
       }
       this.#renderCoordinator.invalidateStyles();
     });
-    this.#debugFacade.subscribeHookedFishRuntimeUpdated((e) => {
+    this.#diagnostics.subscribeHookedFishRuntimeUpdated((e) => {
       this.#handleHookedFishRuntimeUpdate(e);
     });
   }
@@ -867,7 +862,7 @@ export class GameApplication {
       this.#ui.dispose?.();
     }
     this.#listeners.dispose();
-    this.#debugFacade?.clear();
+    this.#diagnostics.dispose();
   }
 
   get gameStateName() {
@@ -886,19 +881,20 @@ export class GameApplication {
     return this.#location.chumCastDistance;
   }
   isDebugEnabled() {
-    return this.#debugFacade.isDebugEnabled();
+    return this.#diagnostics.isDebugEnabled();
   }
   subscribeConfigUpdated(handler) {
-    return this.#debugFacade.subscribeConfigUpdated(handler);
+    // Runtime config edits (DEV tools in practice) arrive as "config-updated" events on the document.
+    return this.#listeners.add(this.#documentTarget, "config-updated", handler);
   }
   getViewportSize() {
     return this.#viewportFacade.getViewportSize();
   }
   emitDebugEvent(type, detail) {
-    this.#debugFacade.emit(type, detail);
+    this.#diagnostics.emit(type, detail);
   }
   onDebugEvent(type, handler) {
-    return this.#debugFacade.on(type, handler);
+    return this.#diagnostics.on(type, handler);
   }
   get float() {
     return this.#float;
