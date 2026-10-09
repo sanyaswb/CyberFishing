@@ -14,8 +14,9 @@ import { ROD_CAST_DISPLAY_LABELS } from "../../game/presentation/inventory/rod_c
 import { RodCastDisplayStatsWriter } from "../../game/application/inventory/rod_cast_display_stats_writer.js";
 import { TackleLoadLimitPolicy } from "../../game/domain/equipment/tackle_load_limit_policy.js";
 
-// Composes the player's inventory: the legacy save seeds the inventory (only when no current save exists), item views
-// get their runtime context, and PlayerInventory exposes the result to the game.
+// Composes the player's inventory. Without a current save, a new player starts from the configured items in the
+// current format and a classic save is converted once; item views get their runtime context, and PlayerInventory
+// exposes the result to the game.
 export function createPlayerInventory({
   itemDB,
   playerConfig,
@@ -38,7 +39,7 @@ export function createPlayerInventory({
   const itemDatabase = new ItemDatabase(itemDB);
   const effectiveRarityResolver = new EffectiveItemRarityResolver({ itemRarityResolver });
   const itemFactory = new InventoryItemFactory({ itemDatabase, itemRarityResolver });
-  const legacySave = new LegacyInventorySaveSource({ cache, itemDB, playerConfig, itemFactory }).load();
+  const legacySaveSource = new LegacyInventorySaveSource({ cache, itemDB, playerConfig, itemFactory });
   const itemViewContext = new InventoryItemViewContext({
     runtimeConfigProvider,
     itemDatabase,
@@ -59,9 +60,21 @@ export function createPlayerInventory({
   let playerInventory = null;
   const inventory = InventoryCompositionRoot.compose({
     cache,
-    legacyItems: legacySave.inventory.getAll(),
-    legacyEquipment: legacySave.equipment,
-    legacySettings: legacySave.settings,
+    // Both providers are read only when neither a current nor a previous-schema save exists.
+    startingStateProvider: () => legacySaveSource.hasSave() ? null : {
+      items: playerConfig.inventory || [],
+      equipment: playerConfig.equipment || {},
+      buildTemplates: itemDB.builds || {},
+      settings: playerConfig.inventorySettings || {},
+    },
+    legacyStateProvider: () => {
+      const legacySave = legacySaveSource.load();
+      return {
+        legacyItems: legacySave.inventory.getAll(),
+        legacyEquipment: legacySave.equipment,
+        settings: legacySave.settings,
+      };
+    },
     itemDefinitionResolver: itemDatabase,
     itemViewFactory,
     instanceIdFactory: (context = {}) => {

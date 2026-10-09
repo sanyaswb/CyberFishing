@@ -75,6 +75,24 @@ function checkFreshStart() {
   assert.equal(inventory.getMaxTackleLoadKg(), 0, "an empty tackle has no load limit");
 }
 
+function checkStartingInventory() {
+  const key = "player_inventory_v2";
+  const direct = compose();
+  // A classic save key forces the legacy conversion of the same configured items.
+  const classicCache = new MemoryCache();
+  classicCache.values.set("player_equipment", {});
+  const converted = compose({ cache: classicCache });
+  assert.equal(JSON.stringify(direct.cache.values.get(key)), JSON.stringify(converted.cache.values.get(key)),
+    "the current-format start saves the same bytes as the former legacy conversion of the configuration");
+  assert.deepEqual(direct.cache.writes, [key], "a new player's start writes only the current save");
+  const { CONFIG } = direct;
+  assert.throws(() => compose({ playerConfig: { ...CONFIG.player, equipment: { ...CONFIG.player.equipment, rodId: "uuid-rod-spin" } } }),
+    /Starting inventory supports items and settings only \(equipment: rodId; build templates: none\)/u,
+    "starting equipment is rejected instead of silently dropped");
+  const settings = compose({ playerConfig: { ...CONFIG.player, inventorySettings: { autoBait: true, autoChum: "yes" } } });
+  assert.deepEqual(settings.cache.values.get(key).settings, { autoBait: true, autoChum: false, refillMemory: {} });
+}
+
 function checkLegacySaveMigration() {
   const cache = new MemoryCache();
   cache.values.set("player_inventory", [
@@ -192,10 +210,12 @@ function checkInstanceIds() {
 }
 
 checkFreshStart();
+checkStartingInventory();
 checkLegacySaveMigration();
 checkPlayerInventoryPort();
 checkLineCapacityContext();
 checkInstanceIds();
-console.log("Player inventory passed: fresh start seeds the inventory without writing legacy keys; a legacy save migrates " +
+console.log("Player inventory passed: fresh start creates the current-format inventory directly (same bytes as the former " +
+  "legacy conversion, starting equipment rejected) without writing legacy keys; a legacy save migrates " +
   "(sinker -> feeder rig); lock policy, change events, cached equipment with rod display stats, tackle load " +
   "limit, readiness, provider validation, refresh, dispose, the id fallback and the live line-capacity context behave as composed in production.");

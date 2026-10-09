@@ -51,6 +51,7 @@ import { InventoryRefillTargetWriter } from "../../game/application/inventory/in
 import { InventoryRefillMemoryTransactionParticipant } from "../../game/application/inventory/inventory_refill_memory_transaction_participant.js";
 import { InventorySettingsTransactionParticipant } from "../../game/application/inventory/inventory_settings_transaction_participant.js";
 import { InventorySnapshotFactory } from "../../game/application/inventory/persistence/inventory_snapshot_factory.js";
+import { StartingInventorySnapshotFactory } from "../../game/application/inventory/persistence/starting_inventory_snapshot_factory.js";
 import { InventorySnapshotMigration } from "../../game/application/inventory/persistence/inventory_snapshot_migration.js";
 import { InventorySubfilterResolver } from "../../game/presentation/inventory/inventory_subfilter_resolver.js";
 import { InventoryTransactionCoordinator } from "../../game/application/inventory/inventory_transaction_coordinator.js";
@@ -79,6 +80,7 @@ export class InventoryCompositionRoot {
     cache = null,
     stateStore = null,
     initialSnapshot = null,
+    startingStateProvider = null,
     legacyStateProvider = null,
     legacyItems = null,
     legacyEquipment = null,
@@ -123,6 +125,7 @@ export class InventoryCompositionRoot {
     const resolvedState = this.#resolveSnapshot({
       store,
       initialSnapshot,
+      startingStateProvider,
       legacyStateProvider,
       legacyItems,
       legacyEquipment,
@@ -498,6 +501,7 @@ export class InventoryCompositionRoot {
   static #resolveSnapshot({
     store,
     initialSnapshot,
+    startingStateProvider,
     legacyStateProvider,
     legacyItems,
     legacyEquipment,
@@ -545,6 +549,15 @@ export class InventoryCompositionRoot {
       }).migrate(previousSnapshot);
       const snapshot = store.save(migration.snapshot);
       return { snapshot, warnings: [...migration.warnings] };
+    }
+
+    // A new player (no classic save either) starts directly in the current format.
+    const startingState = startingStateProvider == null ? null : startingStateProvider();
+    if (startingState) {
+      const snapshot = store.save(
+        new StartingInventorySnapshotFactory({ itemSnapshotMapper }).create(startingState),
+      );
+      return { snapshot, warnings: [] };
     }
 
     const provided =

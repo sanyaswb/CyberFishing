@@ -122,7 +122,9 @@
 │  │  └── spec.md
 │  ├── 035-inactive-diagnostics
 │  │  └── spec.md
-│  └── 036-listener-counter
+│  ├── 036-listener-counter
+│  │  └── spec.md
+│  └── 037-starting-inventory
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -388,7 +390,8 @@
 │  │  │  │  │  ├── inventory_state_store.js
 │  │  │  │  │  ├── legacy_inventory_items.js
 │  │  │  │  │  ├── legacy_inventory_save_source.js
-│  │  │  │  │  └── legacy_item_state_migration.js
+│  │  │  │  │  ├── legacy_item_state_migration.js
+│  │  │  │  │  └── starting_inventory_snapshot_factory.js
 │  │  │  │  ├── player_inventory.js
 │  │  │  │  ├── reel_runtime_display_stats_resolver.js
 │  │  │  │  ├── rod_cast_display_stats_writer.js

@@ -3,8 +3,8 @@ import { EquipmentStateMigrationPolicy } from "./equipment_state_migration_polic
 import { InventoryItemIdMigrationPolicy } from "./inventory_item_id_migration_policy.js";
 import { LegacyInventoryItems } from "./legacy_inventory_items.js";
 
-// Reads the classic save keys once at startup, applies the legacy id and equipment migrations and seeds
-// the configured starting items. The inventory consumes the result only when it has no current save yet.
+// Reads the classic save keys, applies the legacy id and equipment migrations and seeds the configured starting
+// items. The inventory loads it only when it has no current save and a classic save exists.
 export class LegacyInventorySaveSource {
   #cache;
   #itemDB;
@@ -16,6 +16,10 @@ export class LegacyInventorySaveSource {
     this.#itemDB = itemDB;
     this.#playerConfig = playerConfig;
     this.#itemFactory = itemFactory;
+  }
+
+  hasSave() {
+    return this.#cache.get("player_inventory") != null || this.#cache.get("player_equipment") != null;
   }
 
   load() {

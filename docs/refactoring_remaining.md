@@ -18,9 +18,9 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
      `InactiveDebugEvents`/`InactiveGameDiagnostics`; `config-updated` stays session lifecycle.
    - ~~Listener counters~~: done in [036](../specs/036-listener-counter/spec.md) — an injected DEV
      `ManagedListenerCounter` replaces the module-level/static counters.
-3. **Starting inventory without the legacy path** (decision 2). A new player's starting inventory is created
-   through the legacy conversion path. Add a direct current-format initialization; legacy migration stays for
-   old saves (no removal date).
+3. ~~**Starting inventory without the legacy path** (decision 2).~~ Done in
+   [037](../specs/037-starting-inventory/spec.md): `StartingInventorySnapshotFactory`, same save bytes; the legacy
+   conversion runs only for classic saves (no removal date).
 4. **Immutable release directories** (review 7, decision 1). Publish each release under
    `releases/<version>-<commit>/` with its whole module/CSS/resource graph; root `index.html` points at that
    entry; published directories are never overwritten. No import map or service worker.

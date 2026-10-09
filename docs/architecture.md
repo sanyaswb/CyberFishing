@@ -46,9 +46,11 @@ Styles live in `src/game/presentation/styles/`; DEV metric/parameter description
 
 `bootstrap/production/player_inventory_composition.js` composes the player's inventory once per page:
 
-- `LegacyInventorySaveSource` reads the classic save keys (`player_inventory`, `player_equipment`), migrates and
-  seeds them; the inventory uses the result only when its own save (`fishing_game_player_inventory_v2`, schema 4)
-  does not exist yet.
+- Without its own save (`fishing_game_player_inventory_v2`, schema 4, or a previous schema) the inventory starts
+  in one of two ways. A new player gets the configured starting items directly in the current format
+  (`StartingInventorySnapshotFactory`; starting equipment and build templates are rejected). A player with the
+  classic save keys (`player_inventory`, `player_equipment`) goes through `LegacyInventorySaveSource`, which
+  migrates and seeds them, and then `InventoryLegacyMigration`. The legacy source is read only in that case.
 - `InventoryCompositionRoot` builds the repository, assemblies, equipment state, loadouts, transactions and:
   `InventoryCommandService` (player actions from the UI), `InventoryUiState` (navigation state),
   `InventoryGameplayCommands` (consumption, line breaks, auto-refill), `InventoryItemRemovalService`,
