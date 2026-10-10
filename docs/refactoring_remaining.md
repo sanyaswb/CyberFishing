@@ -25,6 +25,8 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check.
    - First publication (owner-approved) on 2026-10-09: `gh-pages` 1ca1c7f3 with `releases/0.31.0-c6a2ba2/`.
    - Live demo: v0.31.0, every resource inside the release, 0 errors.
+   - Release v0.32.0 (tag on 8a583f8) published 2026-10-10: `gh-pages` 9a5da357 with `releases/0.32.0-8a583f8/`;
+     live demo v0.32.0, every resource inside the release, 0 errors.
 5. ~~**Optional contracts, second pass** (review 8, spec 032 rule).~~ Done:
    - inventory collaborators in [041](../specs/041-direct-calls-inventory/spec.md);
    - fight systems (fish, physics adapter, condition, accumulator, DEV flag port) and typeof guards on composed
