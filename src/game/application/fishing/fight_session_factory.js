@@ -20,11 +20,11 @@ export class FightSessionFactory {
   // runtimeConfig is the live runtime config (CONFIG) whose adapter DEV overrides replace.
   // logger receives the fish's developer diagnostics (the platform ConsoleLogger in production).
   // stepClock is the platform high-resolution clock for the fight pipeline's diagnostic step durations.
-  // fightDiagnostics builds the full DEV fight snapshot each step (Development composition and checks).
+  // fightDiagnosticsBuilder builds the full DEV fight snapshot each step (Development composition and checks only).
   constructor({ config, rng, castDistanceCalculator = null, devFlags = null, runtimeConfig = null, logger = null,
-    stepClock = null, fightDiagnostics = false }) {
+    stepClock = null, fightDiagnosticsBuilder = null }) {
     this.config = config;
-    this.fightDiagnostics = fightDiagnostics === true;
+    this.fightDiagnosticsBuilder = fightDiagnosticsBuilder;
     this.stepClock = stepClock;
     this.runtimeConfig = runtimeConfig;
     this.logger = logger;
@@ -77,7 +77,7 @@ export class FightSessionFactory {
     const fightPhysicsSystem = new FightPhysicsOrchestrator(this.config, {
       stepClock: this.stepClock,
       logger: this.logger,
-      diagnosticsEnabled: this.fightDiagnostics,
+      diagnosticsSnapshotBuilder: this.fightDiagnosticsBuilder,
     });
     const fishCondition = new FishCondition(
       fishData.level,

@@ -15,6 +15,7 @@ import { DevToolsUI } from "../../dev/tools/dev_tools_ui.js";
 import { EventBus } from "../../engine/events/event_bus.js";
 import { EventLifecycle } from "../../engine/events/event_lifecycle.js";
 import { FISH_DB } from "../../game/config/databases/fish_database.js";
+import { FightDiagnosticsSnapshotBuilder } from "../../dev/fishing/fight_diagnostics_snapshot_builder.js";
 import { FixedCatchFishFactory } from "../../dev/fishing/fixed_catch_fish_factory.js";
 import { FixedCatchHook } from "../../dev/fishing/fixed_catch_hook.js";
 import { Game } from "../production/game.js";
@@ -115,7 +116,7 @@ async function startGame() {
       }),
       createHookedFishProfileSynchronizer: options => new HookedFishProfileSynchronizer(options),
       createDebugService: config => new DebugService(config, debugModulesSource),
-      collectFightDiagnostics: true,
+      createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,

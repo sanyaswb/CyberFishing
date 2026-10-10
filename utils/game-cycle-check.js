@@ -151,6 +151,7 @@ const GAMEPLAY_FILES = [
   "src/game/application/fishing/fight_physics_pipeline.js",
   "src/game/application/fishing/fight_physics_pipeline_frame.js",
   "src/game/application/fishing/fight_physics_orchestrator.js",
+  "src/dev/fishing/fight_diagnostics_snapshot_builder.js",
   "src/game/domain/fishing/stamina_system.js",
   "src/game/application/fishing/fishing_controller.js",
   "src/game/application/fishing/cast_service.js",
@@ -568,7 +569,7 @@ function runFloatDepthIntegrationChecks() {
     runtimeConfig: CONFIG,
     // Deterministic stand-in for the platform high-resolution clock bootstrap injects (pipeline step durations).
     stepClock: createStepClock(),
-    fightDiagnostics: true,
+    fightDiagnosticsBuilder: new FightDiagnosticsSnapshotBuilder(),
   }).create(
     createFish({ weightKg: 0.25 }),
     equipment,
@@ -1718,7 +1719,7 @@ function createFightService({ config, rng, fightDiagnostics = true }) {
   const devFlags = createDevFlags();
   return new FightService({ config, rng, devFlags,
     fightSessionFactory: new FightSessionFactory({ config, rng, devFlags, stepClock: createStepClock(),
-      fightDiagnostics }) });
+      fightDiagnosticsBuilder: fightDiagnostics ? new FightDiagnosticsSnapshotBuilder() : null }) });
 }
 
 // Every value of the production fight frame equals the same key of the full DEV diagnostics at the same moment.

@@ -183,7 +183,7 @@ function checkDevelopmentInputs() {
     FixedCatchFishFactory: Renderer, FixedCatchHook: Renderer, HookedFishProfileSynchronizer: Renderer, DebugService: Renderer,
     itemCatalog: {}, FISH_DB: {}, mapCatalog: {}, settingsStore: {}, storageCache: {}, debugModulesSource: () => debugModules, debugModules,
     DevToolsParameterTooltipProvider: class {}, DevToolsUI: class {},
-    BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus,
+    BrowserDebugAdapter: DebugAdapter, GameDebugFacade: Renderer, EventLifecycle: ListenerLifecycle, EventBus: Bus, FightDiagnosticsSnapshotBuilder: Renderer,
     documentTarget: document, windowTarget: window, gameLoopGuard, listenerCounter, godMode: godModeInstance } });
 
   runtime.context.DevFlagsProvider = Flags; // Keep the constructor spy after loading the real canvas provider.
@@ -221,6 +221,7 @@ function checkDevelopmentInputs() {
   assert.deepEqual(Object.keys(hook.options.fishFactory.options).sort(), ["fishAnomalyVariantResolver", "fishRarityResolver", "fishVisualVariantResolver"], "DEV Fixed Catch hook composes its fish factory");
   assert.equal(ports.createHookedFishProfileSynchronizer(rendererOptions).options, rendererOptions);
   assert.equal(ports.createDebugService(config).options, config);
+  assert(ports.createFightDiagnosticsBuilder() instanceof Renderer, "DEV composes the fight diagnostics snapshot builder");
   const isEnabled = () => true, debugEvents = ports.createDebugEvents({ documentTarget: document, isEnabled });
   assert(debugEvents instanceof DebugAdapter);assert.equal(debugEvents.target, document);assert.equal(debugEvents.isEnabled, isEnabled);
   assert(debugEvents.bus instanceof Bus);assert.equal(debugEvents.bus.counter, listenerCounter, "the DEV debug bus is counted");
@@ -273,7 +274,7 @@ function checkDevOverrideReader() {
   assert.equal(flags.isEnabled("noEquipmentLoss"), false, "master setting is read live");
   const Root = source.context.GameCompositionRoot;
   assert.doesNotThrow(() => new Root(config));
-  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled","createDebugEvents","createGameDiagnostics"])
+  for (const option of ["createDebugService","createDevTools","getRenderDiagnostics","isCatchResolutionLogEnabled","createDebugEvents","createGameDiagnostics","createFightDiagnosticsBuilder"])
     assert.throws(() => new Root(config, { [option]:false }), /optional callback/);
   for (const option of ["createDebugEvents","createGameDiagnostics"])
     assert.throws(() => new Root(config, { [option]:() => ({}) }), /coherent diagnostics/);

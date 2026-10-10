@@ -142,7 +142,7 @@ export class GameCompositionRoot {
   #createDevTools;
   #getRenderDiagnostics;
   #isCatchResolutionLogEnabled;
-  #collectFightDiagnostics;
+  #createFightDiagnosticsBuilder;
   #storageCache;
   #rendering;
   constructor(config, {
@@ -168,13 +168,13 @@ export class GameCompositionRoot {
     createLocationDebugRenderFrameBuilder,
     getRenderDiagnostics,
     isCatchResolutionLogEnabled,
-    collectFightDiagnostics = false,
+    createFightDiagnosticsBuilder,
   } = {}) {
     for (const [name, factory] of Object.entries({
       createLocationDebugMapBuilder, createItemProgressionDebugSnapshotProvider, createHookedFishOverride,
       createHookedFishProfileSynchronizer, createDebugService, createWorldDebugRenderer,
       createDevTools, createLocationDebugRenderFrameBuilder, getRenderDiagnostics,
-      isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics,
+      isCatchResolutionLogEnabled, createDebugEvents, createGameDiagnostics, createFightDiagnosticsBuilder,
     })) {
       if (factory != null && typeof factory !== "function") {
         throw new TypeError("GameCompositionRoot requires optional callback " + name);
@@ -212,7 +212,7 @@ export class GameCompositionRoot {
     this.#createDevTools = createDevTools;
     this.#getRenderDiagnostics = getRenderDiagnostics;
     this.#isCatchResolutionLogEnabled = isCatchResolutionLogEnabled;
-    this.#collectFightDiagnostics = collectFightDiagnostics === true;
+    this.#createFightDiagnosticsBuilder = createFightDiagnosticsBuilder;
     this.#rendering = new GameRenderComposition({
       readRenderDiagnostics: () => this.#readRenderDiagnostics(),
       createOptionalDiagnostic: (factory, name, args, methods) =>
@@ -1015,7 +1015,8 @@ export class GameCompositionRoot {
         castDistanceCalculator: runtime.castDistanceCalculator,
         logger: new ConsoleLogger(),
         stepClock: () => clock.highResolutionNow(),
-        fightDiagnostics: this.#collectFightDiagnostics,
+        // The DEV fight snapshot exists only when Development startup composes its builder.
+        fightDiagnosticsBuilder: this.#createFightDiagnosticsBuilder == null ? null : this.#createFightDiagnosticsBuilder(),
       }),
     });
 

@@ -67,7 +67,10 @@ verify legacy → current → cloud import and recovery before any legacy-format
 
 ## Optional
 
-Split `FightPhysicsOrchestrator` (≈4,700 lines) by pipeline stage; static inline styling; Canvas decomposition.
+- **Split `FightPhysicsOrchestrator` by pipeline stage** (owner asked to close it, 2026-10-10). In progress:
+  - [043](../specs/043-fight-diagnostics-builder/spec.md): the DEV snapshot moved to
+    `dev/fishing/FightDiagnosticsSnapshotBuilder`, 4,740 → 3,355 lines.
+- Static inline styling; Canvas decomposition.
 
 ## Done after the finalization review
 
