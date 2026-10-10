@@ -151,7 +151,9 @@
 │  │  └── spec.md
 │  ├── 043-fight-diagnostics-builder
 │  │  └── spec.md
-│  └── 044-fight-stages-pressure-landing-stamina
+│  ├── 044-fight-stages-pressure-landing-stamina
+│  │  └── spec.md
+│  └── 045-fight-stages-motion-line
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -348,11 +350,16 @@
 │  │  │  │  ├── cast_service.js
 │  │  │  │  ├── catch_resolution_service.js
 │  │  │  │  ├── drag_control_service.js
+│  │  │  │  ├── fight_fish_motion_stage.js
 │  │  │  │  ├── fight_landing_tension_stage.js
+│  │  │  │  ├── fight_line_constraint.js
+│  │  │  │  ├── fight_line_recovery_stage.js
 │  │  │  │  ├── fight_physics_orchestrator.js
 │  │  │  │  ├── fight_physics_pipeline.js
 │  │  │  │  ├── fight_physics_pipeline_frame.js
 │  │  │  │  ├── fight_player_pressure_stage.js
+│  │  │  │  ├── fight_pole_sector.js
+│  │  │  │  ├── fight_rod_movement_stage.js
 │  │  │  │  ├── fight_service.js
 │  │  │  │  ├── fight_session_factory.js
 │  │  │  │  ├── fight_stamina_frame_builder.js

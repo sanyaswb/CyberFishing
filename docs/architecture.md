@@ -31,7 +31,19 @@ Gameplay reads GodMode and debug switches only through the injected DEV flag por
 `isDebugEnabled`): production composes `InactiveDevFlags` (all off whatever the configuration says), DEV composes
 `dev/runtime/DevFlagsProvider` over `GameplayOverrideReader` and switches GodMode on for balance testing. Fixed Catch exists only in DEV: Development startup composes `FixedCatchHook` as
 the optional hooked-fish override of the waiting state, and production composes none. The full fight diagnostics
-snapshot is likewise composed only for DEV (`collectFightDiagnostics`); gameplay, HUD and render read the fight frame.
+snapshot is likewise composed only for DEV (`createFightDiagnosticsBuilder` → `dev/fishing/FightDiagnosticsSnapshotBuilder`);
+gameplay, HUD and render read the fight frame.
+
+`FightPhysicsOrchestrator` runs one fight step in `FightPhysicsPipeline` order and writes the fight frame. It owns
+the shared per-session helpers (pull motion smoother, recoverable line calculator, reel-recovery fish slowdown) and
+builds one object per pipeline stage for the session:
+- `FightPlayerPressureStage`: force budget, pressure gain, tension build rate, pressure/reel fatigue;
+- `FightFishMotionStage`: line-constrained fish motion;
+- `FightRodMovementStage`: rod pull, lateral rod control, stroke distance, movement within water and bounds;
+- `FightLineRecoveryStage`: line and stroke credit, reel-hold recovery, hard line limit;
+- `FightLandingTensionStage`: final tension, landing lift, landing frame;
+- `FightStaminaFrameBuilder`: stamina frame;
+- shared by the stages: `FightLineConstraint` and `FightPoleSector`.
 
 Bootstrap only composes. The running game session is `game/application/session/GameApplication` (state machine,
 update/draw order, casting and chum flow, inventory reactions). Its debug events and diagnostics are injected ports:
