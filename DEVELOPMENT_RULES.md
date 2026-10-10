@@ -21,6 +21,14 @@ Single Source of Truth does NOT mean one giant GameState. Each mutable fact must
 
 Structural refactoring must not be mixed with gameplay changes. Preserve behavior, formulas, APIs, state semantics, save format, timing and performance (the game-cycle output must stay identical). Do not opportunistically rebalance, rename APIs or redesign state unless explicitly requested.
 
+Gameplay changes (bug fixes, mechanics, balance) are tracked in `docs/gameplay_backlog.md`, one entry per problem, each with a reproduction, expected and actual behavior, and a priority. One entry is one change:
+- reproduce first: a focused check or a deterministic scenario (fixed seed/clock) fails before the fix and passes after it;
+- if the fix needs a structural change, commit that first on its own with an unchanged game-cycle baseline, then the gameplay commit;
+- when the game-cycle report changes, re-baseline (`npm run baseline:game-cycle`) in the same commit; the commit message says which behavior changed and why;
+- balance values live in configuration, not in formulas; a save format change needs an explicit migration decision;
+- evidence: focused check, Architecture + Quick + Full, index/dev browser smoke of the changed flow, and the owner's play check for anything that changes feel;
+- a bug fix is a backlog entry plus the commit; a new or changed mechanic also gets a spec; releases bump the patch version for fixes and the minor version for mechanics, with a short CHANGELOG line.
+
 The runtime is native ESM: every page loads one module entry. Do not add globals, compatibility bridges or classic scripts.
 
 Modules:

@@ -86,6 +86,7 @@
 │  │  └── 2026-10-08-stage7-post-closure.md
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
+│  ├── gameplay_backlog.md
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
 │  ├── refactoring_remaining.md

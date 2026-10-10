@@ -1,5 +1,7 @@
 # Refactoring: remaining work (2026-10-09)
 
+Gameplay bugs and mechanics live in [gameplay_backlog.md](gameplay_backlog.md).
+
 This is the single refactoring checklist. It replaces the open list of the
 [finalization review](audits/2026-10-08-finalization-review.md) (its numbers are given as "review N").
 Owner decisions for releases, legacy saves and DEV isolation:
