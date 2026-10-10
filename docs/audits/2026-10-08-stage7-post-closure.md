@@ -196,7 +196,7 @@ CSS vocabulary check доводить згадку class names у code, але �
 файлах не знайдено повторів повного selector header в однаковому at-rule context; це також
 не є доказом відсутності дубльованих declarations або семантично мертвих rules.
 
-Окрема задача: [018 — Presentation CSS restructure](../../specs/018-presentation-css-restructure/spec.md).
+Окрема задача: [018 — Presentation CSS restructure](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/spec.md).
 
 ## Рекомендований порядок після аудиту
 
@@ -212,7 +212,7 @@ CSS vocabulary check доводить згадку class names у code, але �
 ## Follow-up closure
 
 Початковий аудит вище збережений як snapshot до реалізації. За наступним дорученням
-власника виконано [019 cleanup](../../specs/019-post-closure-dead-code/results.md)
-(commit `67da207`) і [018 CSS restructure](../../specs/018-presentation-css-restructure/results.md).
+власника виконано [019 cleanup](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/019-post-closure-dead-code/results.md)
+(commit `67da207`) і [018 CSS restructure](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/results.md).
 Consumer review, збережені contracts, removals, differential/browser evidence і network
 tradeoff записані у results. Stage 7 не відкривався повторно; версію 0.30.1 не змінено.

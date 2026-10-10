@@ -48,50 +48,6 @@
 ├── package.json
 ├── project-structure.txt
 ├── specs
-│  ├── 001-inventory-decomposition
-│  │  ├── plan.md
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 002-line-capacity-context
-│  │  └── spec.md
-│  ├── 003-names-and-placement
-│  │  └── spec.md
-│  ├── 004-css-cleanup
-│  │  └── spec.md
-│  ├── 005-player-texts
-│  │  └── spec.md
-│  ├── 006-unreachable-progression-ui
-│  │  └── spec.md
-│  ├── 007-progression-styling
-│  │  └── spec.md
-│  ├── 008-test-capacity-policy
-│  │  └── spec.md
-│  ├── 009-production-comments
-│  │  └── spec.md
-│  ├── 010-rating-tier-option
-│  │  └── spec.md
-│  ├── 011-unused-readiness
-│  │  └── spec.md
-│  ├── 013-viewport-perspective
-│  │  └── spec.md
-│  ├── 014-tracked-structure
-│  │  └── spec.md
-│  ├── 015-release-0301
-│  │  └── spec.md
-│  ├── 016-converter-location
-│  │  └── spec.md
-│  ├── 017-force-diagnostics
-│  │  └── spec.md
-│  ├── 018-presentation-css-restructure
-│  │  ├── ownership.md
-│  │  ├── plan.md
-│  │  ├── results.md
-│  │  ├── rule-map.json
-│  │  ├── spec.md
-│  │  └── tasks.md
-│  ├── 019-post-closure-dead-code
-│  │  ├── results.md
-│  │  └── spec.md
 │  ├── 020-production-console-noise
 │  │  └── spec.md
 │  ├── 021-shared-number-normalization
@@ -155,8 +111,9 @@
 │  │  └── spec.md
 │  ├── 045-fight-stages-motion-line
 │  │  └── spec.md
-│  └── 046-fight-direct-calls
-│     └── spec.md
+│  ├── 046-fight-direct-calls
+│  │  └── spec.md
+│  └── README.md
 ├── src
 │  ├── bootstrap
 │  │  ├── development

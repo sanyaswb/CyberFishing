@@ -91,36 +91,36 @@ remain closed; historical machinery stays at `migration-final-archive`.
 
 ## Completed steps and decisions
 
-1. **Write-only progression styling — done ([007](../specs/007-progression-styling/spec.md)).**
+1. **Write-only progression styling — done ([007](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/007-progression-styling/spec.md)).**
    No production/DEV reader of the six progression CSS properties or `has-item-progression`; removed their writes
    and the unused capacity visual/dependency. Rating/quality colors and the line resource meter remain.
-2. **Rating-tier badge option — fixed ([010](../specs/010-rating-tier-option/spec.md)).**
+2. **Rating-tier badge option — fixed ([010](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/010-rating-tier-option/spec.md)).**
    The renderer passes `renderRatingTierBadge: showMetadata`. Real adapter/card integration proves one badge with
    metadata and zero without it, including an explicitly enabled rating tier.
-3. **`ratingTier` capability — retained ([010](../specs/010-rating-tier-option/spec.md)).**
+3. **`ratingTier` capability — retained ([010](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/010-rating-tier-option/spec.md)).**
    Keep the tested resolver, validator, sort/parameter/badge capability for balance overrides; it remains absent
    from production config. No gameplay or save change.
-4. **Test-only Domain module — moved ([008](../specs/008-test-capacity-policy/spec.md)).**
+4. **Test-only Domain module — moved ([008](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/008-test-capacity-policy/spec.md)).**
    `DelegatingInventoryCapacityPolicy` lives in `utils/testing/doubles/`; all three test consumers use it there.
    It is reachable from neither browser entry. The source graph lost one module, runtime graphs were unchanged.
-5. **Historical comments — cleaned ([009](../specs/009-production-comments/spec.md)).**
+5. **Historical comments — cleaned ([009](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/009-production-comments/spec.md)).**
    Actual scan: 118 Cyrillic comments in 18 files. Useful explanations translated into English; edit markers and
    redundant narration removed. Every modified file retains identical code tokens; no Cyrillic comment remains
    in the inspected engine/domain/application/platform/bootstrap scope.
-6. **Unused readiness APIs — removed ([011](../specs/011-unused-readiness/spec.md)).**
+6. **Unused readiness APIs — removed ([011](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/011-unused-readiness/spec.md)).**
    Retired `InventoryGameplayBridge.evaluateBiteReadiness`/`evaluateChumBonus` and the resulting test-only policy
    branches/helpers/messages. Live `BiteSystem`, cast/equipment readiness and both inventory check files remain.
-7. **Force/tackle diagnostics names — consistent ([017](../specs/017-force-diagnostics/spec.md)).**
+7. **Force/tackle diagnostics names — consistent ([017](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/017-force-diagnostics/spec.md)).**
    Private snapshots/helpers use diagnostics; the force result has `diagnostics` and all three readers migrated.
    Snapshot contents/ownership and public accessors stay unchanged; no compatibility alias added.
-8. **Camera and world perspective — separated ([013](../specs/013-viewport-perspective/spec.md)).**
+8. **Camera and world perspective — separated ([013](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/013-viewport-perspective/spec.md)).**
    Domain `WorldPerspective` owns the exact formula; application `ViewportProjector` owns camera state and coordinate
    conversion. Bootstrap binds/injects one perspective query with the same function identity and no per-frame
    wrapper. 1,200 differential frames have identical outputs and Math call traces; allocation sites unchanged.
-9. **`struct` — Git-tracked files only ([014](../specs/014-tracked-structure/spec.md)).**
+9. **`struct` — Git-tracked files only ([014](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/014-tracked-structure/spec.md)).**
    `npm run struct` uses `git ls-files -z`; every tree leaf equals a tracked path. Local notes excluded, generation
    deterministic. Unused structure CLI dependency removed without unrelated package upgrades.
-10. **Patch release 0.30.1 — accepted ([015](../specs/015-release-0301/spec.md)).**
+10. **Patch release 0.30.1 — accepted ([015](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/015-release-0301/spec.md)).**
     Package/lock/UI versions, codename/notes, page cache versions, short CHANGELOG and project structure updated.
     Fresh clone `npm ci` + `npm run check` passes; `npm run struct` reproduces the committed bytes. Publication
     uses the annotated `v0.30.1` tag and `develop` after acceptance.
@@ -145,7 +145,7 @@ For the next task, inspect current Git status and follow the owner's current ins
 `DEVELOPMENT_RULES.md`; do not resume archived Stage 3–7 tooling.
 
 Post-release follow-up: the owner authorized committing `convert-images.js` → `utils/convert-images.js`
-([016](../specs/016-converter-location/spec.md)). Its base directory still points at the project root;
+([016](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/016-converter-location/spec.md)). Its base directory still points at the project root;
 source/startup/search parity and Architecture/Quick/Full pass. The published v0.30.1 tag is unchanged.
 
 ## Separate follow-up tasks (2026-10-08)
@@ -155,15 +155,15 @@ The completed cleanup checklist above stays closed. New work does not reopen Sta
 - [Post-closure audit](audits/2026-10-08-stage7-post-closure.md): current checks/graphs/browser pass;
   no classic runtime transport or unreachable source files; remaining private-field/local-value,
   DEV fallback and test-harness candidates are recorded with evidence. No runtime cleanup was performed by the audit.
-- [018 — Presentation CSS restructure](../specs/018-presentation-css-restructure/spec.md),
-  [plan](../specs/018-presentation-css-restructure/plan.md),
-  [tasks](../specs/018-presentation-css-restructure/tasks.md): component ownership, DEV style isolation,
-  native load order and visual/cascade parity. **Completed**: [results](../specs/018-presentation-css-restructure/results.md),
-  [ownership](../specs/018-presentation-css-restructure/ownership.md). 250 unchanged authored blocks,
+- [018 — Presentation CSS restructure](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/spec.md),
+  [plan](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/plan.md),
+  [tasks](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/tasks.md): component ownership, DEV style isolation,
+  native load order and visual/cascade parity. **Completed**: [results](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/results.md),
+  [ownership](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/018-presentation-css-restructure/ownership.md). 250 unchanged authored blocks,
   15 production stylesheets + one DEV stylesheet; 39 visual scenarios / seven pixel pairs pass.
   Request-overhead tradeoff measured and recorded; version/tag unchanged.
 
-- [019 — Post-closure dead code](../specs/019-post-closure-dead-code/results.md): implemented;
+- [019 — Post-closure dead code](https://github.com/sanyaswb/CyberFishing/blob/specs-archive-001-019/specs/019-post-closure-dead-code/results.md): implemented;
   24 unused private fields, unused locals/12 methods, null-only buffs and missing bite-config
   fallback retired. Native test assertions strengthened; live/test/manual contracts retained.
   Full 38/38, Quick 13/13, Architecture 2/2; 4,837 differential records and game-cycle/save parity.

@@ -69,5 +69,5 @@ It contains 13 negative fixtures. Inventory/item/platform tests preserve interac
 cached DOM/frame identity and disposal contracts. Architecture, Quick and Full checks remain
 required, along with browser smoke for affected production/DEV UI and responsive layouts.
 
-The earlier migration record in `specs/018-presentation-css-restructure/` is historical; this document
+The earlier migration record (spec 018, archived at the `specs-archive-001-019` tag) is historical; this document
 describes the current styling boundaries.
