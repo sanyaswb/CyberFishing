@@ -39,6 +39,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [046](046-fight-direct-calls/spec.md) | Direct calls in fight systems; typeof guards on composed receivers | Done | v0.32.0 |
 | [047](047-smart-asset-preloader/spec.md) | Smart asset loading, optional Spine and DEV image tools: [plan](047-smart-asset-preloader/plan.md) | Spec and design only (owner review) | — |
 | [048](048-game-cycle-baseline/spec.md) | Tracked game-cycle baseline; gameplay changes re-baseline as a reviewed diff | Done | — |
+| [049](049-fishing-services-composition/spec.md) | One fishing services composition for production and game-cycle | Done | — |
 
 ## Archived
 

@@ -35,10 +35,7 @@ import { LocalStorageCache } from "../../platform/browser/storage/local_storage_
 import { Canvas2DSurface } from "../../platform/browser/canvas/canvas_2d_surface.js";
 import { CanvasPrimitives } from "../../platform/browser/canvas/canvas_primitives.js";
 import { CastDistanceCalculator } from "../../game/domain/casting/cast_distance_calculator.js";
-import { CastService } from "../../game/application/fishing/cast_service.js";
-import { CatchResolutionService } from "../../game/application/fishing/catch_resolution_service.js";
-import { FightService } from "../../game/application/fishing/fight_service.js";
-import { FightSessionFactory } from "../../game/application/fishing/fight_session_factory.js";
+import { composeFishingServices } from "./fishing_services_composition.js";
 import { FishingController } from "../../game/application/fishing/fishing_controller.js";
 import { ChumController } from "../../game/application/chum/chum_controller.js";
 import { ChumControls } from "../../platform/browser/ui/chum_controls.js";
@@ -983,41 +980,26 @@ export class GameCompositionRoot {
 
   // Casting and fight services and the optional DEV debug service.
   #composeFishingServices({ config, rng, clock, runtime, appPorts, debugEvents, devFlags, runtimeConfig }) {
-    const castService = new CastService({
-      messages: FISHING_MESSAGES,
+    const { castService, fightService } = composeFishingServices({
       config,
       rng,
       clock,
-      equipmentRules: runtime.equipmentRules,
-      baitRules: runtime.baitRules,
-      getRodVirtualPos: appPorts.getRodVirtualPos,
-      getDynamicBounds: appPorts.getDynamicBounds,
-      debugEvents,
+      stepClock: () => clock.highResolutionNow(),
       devFlags,
       runtimeConfig,
+      equipmentRules: runtime.equipmentRules,
+      baitRules: runtime.baitRules,
+      castDistanceCalculator: runtime.castDistanceCalculator,
+      getRodVirtualPos: appPorts.getRodVirtualPos,
+      getDynamicBounds: appPorts.getDynamicBounds,
       castReadinessEvaluator: (equipment) =>
         runtime.inventory.evaluateCastReadiness?.(equipment),
-    });
-
-    const fightService = new FightService({
-      config,
-      rng,
-      devFlags,
-      catchResolver: new CatchResolutionService({
-        logger: new ConsoleLogger(),
-        isLogEnabled: this.#isCatchResolutionLogEnabled,
-      }),
-      fightSessionFactory: new FightSessionFactory({
-        config,
-        rng,
-        devFlags,
-        runtimeConfig,
-        castDistanceCalculator: runtime.castDistanceCalculator,
-        logger: new ConsoleLogger(),
-        stepClock: () => clock.highResolutionNow(),
-        // The DEV fight snapshot exists only when Development startup composes its builder.
-        fightDiagnosticsBuilder: this.#createFightDiagnosticsBuilder == null ? null : this.#createFightDiagnosticsBuilder(),
-      }),
+      debugEvents,
+      catchResolutionLogger: new ConsoleLogger(),
+      fightLogger: new ConsoleLogger(),
+      isCatchResolutionLogEnabled: this.#isCatchResolutionLogEnabled,
+      // The DEV fight snapshot exists only when Development startup composes its builder.
+      fightDiagnosticsBuilder: this.#createFightDiagnosticsBuilder == null ? null : this.#createFightDiagnosticsBuilder(),
     });
 
     const debugService = this.#createOptionalDiagnostic(

@@ -172,6 +172,7 @@ const GAMEPLAY_FILES = [
   "src/game/application/world/game_world.js",
   "src/game/application/fishing/mutable_fight_frame_context.js",
   "src/game/application/fishing/bite_environment_service.js",
+  "src/bootstrap/production/fishing_services_composition.js",
 ];
 
 const context = vm.createContext({
@@ -193,9 +194,6 @@ context.nativeTestExport=(file,name)=>moduleLoader.getExports(file)[name];
 moduleLoader.loadAll(CONFIG_FILES);
 composeTestConfig(file => moduleLoader.getExports(file), context);
 moduleLoader.loadAll(GAMEPLAY_FILES);
-// Player-facing casting messages are injected the way GameCompositionRoot injects them.
-context.CastService = require("./testing/runtime/constructor_defaults").bindConstructorDefaults(context.CastService,
-  { messages: moduleLoader.getExports("src/game/presentation/fishing/fishing_messages.js").FISHING_MESSAGES });
 
 vm.runInContext(`
 const checks = [];
@@ -259,6 +257,15 @@ function createRng() {
 
 function createDevFlags() {
   return { isEnabled: () => false };
+}
+
+// The production fishing composition with the check's hosts: the live runtime config, inactive DEV flags, the
+// deterministic step clock and no console loggers.
+function composeProductionFishingServices({ config, rng, clock, equipmentRules, baitRules, getRodVirtualPos,
+  getDynamicBounds, fightDiagnosticsBuilder = null }) {
+  return composeFishingServices({ config, rng, clock, stepClock: createStepClock(), devFlags: createDevFlags(),
+    runtimeConfig: CONFIG, equipmentRules, baitRules, castDistanceCalculator: new CastDistanceCalculator(config),
+    getRodVirtualPos, getDynamicBounds, fightDiagnosticsBuilder });
 }
 
 function createTestBuild({
@@ -455,7 +462,7 @@ function createCast({
   const baitRules = new BaitRules();
   const bounds = { left: 0, right: 1000, top: 0, bottom: 800 };
   const rodVirtualPos = { x: 500, y: bounds.bottom };
-  const castService = new CastService({
+  const { castService } = composeProductionFishingServices({
     config,
     rng,
     clock: { now: 1000 },
@@ -463,8 +470,6 @@ function createCast({
     baitRules,
     getRodVirtualPos: () => rodVirtualPos,
     getDynamicBounds: () => bounds,
-    // The live runtime config the water entities read, as the composition passes it.
-    runtimeConfig: CONFIG,
   });
   const result = castService.cast(
     rodVirtualPos.x,
@@ -1715,12 +1720,18 @@ function createStepClock() {
   return () => (ticks += 0.25);
 }
 
-// FightService with its default fight session factory (same config, rng and DEV flags objects) plus the step clock.
+// FightService from the production fishing composition; only casting is unused by the fight scenarios.
 function createFightService({ config, rng, fightDiagnostics = true }) {
-  const devFlags = createDevFlags();
-  return new FightService({ config, rng, devFlags,
-    fightSessionFactory: new FightSessionFactory({ config, rng, devFlags, stepClock: createStepClock(),
-      fightDiagnosticsBuilder: fightDiagnostics ? new FightDiagnosticsSnapshotBuilder() : null }) });
+  return composeProductionFishingServices({
+    config,
+    rng,
+    clock: { now: 1000 },
+    equipmentRules: null,
+    baitRules: null,
+    getRodVirtualPos: () => null,
+    getDynamicBounds: () => null,
+    fightDiagnosticsBuilder: fightDiagnostics ? new FightDiagnosticsSnapshotBuilder() : null,
+  }).fightService;
 }
 
 // Every value of the production fight frame equals the same key of the full DEV diagnostics at the same moment.

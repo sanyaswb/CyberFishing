@@ -114,8 +114,10 @@ npm run check:inventory       inventory systems (also :items, :tools)
 node utils/run-checks.js --check game-cycle
 ```
 
-`game-cycle` is the end-to-end regression: its output must stay byte-identical for refactors that
-preserve behavior.
+`game-cycle` is the end-to-end regression. It composes casting and fights through the production
+`bootstrap/production/fishing_services_composition.js` and compares its report with
+`utils/testing/baselines/game-cycle.txt`. A refactor that preserves behavior leaves that file unchanged. A gameplay
+change that changes the report re-baselines it (`npm run baseline:game-cycle`) in the same commit.
 
 ## Migration history
 

@@ -176,6 +176,8 @@
 │  │  └── spec.md
 │  ├── 048-game-cycle-baseline
 │  │  └── spec.md
+│  ├── 049-fishing-services-composition
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -185,6 +187,7 @@
 │  │  │  └── development_game_startup.js
 │  │  └── production
 │  │     ├── config_context.js
+│  │     ├── fishing_services_composition.js
 │  │     ├── game.js
 │  │     ├── game_composition_root.js
 │  │     ├── game_config_composition.js
