@@ -1,5 +1,11 @@
 # CyberFishing changelog
 
+## v0.32.0 - Isolated DEV, Fight Stages
+
+- Production composes inactive DEV ports, so GodMode, debug events, session diagnostics and listener counting stay off whatever the configuration or overrides say; a new player's inventory starts directly in the current save format (same bytes, legacy conversion only for classic saves).
+- Fight physics runs as nine per-session pipeline stages (orchestrator 4,740 → 762 lines) and the DEV fight snapshot builder lives in DEV; shared clamps and direct contracts replace private copies and optional calls; identical gameplay and timing.
+- GitHub Pages releases are immutable `releases/<version>-<commit>/` directories built by `npm run release:pages`; the version-copy folder comes from `CYBER_FISHING_VERSIONS_DIR`.
+
 ## v0.31.0 - Lean Fight Frame
 
 - Production fights write one reused fight frame (no DEV diagnostics snapshot or per-frame copies) and reuse normalized physics settings until the runtime config changes; about 40% less fight update time in a seeded benchmark (228 → 135 ms), identical gameplay.
