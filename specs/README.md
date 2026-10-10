@@ -37,6 +37,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [044](044-fight-stages-pressure-landing-stamina/spec.md) | Pressure, landing/tension and stamina fight stages | Done | v0.32.0 |
 | [045](045-fight-stages-motion-line/spec.md) | Fish motion, rod movement and line fight stages | Done | v0.32.0 |
 | [046](046-fight-direct-calls/spec.md) | Direct calls in fight systems; typeof guards on composed receivers | Done | v0.32.0 |
+| [047](047-smart-asset-preloader/spec.md) | Smart asset loading, optional Spine and DEV image tools: [plan](047-smart-asset-preloader/plan.md) | Spec and design only (owner review) | — |
 
 ## Archived
 
