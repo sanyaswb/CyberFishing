@@ -41,6 +41,15 @@ export function clampFiniteOrMin(value, min, max) {
   return Math.max(min, Math.min(max, number));
 }
 
+// The point itself when falsy, else whether both coordinates are finite numbers.
+export function hasFinitePoint(point) {
+  return (
+    point &&
+    Number.isFinite(Number(point.x)) &&
+    Number.isFinite(Number(point.y))
+  );
+}
+
 // A finite number, else the fallback as given.
 export function finiteOr(value, fallback) {
   const parsed = Number(value);

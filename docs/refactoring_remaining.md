@@ -70,6 +70,8 @@ verify legacy → current → cloud import and recovery before any legacy-format
 - **Split `FightPhysicsOrchestrator` by pipeline stage** (owner asked to close it, 2026-10-10). In progress:
   - [043](../specs/043-fight-diagnostics-builder/spec.md): the DEV snapshot moved to
     `dev/fishing/FightDiagnosticsSnapshotBuilder`, 4,740 → 3,355 lines.
+  - [044](../specs/044-fight-stages-pressure-landing-stamina/spec.md): player pressure, landing/tension and
+    stamina stages, 3,355 → 2,417 lines.
 - Static inline styling; Canvas decomposition.
 
 ## Done after the finalization review

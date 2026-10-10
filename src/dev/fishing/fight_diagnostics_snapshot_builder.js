@@ -1,4 +1,4 @@
-import { hasLineReserve } from "../../game/domain/fishing/line_reserve.js";
+import { hasLineReserve } from "../../game/domain/fishing/line_state_queries.js";
 
 // DEV fight diagnostics: the full per-step snapshot behind overlays, console modules and checks. Development
 // composition (and the checks) give one to the fight session; production composes none and keeps the fight frame.

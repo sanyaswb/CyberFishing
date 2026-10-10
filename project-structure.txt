@@ -149,7 +149,9 @@
 │  │  └── spec.md
 │  ├── 042-src-module-type
 │  │  └── spec.md
-│  └── 043-fight-diagnostics-builder
+│  ├── 043-fight-diagnostics-builder
+│  │  └── spec.md
+│  └── 044-fight-stages-pressure-landing-stamina
 │     └── spec.md
 ├── src
 │  ├── bootstrap
@@ -346,11 +348,14 @@
 │  │  │  │  ├── cast_service.js
 │  │  │  │  ├── catch_resolution_service.js
 │  │  │  │  ├── drag_control_service.js
+│  │  │  │  ├── fight_landing_tension_stage.js
 │  │  │  │  ├── fight_physics_orchestrator.js
 │  │  │  │  ├── fight_physics_pipeline.js
 │  │  │  │  ├── fight_physics_pipeline_frame.js
+│  │  │  │  ├── fight_player_pressure_stage.js
 │  │  │  │  ├── fight_service.js
 │  │  │  │  ├── fight_session_factory.js
+│  │  │  │  ├── fight_stamina_frame_builder.js
 │  │  │  │  ├── fishing_controller.js
 │  │  │  │  ├── fishing_force_service.js
 │  │  │  │  ├── game_fishing_facade.js
@@ -551,8 +556,8 @@
 │  │  │  │  ├── line_constrained_fish_motion_resolver.js
 │  │  │  │  ├── line_constraint_state_resolver.js
 │  │  │  │  ├── line_radial_movement_splitter.js
-│  │  │  │  ├── line_reserve.js
 │  │  │  │  ├── line_spool_state.js
+│  │  │  │  ├── line_state_queries.js
 │  │  │  │  ├── line_system.js
 │  │  │  │  ├── line_tension_calculator.js
 │  │  │  │  ├── loose_line_calculator.js
