@@ -54,6 +54,7 @@ class EquipmentHydrationRuntime {
     load("src/game/domain/casting/cast_distance_calculator.js", ["CastDistanceCalculator"]);
     load("src/game/domain/fishing/line_spool_state.js", ["LineSpoolState"]);
     load("src/game/domain/fishing/line_system.js", ["LineSystem"]);
+    load("src/game/config/physics/fight_physics_config_adapter.js", ["FightPhysicsConfigAdapter"]);
     load("src/game/application/fishing/fight_session_factory.js", ["FightSessionFactory"]);
   }
 }
@@ -253,8 +254,11 @@ class ProductionShapedEquipmentHydrationCheck {
       10,
       "cast-distance boundary reads canonical line length",
     );
+    // Production composition always gives the session factory its physics adapter.
+    const fightConfig = { physics: { pixelsPerMeter: 50 } };
+    fightConfig.fightPhysicsConfig = new this.runtime.FightPhysicsConfigAdapter(fightConfig);
     const session = new this.runtime.FightSessionFactory({
-      config: {},
+      config: fightConfig,
       rng: {},
       castDistanceCalculator: calculator,
     }).createEquipment(equipment);

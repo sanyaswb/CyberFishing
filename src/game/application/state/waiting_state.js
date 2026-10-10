@@ -117,10 +117,7 @@ export class WaitingState extends GameState {
       baitCandidates,
     );
 
-    const biteEnv =
-      typeof this.deps.world.getBiteEnv === "function"
-        ? this.deps.world.getBiteEnv()
-        : envData.biteEnv;
+    const biteEnv = this.deps.world.getBiteEnv();
 
     let hooked = this.deps.biteSystem.evaluateBite(dt, biteEnv, {
       hookSize:

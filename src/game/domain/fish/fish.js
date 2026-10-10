@@ -157,9 +157,7 @@ export class Fish {
   }
 
   reactToWall(wallSide) {
-    if (this.#behavior && typeof this.#behavior.reactToWall === "function") {
-      this.#behavior.reactToWall(wallSide);
-    }
+    this.#behavior.reactToWall(wallSide);
   }
 
   #getBehaviorMap() {

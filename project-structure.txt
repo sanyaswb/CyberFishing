@@ -153,7 +153,9 @@
 │  │  └── spec.md
 │  ├── 044-fight-stages-pressure-landing-stamina
 │  │  └── spec.md
-│  └── 045-fight-stages-motion-line
+│  ├── 045-fight-stages-motion-line
+│  │  └── spec.md
+│  └── 046-fight-direct-calls
 │     └── spec.md
 ├── src
 │  ├── bootstrap

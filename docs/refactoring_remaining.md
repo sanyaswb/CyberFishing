@@ -25,13 +25,13 @@ focused checks, Architecture + Quick + Full, the unchanged game-cycle digest and
    [038](../specs/038-pages-release/spec.md): `npm run release:pages`, `pages-release` check.
    - First publication (owner-approved) on 2026-10-09: `gh-pages` 1ca1c7f3 with `releases/0.31.0-c6a2ba2/`.
    - Live demo: v0.31.0, every resource inside the release, 0 errors.
-5. **Optional contracts, second pass** (review 8, spec 032 rule).
-   - Inventory collaborators are done in [041](../specs/041-direct-calls-inventory/spec.md); `?.(` in `src` went
-     450 → 435.
-   - Still open: the fight/physics domain receivers (`#fish`, `#physicsConfig`; hot loop, needs allocation and
-     call-count evidence) and ≈95 `typeof … === "function"` checks.
-   - The rest are optional by design: duck-typed items, alternative reader shapes, render callbacks, DOM/events,
-     fight-only fields, DEV and teardown.
+5. ~~**Optional contracts, second pass** (review 8, spec 032 rule).~~ Done:
+   - inventory collaborators in [041](../specs/041-direct-calls-inventory/spec.md);
+   - fight systems (fish, physics adapter, condition, accumulator, DEV flag port) and typeof guards on composed
+     receivers in [046](../specs/046-fight-direct-calls/spec.md); `?.(` 450 → 400, `typeof … "function"` 95 → 84;
+     dead `hookFish`/`updateTarget` branches removed.
+   - What remains is optional by design: duck-typed items, alternative reader/rng shapes, polymorphic states and
+     entities, callbacks, DOM/feature detection, fight-only fields, DEV and teardown.
 6. **Test composition** (review 9). The Node module-type warning is done in
    [042](../specs/042-src-module-type/spec.md) (`src/package.json`).
    - Open: `utils/game-cycle-check.js` keeps its own composition of the fishing services (`CastService`,

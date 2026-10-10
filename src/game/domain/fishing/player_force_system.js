@@ -7,7 +7,12 @@ export class PlayerForceSystem {
   #lineDir = new Vector2(0, 0);
   #physicsConfig;
 
-  constructor({ physicsConfig = null } = {}) {
+  constructor({ physicsConfig } = {}) {
+    for (const method of ["getInputSteeringBlend", "getRodHoldConfig", "getRodAnglePenaltyConfig"]) {
+      if (typeof physicsConfig?.[method] !== "function") {
+        throw new TypeError(`PlayerForceSystem requires FightPhysicsConfigAdapter.${method}`);
+      }
+    }
     this.#physicsConfig = physicsConfig;
   }
 
@@ -32,7 +37,7 @@ export class PlayerForceSystem {
     const steerX = Number(inputDir?.x) || 0;
     if (Math.abs(steerX) > 0.001) {
       const inputSteeringBlend =
-        config?.getInputSteeringBlend?.() ?? 0.35;
+        config.getInputSteeringBlend() ?? 0.35;
       basePullDir.x += steerX * inputSteeringBlend;
       basePullDir.normalize();
     }
@@ -44,8 +49,8 @@ export class PlayerForceSystem {
     const dot = Math.max(-1, Math.min(1, lineDir.x * idealDir.x + lineDir.y * idealDir.y));
     const angleDeg = (Math.acos(dot) * 180) / Math.PI;
     const angleCfg =
-      config?.getRodHoldConfig?.()?.anglePenalty ||
-      config?.getRodAnglePenaltyConfig?.() ||
+      config.getRodHoldConfig()?.anglePenalty ||
+      config.getRodAnglePenaltyConfig() ||
       {};
     const noPenalty = angleCfg.noPenaltyAngleDeg ?? 15;
     const maxPenaltyAngle = angleCfg.maxPenaltyAngleDeg ?? 75;

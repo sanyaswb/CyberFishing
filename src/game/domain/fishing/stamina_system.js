@@ -8,6 +8,16 @@ export class StaminaSystem {
   #isMasteryActive = false;
 
   constructor(condition, fish, mechanicsConfig) {
+    for (const method of ["restoreFull", "applyExhaustionStaminaRegen", "breakExhaustion"]) {
+      if (typeof condition?.[method] !== "function") {
+        throw new TypeError(`StaminaSystem requires FishCondition.${method}`);
+      }
+    }
+    for (const method of ["setMasteryMultiplier", "clearMasteryDebuff", "clearDebuff", "setPowerRatioByEnduranceRatio"]) {
+      if (typeof fish?.[method] !== "function") {
+        throw new TypeError(`StaminaSystem requires Fish.${method}`);
+      }
+    }
     this.#condition = condition;
     this.#fish = fish;
     this.#mechanicsConfig = mechanicsConfig;
@@ -22,11 +32,11 @@ export class StaminaSystem {
   }
 
   restoreFullStamina() {
-    this.#condition.restoreFull?.();
+    this.#condition.restoreFull();
     this.#masteryTimer = 0;
     this.#isMasteryActive = false;
-    this.#fish.clearDebuff?.();
-    this.#fish.setMasteryMultiplier?.(1.0);
+    this.#fish.clearDebuff();
+    this.#fish.setMasteryMultiplier(1.0);
   }
 
   getExhaustionDurationMs() {
@@ -89,7 +99,7 @@ export class StaminaSystem {
         Number(frame.passiveStaminaRegen ?? frame.staminaRegen) || 0,
       );
       if (regen > 0) {
-        this.#condition.applyExhaustionStaminaRegen?.(regen);
+        this.#condition.applyExhaustionStaminaRegen(regen);
       }
       if (frame.nextPhase === "stamina") {
         this.#returnToStaminaPhase();
@@ -115,10 +125,10 @@ export class StaminaSystem {
     this.#masteryTimer = 0;
     if (this.#isMasteryActive) {
       this.#isMasteryActive = false;
-      this.#fish.clearMasteryDebuff?.();
+      this.#fish.clearMasteryDebuff();
     }
-    this.#fish.setMasteryMultiplier?.(1.0);
-    this.#condition.breakExhaustion?.();
+    this.#fish.setMasteryMultiplier(1.0);
+    this.#condition.breakExhaustion();
   }
 
   #recoverEnduranceInStaminaPhase(frame) {
@@ -214,7 +224,7 @@ export class StaminaSystem {
       Number(powerDebuffConfig.curvePower) || 1.0,
     );
 
-    if (enabled && typeof this.#fish?.setPowerRatioByEnduranceRatio === "function") {
+    if (enabled) {
       this.#fish.setPowerRatioByEnduranceRatio(
         enduranceRatio,
         minBasePowerRatio,

@@ -55,36 +55,28 @@ export class FightLandingTensionStage {
       landingLift,
     };
 
-    if (typeof stressSystem.updateTensionFrame === "function") {
-      const lineHasReserve = hasLineReserve(lineState);
-      const canSlipDrag =
-        !dragContext.dragLocked &&
-        lineHasReserve &&
-        !hardLineLimit;
-      const tensionStressSource =
-        canSlipDrag && tensionResult.shouldSlipDrag
-          ? "visible"
-          : "raw";
-      stressSystem.updateTensionFrame({
-        visibleTensionKg: tensionResult.tensionKg,
-        totalTensionKg: tensionResult.totalTensionKg,
-        rawTotalTensionKg: tensionResult.rawTotalTensionKg,
-        rawTensionKg: tensionResult.rawTensionKg,
-        fishTensionKg: tensionResult.fishTensionKg,
-        tensionStressSource,
-        dtSec,
-        tensionConfig:
-          this.#physicsConfig.getTensionConfig() ||
-          this.#config.tension ||
-          {},
-      });
-    } else {
-      stressSystem.updateTarget(
-        tensionResult.tensionKg,
-        dtSec,
-        this.#config.tension || {},
-      );
-    }
+    const lineHasReserve = hasLineReserve(lineState);
+    const canSlipDrag =
+      !dragContext.dragLocked &&
+      lineHasReserve &&
+      !hardLineLimit;
+    const tensionStressSource =
+      canSlipDrag && tensionResult.shouldSlipDrag
+        ? "visible"
+        : "raw";
+    stressSystem.updateTensionFrame({
+      visibleTensionKg: tensionResult.tensionKg,
+      totalTensionKg: tensionResult.totalTensionKg,
+      rawTotalTensionKg: tensionResult.rawTotalTensionKg,
+      rawTensionKg: tensionResult.rawTensionKg,
+      fishTensionKg: tensionResult.fishTensionKg,
+      tensionStressSource,
+      dtSec,
+      tensionConfig:
+        this.#physicsConfig.getTensionConfig() ||
+        this.#config.tension ||
+        {},
+    });
     return tensionResult;
   }
 

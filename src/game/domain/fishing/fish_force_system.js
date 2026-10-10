@@ -27,9 +27,19 @@ export class FishForceSystem {
   #fishPhysics = null;
 
   constructor({ fish, config }) {
+    for (const method of ["getPhysicsConfig", "getLastDashDiagnostics", "getInitialPower", "getPower", "getPowerBeforeMastery", "getPowerDebuff", "evaluateLastDashTrigger", "handleFightEvent"]) {
+      if (typeof fish?.[method] !== "function") {
+        throw new TypeError(`FishForceSystem requires Fish.${method}`);
+      }
+    }
     this.#fish = fish;
     this.#config = config || {};
     this.#physicsConfig = this.#resolvePhysicsConfigAdapter(this.#config);
+    for (const method of ["getPixelsPerMeter", "getDirectionForceConfig", "getWaterConfig", "getCurrentInfluenceMultiplier", "getInputSteeringBlend", "getRodHoldConfig", "getRodAnglePenaltyConfig"]) {
+      if (typeof this.#physicsConfig?.[method] !== "function") {
+        throw new TypeError(`FishForceSystem requires FightPhysicsConfigAdapter.${method}`);
+      }
+    }
     this.#playerForceSystem = new PlayerForceSystem({
       physicsConfig: this.#physicsConfig,
     });
@@ -55,9 +65,9 @@ export class FishForceSystem {
     const physics = this.#getRuntimePhysicsConfig();
     const pixelsPerMeter = Math.max(
       1,
-      Number(this.#physicsConfig?.getPixelsPerMeter?.()) || 50,
+      Number(this.#physicsConfig.getPixelsPerMeter()) || 50,
     );
-    const rawFishPhysics = this.#fish.getPhysicsConfig?.() || {};
+    const rawFishPhysics = this.#fish.getPhysicsConfig() || {};
     if (rawFishPhysics !== this.#fishPhysicsSource) {
       this.#fishPhysicsSource = rawFishPhysics;
       this.#fishPhysics = FishPhysicsProfile.toRuntimeConfig(rawFishPhysics);
@@ -88,7 +98,7 @@ export class FishForceSystem {
     const behavior = this.#fish.getBehavior(dtMs, enduranceMovementDebuff);
     const enduranceMovementDebug =
       this.#enduranceMovementDebugFields(enduranceMovementDebuff, behavior);
-    const lastDashDebug = this.#fish.getLastDashDiagnostics?.() || {};
+    const lastDashDebug = this.#fish.getLastDashDiagnostics() || {};
 
     const behaviorPullValue = this.#numberOrDefault(
       behavior.forceMultiplier ?? behavior.pullMult,
@@ -123,12 +133,12 @@ export class FishForceSystem {
     const opposition = this.#calculateOpposition({ moveDir, awayDir });
     const directionInfo = this.#calculateDirectionInfo({
       opposition,
-      directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
+      directionConfig: this.#physicsConfig.getDirectionForceConfig(),
     });
     const holdOpposition = this.#holdOppositionResolver.resolve({
       activeRodHoldKg,
       fishDirectionState: directionInfo.name,
-      directionConfig: this.#physicsConfig?.getDirectionForceConfig?.(),
+      directionConfig: this.#physicsConfig.getDirectionForceConfig(),
     });
     const directionMultiplier = directionInfo.multiplier;
     const configuredFishBasePower = this.#firstFiniteNumber(
@@ -137,19 +147,19 @@ export class FishForceSystem {
       1,
     );
     const fishInitialPower = this.#firstFiniteNumber(
-      this.#fish.getInitialPower?.(),
+      this.#fish.getInitialPower(),
       configuredFishBasePower,
     );
     const fishCurrentPower = this.#firstFiniteNumber(
-      this.#fish.getPower?.(),
+      this.#fish.getPower(),
       fishInitialPower,
     );
     const fishPowerBeforeMastery = this.#firstFiniteNumber(
-      this.#fish.getPowerBeforeMastery?.(),
+      this.#fish.getPowerBeforeMastery(),
       fishCurrentPower,
     );
     const fishPowerDebuff = this.#firstFiniteNumber(
-      this.#fish.getPowerDebuff?.(),
+      this.#fish.getPowerDebuff(),
       Math.max(0, fishInitialPower - fishPowerBeforeMastery),
       0,
     );
@@ -167,7 +177,7 @@ export class FishForceSystem {
       1,
     );
     const fishBaseSpeed = rawFishBaseSpeed * fishBaseSpeedMultiplier;
-    const waterConfig = this.#physicsConfig?.getWaterConfig?.() || {};
+    const waterConfig = this.#physicsConfig.getWaterConfig() || {};
     const behaviorPowerRatio = Math.max(
       0,
       Number(
@@ -588,11 +598,11 @@ export class FishForceSystem {
   }
 
   evaluateLastDashTrigger(context = {}) {
-    return this.#fish.evaluateLastDashTrigger?.(context) || {};
+    return this.#fish.evaluateLastDashTrigger(context) || {};
   }
 
   handleFightEvent(event = {}) {
-    this.#fish.handleFightEvent?.(event);
+    this.#fish.handleFightEvent(event);
   }
 
   #calculateEnduranceMovementDebuff({
@@ -676,7 +686,7 @@ export class FishForceSystem {
     const dy = Number(dir.y) || 0;
     const len = Math.hypot(dx, dy) || 1;
     const influence =
-      this.#physicsConfig?.getCurrentInfluenceMultiplier?.() ??
+      this.#physicsConfig.getCurrentInfluenceMultiplier() ??
       1.0;
     return {
       x: (dx / len) * speed * influence,

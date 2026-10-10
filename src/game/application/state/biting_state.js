@@ -78,12 +78,6 @@ export class BitingState extends GameState {
       if (success) {
         input.clickPos = null;
         this.deps.float.hook();
-        if (
-          this.deps.biteSystem &&
-          typeof this.deps.biteSystem.hookFish === "function"
-        ) {
-          this.deps.biteSystem.hookFish();
-        }
         this.deps.commands.setState("playing", { fish: this.fish });
       } else {
         input.clickPos = null;
@@ -128,12 +122,6 @@ export class BitingState extends GameState {
     const stepInfo = this.deps.float.getBiteStepInfo?.();
     if (isSpinning && stepInfo && stepInfo.isGuaranteed && input.isPulling) {
       this.deps.float.hook();
-      if (
-        this.deps.biteSystem &&
-        typeof this.deps.biteSystem.hookFish === "function"
-      ) {
-        this.deps.biteSystem.hookFish();
-      }
       this.deps.commands.setState("playing", { fish: this.fish });
       return;
     }

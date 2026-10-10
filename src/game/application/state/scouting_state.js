@@ -131,9 +131,7 @@ export class ScoutingState extends GameState {
         },
       );
     } else {
-      if (typeof this.deps.depthUI.updateMax === "function") {
-        this.deps.depthUI.updateMax(maxDepth);
-      }
+      this.deps.depthUI.updateMax(maxDepth);
     }
     this.#syncDepthCastDistance(eq, bounds);
   }

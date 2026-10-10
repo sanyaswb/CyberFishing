@@ -363,7 +363,7 @@ export class GameApplication {
       ? newEq.net.effectiveStats || newEq.net
       : { active: false, maxWeight: 0, length: 10, chances: [] };
 
-    if (this.#net && typeof this.#net.updateConfig === "function") {
+    if (this.#net) {
       this.#net.updateConfig(netConfig);
     } else {
       this.#net = new Net(
@@ -375,13 +375,8 @@ export class GameApplication {
     this.#hasEquippedNet = !!newEq.net;
     this.#chumController.refreshActiveHandChum();
 
-    if (typeof this.#ui?.updateNetButtonState === "function") {
-      this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
-    }
-
-    if (this.#depthUI && typeof this.#depthUI.updateMax === "function") {
-      this.#depthUI.updateMax(this.getMaxHookDepth());
-    }
+    this.#ui.updateNetButtonState(this.#hasEquippedNet, false);
+    this.#depthUI.updateMax(this.getMaxHookDepth());
   }
 
   #rebuildFloat() {

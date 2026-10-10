@@ -35,9 +35,7 @@ export class GameWorld {
 
   refreshLocationConfig(locationConfig, locationResources) {
     this.#locationConfig = locationConfig;
-    if (typeof this.#map.refreshConfig === "function") {
-      this.#map.refreshConfig(locationConfig, locationResources);
-    }
+    this.#map.refreshConfig(locationConfig, locationResources);
     this.refreshViewport(true);
   }
 

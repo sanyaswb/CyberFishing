@@ -33,7 +33,11 @@ export class TackleStressSystem {
   #stressDiagnostics = {};
   #selectedFailureComponent = null;
 
-  constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags = null, weakestLimitResolver = null }) {
+  constructor({ rod, reel, lineSystem, hook = null, leader = null, config, rng = null, devFlags, weakestLimitResolver = null }) {
+    // DEV flag port: production composes InactiveDevFlags.
+    if (typeof devFlags?.isEnabled !== "function") {
+      throw new TypeError("TackleStressSystem requires devFlags.isEnabled");
+    }
     this.#config = config || {};
     this.#rng = rng || { next: () => Math.random() };
     this.#devFlags = devFlags;
@@ -52,16 +56,6 @@ export class TackleStressSystem {
     this.#leader = leader;
     this.resetStress();
     this.#refreshRatios();
-  }
-
-  updateTarget(tensionKg, dtSec, tensionConfig) {
-    return this.updateTensionFrame({
-      visibleTensionKg: tensionKg,
-      totalTensionKg: tensionKg,
-      fishTensionKg: tensionKg,
-      dtSec,
-      tensionConfig,
-    });
   }
 
   updateTensionFrame({
@@ -316,9 +310,9 @@ export class TackleStressSystem {
   }
 
   resetStress() {
-    this.#accumulator?.reset?.();
+    this.#accumulator.reset();
     const stressConfig = this.#resolveTackleStressConfig(this.#config);
-    this.#stressDiagnostics = this.#accumulator?.getDiagnostics?.(
+    this.#stressDiagnostics = this.#accumulator.getDiagnostics(
       this.#stressDiagnosticsDefaults(stressConfig),
     ) || {};
     this.#lastBreakProgress = 0;
@@ -366,9 +360,9 @@ export class TackleStressSystem {
   }
 
   #isBreakPrevented(reason) {
-    if (reason === "rod") return this.#devFlags?.isEnabled?.("noRodBreak") === true;
+    if (reason === "rod") return this.#devFlags.isEnabled("noRodBreak") === true;
     if (reason === "line" || reason === "leader") {
-      return this.#devFlags?.isEnabled?.("noLineBreak") === true;
+      return this.#devFlags.isEnabled("noLineBreak") === true;
     }
     return false;
   }

@@ -37,7 +37,7 @@ export class FightService {
   constructor({
     config,
     rng,
-    devFlags = null,
+    devFlags,
     fightSessionFactory = null,
     forceService = null,
     catchResolver = null,
@@ -45,6 +45,10 @@ export class FightService {
     this.#config = config;
     this.#physicsConfig = config?.fightPhysicsConfig;
     this.#rng = rng;
+    // DEV flag port: production composes InactiveDevFlags.
+    if (typeof devFlags?.isEnabled !== "function") {
+      throw new TypeError("FightService requires devFlags.isEnabled");
+    }
     this.#devFlags = devFlags;
     this.#fightSessionFactory =
       fightSessionFactory || new FightSessionFactory({ config, rng, devFlags });
@@ -187,7 +191,7 @@ export class FightService {
   }
 
   #isFishStaminaLocked() {
-    return this.#devFlags?.isEnabled?.("noFishStaminaLoss") === true;
+    return this.#devFlags.isEnabled("noFishStaminaLoss") === true;
   }
 
   handlePlayerInput(input, equipment) {

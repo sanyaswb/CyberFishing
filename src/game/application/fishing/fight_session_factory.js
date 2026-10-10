@@ -31,6 +31,11 @@ export class FightSessionFactory {
     this.rng = rng;
     this.devFlags = devFlags;
     this.physicsConfig = config?.fightPhysicsConfig;
+    for (const method of ["getReelDragConfig", "getRodPullConfig", "getRodHoldConfig", "getReelConfig", "getTensionConfig", "getLineSystemConfig"]) {
+      if (typeof this.physicsConfig?.[method] !== "function") {
+        throw new TypeError(`FightSessionFactory requires FightPhysicsConfigAdapter.${method}`);
+      }
+    }
     this.castDistanceCalculator =
       castDistanceCalculator || new CastDistanceCalculator(config || {});
   }
@@ -45,7 +50,7 @@ export class FightSessionFactory {
       this.logger,
     );
     const dragSystem = new DragControlService(
-      this.physicsConfig?.getReelDragConfig?.() || {},
+      this.physicsConfig.getReelDragConfig() || {},
       reel,
     );
     const fishForceSystem = new FishForceSystem({
@@ -55,13 +60,13 @@ export class FightSessionFactory {
     const pullInputMapper = new PullInputMapper();
     const rodPullSystem = new RodPullSystem(
       {
-        ...(this.physicsConfig?.getRodPullConfig?.() || {}),
-        rodHold: this.physicsConfig?.getRodHoldConfig?.() || {},
+        ...(this.physicsConfig.getRodPullConfig() || {}),
+        rodHold: this.physicsConfig.getRodHoldConfig() || {},
       },
     );
     const rodControlSystem = new RodLateralControlSystem();
     const reelSystem = new ReelService(
-      this.physicsConfig?.getReelConfig?.() || {},
+      this.physicsConfig.getReelConfig() || {},
     );
     const tensionSystem = new TensionService();
     const tensionMeter = new TackleStressSystem({
@@ -70,7 +75,7 @@ export class FightSessionFactory {
       lineSystem,
       hook,
       leader: equipment.leader,
-      config: this.physicsConfig?.getTensionConfig?.() || this.config.tension,
+      config: this.physicsConfig.getTensionConfig() || this.config.tension,
       rng: this.rng,
       devFlags: this.devFlags,
     });
@@ -151,7 +156,7 @@ export class FightSessionFactory {
             retrieveSpeedMetersPerSec: reelStats.retrieveSpeedMetersPerSec,
             bearingCount: reelStats.bearingCount,
             bearingRetrieveSpeedBonusMetersPerSec:
-              this.physicsConfig?.getReelConfig?.()
+              this.physicsConfig.getReelConfig()
                 ?.bearingRetrieveSpeedBonusMetersPerSec,
             dragMinKg: reelStats.dragMinKg,
             dragMaxKg: reelStats.dragMaxKg,
@@ -178,7 +183,7 @@ export class FightSessionFactory {
   }
 
   #getLineSystemConfig() {
-    return this.physicsConfig?.getLineSystemConfig?.() || {};
+    return this.physicsConfig.getLineSystemConfig() || {};
   }
 
   #getCastOptions(options) {
