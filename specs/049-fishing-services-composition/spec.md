@@ -38,8 +38,10 @@ No re-baseline was needed.
 - Browser smoke, performed by Claude in the built-in browser (automated) on the local dev server:
   - `index.html` v0.32.0 loads the new module with 0 console messages; a cast without a rod is answered by
     `CastService` with the player message and the inventory.
-  - `dev.html` with a rod, line, float and baited hook casts (5.0 m cast HUD, depth selector) with 0 console errors.
-  - No bite or fight was driven in the browser. The fight path runs through the same composition in game-cycle.
+  - `dev.html` with a pole, line, float and baited hook (the owner's stored GodMode overrides: 100% bite chance,
+    guaranteed sequence) runs the whole cycle: a pull-back power cast puts the state at `BITING`; a tap hooks the fish
+    (crucian stalker); then 25 s of held pull. The fish cycles through SWIM/DASH/IDLE, its force falls
+    0.560 → 0.474 kg, and the fight HUD shows stamina, endurance and tension. 0 console errors.
 
 ## Remaining (item 6, optional test hygiene)
 - `GAMEPLAY_FILES`/`CONFIG_FILES` remain a hand-kept list of published names.
