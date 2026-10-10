@@ -1,5 +1,6 @@
 const { composeTestConfig } = require("./testing/runtime/config_test_composition");
 const path = require("node:path");
+const { OutputBaseline } = require("./testing/core/output_baseline");
 const vm = require("node:vm");
 const {
   NativeEsmTestLoader,
@@ -2147,10 +2148,19 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
     "world services advance the environment, viewport and bite snapshot over the lake");
 }
 
-console.log("game-cycle-check passed:");
-console.log("- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%");
-console.log("- victory peak total tension: " + victory.peakTotalTension.toFixed(3) + " kg");
-console.log("- line break peak line stress: " + (breakCase.peakLineStress * 100).toFixed(1) + "%");
-console.log("- line break reason: " + breakCase.transition.data.reason);
-for (const message of checks) console.log("- " + message);
+globalThis.gameCycleReport = [
+  "game-cycle-check passed:",
+  "- victory peak line stress: " + (victory.peakLineStress * 100).toFixed(1) + "%",
+  "- victory peak total tension: " + victory.peakTotalTension.toFixed(3) + " kg",
+  "- line break peak line stress: " + (breakCase.peakLineStress * 100).toFixed(1) + "%",
+  "- line break reason: " + breakCase.transition.data.reason,
+  ...checks.map(message => "- " + message),
+];
 `, context, { filename: "utils/game-cycle-check.js#scenario" });
+
+// The report is the behavior reference. It is compared with the tracked baseline, so a behavior change shows up as a
+// reviewed diff of that file; the baseline is rewritten only by `npm run baseline:game-cycle`.
+const report = context.gameCycleReport.map(line => line + "\n").join("");
+process.stdout.write(report);
+new OutputBaseline({ file: path.join(ROOT, "utils/testing/baselines/game-cycle.txt") })
+  .verify(report, { update: process.argv.includes("--update-baseline") });

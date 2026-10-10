@@ -1,0 +1,216 @@
+game-cycle-check passed:
+- victory peak line stress: 1.3%
+- victory peak total tension: 0.250 kg
+- line break peak line stress: 262.5%
+- line break reason: line
+- simplified stamina model is active
+- simplified stamina drains under effective pressure
+- stamina frame never drains and regens simultaneously
+- center fish gives full hold stamina multiplier
+- center fish gives low control stamina multiplier
+- edge fish gives low hold stamina multiplier
+- edge fish gives full control stamina multiplier
+- control toward center is marked centering
+- control away from center is marked wrong
+- wrong control has lower stamina pressure than centering control
+- phase 1 release pressure immediately regens stamina
+- phase 2 release pressure does not regen stamina
+- phase 2 release pressure does not return to stamina
+- phase 2 no input below timeout does not recover
+- phase 2 no input timeout becomes recovery-ready
+- phase 2 no input timeout is recovery trigger
+- phase 2 no input timeout starts stamina recovery
+- raw input active resets no-input timer
+- control exhausted holding input is not inactivity trigger
+- phase 2 full fatigue starts stamina recovery
+- phase 2 returns only after stamina recovers past threshold
+- standalone sinker item category is removed
+- float owns its ballast profiles
+- feeder spring preserves its feeder weight parameters
+- float enables depth selection
+- float maximum depth uses free line after the rod length
+- 3m float depth reduces 10m line cast distance to 7m
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- float reaches selected depth using its embedded ballast
+- fight radial line limit uses the depth-adjusted 7m budget
+- raw touch before hold threshold does not start Rod Hold
+- raw touch can start Rod Control before hold threshold
+- touch lateral control keeps pointer Rod Hold active
+- touch lateral control activates Rod Control
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- touch hold + control resolves shared force-budget mode
+- touch hold + control resolves tensionBuildMode
+- hold + control uses x1.5 TENSION build rate
+- tension build sees active hold channel
+- tension build sees active control channel
+- hold + control speeds up Rod Hold charge
+- hold + control speeds up Rod Control build
+- build rate does not increase tension ceiling multiplier
+- build rate does not bypass final tension ceiling
+- rod control reaches full geometry at 20 degrees
+- rod control no longer uses fixed maxForceKg cap
+- rod control no longer uses fish-weight force divisor
+- rod control exposes the configured full-force angle
+- test fish is beyond the full-force line angle
+- rod control angle ratio reaches 100 percent at 20 degrees
+- rod control receives the remaining player budget
+- rod control applies hold-style lateral tension from available budget
+- neutral side rod control force matches lateral tension
+- fish weight no longer reduces rod control tension
+- drag-slip Rod Control uses hold-style drag cap without subtracting post-hold current tension
+- drag-slip Rod Control force is not directly capped before downstream tension resolution
+- legacy distanceMultiplierByRodLength no longer controls rod stroke capacity
+- legacy strokeChargePerSecond and chargePerSecond no longer control rod hold charge
+- rodStroke.capacityByRodLengthRatio controls rod stroke capacity
+- rodHold.chargeTimeSeconds controls rod hold charge
+- rod pull adapter sources capacity from physics.fight.rodStroke only
+- rod pull adapter sources pole capacity from physics.fight.rodStroke only
+- rod pull adapter no longer exports distanceMultiplierByRodLength
+- rod pull adapter no longer exports strokeChargePerSecond
+- pole rod stroke capacity equals equipped line length
+- reel rod stroke capacity equals rod length
+- RodPullSystem preserves 10m pole stroke capacity
+- RodPullSystem preserves 3m reel-rod stroke capacity
+- rod stroke test seeds won distance
+- legacy Y loss no longer reduces rod stroke
+- legacy Y loss is ignored by distance-based stroke loss
+- distance loss remains the rod stroke loss source
+- distance loss diagnostics still report stroke loss
+- reel hold ignores max_distance_reached until rod stroke is full
+- reel hold reports stroke_not_full below required rod stroke ratio
+- reel hold ignores full stroke meters when rod stroke ratio is below required ratio
+- reel hold full-stroke gate uses rod stroke ratio as source of truth
+- reel hold allows tiny stroke ratio tolerance for float precision
+- reel hold diagnostics expose stroke ratio tolerance
+- reel hold diagnostics expose input stroke ratio
+- reel hold can activate after full rod stroke
+- reel hold exposes canPull when capability is engaged
+- reel hold diagnostics expose config gate
+- reel hold diagnostics expose reel gate
+- reel hold diagnostics expose player hold gate
+- reel hold diagnostics expose required stroke ratio
+- reel hold diagnostics expose stroke gate
+- reel hold diagnostics expose drag limit gate
+- reel hold diagnostics expose reel max load gate
+- reel hold diagnostics expose combined drag hold gate
+- reel hold diagnostics expose retrieve speed
+- reel hold remains engaged without recoverable line
+- reel hold engagement is separate from line recovery
+- reel hold can pull even when line recovery has no credit
+- reel hold does not recover line when no line credit exists
+- missing recoverable line does not block reel hold engagement
+- missing recoverable line is reported as line recovery block only
+- default player pressure fatigue source mode is reel_hold_session
+- player reel fatigue session starts on first reel hold engagement
+- player reel fatigue session reports start frame
+- fatigue starts in grace after reel hold session starts
+- fatigue source is active when reel hold session starts
+- stroke drop does not end player reel fatigue session
+- stroke drop keeps fatigue source active through session latch
+- stroke drop does not start fatigue recovery
+- stroke drop does not reset fatigue hold timer
+- drag slipping does not end player reel fatigue session
+- drag slipping keeps fatigue source active through session latch
+- drag slipping does not restart grace or recovery
+- fatigue keeps building while reel hold is temporarily blocked
+- drag/reel limit blocker keeps fatigue source active through session latch
+- drag/reel limit blocker does not start fatigue recovery
+- release ends player reel fatigue session
+- release reports player reel fatigue session end frame
+- release after fatigue progress starts recovery
+- release during grace ends player reel fatigue session
+- release during full-efficiency grace returns fatigue to idle
+- reel hold enabled is sourced from physics.fight.reelHold
+- legacy tackle reel hold delay no longer overrides reel hold config
+- legacy tackle reel hold ratio no longer overrides reel hold config
+- reel hold ratio tolerance defaults to a small precision guard
+- legacy tackle reel hold tolerance no longer overrides reel hold config
+- rod stroke recovery does not use rodStrokeUnrecoveredMeters as fallback credit
+- rod stroke recovery requires explicit rodStrokeWonMeters
+- auto recovery speed is not reduced by tension below reel load
+- auto recovery recovers at reel retrieve speed when load gate passes
+- auto recovery does not recover line when line system has no recoverable meters
+- rod stroke credit without recoverable line is reported as stroke_line_desync
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- post-stroke reel hold check reaches full rod stroke
+- reel hold uses post-stroke rod state after rodHold movement is recorded
+- reel hold input stroke ratio is the post-record stroke ratio
+- reel hold movement debug captures a moving reel hold frame
+- reel hold applied speed uses real frame dt
+- reel hold applied speed matches reel hold move divided by frame dt
+- debug snapshot exposes reelHoldActive capability alias
+- debug snapshot exposes reelHoldEngaged capability alias
+- debug snapshot exposes reelHoldCanPull capability alias
+- debug snapshot exposes reelHoldRecoveringLine capability alias
+- debug snapshot exposes reelHoldBlockedReason capability alias
+- debug snapshot exposes player reel fatigue session state
+- debug snapshot exposes reel_hold_session fatigue source mode
+- debug snapshot fatigue source active follows reel fatigue session active
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- victory: rod hold produces force
+- victory: hold contributes player tension
+- victory: fight produces blocked-force or player-hold tension
+- easy fish reaches victory through full fight update cycle (last distance 0.000m, transition victory/no_reason, lift=0.250/0.250, liftActive=true, liftInZone=true, totalTension=0.250)
+- easy fish physically moves toward player during hold
+- easy fish stays under line break stress
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- light_landing_lift: rod hold produces force
+- light_landing_lift: fight produces blocked-force or player-hold tension
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- heavy_landing_lift: rod hold produces force
+- heavy_landing_lift: fight produces blocked-force or player-hold tension
+- light fish reaches victory through landing lift
+- near-limit fish can still reach victory through landing lift
+- near-limit fish takes longer to land than light fish
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- line_break: fight produces blocked-force or player-hold tension
+- fish-pressure overload scenario exceeds line load (peak=2.1000, transition=failed/line)
+- fish-pressure overload scenario fails
+- fish-pressure overload scenario breaks the line
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- strong-tackle fight starts in the stamina phase
+- sustained pressure drains fish stamina into exhaustion
+- exhaustion phase drains fish endurance
+- endurance movement debuff activates during exhaustion
+- endurance movement debuff power stays within 0..1
+- exhausted fish is landed through the full fight update cycle
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- weakest tackle limit resolves the weak hook
+- tackle failure selector reports hook_bent for the weak hook
+- strong fish breaks the weak hook
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- weakest tackle limit resolves the weak rod
+- tackle failure selector reports rod_broken for the weak rod
+- strong fish breaks the weak rod
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- pole_victory: fight produces blocked-force or player-hold tension
+- pole rod without a reel lands a light fish
+- pole rod weakest tackle limit ignores the missing reel
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- pole_line_break: fight produces blocked-force or player-hold tension
+- pole rod line breaks under a strong fish
+- cast succeeds with equipped test build and bait
+- cast creates runtime float/tackle entity
+- spinning_victory: rod hold produces force
+- spinning_victory: hold contributes player tension
+- spinning_victory: fight produces blocked-force or player-hold tension
+- spinning rod lands a light fish
+- inventory repository splits a stack and attaches one item
+- inventory repository lists attached descendants by depth
+- inventory repository merges a stack back
+- inventory repository keeps its state after a rejected restore
+- inventory repository restores a snapshot and rebuilds its child index
+- location map updates its background and dynamic zones
+- location map exposes its grid and castable bounds

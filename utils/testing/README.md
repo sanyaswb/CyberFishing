@@ -7,7 +7,8 @@ utils/
   architecture-check.js         layer/import/global guard (see docs/architecture.md)
   testing/
     doubles/                    test-only implementations of production contracts
-    core/                       CheckAssertion and SourceRuntime (Node VM over native ESM sources)
+    core/                       CheckAssertion, SourceRuntime (Node VM over native ESM sources), OutputBaseline
+    baselines/                  tracked expected output of behavior-reference checks (game-cycle.txt)
     runtime/                    native ESM test loader and test compositions
     suites/check_manifest.js    single registry of checks and suite membership
 ```
@@ -21,6 +22,12 @@ Keep the scenario in a domain-named `utils/*-check.js` file and add one descript
 `check_manifest.js`; suite membership belongs only there. Reuse `CheckAssertion`, `SourceRuntime` and
 the compositions in `runtime/`. Inject test doubles through constructors (`constructor_defaults.js`)
 instead of globals. A check must not write project files.
+
+## Behavior baseline
+
+`game-cycle-check.js` compares its report with `baselines/game-cycle.txt`. Structural changes keep the file
+unchanged. A gameplay change that changes the report re-baselines with `npm run baseline:game-cycle` and commits
+the file diff together with the change and its reason.
 
 Do not duplicate a scenario across files; a focused unit check and a broader integration check may
 both stay when they protect different contracts.

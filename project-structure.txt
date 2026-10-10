@@ -1,5 +1,55 @@
+├── .agents
+│  └── skills
+│     ├── speckit-analyze
+│     │  └── SKILL.md
+│     ├── speckit-checklist
+│     │  └── SKILL.md
+│     ├── speckit-clarify
+│     │  └── SKILL.md
+│     ├── speckit-constitution
+│     │  └── SKILL.md
+│     ├── speckit-converge
+│     │  └── SKILL.md
+│     ├── speckit-implement
+│     │  └── SKILL.md
+│     ├── speckit-plan
+│     │  └── SKILL.md
+│     ├── speckit-specify
+│     │  └── SKILL.md
+│     ├── speckit-tasks
+│     │  └── SKILL.md
+│     └── speckit-taskstoissues
+│        └── SKILL.md
 ├── .gitattributes
 ├── .gitignore
+├── .specify
+│  ├── .gitignore
+│  ├── init-options.json
+│  ├── integration.json
+│  ├── integrations
+│  │  ├── codex.manifest.json
+│  │  └── speckit.manifest.json
+│  ├── memory
+│  │  ├── .constitution-template.json
+│  │  └── constitution.md
+│  ├── scripts
+│  │  └── powershell
+│  │     ├── check-prerequisites.ps1
+│  │     ├── common.ps1
+│  │     ├── create-new-feature.ps1
+│  │     ├── resolve-template.ps1
+│  │     ├── setup-plan.ps1
+│  │     └── setup-tasks.ps1
+│  ├── templates
+│  │  ├── checklist-template.md
+│  │  ├── constitution-template.md
+│  │  ├── plan-template.md
+│  │  ├── spec-template.md
+│  │  └── tasks-template.md
+│  └── workflows
+│     ├── speckit
+│     │  └── workflow.yml
+│     └── workflow-registry.json
 ├── CHANGELOG.md
 ├── DEVELOPMENT_RULES.md
 ├── README.md
@@ -112,6 +162,19 @@
 │  ├── 045-fight-stages-motion-line
 │  │  └── spec.md
 │  ├── 046-fight-direct-calls
+│  │  └── spec.md
+│  ├── 047-smart-asset-preloader
+│  │  ├── checklists
+│  │  │  └── requirements.md
+│  │  ├── contracts
+│  │  │  ├── dev-image-tools.md
+│  │  │  └── runtime-assets.md
+│  │  ├── data-model.md
+│  │  ├── plan.md
+│  │  ├── quickstart.md
+│  │  ├── research.md
+│  │  └── spec.md
+│  ├── 048-game-cycle-baseline
 │  │  └── spec.md
 │  └── README.md
 ├── src
@@ -899,8 +962,11 @@
    ├── run-checks.js
    ├── testing
    │  ├── README.md
+   │  ├── baselines
+   │  │  └── game-cycle.txt
    │  ├── core
    │  │  ├── check_assertion.js
+   │  │  ├── output_baseline.js
    │  │  └── source_runtime.js
    │  ├── doubles
    │  │  └── delegating_inventory_capacity_policy.js
