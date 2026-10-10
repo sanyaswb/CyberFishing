@@ -1,0 +1,178 @@
+/* Card visuals, metadata, rarity pulse and long-press feedback. */
+
+.inventory-item-card__rating-badge {
+  position: absolute;
+  top: calc(var(--inventory-slot-size) * 0.04);
+  left: calc(var(--inventory-slot-size) * 0.04);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--inventory-slot-size) * 0.26);
+  height: calc(var(--inventory-slot-size) * 0.26);
+  box-sizing: border-box;
+  border: 2px solid var(--rarity-color);
+  border-radius: var(--ui-radius-control);
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--rarity-color);
+  font-size: calc(var(--inventory-slot-size) * 0.16);
+  font-weight: 800;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+}
+
+.inventory-item-card {
+  --rarity-color: #68757b;
+  --inventory-slot-size: var(--inventory-card-size);
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  overflow: visible;
+  border: var(--rarity-border-width, 2px) solid var(--rarity-color);
+  outline: none;
+  background: linear-gradient(
+    to top,
+    var(--rarity-background-color, rgba(41, 47, 51, 0.62)),
+    rgba(3, 7, 9, 0.58)
+  );
+  color: var(--ui-text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.inventory-item-card--socket {
+  --inventory-slot-size: var(--inventory-socket-size);
+}
+
+.inventory-item-card.item-rarity--glow {
+  box-shadow: 0 0 var(--rarity-glow-blur, 8px) var(--rarity-color);
+}
+
+.inventory-item-card.item-rarity--unique.item-rarity--pulse {
+  animation: inventory-card-rarity-pulse var(--rarity-animation-duration, 1800ms)
+    ease-in-out infinite;
+}
+
+.inventory-item-card.inventory-item-card--frameless {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.inventory-item-card:focus-visible {
+  outline: 2px solid var(--inventory-accent);
+  outline-offset: 3px;
+}
+
+.inventory-item-card__visual {
+  position: absolute;
+  inset: 12%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.inventory-item-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  user-select: none;
+}
+
+.inventory-item-card__icon {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+  font:
+    clamp(34px, 4vw, 63px)/1 system-ui,
+    sans-serif;
+}
+
+.inventory-item-card__quantity {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 15px;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
+.inventory-item-card__incomplete-dot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  z-index: 7;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #ff8b99;
+  border-radius: 50%;
+  background: #ff334d;
+  box-shadow: 0 0 6px rgba(255, 51, 77, 0.9);
+  pointer-events: none;
+}
+
+.inventory-item-card__press-progress {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 30;
+  width: clamp(42px, 58%, 72px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(235, 241, 243, 0.34);
+  border-radius: 50%;
+  opacity: 0;
+  background: conic-gradient(
+    from -90deg,
+    var(--inventory-long-press-color, transparent) 0deg,
+    var(--inventory-long-press-color, transparent)
+    var(--inventory-long-press-angle, 0deg),
+    rgba(4, 8, 10, 0.12) var(--inventory-long-press-angle, 0deg),
+    rgba(4, 8, 10, 0.12) 360deg
+  );
+  box-shadow:
+    0 0 12px var(--inventory-long-press-glow-color, transparent),
+    inset 0 0 8px rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.inventory-item-card.inventory-item-card--pressing > .inventory-item-card__press-progress,
+.inventory-item-card.inventory-item-card--press-fired > .inventory-item-card__press-progress {
+  opacity: 1;
+}
+
+.inventory-item-card.inventory-item-card--press-fired {
+  filter: brightness(1.32);
+}
+
+@keyframes inventory-card-rarity-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-item-card.item-rarity--unique.item-rarity--pulse {
+    animation: none;
+  }
+}

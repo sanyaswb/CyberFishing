@@ -1,0 +1,124 @@
+/* Equipment fields, empty/locked/highlighted sockets and pulse. */
+
+.inventory-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inventory-field--semantic,
+.inventory-field--auxiliary {
+  width: var(--inventory-card-size);
+}
+
+.inventory-field__label {
+  overflow: hidden;
+  color: #aeb3b5;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-slot {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: var(--inventory-card-size);
+  place-items: center;
+  overflow: visible;
+}
+
+.inventory-field--rod .inventory-slot {
+  height: clamp(310px, 46vh, 405px);
+}
+
+.inventory-field--socket .inventory-slot {
+  width: var(--inventory-socket-size);
+  height: var(--inventory-socket-size);
+}
+
+.inventory-slot:not(.inventory-slot--filled) {
+  border: 2px solid #252e31;
+  background: #181e20;
+}
+
+.inventory-slot--locked:not(.inventory-slot--filled),
+.inventory-slot--unavailable:not(.inventory-slot--filled) {
+  border-color: #080a0b;
+  background: #101415;
+}
+
+.inventory-slot.inventory-slot--highlighted {
+  isolation: isolate;
+}
+
+.inventory-slot.inventory-slot--highlighted::after {
+  position: absolute;
+  z-index: 18;
+  inset: 0;
+  background: var(--inventory-success);
+  content: "";
+  opacity: 0.2;
+  pointer-events: none;
+  animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite;
+}
+
+.inventory-slot.inventory-slot--filled {
+  border: 0;
+  background: transparent;
+}
+
+.inventory-slot__empty-button {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: #171b1c;
+  cursor: pointer;
+  font:
+    400 clamp(38px, 4vw, 64px)/1 system-ui,
+    sans-serif;
+}
+
+.inventory-slot--locked .inventory-slot__empty-button {
+  position: relative;
+  color: transparent;
+}
+
+.inventory-slot--locked .inventory-slot__empty-button::before,
+.inventory-slot--locked .inventory-slot__empty-button::after {
+  position: absolute;
+  top: 50%;
+  left: 13%;
+  width: 74%;
+  height: 1px;
+  background: #b82d37;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.inventory-slot--locked .inventory-slot__empty-button::after {
+  transform: rotate(-45deg);
+}
+
+@keyframes inventory-compatible-slot-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-slot.inventory-slot--highlighted::after {
+    opacity: 0.35;
+    animation: none;
+  }
+}

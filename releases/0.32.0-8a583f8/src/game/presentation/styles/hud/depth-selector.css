@@ -1,0 +1,58 @@
+/* Depth selector and available cast distance; geometry is supplied by its adapter. */
+
+.depth-selector {
+  position: fixed; top: 0; right: 0; width: 140px; height: 100%;
+  display: none; justify-content: center; align-items: center; padding-right: 5%;
+  font-family: sans-serif; pointer-events: none; z-index: var(--ui-layer-controls);
+}
+.depth-selector__wrapper {
+  display: flex; align-items: center; gap: 15px; height: 50vh; position: relative;
+  pointer-events: none;
+}
+.depth-selector__input-container {
+  position: absolute; left: -90px;
+}
+.depth-selector__input {
+  background: var(--ui-info); color: #000; font-size: 18px; font-weight: bold;
+  border: 2px solid #000; border-radius: var(--ui-radius-control); padding: 4px;
+  width: 60px; text-align: center; outline: none;
+  pointer-events: auto;
+}
+.depth-selector__input::after {
+  content: ''; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 2px; background: var(--ui-text);
+}
+.depth-selector__slider-container {
+  height: 100%; display: flex; align-items: center;
+}
+.depth-selector__slider {
+  writing-mode: vertical-lr; width: 8px; height: 100%; margin: 0; cursor: pointer;
+  background: linear-gradient(to bottom, #002233, var(--ui-info)); border-radius: var(--ui-radius-control); outline: none;
+  pointer-events: auto;
+}
+.depth-selector__labels {
+  display: flex; flex-direction: column; justify-content: space-between;
+  height: 100%; color: var(--ui-text); font-size: 14px; font-weight: bold; margin-left: 5px;
+}
+.depth-selector__distance-panel {
+  position: absolute; left: -165px; top: -66px; width: 145px;
+  padding: 8px 10px; border: 1px solid rgba(115, 194, 251, 0.8);
+  border-radius: 7px; background: rgba(var(--ui-surface-rgb), 0.9);
+  color: var(--ui-text); font-size: 12px; font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+.depth-selector__distance-value {
+  display: block; margin-bottom: 6px; color: var(--ui-success);
+  font-size: 14px; text-align: center;
+}
+.depth-selector__distance-track {
+  width: 100%; height: 9px; overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 5px; background: rgba(0, 0, 0, 0.55);
+}
+.depth-selector__distance-fill {
+  width: 100%; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, #0b8f49, var(--ui-success));
+  transition: width 80ms linear;
+}
+

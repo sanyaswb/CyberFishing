@@ -1,0 +1,67 @@
+/* Chum control state appearance. */
+
+.chum-control {
+  position: absolute;
+  bottom: 20px;
+  right: 190px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: var(--ui-warning);
+  color: #ffd000;
+  border: 2px solid #ffcc00;
+  border-radius: var(--ui-radius-panel);
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+  transition: all 0.2s ease;
+  touch-action: none;
+}
+
+.chum-control--disabled {
+  background-color: #555555;
+  border-color: #444444;
+  color: #aaaaaa;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chum-control--empty {
+  background-color: #2c3e50;
+  border-color: #34495e;
+  color: #95a5a6;
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+.chum-control--aiming {
+  background-color: var(--ui-danger);
+  border-color: #ff8888;
+  color: var(--ui-text);
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--moving {
+  background-color: #6c7a89;
+  border-color: var(--ui-muted);
+  color: var(--ui-text);
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.chum-control--ready {
+  background-color: var(--ui-success);
+  border-color: #55ffaa;
+  color: #000;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--idle {
+  background-color: #0000007e;
+  border-color: #ffcc00;
+  color: #ffcc00;
+  opacity: 1;
+  cursor: pointer;
+}
