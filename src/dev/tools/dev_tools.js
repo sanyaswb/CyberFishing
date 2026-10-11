@@ -23,7 +23,6 @@ export class DevTools {
   #itemProgressionResolver;
   #grantCatalogItem;
   #storageCache;
-  #reelRetrieveProbeState = Object.freeze({ status: "unavailable" });
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -37,13 +36,6 @@ export class DevTools {
     ) {
       this.#populatePanel();
     }
-  };
-  #onReelRetrieveProbeState = (event) => {
-    if (this.#isDisposed) return;
-    this.#reelRetrieveProbeState = event.detail || Object.freeze({
-      status: "unavailable",
-    });
-    if (this.#isOpen) this.#populatePanel();
   };
 
   #excludeKeys = [
@@ -105,11 +97,6 @@ export class DevTools {
       "debug-live-update",
       this.#onDebugLiveUpdate,
     );
-    document.addEventListener(
-      "reel-retrieve-diagnostic-state",
-      this.#onReelRetrieveProbeState,
-    );
-    this.#sendReelRetrieveProbeCommand("query");
   }
 
   toggle() {
@@ -128,10 +115,6 @@ export class DevTools {
     document.removeEventListener(
       "debug-live-update",
       this.#onDebugLiveUpdate,
-    );
-    document.removeEventListener(
-      "reel-retrieve-diagnostic-state",
-      this.#onReelRetrieveProbeState,
     );
     this.#liveData = null;
     this.#ui.dispose();
@@ -200,7 +183,6 @@ export class DevTools {
     }
 
     const debugContent = this.#renderConfigDebugSection(body);
-    this.#renderReelRetrieveDiagnosticSection(debugContent);
     this.#renderLocationDebugSection(debugContent);
     this.#renderItemGrantSection(body);
 
@@ -593,121 +575,6 @@ export class DevTools {
     }
 
     this.#renderParameterAliases(obj, parentElement, path);
-  }
-
-  #renderReelRetrieveDiagnosticSection(debugContent) {
-    if (!debugContent) return;
-
-    const content = this.#createSectionWithCache(
-      "🧪 ДІАГНОСТИКА ПІДМОТУВАННЯ",
-      debugContent,
-      ["DEBUG_TOOLS", "reel-retrieve-diagnostic"],
-    );
-    const state = this.#reelRetrieveProbeState || { status: "unavailable" };
-    const activeStatuses = new Set([
-      "arming",
-      "armed",
-      "capturing-before",
-      "observing-recovery",
-    ]);
-
-    this.#ui.createInfoRow("status", state.status, content);
-    this.#ui.createInfoRow(
-      "instructions",
-      state.instructions ||
-        "Equip a spinning loadout, set drag above zero, start a fight, hold Space, then release it.",
-      content,
-    );
-
-    if (state.before) {
-      this.#ui.createInfoRow(
-        "A — BEFORE",
-        this.#formatReelRetrieveSnapshot(state.before),
-        content,
-      );
-    }
-    if (state.after) {
-      this.#ui.createInfoRow(
-        "B — AFTER",
-        this.#formatReelRetrieveSnapshot(state.after),
-        content,
-      );
-    }
-    if (state.verdict) {
-      this.#ui.createInfoRow(
-        "result",
-        `${state.verdict.status} / ${state.verdict.blockerClassification}`,
-        content,
-      );
-      this.#ui.createInfoRow("scenario", state.verdict.scenario, content);
-      this.#ui.createInfoRow(
-        "console",
-        `${state.verdict.console.errors} errors / ${state.verdict.console.warnings} warnings`,
-        content,
-      );
-      this.#ui.createButtonRow("Copy A/B result", content, () =>
-        this.#copyReelRetrieveProbeResult(state),
-      );
-    }
-    if (state.error) {
-      this.#ui.createInfoRow("error", state.error, content);
-    }
-
-    if (activeStatuses.has(state.status)) {
-      this.#ui.createButtonRow("Cancel A/B trace", content, () => {
-        this.#sendReelRetrieveProbeCommand("cancel");
-      });
-      return;
-    }
-
-    this.#ui.createButtonRow("Start A/B trace", content, () => {
-      document.activeElement?.blur?.();
-      this.#sendReelRetrieveProbeCommand("arm");
-    });
-  }
-
-  #sendReelRetrieveProbeCommand(action) {
-    document.dispatchEvent(
-      new CustomEvent("reel-retrieve-diagnostic-command", {
-        detail: { action },
-      }),
-    );
-  }
-
-  #formatReelRetrieveSnapshot(snapshot) {
-    return [
-      `hasReel=${snapshot.hasReel}`,
-      `total=${this.#formatProbeNumber(snapshot.lineTotalMeters)}`,
-      `released=${this.#formatProbeNumber(snapshot.lineReleasedMeters)}`,
-      `stroke=${this.#formatProbeNumber(snapshot.rodStrokeWonMeters)}`,
-      `auto=${this.#formatProbeNumber(snapshot.autoRecoveredMeters)}`,
-      `hold=${this.#formatProbeNumber(snapshot.holdRecoveredMeters)}`,
-      `blocked=${snapshot.autoRecoverBlockedReason || "none"}`,
-    ].join("; ");
-  }
-
-  #formatProbeNumber(value) {
-    const number = Number(value);
-    return Number.isFinite(number) ? number.toFixed(4) : "n/a";
-  }
-
-  #copyReelRetrieveProbeResult(state) {
-    const result = JSON.stringify(
-      {
-        before: state.before,
-        after: state.after,
-        verdict: state.verdict,
-      },
-      null,
-      2,
-    );
-    if (navigator?.clipboard?.writeText) {
-      navigator.clipboard.writeText(result).catch(() => {
-        window.prompt?.("Copy reel retrieve diagnostic result", result);
-      });
-      return;
-    }
-    window.prompt?.("Copy reel retrieve diagnostic result", result);
   }
 
   #renderItemProgressionSection(body) {

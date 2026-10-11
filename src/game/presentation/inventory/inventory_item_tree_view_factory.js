@@ -1,6 +1,7 @@
 export class InventoryItemTreeViewFactory {
   #repository;
   #assemblyStates;
+  #profileRegistry;
   #completionPolicy;
   #hydrate;
   #boatChargeProvider;
@@ -8,13 +9,14 @@ export class InventoryItemTreeViewFactory {
   constructor({
     repository,
     assemblyStates,
-    assemblyReader,
+    profileRegistry,
     completionPolicy = null,
     hydrate,
     boatChargeProvider = null,
   } = {}) {
     this.#repository = repository;
     this.#assemblyStates = assemblyStates;
+    this.#profileRegistry = profileRegistry;
     this.#completionPolicy = completionPolicy;
     this.#hydrate = hydrate;
     this.#boatChargeProvider = boatChargeProvider;
@@ -43,25 +45,38 @@ export class InventoryItemTreeViewFactory {
       status: state?.isDraft ? "draft" : state?.isPrepared ? "prepared" : null,
       prepared: state ? state.isPrepared : null,
       assemblyCompletion,
+      loadoutMembership: this.#loadoutMembership(raw),
     };
-    if (includeAttachments && state) {
-      view.attachments = this.#createAttachmentBadges(instanceId);
+    if (includeAttachments) {
+      view.attachments = this.#createAttachmentSlots(raw, state?.profileId);
     }
+    const reelLineCapacity = this.#createReelLineCapacity(view);
+    if (reelLineCapacity) view.reelLineCapacity = reelLineCapacity;
     const charge = this.#createBoatCharge(view);
     if (charge) view.charge = charge;
     return view;
   }
 
   createLoadout(loadout) {
+    const roots = Object.entries(loadout.getRootInstanceIds())
+      .map(([slotId, id]) => ({ slotId, item: id ? this.create(id, { includeAttachments: false }) : null }))
+      .filter((entry) => entry.item);
+    const main = roots.find((entry) => entry.slotId === "rod") || roots[0];
     return {
+      ...main?.item,
       instanceId: loadout.loadoutId,
       itemId: "equipment_loadout",
       itemType: "equipment_loadout",
       name: loadout.name,
-      icon: "🧰",
+      icon: main?.item.icon || "🎣",
       quantity: 1,
       loadoutId: loadout.loadoutId,
       prepared: true,
+      attachments: roots.filter((entry) => entry !== main).map(({ slotId, item }) => ({
+        instanceId: item.instanceId, name: item.name, icon: item.icon,
+        iconUrl: item.iconUrl || item.imageUrl, rarity: item.rarity,
+        kind: slotId, placement: "bottom", empty: false,
+      })),
     };
   }
 
@@ -72,21 +87,68 @@ export class InventoryItemTreeViewFactory {
     return { ...raw };
   }
 
-  #createAttachmentBadges(rootInstanceId) {
-    const badges = [];
-    for (const entry of this.#repository.listDescendants(rootInstanceId)) {
-      const raw = entry.item;
-      const hydrated = this.#hydrateItem(raw) || raw;
-      badges.push({
-        instanceId: raw.instanceId,
-        name: hydrated.name,
-        icon: hydrated.icon,
-        iconUrl: hydrated.iconUrl || hydrated.imageUrl,
-        kind: raw.location.slotId,
-        placement: this.#placement(raw.location.slotId),
-      });
+  #loadoutMembership(raw) {
+    let root = raw;
+    while (root?.location?.kind === "ATTACHED") {
+      root = this.#repository.get(root.location.parentInstanceId);
     }
+    const id = root?.location?.loadoutId;
+    if (!id) return null;
+    let hash = 0;
+    for (let index = 0; index < id.length; index++) {
+      hash = (Math.imul(hash, 31) + id.charCodeAt(index)) >>> 0;
+    }
+    return { id, color: `hsl(${hash % 360} 70% 60%)` };
+  }
+
+  #createAttachmentSlots(root, profileId) {
+    const badges = [];
+    this.#appendAttachmentSlots(root, profileId, badges);
     return badges;
+  }
+
+  #appendAttachmentSlots(parent, profileId, badges) {
+    const profile = this.#profileRegistry.resolveForItem(parent, profileId);
+    for (const slot of profile?.slots || []) {
+      const capacity = this.#profileRegistry.getSlotCapacity(parent, slot);
+      for (let index = 0; index < capacity; index++) {
+        const raw = this.#repository.getChild(parent.instanceId, slot.id, index);
+        const hydrated = raw ? this.#hydrateItem(raw) || raw : null;
+        badges.push({
+          instanceId: raw?.instanceId || null,
+          parentInstanceId: parent.instanceId,
+          slotIndex: index,
+          empty: !raw,
+          name: hydrated?.name,
+          icon: hydrated?.icon,
+          iconUrl: hydrated?.iconUrl || hydrated?.imageUrl,
+          rarity: hydrated?.rarity,
+          kind: slot.id,
+          placement: this.#placement(slot.id),
+        });
+        if (raw) this.#appendAttachmentSlots(raw, null, badges);
+      }
+    }
+  }
+
+  #createReelLineCapacity(item) {
+    if (item.itemType !== "reel") return null;
+    const rawLine = this.#repository.getChild(item.instanceId, "line", 0);
+    if (!rawLine) return null;
+    const line = this.#hydrateItem(rawLine);
+    const maximum = Number(item.effectiveStats?.lineCapacityMeters);
+    const remaining = line?.progression?.capacity?.available === true
+      ? line.progression.capacity.current
+      : line?.effectiveStats?.lengthMeters;
+    if (remaining == null || !Number.isFinite(Number(remaining)) ||
+        !Number.isFinite(maximum) || maximum <= 0) return null;
+    const current = Math.max(0, Math.min(maximum, Number(remaining)));
+    return {
+      current,
+      maximum,
+      percent: current / maximum * 100,
+      label: "Заповнення котушки",
+    };
   }
 
   #placement(slotId) {

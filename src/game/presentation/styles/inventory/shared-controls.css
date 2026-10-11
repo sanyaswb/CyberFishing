@@ -37,7 +37,6 @@
   visibility: visible;
 }
 
-.inventory-loadout-save__button.inventory-loadout-save__button--disabled,
 .inventory-action.inventory-action--disabled {
   opacity: 0.46;
   cursor: not-allowed;

@@ -8,10 +8,14 @@ export const INVENTORY_RESOURCE_METER_DEFINITIONS = Object.freeze([
   Object.freeze({
     id: "capacity",
     icon: "",
-    read: (item) =>
-      item?.progression?.capacity?.available === true
+    read: (item) => {
+      if (item?.reelLineCapacity) return item.reelLineCapacity;
+      if (item?.equipped === true ||
+          ["ATTACHED", "LOADOUT"].includes(item?.location?.kind)) return null;
+      return item?.progression?.capacity?.available === true
         ? item.progression.capacity
-        : null,
+        : null;
+    },
     fallbackLabel: "Залишок",
   }),
 ]);
@@ -26,6 +30,7 @@ export class InventoryResourceMeterResolver {
   resolve(item) {
     for (const definition of this.#definitions) {
       const reading = definition.read?.(item);
+      if (!reading) continue;
       const percent = Number(reading?.percent);
       if (!Number.isFinite(percent)) continue;
       const normalizedPercent = Math.max(0, Math.min(100, percent));

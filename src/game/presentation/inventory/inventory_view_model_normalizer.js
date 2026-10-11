@@ -32,7 +32,7 @@ export class InventoryViewModelNormalizer {
   normalize(source = {}) {
     const panel = source.panel || {};
     const requestedMode = panel.mode || source.mode;
-    const mode = requestedMode === "assembly" ? "assembly" : "loadout";
+    const mode = ["assembly", "saved-loadout"].includes(requestedMode) ? requestedMode : "loadout";
 
     return Object.freeze({
       isOpen: source.isOpen !== false,
@@ -41,6 +41,7 @@ export class InventoryViewModelNormalizer {
       tooltipContext: this.#normalizeTooltipContext(source.tooltipContext),
       panel: Object.freeze({
         mode,
+        savedLoadout: this.#normalizeSavedLoadout(panel.savedLoadout || source.inventory?.savedLoadout),
         loadout: this.#normalizeLoadout(panel.loadout || source.loadout),
         assembly: this.#normalizeAssembly(
           panel.assembly || source.assembly,
@@ -97,19 +98,6 @@ export class InventoryViewModelNormalizer {
           InventoryViewModelNormalizer.AUXILIARY_SLOT_IDS,
         ),
       ),
-      save: Object.freeze({
-        visible: source.save?.visible !== false,
-        enabled: source.save?.enabled !== false,
-        maxNameLength: Math.max(
-          1,
-          Math.floor(this.#finite(source.save?.maxNameLength, 40)),
-        ),
-        placeholder: this.#text(
-          source.save?.placeholder,
-          "Назва комплекту...",
-        ),
-        warning: this.#text(source.save?.warning, ""),
-      }),
     });
   }
 
@@ -124,6 +112,7 @@ export class InventoryViewModelNormalizer {
       sockets: Object.freeze(this.#normalizeSlots(source.sockets, "socket")),
       parameterItems: Object.freeze(this.#array(source.parameterItems)),
       equipped: source.equipped === true,
+      rodRemovalStep: source.rodRemovalStep || null,
       canEquip: source.canEquip !== false,
       showEquip: source.showEquip !== false && source.equipped !== true,
       canUnequip: source.canUnequip !== false,
@@ -140,11 +129,10 @@ export class InventoryViewModelNormalizer {
     return Object.freeze({
       loadoutId: this.#text(source.loadoutId, ""),
       name: this.#text(source.name, "Збірка"),
+      card: source.card || null,
       slots: Object.freeze(this.#normalizeSlots(source.slots, "saved-loadout")),
       canEquipAll: source.canEquipAll !== false,
-      canDisassemble: source.canDisassemble !== false,
       equipWarning: this.#text(source.equipWarning, ""),
-      disassembleWarning: this.#text(source.disassembleWarning, ""),
     });
   }
 

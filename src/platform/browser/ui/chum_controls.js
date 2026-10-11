@@ -7,6 +7,7 @@ export class ChumControls {
     this.button = document.createElement("button");
     this.button.className = "game-control chum-control";
     this.button.innerText = "🍞";
+    this.button.hidden = true;
 
     this.currentState = "idle";
     this.currentMethod = "hand";
@@ -15,6 +16,7 @@ export class ChumControls {
 
     this.button.addEventListener("click", (e) => {
       if (
+        this.button.hidden ||
         this.currentState === "disabled" ||
         this.currentState === "empty" ||
         this.currentState === "moving"
@@ -27,7 +29,7 @@ export class ChumControls {
     document.body.appendChild(this.button);
   }
 
-  setState(state, method = "hand", count = 0, isManual = false) {
+  setState(state, method = "hand", count = 0, isManual = false, isVisible = true) {
 
     let text = "";
     if (state === "empty") {
@@ -49,6 +51,7 @@ export class ChumControls {
     if (
       this.currentState === state &&
       this.currentMethod === method &&
+      this.button.hidden === !isVisible &&
       this.button.innerText === text
     ) {
       return;
@@ -56,6 +59,7 @@ export class ChumControls {
 
     this.currentState = state;
     this.currentMethod = method;
+    this.button.hidden = !isVisible;
     this.button.innerText = text;
 
     const visualState = CHUM_VISUAL_STATES.has(state)

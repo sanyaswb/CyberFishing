@@ -27,7 +27,17 @@ function checkChumComposition() {
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
     getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,
     createUi:(onClick)=>new runtime.context.ChumControls(onClick)});
-  const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');
+  assert.equal(controller.ui.button.hidden,true);
+  const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');assert.equal(controller.ui.button.hidden,false);
+  // Visibility follows equipped items, including changes with the same empty UI state.
+  equipped.handChum=null;controller.refreshActiveHandChum();controller.updateUI();assert.equal(controller.ui.button.hidden,true);
+  const warningsBeforeHiddenClick=warnings.length;controller.ui.button.events.click({});assert.equal(warnings.length,warningsBeforeHiddenClick);
+  equipped.delivery={effectiveStats:{manualControl:true,sections:2}};equipped.deliveryChums=[];
+  controller.updateUI();assert.equal(controller.ui.currentState,'empty');assert.equal(controller.ui.button.hidden,false);
+  equipped.delivery=null;controller.updateUI();assert.equal(controller.ui.button.hidden,true);
+  equipped.delivery={effectiveStats:{manualControl:true,sections:2}};controller.updateUI();assert.equal(controller.ui.button.hidden,false);
+  equipped.delivery=null;equipped.handChum=hand;equipped.deliveryChums=[{id:'first'},null,{id:'second'}];controller.refreshActiveHandChum();
+  controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');assert.equal(controller.ui.button.hidden,false);
   controller.handleClick();assert.equal(controller.isAiming,true);assert.equal(hidden,1);
   input.clickPos={x:400,y:500};controller.handleAiming(input,bounds,16);assert.equal(input.clickPos,null);assert.equal(drops.length,0);
   clock.now+=250;input.clickPos={x:400,y:450};controller.handleAiming(input,bounds,16);
@@ -36,7 +46,7 @@ function checkChumComposition() {
   assert.equal(invalid.length,1);assert.match(warnings[0],/Занадто далеко/);
   water=false;controller.setAiming(true);clock.now+=250;input.clickPos={x:400,y:450};controller.handleAiming(input,bounds,16);assert.equal(invalid.length,2);water=true;
   equipped.handChum=null;controller.refreshActiveHandChum();controller.handleClick();assert.match(warnings.at(-1),/немає прикормки/);
-  controller.updateUI();assert.equal(controller.ui.currentState,'empty');equipped.handChum=hand;controller.refreshActiveHandChum();
+  controller.updateUI();assert.equal(controller.ui.currentState,'empty');assert.equal(controller.ui.button.hidden,true);equipped.handChum=hand;controller.refreshActiveHandChum();
   config.casting.enabled=true;controller.setAiming(true);clock.now+=250;
   const drag={pointerDown:true,pointerStart:{x:400,y:450},pointerCurrent:{x:400,y:550},clickPos:null};
   let visual;

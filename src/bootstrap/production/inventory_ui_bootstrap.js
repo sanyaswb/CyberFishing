@@ -6,6 +6,7 @@ import { InventoryViewModelNormalizer } from "../../game/presentation/inventory/
 import { InventoryAssemblyEditorRenderer } from "../../game/presentation/inventory/inventory_assembly_editor_renderer.js";
 import { InventoryAssemblyParameterSectionResolver } from "../../game/presentation/inventory/inventory_assembly_parameter_section_resolver.js";
 import { InventoryAttachmentBadgeRenderer } from "../../game/presentation/inventory/inventory_attachment_badge_renderer.js";
+import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/inventory_rod_removal_renderer.js";
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
@@ -79,6 +80,7 @@ export class InventoryUiBootstrap {
     const attachmentRenderer =
       new InventoryAttachmentBadgeRenderer({
         domFactory: dom,
+        rarityDomAdapter,
       });
     const resolvedResourceMeterResolver =
       resourceMeterResolver || new InventoryResourceMeterResolver();
@@ -125,12 +127,15 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         parametersRenderer: itemParametersRenderer,
         createParameterSectionResolver: () => new InventoryAssemblyParameterSectionResolver(),
+        rodRemovalRenderer: new InventoryRodRemovalRenderer({ domFactory: dom }),
       });
     const resolvedSavedLoadoutRenderer =
       savedLoadoutRenderer ||
       new InventorySavedLoadoutPreviewRenderer({
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
+        parametersRenderer: itemParametersRenderer,
+        parameterSectionResolver: new InventoryAssemblyParameterSectionResolver(),
       });
     const resolvedInventoryRenderer =
       inventoryRenderer ||

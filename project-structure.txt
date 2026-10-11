@@ -256,8 +256,6 @@
 │  │  │  ├── map_debug_module.js
 │  │  │  ├── net_debug_module.js
 │  │  │  ├── prediction_debug_module.js
-│  │  │  ├── reel_hold_gate_debug_module.js
-│  │  │  ├── reel_retrieve_diagnostic.js
 │  │  │  ├── rod_stroke_debug_module.js
 │  │  │  ├── stamina_debug_module.js
 │  │  │  └── tension_debug_module.js
@@ -796,6 +794,7 @@
 │  │     │  ├── inventory_messages.js
 │  │     │  ├── inventory_resource_meter_renderer.js
 │  │     │  ├── inventory_resource_meter_resolver.js
+│  │     │  ├── inventory_rod_removal_renderer.js
 │  │     │  ├── inventory_rule_messages.js
 │  │     │  ├── inventory_saved_loadout_preview_renderer.js
 │  │     │  ├── inventory_sort_config.js
@@ -976,7 +975,6 @@
    ├── player-inventory-check.js
    ├── project-structure.js
    ├── rarity-production-check.js
-   ├── reel-retrieve-diagnostic-check.js
    ├── run-checks.js
    ├── testing
    │  ├── README.md

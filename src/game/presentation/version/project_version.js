@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.32.0";
+export const CURRENT_PROJECT_VERSION = "0.32.1";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "isolated-dev-fight-stages",
-  updatedAt: "2026-10-10",
+  codename: "inventory-equipment-ux",
+  updatedAt: "2026-10-11",
   notes: Object.freeze([
-    "Production composes inactive DEV ports: GodMode, debug events, session diagnostics and listener counting stay off whatever the configuration says",
-    "Fight physics runs as nine per-session pipeline stages; the DEV fight snapshot builder lives in DEV",
-    "A new player's inventory starts in the current save format without the legacy conversion; Pages releases are immutable directories",
+    "Inventory cards keep square equipment compartments, equal spacing and minimal resource meters inside their bounds",
+    "Rod replacement opens a preview; removing an unsaved equipped rod offers saving or disassembling its components",
+    "Saved loadout members share a color, return intact when unequipped and disassemble only through a long press",
   ]),
 });
 

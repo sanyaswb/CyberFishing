@@ -106,6 +106,8 @@ export class InventoryCommandService {
     // The UI action vocabulary is presentation-owned and injected by the composition root.
     const InventoryActionType = this.#actionTypes;
     switch (action.type) {
+      case InventoryActionType.ROD_REMOVAL_CHOICE:
+        return this.#chooseRodRemoval(action.choice);
       case InventoryActionType.OPEN:
         this.#uiState.open();
         return this.#success();
@@ -140,16 +142,15 @@ export class InventoryCommandService {
       case InventoryActionType.ASSEMBLY_DISASSEMBLE:
         return this.#disassembleAssembly(action.rootInstanceId);
       case InventoryActionType.ASSEMBLY_BACK:
-        this.#uiState.showLoadoutPanel();
+        this.#backFromItem(action.rootInstanceId);
         return this.#success();
       case InventoryActionType.LOADOUT_SAVE:
-        return this.#saveLoadout(action.name);
+        return this.#uiState.rodRemovalStep === "save"
+          ? this.#confirmRodRemovalSave(action.name) : this.#saveLoadout(action.name);
       case InventoryActionType.LOADOUT_PREVIEW_SLOT_EQUIP:
         return this.#equipLoadoutSlot(action.loadoutId, action.slotId);
       case InventoryActionType.LOADOUT_EQUIP_ALL:
         return this.#equipLoadout(action.loadoutId);
-      case InventoryActionType.LOADOUT_DISASSEMBLE:
-        return this.#disassembleLoadout(action.loadoutId);
       case InventoryActionType.LOADOUT_PREVIEW_BACK:
         this.#uiState.showLoadoutPanel();
         return this.#success({ loadoutId: action.loadoutId });
@@ -170,6 +171,13 @@ export class InventoryCommandService {
 
     const source = this.#repository.get(instanceId);
     if (!source) return this.#failure(this.#messages.itemNotFound);
+    if (this.#type(source) === "rod") {
+      if (!this.#equipmentState.getRootInstanceId("rod")) {
+        return this.#equipLooseRoot(source.instanceId, "rod");
+      }
+      this.#uiState.showAssemblyEditor(source.instanceId);
+      return this.#success({ rootInstanceId: source.instanceId });
+    }
     if (
       this.#uiState.panelMode === "assembly" &&
       this.#assemblyStates.has(this.#uiState.editingRootInstanceId)
@@ -302,6 +310,13 @@ export class InventoryCommandService {
   #unequipSlot(slotId) {
     const currentId = this.#equipmentState.getRootInstanceId(slotId);
     if (!currentId) return this.#failure(this.#messages.slotAlreadyEmpty);
+    const isSavedRoot = InventoryItemLocation.isLoadout(this.#repository.require(currentId).location);
+    const hasComponents = EQUIPMENT_MAIN_SLOT_IDS.some((id) =>
+      id !== "rod" && this.#equipmentState.getRootInstanceId(id));
+    if (slotId === "rod" && !isSavedRoot && hasComponents) {
+      this.#uiState.showRodRemoval(currentId);
+      return this.#success({ requiresRodRemovalChoice: true });
+    }
     let unequippedInstanceId = currentId;
     this.#transaction.runAtomic(() => {
       if (slotId === "rod") {
@@ -326,6 +341,12 @@ export class InventoryCommandService {
 
   #activateAssemblySocket(action) {
     const rootInstanceId = action.rootInstanceId || this.#uiState.editingRootInstanceId;
+    if (this.#type(this.#repository.get(rootInstanceId)) === "rod") {
+      if (this.#equipmentState.getRootInstanceId("rod") !== rootInstanceId) {
+        return this.#failure(this.#messages.equipRodBeforeComponents);
+      }
+      return this.#activateEquipmentSlot(action.slotId);
+    }
     if (!rootInstanceId || !this.#assemblyStates.has(rootInstanceId)) {
       return this.#failure(this.#messages.assemblyNotFound);
     }
@@ -409,11 +430,15 @@ export class InventoryCommandService {
     const slotId = this.#findActiveSlot(rootInstanceId);
     if (!slotId) return this.#failure(this.#messages.assemblyNotEquipped);
     const result = this.#unequipSlot(slotId);
-    if (result.success) this.#uiState.showLoadoutPanel();
+    if (result.success && !result.requiresRodRemovalChoice) this.#uiState.showLoadoutPanel();
     return result;
   }
 
   #disassembleAssembly(rootInstanceId) {
+    const root = this.#repository.get(rootInstanceId);
+    if (InventoryItemLocation.isLoadout(root?.location)) {
+      return this.#failure(this.#messages.loadoutLongPressToDisassemble);
+    }
     if (!this.#assemblyStates.has(rootInstanceId)) {
       return this.#failure(this.#messages.assemblyNotFound);
     }
@@ -422,27 +447,25 @@ export class InventoryCommandService {
         this.#messages.unequipBeforeDisassembly,
       );
     }
-    const result = this.#transaction.runAtomic(() => {
-      this.#itemRemoval.releaseRootFromLoadout(rootInstanceId);
-      const releasedLineIds = this.#collectAssemblyLineIds(rootInstanceId);
-      const disassembled = this.#assemblyService.disassemble(rootInstanceId);
-      for (const lineInstanceId of releasedLineIds) {
-        if (this.#repository.has(lineInstanceId)) {
-          this.#lineAllocationService.release(lineInstanceId);
-        }
-      }
-      return disassembled;
-    });
+    const result = this.#transaction.runAtomic(() => this.#disassembleRootWithinTransaction(rootInstanceId));
     this.#uiState.showLoadoutPanel();
-    return this.#success({
-      disassembled: true,
-      result,
-    });
+    return this.#success({ disassembled: true, result });
+  }
+
+  #disassembleRootWithinTransaction(rootInstanceId) {
+    this.#itemRemoval.releaseRootFromLoadout(rootInstanceId);
+    const releasedLineIds = this.#collectAssemblyLineIds(rootInstanceId);
+    const disassembled = this.#assemblyService.disassemble(rootInstanceId);
+    for (const lineInstanceId of releasedLineIds) {
+      if (this.#repository.has(lineInstanceId)) {
+        this.#lineAllocationService.release(lineInstanceId);
+      }
+    }
+    return disassembled;
   }
 
   #saveLoadout(name) {
-    const normalizedName = String(name || "").trim().slice(0, 40);
-    if (!normalizedName) return this.#failure(this.#messages.loadoutNameRequired);
+    const normalizedName = this.#loadoutName(name);
     const result = this.#loadoutService.createFromEquipment({
       loadoutId: this.#nextId("loadout"),
       name: normalizedName,
@@ -488,30 +511,94 @@ export class InventoryCommandService {
       });
     }
 
-    this.#transaction.runAtomic(() => {
-      this.#equipRootWithinTransaction(rootInstanceId, slotId);
-    });
-    this.#uiState.showSavedLoadoutPreview(loadoutId);
-    return this.#equipmentSuccess({
-      loadoutId,
-      slotId,
-      equippedInstanceId: rootInstanceId,
-    });
+    this.#uiState.showLoadoutPanel();
+    return this.#activateInventoryItem(rootInstanceId);
   }
 
   #disassembleLoadout(loadoutId) {
     if (!this.#loadouts.has(loadoutId)) {
       return this.#failure(this.#messages.savedLoadoutNotFound);
     }
-    const result = this.#loadoutService.disassemble({
-      loadout: this.#loadouts.require(loadoutId),
-      equipmentState: this.#equipmentState,
+    const result = this.#transaction.runAtomic(() => {
+      const loadout = this.#loadouts.require(loadoutId);
+      const roots = loadout.getContainedRootIds();
+      const released = this.#loadoutService.disassemble({ loadout, equipmentState: this.#equipmentState });
+      if (!released.success) throw new InventoryApplicationError("LOADOUT_DISASSEMBLY_FAILED", released.warning);
+      for (const id of roots) {
+        if (this.#assemblyStates.has(id)) this.#disassembleRootWithinTransaction(id);
+      }
+      return released;
     });
     if (!result.success) return this.#failure(result.warning);
     if (this.#uiState.viewingLoadoutId === loadoutId) {
       this.#uiState.showLoadoutPanel();
     }
     return this.#success({ loadoutId, disassembled: true });
+  }
+
+  #backFromItem(rootInstanceId) {
+    const item = this.#repository.get(rootInstanceId);
+    if (InventoryItemLocation.isLoadout(item?.location)) {
+      this.#uiState.showSavedLoadoutPreview(item.location.loadoutId);
+    } else this.#uiState.showLoadoutPanel();
+  }
+
+  #loadoutName(name) {
+    const rod = this.#hydrate(this.#repository.get(this.#equipmentState.getRootInstanceId("rod")));
+    return (String(name || "").trim() ||
+      this.#messages.automaticLoadoutName(rod?.name || this.#messages.defaultRodName, this.#loadouts.list().length + 1)).slice(0, 40);
+  }
+
+  #chooseRodRemoval(choice) {
+    const rodId = this.#uiState.editingRootInstanceId;
+    if (!this.#uiState.rodRemovalStep || this.#equipmentState.getRootInstanceId("rod") !== rodId) {
+      return this.#failure(this.#messages.rodRemovalExpired);
+    }
+    if (choice === "cancel") {
+      this.#uiState.showAssemblyEditor(rodId);
+      return this.#success();
+    }
+    if (choice === "save") {
+      this.#uiState.showRodRemoval(rodId, "save");
+      return this.#success();
+    }
+    if (choice !== "disassemble") return this.#failure(this.#messages.unknownAction(choice));
+    this.#transaction.runAtomic(() => {
+      const roots = this.#equipmentState.getMainRootInstanceIds();
+      for (const id of Object.values(roots).filter(Boolean)) {
+        this.#itemRemoval.releaseRootFromLoadout(id);
+      }
+      const plan = this.#rodChangePlanner.plan({ equipmentState: this.#equipmentState, nextRodInstanceId: null });
+      this.#assertAllowedPlan(plan);
+      this.#equipmentState.restore(plan.after);
+      for (const [slotId, id] of Object.entries(roots)) {
+        if (!id) continue;
+        if (this.#assemblyStates.has(id)) this.#disassembleRootWithinTransaction(id);
+        else this.#settleUnequippedRoot(id, slotId);
+      }
+    });
+    this.#uiState.showLoadoutPanel();
+    return this.#success({ disassembled: true });
+  }
+
+  #confirmRodRemovalSave(name) {
+    const rodId = this.#uiState.editingRootInstanceId;
+    if (this.#uiState.rodRemovalStep !== "save" || this.#equipmentState.getRootInstanceId("rod") !== rodId) {
+      return this.#failure(this.#messages.rodRemovalExpired);
+    }
+    const loadoutId = this.#nextId("loadout");
+    this.#transaction.runAtomic(() => {
+      const saved = this.#loadoutService.createFromEquipment({
+        loadoutId, name: this.#loadoutName(name), equipmentState: this.#equipmentState,
+      });
+      if (!saved.success) throw new InventoryApplicationError("LOADOUT_SAVE_FAILED", saved.warning);
+      const plan = this.#rodChangePlanner.plan({ equipmentState: this.#equipmentState, nextRodInstanceId: null });
+      this.#assertAllowedPlan(plan);
+      this.#equipmentState.restore(plan.after);
+      this.#settleUnequippedRootsAfterPlan(plan);
+    });
+    this.#uiState.showLoadoutPanel();
+    return this.#success({ loadoutId });
   }
 
   #changeSetting(setting, enabled) {
@@ -570,8 +657,9 @@ export class InventoryCommandService {
           validation.reason || this.#messages.itemIncompatible,
         );
       }
-      const preparedLine = this.#prepareLooseLineForEquipment(source, slotId);
-      const root = preparedLine || this.#repository.splitOne(source.instanceId);
+      const savedRoot = InventoryItemLocation.isLoadout(source.location);
+      const preparedLine = savedRoot ? null : this.#prepareLooseLineForEquipment(source, slotId);
+      const root = preparedLine || (savedRoot ? source : this.#repository.splitOne(source.instanceId));
       equippedInstanceId = root.instanceId;
       this.#equipRootWithinTransaction(root.instanceId, slotId);
     });

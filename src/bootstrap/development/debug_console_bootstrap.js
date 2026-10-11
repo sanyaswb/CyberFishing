@@ -15,7 +15,6 @@ import { LocationDebugModule } from "../../dev/modules/location_debug_module.js"
 import { MapDebugModule } from "../../dev/modules/map_debug_module.js";
 import { NetDebugModule } from "../../dev/modules/net_debug_module.js";
 import { PredictionDebugModule } from "../../dev/modules/prediction_debug_module.js";
-import { ReelHoldGateDebugModule } from "../../dev/modules/reel_hold_gate_debug_module.js";
 import { RodStrokeDebugModule } from "../../dev/modules/rod_stroke_debug_module.js";
 import { StaminaDebugModule } from "../../dev/modules/stamina_debug_module.js";
 import { TensionDebugModule } from "../../dev/modules/tension_debug_module.js";
@@ -29,7 +28,7 @@ export function createDebugConsoleRuntime({config, debugModulesSource, documentT
   const moduleOptions = {configSource};
   [new BiteTicksDebugModule(moduleOptions), new LocationDebugModule({provider: locationProvider}),
     new MapDebugModule({printer: locationPrinter}), new ForcesDebugModule(moduleOptions), new DeviationsDebugModule(moduleOptions),
-    new TensionDebugModule(moduleOptions), new RodStrokeDebugModule(moduleOptions), new ReelHoldGateDebugModule(moduleOptions),
+    new TensionDebugModule(moduleOptions), new RodStrokeDebugModule(moduleOptions),
     new StaminaDebugModule(moduleOptions), new ExhaustionDebugModule(moduleOptions), new CatchTimeDebugModule(moduleOptions),
     new PredictionDebugModule(moduleOptions), new NetDebugModule(moduleOptions)].forEach(module => registry.register(module));
   const debugConsole = new DebugConsole({context, registry, debugModulesSource});

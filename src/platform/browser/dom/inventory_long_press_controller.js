@@ -1,6 +1,7 @@
 export class InventoryLongPressController {
   static DURATION_MS = 1500;
   static EQUIPPED_DURATION_MS = 800;
+  static ACTIVATION_DELAY_MS = 300;
   static MOVEMENT_TOLERANCE_PX = 8;
 
   #durationMs;
@@ -13,10 +14,7 @@ export class InventoryLongPressController {
     degradationColorResolver = null,
   } = {}) {
     this.#durationMs = InventoryLongPressController.DURATION_MS;
-    this.#movementTolerancePx = Math.max(
-      0,
-      Number(movementTolerancePx) || 0,
-    );
+    this.#movementTolerancePx = Math.max(0, Number(movementTolerancePx) || 0);
     this.#degradationColorResolver = degradationColorResolver;
   }
 
@@ -29,11 +27,7 @@ export class InventoryLongPressController {
 
   bind(
     element,
-    {
-      onClick = null,
-      onLongPress = null,
-      durationMs = this.#durationMs,
-    } = {},
+    { onClick = null, onLongPress = null, durationMs = this.#durationMs } = {},
   ) {
     if (!element?.addEventListener) return () => {};
 
@@ -83,9 +77,9 @@ export class InventoryLongPressController {
     return () => this.#disposeBinding(binding);
   }
 
-  clear() {
+  clear(host = null) {
     for (const binding of [...this.#bindings]) {
-      this.#disposeBinding(binding);
+      if (!host || host.contains(binding.element)) this.#disposeBinding(binding);
     }
   }
 
@@ -102,20 +96,22 @@ export class InventoryLongPressController {
     binding.startX = Number(event.clientX) || 0;
     binding.startY = Number(event.clientY) || 0;
     binding.fired = false;
-    binding.startedAt = this.#now();
-    this.#updateProgressVisual(binding, 0);
-    binding.element.classList.add("inventory-item-card--pressing");
-    this.#scheduleProgressUpdate(binding);
     binding.element.setPointerCapture?.(event.pointerId);
     binding.timerId = globalThis.setTimeout(() => {
-      binding.timerId = null;
-      binding.fired = true;
-      this.#stopProgressUpdate(binding);
-      this.#updateProgressVisual(binding, 1);
-      binding.element.classList.remove("inventory-item-card--pressing");
-      binding.element.classList.add("inventory-item-card--press-fired");
-      binding.onLongPress?.(event);
-    }, binding.durationMs);
+      binding.startedAt = this.#now();
+      this.#updateProgressVisual(binding, 0);
+      binding.element.classList.add("inventory-item-card--pressing");
+      this.#scheduleProgressUpdate(binding);
+      binding.timerId = globalThis.setTimeout(() => {
+        binding.timerId = null;
+        binding.fired = true;
+        this.#stopProgressUpdate(binding);
+        this.#updateProgressVisual(binding, 1);
+        binding.element.classList.remove("inventory-item-card--pressing");
+        binding.element.classList.add("inventory-item-card--press-fired");
+        binding.onLongPress?.(event);
+      }, binding.durationMs);
+    }, InventoryLongPressController.ACTIVATION_DELAY_MS);
   }
 
   #move(binding, event) {
@@ -124,7 +120,10 @@ export class InventoryLongPressController {
     }
     const deltaX = Math.abs((Number(event.clientX) || 0) - binding.startX);
     const deltaY = Math.abs((Number(event.clientY) || 0) - binding.startY);
-    if (deltaX > this.#movementTolerancePx || deltaY > this.#movementTolerancePx) {
+    if (
+      deltaX > this.#movementTolerancePx ||
+      deltaY > this.#movementTolerancePx
+    ) {
       this.#reset(binding);
     }
   }

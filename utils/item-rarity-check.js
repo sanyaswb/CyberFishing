@@ -323,8 +323,8 @@ class ItemRarityCheck {
   #checkCssLayering() {
     const css = readPageCss();
     Assertion.that(
-      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
-      "item cards draw the rarity frame from the rarity color",
+      css.includes("border: 1px solid var(--rarity-color)"),
+      "item cards draw a one-pixel frame from the rarity color",
     );
     Assertion.that(
       css.includes(".inventory-item-card.item-rarity--glow"),

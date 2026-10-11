@@ -1,22 +1,31 @@
 export class InventoryAttachmentBadgeRenderer {
   #dom;
+  #rarityDomAdapter;
 
-  constructor({ domFactory } = {}) {
+  constructor({ domFactory, rarityDomAdapter = null } = {}) {
     this.#dom = domFactory;
+    this.#rarityDomAdapter = rarityDomAdapter;
   }
 
   render(host, attachments = []) {
     if (!host) return;
     const groups = this.#groupAttachments(attachments);
     for (const [placement, entries] of groups) {
+      const side = ["hook", "reel-line"].includes(placement);
+      host.classList.add(side
+        ? "inventory-item-card__content--side-slots"
+        : "inventory-item-card__content--bottom-slots");
+      host.style.setProperty(side
+        ? "--inventory-side-slot-count"
+        : "--inventory-bottom-slot-count", entries.length);
       const cluster = this.#dom.element(
         "span",
         `inventory-attachments inventory-attachments--${placement}`,
       );
       cluster.setAttribute("aria-hidden", "true");
       cluster.style.setProperty("--inventory-badge-count", entries.length);
-      entries.forEach((attachment, index) => {
-        cluster.appendChild(this.#createBadge(attachment, index));
+      entries.forEach((attachment) => {
+        cluster.appendChild(this.#createBadge(attachment));
       });
       host.appendChild(cluster);
     }
@@ -51,10 +60,14 @@ export class InventoryAttachmentBadgeRenderer {
     return "bottom";
   }
 
-  #createBadge(attachment, index) {
+  #createBadge(attachment) {
     const badge = this.#dom.element("span", "inventory-attachment-badge");
-    badge.style.setProperty("--inventory-badge-index", index);
-    badge.title = String(attachment.name || attachment.label || "");
+    badge.title = String(attachment.name || attachment.label || "Порожній відсік");
+    if (attachment.empty === true) {
+      badge.classList.add("inventory-attachment-badge--empty");
+      return badge;
+    }
+    if (attachment.rarity) this.#rarityDomAdapter?.apply?.(badge, attachment.rarity);
 
     const image = this.#dom.image(
       attachment.iconUrl || attachment.imageUrl,

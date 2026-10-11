@@ -6,21 +6,21 @@
 }
 
 .inventory-resource-meter--thumbnail {
-  position: absolute;
-  right: 4px;
-  bottom: 4px;
-  left: 4px;
-  z-index: 6;
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
   height: var(--inventory-parameter-meter-height);
+  background: var(--inventory-resource-track);
 }
 
 .inventory-resource-meter--thumbnail .inventory-resource-meter__icon {
-  position: absolute;
-  bottom: calc(100% + 2px);
-  left: 0;
+  flex: none;
   color: var(--inventory-resource-icon);
   font:
-    12px/1 system-ui,
+    8px/1 system-ui,
     sans-serif;
   filter: drop-shadow(0 1px 2px #000);
 }
@@ -36,16 +36,13 @@
   width: 100%;
   height: var(--inventory-parameter-meter-height);
   overflow: hidden;
-  border: 1px solid var(--inventory-resource-border);
+  border: none;
   background: var(--inventory-resource-track);
 }
 
 .inventory-resource-meter__fill {
   position: absolute;
-  top: 1px;
-  right: 1px;
-  bottom: 1px;
-  left: 1px;
+  inset: 0;
   background: linear-gradient(
     to right,
     var(--inventory-resource-fill-start),

@@ -295,7 +295,10 @@ export class InventoryBalanceParameterResolver {
       .map(([path, actual]) => {
         const definition = this.#definition(item, path);
         const progressionBaseline = baselines.get(path);
-        const configuredBaseline = Number(definition.baseline);
+        const configuredBaseline =
+          definition.baseline === null || definition.baseline === undefined || definition.baseline === ""
+            ? NaN
+            : Number(definition.baseline);
         const baseline = progressionBaseline?.minimum ??
           (Number.isFinite(configuredBaseline) ? configuredBaseline : null);
         return this.#row({
@@ -586,16 +589,17 @@ export class InventoryBalanceParameterResolver {
     const delta = hasNumericComparison
       ? numericActual - numericBaseline
       : null;
+    const hasBaseline = Number.isFinite(numericBaseline) ||
+      (typeof baselineText === "string" && baselineText.trim() && baselineText !== "—");
     return Object.freeze({
       id,
       label: String(label || id),
       technicalPath: String(technicalPath || id),
       actual: actualText || this.#formatValue(actual, unit, precision),
-      baseline: baselineText ||
-        (Number.isFinite(numericBaseline)
-          ? this.#formatValue(numericBaseline, unit, precision)
-          : "—"),
-      baselineLabel,
+      ...(hasBaseline ? {
+        baseline: baselineText || this.#formatValue(numericBaseline, unit, precision),
+        baselineLabel,
+      } : {}),
       delta: deltaText ||
         (delta === null ? "" : this.#signed(delta, unit, precision)),
       tone: delta === null ? "neutral" : this.#tone(delta, direction),

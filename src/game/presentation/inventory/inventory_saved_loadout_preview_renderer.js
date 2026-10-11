@@ -1,10 +1,14 @@
 export class InventorySavedLoadoutPreviewRenderer {
   #dom;
   #itemRenderer;
+  #parametersRenderer;
+  #parameterSectionResolver;
 
-  constructor({ domFactory, itemRenderer } = {}) {
+  constructor({ domFactory, itemRenderer, parametersRenderer, parameterSectionResolver } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
+    this.#parametersRenderer = parametersRenderer;
+    this.#parameterSectionResolver = parameterSectionResolver;
   }
 
   render(
@@ -12,7 +16,6 @@ export class InventorySavedLoadoutPreviewRenderer {
     {
       onSlotEquip = null,
       onEquipAll = null,
-      onDisassemble = null,
       onBack = null,
       onWarning = null,
     } = {},
@@ -34,7 +37,7 @@ export class InventorySavedLoadoutPreviewRenderer {
       this.#dom.element(
         "p",
         "inventory-saved-loadout-preview__hint",
-        "Натисніть предмет, щоб спорядити лише його",
+        "Оберіть предмет для перегляду або спорядіть збірку",
       ),
     );
 
@@ -59,13 +62,18 @@ export class InventorySavedLoadoutPreviewRenderer {
       heading,
       this.#renderActions(model, {
         onEquipAll,
-        onDisassemble,
         onBack,
         onWarning,
       }),
       slots,
     );
+    const parameters = this.#parametersRenderer?.renderSections(this.#parameterSectionResolver.resolve({ sockets: model.slots }));
+    if (parameters) preview.appendChild(parameters);
     return preview;
+  }
+
+  updateDynamicVisuals(host, model) {
+    return this.#parametersRenderer?.updateSections(host, this.#parameterSectionResolver.resolve({ sockets: model.slots }));
   }
 
   #renderSlot(slot, onSlotEquip) {
@@ -90,16 +98,11 @@ export class InventorySavedLoadoutPreviewRenderer {
       const card = this.#itemRenderer.renderItem(slot.item, {
         variant: "saved-loadout",
         onActivate: () => onSlotEquip?.(slot),
+        showAttachments: false,
+        showTooltip: !this.#parametersRenderer?.hasParameters(slot.item),
       });
       card.setAttribute("aria-pressed", String(slot.active === true));
       well.appendChild(card);
-      const membership = this.#dom.element(
-        "span",
-        "inventory-saved-loadout-preview__membership-dot",
-      );
-      membership.setAttribute("role", "img");
-      membership.setAttribute("aria-label", "Належить до збірки");
-      well.appendChild(membership);
     } else {
       well.classList.add("inventory-saved-loadout-preview__well--empty");
       well.setAttribute("aria-label", `${slot.label}: порожньо`);
@@ -110,7 +113,7 @@ export class InventorySavedLoadoutPreviewRenderer {
 
   #renderActions(
     model,
-    { onEquipAll, onDisassemble, onBack, onWarning },
+    { onEquipAll, onBack, onWarning },
   ) {
     const actions = this.#dom.element(
       "div",
@@ -118,7 +121,7 @@ export class InventorySavedLoadoutPreviewRenderer {
     );
     actions.append(
       this.#actionButton(
-        "Спорядити все",
+        "Спорядити",
         "inventory-action--primary",
         model.canEquipAll,
         () => {
@@ -127,17 +130,6 @@ export class InventorySavedLoadoutPreviewRenderer {
         },
       ),
       this.#actionButton("Назад", "inventory-action--muted", true, () => onBack?.()),
-      this.#actionButton(
-        "Розібрати",
-        "inventory-action--danger",
-        model.canDisassemble,
-        () => {
-          if (!model.canDisassemble) {
-            return onWarning?.(model.disassembleWarning);
-          }
-          onDisassemble?.();
-        },
-      ),
     );
     return actions;
   }

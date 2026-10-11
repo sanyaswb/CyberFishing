@@ -1,4 +1,4 @@
-/* Equipped loadout, save action and saved-loadout preview. */
+/* Equipped loadout, removal confirmation form and saved-loadout preview. */
 
 .inventory-loadout-shell {
   height: 100%;
@@ -174,20 +174,6 @@
 .inventory-item-card--saved-loadout {
   width: 100%;
   height: 100%;
-}
-
-.inventory-saved-loadout-preview__membership-dot {
-  position: absolute;
-  z-index: 3;
-  right: 6px;
-  bottom: 6px;
-  width: 9px;
-  height: 9px;
-  border: 1px solid #c8ffe6;
-  border-radius: 50%;
-  background: var(--inventory-success);
-  box-shadow: 0 0 7px rgba(var(--inventory-success-rgb), 0.72);
-  pointer-events: none;
 }
 
 .inventory-saved-loadout-preview__empty {

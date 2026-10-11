@@ -14,6 +14,7 @@ export class InventoryUiState {
   #panelMode = "loadout";
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
+  #rodRemovalStep = null;
 
   constructor({ sortConfig } = {}) {
     this.#sortCriterionIds = [...(sortConfig?.defaults?.criterionIds || [])];
@@ -34,6 +35,7 @@ export class InventoryUiState {
       panelMode: this.#panelMode,
       editingRootInstanceId: this.#editingRootInstanceId,
       viewingLoadoutId: this.#viewingLoadoutId,
+      rodRemovalStep: this.#rodRemovalStep,
     });
   }
 
@@ -43,6 +45,7 @@ export class InventoryUiState {
   get editingRootInstanceId() { return this.#editingRootInstanceId; }
   get viewingLoadoutId() { return this.#viewingLoadoutId; }
   get placementOrderKey() { return this.#placementOrderKey; }
+  get rodRemovalStep() { return this.#rodRemovalStep; }
 
   open() {
     this.#isOpen = true;
@@ -50,6 +53,7 @@ export class InventoryUiState {
   }
 
   close() {
+    this.#rodRemovalStep = null;
     this.#isOpen = false;
     this.#highlightedEquipmentSlotId = null;
     this.clearPlacementOrder();
@@ -129,6 +133,7 @@ export class InventoryUiState {
 
   showAssemblyEditor(rootInstanceId) {
     this.#showPanel("assembly", rootInstanceId, null);
+    this.focusCompatibleCategory();
   }
 
   showLoadoutPanel() {
@@ -136,11 +141,17 @@ export class InventoryUiState {
   }
 
   showSavedLoadoutPreview(loadoutId) {
-    this.#showPanel("loadout", null, loadoutId);
+    this.#showPanel("saved-loadout", null, loadoutId);
+  }
+
+  showRodRemoval(rootInstanceId, step = "choice") {
+    this.showAssemblyEditor(rootInstanceId);
+    this.#rodRemovalStep = step;
   }
 
   #showPanel(panelMode, editingRootInstanceId, viewingLoadoutId) {
     this.#panelMode = panelMode;
+    this.#rodRemovalStep = null;
     this.#editingRootInstanceId = editingRootInstanceId;
     this.#viewingLoadoutId = viewingLoadoutId;
     this.#selectedInstanceId = null;

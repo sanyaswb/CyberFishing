@@ -12,6 +12,7 @@ export class InventoryUI {
   #loadoutRenderer;
   #assemblyRenderer;
   #savedLoadoutRenderer;
+  #inventoryRenderSignature = null;
   #inventoryRenderer;
   #tooltipPresenter;
   #mountNode;
@@ -137,6 +138,7 @@ export class InventoryUI {
   }
 
   close() {
+    this.#inventoryRenderSignature = null;
     if (!this.#isOpen) return;
     this.#isOpen = false;
     this.#rootNode.classList.remove("inventory-modal--open");
@@ -177,12 +179,28 @@ export class InventoryUI {
 
   render(source) {
     const viewModel = this.#normalizer.normalize(source);
-    this.#longPressController.clear();
+    this.#longPressController.clear(this.#leftHost);
     this.#tooltipPresenter.hide();
     this.#tooltipPresenter.setContext(viewModel.tooltipContext);
     this.#renderHeader(viewModel);
     this.#renderLeftPanel(viewModel.panel);
-    this.#renderInventory(viewModel.inventory);
+    const signature = JSON.stringify({
+      ...viewModel.inventory, savedLoadout: undefined, mode: undefined,
+      items: viewModel.inventory.items.map((item) => ({
+        instanceId: item.instanceId, itemId: item.itemId, itemType: item.itemType,
+        name: item.name, icon: item.icon, iconUrl: item.iconUrl || item.imageUrl,
+        quantity: item.quantity, rarity: item.rarity, attachments: item.attachments,
+        ratingTier: item.progression?.ratingTier, rarityVisual: item.rarityVisual,
+        assemblyCompletion: item.assemblyCompletion,
+        loadoutMembership: item.loadoutMembership,
+        compatibleWithHighlightedSlot: item.compatibleWithHighlightedSlot,
+      })),
+    });
+    if (signature !== this.#inventoryRenderSignature) {
+      this.#longPressController.clear(this.#rightHost);
+      this.#renderInventory(viewModel.inventory);
+      this.#inventoryRenderSignature = signature;
+    } else this.#updateDynamicVisuals(viewModel);
 
     const visible = this.#isOpen && viewModel.isOpen;
     this.#rootNode.classList.toggle("inventory-modal--open", visible);
@@ -205,6 +223,8 @@ export class InventoryUI {
         this.#leftHost,
         viewModel.panel.assembly,
       );
+    } else if (viewModel.panel.mode === "saved-loadout") {
+      this.#savedLoadoutRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.savedLoadout);
     }
 
     const loadValue = this.#firstNodeByClass(
@@ -233,6 +253,8 @@ export class InventoryUI {
     append(viewModel.panel.assembly.root);
     viewModel.panel.assembly.sockets.forEach((slot) => append(slot.item));
     viewModel.inventory.savedLoadout.slots.forEach((slot) => append(slot.item));
+    append(viewModel.panel.savedLoadout.card);
+    viewModel.panel.savedLoadout.slots.forEach((slot) => append(slot.item));
     viewModel.inventory.items.forEach(append);
     return items;
   }
@@ -346,9 +368,15 @@ export class InventoryUI {
   }
 
   #renderLeftPanel(panel) {
+    if (panel.mode === "saved-loadout") {
+      this.#renderSavedLoadout(this.#leftHost, panel.savedLoadout);
+      return;
+    }
     if (panel.mode === "assembly") {
       const rootInstanceId = panel.assembly.rootInstanceId;
       const editor = this.#assemblyRenderer.render(panel.assembly, {
+        onRodRemovalChoice: (choice) => this.#dispatch({ type: this.#actionTypes.ROD_REMOVAL_CHOICE, choice }),
+        onRodRemovalSave: (name) => this.#dispatch({ type: this.#actionTypes.LOADOUT_SAVE, name }),
         onSocketActivate: (socket) =>
           this.#dispatch({
             type: this.#actionTypes.ASSEMBLY_SOCKET_ACTIVATE,
@@ -398,20 +426,14 @@ export class InventoryUI {
           instanceId: slot.item?.instanceId || null,
         }),
       onWarning: (message) => this.showWarning(message),
-      onSaveLoadout: (name) =>
-        this.#dispatch({
-          type: this.#actionTypes.LOADOUT_SAVE,
-          name,
-        }),
     });
     this.#dom.replaceChildren(this.#leftHost, loadout);
   }
 
-  #renderInventory(inventory) {
-    if (inventory.mode === "saved-loadout") {
-      const loadoutId = inventory.savedLoadout.loadoutId;
+  #renderSavedLoadout(host, model) {
+      const loadoutId = model.loadoutId;
       const preview = this.#savedLoadoutRenderer.render(
-        inventory.savedLoadout,
+        model,
         {
           onSlotEquip: (slot) =>
             this.#dispatch({
@@ -425,11 +447,6 @@ export class InventoryUI {
               type: this.#actionTypes.LOADOUT_EQUIP_ALL,
               loadoutId,
             }),
-          onDisassemble: () =>
-            this.#dispatch({
-              type: this.#actionTypes.LOADOUT_DISASSEMBLE,
-              loadoutId,
-            }),
           onBack: () =>
             this.#dispatch({
               type: this.#actionTypes.LOADOUT_PREVIEW_BACK,
@@ -438,9 +455,10 @@ export class InventoryUI {
           onWarning: (message) => this.showWarning(message),
         },
       );
-      this.#dom.replaceChildren(this.#rightHost, preview);
-      return;
-    }
+      this.#dom.replaceChildren(host, preview);
+  }
+
+  #renderInventory(inventory) {
     const grid = this.#inventoryRenderer.render(inventory, {
       onCategorySelect: (categoryId) =>
         this.#dispatch({

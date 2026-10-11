@@ -37,6 +37,7 @@ export class InventoryItemCardRenderer {
       card,
       this.#resourceMeterResolver.resolve(item),
     );
+    this.#conditionDomAdapter?.apply(card, item.condition);
     this.#tooltipPresenter?.update?.(item);
   }
 
@@ -50,6 +51,7 @@ export class InventoryItemCardRenderer {
       onUnavailable = null,
       framelessItem = false,
       showAttachments = true,
+      showTooltip = true,
     } = {},
   ) {
     const field = this.#dom.element(
@@ -79,6 +81,7 @@ export class InventoryItemCardRenderer {
           longPressDurationMs,
           frameless: framelessItem,
           showAttachments,
+          showTooltip,
         }),
       );
     } else {
@@ -145,6 +148,7 @@ export class InventoryItemCardRenderer {
       showAttachments = true,
       showMetadata = true,
       showResourceMeter = true,
+      showTooltip = true,
     } = {},
   ) {
     const card = this.#dom.button(
@@ -154,7 +158,10 @@ export class InventoryItemCardRenderer {
     card.classList.toggle("inventory-item-card--frameless", frameless);
     card.dataset.instanceId = String(item.instanceId || "");
     card.setAttribute("aria-label", String(item.name || "Предмет"));
-    this.#renderMainVisual(card, item);
+    const content = this.#dom.element("span", "inventory-item-card__content");
+    this.#renderMainVisual(content, item);
+    if (showAttachments) this.#attachmentRenderer.render(content, item.attachments);
+    card.appendChild(content);
     if (showMetadata) this.#renderMetadata(card, item);
     this.#applyVisualAdapters(card, item, frameless, { showMetadata });
     if (showResourceMeter) {
@@ -163,10 +170,7 @@ export class InventoryItemCardRenderer {
         this.#resourceMeterResolver.resolve(item),
       );
     }
-    if (showAttachments) {
-      this.#attachmentRenderer.render(card, item.attachments);
-    }
-    this.#tooltipPresenter?.bind?.(card, item);
+    if (showTooltip) this.#tooltipPresenter?.bind?.(card, item);
     this.#bindInteraction(
       card,
       onActivate,
@@ -199,6 +203,13 @@ export class InventoryItemCardRenderer {
   }
 
   #renderMetadata(card, item) {
+    if (item.loadoutMembership) {
+      const dot = this.#dom.element("span", "inventory-item-card__membership-dot");
+      dot.style.setProperty("background-color", item.loadoutMembership.color);
+      dot.setAttribute("role", "img");
+      dot.setAttribute("aria-label", "Належить до збірки");
+      card.appendChild(dot);
+    }
     if (Number(item.quantity) > 1) {
       card.appendChild(
         this.#dom.element(

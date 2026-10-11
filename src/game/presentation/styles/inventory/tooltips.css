@@ -129,11 +129,6 @@
   font-weight: 700;
 }
 
-.inventory-balance-tooltip__baseline {
-  color: #7c9299;
-  font-size: 12px;
-}
-
 .inventory-balance-tooltip__impact {
   display: flex;
   align-items: center;

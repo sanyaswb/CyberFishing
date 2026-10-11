@@ -33,7 +33,6 @@ import { MemoryLeakWatchdog } from "../../dev/services/memory_leak_watchdog.js";
 import { OVERLAY_MODULES } from "../../dev/overlay/config/overlay_modules_config.js";
 import { OverlaySettingsStore } from "../../dev/overlay/overlay_settings_store.js";
 import { PROJECT_VERSION_CONFIG } from "../../game/presentation/version/project_version.js";
-import { ReelRetrieveDiagnostic } from "../../dev/modules/reel_retrieve_diagnostic.js";
 import { RenderAllocationDiagnostics } from "../../dev/diagnostics/render_allocation_diagnostics.js";
 import { WorldDebugRenderer } from "../../dev/rendering/world_debug_renderer.js";
 import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishBrowserStartupConfig } from "../../platform/browser/runtime/browser_startup_environment.js";
@@ -79,7 +78,7 @@ async function startGame() {
       itemDb: itemCatalog, mapDb: mapCatalog, parameterLabels, baseConfig: configRuntime.baseConfig,
       overrideStore: configRuntime.overrideStore, projectVersion: PROJECT_VERSION_CONFIG}),
   });
-  let consoleRuntime, overlayRuntime, probe, game, watchdog;
+  let consoleRuntime, overlayRuntime, game, watchdog;
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
@@ -87,7 +86,6 @@ async function startGame() {
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
     watchdog?.dispose();
-    probe?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
     disposeInterface?.();
@@ -98,7 +96,6 @@ async function startGame() {
   try {
     consoleRuntime = createDebugConsoleRuntime({config: CONFIG, debugModulesSource, documentTarget, windowTarget, logger: windowTarget.console});
     overlayRuntime = createDebugOverlayRuntime({config: CONFIG, baseConfig: configRuntime.baseConfig, settingsStore, documentTarget, windowTarget, storageCache});
-    probe = new ReelRetrieveDiagnostic({debugModulesSource});
     const compositionRoot = new GameCompositionRoot(CONFIG, {
       itemDb: itemCatalog,
       loadRandomInventoryId: () => import("../../platform/browser/inventory/random_inventory_id.js"),

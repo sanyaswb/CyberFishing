@@ -105,6 +105,10 @@ class FakeClassList {
 class FakeStyle {
   #properties = new Map();
 
+  getPropertyValue(name) {
+    return this.#properties.get(name) || "";
+  }
+
   setProperty(name, value) {
     this.#properties.set(name, String(value));
   }
@@ -396,6 +400,7 @@ class InventoryStaticContractCheck {
   #assertLongPressContract(source, style) {
     assert.match(source, /DURATION_MS\s*=\s*1500/);
     assert.match(source, /EQUIPPED_DURATION_MS\s*=\s*800/);
+    assert.match(source, /ACTIVATION_DELAY_MS\s*=\s*300/);
     assert.match(source, /MOVEMENT_TOLERANCE_PX\s*=\s*8/);
     assert.match(source, /get hasActivePress\(\)/);
     assert.match(source, /longPressController\.hasActivePress/);
@@ -529,18 +534,27 @@ class InventoryStaticContractCheck {
       "All thumbnail resources must share one reusable meter and color source",
     );
     assert.ok(
-      resourceThumbnailRule?.includes("right: 4px") &&
-        resourceThumbnailRule.includes("left: 4px") &&
+      resourceThumbnailRule?.includes("position: relative") &&
+        resourceThumbnailRule.includes("flex: none") &&
+        resourceThumbnailRule.includes("width: 100%") &&
         resourceThumbnailRule.includes("height: var(--inventory-parameter-meter-height)") &&
         resourceTrackRule?.includes("width: 100%"),
-      "The resource scale must span the thumbnail width with small equal insets",
+      "The resource scale must reserve its own row below the content at full width",
     );
     assert.ok(
-      resourceIconRule?.includes("position: absolute") &&
-        resourceIconRule.includes("bottom: calc(100% + 2px)") &&
-        resourceIconRule.includes("left: 0"),
-      "The optional resource icon must sit above the scale on its left edge",
+      resourceIconRule?.includes("flex: none") &&
+        !resourceIconRule.includes("position: absolute"),
+      "The optional resource icon must occupy space beside the scale",
     );
+    const compartmentRule = style.match(/\.inventory-attachment-badge\s*\{([^}]+)\}/)?.[1];
+    const incompleteRule = style.match(/\.inventory-item-card__incomplete-dot\s*\{([^}]+)\}/)?.[1];
+    assert.ok(compartmentRule?.includes("aspect-ratio: 1") &&
+      compartmentRule.includes("border: 1px solid var(--rarity-color)") &&
+      !compartmentRule.includes("position: absolute") &&
+      !compartmentRule.includes("border-radius: 50%"),
+      "Equipment must occupy square compartments with thin rarity borders inside the content grid");
+    assert.ok(incompleteRule?.includes("top: 2px") && incompleteRule.includes("left: 2px"),
+      "The incomplete indicator must remain inside the card with a two-pixel inset");
     assert.ok(
       parameterBarRule?.includes(
         "height: var(--inventory-parameter-meter-height)",
@@ -654,6 +668,18 @@ class InventoryStaticContractCheck {
           style,
         ),
       "Compatible socket backgrounds must pulse slowly between 20% and 50% opacity",
+    );
+    const highlightedItemRule = style.match(
+      /\.inventory-list-item\.inventory-list-item--compatible:not\(\.inventory-list-item--selected\)::after\s*\{[\s\S]*?\n\}/,
+    )?.[0];
+    assert.ok(
+      highlightedItemRule?.includes("background: var(--inventory-success)") &&
+        highlightedItemRule.includes("inset: 0") &&
+        highlightedItemRule.includes("opacity: 0.2") &&
+        highlightedItemRule.includes("animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite") &&
+        !highlightedItemRule.includes("border:") &&
+        !highlightedItemRule.includes("box-shadow:"),
+      "Compatible inventory cards must use the same green background pulse as sockets without a selection frame",
     );
     assert.ok(
       style.includes("--inventory-slot-size: var(--inventory-card-size)"),
@@ -780,7 +806,6 @@ class InventoryStaticContractCheck {
       "LOADOUT_SAVE",
       "LOADOUT_PREVIEW_SLOT_EQUIP",
       "LOADOUT_EQUIP_ALL",
-      "LOADOUT_DISASSEMBLE",
       "LOADOUT_PREVIEW_BACK",
       "AUTO_BAIT_CHANGE",
       "AUTO_CHUM_CHANGE",
@@ -986,15 +1011,9 @@ class InventoryStaticContractCheck {
       loadoutShell,
       "inventory-loadout-panel",
     );
-    const saveBar = this.#findByClass(
-      loadoutShell,
-      "inventory-loadout-save",
-    );
-    assert.strictEqual(saveBar.parentNode, loadoutShell);
-    assert.ok(
-      !loadoutPanel.contains(saveBar),
-      "Save bar must stay above the bordered loadout panel",
-    );
+    assert.strictEqual(loadoutPanel.parentNode, loadoutShell);
+    assert.strictEqual(this.#findAllByClass(loadoutShell, "inventory-loadout-save").length, 0,
+      "The normal equipment panel must not contain a permanent save form");
 
     const reelEmptyButton = this.#findByClass(
       this.#field(ui.rootNode, "reel"),
@@ -1221,6 +1240,8 @@ class InventoryStaticContractCheck {
     );
     const tooltip = this.#findByClass(document.body, "inventory-tooltip");
     inventoryCard.emit("mouseenter");
+    assert.strictEqual(this.#findAllByClass(tooltip, "inventory-balance-tooltip__baseline").length, 0);
+    assert.ok(!tooltip.textContent.includes("базове значення"), "Baseline values must stay out of the parameter display");
     assert.ok(
       tooltip.textContent.includes("Потужність") &&
         !tooltip.textContent.includes("engineStats.maxLoadKg") &&
@@ -1268,6 +1289,12 @@ class InventoryStaticContractCheck {
 
     dispatched.length = 0;
     inventoryCard.emit("pointerdown", { pointerId: 7 });
+    assert.strictEqual(inventoryCard.classList.contains("inventory-item-card--pressing"), false);
+    timers.advance(299);
+    assert.strictEqual(inventoryCard.classList.contains("inventory-item-card--pressing"), false);
+    assert.strictEqual(dispatched.length, 0);
+    timers.advance(1);
+    assert.strictEqual(inventoryCard.classList.contains("inventory-item-card--pressing"), true);
     timers.advance(1499);
     assert.strictEqual(dispatched.length, 0, "Long press fired too early");
     timers.advance(1);
@@ -1286,6 +1313,7 @@ class InventoryStaticContractCheck {
       clientX: 8,
       clientY: 0,
     });
+    timers.advance(300);
     for (let elapsed = 0; elapsed < 1500; elapsed += 250) {
       timers.advance(250);
       ui.updateDynamicProgression(250);
@@ -1313,7 +1341,7 @@ class InventoryStaticContractCheck {
       clientX: 9,
       clientY: 0,
     });
-    timers.advance(1500);
+    timers.advance(2300);
     assert.strictEqual(
       dispatched.length,
       0,
@@ -1330,11 +1358,11 @@ class InventoryStaticContractCheck {
     });
     dispatched.length = 0;
     savedLoadoutCard.emit("pointerdown", { pointerId: 11 });
-    timers.advance(1499);
+    timers.advance(1799);
     assert.strictEqual(
       dispatched.length,
       0,
-      "Saved loadout disassembly fired before 1500ms",
+      "Saved loadout disassembly fired before the activation delay and 1500ms countdown",
     );
     timers.advance(1);
     this.#assertLast(dispatched, {
@@ -1364,7 +1392,7 @@ class InventoryStaticContractCheck {
     );
     assert.strictEqual(rodCard.dataset.longPressDuration, "800");
     rodCard.emit("pointerdown", { pointerId: 12 });
-    timers.advance(799);
+    timers.advance(1099);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     rodCard.emit("pointerup", { pointerId: 12 });
@@ -1383,7 +1411,7 @@ class InventoryStaticContractCheck {
     );
     assert.strictEqual(tackleCard.dataset.longPressDuration, "800");
     tackleCard.emit("pointerdown", { pointerId: 9 });
-    timers.advance(799);
+    timers.advance(1099);
     assert.strictEqual(dispatched.length, 0);
     timers.advance(1);
     tackleCard.emit("pointerup", { pointerId: 9 });
@@ -1410,12 +1438,6 @@ class InventoryStaticContractCheck {
       enabled: true,
     });
 
-    const saveInput = this.#findByClass(
-      ui.rootNode,
-      "inventory-loadout-save__input",
-    );
-    saveInput.value = "Match";
-    saveInput.focus();
     const scrollableLoadout = this.#findByClass(
       ui.rootNode,
       "inventory-loadout-panel",
@@ -1433,27 +1455,9 @@ class InventoryStaticContractCheck {
     for (let update = 0; update < 4; update += 1) {
       ui.updateDynamicProgression(250);
     }
-    assert.strictEqual(
-      this.#findByClass(
-        ui.rootNode,
-        "inventory-loadout-save__input",
-      ),
-      saveInput,
-      "Dynamic updates must preserve the active input node",
-    );
-    assert.strictEqual(saveInput.value, "Match");
-    assert.strictEqual(document.activeElement, saveInput);
     assert.strictEqual(scrollableLoadout.scrollTop, 37);
     assert.strictEqual(scrollableInventory.scrollTop, 91);
     assert.strictEqual(equippedBoatMeter.getAttribute("aria-valuenow"), "62");
-    this.#findByClass(
-      ui.rootNode,
-      "inventory-loadout-save__button",
-    ).click();
-    this.#assertLast(dispatched, {
-      type: sandbox.InventoryActionType.LOADOUT_SAVE,
-      name: "Match",
-    });
 
     const { ItemProgressionDomAdapter } = new SourceRuntime().importModule(
       "src/platform/browser/dom/item_progression_dom_adapter.js",
@@ -1703,6 +1707,23 @@ class InventoryStaticContractCheck {
     });
     assert.strictEqual(debugSections.at(-1).id, "effective-stats");
     assert.strictEqual(debugSections.at(-1).showTechnicalPaths, true);
+    const missingBaseline = debugSections.flatMap((section) => section.rows).find((row) => row.id === "stat:maxLoadKg");
+    assert.strictEqual(Object.hasOwn(missingBaseline, "baseline"), false);
+    assert.strictEqual(Object.hasOwn(missingBaseline, "baselineLabel"), false);
+    assert.strictEqual(missingBaseline.delta, "");
+    const optionalBaselineConfig = {
+      stats: {
+        maxLoadKg: { label: "Load", baseline: null },
+        bearingCount: { label: "Bearings", baseline: 0 },
+      },
+    };
+    const optionalBaselineRows = new sandbox.InventoryBalanceParameterResolver({ config: optionalBaselineConfig })
+      .resolve({ itemType: "hook", effectiveStats: { maxLoadKg: 2, bearingCount: 3 } })
+      .flatMap((section) => section.rows);
+    assert.strictEqual(Object.hasOwn(optionalBaselineRows.find((row) => row.id === "stat:maxLoadKg"), "baseline"), false,
+      "A missing baseline must not become an implicit zero");
+    assert.strictEqual(optionalBaselineRows.find((row) => row.id === "stat:bearingCount").baseline, "0",
+      "An explicitly configured zero baseline remains available in the read model");
 
     const upgradedStatRows = balanceResolver.resolve({
       instanceId: "quality-nine-hook",
@@ -1786,8 +1807,53 @@ class InventoryStaticContractCheck {
         "inventory-attachment-badge",
       ).length,
       1,
-      "Inventory thumbnails must keep their attachment circles",
+      "Inventory thumbnails must keep their equipped item compartments",
     );
+    const compartmentContent = this.#findByClass(attachedInventoryItem, "inventory-item-card__content");
+    assert.ok(compartmentContent.classList.contains("inventory-item-card__content--bottom-slots"));
+    const emptyCompartmentCard = isolatedItemRenderer.renderItem({
+      instanceId: "empty-compartments", icon: "B",
+      attachments: [{ kind: "cargo", empty: true }, { kind: "cargo", empty: true }],
+      charge: { percent: 50 },
+    });
+    assert.strictEqual(this.#findAllByClass(emptyCompartmentCard, "inventory-attachment-badge--empty").length, 2);
+    assert.strictEqual(this.#findAllByClass(emptyCompartmentCard, "inventory-attachment-badge__icon").length, 0,
+      "Empty equipment compartments must stay empty rather than display an emoji");
+    const contentIndex = emptyCompartmentCard.children.indexOf(this.#findByClass(emptyCompartmentCard, "inventory-item-card__content"));
+    const meterIndex = emptyCompartmentCard.children.indexOf(this.#findByClass(emptyCompartmentCard, "inventory-resource-meter"));
+    assert.ok(contentIndex < meterIndex, "The resource meter follows all image and equipment compartments");
+    const bareItemCard = isolatedItemRenderer.renderItem({ instanceId: "bare-item", icon: "X" });
+    assert.strictEqual(this.#findAllByClass(bareItemCard, "inventory-attachments").length, 0,
+      "Items without equipment must not display compartments");
+    const rarityHost = isolatedDom.element("span");
+    const slotRarity = { id: "rare" };
+    let appliedSlotRarity = null;
+    const coloredCompartments = new sandbox.InventoryAttachmentBadgeRenderer({
+      domFactory: isolatedDom,
+      rarityDomAdapter: { apply(element, rarity) {
+        appliedSlotRarity = rarity;
+        element.style.setProperty("--rarity-color", "#aabbcc");
+      } },
+    });
+    coloredCompartments.render(rarityHost, [{ icon: "H", rarity: slotRarity }, { empty: true }]);
+    assert.strictEqual(appliedSlotRarity, slotRarity,
+      "Equipped compartment borders must use the attached item's rarity");
+    const rarityBadges = this.#findAllByClass(rarityHost, "inventory-attachment-badge");
+    assert.strictEqual(rarityBadges[0].style.getPropertyValue("--rarity-color"), "#aabbcc");
+    assert.strictEqual(rarityBadges[1].style.getPropertyValue("--rarity-color"), "",
+      "Empty compartments must keep their translucent grey appearance");
+    const capacityResolver = new sandbox.InventoryResourceMeterResolver();
+    const spool = { itemType: "fishing_line", location: { kind: "INVENTORY" },
+      progression: { capacity: { available: true, percent: 62 } } };
+    assert.strictEqual(capacityResolver.resolve(spool).percent, 62);
+    for (const kind of ["LOADOUT", "ATTACHED"]) {
+      assert.strictEqual(capacityResolver.resolve({ ...spool, location: { kind } }), null,
+        "Equipped and attached line must not have a separate capacity scale");
+    }
+    assert.strictEqual(capacityResolver.resolve({ ...spool, equipped: true }), null);
+    assert.strictEqual(capacityResolver.resolve({ itemType: "reel", equipped: true,
+      reelLineCapacity: { percent: 25, label: "Заповнення котушки" } }).percent, 25,
+      "The equipped reel must display its own projected fill ratio");
     const emptyDraftCard = isolatedItemRenderer.renderItem({
       instanceId: "empty-draft-stack",
       name: "Empty draft stack",
@@ -1920,6 +1986,9 @@ class InventoryStaticContractCheck {
       "Progression adapter and item renderer must not duplicate the rating-tier badge",
     );
 
+    currentView = this.#loadoutViewModel();
+    ui.render(currentView);
+    const inventoryBeforePreview = this.#findByClass(ui.rootNode, "inventory-list-panel");
     currentView = this.#savedLoadoutViewModel();
     ui.render(currentView);
     const savedPreview = this.#findByClass(
@@ -1928,15 +1997,15 @@ class InventoryStaticContractCheck {
     );
     assert.ok(
       this.#findByClass(ui.rootNode, "inventory-main__left").contains(
-        this.#findByClass(ui.rootNode, "inventory-loadout-panel"),
+        savedPreview,
       ),
-      "Saved loadout preview must leave the equipment panel on the left",
+      "Saved loadout contents must appear on the left",
     );
     assert.ok(
       this.#findByClass(ui.rootNode, "inventory-main__right").contains(
-        savedPreview,
+        inventoryBeforePreview,
       ),
-      "Saved loadout contents must replace the right inventory panel",
+      "Opening a saved loadout must preserve the inventory DOM on the right",
     );
     assert.strictEqual(
       this.#findAllByClass(
@@ -1949,10 +2018,10 @@ class InventoryStaticContractCheck {
     assert.strictEqual(
       this.#findAllByClass(
         savedPreview,
-        "inventory-saved-loadout-preview__membership-dot",
+        "inventory-item-card__membership-dot",
       ).length,
       2,
-      "Every saved root must keep the green loadout-membership dot",
+      "Every saved root must show its loadout-membership dot",
     );
     const savedRodCard = this.#walk(savedPreview).find(
       (node) =>
@@ -1973,7 +2042,6 @@ class InventoryStaticContractCheck {
     const previewButtonActions = [
       sandbox.InventoryActionType.LOADOUT_EQUIP_ALL,
       sandbox.InventoryActionType.LOADOUT_PREVIEW_BACK,
-      sandbox.InventoryActionType.LOADOUT_DISASSEMBLE,
     ];
     previewButtons.forEach((button, index) => {
       button.click();
@@ -2032,6 +2100,14 @@ class InventoryStaticContractCheck {
         assemblyParameters.textContent.includes("Freshness"),
       "The assembly editor must show production parameters for its root and attached components",
     );
+    for (const card of this.#findAllByClass(editor, "inventory-item-card")) {
+      card.emit("mouseenter");
+      assert.strictEqual(tooltip.style.display, "none", "Items with visible editor parameters must not duplicate them on hover");
+    }
+    const editorInventoryCard = this.#inventoryCard(ui.rootNode, "assembly-bag");
+    editorInventoryCard.emit("mouseenter");
+    assert.strictEqual(tooltip.style.display, "block", "Other inventory items retain hover parameters while the editor is open");
+    editorInventoryCard.emit("mouseleave");
     assert.strictEqual(
       this.#findAllByClass(
         assemblyParameters,
@@ -2204,6 +2280,19 @@ class InventoryStaticContractCheck {
       "The inactive Equip action must explain the rod incompatibility",
     );
 
+    const emptyParameterView = this.#editorViewModel();
+    emptyParameterView.panel.assembly.root = {
+      instanceId: "assembly-active", name: "No panel parameters", itemType: "hook", effectiveStats: { maxLoadKg: 2 },
+    };
+    emptyParameterView.panel.assembly.sockets = [];
+    emptyParameterView.panel.assembly.parameterItems = [];
+    ui.render(emptyParameterView);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-item-parameters").length, 0);
+    const emptyParameterCard = this.#findByClass(this.#findByClass(ui.rootNode, "inventory-assembly-editor__visual"), "inventory-item-card");
+    emptyParameterCard.emit("mouseenter");
+    assert.strictEqual(tooltip.style.display, "block", "Hover stays available when the editor has no visible parameters for the item");
+    emptyParameterCard.emit("mouseleave");
+    ui.render(currentView);
     ui.close();
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.CLOSE,
@@ -2223,6 +2312,22 @@ class InventoryStaticContractCheck {
     this.#assertLast(dispatched, {
       type: sandbox.InventoryActionType.CLOSE,
     });
+    currentView = this.#editorViewModel();
+    currentView.panel.assembly.rodRemovalStep = "choice";
+    ui.render(currentView);
+    const removal = this.#findByClass(ui.rootNode, "inventory-rod-removal");
+    this.#findByClass(removal, "inventory-action--primary").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ROD_REMOVAL_CHOICE, choice: "save" });
+    this.#findByClass(removal, "inventory-action--danger").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ROD_REMOVAL_CHOICE, choice: "disassemble" });
+    this.#findByClass(removal, "inventory-action--muted").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.ROD_REMOVAL_CHOICE, choice: "cancel" });
+    currentView.panel.assembly.rodRemovalStep = "save";
+    ui.render(currentView);
+    const removalForm = this.#findByClass(ui.rootNode, "inventory-loadout-save");
+    this.#findByClass(removalForm, "inventory-loadout-save__input").value = "";
+    removalForm.emit("submit");
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.LOADOUT_SAVE, name: "" });
     const observedTypes = new Set(observed.map((action) => action.type));
     Object.values(sandbox.InventoryActionType).forEach((type) => {
       assert.ok(observedTypes.has(type), `Missing interaction action: ${type}`);
@@ -2270,13 +2375,13 @@ class InventoryStaticContractCheck {
         actions.ASSEMBLY_BACK,
       ].map((type) => ({ type, rootInstanceId: "rig" })),
       { type: actions.LOADOUT_SAVE, name: "Match" },
+      { type: actions.ROD_REMOVAL_CHOICE, choice: "save" },
       {
         type: actions.LOADOUT_PREVIEW_SLOT_EQUIP,
         loadoutId: "saved-kit",
         slotId: "rod",
       },
       { type: actions.LOADOUT_EQUIP_ALL, loadoutId: "saved-kit" },
-      { type: actions.LOADOUT_DISASSEMBLE, loadoutId: "saved-kit" },
       { type: actions.LOADOUT_PREVIEW_BACK, loadoutId: "saved-kit" },
       { type: actions.AUTO_BAIT_CHANGE, enabled: true },
       { type: actions.AUTO_CHUM_CHANGE, enabled: false },
@@ -2501,9 +2606,10 @@ class InventoryStaticContractCheck {
     const base = this.#loadoutViewModel();
     return {
       ...base,
+      panel: { ...base.panel, mode: "saved-loadout" },
       inventory: {
         ...base.inventory,
-        mode: "saved-loadout",
+        mode: "inventory",
         savedLoadout: {
           loadoutId: "saved-kit",
           name: "Saved kit",
@@ -2520,6 +2626,7 @@ class InventoryStaticContractCheck {
                 itemType: "rod",
                 variant: "feeder",
                 name: "Saved rod",
+                loadoutMembership: { id: "saved-kit", color: "hsl(120 70% 60%)" },
                 icon: "R",
                 quantity: 1,
               },
@@ -2534,6 +2641,7 @@ class InventoryStaticContractCheck {
                 itemType: "feeder_rig",
                 variant: "spring",
                 name: "Saved spring",
+                loadoutMembership: { id: "saved-kit", color: "hsl(120 70% 60%)" },
                 icon: "S",
                 quantity: 1,
               },

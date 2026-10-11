@@ -838,7 +838,7 @@ class ItemProgressionCheck {
       "rating-tier badge inherits the item rarity frame color",
     );
     Assertion.that(
-      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)") &&
+      css.includes("border: 1px solid var(--rarity-color)") &&
         css.includes(".inventory-list-item.inventory-list-item--selected::after"),
       "rarity and interaction layers remain independent",
     );

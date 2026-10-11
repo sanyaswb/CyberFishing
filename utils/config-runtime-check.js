@@ -530,7 +530,7 @@ function checkLocationMapConfigChanges() {
 }
 
 async function checkNativeDevelopmentLifecycle() {
-  const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,probeDispose:0,watchdogDispose:0};
+  const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0};
   const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
   const config={rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
   const composition = new SourceRuntime({moduleStubs:{'src/game/config/runtime/game_config.js':{CONFIG:config}}})
@@ -548,7 +548,6 @@ async function checkNativeDevelopmentLifecycle() {
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
     'src/bootstrap/development/debug_console_bootstrap.js':{createDebugConsoleRuntime:()=>resource('consoleDispose')},
     'src/bootstrap/development/debug_overlay_bootstrap.js':{createDebugOverlayRuntime:()=>resource('overlayDispose')},
-    'src/dev/modules/reel_retrieve_diagnostic.js':{ReelRetrieveDiagnostic:class{dispose(){counts.probeDispose++;}}},
     'src/dev/services/memory_leak_watchdog.js':{MemoryLeakWatchdog:class{start(){}dispose(){counts.watchdogDispose++;}getReport(){return{};}}},
   }});
   const startup=source.importModule('src/bootstrap/development/development_game_startup.js');
@@ -576,10 +575,10 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(config.debug.fixedCatch.enabled,false);
   assert.equal(counts.root,2);assert.equal(counts.start,2);assert.equal(counts.gameDispose,2);assert.equal(windowTarget.CYBER_FISHING_CONFIG_RUNTIME,configRuntime);
   resetBuild();const failed=startup.startDevelopmentGame();rejectBuild(new Error('fixture build failure'));await assert.rejects(failed,/fixture build failure/);
-  assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);assert.equal(counts.probeDispose,3);
+  assert.equal(listeners.size,0);assert.equal(windowTarget.game,null);assert.equal(counts.consoleDispose,3);assert.equal(counts.overlayDispose,3);
   resetBuild();const hidden=startup.startDevelopmentGame();listeners.get('pagehide')();resolveBuild(app);await hidden;
   assert.equal(counts.start,2,'pagehide during a pending build never starts a late game loop');assert.equal(counts.gameDispose,3);
-  assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.probeDispose,4);assert.equal(counts.watchdogDispose,2);
+  assert.equal(counts.consoleDispose,4);assert.equal(counts.overlayDispose,4);assert.equal(counts.watchdogDispose,2);
 }
 
 checkNativeProductionStartup().then(checkNativeDevelopmentLifecycle).then(() => {

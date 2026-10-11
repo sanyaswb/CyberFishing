@@ -180,11 +180,6 @@ export class InventoryTooltipPresenter {
     header.append(identity, values);
     node.appendChild(header);
 
-    const baseline = this.#document.createElement("div");
-    baseline.className = "inventory-balance-tooltip__baseline";
-    baseline.textContent = `${row.baselineLabel || "мінімум"}: ${row.baseline}`;
-    node.appendChild(baseline);
-
     for (const impact of row.impacts || []) {
       const impactNode = this.#document.createElement("div");
       impactNode.className =

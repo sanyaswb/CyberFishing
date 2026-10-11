@@ -3,6 +3,7 @@ export class InventoryAssemblyEditorRenderer {
   #itemRenderer;
   #parametersRenderer;
   #parameterSectionResolver;
+  #rodRemovalRenderer;
 
   constructor({
     domFactory,
@@ -10,10 +11,12 @@ export class InventoryAssemblyEditorRenderer {
     parametersRenderer = null,
     parameterSectionResolver = null,
     createParameterSectionResolver,
+    rodRemovalRenderer,
   } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
     this.#parametersRenderer = parametersRenderer;
+    this.#rodRemovalRenderer = rodRemovalRenderer;
     this.#parameterSectionResolver =
       parameterSectionResolver ||
       createParameterSectionResolver();
@@ -28,6 +31,8 @@ export class InventoryAssemblyEditorRenderer {
       onDisassemble = null,
       onBack = null,
       onWarning = null,
+      onRodRemovalChoice = null,
+      onRodRemovalSave = null,
     } = {},
   ) {
     const editor = this.#dom.element(
@@ -38,6 +43,12 @@ export class InventoryAssemblyEditorRenderer {
       "div",
       "inventory-assembly-editor__workspace",
     );
+    if (model.rodRemovalStep) {
+      editor.appendChild(this.#rodRemovalRenderer.render(model, {
+        onChoice: onRodRemovalChoice, onSave: onRodRemovalSave,
+      }));
+      return editor;
+    }
     workspace.appendChild(this.#renderRootVisual(model));
     if (model.sockets.length > 0) {
       const sockets = this.#dom.element(
@@ -50,6 +61,7 @@ export class InventoryAssemblyEditorRenderer {
             variant: "socket",
             onActivate: () => onSocketActivate?.(socket),
             onUnavailable: (warning) => onWarning?.(warning),
+            showTooltip: !this.#parametersRenderer.hasParameters(socket.item),
           }),
         );
       });
@@ -87,6 +99,7 @@ export class InventoryAssemblyEditorRenderer {
       showAttachments: false,
       showMetadata: false,
       showResourceMeter: false,
+      showTooltip: !this.#parametersRenderer.hasParameters(model.root),
     }));
     return visual;
   }

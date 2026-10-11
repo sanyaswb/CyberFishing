@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.32.1 - Inventory and Equipment UX
+
+- Inventory cards use thin rarity borders, evenly spaced square equipment compartments and resource meters below the contents; line capacity appears on spools and reels containing line, with reel fill relative to its capacity. Filters have symmetric spacing and item previews select the compatible category.
+- Clicking another rod opens its parameters and equipment preview before replacement. Removing an unsaved rod with components offers saving with an optional name or disassembling; the permanent save form is removed.
+- Saved loadouts use the rod visual and first-level equipment, open on the left while preserving the inventory list, and mark their members with a shared color. Unequipping returns a saved kit intact without a dialog; only a long press disassembles it into individual items, including nested contents.
+- Long-press feedback starts after an activation delay; compatible items highlight their background, hover parameters appear only when they are not already visible, and undefined baseline values are hidden. Boat controls follow equipped delivery equipment; obsolete reeling diagnostics are removed from DevTools.
+
 ## v0.32.0 - Isolated DEV, Fight Stages
 
 - Production composes inactive DEV ports, so GodMode, debug events, session diagnostics and listener counting stay off whatever the configuration or overrides say; a new player's inventory starts directly in the current save format (same bytes, legacy conversion only for classic saves).

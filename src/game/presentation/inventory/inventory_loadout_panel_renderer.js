@@ -15,7 +15,6 @@ export class InventoryLoadoutPanelRenderer {
       onSlotActivate = null,
       onSlotLongPress = null,
       onWarning = null,
-      onSaveLoadout = null,
     } = {},
   ) {
     const shell = this.#dom.element(
@@ -26,11 +25,6 @@ export class InventoryLoadoutPanelRenderer {
       "div",
       "inventory-loadout-panel inventory-panel",
     );
-    if (model.save.visible) {
-      shell.appendChild(
-        this.#renderSaveBar(model.save, { onSaveLoadout, onWarning }),
-      );
-    }
 
     const primary = this.#dom.element(
       "div",
@@ -103,33 +97,4 @@ export class InventoryLoadoutPanelRenderer {
     });
   }
 
-  #renderSaveBar(save, { onSaveLoadout, onWarning }) {
-    const bar = this.#dom.element("div", "inventory-loadout-save");
-    const input = this.#dom.element("input", "inventory-loadout-save__input");
-    input.type = "text";
-    input.maxLength = save.maxNameLength;
-    input.placeholder = save.placeholder;
-    input.setAttribute("aria-label", save.placeholder);
-    const button = this.#dom.button(
-      "inventory-loadout-save__button",
-      "💾 Зберегти комплект",
-    );
-    button.classList.toggle("inventory-loadout-save__button--disabled", !save.enabled);
-    button.setAttribute("aria-disabled", String(!save.enabled));
-    const saveAction = () => {
-      if (!save.enabled) {
-        onWarning?.(save.warning || "Комплект зараз неможливо зберегти");
-        return;
-      }
-      onSaveLoadout?.(input.value.trim());
-    };
-    button.addEventListener("click", saveAction);
-    input.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") return;
-      event.preventDefault();
-      saveAction();
-    });
-    bar.append(input, button);
-    return bar;
-  }
 }

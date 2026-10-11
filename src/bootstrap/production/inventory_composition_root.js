@@ -359,7 +359,7 @@ export class InventoryCompositionRoot {
     const itemViews = new InventoryItemTreeViewFactory({
       repository,
       assemblyStates,
-      assemblyReader,
+      profileRegistry,
       completionPolicy,
       hydrate: (raw) =>
         itemViewFactory?.create?.(raw) || hydrator.hydrate(raw, repository),
@@ -384,6 +384,7 @@ export class InventoryCompositionRoot {
       terminalLineLabelResolver,
       compatibilityPolicy,
       equipmentLineReadinessPolicy,
+      rodChangePlanner,
       equipmentReadModelFactory,
       settings,
       loadValueProvider,

@@ -119,7 +119,6 @@ export const CONFIG = {
       deviations: false,
       tension: false,
       rodStroke: false,
-      reelHoldGate: false,
       stamina: false,
       exhaustion: false,
       catchTime: false,

@@ -11,6 +11,11 @@ export class InventoryActionContract {
     }
 
     switch (action.type) {
+      case types.ROD_REMOVAL_CHOICE:
+        if (!["save", "disassemble", "cancel"].includes(action.choice)) {
+          throw new TypeError("Invalid rod removal choice");
+        }
+        break;
       case types.CATEGORY_SELECT:
         this.#requireId(action.categoryId, "categoryId");
         break;
@@ -69,7 +74,6 @@ export class InventoryActionContract {
         this.#requireId(action.slotId, "slotId");
         break;
       case types.LOADOUT_EQUIP_ALL:
-      case types.LOADOUT_DISASSEMBLE:
       case types.LOADOUT_PREVIEW_BACK:
         this.#requireId(action.loadoutId, "loadoutId");
         break;

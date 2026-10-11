@@ -13,6 +13,10 @@ export class InventoryItemParametersRenderer {
     this.#resourceMeterRenderer = resourceMeterRenderer;
   }
 
+  hasParameters(item) {
+    return this.#resolver.resolve(item).length > 0;
+  }
+
   render(item) {
     return this.renderSections(
       [{ item, title: item?.name || "Предмет", slotLabel: "", count: 1 }],

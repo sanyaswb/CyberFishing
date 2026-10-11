@@ -201,12 +201,6 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
-    id: "reel-retrieve-diagnostic",
-    title: "DEV reel retrieve diagnostic lifecycle",
-    file: "utils/reel-retrieve-diagnostic-check.js",
-    suites: ["tools"],
-  },
-  {
     id: "devtools-links",
     title: "DevTools linked parameters",
     file: "utils/dev-tools-linked-parameter-check.js",

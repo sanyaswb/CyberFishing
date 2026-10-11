@@ -159,7 +159,7 @@ export class ChumController {
       }
     }
 
-    this.#ui.setState(state, method, count, isManual);
+    this.#ui.setState(state, method, count, isManual, !!(eq.delivery || eq.handChum));
     this.#syncAimingWithBoatState(method, isManual);
   }
 

@@ -1,4 +1,5 @@
 export const InventoryActionType = Object.freeze({
+  ROD_REMOVAL_CHOICE: "inventory/rod-removal-choice",
   OPEN: "inventory/open",
   CLOSE: "inventory/close",
   CATEGORY_SELECT: "inventory/category-select",
@@ -18,7 +19,6 @@ export const InventoryActionType = Object.freeze({
   LOADOUT_SAVE: "inventory/loadout-save",
   LOADOUT_PREVIEW_SLOT_EQUIP: "inventory/loadout-preview-slot-equip",
   LOADOUT_EQUIP_ALL: "inventory/loadout-equip-all",
-  LOADOUT_DISASSEMBLE: "inventory/loadout-disassemble",
   LOADOUT_PREVIEW_BACK: "inventory/loadout-preview-back",
   AUTO_BAIT_CHANGE: "inventory/auto-bait-change",
   AUTO_CHUM_CHANGE: "inventory/auto-chum-change",

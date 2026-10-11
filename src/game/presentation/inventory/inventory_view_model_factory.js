@@ -2,12 +2,13 @@ import { EQUIPMENT_ALL_SLOT_IDS, EQUIPMENT_MAIN_SLOT_IDS, EQUIPMENT_SLOT_CONFIG 
 import { EQUIPMENT_SLOT_PRESENTATION } from "./equipment_slot_presentation.js";
 import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_policy.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
+import { EquipmentState } from "../../domain/equipment/equipment_state.js";
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
     { id: "all", label: "Усі", icon: "🎒" },
     { id: "compatible", label: "Сумісне", icon: "✓" },
-    { id: "loadouts", label: "Комплекти", icon: "🧰" },
+    { id: "loadouts", label: "Збірки", icon: "🎣" },
     { id: "rods", label: "Вудилища", icon: "🎣" },
     { id: "reels", label: "Котушки", icon: "⚙️" },
     { id: "lines", label: "Ліски", icon: "🧵" },
@@ -33,6 +34,7 @@ export class InventoryViewModelFactory {
   #terminalLineLabelResolver;
   #compatibilityPolicy;
   #equipmentLineReadinessPolicy;
+  #rodChangePlanner;
   #equipmentReadModelFactory;
   #settings;
   #loadValueProvider;
@@ -52,6 +54,7 @@ export class InventoryViewModelFactory {
     terminalLineLabelResolver,
     compatibilityPolicy,
     equipmentLineReadinessPolicy = null,
+    rodChangePlanner,
     equipmentReadModelFactory,
     settings,
     loadValueProvider = null,
@@ -71,6 +74,7 @@ export class InventoryViewModelFactory {
     this.#terminalLineLabelResolver = terminalLineLabelResolver;
     this.#compatibilityPolicy = compatibilityPolicy;
     this.#equipmentLineReadinessPolicy = equipmentLineReadinessPolicy;
+    this.#rodChangePlanner = rodChangePlanner;
     this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#settings = settings;
     this.#loadValueProvider = loadValueProvider;
@@ -144,7 +148,8 @@ export class InventoryViewModelFactory {
       settings: this.#settings.snapshot(),
       tooltipContext: this.#createTooltipContext(equipmentReadModel),
       panel: {
-        mode: uiState.panelMode === "assembly" ? "assembly" : "loadout",
+        mode: ["assembly", "saved-loadout"].includes(uiState.panelMode) ? uiState.panelMode : "loadout",
+        savedLoadout,
         loadout: this.#createEquipmentPanel(
           accessibleRawItems,
           equipmentReadModel.rod,
@@ -156,6 +161,7 @@ export class InventoryViewModelFactory {
           accessibleRawItems,
           selectedRaw,
           equipmentReadModel,
+          uiState.rodRemovalStep,
         ),
       },
       inventory: {
@@ -165,7 +171,7 @@ export class InventoryViewModelFactory {
           equipmentReadModel.rod,
           inventoryContext,
         ),
-        mode: uiState.viewingLoadoutId ? "saved-loadout" : "inventory",
+        mode: "inventory",
         savedLoadout,
       },
     };
@@ -228,14 +234,6 @@ export class InventoryViewModelFactory {
     return {
       mainSlots,
       auxiliarySlots,
-      save: {
-        visible: true,
-        enabled: Object.values(
-          this.#equipmentState.getMainRootInstanceIds(),
-        ).some(Boolean),
-        placeholder: "Назва комплекту...",
-        maxNameLength: 40,
-      },
     };
   }
 
@@ -244,6 +242,7 @@ export class InventoryViewModelFactory {
     accessibleRawItems,
     selectedRaw,
     equipmentReadModel,
+    rodRemovalStep = null,
   ) {
     if (!rootInstanceId || !this.#repository.has(rootInstanceId)) {
       return {
@@ -271,7 +270,7 @@ export class InventoryViewModelFactory {
             .map((target) => target.socketId)
         : [],
     );
-    const sockets = targets
+    let sockets = targets
       .map((target) => {
         const hasCompatibleItem = accessibleRawItems.some((candidate) =>
           this.#attachmentTargetResolver.accepts(target, candidate),
@@ -300,6 +299,21 @@ export class InventoryViewModelFactory {
       rootInstanceId,
     );
     const rootView = this.#itemViews.create(rootInstanceId);
+    if (rootView?.itemType === "rod") {
+      const rodEquipment = equipped ? this.#equipmentState : new EquipmentState({ rod: rootInstanceId });
+      sockets = EQUIPMENT_MAIN_SLOT_IDS.filter((id) => id !== "rod" &&
+        this.#visibilityPolicy.isVisible(id, { rod: rootView })).map((slotId) => {
+        const id = rodEquipment.getRootInstanceId(slotId);
+        return {
+          socketId: slotId, slotId, slotIndex: 0, parentInstanceId: rootInstanceId,
+          label: this.#equipmentLabel(slotId, rootView, null),
+          item: id ? this.#itemViews.create(id) : null,
+          state: id ? "filled" : equipped ? "available" : "unavailable",
+          warning: "Спочатку спорядіть це вудилище.",
+          highlighted: false,
+        };
+      });
+    }
     const hasAttachedComponents =
       rootView?.assemblyCompletion?.hasAnyComponent === true;
     const equipAvailability = equipped
@@ -309,6 +323,7 @@ export class InventoryViewModelFactory {
       root: rootView ? { ...rootView, equipped } : null,
       rootLabel: this.#itemViews.create(rootInstanceId)?.name || "Предмет",
       rootInstanceId,
+      rodRemovalStep,
       sockets,
       parameterItems: this.#createEquippedRodParameterItems(
         rootInstanceId,
@@ -320,8 +335,8 @@ export class InventoryViewModelFactory {
       equipWarning: equipAvailability.warning,
       canUnequip: equipped,
       showUnequip: equipped,
-      canDisassemble: !equipped && hasAssembly && hasAttachedComponents,
-      showDisassemble: !equipped && hasAssembly && hasAttachedComponents,
+      canDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
+      showDisassemble: !equipped && hasAssembly && !rootView?.loadoutMembership && hasAttachedComponents,
     };
   }
 
@@ -371,10 +386,13 @@ export class InventoryViewModelFactory {
     if (!this.#equipmentLineReadinessPolicy?.validate) {
       return { isValid: true };
     }
-    return this.#equipmentLineReadinessPolicy.validate({
+    const snapshot = slotId === "rod"
+      ? this.#rodChangePlanner.plan({ equipmentState: this.#equipmentState, nextRodInstanceId: instanceId }).after
+      : {
       ...this.#equipmentState.snapshot(),
       [slotId]: instanceId,
-    });
+    };
+    return this.#equipmentLineReadinessPolicy.validate(snapshot);
   }
 
   #createEquippedRodParameterItems(rootInstanceId, projection = {}) {
@@ -406,7 +424,6 @@ export class InventoryViewModelFactory {
         name: "Збірка",
         slots: [],
         canEquipAll: false,
-        canDisassemble: false,
       };
     }
     const rodInstanceId = loadout.getRootInstanceId("rod");
@@ -431,15 +448,23 @@ export class InventoryViewModelFactory {
       });
     }
     const hasContents = loadout.getContainedRootIds().length > 0;
+    const nextEquipment = new EquipmentState({ ...this.#equipmentState.snapshot(), ...loadout.getRootInstanceIds() });
+    const validation = slots.map((slot) => this.#compatibilityPolicy.validate({
+      slotId: slot.slotId, item: slot.item, rod, equipmentState: nextEquipment, enforceReadiness: false,
+    })).find((result) => !result.isValid);
+    const readiness = this.#validateActivationReadinessForLoadout(nextEquipment.snapshot());
     return {
       loadoutId: loadout.loadoutId,
       name: loadout.name,
       slots,
-      canEquipAll: hasContents,
-      canDisassemble: hasContents,
-      equipWarning: hasContents ? "" : "Збірка порожня.",
-      disassembleWarning: hasContents ? "" : "Збірка порожня.",
+      card: this.#itemViews.createLoadout(loadout),
+      canEquipAll: hasContents && !validation && readiness.isValid !== false,
+      equipWarning: !hasContents ? "Збірка порожня." : validation?.reason || readiness.warning || "",
     };
+  }
+
+  #validateActivationReadinessForLoadout(snapshot) {
+    return this.#equipmentLineReadinessPolicy?.validate?.(snapshot) || { isValid: true };
   }
 
   #createInventory(uiState, accessibleRawItems, rod, context = {}) {
@@ -448,7 +473,7 @@ export class InventoryViewModelFactory {
       .map((item) => this.#itemViews.create(item.instanceId))
       .filter(Boolean);
     const compatibleInstanceIds = contextFiltered
-      ? new Set()
+      ? new Set(itemViews.map((item) => item.instanceId))
       : new Set(
           this.#contextItemFilter
             .filter(accessibleRawItems, { mode: "equipment-compatible" })
@@ -458,6 +483,7 @@ export class InventoryViewModelFactory {
       ? InventoryViewModelFactory.#categories.filter(
           (category) =>
             category.id === "all" ||
+            category.id === "compatible" ||
             itemViews.some((item) => this.#matchesCategory(item, category.id)),
         )
       : InventoryViewModelFactory.#categories;

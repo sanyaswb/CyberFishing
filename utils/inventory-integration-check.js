@@ -193,6 +193,13 @@ vm.runInContext(
         lineCapacityMeters: 20,
       },
     },
+    reelSmall: {
+      id: "reelSmall",
+      name: "Small reel",
+      itemType: "reel",
+      assemblyProfileId: "reel_standard",
+      gameplayStats: { lineCapacityMeters: 10 },
+    },
     line: {
       id: "line",
       name: "Line",
@@ -304,6 +311,7 @@ vm.runInContext(
     settings = {},
     itemViewFactory = null,
     now = null,
+    onPersist = null,
   }) => {
     let persisted = null;
     let sequence = 0;
@@ -314,6 +322,7 @@ vm.runInContext(
           : JSON.parse(JSON.stringify(persisted));
       },
       set(_key, value) {
+        onPersist?.(value);
         persisted = JSON.parse(JSON.stringify(value));
       },
     };
@@ -361,6 +370,110 @@ vm.runInContext(
 
   const lineMeters = (composition, instanceId) =>
     composition.lineAllocationService.getLengthMeters(instanceId);
+
+  const rodUx = makeComposition({
+    items: [raw("ux-rod", "rodPole"), raw("ux-next-rod", "rodFeeder"),
+      raw("ux-line", "line", 1, { statOverrides: { lengthMeters: 8 } }),
+      raw("ux-hook", "hook"), raw("ux-bait", "bait", 1, {
+        location: InventoryItemLocation.attached("ux-hook", "bait"),
+      })],
+    equipment: { ...emptyEquipment(), rod: "ux-rod", terminalLine: "ux-line", tackle: "ux-hook" },
+    assemblies: [{ rootInstanceId: "ux-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }],
+  });
+  const beforeRodInspect = JSON.stringify(rodUx.snapshotFactory.create());
+  dispatch(rodUx, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "ux-next-rod" });
+  const inspectedRod = rodUx.facade.getViewModel();
+  assertIntegration(JSON.stringify(rodUx.snapshotFactory.create()) === beforeRodInspect &&
+    inspectedRod.panel.assembly.rootInstanceId === "ux-next-rod" &&
+    inspectedRod.panel.assembly.sockets.length > 0 &&
+    inspectedRod.panel.assembly.sockets.every((slot) => !slot.item) &&
+    inspectedRod.panel.assembly.showEquip && !inspectedRod.panel.assembly.showDisassemble &&
+    inspectedRod.inventory.activeCategoryId === "compatible",
+    "clicking another rod opens its parameters and empty slots without replacing current equipment");
+  dispatch(rodUx, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: "ux-next-rod" });
+  const removalRequest = dispatch(rodUx, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, { slotId: "rod" });
+  assertIntegration(removalRequest.requiresRodRemovalChoice && rodUx.commands.getUiState().rodRemovalStep === "choice" &&
+    JSON.stringify(rodUx.snapshotFactory.create()) === beforeRodInspect,
+    "removing a rod with components first requests a choice without mutating saved state");
+  dispatch(rodUx, InventoryActionType.ROD_REMOVAL_CHOICE, { choice: "cancel" });
+  assertIntegration(JSON.stringify(rodUx.snapshotFactory.create()) === beforeRodInspect,
+    "cancelling rod removal preserves every component and line meter");
+  dispatch(rodUx, InventoryActionType.ASSEMBLY_UNEQUIP, { rootInstanceId: "ux-rod" });
+  dispatch(rodUx, InventoryActionType.ROD_REMOVAL_CHOICE, { choice: "save" });
+  const savedRodUx = dispatch(rodUx, InventoryActionType.LOADOUT_SAVE, { name: "" });
+  const savedRodRoots = rodUx.loadouts.require(savedRodUx.loadoutId).getRootInstanceIds();
+  assertIntegration(rodUx.loadouts.require(savedRodUx.loadoutId).name.trim() &&
+    savedRodRoots.rod === "ux-rod" && savedRodRoots.terminalLine === "ux-line" && savedRodRoots.tackle === "ux-hook" &&
+    rodUx.equipmentState.getRootInstanceId("rod") === null && lineMeters(rodUx, "ux-line") === 8 &&
+    rodUx.repository.require("ux-bait").location.kind === "ATTACHED",
+    "saving without a name assigns one automatically and preserves exact roots, nested bait and line length");
+  dispatch(rodUx, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+  const savedRodCard = rodUx.facade.getViewModel().inventory.items.find((item) => item.loadoutId === savedRodUx.loadoutId);
+  assertIntegration(savedRodCard.icon !== "🧰" && savedRodCard.attachments.length === 2 &&
+    savedRodCard.attachments.every((slot) => slot.instanceId !== "ux-bait"),
+    "the saved card uses the rod visual and only its first-level equipment roots");
+  const inventoryBeforeSavedPreview = rodUx.facade.getViewModel().inventory.items.map((item) => item.instanceId).join(",");
+  dispatch(rodUx, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: savedRodUx.loadoutId });
+  assertIntegration(rodUx.facade.getViewModel().panel.mode === "saved-loadout" &&
+    rodUx.facade.getViewModel().inventory.mode === "inventory" &&
+    rodUx.facade.getViewModel().inventory.items.map((item) => item.instanceId).join(",") === inventoryBeforeSavedPreview,
+    "the saved loadout opens on the left without changing the inventory list");
+  dispatch(rodUx, InventoryActionType.LOADOUT_EQUIP_ALL, { loadoutId: savedRodUx.loadoutId });
+  const memberViews = rodUx.facade.getViewModel().panel.loadout.mainSlots.filter((slot) => slot.item).map((slot) => slot.item);
+  assertIntegration(memberViews.length === 3 && memberViews.every((item) =>
+    item.loadoutMembership?.id === savedRodUx.loadoutId &&
+    item.loadoutMembership.color === memberViews[0].loadoutMembership.color),
+    "equipped members of one loadout share a stable membership color");
+  const savedRemoval = dispatch(rodUx, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, { slotId: "rod" });
+  assertIntegration(!savedRemoval.requiresRodRemovalChoice && !rodUx.commands.getUiState().rodRemovalStep &&
+    rodUx.loadouts.list().length === 1 && rodUx.repository.size === 5 &&
+    savedRodRoots.rod === rodUx.loadouts.require(savedRodUx.loadoutId).getRootInstanceId("rod") &&
+    EQUIPMENT_MAIN_SLOT_IDS.every((slot) => !rodUx.equipmentState.getRootInstanceId(slot)) &&
+    rodUx.repository.require("ux-bait").location.kind === "ATTACHED" && lineMeters(rodUx, "ux-line") === 8,
+    "removing a saved rod returns its complete loadout without a save/disassemble prompt");
+  dispatch(rodUx, InventoryActionType.LOADOUT_EQUIP_ALL, { loadoutId: savedRodUx.loadoutId });
+  dispatch(rodUx, InventoryActionType.ASSEMBLY_UNEQUIP, { rootInstanceId: "ux-rod" });
+  dispatch(rodUx, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, { instanceId: savedRodUx.loadoutId });
+  assertIntegration(rodUx.loadouts.list().length === 0 &&
+    rodUx.repository.list().every((item) => item.location.kind === "INVENTORY") &&
+    EQUIPMENT_MAIN_SLOT_IDS.every((slot) => !rodUx.equipmentState.getRootInstanceId(slot)),
+    "long pressing the removed saved loadout returns every root and nested item to the inventory");
+
+  for (const choice of ["save", "disassemble"]) {
+    let rejectPersistence = false;
+    const removalRollback = makeComposition({ ...JSON.parse(beforeRodInspect), onPersist: () => {
+      if (rejectPersistence) throw new Error("Simulated persistence failure");
+    } });
+    dispatch(removalRollback, InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS, { slotId: "rod" });
+    if (choice === "save") dispatch(removalRollback, InventoryActionType.ROD_REMOVAL_CHOICE, { choice });
+    rejectPersistence = true;
+    const failedRemoval = removalRollback.facade.dispatch(choice === "save"
+      ? { type: InventoryActionType.LOADOUT_SAVE, name: "Test rod" }
+      : { type: InventoryActionType.ROD_REMOVAL_CHOICE, choice });
+    assertIntegration(failedRemoval.success === false &&
+      JSON.stringify(removalRollback.snapshotFactory.create()) === beforeRodInspect,
+      "failed " + choice + " persists neither partial equipment changes nor broken custody");
+    rejectPersistence = false;
+    dispatch(removalRollback, choice === "save" ? InventoryActionType.LOADOUT_SAVE : InventoryActionType.ROD_REMOVAL_CHOICE,
+      choice === "save" ? { name: "Test rod" } : { choice });
+    assertIntegration(removalRollback.equipmentState.getRootInstanceId("rod") === null &&
+      (choice === "save" ? removalRollback.loadouts.list()[0].name === "Test rod" :
+        removalRollback.repository.list().every((item) => item.location.kind === "INVENTORY")),
+      "retrying " + choice + " after rollback completes the removal");
+  }
+
+  const savedDisassembly = makeComposition({
+    items: [raw("diss-rod", "rodPole", 1, { location: InventoryItemLocation.loadout("diss-kit", "rod") }),
+      raw("diss-hook", "hook", 1, { location: InventoryItemLocation.loadout("diss-kit", "tackle") }),
+      raw("diss-bait", "bait", 1, { location: InventoryItemLocation.attached("diss-hook", "bait") })],
+    assemblies: [{ rootInstanceId: "diss-hook", profileId: "hook_standard", status: "PREPARED", refillSignatures: {} }],
+    loadouts: [{ loadoutId: "diss-kit", name: "Diss", rootInstanceIds: { rod: "diss-rod", tackle: "diss-hook" } }],
+  });
+  dispatch(savedDisassembly, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, { instanceId: "diss-kit" });
+  assertIntegration(savedDisassembly.loadouts.list().length === 0 &&
+    savedDisassembly.repository.list().every((item) => item.location.kind === "INVENTORY") &&
+    !savedDisassembly.assemblyStates.has("diss-hook"),
+    "long pressing a saved loadout releases nested contents as individual inventory items");
 
   // Full player flow: prepared hook -> nested spring -> saved loadout.
   const flow = makeComposition({
@@ -624,6 +737,74 @@ vm.runInContext(
     "boat charge is projected onto its inventory thumbnail",
   );
 
+  const compartmentProjection = makeComposition({
+    items: [
+      raw("empty-spring-card", "spring"),
+      raw("partial-spring-card", "spring"),
+      raw("partial-hook-card", "hook", 1, {
+        location: InventoryItemLocation.attached("partial-spring-card", "hook", 1),
+      }),
+      raw("empty-hook-card", "hook"),
+      raw("no-compartments-card", "bait"),
+      raw("empty-reel-card", "reel"),
+    ],
+  });
+  const compartmentItems = compartmentProjection.facade.getViewModel().inventory.items;
+  const compartmentCard = (id) => compartmentItems.find((item) => item.instanceId === id);
+  assertIntegration(compartmentCard("empty-spring-card").attachments.length === 4 &&
+    compartmentCard("empty-spring-card").attachments.every((slot) => slot.empty),
+    "a bare feeder shows its configured three hooks and chum compartment");
+  const partialSlots = compartmentCard("partial-spring-card").attachments;
+  assertIntegration(partialSlots.length === 5 &&
+    partialSlots.filter((slot) => slot.empty).length === 4 &&
+    partialSlots.some((slot) => slot.kind === "hook" && slot.slotIndex === 1 && !slot.empty) &&
+    partialSlots.some((slot) => slot.kind === "bait" && slot.empty),
+    "nested hooks retain their index and expose empty bait compartments");
+  assertIntegration(compartmentCard("empty-hook-card").attachments[0]?.empty === true &&
+    compartmentCard("empty-reel-card").attachments[0]?.kind === "line" &&
+    !compartmentCard("empty-reel-card").reelLineCapacity &&
+    compartmentCard("no-compartments-card").attachments.length === 0,
+    "equipment-bearing items expose empty sockets, while slotless items and empty reels have no resource scale");
+
+  const reelFillProjection = makeComposition({
+    items: [
+      ...[5, 10, 20].flatMap((length) => [
+        raw("fill-reel-" + length, "reel"),
+        raw("fill-line-" + length, "line", 1, {
+          statOverrides: { lengthMeters: length },
+          location: InventoryItemLocation.attached("fill-reel-" + length, "line"),
+        }),
+      ]),
+    ],
+  });
+  const fillItems = reelFillProjection.facade.getViewModel().inventory.items;
+  for (const length of [5, 10, 20]) {
+    const capacity = fillItems.find((item) => item.instanceId === "fill-reel-" + length)?.reelLineCapacity;
+    assertIntegration(capacity?.percent === length / 20 * 100 && capacity.maximum === 20,
+      "reel fill uses the reel's capacity instead of the catalog line spool length");
+  }
+  let liveLineRemaining = 6;
+  const liveReelFill = makeComposition({
+    items: [raw("live-fill-reel", "reelSmall"),
+      raw("live-fill-line", "line", 1, {
+        statOverrides: { lengthMeters: 10 },
+        location: InventoryItemLocation.attached("live-fill-reel", "line"),
+      })],
+    itemViewFactory: { create(instance) {
+      return instance.instanceId === "live-fill-line" ? {
+        ...instance,
+        progression: { capacity: { available: true, current: liveLineRemaining, maximum: 100, percent: liveLineRemaining } },
+      } : null;
+    } },
+  });
+  const liveCapacity = () => liveReelFill.facade.getViewModel().inventory.items
+    .find((item) => item.instanceId === "live-fill-reel").reelLineCapacity;
+  assertIntegration(liveCapacity().percent === 60 && liveCapacity().maximum === 10,
+    "reel fill reads the live line remainder and the reel's effective capacity");
+  liveLineRemaining = 0;
+  assertIntegration(liveCapacity().percent === 0,
+    "a depleted attached line keeps a zero-percent reel scale on refresh");
+
   const subtypeFiltering = makeComposition({
     items: [
       raw("filter-pole", "rodPole"),
@@ -703,7 +884,7 @@ vm.runInContext(
     reelContextView.items.length === 1 &&
       reelContextView.items[0].instanceId === "context-line" &&
       reelContextView.categories.map((category) => category.id).join(",") ===
-        "all,lines",
+        "all,compatible,lines",
     "an open reel shows only line candidates and ignores an obsolete category",
   );
   dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
@@ -1216,6 +1397,7 @@ vm.runInContext(
   dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "feeder-rod",
   });
+  dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, { rootInstanceId: "feeder-rod" });
   assertIntegration(
     flow.equipmentState.getRootInstanceId("tackle") === null,
     "rod change clears previous tackle",
@@ -1365,10 +1547,9 @@ vm.runInContext(
   assertIntegration(
     flow.equipmentState.getRootInstanceId("tackle") === null &&
       flow.commands.getUiState().viewingLoadoutId === saved.loadoutId &&
-      savedPreview.panel.mode === "loadout" &&
-      savedPreview.inventory.mode === "saved-loadout" &&
+      savedPreview.panel.mode === "saved-loadout" && savedPreview.inventory.mode === "inventory" &&
       savedPreview.inventory.savedLoadout.slots.every((slot) => slot.item),
-    "short press opens only the saved loadout contents on the right without equipping it",
+    "short press opens the saved loadout on the left and keeps the inventory on the right without equipping it",
   );
   dispatch(flow, InventoryActionType.LOADOUT_PREVIEW_BACK, {
     loadoutId: saved.loadoutId,
@@ -1385,10 +1566,14 @@ vm.runInContext(
     loadoutId: saved.loadoutId,
     slotId: "tackle",
   });
+  assertIntegration(flow.facade.getViewModel().panel.assembly.rootInstanceId === springDraft &&
+    flow.equipmentState.getRootInstanceId("tackle") === null,
+    "an incomplete saved root opens its parameters just like the same inventory item");
+  dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, { rootInstanceId: springDraft });
   assertIntegration(
     flow.equipmentState.getRootInstanceId("tackle") === springDraft &&
-      flow.commands.getUiState().viewingLoadoutId === saved.loadoutId,
-    "a saved loadout root can be equipped separately while its contents stay open",
+      flow.commands.getUiState().viewingLoadoutId === null,
+    "a saved root follows normal inventory equip behavior and returns to the equipment panel",
   );
   flow.equipmentState.clear("tackle");
   dispatch(flow, InventoryActionType.LOADOUT_EQUIP_ALL, {
@@ -1518,31 +1703,31 @@ vm.runInContext(
     slotId: "tackle",
     instanceId: disassemblySpring,
   });
-  dispatch(disassembly, InventoryActionType.ASSEMBLY_DISASSEMBLE, {
+  const savedComponentDisassembly = disassembly.facade.dispatch({ type: InventoryActionType.ASSEMBLY_DISASSEMBLE,
     rootInstanceId: disassemblySpring,
   });
   assertIntegration(
-    disassembly.loadouts.has(disassemblyLoadoutId) &&
+    savedComponentDisassembly.success === false && disassembly.loadouts.has(disassemblyLoadoutId) &&
       disassembly.loadouts
         .require(disassemblyLoadoutId)
         .getRootInstanceId("rod") === "disassembly-rod" &&
       disassembly.loadouts
         .require(disassemblyLoadoutId)
-        .getRootInstanceId("tackle") === null &&
+        .getRootInstanceId("tackle") === disassemblySpring &&
       disassembly.repository.require("disassembly-rod").location.kind ===
         "LOADOUT" &&
-      !disassembly.assemblyStates.has(disassemblySpring) &&
+      disassembly.assemblyStates.has(disassemblySpring) &&
       disassembly.equipmentState.getRootInstanceId("tackle") === null,
-    "disassembling an unequipped stack updates its loadout without destroying the other roots",
+    "a saved component cannot be disassembled separately through a button",
   );
-  dispatch(disassembly, InventoryActionType.LOADOUT_DISASSEMBLE, {
-    loadoutId: disassemblyLoadoutId,
+  dispatch(disassembly, InventoryActionType.INVENTORY_ITEM_LONG_PRESS, {
+    instanceId: disassemblyLoadoutId,
   });
   assertIntegration(
     !disassembly.loadouts.has(disassemblyLoadoutId) &&
       disassembly.repository.require("disassembly-rod").location.kind ===
         "INVENTORY",
-    "the loadout preview Disassemble command releases its remaining contents",
+    "long pressing a saved loadout releases its remaining contents",
   );
 
   // A loadout transition must return loose pole-line segments to their exact
@@ -1849,6 +2034,7 @@ vm.runInContext(
   dispatch(changedRodReel, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "long-reel-rod",
   });
+  dispatch(changedRodReel, InventoryActionType.ASSEMBLY_EQUIP, { rootInstanceId: "long-reel-rod" });
   const rejectedPreparedReel = changedRodReel.facade.dispatch({
     type: InventoryActionType.INVENTORY_ITEM_ACTIVATE,
     instanceId: preparedShortReel,

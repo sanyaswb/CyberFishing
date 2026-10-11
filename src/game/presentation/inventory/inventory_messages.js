@@ -1,5 +1,9 @@
 // Player-facing inventory messages, injected into the inventory application services by composition.
 export const INVENTORY_MESSAGES = Object.freeze({
+  automaticLoadoutName: (rodName, index) => `${rodName} — збірка ${index}`,
+  defaultRodName: "Вудилище",
+  equipRodBeforeComponents: "Спочатку спорядіть це вудилище.",
+  rodRemovalExpired: "Спорядження змінилося. Відкрийте вудилище знову.",
   actionFailed: "Не вдалося виконати дію.",
   unknownAction: (type) => `Невідома дія інвентарю: ${type}`,
   itemNotFound: "Предмет не знайдено.",
@@ -13,8 +17,8 @@ export const INVENTORY_MESSAGES = Object.freeze({
   assemblyIncompatible: "Збірка не сумісна з поточним спорядженням.",
   assemblyNotEquipped: "Збірка не споряджена.",
   unequipBeforeDisassembly: "Спочатку зніміть предмет. Розібрати його можна лише в інвентарі.",
-  loadoutNameRequired: "Введіть назву комплекту.",
   savedLoadoutNotFound: "Збережену збірку не знайдено.",
+  loadoutLongPressToDisassemble: "Щоб розібрати збірку, затисніть її картку в інвентарі.",
   slotNotInMainLoadout: "Ця комірка не належить до основної збірки.",
   loadoutSlotEmpty: "У цій комірці збірки немає предмета.",
   unknownSortCriterion: "Невідомий критерій сортування.",

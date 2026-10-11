@@ -337,7 +337,7 @@ function checkVisualFrames() {
 }
 
 function checkLongPressFrames(usePerformance) {
-  let now=0,clockReads=0,frameRequests=0,nextFrame=0,styleWrites=0,createdNodes=0,removedNodes=0,fired=0,clicks=0;
+  let now=0,clockReads=0,frameRequests=0,nextFrame=0,nextTimer=0,styleWrites=0,createdNodes=0,removedNodes=0,fired=0,clicks=0;
   const frames=new Map(),timers=new Map(),listeners=new Map(),styles=new Map();
   const document={
     querySelector(){throw new Error("frame must not query DOM");},
@@ -348,7 +348,7 @@ function checkLongPressFrames(usePerformance) {
   const globals={document,
     Date:class extends Date {static now(){clockReads++;return now;}},
     ...(usePerformance?{performance:{now(){clockReads++;return now;}}}:{}),
-    setTimeout(callback,duration){assert.equal(duration,1500);timers.set(1,callback);return 1;},
+    setTimeout(callback,duration){timers.set(++nextTimer,{callback,duration});return nextTimer;},
     clearTimeout(id){timers.delete(id);},
     requestAnimationFrame(callback){frameRequests++;frames.set(++nextFrame,callback);return nextFrame;},
     cancelAnimationFrame(id){frames.delete(id);},
@@ -356,20 +356,35 @@ function checkLongPressFrames(usePerformance) {
   const runtime=new SourceRuntime({globals});
   runtime.load("src/platform/browser/dom/inventory_long_press_controller.js",{expose:["InventoryLongPressController"]});
   const controller=new runtime.context.InventoryLongPressController();
-  const element={ownerDocument:document,dataset:{},classList:{add(){},remove(){}},appendChild(){},
+  const classes=new Set();
+  const element={ownerDocument:document,dataset:{},classList:{add(name){classes.add(name);},remove(name){classes.delete(name);}},appendChild(){},
     addEventListener(name,callback){listeners.set(name,callback);},
     removeEventListener(name,callback){assert.equal(listeners.get(name),callback);listeners.delete(name);},
   };
   controller.bind(element,{onLongPress(){fired++;},onClick(){clicks++;}});
   assert.equal(listeners.size,7);
   const pointer={pointerId:7,clientX:0,clientY:0,button:0,isPrimary:true};
+  const runTimeout=(duration)=>{
+    const [id,timer]=timers.entries().next().value;
+    assert.equal(timer.duration,duration);timers.delete(id);now+=duration;timer.callback();
+  };
+  // Short clicks stay immediate and allocate no animation frames during the activation delay.
+  listeners.get("pointerdown")(pointer);
+  assert.equal(controller.hasActivePress,true);assert.equal(timers.size,1);assert.equal(frames.size,0);
+  assert.equal(classes.has("inventory-item-card--pressing"),false);assert.equal(styleWrites,0);
+  now=299;listeners.get("pointerup")(pointer);
+  listeners.get("click")({});assert.equal(clicks,1);assert.equal(fired,0);assert.equal(timers.size,0);
+  clicks=0;now=0;
   listeners.get("pointerdown")(pointer);
   assert.equal(controller.hasActivePress,true);
   assert.equal(createdNodes,1);
+  assert.equal(clockReads,0,"the activation delay does not sample the progress clock");
+  runTimeout(300);
+  assert.equal(classes.has("inventory-item-card--pressing"),true);assert.equal(fired,0);
   const callback=frames.values().next().value;
   const before={clockReads,frameRequests,styleWrites,createdNodes};
   for(let frame=1;frame<=120;frame++) {
-    now=frame*10;
+    now=300+frame*10;
     const [id,current]=frames.entries().next().value;
     assert.equal(current,callback,"progress callback must be reused on every frame");
     frames.delete(id);current();
@@ -381,7 +396,7 @@ function checkLongPressFrames(usePerformance) {
   assert.equal(createdNodes,before.createdNodes,"frames allocate no DOM nodes");
   assert.equal(styles.get("--inventory-long-press-angle"),"288deg");
   assert.equal(fired,0,"RAF progress does not own the press deadline");
-  now=1500;timers.get(1)();timers.clear();
+  now=300;runTimeout(1500);
   assert.equal(fired,1);
   assert.equal(controller.hasActivePress,false);
   assert.equal(frames.size,0,"the deadline cancels its scheduled frame");
@@ -389,6 +404,18 @@ function checkLongPressFrames(usePerformance) {
   let suppressed=0;
   listeners.get("click")({preventDefault(){suppressed++;},stopPropagation(){},stopImmediatePropagation(){}});
   assert.equal(suppressed,1);assert.equal(clicks,0);
+  // Movement, cancellation and lost capture cancel the pending activation as well as an active countdown.
+  for(const eventName of ["pointermove","pointercancel","lostpointercapture"]) {
+    listeners.get("pointerdown")(pointer);
+    listeners.get(eventName)({...pointer,clientX:9});
+    assert.equal(controller.hasActivePress,false);assert.equal(timers.size,0);assert.equal(frames.size,0);
+    assert.equal(classes.has("inventory-item-card--pressing"),false);
+  }
+  listeners.get("pointerdown")(pointer);runTimeout(300);
+  assert.equal(frames.size,1);listeners.get("pointerup")(pointer);
+  assert.equal(timers.size,0);assert.equal(frames.size,0);assert.equal(controller.hasActivePress,false);
+  assert.equal(classes.has("inventory-item-card--pressing"),false);
+  listeners.get("pointerdown")(pointer);
   controller.dispose();
   assert.equal(listeners.size,0);assert.equal(removedNodes,1);assert.equal(frames.size,0);assert.equal(timers.size,0);
 }

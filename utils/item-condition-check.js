@@ -224,7 +224,7 @@ class ItemConditionCheck {
   #checkCssContract() {
     const css = readPageCss();
     Assertion.that(
-      css.includes("border: var(--rarity-border-width, 2px) solid var(--rarity-color)"),
+      css.includes("border: 1px solid var(--rarity-color)"),
       "the item card rarity frame stays full and independent from condition",
     );
   }
