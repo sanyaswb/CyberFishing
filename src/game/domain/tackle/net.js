@@ -45,18 +45,19 @@ export class Net {
   }
 
 
-  getTriggerVirtualY(virtualBottomY) {
+  // The reach is base pixels from the shore line; the location's water metric places it on the map.
+  getTriggerVirtualY(waterMetric) {
     // Without a net, use the base landing zone near the shore.
     const baseReach = 50;
     const reach = this.isActive ? this.virtualReach : baseReach;
-    return virtualBottomY - reach;
+    return waterMetric.yAtBasePixels(reach);
   }
 
 
-  isFloatInZone(floatVirtualY, virtualBottomY) {
+  isFloatInZone(floatVirtualY, waterMetric) {
     if (!this.isActive) return false;
-    const triggerY = this.getTriggerVirtualY(virtualBottomY);
-    return floatVirtualY >= triggerY && floatVirtualY < virtualBottomY;
+    const triggerY = this.getTriggerVirtualY(waterMetric);
+    return floatVirtualY >= triggerY && floatVirtualY < waterMetric.shoreY;
   }
 
 

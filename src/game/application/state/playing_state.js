@@ -92,7 +92,7 @@ export class PlayingState extends GameState {
     }
 
     const updatedPos = this.deps.float.getPosition();
-    this.#isNetReady = this.deps.net.isFloatInZone(floatPos.y, bounds.bottom);
+    this.#isNetReady = this.deps.net.isFloatInZone(floatPos.y, fightContext.waterMetric);
     this.deps.ui.updateNetButtonState(this.#hasEquippedNet, this.#isNetReady);
 
     if (updatedPos.y >= bounds.bottom) return;

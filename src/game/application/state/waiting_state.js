@@ -269,14 +269,12 @@ export class WaitingState extends GameState {
     if (landingDistanceMeters <= 0) return false;
 
     const rodPos = this.deps.world.getRodVirtualPos(bounds);
-    const pixelsPerMeter =
-      Math.max(
-        1,
-        Number(this.deps.config.fightPhysicsConfig?.getPixelsPerMeter?.()) ||
-          50,
-      );
-    const distanceMeters =
-      Math.hypot(position.x - rodPos.x, position.y - rodPos.y) / pixelsPerMeter;
+    const distanceMeters = this.deps.world.getWaterMetric().distanceMeters(
+      position.x,
+      position.y,
+      rodPos.x,
+      rodPos.y,
+    );
 
     if (distanceMeters <= landingDistanceMeters + 0.001) return true;
 

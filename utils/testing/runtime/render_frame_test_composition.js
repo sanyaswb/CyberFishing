@@ -47,8 +47,8 @@ function checkRenderFrameComposition() {
   const chumSource={isAiming:()=>aiming,getEquipment:()=>({}),getGameStateName:()=> 'casting',getCastDistance:()=>300,getPowerAimVisual:()=>({active:true,mode:'chum',screenX:250,power:0.5}),getAccuracyPreview:()=>({active:true,x:250,y:300,radiusX:10,radiusY:5}),getBounds:()=>bounds,getNow:()=>clock.now};
   const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top});
   const castingBuilder=new c.CastingRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,hudStyleResolver:styles,chumSource});
-  const landingBuilder=new c.LandingAreaRenderFrameBuilder({projector,config,canvasMetrics:metrics,getRodScreenX:()=>400,getNet:()=>({isActive:true,getTriggerVirtualY:bottom=>bottom-100}),landingPolicyResolver:{resolve:()=>({getLandingDistanceMeters:()=>1})}});
-  const areaBuilder=new c.FightAreaRenderFrameBuilder({projector,config,canvasMetrics:metrics,getRodScreenX:()=>400,landingAreaBuilder:landingBuilder,sectorGeometry:{resolve:()=>geometry}});
+  const landingBuilder=new c.LandingAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,getNet:()=>({isActive:true,getTriggerVirtualY:metric=>metric.shoreY-100}),landingPolicyResolver:{resolve:()=>({getLandingDistanceMeters:()=>1})}});
+  const areaBuilder=new c.FightAreaRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,getRodScreenX:()=>400,landingAreaBuilder:landingBuilder,sectorGeometry:{resolve:()=>geometry}});
   const hudBuilder=new c.FightHudFrameBuilder({config,canvasMetrics:metrics});
   const equipmentBuilder=new c.FishingEquipmentRenderModelBuilder({projector,canvasMetrics:metrics,clock,config,getRodScreenX:()=>400});
   const lineFrame={lengthRatio:0.8,dropOffset:10,straightFactor:0.5};let lineContext=null;

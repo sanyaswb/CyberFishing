@@ -1,6 +1,6 @@
 # Feature Specification: Perspective metres on the water (water metric)
 
-**Created**: 2026-10-11 · **Status**: Steps 1–3 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
+**Created**: 2026-10-11 · **Status**: Steps 1–4 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
 
 ## Owner request (2026-10-11)
 Distances are flat today: 1 m is always 50 px, so the castable water of the test location (520..1160 virtual px,
@@ -89,6 +89,20 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
 - `water-metric`: the plane maps invert, the velocity derivative matches finite differences, uniform maps are
   `Object.is` identities.
 - Game-cycle report unchanged (SHA256 `7b9baea3…d5b6`); 40/40 checks; production 480 modules.
+
+## Step 4: rod and landing on the map
+- `Net.getTriggerVirtualY(waterMetric)` / `isFloatInZone(y, waterMetric)`: the net reach (base pixels) is placed with
+  `yAtBasePixels`; the playing state passes the fight context's metric.
+- The waiting state's empty-tackle landing measures `waterMetric.distanceMeters` to the rod.
+- `FightAreaRenderFrameBuilder` draws the pole sector, its axis and the line radius from plane geometry (the fight
+  frame is plane data; the preview converts the float and rod first) and maps each point with `fromBasePlane`.
+- `LandingAreaRenderFrameBuilder` places the last-dash band, the net band and the catch ellipse height through the
+  metric.
+- Not converted: `FightService.getDiagnostics` (DEV values over the screen height of the water) and the
+  `pixelsPerMeter` mismatch that predates the metric (casting reads it once at startup, the fight reads it live).
+
+## Step 4 evidence
+- 40/40 checks; game-cycle report unchanged (SHA256 `7b9baea3…d5b6`).
 
 ## Configuration (owner request 2026-10-11)
 The owner tunes the curve in config: where the compression starts and how strong it is.

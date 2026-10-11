@@ -2,6 +2,7 @@ import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class LandingAreaRenderFrameBuilder {
   #projector;
+  #getWaterMetric;
   #config;
   #canvasMetrics;
   #getNet;
@@ -14,6 +15,7 @@ export class LandingAreaRenderFrameBuilder {
 
   constructor({
     projector,
+    getWaterMetric,
     config,
     canvasMetrics,
     getNet,
@@ -21,6 +23,7 @@ export class LandingAreaRenderFrameBuilder {
     landingPolicyResolver,
   }) {
     this.#projector = projector;
+    this.#getWaterMetric = getWaterMetric;
     this.#config = config;
     this.#canvasMetrics = canvasMetrics;
     this.#getNet = getNet;
@@ -28,7 +31,9 @@ export class LandingAreaRenderFrameBuilder {
     this.#landingPolicyResolver = landingPolicyResolver;
   }
 
+  // Landing distances are base pixels from the shore line (bottom); the water metric places them on the map.
   buildInto({ target, bottom, debug, equipment }) {
+    const metric = this.#getWaterMetric();
     const locations = this.#config.locations || {};
     const scale = this.#projector.getScale();
     const catchY = this.#projector.virtualToScreen(
@@ -54,10 +59,9 @@ export class LandingAreaRenderFrameBuilder {
     );
     const pixelsPerMeter =
       this.#config.fightPhysicsConfig?.getPixelsPerMeter?.() || 50;
-    const radius =
+    const radiusBasePixels =
       Math.max(0, landingDistance) *
-      Math.max(1, pixelsPerMeter) *
-      scale;
+      Math.max(1, pixelsPerMeter);
     this.#buildCatchZone(
       target.catchZone,
       locations,
@@ -65,13 +69,14 @@ export class LandingAreaRenderFrameBuilder {
       bottom,
       catchY,
       width,
-      radius,
+      radiusBasePixels * scale,
+      (bottom - metric.yAtBasePixels(radiusBasePixels)) * scale,
     );
     this.#buildLastDashZone(
       target.lastDashZone,
       locations,
       debug,
-      bottom,
+      metric,
       catchY,
       width,
       pixelsPerMeter,
@@ -79,7 +84,7 @@ export class LandingAreaRenderFrameBuilder {
     this.#buildNetZone(
       target.netZone,
       locations,
-      bottom,
+      metric,
       catchY,
       width,
     );
@@ -93,6 +98,7 @@ export class LandingAreaRenderFrameBuilder {
     catchY,
     width,
     radius,
+    radiusY,
   ) {
     if (locations.showCatchZone === false) return;
     target.visible = true;
@@ -106,7 +112,7 @@ export class LandingAreaRenderFrameBuilder {
       target.x = center.x;
       target.y = center.y;
       target.radiusX = radius;
-      target.radiusY = radius;
+      target.radiusY = radiusY;
       return;
     }
     target.kind = "band";
@@ -120,7 +126,7 @@ export class LandingAreaRenderFrameBuilder {
     target,
     locations,
     debug,
-    bottom,
+    metric,
     catchY,
     width,
     pixelsPerMeter,
@@ -132,7 +138,7 @@ export class LandingAreaRenderFrameBuilder {
     if (locations.showLastDashZone !== true || distance <= 0) return;
     const triggerY = this.#projector.virtualToScreen(
       0,
-      bottom - distance * pixelsPerMeter,
+      metric.yAtBasePixels(distance * pixelsPerMeter),
       this.#screenA,
     ).y;
     target.visible = true;
@@ -141,12 +147,12 @@ export class LandingAreaRenderFrameBuilder {
     target.height = Math.max(0, catchY - target.y);
   }
 
-  #buildNetZone(target, locations, bottom, catchY, width) {
+  #buildNetZone(target, locations, metric, catchY, width) {
     const net = this.#getNet();
     if (locations.showNetZone === false || !net?.isActive) return;
     const triggerY = this.#projector.virtualToScreen(
       0,
-      net.getTriggerVirtualY(bottom),
+      net.getTriggerVirtualY(metric),
       this.#screenA,
     ).y;
     target.visible = true;

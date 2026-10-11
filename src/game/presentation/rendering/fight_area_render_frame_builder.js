@@ -2,12 +2,16 @@ import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class FightAreaRenderFrameBuilder {
   #projector;
+  #getWaterMetric;
+  #metric = null;
   #config;
   #canvasMetrics;
   #getRodScreenX;
   #landingAreaBuilder;
   #sectorGeometry;
   #screenA = new Vector2(0, 0);
+  #virtual = new Vector2(0, 0);
+  #plane = new Vector2(0, 0);
   #origin = { x: 0, y: 0 };
   #landingContext = {
     target: null,
@@ -31,6 +35,7 @@ export class FightAreaRenderFrameBuilder {
 
   constructor({
     projector,
+    getWaterMetric,
     config,
     canvasMetrics,
     getRodScreenX,
@@ -51,6 +56,7 @@ export class FightAreaRenderFrameBuilder {
       );
     }
     this.#projector = projector;
+    this.#getWaterMetric = getWaterMetric;
     this.#config = config;
     this.#canvasMetrics = canvasMetrics;
     this.#getRodScreenX = getRodScreenX;
@@ -71,6 +77,7 @@ export class FightAreaRenderFrameBuilder {
     if (!locations.debugVisuals) return;
     target.visible = true;
     target.clipRegions = clipRegions;
+    this.#metric = this.#getWaterMetric();
     const landingContext = this.#landingContext;
     landingContext.target = target;
     landingContext.bottom = bottom;
@@ -86,6 +93,8 @@ export class FightAreaRenderFrameBuilder {
     );
   }
 
+  // The sector geometry lies on the water metric's ground plane (the fight frame is computed there); its points are
+  // mapped to the map before projection, so a far line radius is no longer a circle on screen.
   #buildSector(target, state, bottom, debug, floatPosition) {
     const locations = this.#config.locations || {};
     target.showSector = locations.showPoleFightSector === true;
@@ -118,11 +127,7 @@ export class FightAreaRenderFrameBuilder {
       originY,
       geometry.poleFightSectorMaxAngleDeg,
     );
-    const apex = this.#projector.virtualToScreen(
-      apexX,
-      apexY,
-      this.#screenA,
-    );
+    const apex = this.#planeToScreen(apexX, apexY);
     target.apexX = apex.x;
     target.apexY = apex.y;
     target.sectorClamped =
@@ -135,29 +140,23 @@ export class FightAreaRenderFrameBuilder {
         (leftAngle + (rightAngle - leftAngle) * (index / 64)) *
         Math.PI /
         180;
-      const point = this.#projector.virtualToScreen(
+      const point = this.#planeToScreen(
         originX + Math.sin(angle) * radius,
         originY - Math.cos(angle) * radius,
-        this.#screenA,
       );
       record = target.sectorPoints.acquire();
       record.x = point.x;
       record.y = point.y;
     }
-    const axisEnd = this.#projector.virtualToScreen(
-      originX,
-      originY - radius,
-      this.#screenA,
-    );
+    const axisEnd = this.#planeToScreen(originX, originY - radius);
     target.axisEndX = axisEnd.x;
     target.axisEndY = axisEnd.y;
 
     for (let index = 0; index <= 64; index += 1) {
       const angle = (-90 + 180 * (index / 64)) * Math.PI / 180;
-      const point = this.#projector.virtualToScreen(
+      const point = this.#planeToScreen(
         originX + Math.sin(angle) * radius,
         originY - Math.cos(angle) * radius,
-        this.#screenA,
       );
       record = target.lineRadiusPoints.acquire();
       record.x = point.x;
@@ -181,11 +180,11 @@ export class FightAreaRenderFrameBuilder {
       0,
       this.#screenA,
     );
-    this.#origin.x = origin.x;
-    this.#origin.y = bottom;
+    this.#metric.toBasePlane(origin.x, bottom, this.#origin);
+    const floatPlane = this.#metric.toBasePlane(floatPosition.x, floatPosition.y, this.#plane);
     const limitRadius = Math.hypot(
-      floatPosition.x - this.#origin.x,
-      floatPosition.y - this.#origin.y,
+      floatPlane.x - this.#origin.x,
+      floatPlane.y - this.#origin.y,
     );
     const config =
       this.#config.fightPhysicsConfig?.getPoleFightSectorConfig?.() ||
@@ -216,6 +215,11 @@ export class FightAreaRenderFrameBuilder {
       geometry.rightBoundaryRadiusIntersectionY;
     frame.poleFightSectorClamped = false;
     return frame;
+  }
+
+  #planeToScreen(x, y) {
+    const virtual = this.#metric.fromBasePlane(x, y, this.#virtual);
+    return this.#projector.virtualToScreen(virtual.x, virtual.y, this.#screenA);
   }
 
   #resolveBoundaryAngle(x, y, originX, originY, fallback) {

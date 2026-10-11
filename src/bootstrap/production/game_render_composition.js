@@ -260,11 +260,13 @@ export class GameRenderComposition {
     });
     const fightAreaBuilder = new FightAreaRenderFrameBuilder({
       projector: runtime.projector,
+      getWaterMetric: appPorts.getWaterMetric,
       config,
       canvasMetrics,
       getRodScreenX: appPorts.getRodScreenX,
       landingAreaBuilder: new LandingAreaRenderFrameBuilder({
         projector: runtime.projector,
+        getWaterMetric: appPorts.getWaterMetric,
         config,
         canvasMetrics,
         getNet: appPorts.getNet,
