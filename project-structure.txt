@@ -185,6 +185,8 @@
 │  │  └── spec.md
 │  ├── 052-depth-selector-ux
 │  │  └── spec.md
+│  ├── 053-water-metric
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -718,6 +720,7 @@
 │  │  │  │  ├── dynamic_zone.js
 │  │  │  │  ├── grid_cell.js
 │  │  │  │  ├── location_map.js
+│  │  │  │  ├── water_metric.js
 │  │  │  │  └── world_perspective.js
 │  │  │  ├── rules
 │  │  │  │  ├── bait_rules.js
@@ -996,4 +999,5 @@
    │  └── suites
    │     └── check_manifest.js
    ├── victory-input-check.js
-   └── viewport-check.js
+   ├── viewport-check.js
+   └── water-metric-check.js

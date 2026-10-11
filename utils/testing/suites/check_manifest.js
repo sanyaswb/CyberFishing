@@ -27,6 +27,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["gameplay"],
   },
   {
+    id: "water-metric",
+    title: "Water metric (metres on the water plane)",
+    file: "utils/water-metric-check.js",
+    suites: ["gameplay"],
+  },
+  {
     id: "float-depth",
     title: "Float depth and casting",
     file: "utils/float-depth-cast-check.js",
