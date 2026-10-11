@@ -183,6 +183,8 @@
 │  │  └── spec.md
 │  ├── 051-dev-item-grant
 │  │  └── spec.md
+│  ├── 052-depth-selector-ux
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

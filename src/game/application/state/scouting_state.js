@@ -125,19 +125,20 @@ export class ScoutingState extends GameState {
       this.deps.depthUI.show(
         maxDepth,
         Math.min(this.deps.currentHookDepthRef.get(), maxDepth),
-        (d) => {
-          this.deps.currentHookDepthRef.set(d);
-          this.#syncDepthCastDistance(eq, bounds);
-        },
+        (d) => this.deps.currentHookDepthRef.set(d),
       );
     } else {
       this.deps.depthUI.updateMax(maxDepth);
     }
-    this.#syncDepthCastDistance(eq, bounds);
+    // The button shows the equipped float (or the jig on a spinning rod).
+    this.deps.depthUI.setIcon(eq?.float?.icon || eq?.baits?.[0]?.icon || "");
   }
 
   getRenderState(target, bounds) {
     target.stateName = "scouting";
+    if (this.deps.depthUI.isOpen && !this.deps.isAimingChum()) {
+      this.#populateDepthCastLimit(target, bounds);
+    }
     if (this.#usePowerCasting()) {
       if (!this.deps.isAimingChum()) {
         const visual = this.#castAim.getVisualState();
@@ -331,27 +332,21 @@ export class ScoutingState extends GameState {
     target.casting.nowMs = this.deps.clock.now;
   }
 
-  #syncDepthCastDistance(eq, bounds) {
-    if (!this.deps.depthUI?.isActive) return;
-
-    const info = this.deps.rules.equipment.getCastDistanceInfo(
-      eq,
-      1,
-      this.getSelectedHookDepthMeters(),
-    );
+  // While the depth track is open: the farthest reachable cast at the selected depth (the same limit a full-power
+  // cast uses), bounded by the location, for the cast limit line on the map.
+  #populateDepthCastLimit(target, bounds) {
+    const eq = this.deps.inventory.getEquipped();
+    const maxDistance = this.getEffectiveCastDistance(eq);
+    if (!Number.isFinite(maxDistance)) return;
+    const info = this.deps.rules.equipment.getCastDistanceInfo(eq, null, this.getSelectedHookDepthMeters());
     const pixelsPerMeter = Math.max(1, Number(info.pixelsPerMeter) || 1);
-    const locationLimitPx = Math.max(0, bounds.bottom - bounds.top);
-    const availablePx = Math.min(info.maxDistancePx, locationLimitPx);
-    const fullLinePx = Math.min(
-      info.lineLengthMeters * pixelsPerMeter,
-      locationLimitPx,
-    );
-
-    this.deps.depthUI.updateCastDistance?.({
-      availableMeters: availablePx / pixelsPerMeter,
-      maximumMeters: fullLinePx / pixelsPerMeter,
-      visible: info.isFloatDepthLimited,
-    });
+    const limit = target.casting.depthLimit;
+    target.casting.visible = true;
+    limit.visible = true;
+    limit.virtualBottomY = bounds.bottom;
+    limit.maxDistance = Math.min(maxDistance, Math.max(0, bounds.bottom - bounds.top));
+    limit.meters = maxDistance / pixelsPerMeter;
+    limit.nowMs = this.deps.clock.realNow;
   }
 
   #populateAimingZone(target, bottom, maxDistance, mode) {

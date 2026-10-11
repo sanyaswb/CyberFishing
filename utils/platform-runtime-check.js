@@ -35,6 +35,7 @@ function checkCanvasScenes() {
     boats:list([{x:250,y:250,angle:0,fontSize:20,emoji:'boat',barWidth:40,barY:12,barHeight:4,energyColor:'#00ff00',energyRatio:0.5}]),
     sensorRays:list([{startX:250,startY:250,endX:300,endY:300,blocked:false}]),invalidCastMarker:{visible:true,x:200,y:200}};
   const castModel={visible:true,aimingZone:{visible:true,clipRegions:empty,lineY:150,viewportWidth:800,mode:'rod',fillHeight:100},
+    depthLimit:{visible:true,clipRegions:empty,lineY:120,viewportWidth:800,alpha:1,label:'закид до 7.4 м',dimColor:'#000',lineColor:'#fff',dash:[2,3]},
     accuracyArea:{visible:true,x:200,y:200,radiusX:20,radiusY:10,fillColor:'#123',strokeColor:'#456',lineWidth:2,dash:[2,3]},
     powerAim:{visible:true,screenX:250,originY:500,targetY:150,lineColor:'#123',lineWidth:2,dash:[2,3],dashOffset:1,glowBlur:5,powerRatio:0.5,powerColor:'#456',viewportWidth:800,mode:'rod'}};
   const fightModel={visible:true,clipRegions:empty,lastDashZone:{visible:true,y:100,width:800,height:100},catchZone:{visible:true,kind:'ellipse',x:200,y:200,radiusX:30,radiusY:20,y:200,width:800,height:100,lineY:200},netZone:{visible:true,y:300,width:800,height:50},showSector:true,sectorPoints:points,sectorClamped:false,apexX:20,apexY:20,axisEndX:40,axisEndY:40,showLineRadius:true,lineRadiusPoints:points};
@@ -161,7 +162,7 @@ function checkBrowserWidgets() {
     get innerHTML(){return this.html;},addEventListener(type,fn,opts){const list=this.listeners.get(type)||[];list.push({fn,opts});this.listeners.set(type,list);},
     removeEventListener(type,fn){this.listeners.set(type,(this.listeners.get(type)||[]).filter(x=>x.fn!==fn));},
     emit(type,event={}){for(const {fn}of this.listeners.get(type)||[])fn({button:0,pointerType:'mouse',pointerId:1,clientX:25,clientY:25,stopPropagation(){},preventDefault(){},target:this,...event});},
-    appendChild(node){this.children.push(node);return node;},remove(){this.removed=true;},setAttribute(k,v){this.attrs[k]=v;},
+    appendChild(node){this.children.push(node);return node;},remove(){this.removed=true;},contains(node){return node===this||this.children.some(child=>child.contains?.(node));},setAttribute(k,v){this.attrs[k]=v;},
     setPointerCapture(){},releasePointerCapture(){},getBoundingClientRect(){return {left:20,top:20,right:60,bottom:60,width:40,height:40};}});
   const document=makeNode();document.body=makeNode();document.head=makeNode();document.createElement=makeNode;
   document.getElementById=id=>{queries++;assert(ids.has(id),id);return ids.get(id);};
@@ -198,7 +199,7 @@ function checkBrowserWidgets() {
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
   for(let frame=0;frame<120;frame++) {
     controls.updateNetButtonState(frame>=30,frame>=60);controls.updateContinueButtonState(frame>=90);controls.setOutcomeOverlayActive(frame>=100);
-    depth.updateMax(frame<60?20:2);depth.updateCastDistance({availableMeters:frame,maximumMeters:20,visible:frame!==119});
+    depth.updateMax(frame<60?20:2);depth.setIcon(frame%2?'🪶':'🥢');
     time.update(frame<30?4:frame<60?6:frame<90?12:19);
     hold.update({hasHold:true,max:frame<60?3:4,current:1,isActive:frame%2===0,restoring:[0.5],restoreMaxTime:1});
     if(frame===1)circle=hold.circles[0];if(frame>1&&frame<60)assert.equal(hold.circles[0],circle,'stable capacity reuses DOM circles');
@@ -207,27 +208,51 @@ function checkBrowserWidgets() {
   }
   assert.equal(queries,initialQueries,'updates use cached DOM references');assert.equal(depth.lastChange,2);assert.equal(time.emojiSpan.innerText,'🌇');
   assert.equal(clicks,61,'only enabled chum states dispatch clicks');assert.equal(hold.circles.length,4);
-  assert.equal(hold.textLabel.innerText,'УТРИМАННЯ');assert.equal(depth.distanceValue.innerText,'Закид: 20.0 м','injected HUD labels reach the widgets');
+  assert.equal(hold.textLabel.innerText,'УТРИМАННЯ');const depthRoot=document.body.children.find(node=>node.className==='depth-selector');
+  assert.equal(depthRoot.children[0].children[1].textContent,'2.0 м','injected HUD labels reach the widgets');assert.equal(depthRoot.children[0].children[0].textContent,'🪶');
   controls.setScoutingPointerDimmed(true);controls.setScoutingPointerDimmed(false);drainFrames();
   controls.hideNetButton();depth.hide();hold.update(null);assert.equal(hold.container.style.display,'none');
   controls.dispose();controls.dispose();time.dispose();hold.dispose();chum.dispose();assert.equal(disposed,1);assert.equal(timers.size,0);
-  let positions=0;
-  Object.defineProperty(depth.inputContainer.style,'top',{set(){positions++;},configurable:true});
-  depth.show(10,1,()=>{});depth.updateMax(9);depth.updateMax(8);
-  assert.equal(frames.size,3,'all normal callbacks remain scheduled');drainFrames();assert.equal(positions,3);
-  depth.show(10,1,()=>{});depth.updateMax(9);depth.updateMax(8);
-  const pending=[...frames.keys()],lateCallbacks=[...frames.values()],slider=depth.slider,input=depth.input;
-  const cancellations=cancelled.length;
+  checkDepthSelector(c,document,depth,depthRoot);
+}
+
+// Depth control: closed after show (clean map), the float toggles the track, drags, keys and the wheel select on the
+// 0.1 m grid, a canvas press only closes it, and nothing runs after dispose.
+function checkDepthSelector(c,document,depth,root) {
+  const floatButton=root.children[0],track=root.children[1].children[1],changes=[];
+  depth.show(5,1.5,value=>changes.push(value));
+  assert.equal(root.style.display,'block');assert.equal(depth.isOpen,false,'the map stays clean until the float is pressed');
+  track.emit('pointerdown',{clientY:40});assert.equal(changes.length,0,'a closed track ignores presses');
+  floatButton.emit('click');
+  assert(depth.isOpen&&root.classList.contains('depth-selector--open'));assert.equal(floatButton.attrs['aria-expanded'],'true');
+  track.emit('pointerdown',{clientY:40});assert.equal(depth.value,2.6,'the track maps its height to min..max');
+  track.emit('pointermove',{clientY:60});track.emit('pointermove',{clientY:0});assert.equal(depth.value,0.1);
+  track.emit('pointerup',{});track.emit('pointermove',{clientY:60});assert.equal(depth.value,0.1,'moves after release do not drag');
+  track.emit('keydown',{key:'End'});track.emit('keydown',{key:'ArrowUp'});track.emit('keydown',{key:'PageUp'});
+  assert.equal(depth.value,3.9);track.emit('keydown',{key:'Home'});root.emit('wheel',{deltaY:120});
+  assert.deepEqual(changes,[2.6,5,0.1,5,4.9,3.9,0.1,0.2],'every change on the 0.1 m grid reaches the game once');
+  assert.equal(track.attrs['aria-valuenow'],'0.2');assert.equal(track.attrs['aria-valuemax'],'5.0');assert.equal(floatButton.children[1].textContent,'0.2 м');
+  assert.equal(root.children[1].children[2].textContent,'5.0 м','the track shows its deepest depth');
+  let consumed=0;const press=target=>document.emit('pointerdown',{target,stopPropagation(){consumed++;}});
+  press(track);assert(depth.isOpen,'presses inside the control keep it open');
+  press({tagName:'CANVAS'});assert.equal(depth.isOpen,false);assert.equal(consumed,1,'a canvas press only closes the track');
+  press({tagName:'CANVAS'});assert.equal(consumed,1,'a closed track lets the game receive presses');
+  floatButton.emit('click');press({tagName:'DIV'});assert.equal(depth.isOpen,false);assert.equal(consumed,1,'other UI still receives its press');
+  floatButton.emit('click');document.emit('keydown',{key:'Escape'});assert.equal(depth.isOpen,false);
+  floatButton.emit('click');floatButton.emit('click');assert.equal(depth.isOpen,false,'the float closes the track again');
+  depth.updateMax(3);floatButton.emit('click');track.emit('keydown',{key:'End'});assert.equal(depth.value,3);
+  depth.updateMax(2);assert.equal(depth.value,2);assert.equal(changes.at(-1),2,'a lower maximum clamps and reports the depth');
+  depth.hide();assert.equal(depth.isOpen,false);assert.equal(root.style.display,'none');
+  const listeners=document.listeners.get('pointerdown').length;
   depth.dispose();depth.dispose();
-  assert.deepEqual(cancelled.slice(cancellations),pending,'dispose cancels every pending frame, excluding completed frames');
-  assert.equal(frames.size,0);assert.equal(depth.isActive,false);
-  for(const fn of lateCallbacks)fn();
-  slider.emit('input');input.emit('input');input.emit('change');
-  depth.show(10,1,()=>{throw Error('disposed callback');});depth.updateMax(9);depth.updateCastDistance({availableMeters:1,maximumMeters:2});depth.hide();
-  assert.equal(positions,3,'late callbacks/events and public operations do nothing after dispose');assert.equal(frames.size,0);
+  assert(root.removed);assert.equal(document.listeners.get('pointerdown').length,listeners-1,'dispose removes the document listener');
+  floatButton.emit('click');depth.show(5,1,()=>{throw Error('disposed callback');});depth.updateMax(1);depth.setIcon('x');
+  assert.equal(depth.isOpen,false);assert.equal(depth.isActive,false,'public operations do nothing after dispose');
   const reentrant=new c.DepthSelector();
-  reentrant.show(10,5,()=>reentrant.dispose());reentrant.updateMax(1);
-  assert.equal(frames.size,0,'dispose from onChange also prevents subsequent scheduling');
+  reentrant.show(10,5,()=>reentrant.dispose());
+  const reentrantRoot=document.body.children.at(-1);reentrantRoot.children[0].emit('click');
+  reentrantRoot.children[1].children[1].emit('keydown',{key:'End'});reentrantRoot.children[1].children[1].emit('keydown',{key:'Home'});
+  assert(reentrantRoot.removed&&!reentrant.isOpen,'dispose from onChange stops further input');
 }
 
 function checkTimeoutScheduler() {

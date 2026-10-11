@@ -8,6 +8,13 @@ export class CastingRenderFrameBuilder {
   #canvasMetrics;
   #hudStyleResolver;
   #chumSource;
+  #labels;
+  // Displayed cast limit (virtual Y) eases toward the target so the line glides when the depth changes.
+  #depthLimitLineY = 0;
+  #depthLimitShownAtMs = -1;
+  #depthLimitLastMs = 0;
+  #depthLimitLabelMeters = -1;
+  #depthLimitLabel = "";
   #screenA = new Vector2(0, 0);
   #screenB = new Vector2(0, 0);
   #defaultDash = Object.freeze([12, 10]);
@@ -19,6 +26,7 @@ export class CastingRenderFrameBuilder {
     canvasMetrics,
     hudStyleResolver,
     chumSource,
+    labels,
   }) {
     if (!projector || typeof projector.virtualToScreen !== "function") {
       throw new TypeError("CastingRenderFrameBuilder requires projector");
@@ -50,9 +58,15 @@ export class CastingRenderFrameBuilder {
     this.#canvasMetrics = canvasMetrics;
     this.#hudStyleResolver = hudStyleResolver;
     this.#chumSource = chumSource;
+    this.#labels = labels;
   }
 
   buildInto({ target, intent, clipRegions }) {
+    if (intent.casting.depthLimit.visible) {
+      this.#buildDepthLimit(target, intent.casting.depthLimit, clipRegions);
+    } else {
+      this.#depthLimitShownAtMs = -1;
+    }
     if (intent.casting.visible) {
       if (intent.casting.zoneVisible) {
         this.#buildAimingZone(
@@ -146,6 +160,42 @@ export class CastingRenderFrameBuilder {
     target.aimingZone.viewportWidth = this.#canvasMetrics.width;
     target.aimingZone.mode = mode;
     target.aimingZone.clipRegions = clipRegions;
+    target.visible = true;
+  }
+
+  #buildDepthLimit(target, limit, clipRegions) {
+    const config = this.#config.casting?.depthLimit || {};
+    const targetY = limit.virtualBottomY - limit.maxDistance;
+    const nowMs = limit.nowMs;
+    if (this.#depthLimitShownAtMs < 0) {
+      this.#depthLimitShownAtMs = nowMs;
+      this.#depthLimitLineY = targetY;
+    } else {
+      const dt = Math.max(0, Math.min(100, nowMs - this.#depthLimitLastMs));
+      const easing = 1 - Math.exp(-dt / Math.max(1, config.easeMs ?? 70));
+      this.#depthLimitLineY += (targetY - this.#depthLimitLineY) * easing;
+      if (Math.abs(targetY - this.#depthLimitLineY) < 0.25) this.#depthLimitLineY = targetY;
+    }
+    this.#depthLimitLastMs = nowMs;
+    const fadeMs = Math.max(1, config.fadeInMs ?? 180);
+    const alpha = RenderMath.clamp((nowMs - this.#depthLimitShownAtMs) / fadeMs);
+    // The label text changes only when the shown distance (0.1 m) changes, so steady frames allocate nothing.
+    const meters = Math.round(limit.meters * 10) / 10;
+    if (meters !== this.#depthLimitLabelMeters) {
+      this.#depthLimitLabelMeters = meters;
+      this.#depthLimitLabel = this.#labels.castLimit(meters.toFixed(1));
+    }
+    const lineY = this.#projector.virtualToScreen(0, this.#depthLimitLineY, this.#screenA).y;
+    const model = target.depthLimit;
+    model.visible = true;
+    model.lineY = lineY;
+    model.viewportWidth = this.#canvasMetrics.width;
+    model.alpha = alpha;
+    model.label = this.#depthLimitLabel;
+    model.dimColor = config.dimColor || "rgba(0, 8, 16, 0.38)";
+    model.lineColor = config.lineColor || "rgba(255, 255, 255, 0.85)";
+    model.dash = config.dash || this.#defaultDash;
+    model.clipRegions = clipRegions;
     target.visible = true;
   }
 

@@ -27,6 +27,7 @@ export class GameRenderFrame {
     this.casting = {
       visible: false,
       aimingZone: { visible: false },
+      depthLimit: { visible: false },
       powerAim: { visible: false },
       accuracyArea: { visible: false },
     };
@@ -89,6 +90,7 @@ export class GameRenderFrame {
     this.world.invalidCastMarker.visible = false;
     this.casting.visible = false;
     this.casting.aimingZone.visible = false;
+    this.casting.depthLimit.visible = false;
     this.casting.powerAim.visible = false;
     this.casting.accuracyArea.visible = false;
     this.fishing.visible = false;

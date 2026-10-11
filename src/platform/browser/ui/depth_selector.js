@@ -1,191 +1,261 @@
+import { UiEventShield } from "../dom/ui_event_shield.js";
+
+const DEPTH_STEP_METERS = 0.1;
+const DEPTH_PAGE_METERS = 1;
+
+// Depth control of a float or jig rig: a tackle button that shows the selected depth and, when pressed, slides out a
+// vertical depth track below it (surface at the top, the deepest reachable depth at the bottom). The track follows
+// pointer drags, the wheel and the keyboard. While it is open, a press on the game canvas only closes it.
 export class DepthSelector {
-  #pendingFrames = new Set();
-  #disposed = false;
-  #animationFrameHost;
   #labels;
+  #document;
+  #root;
+  #button;
+  #icon;
+  #buttonValue;
+  #panel;
+  #track;
+  #line;
+  #marker;
+  #markerValue;
+  #minLabel;
+  #maxLabel;
+  #minDepth = 0.1;
+  #maxDepth = 0.1;
+  #value = 0.1;
+  #iconText = "";
+  #dragPointerId = null;
+  #isOpen = false;
+  #disposed = false;
+  #onDocumentPointerDown = (event) => this.#closeOnOutsidePress(event);
+  #onDocumentKeyDown = (event) => {
+    if (this.#isOpen && event.key === "Escape") this.close();
+  };
 
   constructor({ labels } = {}) {
     this.#labels = labels;
-    this.#animationFrameHost = document.defaultView;
-    this.container = document.createElement("div");
-    this.container.innerHTML = `
-            <div id="ds-container" class="depth-selector">
-                <div id="ds-wrapper" class="depth-selector__wrapper">
-                    <div id="ds-distance-panel" class="depth-selector__distance-panel">
-                        <span id="ds-distance-value" class="depth-selector__distance-value">${this.#labels.castDistance("0.0")}</span>
-                        <div id="ds-distance-track" class="depth-selector__distance-track" role="progressbar" aria-label="${this.#labels.castDistanceRange}">
-                            <div id="ds-distance-fill" class="depth-selector__distance-fill"></div>
-                        </div>
-                    </div>
-                    <div id="ds-input-container" class="depth-selector__input-container">
-                        <input type="text" id="ds-input" class="depth-selector__input" value="1.5">
-                    </div>
-                    <div id="ds-slider-container" class="depth-selector__slider-container">
-                        <input type="range" id="ds-slider" class="depth-selector__slider" min="0.1" step="0.1">
-                    </div>
-                    <div id="ds-labels" class="depth-selector__labels">
-                        <span id="ds-min" class="depth-selector__min">0.1</span>
-                        <span></span>
-                        <span id="ds-max" class="depth-selector__max">8.0</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    document.body.appendChild(this.container);
-
-    this.mainContainer = document.getElementById("ds-container");
-    this.slider = document.getElementById("ds-slider");
-    this.input = document.getElementById("ds-input");
-    this.maxLabel = document.getElementById("ds-max");
-    this.inputContainer = document.getElementById("ds-input-container");
-    this.distanceValue = document.getElementById("ds-distance-value");
-    this.distancePanel = document.getElementById("ds-distance-panel");
-    this.distanceTrack = document.getElementById("ds-distance-track");
-    this.distanceFill = document.getElementById("ds-distance-fill");
-
+    this.#document = document;
     this.onChange = null;
     this.isActive = false;
-
+    this.#build();
     this.#bindEvents();
   }
 
-  #bindEvents() {
-    this.slider.addEventListener("input", (e) => {
-      if (this.#disposed) return;
-      const val = parseFloat(e.target.value);
-      this.input.value = val.toFixed(2);
-      this.#updateInputPosition();
-      if (this.onChange) this.onChange(val);
-    });
-
-    this.input.addEventListener("input", (e) => {
-      if (this.#disposed) return;
-      let val = e.target.value.replace(",", ".").replace(/[^0-9.]/g, "");
-      if ((val.match(/\./g) || []).length > 1) {
-        val = val.substring(0, val.lastIndexOf("."));
-      }
-      e.target.value = val;
-    });
-
-    this.input.addEventListener("change", (e) => {
-      if (this.#disposed) return;
-      let val = parseFloat(e.target.value);
-      if (isNaN(val)) val = 0.1;
-      val = Math.max(0.1, Math.min(parseFloat(this.slider.max), val));
-      this.input.value = val.toFixed(2);
-      this.slider.value = val;
-      this.#updateInputPosition();
-      if (this.onChange) this.onChange(val);
-    });
+  get isOpen() {
+    return this.#isOpen;
   }
 
-  #updateInputPosition() {
-    if (this.#disposed) return;
-    const min = parseFloat(this.slider.min);
-    const max = parseFloat(this.slider.max);
-    const val = parseFloat(this.slider.value);
-
-    const range = max - min;
-    const percent = range > 0 ? (val - min) / range : 0;
-    const sliderHeight = this.slider.clientHeight;
-    const offset = percent * sliderHeight;
-
-    this.inputContainer.style.top = `calc(${offset}px - 18px)`;
+  get value() {
+    return this.#value;
   }
 
+  // Shows the control closed; the map stays clean until the player opens the track.
   show(maxDepth, currentDepth, changeCallback) {
     if (this.#disposed) return;
     this.isActive = true;
     this.onChange = changeCallback;
-
-    this.slider.max = maxDepth;
-    this.maxLabel.innerText = maxDepth.toFixed(1);
-
-    this.slider.value = currentDepth;
-    this.input.value = currentDepth.toFixed(2);
-
-    this.mainContainer.style.display = "flex";
-
-    this.#scheduleInputPosition();
+    this.#setRange(maxDepth);
+    this.#value = this.#clamp(currentDepth);
+    this.#root.style.display = "block";
+    this.#render();
   }
 
   updateMax(maxDepth) {
-    if (this.#disposed) return;
-    if (!this.isActive || parseFloat(this.slider.max) === maxDepth) return;
-
-    this.slider.max = maxDepth;
-    this.maxLabel.innerText = maxDepth.toFixed(1);
-
-    // Clamp the current depth when it exceeds the new limit.
-    let val = parseFloat(this.input.value);
-    if (val > maxDepth) {
-      val = maxDepth;
-      this.input.value = val.toFixed(2);
-      this.slider.value = val;
-      if (this.onChange) this.onChange(val);
+    if (this.#disposed || !this.isActive || maxDepth === this.#maxDepth) return;
+    this.#setRange(maxDepth);
+    const clamped = this.#clamp(this.#value);
+    if (clamped !== this.#value) {
+      this.#value = clamped;
+      this.#render();
+      this.onChange?.(clamped);
+      return;
     }
-
-    this.#scheduleInputPosition();
+    this.#render();
   }
 
-  #scheduleInputPosition() {
+  // The tackle icon on the button (the equipped float or jig); an image can replace the emoji later.
+  setIcon(icon) {
     if (this.#disposed) return;
-    const frameId = this.#animationFrameHost.requestAnimationFrame(() => {
-      this.#pendingFrames.delete(frameId);
-      this.#updateInputPosition();
-    });
-    this.#pendingFrames.add(frameId);
+    const text = icon || "";
+    if (text === this.#iconText) return;
+    this.#iconText = text;
+    this.#icon.textContent = text;
   }
 
-  updateCastDistance({ availableMeters, maximumMeters, visible = true } = {}) {
-    if (this.#disposed) return;
-    this.distancePanel.style.display = visible ? "block" : "none";
-    if (!visible) return;
+  open() {
+    if (this.#disposed || !this.isActive || this.#isOpen) return;
+    this.#isOpen = true;
+    this.#root.classList.add("depth-selector--open");
+    this.#button.setAttribute("aria-expanded", "true");
+  }
 
-    const maximum = Math.max(0, Number(maximumMeters) || 0);
-    const available = Math.max(
-      0,
-      Math.min(maximum, Number(availableMeters) || 0),
-    );
-    const ratio = maximum > 0 ? available / maximum : 0;
+  close() {
+    if (this.#disposed || !this.#isOpen) return;
+    this.#isOpen = false;
+    this.#dragPointerId = null;
+    this.#root.classList.remove("depth-selector--open");
+    this.#button.setAttribute("aria-expanded", "false");
+  }
 
-    this.distanceValue.innerText = this.#labels.castDistance(available.toFixed(1));
-    this.distanceFill.style.width = `${(ratio * 100).toFixed(1)}%`;
-    this.distanceTrack.setAttribute("aria-valuemin", "0");
-    this.distanceTrack.setAttribute(
-      "aria-valuemax",
-      maximum.toFixed(1),
-    );
-    this.distanceTrack.setAttribute(
-      "aria-valuenow",
-      available.toFixed(1),
-    );
+  toggle() {
+    if (this.#isOpen) this.close();
+    else this.open();
   }
 
   hide() {
     if (this.#disposed) return;
+    this.close();
     this.isActive = false;
-    this.mainContainer.style.display = "none";
+    this.#root.style.display = "none";
   }
 
   dispose() {
     if (this.#disposed) return;
+    this.close();
     this.#disposed = true;
     this.isActive = false;
-    for (const frameId of this.#pendingFrames) this.#animationFrameHost.cancelAnimationFrame(frameId);
-    this.#pendingFrames.clear();
-    this.#animationFrameHost = null;
     this.onChange = null;
-    this.container?.remove();
-    this.container = null;
-    this.mainContainer = null;
-    this.slider = null;
-    this.input = null;
-    this.maxLabel = null;
-    this.inputContainer = null;
-    this.distanceValue = null;
-    this.distancePanel = null;
-    this.distanceTrack = null;
-    this.distanceFill = null;
+    this.#document.removeEventListener("pointerdown", this.#onDocumentPointerDown, true);
+    this.#document.removeEventListener("keydown", this.#onDocumentKeyDown);
+    this.#root.remove();
+  }
+
+  #build() {
+    const doc = this.#document;
+    const element = (tag, className) => {
+      const node = doc.createElement(tag);
+      node.className = className;
+      return node;
+    };
+    this.#root = element("div", "depth-selector");
+    this.#root.style.display = "none";
+
+    this.#button = element("button", "depth-selector__float");
+    this.#button.type = "button";
+    this.#button.setAttribute("aria-expanded", "false");
+    this.#button.setAttribute("aria-label", this.#labels.depthToggle);
+    this.#icon = element("span", "depth-selector__icon");
+    this.#buttonValue = element("span", "depth-selector__value");
+    this.#button.appendChild(this.#icon);
+    this.#button.appendChild(this.#buttonValue);
+
+    this.#panel = element("div", "depth-selector__panel");
+    this.#track = element("div", "depth-selector__track");
+    this.#track.tabIndex = 0;
+    this.#track.setAttribute("role", "slider");
+    this.#track.setAttribute("aria-orientation", "vertical");
+    this.#track.setAttribute("aria-label", this.#labels.depthTrack);
+    this.#line = element("div", "depth-selector__line");
+    this.#marker = element("div", "depth-selector__marker");
+    this.#markerValue = element("span", "depth-selector__marker-value");
+    this.#marker.appendChild(this.#markerValue);
+    this.#minLabel = element("span", "depth-selector__limit depth-selector__limit--min");
+    this.#maxLabel = element("span", "depth-selector__limit depth-selector__limit--max");
+    this.#track.appendChild(this.#line);
+    this.#track.appendChild(this.#marker);
+    this.#panel.appendChild(this.#minLabel);
+    this.#panel.appendChild(this.#track);
+    this.#panel.appendChild(this.#maxLabel);
+
+    this.#root.appendChild(this.#button);
+    this.#root.appendChild(this.#panel);
+    UiEventShield.makeSolid(this.#root);
+    doc.body.appendChild(this.#root);
+  }
+
+  #bindEvents() {
+    this.#button.addEventListener("click", () => {
+      if (!this.#disposed) this.toggle();
+    });
+    this.#track.addEventListener("pointerdown", (event) => {
+      if (this.#disposed || !this.#isOpen || event.button > 0) return;
+      this.#dragPointerId = event.pointerId;
+      this.#track.setPointerCapture?.(event.pointerId);
+      this.#selectAt(event.clientY);
+      event.preventDefault?.();
+    });
+    this.#track.addEventListener("pointermove", (event) => {
+      if (this.#disposed || event.pointerId !== this.#dragPointerId) return;
+      this.#selectAt(event.clientY);
+    });
+    const endDrag = (event) => {
+      if (event.pointerId !== this.#dragPointerId) return;
+      this.#dragPointerId = null;
+      this.#track.releasePointerCapture?.(event.pointerId);
+    };
+    this.#track.addEventListener("pointerup", endDrag);
+    this.#track.addEventListener("pointercancel", endDrag);
+    this.#root.addEventListener("wheel", (event) => {
+      if (this.#disposed || !this.#isOpen) return;
+      event.preventDefault?.();
+      this.#select(this.#value + (event.deltaY > 0 ? DEPTH_STEP_METERS : -DEPTH_STEP_METERS));
+    }, { passive: false });
+    this.#track.addEventListener("keydown", (event) => {
+      if (this.#disposed || !this.#isOpen) return;
+      const delta = {
+        ArrowDown: DEPTH_STEP_METERS,
+        ArrowUp: -DEPTH_STEP_METERS,
+        PageDown: DEPTH_PAGE_METERS,
+        PageUp: -DEPTH_PAGE_METERS,
+      }[event.key];
+      if (delta !== undefined) this.#select(this.#value + delta);
+      else if (event.key === "Home") this.#select(this.#minDepth);
+      else if (event.key === "End") this.#select(this.#maxDepth);
+      else return;
+      event.preventDefault?.();
+    });
+    this.#document.addEventListener("pointerdown", this.#onDocumentPointerDown, true);
+    this.#document.addEventListener("keydown", this.#onDocumentKeyDown);
+  }
+
+  // A press outside the control closes the open track; on the game canvas the press is consumed so it starts no cast.
+  #closeOnOutsidePress(event) {
+    if (!this.#isOpen || this.#root.contains?.(event.target)) return;
+    this.close();
+    if (event.target?.tagName === "CANVAS") {
+      event.stopPropagation();
+      event.preventDefault?.();
+    }
+  }
+
+  #selectAt(clientY) {
+    const rect = this.#track.getBoundingClientRect();
+    const ratio = rect.height > 0 ? (clientY - rect.top) / rect.height : 0;
+    const clampedRatio = Math.max(0, Math.min(1, ratio));
+    this.#select(this.#minDepth + clampedRatio * (this.#maxDepth - this.#minDepth));
+  }
+
+  #select(depth) {
+    const next = this.#clamp(depth);
+    if (next === this.#value) return;
+    this.#value = next;
+    this.#render();
+    this.onChange?.(next);
+  }
+
+  #setRange(maxDepth) {
+    this.#maxDepth = Math.max(this.#minDepth, Number(maxDepth) || this.#minDepth);
+    this.#minLabel.textContent = this.#labels.depthValue(this.#minDepth.toFixed(1));
+    this.#maxLabel.textContent = this.#labels.depthValue(this.#maxDepth.toFixed(1));
+    this.#track.setAttribute("aria-valuemin", this.#minDepth.toFixed(1));
+    this.#track.setAttribute("aria-valuemax", this.#maxDepth.toFixed(1));
+  }
+
+  // Depth on the 0.1 m grid inside the current range.
+  #clamp(depth) {
+    const value = Number(depth);
+    const bounded = Math.max(this.#minDepth, Math.min(this.#maxDepth, Number.isFinite(value) ? value : this.#minDepth));
+    return Math.round(bounded / DEPTH_STEP_METERS) / Math.round(1 / DEPTH_STEP_METERS);
+  }
+
+  #render() {
+    const text = this.#labels.depthValue(this.#value.toFixed(1));
+    const range = this.#maxDepth - this.#minDepth;
+    const percent = range > 0 ? ((this.#value - this.#minDepth) / range) * 100 : 0;
+    this.#buttonValue.textContent = text;
+    this.#markerValue.textContent = text;
+    this.#root.style.setProperty("--depth-ratio", `${percent.toFixed(2)}%`);
+    this.#track.setAttribute("aria-valuenow", this.#value.toFixed(1));
+    this.#track.setAttribute("aria-valuetext", text);
   }
 }

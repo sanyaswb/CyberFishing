@@ -1,58 +1,76 @@
-/* Depth selector and available cast distance; geometry is supplied by its adapter. */
+/* Depth control: a tackle button with the selected depth and a depth track that slides out below it. The line runs
+   from the float down to the depth marker; --depth-ratio is supplied by the adapter. */
 
 .depth-selector {
-  position: fixed; top: 0; right: 0; width: 140px; height: 100%;
-  display: none; justify-content: center; align-items: center; padding-right: 5%;
-  font-family: sans-serif; pointer-events: none; z-index: var(--ui-layer-controls);
-}
-.depth-selector__wrapper {
-  display: flex; align-items: center; gap: 15px; height: 50vh; position: relative;
-  pointer-events: none;
-}
-.depth-selector__input-container {
-  position: absolute; left: -90px;
-}
-.depth-selector__input {
-  background: var(--ui-info); color: #000; font-size: 18px; font-weight: bold;
-  border: 2px solid #000; border-radius: var(--ui-radius-control); padding: 4px;
-  width: 60px; text-align: center; outline: none;
-  pointer-events: auto;
-}
-.depth-selector__input::after {
-  content: ''; position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
-  width: 12px; height: 2px; background: var(--ui-text);
-}
-.depth-selector__slider-container {
-  height: 100%; display: flex; align-items: center;
-}
-.depth-selector__slider {
-  writing-mode: vertical-lr; width: 8px; height: 100%; margin: 0; cursor: pointer;
-  background: linear-gradient(to bottom, #002233, var(--ui-info)); border-radius: var(--ui-radius-control); outline: none;
-  pointer-events: auto;
-}
-.depth-selector__labels {
-  display: flex; flex-direction: column; justify-content: space-between;
-  height: 100%; color: var(--ui-text); font-size: 14px; font-weight: bold; margin-left: 5px;
-}
-.depth-selector__distance-panel {
-  position: absolute; left: -165px; top: -66px; width: 145px;
-  padding: 8px 10px; border: 1px solid rgba(115, 194, 251, 0.8);
-  border-radius: 7px; background: rgba(var(--ui-surface-rgb), 0.9);
-  color: var(--ui-text); font-size: 12px; font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
-}
-.depth-selector__distance-value {
-  display: block; margin-bottom: 6px; color: var(--ui-success);
-  font-size: 14px; text-align: center;
-}
-.depth-selector__distance-track {
-  width: 100%; height: 9px; overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  border-radius: 5px; background: rgba(0, 0, 0, 0.55);
-}
-.depth-selector__distance-fill {
-  width: 100%; height: 100%; border-radius: inherit;
-  background: linear-gradient(90deg, #0b8f49, var(--ui-success));
-  transition: width 80ms linear;
+  --depth-ratio: 0%;
+  --depth-track-height: min(42vh, 300px);
+  position: fixed; top: 64px; right: 18px; width: 112px;
+  display: none; font-family: var(--ui-font-mono); color: var(--ui-text);
+  z-index: var(--ui-layer-controls); user-select: none; -webkit-user-select: none;
 }
 
+.depth-selector__float {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 60px; height: 60px; margin-left: auto; padding: 0;
+  border: 2px solid rgba(var(--ui-accent-rgb), 0.65); border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(var(--ui-accent-rgb), 0.18), rgba(var(--ui-surface-rgb), 0.92) 70%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5); color: inherit; cursor: pointer; touch-action: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+.depth-selector__float:hover { border-color: var(--ui-accent); }
+.depth-selector__float:active { transform: scale(0.95); }
+.depth-selector__float:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.depth-selector--open .depth-selector__float {
+  border-color: var(--ui-accent); box-shadow: 0 0 16px rgba(var(--ui-accent-rgb), 0.45), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.depth-selector__icon { font-size: 28px; line-height: 1; }
+.depth-selector__value {
+  position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+  padding: 1px 7px; border: 1px solid rgba(var(--ui-accent-rgb), 0.7); border-radius: 9px;
+  background: rgba(var(--ui-surface-rgb), 0.95); font-size: 12px; font-weight: bold; white-space: nowrap;
+}
+
+/* Closed: clipped to its top edge. Open: slides down from under the float. */
+.depth-selector__panel {
+  position: relative; height: var(--depth-track-height); margin-top: 16px;
+  clip-path: inset(0 0 100% 0); opacity: 0; transform: translateY(-10px); pointer-events: none;
+  transition: clip-path 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease, transform 0.26s ease;
+}
+.depth-selector--open .depth-selector__panel {
+  clip-path: inset(-12px -40px -12px -40px); opacity: 1; transform: none; pointer-events: auto;
+}
+
+/* The touch target is wide; the rail itself is a thin water gradient under the float's centre. */
+.depth-selector__track {
+  position: absolute; top: 0; right: 8px; width: 44px; height: 100%; cursor: ns-resize; touch-action: none;
+  outline: none;
+}
+.depth-selector__track::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 6px; transform: translateX(-50%);
+  border-radius: 3px; background: linear-gradient(to bottom, rgba(115, 194, 251, 0.55), rgba(0, 34, 51, 0.95));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.depth-selector__track:focus-visible::before { box-shadow: 0 0 0 2px var(--ui-info); }
+.depth-selector__line {
+  position: absolute; top: -16px; left: 50%; width: 2px; height: calc(var(--depth-ratio) + 16px);
+  transform: translateX(-50%); background: rgba(255, 255, 255, 0.85);
+}
+.depth-selector__marker {
+  position: absolute; top: var(--depth-ratio); left: 50%; width: 18px; height: 18px;
+  transform: translate(-50%, -50%); border: 2px solid var(--ui-text); border-radius: 50%;
+  background: var(--ui-accent); box-shadow: 0 0 10px rgba(var(--ui-accent-rgb), 0.8);
+}
+.depth-selector__marker-value {
+  position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
+  padding: 2px 7px; border-radius: 9px; background: rgba(var(--ui-surface-rgb), 0.95);
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.7); font-size: 13px; font-weight: bold; white-space: nowrap;
+}
+.depth-selector__limit {
+  position: absolute; right: 56px; font-size: 11px; color: var(--ui-muted); white-space: nowrap;
+}
+.depth-selector__limit--min { top: 0; }
+.depth-selector__limit--max { bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .depth-selector__float, .depth-selector__panel { transition: none; }
+}

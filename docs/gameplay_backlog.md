@@ -55,3 +55,6 @@ Add observations here in any form; Claude turns them into numbered entries.
   depth costs no cast distance. Max depth stays line − rod, and the fixed float keeps line − depth.
 - G-004 DEV item grant: done in [051](../specs/051-dev-item-grant/spec.md). DevTools → "🎁 ВИДАТИ ПРЕДМЕТ" adds any
   catalog item to the inventory, including the sliding float.
+- G-005 Depth selection UX: done in [052](../specs/052-depth-selector-ux/spec.md). A float button with a slide-down
+  depth track; while the track is open, a dashed cast limit line dims the unreachable water. The cast bar is removed.
+  The owner checks the visuals.

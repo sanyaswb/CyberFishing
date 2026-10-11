@@ -3,6 +3,7 @@ import { BoatChumRenderFrameBuilder } from "../../game/presentation/rendering/bo
 import { CastingRenderFrameBuilder } from "../../game/presentation/rendering/casting_render_frame_builder.js";
 import { CastingRenderPass } from "../../game/presentation/rendering/casting_render_pass.js";
 import { CastSceneRenderer } from "../../game/presentation/casting/cast_scene_renderer.js";
+import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 import { FightAreaRenderer } from "../../game/presentation/fishing/fight_area_renderer.js";
 import { FightAreaRenderFrameBuilder } from "../../game/presentation/rendering/fight_area_render_frame_builder.js";
 import { FightHudFrameBuilder } from "../../game/presentation/hud/fight_hud_frame_builder.js";
@@ -254,6 +255,7 @@ export class GameRenderComposition {
         getBounds: appPorts.getDynamicBounds,
         getNow: () => clock.now,
       },
+      labels: HUD_LABELS,
     });
     const fightAreaBuilder = new FightAreaRenderFrameBuilder({
       projector: runtime.projector,

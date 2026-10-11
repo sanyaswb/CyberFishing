@@ -38,9 +38,39 @@ export class CastSceneRenderer {
 
   render(model) {
     if (!model.visible) return;
+    this.#renderDepthLimit(model.depthLimit);
     this.#renderAimingZone(model.aimingZone);
     this.#renderAccuracyArea(model.accuracyArea);
     this.#renderPowerAim(model.powerAim);
+  }
+
+  // Unreachable water above the cast limit is dimmed; the dashed line marks the limit and carries its distance.
+  #renderDepthLimit(model) {
+    if (!model.visible || model.alpha <= 0) return;
+    const clipped = this.#primitives.beginClip(model.clipRegions);
+    const surface = this.#surface;
+    surface.save();
+    surface.globalAlpha = model.alpha;
+    if (model.lineY > 0) {
+      surface.fillStyle = model.dimColor;
+      surface.fillRect(0, 0, model.viewportWidth, model.lineY);
+    }
+    surface.beginPath();
+    surface.moveTo(0, model.lineY);
+    surface.lineTo(model.viewportWidth, model.lineY);
+    surface.strokeStyle = model.lineColor;
+    surface.lineWidth = 2;
+    surface.setLineDash(model.dash);
+    surface.stroke();
+    surface.font = "bold 13px monospace";
+    surface.textAlign = "center";
+    surface.textBaseline = "bottom";
+    surface.shadowColor = "rgba(0, 0, 0, 0.9)";
+    surface.shadowBlur = 4;
+    surface.fillStyle = model.lineColor;
+    surface.fillText(model.label, model.viewportWidth / 2, model.lineY - 6);
+    surface.restore();
+    this.#primitives.endClip(clipped);
   }
 
   #renderAimingZone(model) {
