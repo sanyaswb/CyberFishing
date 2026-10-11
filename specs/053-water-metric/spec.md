@@ -56,12 +56,12 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
   the casting `pixelsPerMeter`. The session port `getWaterMetric` reaches the states, `CastService`,
   `ChumController` and `CastingRenderFrameBuilder`.
 - Through the metric: `CastRules.canCastAt` (takes the metric instead of bounds), `CastPowerAim` (cast limit, target
-  height, distance check, accuracy spread), `CastService` (cast distance ratio), the hand chum limit, the aiming zone,
-  the depth limit line and the power aim line. The depth limit intent no longer carries `virtualBottomY`.
+  height, distance check; the accuracy spread stays in map pixels), `CastService` (cast distance ratio), the hand
+  chum limit, the aiming zone, the depth limit line and the power aim line. The depth limit intent no longer carries `virtualBottomY`.
 - The game-cycle check composes a uniform metric over its own water (0..800) through the same resolver.
-- Open for step 6: the accuracy spread now converts with the lateral scale, and the projector's sprite perspective
-  scale still applies on top of it. With a profile the far spread therefore shrinks twice; the owner tunes it in play
-  (accuracy percent or the sprite factor).
+- Accuracy (owner decision 2026-10-11): the spread lives apart from the metric and works as before. A distance-based
+  spread is a share of the map height the cast covers (`WaterMetric.virtualPixelsFromShore`), the ellipse keeps the
+  sprite perspective scale only. The first version converted it with the lateral scale; that is reverted.
 
 ## Step 3: the fight on the ground plane
 - Instead of converting each of the many pixel/metre sites in the fight stages, the fight step itself runs on the
@@ -122,7 +122,6 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
 - The game-cycle report does not change: it fights on its own lake, not on `MAP_DB`. The water metric check now
   requires the profile on the test location and its 30 m far edge (failed before the change).
 - Points for the owner's play check:
-  - the accuracy spread far away shrinks twice (metric and sprite perspective; see step 2);
   - `chumCastDistance: 680` is now base pixels, 13.6 m: the hand chum no longer reaches the far half of the water;
   - chum zones, the bait boat and the sprite perspective (`perspective.angleTop/angleBottom`) stay in map pixels;
   - casting reads `physics.simulation.pixelsPerMeter` once at startup, the fight reads it live (predates the metric).
@@ -144,6 +143,8 @@ The owner tunes the curve in config: where the compression starts and how strong
   on the 30 m profile they follow the curve (top edge 1500 base px); the resolver reuses its metric until the bounds or
   the profile change.
 - Game-cycle report unchanged (SHA256 `7b9baea38feaa4b550e20bc2d22d5eed7875a8c7fb6f3fdf9e176ddf573ed5b6`); 40/40 checks.
+- `water-metric`: for the same target height on the map the accuracy ellipse (radius, radii, position) is the same
+  with and without a 30 m profile; a spread computed from base pixels fails it.
 
 ## Step 1 evidence
 - `water-metric` check:

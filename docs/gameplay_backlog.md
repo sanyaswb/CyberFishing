@@ -60,4 +60,4 @@ Add observations here in any form; Claude turns them into numbered entries.
   The owner checks the visuals.
 - G-006 Perspective metres on the water: done in [053](../specs/053-water-metric/spec.md). One water metric per location
   (`MAP_DB.<id>.distanceProfile`, live in DevTools); casting, the fight and the tackle run in ground metres. The test
-  location reaches 30 m at its far edge. Owner play check pending: accuracy far away, hand chum reach (13.6 m).
+  location reaches 30 m at its far edge. Accuracy stays in map pixels (owner). Owner play check pending: hand chum reach (13.6 m).

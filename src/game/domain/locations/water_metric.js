@@ -150,10 +150,11 @@ export class WaterMetric {
     return target;
   }
 
-  // Virtual pixels covered sideways at height y by the given base pixels.
-  lateralVirtualPixels(basePixels, y) {
+  // Virtual pixels from the shore line up to the height the given base pixels reach (what the base pixels were on
+  // the map before the metric). Map-pixel mechanics such as the cast accuracy spread measure with it.
+  virtualPixelsFromShore(basePixels) {
     if (this.#isUniform) return basePixels;
-    return basePixels * this.pixelsPerMeterX(y) / this.#pixelsPerMeter;
+    return this.#shoreY - this.yAtBasePixels(basePixels);
   }
 
   // Metres from the shore line to the virtual height y (negative below the shore).

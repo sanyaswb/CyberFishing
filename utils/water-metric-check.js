@@ -27,7 +27,7 @@ function checkUniformMatchesPlainArithmetic() {
       "uniform base pixels are the plain virtual pixel distance");
     const basePixels = next() * 900;
     assert(Object.is(metric.yAtBasePixels(basePixels), 1160 - basePixels), "uniform base pixels map 1:1 to height");
-    assert(Object.is(metric.lateralVirtualPixels(basePixels, y1), basePixels), "uniform lateral base pixels are 1:1");
+    assert(Object.is(metric.virtualPixelsFromShore(basePixels), basePixels), "uniform base pixels are map pixels");
     const plane = { x: NaN, y: NaN };
     metric.toBasePlane(x1, y1, plane);
     assert(Object.is(plane.x, x1) && Object.is(plane.y, y1), "the uniform ground plane is the virtual plane");
@@ -95,9 +95,8 @@ function checkBasePixels() {
   }
   close(metric.distanceBasePixels(1280, 1160, 1400, 600), metric.distanceMeters(1280, 1160, 1400, 600) * 50,
     "distanceBasePixels is the ground distance in base pixels");
-  close(metric.lateralVirtualPixels(100, 1000), 100, "near the shore lateral base pixels stay 1:1");
-  close(metric.lateralVirtualPixels(100, 520), 100 * metric.pixelsPerMeterX(520) / 50,
-    "far away lateral base pixels shrink with the lateral scale");
+  close(metric.virtualPixelsFromShore(160), 160, "near the shore base pixels are map pixels");
+  close(metric.virtualPixelsFromShore(1500), 640, "the far edge is the full map height of the water");
 }
 
 function checkGroundPlane() {
@@ -178,6 +177,32 @@ function checkTestLocationProfile() {
   "the near share of the test location keeps the base scale");
 }
 
+// The cast accuracy spread lives in map pixels: for the same target height on the map, the spread ellipse is the
+// same with and without a distance profile (the owner keeps accuracy apart from perspective metres).
+function checkAccuracyIndependentOfProfile() {
+  const { CastPowerAim } = runtime.importModule("src/game/application/casting/cast_power_aim.js");
+  const projector = {
+    virtualToScreen: (x, y, out) => { out.x = x; out.y = y; return out; },
+    screenToVirtual: (x, y, out) => { out.x = x; out.y = y; return out; },
+    getScale: () => 1,
+    getPerspective: (y) => ({ scale: 0.4 + y / 2000, squashY: 0.6 }),
+  };
+  const preview = (metric, maxDistance) => {
+    const aim = new CastPowerAim({ config: { casting: { accuracyDistancePercent: 10 } }, projector,
+      getWaterMetric: () => metric, getViewportSize: () => ({ width: 2560, height: 1440 }), rng: { next: () => 0.5 } });
+    aim.update({ pointerDown: true, pointerStart: { x: 1280, y: 100 }, pointerCurrent: { x: 1280, y: 300 } }, null, 16);
+    return aim.getAccuracyPreview({ left: 0, right: 2560, top: 520, bottom: 1160 }, maxDistance, 80, null, 1);
+  };
+  const curve = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
+  const mapHeight = curve.virtualPixelsFromShore(750);
+  const curved = preview(curve, 750);
+  const flat = preview(new WaterMetric(LOCATION), mapHeight);
+  assert(Math.abs(curved.radiusPx - mapHeight * 0.1 / 2) < 1e-9, "the spread is a share of the map height of the cast");
+  for (const key of ["radiusPx", "radiusX", "radiusY", "x", "y"]) {
+    assert(Math.abs(curved[key] - flat[key]) < 1e-9, `accuracy ${key} is the same with and without the profile`);
+  }
+}
+
 function checkValidation() {
   assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
     "a maxMeters below the uniform distance is rejected");
@@ -194,9 +219,10 @@ checkBasePixels();
 checkGroundPlane();
 checkResolver();
 checkTestLocationProfile();
+checkAccuracyIndependentOfProfile();
 checkValidation();
 console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
   "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
-  "the previous metric on an invalid live edit; the test location reaches maxMeters at its far edge; invalid profiles are rejected.");
+  "the previous metric on an invalid live edit; the test location reaches maxMeters at its far edge; the cast accuracy spread stays in map pixels; invalid profiles are rejected.");

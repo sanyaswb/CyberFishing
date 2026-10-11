@@ -154,7 +154,7 @@ export class CastPowerAim {
       this.#resolveAccuracyDiameter(
         accuracyPx,
         accuracyPercent,
-        distance,
+        metric.virtualPixelsFromShore(distance),
         accuracyMultiplier,
       ) / 2;
     const area = this.#getAccuracyAreaScreen(
@@ -188,7 +188,7 @@ export class CastPowerAim {
     const accuracyPx = this.#resolveAccuracyDiameter(
       options.accuracyPx,
       options.accuracyPercent,
-      distance,
+      metric.virtualPixelsFromShore(distance),
       options.accuracyMultiplier,
     );
     const origin = this.#projector.screenToVirtual(
@@ -478,7 +478,7 @@ export class CastPowerAim {
       this.#scratchB,
     ).y;
 
-    const initialRadii = this.#getPerspectiveRadii(metric, targetTopY, baseRadiusPx);
+    const initialRadii = this.#getPerspectiveRadii(targetTopY, baseRadiusPx);
     let minCenterY = mapTopScreenY + initialRadii.radiusY;
     let maxCenterY = mapBottomScreenY - initialRadii.radiusY;
     let centerY =
@@ -495,7 +495,7 @@ export class CastPowerAim {
       centerY,
       this.#scratchA,
     );
-    const radii = this.#getPerspectiveRadii(metric, centerVirtual.y, baseRadiusPx);
+    const radii = this.#getPerspectiveRadii(centerVirtual.y, baseRadiusPx);
     minCenterY = mapTopScreenY + radii.radiusY;
     maxCenterY = mapBottomScreenY - radii.radiusY;
     centerY =
@@ -511,21 +511,22 @@ export class CastPowerAim {
     };
   }
 
-  // The accuracy spread is ground base pixels; the metric gives its sideways virtual size at virtualY.
-  #getPerspectiveRadii(metric, virtualY, baseRadiusPx) {
+  #getPerspectiveRadii(virtualY, baseRadiusPx) {
     const perspective = this.#projector.getPerspective?.(virtualY) || {
       scale: 1,
       squashY: 1,
     };
     const scale = Math.max(0, Number(perspective.scale) || 0);
     const squashY = Math.max(0, Number(perspective.squashY) || 0);
-    const radiusX = metric.lateralVirtualPixels(baseRadiusPx, virtualY) * scale * this.#projector.getScale();
+    const radiusX = baseRadiusPx * scale * this.#projector.getScale();
     return {
       radiusX,
       radiusY: radiusX * squashY,
     };
   }
 
+  // The accuracy spread lives in map pixels, apart from the water metric: a distance-based spread is a share of the
+  // map height the cast covers (the distance on the map, not in metres).
   #resolveAccuracyDiameter(
     fallbackPx,
     percentValue,
