@@ -16,6 +16,7 @@ function checkRenderFrameComposition() {
     ["src/game/presentation/fishing/fishing_equipment_render_model_builder.js",'FishingEquipmentRenderModelBuilder'],["src/game/presentation/rendering/fishing_render_frame_builder.js",'FishingRenderFrameBuilder'],
     ["src/game/presentation/rendering/game_render_frame_builder.js",'GameRenderFrameBuilder'],["src/game/presentation/rendering/landing_area_render_frame_builder.js",'LandingAreaRenderFrameBuilder'],
     ["src/game/presentation/screens/outcome_render_frame_builder.js",'OutcomeRenderFrameBuilder'],["src/game/presentation/rendering/world_render_frame_builder.js",'WorldRenderFrameBuilder'],["src/game/presentation/rendering/game_render_intent.js",'GameRenderIntent'],["src/game/presentation/rendering/game_render_coordinator.js",'GameRenderCoordinator']];
+  runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
   for(const [file,name]of definitions)runtime.load(file,{expose:[name]});
   const c=runtime.context,metrics={width:800,height:600},clock={now:1000,realNow:1000};
   const projector={getScale:()=>1,getPerspective:()=>({scale:1,squashY:0.5}),virtualToScreen(x,y,out){out.x=x;out.y=y;return out;},screenToVirtual(x,y,out){out.x=x;out.y=y;return out;}};
@@ -44,7 +45,8 @@ function checkRenderFrameComposition() {
   }
   const styles={resolveBarStyle:()=>({})},bounds={top:0,bottom:600};let aiming=false;
   const chumSource={isAiming:()=>aiming,getEquipment:()=>({}),getGameStateName:()=> 'casting',getCastDistance:()=>300,getPowerAimVisual:()=>({active:true,mode:'chum',screenX:250,power:0.5}),getAccuracyPreview:()=>({active:true,x:250,y:300,radiusX:10,radiusY:5}),getBounds:()=>bounds,getNow:()=>clock.now};
-  const castingBuilder=new c.CastingRenderFrameBuilder({projector,config,canvasMetrics:metrics,hudStyleResolver:styles,chumSource});
+  const waterMetric=new c.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top});
+  const castingBuilder=new c.CastingRenderFrameBuilder({projector,getWaterMetric:()=>waterMetric,config,canvasMetrics:metrics,hudStyleResolver:styles,chumSource});
   const landingBuilder=new c.LandingAreaRenderFrameBuilder({projector,config,canvasMetrics:metrics,getRodScreenX:()=>400,getNet:()=>({isActive:true,getTriggerVirtualY:bottom=>bottom-100}),landingPolicyResolver:{resolve:()=>({getLandingDistanceMeters:()=>1})}});
   const areaBuilder=new c.FightAreaRenderFrameBuilder({projector,config,canvasMetrics:metrics,getRodScreenX:()=>400,landingAreaBuilder:landingBuilder,sectorGeometry:{resolve:()=>geometry}});
   const hudBuilder=new c.FightHudFrameBuilder({config,canvasMetrics:metrics});

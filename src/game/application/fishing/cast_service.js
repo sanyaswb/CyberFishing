@@ -8,6 +8,7 @@ export class CastService {
   #baitRules;
   #getRodVirtualPos;
   #getDynamicBounds;
+  #getWaterMetric;
   #debugEvents;
   #castReadinessEvaluator;
   #devFlags;
@@ -22,6 +23,7 @@ export class CastService {
     baitRules,
     getRodVirtualPos,
     getDynamicBounds,
+    getWaterMetric,
     debugEvents = null,
     castReadinessEvaluator = null,
     devFlags = null,
@@ -34,6 +36,7 @@ export class CastService {
     this.#baitRules = baitRules;
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#getDynamicBounds = getDynamicBounds;
+    this.#getWaterMetric = getWaterMetric;
     this.#debugEvents = debugEvents;
     this.#devFlags = devFlags;
     this.#runtimeConfig = runtimeConfig;
@@ -56,7 +59,7 @@ export class CastService {
 
     const rodPos =
       context.rodVirtualPos || this.#getRodVirtualPos(this.#getDynamicBounds());
-    const dist = Math.hypot(vx - rodPos.x, vy - rodPos.y);
+    const dist = this.#getWaterMetric().distanceBasePixels(vx, vy, rodPos.x, rodPos.y);
     const maxDist = this.#equipmentRules.getMaxCastDistance(
       eq,
       2000,

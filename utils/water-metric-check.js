@@ -3,7 +3,10 @@
 const assert = require("node:assert/strict");
 const { SourceRuntime } = require("./testing/core/source_runtime");
 
-const { WaterMetric } = new SourceRuntime().importModule("src/game/domain/locations/water_metric.js");
+const runtime = new SourceRuntime();
+const { WaterMetric } = runtime.importModule("src/game/domain/locations/water_metric.js");
+const { LocationWaterMetricResolver } = runtime.importModule(
+  "src/game/domain/locations/location_water_metric_resolver.js");
 
 // Test location: castable water 520..1160 virtual px, 50 px per metre (12.8 m uniform).
 const LOCATION = Object.freeze({ pixelsPerMeter: 50, shoreY: 1160, topY: 520, centerX: 1280 });
@@ -20,7 +23,13 @@ function checkUniformMatchesPlainArithmetic() {
     assert(Object.is(metric.metersFromShore(y1), (1160 - y1) / 50));
     const meters = next() * 20;
     assert(Object.is(metric.yAtMeters(meters), 1160 - meters * 50));
+    assert(Object.is(metric.distanceBasePixels(x1, y1, x2, y2), Math.hypot(x1 - x2, y1 - y2)),
+      "uniform base pixels are the plain virtual pixel distance");
+    const basePixels = next() * 900;
+    assert(Object.is(metric.yAtBasePixels(basePixels), 1160 - basePixels), "uniform base pixels map 1:1 to height");
+    assert(Object.is(metric.lateralVirtualPixels(basePixels, y1), basePixels), "uniform lateral base pixels are 1:1");
   }
+  assert(Object.is(metric.topBasePixels, 1160 - 520), "uniform water height in base pixels is the virtual height");
   assert.equal(metric.pixelsPerMeterX(520), 50);
   assert.equal(metric.pixelsPerMeterY(520), 50);
   assert.equal(metric.topMeters, 12.8);
@@ -67,6 +76,38 @@ function checkPerspectiveCurve() {
   assert(fish.x - 1280 < nearFish.x - 1280, "the same 2 m sideways spans fewer pixels far away");
 }
 
+function checkBasePixels() {
+  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
+  const close = (actual, expected, message) =>
+    assert(Math.abs(actual - expected) <= 1e-7, `${message}: expected ${expected}, received ${actual}`);
+  close(metric.topBasePixels, 1500, "the top edge lies at maxMeters x pixelsPerMeter base pixels");
+  for (const basePixels of [0, 160, 320, 700, 1200, 1500, 1700]) {
+    close(metric.yAtBasePixels(basePixels), metric.yAtMeters(basePixels / 50), `yAtBasePixels(${basePixels})`);
+  }
+  close(metric.distanceBasePixels(1280, 1160, 1400, 600), metric.distanceMeters(1280, 1160, 1400, 600) * 50,
+    "distanceBasePixels is the ground distance in base pixels");
+  close(metric.lateralVirtualPixels(100, 1000), 100, "near the shore lateral base pixels stay 1:1");
+  close(metric.lateralVirtualPixels(100, 520), 100 * metric.pixelsPerMeterX(520) / 50,
+    "far away lateral base pixels shrink with the lateral scale");
+}
+
+function checkResolver() {
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
+  const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
+  const uniform = resolver.resolve(bounds, undefined);
+  assert.equal(uniform.isUniform, true, "a location without distanceProfile gets a uniform metric");
+  assert.equal(uniform.shoreY, 1160, "the shore line is the bottom edge of the castable water");
+  assert.equal(resolver.resolve({ ...bounds }, null), uniform, "unchanged inputs return the same metric");
+  const profiled = resolver.resolve(bounds, { maxMeters: 30, linearShare: 0.5 });
+  assert.notEqual(profiled, uniform, "a profile rebuilds the metric");
+  assert(Math.abs(profiled.topMeters - 30) < 1e-9, "the profile reaches maxMeters at the top edge");
+  assert.equal(resolver.resolve(bounds, { maxMeters: 30, linearShare: 0.5 }), profiled,
+    "an equal profile object keeps the metric");
+  assert.equal(profiled.toGround(1280, 520, { x: NaN, y: NaN }).x, 0, "the centre line is between the side edges");
+  assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, { maxMeters: 30, linearShare: 0.5 }), profiled,
+    "changed bounds rebuild the metric");
+}
+
 function checkValidation() {
   assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
     "a maxMeters below the uniform distance is rejected");
@@ -79,7 +120,11 @@ function checkValidation() {
 
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
+checkBasePixels();
+checkResolver();
 checkValidation();
-console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic; the perspective curve " +
-  "keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at the top edge, inverts exactly " +
-  "and compresses lateral distances by the square root of the depth compression; invalid profiles are rejected.");
+console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
+  "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
+  "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
+  "pixels follow the curve; the location resolver reuses its metric until bounds or profile change; invalid profiles " +
+  "are rejected.");

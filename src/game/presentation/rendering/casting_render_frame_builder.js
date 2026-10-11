@@ -4,6 +4,7 @@ import { threeBandGradientColor } from "../styles/three_band_gradient_color.js";
 
 export class CastingRenderFrameBuilder {
   #projector;
+  #getWaterMetric;
   #config;
   #canvasMetrics;
   #hudStyleResolver;
@@ -22,6 +23,7 @@ export class CastingRenderFrameBuilder {
 
   constructor({
     projector,
+    getWaterMetric,
     config,
     canvasMetrics,
     hudStyleResolver,
@@ -30,6 +32,9 @@ export class CastingRenderFrameBuilder {
   }) {
     if (!projector || typeof projector.virtualToScreen !== "function") {
       throw new TypeError("CastingRenderFrameBuilder requires projector");
+    }
+    if (typeof getWaterMetric !== "function") {
+      throw new TypeError("CastingRenderFrameBuilder requires getWaterMetric");
     }
     if (!hudStyleResolver || typeof hudStyleResolver.resolveBarStyle !== "function") {
       throw new TypeError(
@@ -54,6 +59,7 @@ export class CastingRenderFrameBuilder {
       }
     }
     this.#projector = projector;
+    this.#getWaterMetric = getWaterMetric;
     this.#config = config;
     this.#canvasMetrics = canvasMetrics;
     this.#hudStyleResolver = hudStyleResolver;
@@ -143,7 +149,7 @@ export class CastingRenderFrameBuilder {
 
   #buildAimingZone(target, bottom, maxDistance, mode, clipRegions) {
     if (maxDistance === Infinity) return;
-    const lineVirtualY = bottom - maxDistance;
+    const lineVirtualY = this.#getWaterMetric().yAtBasePixels(maxDistance);
     const lineY = this.#projector.virtualToScreen(
       0,
       lineVirtualY,
@@ -165,7 +171,7 @@ export class CastingRenderFrameBuilder {
 
   #buildDepthLimit(target, limit, clipRegions) {
     const config = this.#config.casting?.depthLimit || {};
-    const targetY = limit.virtualBottomY - limit.maxDistance;
+    const targetY = this.#getWaterMetric().yAtBasePixels(limit.maxDistance);
     const nowMs = limit.nowMs;
     if (this.#depthLimitShownAtMs < 0) {
       this.#depthLimitShownAtMs = nowMs;
@@ -222,7 +228,8 @@ export class CastingRenderFrameBuilder {
   #buildPowerAim(target, visual, bounds, maxDistance, nowMs) {
     if (!visual?.active) return;
     const lineConfig = this.#config.casting?.aimLine || {};
-    const mapHeight = Math.max(0, bounds.bottom - bounds.top);
+    const metric = this.#getWaterMetric();
+    const mapHeight = Math.max(0, metric.topBasePixels);
     maxDistance = Number(maxDistance);
     if (!Number.isFinite(maxDistance)) maxDistance = mapHeight;
     const powerRatio = RenderMath.clamp(visual.power);
@@ -236,7 +243,7 @@ export class CastingRenderFrameBuilder {
     ).y;
     const targetY = this.#projector.virtualToScreen(
       0,
-      Math.max(bounds.top, bounds.bottom - distance),
+      Math.max(bounds.top, metric.yAtBasePixels(distance)),
       this.#screenA,
     ).y;
     const dash = Array.isArray(lineConfig.dash)

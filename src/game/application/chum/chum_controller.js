@@ -12,6 +12,7 @@ export class ChumController {
   #config;
   #depthUI;
   #getDynamicBounds;
+  #getWaterMetric;
   #getRodVirtualPos;
   #checkWater;
   #markInvalidCast;
@@ -41,6 +42,7 @@ export class ChumController {
     panViewport,
     depthUI,
     getDynamicBounds,
+    getWaterMetric,
     getRodVirtualPos,
     checkWater,
     markInvalidCast,
@@ -59,6 +61,7 @@ export class ChumController {
     this.#config = config;
     this.#depthUI = depthUI;
     this.#getDynamicBounds = getDynamicBounds;
+    this.#getWaterMetric = getWaterMetric;
     this.#getRodVirtualPos = getRodVirtualPos;
     this.#checkWater = checkWater;
     this.#markInvalidCast = markInvalidCast;
@@ -67,6 +70,7 @@ export class ChumController {
     this.#handCastAim = new CastPowerAim({
       config,
       projector,
+      getWaterMetric,
       getViewportSize,
       panViewport,
       rng,
@@ -270,7 +274,7 @@ export class ChumController {
     const cell = this.#checkWater(vPos.x, vPos.y);
 
     if (method === "hand") {
-      this.#handleHandAiming(input, bounds, vPos, cell);
+      this.#handleHandAiming(input, vPos, cell);
     } else if (method === "boat") {
       this.#handleBoatAiming(input, vPos, cell);
     }
@@ -414,7 +418,7 @@ export class ChumController {
     return release.power <= threshold;
   }
 
-  #handleHandAiming(input, bounds, vPos, cell) {
+  #handleHandAiming(input, vPos, cell) {
     const activeChum = this.#activeHandChum;
 
     if (!cell || !activeChum) {
@@ -424,7 +428,7 @@ export class ChumController {
       return;
     }
 
-    const virtualLineY = bounds.bottom - this.#location.chumCastDistance;
+    const virtualLineY = this.#getWaterMetric().yAtBasePixels(this.#location.chumCastDistance);
     if (vPos.y < virtualLineY) {
       this.#markInvalidCast(input.clickPos);
       input.clickPos = null;

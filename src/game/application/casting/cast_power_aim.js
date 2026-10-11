@@ -3,6 +3,7 @@ import { Vector2 } from "../../../engine/math/vector2.js";
 export class CastPowerAim {
   #config;
   #projector;
+  #getWaterMetric;
   #getViewportSize;
   #panViewport;
   #rng;
@@ -33,9 +34,10 @@ export class CastPowerAim {
   #scratchB = new Vector2(0, 0);
   #scratchC = new Vector2(0, 0);
 
-  constructor({ config, projector, getViewportSize, panViewport, rng }) {
+  constructor({ config, projector, getWaterMetric, getViewportSize, panViewport, rng }) {
     this.#config = config;
     this.#projector = projector;
+    this.#getWaterMetric = getWaterMetric;
     this.#getViewportSize = getViewportSize;
     this.#panViewport = panViewport;
     this.#rng = rng;
@@ -144,7 +146,8 @@ export class CastPowerAim {
     accuracyMultiplier = null,
   ) {
     if (!this.#visual.active) return null;
-    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, bounds);
+    const metric = this.#getWaterMetric();
+    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, metric);
     const distance =
       resolvedMaxDistance * Math.max(0, Math.min(1, this.#visual.power));
     const baseRadiusPx =
@@ -155,6 +158,7 @@ export class CastPowerAim {
         accuracyMultiplier,
       ) / 2;
     const area = this.#getAccuracyAreaScreen(
+      metric,
       bounds,
       maxDistance,
       this.#visual.power,
@@ -178,7 +182,8 @@ export class CastPowerAim {
     const bounds = options.bounds;
     const checkWater = options.checkWater;
     const canCastAnywhere = options.canCastAnywhere === true;
-    const maxDistance = this.#resolveMaxDistance(options.maxDistance, bounds);
+    const metric = this.#getWaterMetric();
+    const maxDistance = this.#resolveMaxDistance(options.maxDistance, metric);
     const distance = maxDistance * Math.max(0, Math.min(1, release.power));
     const accuracyPx = this.#resolveAccuracyDiameter(
       options.accuracyPx,
@@ -195,6 +200,7 @@ export class CastPowerAim {
 
     const baseRadiusPx = accuracyPx / 2;
     const area = this.#getAccuracyAreaScreen(
+      metric,
       bounds,
       maxDistance,
       release.power,
@@ -219,6 +225,7 @@ export class CastPowerAim {
       );
       if (
         !this.#isWithinCastDistance(
+          metric,
           virtualPos,
           originX,
           bounds.bottom,
@@ -251,6 +258,7 @@ export class CastPowerAim {
     const centerCell = checkWater?.(centerVirtual.x, centerVirtual.y);
     if (
       this.#isWithinCastDistance(
+        metric,
         centerVirtual,
         originX,
         bounds.bottom,
@@ -278,12 +286,10 @@ export class CastPowerAim {
     };
   }
 
-  #isWithinCastDistance(virtualPos, originX, originY, distance) {
+  #isWithinCastDistance(metric, virtualPos, originX, originY, distance) {
     const maxDistance = Math.max(0, Number(distance) || 0);
     if (maxDistance <= 0) return false;
-    const dx = virtualPos.x - originX;
-    const dy = virtualPos.y - originY;
-    return Math.hypot(dx, dy) <= maxDistance + 0.001;
+    return metric.distanceBasePixels(virtualPos.x, virtualPos.y, originX, originY) <= maxDistance + 0.001;
   }
 
   #targetResult({
@@ -445,14 +451,15 @@ export class CastPowerAim {
     };
   }
 
-  #resolveMaxDistance(maxDistance, bounds) {
+  // Cast distances are base pixels (ground metres times pixelsPerMeter), bounded by the far edge of the water.
+  #resolveMaxDistance(maxDistance, metric) {
     let resolved = Number(maxDistance);
-    if (!Number.isFinite(resolved)) resolved = bounds.bottom - bounds.top;
-    return Math.max(0, Math.min(resolved, bounds.bottom - bounds.top));
+    if (!Number.isFinite(resolved)) resolved = metric.topBasePixels;
+    return Math.max(0, Math.min(resolved, metric.topBasePixels));
   }
 
-  #getAccuracyAreaScreen(bounds, maxDistance, power, screenX, baseRadiusPx) {
-    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, bounds);
+  #getAccuracyAreaScreen(metric, bounds, maxDistance, power, screenX, baseRadiusPx) {
+    const resolvedMaxDistance = this.#resolveMaxDistance(maxDistance, metric);
     const distance = resolvedMaxDistance * Math.max(0, Math.min(1, power));
     const mapTopScreenY = this.#projector.virtualToScreen(
       0,
@@ -464,14 +471,14 @@ export class CastPowerAim {
       bounds.bottom,
       this.#scratchC,
     ).y;
-    const targetTopY = Math.max(bounds.top, bounds.bottom - distance);
+    const targetTopY = Math.max(bounds.top, metric.yAtBasePixels(distance));
     const targetTopScreenY = this.#projector.virtualToScreen(
       0,
       targetTopY,
       this.#scratchB,
     ).y;
 
-    const initialRadii = this.#getPerspectiveRadii(targetTopY, baseRadiusPx);
+    const initialRadii = this.#getPerspectiveRadii(metric, targetTopY, baseRadiusPx);
     let minCenterY = mapTopScreenY + initialRadii.radiusY;
     let maxCenterY = mapBottomScreenY - initialRadii.radiusY;
     let centerY =
@@ -488,7 +495,7 @@ export class CastPowerAim {
       centerY,
       this.#scratchA,
     );
-    const radii = this.#getPerspectiveRadii(centerVirtual.y, baseRadiusPx);
+    const radii = this.#getPerspectiveRadii(metric, centerVirtual.y, baseRadiusPx);
     minCenterY = mapTopScreenY + radii.radiusY;
     maxCenterY = mapBottomScreenY - radii.radiusY;
     centerY =
@@ -504,14 +511,15 @@ export class CastPowerAim {
     };
   }
 
-  #getPerspectiveRadii(virtualY, baseRadiusPx) {
+  // The accuracy spread is ground base pixels; the metric gives its sideways virtual size at virtualY.
+  #getPerspectiveRadii(metric, virtualY, baseRadiusPx) {
     const perspective = this.#projector.getPerspective?.(virtualY) || {
       scale: 1,
       squashY: 1,
     };
     const scale = Math.max(0, Number(perspective.scale) || 0);
     const squashY = Math.max(0, Number(perspective.squashY) || 0);
-    const radiusX = baseRadiusPx * scale * this.#projector.getScale();
+    const radiusX = metric.lateralVirtualPixels(baseRadiusPx, virtualY) * scale * this.#projector.getScale();
     return {
       radiusX,
       radiusY: radiusX * squashY,

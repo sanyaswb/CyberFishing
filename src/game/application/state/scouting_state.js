@@ -15,6 +15,7 @@ export class ScoutingState extends GameState {
     this.#castAim = new CastPowerAim({
       config: deps.config,
       projector: deps.projector,
+      getWaterMetric: deps.world.getWaterMetric,
       getViewportSize: deps.getViewportSize,
       panViewport: deps.commands.panViewport,
       rng: deps.rng,
@@ -82,7 +83,7 @@ export class ScoutingState extends GameState {
           vPos.x,
           vPos.y,
           eq,
-          bounds,
+          this.deps.world.getWaterMetric(),
           this.deps.world.getRodVirtualPos(bounds),
           this.getSelectedHookDepthMeters(),
         );
@@ -137,7 +138,7 @@ export class ScoutingState extends GameState {
   getRenderState(target, bounds) {
     target.stateName = "scouting";
     if (this.deps.depthUI.isOpen && !this.deps.isAimingChum()) {
-      this.#populateDepthCastLimit(target, bounds);
+      this.#populateDepthCastLimit(target);
     }
     if (this.#usePowerCasting()) {
       if (!this.deps.isAimingChum()) {
@@ -163,7 +164,7 @@ export class ScoutingState extends GameState {
         let maxDist = this.getEffectiveCastDistance(eq);
 
         if (maxDist !== Infinity) {
-          maxDist = Math.min(maxDist, bounds.bottom - bounds.top);
+          maxDist = Math.min(maxDist, this.deps.world.getWaterMetric().topBasePixels);
           this.#populateAimingZone(
             target,
             bounds.bottom,
@@ -334,7 +335,7 @@ export class ScoutingState extends GameState {
 
   // While the depth track is open: the farthest reachable cast at the selected depth (the same limit a full-power
   // cast uses), bounded by the location, for the cast limit line on the map.
-  #populateDepthCastLimit(target, bounds) {
+  #populateDepthCastLimit(target) {
     const eq = this.deps.inventory.getEquipped();
     const maxDistance = this.getEffectiveCastDistance(eq);
     if (!Number.isFinite(maxDistance)) return;
@@ -343,8 +344,7 @@ export class ScoutingState extends GameState {
     const limit = target.casting.depthLimit;
     target.casting.visible = true;
     limit.visible = true;
-    limit.virtualBottomY = bounds.bottom;
-    limit.maxDistance = Math.min(maxDistance, Math.max(0, bounds.bottom - bounds.top));
+    limit.maxDistance = Math.min(maxDistance, Math.max(0, this.deps.world.getWaterMetric().topBasePixels));
     limit.meters = maxDistance / pixelsPerMeter;
     limit.nowMs = this.deps.clock.realNow;
   }

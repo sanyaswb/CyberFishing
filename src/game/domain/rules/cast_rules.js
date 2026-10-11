@@ -3,11 +3,12 @@ export class CastRules {
     this.equipmentRules = equipmentRules;
   }
 
+  // Cast distances are base pixels (ground metres times pixelsPerMeter); the water metric places them on the map.
   canCastAt(
     vx,
     vy,
     equipment,
-    bounds,
+    waterMetric,
     rodPos,
     selectedDepthMeters = null,
   ) {
@@ -18,11 +19,11 @@ export class CastRules {
       selectedDepthMeters,
     );
     if (maxDistance === Infinity) return true;
-    const maxInsideBounds = Math.min(maxDistance, bounds.bottom - bounds.top);
-    const castLineY = bounds.bottom - maxInsideBounds;
+    const maxInsideBounds = Math.min(maxDistance, waterMetric.topBasePixels);
+    const castLineY = waterMetric.yAtBasePixels(maxInsideBounds);
     return (
       vy >= castLineY &&
-      (!rodPos || Math.hypot(vx - rodPos.x, vy - rodPos.y) <= maxDistance)
+      (!rodPos || waterMetric.distanceBasePixels(vx, vy, rodPos.x, rodPos.y) <= maxDistance)
     );
   }
 }

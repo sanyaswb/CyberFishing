@@ -30,6 +30,7 @@ export class StateDepsFactory {
         checkWater: this.#root.checkWater,
         getBiteEnv: this.#root.getBiteEnv,
         getDynamicBounds: this.#root.getDynamicBounds,
+        getWaterMetric: this.#root.getWaterMetric,
         getRodVirtualPos: this.#root.getRodVirtualPos,
         getScreenOffsetRatio: this.#root.getScreenOffsetRatio,
       },

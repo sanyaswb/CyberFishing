@@ -221,6 +221,7 @@ export class GameApplication {
       checkWater: (vx, vy) => this.checkWater(vx, vy),
       getBiteEnv: () => this.getEnvDataForBite(),
       getDynamicBounds: () => this.getDynamicBounds(),
+      getWaterMetric: () => this.#world.getWaterMetric(),
       getRodVirtualPos: (bounds) => this.getRodVirtualPos(bounds),
       getBaseRodVirtualPos: (bounds) => this.getBaseRodVirtualPos(bounds),
       getRodScreenX: () => this.getRodScreenX(),

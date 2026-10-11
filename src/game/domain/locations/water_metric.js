@@ -7,10 +7,15 @@
 //
 // Ground coordinates are metres: X sideways from the vertical centre line `centerX`, Y away from the shore. All
 // methods are allocation-free; `toGround`/`toVirtual` write into the given target.
+//
+// Base pixels are ground metres times pixelsPerMeter: the unit gameplay code measured water distances in before the
+// metric existed. The *BasePixels methods let that code keep its unit; on a uniform metric they return the plain
+// virtual pixel arithmetic exactly (base pixels equal virtual pixels).
 export class WaterMetric {
   #pixelsPerMeter;
   #metersPerPixel;
   #shoreY;
+  #heightPx;
   #centerX;
   #joinHeightPx;
   #curveHeightPx;
@@ -28,6 +33,7 @@ export class WaterMetric {
     this.#pixelsPerMeter = scale;
     this.#metersPerPixel = 1 / scale;
     this.#shoreY = Number(shoreY);
+    this.#heightPx = heightPx;
     this.#centerX = Number(centerX) || 0;
     this.#isUniform = maxMeters === null || maxMeters === undefined;
     if (this.#isUniform) {
@@ -68,6 +74,30 @@ export class WaterMetric {
 
   get topMeters() {
     return this.#topMeters;
+  }
+
+  // Base pixels from the shore line to the top edge of the water.
+  get topBasePixels() {
+    if (this.#isUniform) return this.#heightPx;
+    return this.#topMeters * this.#pixelsPerMeter;
+  }
+
+  // Virtual height y at the given base pixels from the shore.
+  yAtBasePixels(basePixels) {
+    if (this.#isUniform) return this.#shoreY - basePixels;
+    return this.yAtMeters(basePixels / this.#pixelsPerMeter);
+  }
+
+  // Ground distance in base pixels between two virtual points.
+  distanceBasePixels(x1, y1, x2, y2) {
+    if (this.#isUniform) return Math.hypot(x1 - x2, y1 - y2);
+    return this.distanceMeters(x1, y1, x2, y2) * this.#pixelsPerMeter;
+  }
+
+  // Virtual pixels covered sideways at height y by the given base pixels.
+  lateralVirtualPixels(basePixels, y) {
+    if (this.#isUniform) return basePixels;
+    return basePixels * this.pixelsPerMeterX(y) / this.#pixelsPerMeter;
   }
 
   // Metres from the shore line to the virtual height y (negative below the shore).

@@ -12,8 +12,8 @@ export class GameRenderIntent {
       maxDistance: 0,
       mode: "rod",
       nowMs: 0,
-      // Cast limit line while the depth track is open (virtual units; nowMs is real time for its animation).
-      depthLimit: { visible: false, virtualBottomY: 0, maxDistance: 0, meters: 0, nowMs: 0 },
+      // Cast limit line while the depth track is open (base pixels; nowMs is real time for its animation).
+      depthLimit: { visible: false, maxDistance: 0, meters: 0, nowMs: 0 },
     };
     this.fishing = {
       visible: false,

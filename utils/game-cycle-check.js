@@ -169,6 +169,8 @@ const GAMEPLAY_FILES = [
   "src/game/domain/locations/world_perspective.js",
   "src/game/application/world/current_location.js",
   "src/game/application/world/environment_system.js",
+  "src/game/domain/locations/water_metric.js",
+  "src/game/domain/locations/location_water_metric_resolver.js",
   "src/game/application/world/game_world.js",
   "src/game/application/fishing/mutable_fight_frame_context.js",
   "src/game/application/fishing/bite_environment_service.js",
@@ -262,10 +264,10 @@ function createDevFlags() {
 // The production fishing composition with the check's hosts: the live runtime config, inactive DEV flags, the
 // deterministic step clock and no console loggers.
 function composeProductionFishingServices({ config, rng, clock, equipmentRules, baitRules, getRodVirtualPos,
-  getDynamicBounds, fightDiagnosticsBuilder = null }) {
+  getDynamicBounds, getWaterMetric, fightDiagnosticsBuilder = null }) {
   return composeFishingServices({ config, rng, clock, stepClock: createStepClock(), devFlags: createDevFlags(),
     runtimeConfig: CONFIG, equipmentRules, baitRules, castDistanceCalculator: new CastDistanceCalculator(config),
-    getRodVirtualPos, getDynamicBounds, fightDiagnosticsBuilder });
+    getRodVirtualPos, getDynamicBounds, getWaterMetric, fightDiagnosticsBuilder });
 }
 
 function createTestBuild({
@@ -462,6 +464,8 @@ function createCast({
   const baitRules = new BaitRules();
   const bounds = { left: 0, right: 1000, top: 0, bottom: 800 };
   const rodVirtualPos = { x: 500, y: bounds.bottom };
+  // A uniform metric over the check's own water (no distance profile), as GameWorld composes one per location.
+  const waterMetric = new LocationWaterMetricResolver({ pixelsPerMeter: 50 }).resolve(bounds);
   const { castService } = composeProductionFishingServices({
     config,
     rng,
@@ -470,6 +474,7 @@ function createCast({
     baitRules,
     getRodVirtualPos: () => rodVirtualPos,
     getDynamicBounds: () => bounds,
+    getWaterMetric: () => waterMetric,
   });
   const result = castService.cast(
     rodVirtualPos.x,
@@ -1730,6 +1735,7 @@ function createFightService({ config, rng, fightDiagnostics = true }) {
     baitRules: null,
     getRodVirtualPos: () => null,
     getDynamicBounds: () => null,
+    getWaterMetric: () => null,
     fightDiagnosticsBuilder: fightDiagnostics ? new FightDiagnosticsSnapshotBuilder() : null,
   }).fightService;
 }
@@ -2099,7 +2105,7 @@ assert(lake.getCols() === 10 && lake.getRows() === 6 && cell !== null &&
   const canvasMetrics = { width: 100, height: 60 };
   const clock = { now: 0, realNow: 0 };
   const gameWorld = new GameWorld({ map: lake, env: environment, chum, projector, location, canvasMetrics, clock,
-    locationConfig: viewConfig });
+    locationConfig: viewConfig, waterMetricResolver: new LocationWaterMetricResolver({ pixelsPerMeter: 50 }) });
   gameWorld.refreshViewport(true);
   const frameContext = new MutableFightFrameContext();
   const floatEntity = { getPosition: () => ({ x: 35, y: 35 }), getCurrentHookDepth: () => 2 };

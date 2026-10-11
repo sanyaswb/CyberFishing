@@ -1,6 +1,6 @@
 # Feature Specification: Perspective metres on the water (water metric)
 
-**Created**: 2026-10-11 · **Status**: Step 1 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
+**Created**: 2026-10-11 · **Status**: Steps 1–2 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
 
 ## Owner request (2026-10-11)
 Distances are flat today: 1 m is always 50 px, so the castable water of the test location (520..1160 virtual px,
@@ -27,6 +27,9 @@ edge):
   metric converts between ground and virtual pixels without allocations (hot loop).
 - **Uniform default.** A location without `maxMeters` has a uniform metric whose conversions reproduce the current
   `pixelsPerMeter` arithmetic exactly (bitwise equal distances).
+- **Base pixels.** Gameplay code keeps measuring water distances in base pixels (ground metres × `pixelsPerMeter`,
+  the unit it used before). The metric converts base pixels to virtual positions (`topBasePixels`, `yAtBasePixels`,
+  `distanceBasePixels`, `lateralVirtualPixels`); on a uniform metric they return the old expressions exactly.
 
 ## Steps
 1. **`WaterMetric` (this step):** domain class and the `water-metric` check. No consumer yet; behavior unchanged.
@@ -43,6 +46,26 @@ edge):
    owner tunes it in play.
 
 Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay change.
+
+## Step 2: casting
+- `LocationWaterMetricResolver` (domain) builds the metric of the current location from the castable bounds (shore =
+  bottom edge, top = top edge, centre line between the side edges) and `MAP_DB[id].distanceProfile`; it rebuilds only
+  when those inputs change. `GameWorld.getWaterMetric()` is the single source; production composes the resolver with
+  the casting `pixelsPerMeter`. The session port `getWaterMetric` reaches the states, `CastService`,
+  `ChumController` and `CastingRenderFrameBuilder`.
+- Through the metric: `CastRules.canCastAt` (takes the metric instead of bounds), `CastPowerAim` (cast limit, target
+  height, distance check, accuracy spread), `CastService` (cast distance ratio), the hand chum limit, the aiming zone,
+  the depth limit line and the power aim line. The depth limit intent no longer carries `virtualBottomY`.
+- The game-cycle check composes a uniform metric over its own water (0..800) through the same resolver.
+- Open for step 6: the accuracy spread now converts with the lateral scale, and the projector's sprite perspective
+  scale still applies on top of it. With a profile the far spread therefore shrinks twice; the owner tunes it in play
+  (accuracy percent or the sprite factor).
+
+## Step 2 evidence
+- `water-metric` check: uniform base-pixel methods equal the old expressions (`Object.is`) over 500 random points;
+  on the 30 m profile they follow the curve (top edge 1500 base px); the resolver reuses its metric until the bounds or
+  the profile change.
+- Game-cycle report unchanged (SHA256 `7b9baea38feaa4b550e20bc2d22d5eed7875a8c7fb6f3fdf9e176ddf573ed5b6`); 40/40 checks.
 
 ## Step 1 evidence
 - `water-metric` check:

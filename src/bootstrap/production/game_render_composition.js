@@ -242,6 +242,7 @@ export class GameRenderComposition {
     });
     const castingBuilder = new CastingRenderFrameBuilder({
       projector: runtime.projector,
+      getWaterMetric: appPorts.getWaterMetric,
       config,
       canvasMetrics,
       hudStyleResolver: runtime.rendering.hudStyleResolver,

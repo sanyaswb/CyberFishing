@@ -12,6 +12,7 @@ export class WaitingState extends GameState {
     this.#recastAim = new CastPowerAim({
       config: deps.config,
       projector: deps.projector,
+      getWaterMetric: deps.world.getWaterMetric,
       getViewportSize: deps.getViewportSize,
       panViewport: deps.commands.panViewport,
       rng: deps.rng,
@@ -231,7 +232,7 @@ export class WaitingState extends GameState {
       vPos.x,
       vPos.y,
       eq,
-      bounds,
+      this.deps.world.getWaterMetric(),
       this.deps.world.getRodVirtualPos(bounds),
     );
 

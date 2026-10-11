@@ -41,6 +41,7 @@ const files = [
   "src/game/application/fishing/catch_resolution_service.js",
   "src/game/application/fishing/fight_service.js",
   "src/platform/browser/ui/chum_controls.js",
+  "src/game/domain/locations/water_metric.js",
   "src/game/application/chum/chum_controller.js",
   "src/game/application/chum/chum_zone.js",
   "src/game/application/chum/bait_boat.js",
@@ -165,6 +166,7 @@ vm.runInContext(
       baitRules: {},
     });
     const clock = { now: 1_000 };
+    const waterMetric = new WaterMetric({ pixelsPerMeter: 50, shoreY: 100, topY: 0 });
     const controller = new ChumController({
       inventory,
       chum: {
@@ -189,6 +191,7 @@ vm.runInContext(
       panViewport() {},
       depthUI: { hide() {} },
       getDynamicBounds: () => ({ top: 0, bottom: 100 }),
+      getWaterMetric: () => waterMetric,
       getRodVirtualPos: () => ({ x: 0, y: 0 }),
       checkWater: () => true,
       markInvalidCast() {},

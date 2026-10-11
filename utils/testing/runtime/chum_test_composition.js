@@ -7,11 +7,13 @@ function checkChumComposition() {
   const document={createElement(){const node={style:{},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
   const runtime=new SourceRuntime({globals:{document,console:{log(){}}}});
   runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumControls']});
+  runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
   runtime.load('src/game/application/casting/cast_power_aim.js');
   runtime.load('src/game/application/chum/chum_controller.js',{expose:['ChumController']});
   runtime.load('src/game/presentation/fishing/fishing_messages.js',{expose:['FISHING_MESSAGES']});
   runtime.context.ChumController=require('./constructor_defaults').bindConstructorDefaults(runtime.context.ChumController,{messages:runtime.context.FISHING_MESSAGES});
   const bounds={left:0,right:800,top:0,bottom:600},clock={now:1000},boats=[],drops=[],consumed=[],warnings=[],invalid=[];
+  const waterMetric=new runtime.context.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top,centerX:400});
   const hand={id:'hand',instanceId:'hand-1',quantity:3};
   const equipped={handChum:hand,delivery:null,deliveryChums:[{id:'first'},null,{id:'second'}]};
   let state='waiting',water=true,canCast=true,hidden=0;
@@ -22,7 +24,7 @@ function checkChumComposition() {
     removeBoat(boat){boats.splice(boats.indexOf(boat),1);}};
   const controller=new runtime.context.ChumController({inventory:{getEquipped:()=>equipped},chum,projector,inventoryUI:{showWarning(message){warnings.push(message);}},
     fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);}},location:{chumCastDistance:300},clock,config,
-    rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,
+    rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
     getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,
     createUi:(onClick)=>new runtime.context.ChumControls(onClick)});
   const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');

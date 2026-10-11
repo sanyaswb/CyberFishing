@@ -50,6 +50,7 @@ import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/d
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
 import { GameWorld } from "../../game/application/world/game_world.js";
+import { LocationWaterMetricResolver } from "../../game/domain/locations/location_water_metric_resolver.js";
 import { CurrentLocation } from "../../game/application/world/current_location.js";
 import { EquipmentService } from "../../game/application/inventory/equipment_service.js";
 import { FightAreaStyleResolver } from "../../game/presentation/styles/fight_area_style_resolver.js";
@@ -878,6 +879,7 @@ export class GameCompositionRoot {
       canvasMetrics,
       clock,
       locationConfig: this.#config.locations,
+      waterMetricResolver: new LocationWaterMetricResolver({ pixelsPerMeter: castDistanceCalculator.pixelsPerMeter }),
     });
     const equipment = new EquipmentService(systems.inventory);
     const fishing = new FishingController({
@@ -994,6 +996,7 @@ export class GameCompositionRoot {
       castDistanceCalculator: runtime.castDistanceCalculator,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getDynamicBounds: appPorts.getDynamicBounds,
+      getWaterMetric: appPorts.getWaterMetric,
       castReadinessEvaluator: (equipment) =>
         runtime.inventory.evaluateCastReadiness?.(equipment),
       debugEvents,
@@ -1071,6 +1074,7 @@ export class GameCompositionRoot {
       checkWater: appPorts.checkWater,
       getBiteEnv: appPorts.getBiteEnv,
       getDynamicBounds: appPorts.getDynamicBounds,
+      getWaterMetric: appPorts.getWaterMetric,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       getScreenOffsetRatio: appPorts.getScreenOffsetRatio,
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
@@ -1137,6 +1141,7 @@ export class GameCompositionRoot {
       panViewport: appPorts.panViewport,
       depthUI: runtime.depthUI,
       getDynamicBounds: appPorts.getDynamicBounds,
+      getWaterMetric: appPorts.getWaterMetric,
       getRodVirtualPos: appPorts.getRodVirtualPos,
       checkWater: appPorts.checkWater,
       markInvalidCast: appPorts.markInvalidCast,
