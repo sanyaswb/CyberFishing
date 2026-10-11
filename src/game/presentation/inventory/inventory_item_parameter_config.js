@@ -303,6 +303,7 @@ export const INVENTORY_BALANCE_TOOLTIP_CONFIG = Object.freeze({
       unit: "м",
     }),
     ballastWeight: Object.freeze({ label: "Баласт" }),
+    mount: Object.freeze({ label: "Кріплення поплавка" }),
     speedMult: Object.freeze({ label: "Множник швидкості" }),
     heightScale: Object.freeze({ label: "Масштаб висоти" }),
     targetFishes: Object.freeze({ label: "Цільові види риб" }),

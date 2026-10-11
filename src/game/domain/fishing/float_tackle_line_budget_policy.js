@@ -47,9 +47,12 @@ export class FloatTackleLineBudgetPolicy {
       minDepthMeters,
       maxDepthMeters,
     );
-    const depthLineCostMeters = this.#isSurfaceDepth(selectedDepth)
-      ? 0
-      : selectedDepth;
+    // A fixed float hangs the depth below it, so that line is not available for the cast; a sliding float runs
+    // down the line after the cast and costs no cast distance.
+    const depthLineCostMeters =
+      this.#isSurfaceDepth(selectedDepth) || this.#isSlidingFloat(equipment)
+        ? 0
+        : selectedDepth;
     const minimumCastDistanceMeters = Math.min(
       rodLengthMeters,
       lineLengthMeters,
@@ -83,6 +86,10 @@ export class FloatTackleLineBudgetPolicy {
       finiteOr(this.#config.surfaceDepthToleranceMeters, 0.001),
     );
     return depthMeters <= this.#minimumDepthMeters() + tolerance;
+  }
+
+  #isSlidingFloat(equipment) {
+    return equipment?.float?.effectiveStats?.mount === "sliding";
   }
 
   #readMeters(source, propertyName) {

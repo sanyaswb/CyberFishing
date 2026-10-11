@@ -40,6 +40,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [047](047-smart-asset-preloader/spec.md) | Smart asset loading, optional Spine and DEV image tools: [plan](047-smart-asset-preloader/plan.md) | Spec and design only (owner review) | — |
 | [048](048-game-cycle-baseline/spec.md) | Tracked game-cycle baseline; gameplay changes re-baseline as a reviewed diff | Done | — |
 | [049](049-fishing-services-composition/spec.md) | One fishing services composition for production and game-cycle | Done | — |
+| [050](050-sliding-float/spec.md) | Sliding float: depth costs no cast distance (gameplay G-002) | Done | — |
 
 ## Archived
 

@@ -662,6 +662,10 @@ export const ITEM_DB = {
           map: { day: "Денний", night: "Нічний" },
         },
         windCompensation: "Компенсація:",
+        mount: {
+          label: "Кріплення",
+          map: { fixed: "Глухий", sliding: "Ковзний" },
+        },
         ballastWeight: {
           label: "Огрузка",
           map: { light: "Легка", medium: "Середня", heavy: "Важка" },
@@ -671,6 +675,61 @@ export const ITEM_DB = {
       },
 
       gameplayStats: {
+        // fixed: the selected depth hangs below the float and shortens the cast by that much line.
+        mount: "fixed",
+        width: 3,
+        length: 15,
+        quality: 10.0,
+        windCompensation: [0.1, 1.0],
+        overDepthPenaltyMult: 0.5,
+        sinkingDelayMs: 500,
+        sinkingDurationMs: 4000,
+        sinkingReferenceDepthMeters: 10.0,
+        currentCompensation: [0.1, 1.0],
+        ballastWeight: "light",
+        ballastProfiles: {
+          light: { speedMult: 1.0, heightScale: 1.0 },
+          medium: { speedMult: 1.5, heightScale: 0.85 },
+          heavy: { speedMult: 2.0, heightScale: 0.7 },
+        },
+      },
+    },
+    float_sliding: {
+      id: "float_sliding",
+      name: "Ковзний поплавок",
+      itemType: "float",
+      variant: "day",
+      icon: "🪶",
+      rarityProfile: {
+        mode: "authored",
+        tier: 4,
+        maxTier: 5,
+        isUnique: false,
+      },
+      progressionProfile: { groupId: "float.day" },
+      requiresTag: "float",
+      displayStats: {
+        variant: {
+          key: "variant",
+          label: "Тип",
+          map: { day: "Денний", night: "Нічний" },
+        },
+        mount: {
+          label: "Кріплення",
+          map: { fixed: "Глухий", sliding: "Ковзний" },
+        },
+        windCompensation: "Компенсація:",
+        ballastWeight: {
+          label: "Огрузка",
+          map: { light: "Легка", medium: "Середня", heavy: "Важка" },
+        },
+        width: "Ширина: мм",
+        length: "Довжина: см",
+      },
+
+      gameplayStats: {
+        // sliding: the float slides down to the stopper after the cast, so the depth costs no cast distance.
+        mount: "sliding",
         width: 3,
         length: 15,
         quality: 10.0,

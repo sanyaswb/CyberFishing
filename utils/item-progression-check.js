@@ -155,7 +155,7 @@ class ItemProgressionCheck {
         Assertion.that(Boolean(item.itemType), `${item.id} has an itemType`);
       }
     }
-    Assertion.equal(gameplay, 21, "all gameplay items migrated");
+    Assertion.equal(gameplay, 22, "all gameplay items migrated");
     Assertion.equal(technical, 3, "all technical records explicitly excluded");
     for (const [groupId, group] of Object.entries(
       this.#runtime.CONFIGURATION.groups,

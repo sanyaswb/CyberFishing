@@ -179,6 +179,8 @@
 │  │  └── spec.md
 │  ├── 049-fishing-services-composition
 │  │  └── spec.md
+│  ├── 050-sliding-float
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
