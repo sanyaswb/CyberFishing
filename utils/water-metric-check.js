@@ -28,6 +28,15 @@ function checkUniformMatchesPlainArithmetic() {
     const basePixels = next() * 900;
     assert(Object.is(metric.yAtBasePixels(basePixels), 1160 - basePixels), "uniform base pixels map 1:1 to height");
     assert(Object.is(metric.lateralVirtualPixels(basePixels, y1), basePixels), "uniform lateral base pixels are 1:1");
+    const plane = { x: NaN, y: NaN };
+    metric.toBasePlane(x1, y1, plane);
+    assert(Object.is(plane.x, x1) && Object.is(plane.y, y1), "the uniform ground plane is the virtual plane");
+    metric.fromBasePlane(x2, y2, plane);
+    assert(Object.is(plane.x, x2) && Object.is(plane.y, y2), "the uniform ground plane maps back 1:1");
+    metric.velocityToBasePlane(x1, y1, x2, y2, plane);
+    assert(Object.is(plane.x, x2) && Object.is(plane.y, y2), "uniform velocities are unchanged");
+    metric.velocityFromBasePlane(x1, y1, x2, y2, plane);
+    assert(Object.is(plane.x, x2) && Object.is(plane.y, y2), "uniform velocities map back unchanged");
   }
   assert(Object.is(metric.topBasePixels, 1160 - 520), "uniform water height in base pixels is the virtual height");
   assert.equal(metric.pixelsPerMeterX(520), 50);
@@ -91,6 +100,34 @@ function checkBasePixels() {
     "far away lateral base pixels shrink with the lateral scale");
 }
 
+function checkGroundPlane() {
+  const metric = new WaterMetric({ ...LOCATION, maxMeters: 30, linearShare: 0.5 });
+  const close = (actual, expected, message, epsilon) =>
+    assert(Math.abs(actual - expected) <= epsilon, `${message}: expected ${expected}, received ${actual}`);
+  const plane = { x: 0, y: 0 }, back = { x: 0, y: 0 }, velocity = { x: 0, y: 0 }, velocityBack = { x: 0, y: 0 };
+  const shifted = { x: 0, y: 0 };
+  for (const [x, y] of [[1280, 1160], [100, 1100], [2400, 900], [300, 700], [2000, 530], [1500, 450]]) {
+    metric.toBasePlane(x, y, plane);
+    close(metric.distanceBasePixels(1280, 1160, x, y), Math.hypot(plane.x - 1280, plane.y - 1160),
+      `plane distance from the shore centre equals the ground distance at (${x}, ${y})`, 1e-7);
+    metric.fromBasePlane(plane.x, plane.y, back);
+    close(back.x, x, "fromBasePlane inverts toBasePlane (x)", 1e-7);
+    close(back.y, y, "fromBasePlane inverts toBasePlane (y)", 1e-7);
+    for (const [vx, vy] of [[120, 0], [0, -80], [-60, 45]]) {
+      metric.velocityFromBasePlane(x, y, vx, vy, velocity);
+      const h = 1e-4;
+      metric.fromBasePlane(plane.x + vx * h, plane.y + vy * h, shifted);
+      close(velocity.x, (shifted.x - x) / h, `velocity x is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
+      close(velocity.y, (shifted.y - y) / h, `velocity y is the derivative of fromBasePlane at (${x}, ${y})`, 1e-2);
+      metric.velocityToBasePlane(x, y, velocity.x, velocity.y, velocityBack);
+      close(velocityBack.x, vx, "velocityToBasePlane inverts velocityFromBasePlane (x)", 1e-9);
+      close(velocityBack.y, vy, "velocityToBasePlane inverts velocityFromBasePlane (y)", 1e-9);
+    }
+  }
+  metric.velocityFromBasePlane(1280, 600, 0, -100, velocity);
+  assert(velocity.y > -100 / 5 && velocity.y < 0, "far away 2 m/s away from the shore covers few virtual pixels");
+}
+
 function checkResolver() {
   const errors = [];
   const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { error: (message) => errors.push(message) } });
@@ -136,10 +173,11 @@ function checkValidation() {
 checkUniformMatchesPlainArithmetic();
 checkPerspectiveCurve();
 checkBasePixels();
+checkGroundPlane();
 checkResolver();
 checkValidation();
 console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
-  "pixels follow the curve; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
+  "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
   "the previous metric on an invalid live edit; invalid profiles are rejected.");

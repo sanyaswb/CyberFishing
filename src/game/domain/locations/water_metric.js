@@ -24,6 +24,9 @@ export class WaterMetric {
   #topMeters;
   #topMetersPerPixel;
   #isUniform;
+  #jacobianXX = 1;
+  #jacobianXY = 0;
+  #jacobianYY = 1;
 
   constructor({ pixelsPerMeter, shoreY, topY, centerX = 0, maxMeters = null, linearShare = 0.5 }) {
     const scale = Number(pixelsPerMeter);
@@ -94,6 +97,59 @@ export class WaterMetric {
     return this.distanceMeters(x1, y1, x2, y2) * this.#pixelsPerMeter;
   }
 
+  // The ground plane in base pixels: X = centerX + sideways metres x pixelsPerMeter, Y = shoreY - metres from the
+  // shore x pixelsPerMeter. Distances and speeds on it are ground metres x pixelsPerMeter everywhere on the water.
+  // A uniform metric maps the plane 1:1 (exactly the same coordinates).
+  toBasePlane(x, y, target) {
+    if (this.#isUniform) {
+      target.x = x;
+      target.y = y;
+      return target;
+    }
+    target.x = this.#centerX + (x - this.#centerX) / this.pixelsPerMeterX(y) * this.#pixelsPerMeter;
+    target.y = this.#shoreY - this.metersFromShore(y) * this.#pixelsPerMeter;
+    return target;
+  }
+
+  fromBasePlane(baseX, baseY, target) {
+    if (this.#isUniform) {
+      target.x = baseX;
+      target.y = baseY;
+      return target;
+    }
+    const y = this.yAtMeters((this.#shoreY - baseY) / this.#pixelsPerMeter);
+    target.x = this.#centerX + (baseX - this.#centerX) / this.#pixelsPerMeter * this.pixelsPerMeterX(y);
+    target.y = y;
+    return target;
+  }
+
+  // Velocity (or any small displacement) at virtual point (x, y) converted to the ground plane and back. Uses the
+  // exact derivative of fromBasePlane: virtual X depends on the height through the lateral scale.
+  velocityToBasePlane(x, y, velocityX, velocityY, target) {
+    if (this.#isUniform) {
+      target.x = velocityX;
+      target.y = velocityY;
+      return target;
+    }
+    this.#writeJacobian(x, y);
+    const baseVelocityY = velocityY / this.#jacobianYY;
+    target.x = (velocityX - this.#jacobianXY * baseVelocityY) / this.#jacobianXX;
+    target.y = baseVelocityY;
+    return target;
+  }
+
+  velocityFromBasePlane(x, y, baseVelocityX, baseVelocityY, target) {
+    if (this.#isUniform) {
+      target.x = baseVelocityX;
+      target.y = baseVelocityY;
+      return target;
+    }
+    this.#writeJacobian(x, y);
+    target.x = this.#jacobianXX * baseVelocityX + this.#jacobianXY * baseVelocityY;
+    target.y = this.#jacobianYY * baseVelocityY;
+    return target;
+  }
+
   // Virtual pixels covered sideways at height y by the given base pixels.
   lateralVirtualPixels(basePixels, y) {
     if (this.#isUniform) return basePixels;
@@ -157,6 +213,19 @@ export class WaterMetric {
     target.x = this.#centerX + groundX * this.pixelsPerMeterX(y);
     target.y = y;
     return target;
+  }
+
+  // Derivatives of virtual (x, y) by base-plane (X, Y) at virtual point (x, y): dx/dX, dx/dY and dy/dY (dy/dX = 0).
+  #writeJacobian(x, y) {
+    const metersPerPixel = this.#metersPerPixelAt(y);
+    const lateralScale = this.pixelsPerMeterX(y);
+    const curvePx = this.#shoreY - y - this.#joinHeightPx;
+    const lateralScaleSlope = curvePx > 0 && curvePx < this.#curveHeightPx
+      ? this.#pixelsPerMeter * Math.sqrt(this.#metersPerPixel) * this.#curveCoefficient * metersPerPixel ** -1.5
+      : 0;
+    this.#jacobianXX = lateralScale / this.#pixelsPerMeter;
+    this.#jacobianYY = 1 / (metersPerPixel * this.#pixelsPerMeter);
+    this.#jacobianXY = (x - this.#centerX) / lateralScale * lateralScaleSlope * this.#jacobianYY;
   }
 
   #metersPerPixelAt(y) {

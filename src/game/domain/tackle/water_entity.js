@@ -215,6 +215,11 @@ export class WaterEntity {
     this._position.set(x, y);
   }
 
+  // Seconds this entity integrates a movement over for the given frame dt (milliseconds, clamped).
+  getStepSeconds(dt) {
+    return this._getClampedDtSec(dt);
+  }
+
   setHookDepth(depth) {
     this._currentHookDepth = depth;
   }

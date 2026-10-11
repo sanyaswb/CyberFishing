@@ -1,4 +1,9 @@
+import { FightGroundPlane } from "./fight_ground_plane.js";
+
 export class FishingForceService {
+  #groundPlane = new FightGroundPlane();
+
+  // The fight step runs on the ground plane of the location's water metric (see FightGroundPlane).
   applyForces(dt, context) {
     const {
       floatEntity,
@@ -9,6 +14,7 @@ export class FishingForceService {
       getBaseRodVirtualPos,
       rodControlCastAnchor,
       checkWater,
+      waterMetric,
       rod,
       reel,
       fishForceSystem,
@@ -23,29 +29,42 @@ export class FishingForceService {
       fightPhysicsSystem,
       fishCondition,
     } = context;
-    return fightPhysicsSystem.step({
-      dtMs: dt,
+    const plane = this.#groundPlane.begin({
+      metric: waterMetric,
       floatEntity,
       bounds,
-      input,
-      env,
       checkWater,
       rodTipPosition:
         getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
       actualRodTipPosition: getRodVirtualPos(bounds),
       rodControlCastAnchor,
-      rod,
-      reel,
-      fishForceSystem,
-      lineSystem,
-      dragSystem,
-      pullInputMapper,
-      rodPullSystem,
-      rodControlSystem,
-      reelSystem,
-      tensionSystem,
-      stressSystem,
-      fishCondition,
     });
+    try {
+      return fightPhysicsSystem.step({
+        dtMs: dt,
+        floatEntity: plane.floatEntity,
+        bounds: plane.bounds,
+        input,
+        env,
+        checkWater: plane.checkWater,
+        rodTipPosition: plane.rodTipPosition,
+        actualRodTipPosition: plane.actualRodTipPosition,
+        rodControlCastAnchor: plane.rodControlCastAnchor,
+        rod,
+        reel,
+        fishForceSystem,
+        lineSystem,
+        dragSystem,
+        pullInputMapper,
+        rodPullSystem,
+        rodControlSystem,
+        reelSystem,
+        tensionSystem,
+        stressSystem,
+        fishCondition,
+      });
+    } finally {
+      this.#groundPlane.end();
+    }
   }
 }

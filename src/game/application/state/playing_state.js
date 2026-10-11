@@ -75,6 +75,7 @@ export class PlayingState extends GameState {
     const fightContext = this.#fightFrameContext;
     fightContext.floatEntity = this.deps.float;
     fightContext.bounds = bounds;
+    fightContext.waterMetric = this.deps.world.getWaterMetric();
     fightContext.input = input;
     fightContext.env = envData.env;
     fightContext.fishData = this.data.fish;

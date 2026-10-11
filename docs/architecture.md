@@ -34,6 +34,11 @@ the optional hooked-fish override of the waiting state, and production composes 
 snapshot is likewise composed only for DEV (`createFightDiagnosticsBuilder` → `dev/fishing/FightDiagnosticsSnapshotBuilder`);
 gameplay, HUD and render read the fight frame.
 
+Water distances come from one `WaterMetric` per location (`GameWorld.getWaterMetric()`, built by
+`LocationWaterMetricResolver` from the castable bounds and `MAP_DB.<id>.distanceProfile`). Casting converts its base
+pixels (ground metres × pixelsPerMeter) through it. `FishingForceService` runs the fight step on the metric's ground
+plane through `FightGroundPlane`, so every stage measures ground metres; a uniform metric passes the original objects.
+
 `FightPhysicsOrchestrator` runs one fight step in `FightPhysicsPipeline` order and writes the fight frame. It owns
 the shared per-session helpers (pull motion smoother, recoverable line calculator, reel-recovery fish slowdown) and
 builds one object per pipeline stage for the session:

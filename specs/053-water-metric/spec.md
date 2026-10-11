@@ -1,6 +1,6 @@
 # Feature Specification: Perspective metres on the water (water metric)
 
-**Created**: 2026-10-11 · **Status**: Steps 1–2 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
+**Created**: 2026-10-11 · **Status**: Steps 1–3 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
 
 ## Owner request (2026-10-11)
 Distances are flat today: 1 m is always 50 px, so the castable water of the test location (520..1160 virtual px,
@@ -36,12 +36,14 @@ edge):
 2. **Casting:** compose the metric per location. Cast limit, power cast target (power × metres → height), `CastRules`,
    the depth limit line, recast and the line paid out at the cast go through it. Uniform metric → game-cycle
    unchanged.
-3. **Line and fish motion:** `LineSystem` distance, line constraint and radial split, fish force velocities and
-   retrieve run in ground metres. Uniform → unchanged.
-4. **Rod and landing:** rod lateral control, rod movement, pole sector, net reach, landing and fight area frames.
-   Uniform → unchanged.
-5. **Water entities:** float and lure drift, retrieve and sinking in the waiting state; DEV diagnostics. Uniform →
-   unchanged.
+3. **The fight on the ground plane:** the whole fight step (line distance and constraint, radial split, fish forces
+   and velocities, retrieve, rod pull and lateral control, pole sector, landing distances) runs in ground base pixels
+   through `FightGroundPlane`. Uniform → unchanged.
+4. **Rod and landing on the map:** the net zone check in the playing state, the empty-tackle landing in the waiting
+   state, the fight area render frames (pole sector, line radius, landing and net zones) and the DEV fight
+   diagnostics convert plane distances to the map. Uniform → unchanged.
+5. **Water entities:** float and lure drift, retrieve and sinking in the waiting state, and the current drift the
+   tackle adds during the fight (still virtual pixels). Uniform → unchanged.
 6. **Enable** `distanceProfile: { maxMeters: 30, linearShare: 0.5 }` on the test location (gameplay change). The
    owner tunes it in play.
 
@@ -60,6 +62,33 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
 - Open for step 6: the accuracy spread now converts with the lateral scale, and the projector's sprite perspective
   scale still applies on top of it. With a profile the far spread therefore shrinks twice; the owner tunes it in play
   (accuracy percent or the sprite factor).
+
+## Step 3: the fight on the ground plane
+- Instead of converting each of the many pixel/metre sites in the fight stages, the fight step itself runs on the
+  ground plane of the metric: X = centerX + sideways metres × pixelsPerMeter, Y = shoreY − metres × pixelsPerMeter.
+  Every existing `pixelsPerMeter` conversion inside the step then means ground metres. `WaterMetric` gained
+  `toBasePlane`/`fromBasePlane` and the exact velocity derivative (`velocityToBasePlane`/`velocityFromBasePlane`).
+- `FightGroundPlane` (owned by `FishingForceService`, the only entry into the step) hands the step a tackle facade,
+  plane bounds (bounding box of the virtual water), a plane water lookup and plane rod positions. The facade owns the
+  plane position and velocity during the step, because stages mutate them in place; the tackle's virtual vectors
+  are written back around its movement and after the step (`try/finally`).
+- The tackle moves with the virtual velocity that brings it, over its own clamped step
+  (`WaterEntity.getStepSeconds`), exactly to the plane point position + velocity × step. A first-order velocity
+  conversion drifted by about 4·10⁻⁵ m per frame for a fast fish on the curve.
+- A uniform metric hands the step the original objects (no facade), so the uniform fight is the same code path.
+- The playing state passes `world.getWaterMetric()` in the fight context (`MutableFightFrameContext.waterMetric`).
+
+## Step 3 evidence
+- Silent game-cycle check `runGroundPlaneFightCheck` (the reported list is unchanged):
+  - a profile equal to the uniform scale (16 m over 800 px) takes the plane path and follows the direct fight for
+    300 frames (line within 1e-6 m, position within 1e-4 px);
+  - on a 40 m profile a fish cast to 25 m fights, in ground metres, exactly as on a flat lake 40 m tall
+    (1e-5 m per frame over 300 frames), and the line length equals the metric's ground distance on every frame.
+- Mutation evidence: an unconverted tackle velocity, a missing write-back after the step and missing plane bounds
+  each fail the check.
+- `water-metric`: the plane maps invert, the velocity derivative matches finite differences, uniform maps are
+  `Object.is` identities.
+- Game-cycle report unchanged (SHA256 `7b9baea3…d5b6`); 40/40 checks; production 480 modules.
 
 ## Configuration (owner request 2026-10-11)
 The owner tunes the curve in config: where the compression starts and how strong it is.

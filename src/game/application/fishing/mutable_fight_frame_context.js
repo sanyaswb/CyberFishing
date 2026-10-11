@@ -2,6 +2,7 @@ export class MutableFightFrameContext {
   constructor() {
     this.floatEntity = null;
     this.bounds = null;
+    this.waterMetric = null;
     this.input = null;
     this.env = null;
     this.getRodVirtualPos = null;
@@ -16,6 +17,7 @@ export class MutableFightFrameContext {
   reset() {
     this.floatEntity = null;
     this.bounds = null;
+    this.waterMetric = null;
     this.input = null;
     this.env = null;
     this.net = null;

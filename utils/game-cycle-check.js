@@ -457,15 +457,16 @@ function createCast({
   equipment,
   distanceMeters,
   currentHookDepth = 1,
+  distanceProfile = null,
+  bounds = { left: 0, right: 1000, top: 0, bottom: 800 },
 }) {
   const rng = createRng();
   // The runtime config is injected the way GameCompositionRoot injects it (the global CONFIG object).
   const equipmentRules = new EquipmentRules(new CastDistanceCalculator(config), CONFIG);
   const baitRules = new BaitRules();
-  const bounds = { left: 0, right: 1000, top: 0, bottom: 800 };
   const rodVirtualPos = { x: 500, y: bounds.bottom };
-  // A uniform metric over the check's own water (no distance profile), as GameWorld composes one per location.
-  const waterMetric = new LocationWaterMetricResolver({ pixelsPerMeter: 50 }).resolve(bounds);
+  // The metric over the check's own water, as GameWorld composes one per location (uniform without a profile).
+  const waterMetric = new LocationWaterMetricResolver({ pixelsPerMeter: 50 }).resolve(bounds, distanceProfile);
   const { castService } = composeProductionFishingServices({
     config,
     rng,
@@ -478,7 +479,7 @@ function createCast({
   });
   const result = castService.cast(
     rodVirtualPos.x,
-    rodVirtualPos.y - distanceMeters * 50,
+    waterMetric.yAtMeters(distanceMeters),
     2,
     {
       equipment,
@@ -488,7 +489,7 @@ function createCast({
   );
   assert(result.success, "cast succeeds with equipped test build and bait");
   assert(result.floatEntity, "cast creates runtime float/tackle entity");
-  return { ...result, rodVirtualPos, bounds };
+  return { ...result, rodVirtualPos, bounds, waterMetric };
 }
 
 function runFloatDepthIntegrationChecks() {
@@ -649,6 +650,7 @@ function runTouchHoldControlBuildCheck() {
   fight.updateFight(1000 / 30, {
     floatEntity: cast.floatEntity,
     bounds: cast.bounds,
+    waterMetric: cast.waterMetric,
     input: {
       pointerDown: true,
       pointerHoldActive: true,
@@ -1402,6 +1404,7 @@ function runReelHoldPostStrokeOrderCheck() {
     const result = fight.updateFight(1000 / 30, {
       floatEntity: cast.floatEntity,
       bounds: cast.bounds,
+      waterMetric: cast.waterMetric,
       input: {
         isPulling: true,
         retrieve: false,
@@ -1528,6 +1531,7 @@ function runFightScenario({
     const result = fight.updateFight(1000 / 30, {
       floatEntity: cast.floatEntity,
       bounds: cast.bounds,
+      waterMetric: cast.waterMetric,
       input: {
         isPulling: true,
         retrieve: false,
@@ -1766,6 +1770,7 @@ function runLongFightUntilTransition({ equipment, fishData, startDistanceMeters,
     const result = fight.updateFight(1000 / 30, {
       floatEntity: cast.floatEntity,
       bounds: cast.bounds,
+      waterMetric: cast.waterMetric,
       input: {
         isPulling: true,
         retrieve: false,
@@ -1816,6 +1821,7 @@ function runFightFrameModeParityCheck() {
       const result = fight.updateFight(1000 / 30, {
         floatEntity: cast.floatEntity,
         bounds: cast.bounds,
+        waterMetric: cast.waterMetric,
         input: { isPulling: frame % 90 < 60, retrieve: false, pointerDown: false, dragIncrease: frame < 30,
           pullDirection: { x: frame % 120 < 60 ? 0.3 : -0.3, y: 1 } },
         env: {},
@@ -1837,6 +1843,78 @@ function runFightFrameModeParityCheck() {
   }
 }
 runFightFrameModeParityCheck();
+
+// Fights on a water metric with a distance profile run on the ground plane (FightGroundPlane). Silent: the reported
+// list stays the behavior reference. A profile equal to the uniform scale takes the plane path and must follow the
+// direct path. On a 40 m profile the fight, measured in ground metres, must be the fight on a flat lake 40 m tall,
+// and the line length equals the metric's ground distance on every frame.
+function runGroundPlaneFightCheck() {
+  const recorded = checks.length;
+  const run = (distanceProfile, distanceMeters, frames, bounds = undefined) => {
+    const equipment = createTestBuild({ rodMaxLoadKg: 50, reelMaxLoadKg: 50, lineMaxLoadKg: 50, hookMaxLoadKg: 50 });
+    const fishData = createFish({ weightKg: 2, basePower: 1.5, baseSpeed: 1, forceMultiplier: 1, speedMultiplier: 1 });
+    const config = createConfig();
+    const cast = createCast({ config, equipment, distanceMeters, distanceProfile, bounds });
+    const fight = createFightService({ config, rng: createRng(), fightDiagnostics: false });
+    fight.startFight(fishData, equipment);
+    const trace = [];
+    for (let frame = 0; frame < frames; frame++) {
+      const result = fight.updateFight(1000 / 30, {
+        floatEntity: cast.floatEntity,
+        bounds: cast.bounds,
+        waterMetric: cast.waterMetric,
+        input: { isPulling: frame % 90 < 60, retrieve: false, pointerDown: false, dragIncrease: frame < 30,
+          pullDirection: { x: frame % 120 < 60 ? 0.3 : -0.3, y: 1 } },
+        env: {},
+        net: null,
+        fishData,
+        getRodVirtualPos: () => cast.rodVirtualPos,
+        checkWater: () => true,
+      });
+      const position = cast.floatEntity.getPosition();
+      const lineMeters = fight.tensionMeter.getFightFrame().lineDistanceMeters;
+      const groundMeters = cast.waterMetric.distanceMeters(position.x, position.y, cast.rodVirtualPos.x,
+        cast.rodVirtualPos.y);
+      if (!Number.isFinite(position.x + position.y) || position.y > cast.bounds.bottom || position.y < cast.bounds.top) {
+        throw new Error("ground plane fight left the water at frame " + frame);
+      }
+      const ground = cast.waterMetric.toGround(position.x, position.y, { x: 0, y: 0 });
+      trace.push({ lineMeters, groundMeters, x: position.x, y: position.y, groundX: ground.x, groundY: ground.y });
+      if (result.transition) break;
+    }
+    return { trace, metric: cast.waterMetric };
+  };
+  const direct = run(null, 12, 300).trace;
+  const flat = run({ enabled: true, linearShare: 0.5, maxMeters: 16 }, 12, 300);
+  if (flat.metric.isUniform || flat.trace.length !== direct.length || direct.length < 100) {
+    throw new Error("the flat-profile fight must take the plane path and last as long as the direct fight");
+  }
+  flat.trace.forEach((entry, frame) => {
+    const reference = direct[frame];
+    if (Math.abs(entry.lineMeters - reference.lineMeters) > 1e-6 || Math.abs(entry.x - reference.x) > 1e-4 ||
+      Math.abs(entry.y - reference.y) > 1e-4) {
+      throw new Error("the plane path differs from the direct fight at frame " + frame);
+    }
+  });
+  const far = run({ enabled: true, linearShare: 0.5, maxMeters: 40 }, 25, 300);
+  if (Math.abs(far.trace[0].lineMeters - 25) > 0.5) {
+    throw new Error("a fish cast to 25 m on the 40 m profile starts 25 m away, got " + far.trace[0].lineMeters);
+  }
+  const lake = run(null, 25, 300, { left: 0, right: 1000, top: 0, bottom: 2000 }).trace;
+  if (lake.length !== far.trace.length) throw new Error("the 40 m profile fight must last as long as the flat lake fight");
+  far.trace.forEach((entry, frame) => {
+    const reference = lake[frame];
+    if (Math.abs(entry.groundX - reference.groundX) > 1e-5 || Math.abs(entry.groundY - reference.groundY) > 1e-5) {
+      throw new Error("in ground metres the 40 m profile fight differs from the flat lake fight at frame " + frame + " " + JSON.stringify({ e: entry, r: reference, p: far.trace[frame - 1], q: lake[frame - 1] }));
+    }
+    if (Math.abs(entry.lineMeters - entry.groundMeters) > 1e-6) {
+      throw new Error("line length " + entry.lineMeters + " m differs from the ground distance " +
+        entry.groundMeters + " m at frame " + frame);
+    }
+  });
+  checks.length = recorded;
+}
+runGroundPlaneFightCheck();
 
 const exhaustionCase = runLongFightUntilTransition({
   equipment: createTestBuild({
