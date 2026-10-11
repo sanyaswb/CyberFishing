@@ -1,9 +1,10 @@
-import { FightGroundPlane } from "./fight_ground_plane.js";
+import { GroundPlaneScope } from "../world/ground_plane_scope.js";
 
 export class FishingForceService {
-  #groundPlane = new FightGroundPlane();
+  #groundPlane = new GroundPlaneScope();
 
-  // The fight step runs on the ground plane of the location's water metric (see FightGroundPlane).
+  // The fight step runs on the ground plane of the location's water metric (see GroundPlaneScope), so the line,
+  // fish motion, rod and landing distances of every stage are ground metres.
   applyForces(dt, context) {
     const {
       floatEntity,
@@ -29,27 +30,21 @@ export class FishingForceService {
       fightPhysicsSystem,
       fishCondition,
     } = context;
-    const plane = this.#groundPlane.begin({
-      metric: waterMetric,
-      floatEntity,
-      bounds,
-      checkWater,
-      rodTipPosition:
-        getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds),
-      actualRodTipPosition: getRodVirtualPos(bounds),
-      rodControlCastAnchor,
-    });
+    const groundPlane = this.#groundPlane;
+    const rodTipPosition = getBaseRodVirtualPos?.(bounds) || getRodVirtualPos(bounds);
+    const actualRodTipPosition = getRodVirtualPos(bounds);
+    const plane = groundPlane.enter({ metric: waterMetric, entity: floatEntity, bounds, checkWater });
     try {
       return fightPhysicsSystem.step({
         dtMs: dt,
-        floatEntity: plane.floatEntity,
+        floatEntity,
         bounds: plane.bounds,
         input,
         env,
         checkWater: plane.checkWater,
-        rodTipPosition: plane.rodTipPosition,
-        actualRodTipPosition: plane.actualRodTipPosition,
-        rodControlCastAnchor: plane.rodControlCastAnchor,
+        rodTipPosition: groundPlane.point(0, rodTipPosition),
+        actualRodTipPosition: groundPlane.point(1, actualRodTipPosition),
+        rodControlCastAnchor: groundPlane.point(2, rodControlCastAnchor),
         rod,
         reel,
         fishForceSystem,
@@ -64,7 +59,7 @@ export class FishingForceService {
         fishCondition,
       });
     } finally {
-      this.#groundPlane.end();
+      groundPlane.exit();
     }
   }
 }

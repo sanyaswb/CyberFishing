@@ -1,4 +1,5 @@
 import { GameState } from "./game_state.js";
+import { GroundPlaneScope } from "../world/ground_plane_scope.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
 
 export class BitingState extends GameState {
@@ -15,6 +16,7 @@ export class BitingState extends GameState {
   #normalRingAccumulator = 0;
   #guaranteedRingAccumulator = 0;
   #pullDirection = new Vector2(0, 0);
+  #groundPlane = new GroundPlaneScope();
 
   enter(data) {
     if (super.enter) super.enter();
@@ -101,23 +103,35 @@ export class BitingState extends GameState {
 
     const reelPower = eq?.reel?.effectiveStats?.basePower || 0;
 
-    let pullDirection = null;
-    if (input.isPulling) {
-      const rodPos = this.deps.world.getRodVirtualPos(bounds);
-      pullDirection = this.#pullDirection
-        .set(rodPos.x - pos.x, rodPos.y - pos.y)
-        .normalize();
-    }
-
-    this.deps.float.update(
+    // The tackle drifts, retrieves and sinks on the water metric's ground plane (see GroundPlaneScope).
+    const groundPlane = this.#groundPlane;
+    const plane = groundPlane.enter({
+      metric: this.deps.world.getWaterMetric(),
+      entity: this.deps.float,
       bounds,
-      dt,
-      envData.env,
-      (vx, vy) => this.deps.world.checkWater(vx, vy),
-      input,
-      reelPower,
-      pullDirection,
-    );
+      checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
+    });
+    try {
+      let pullDirection = null;
+      if (input.isPulling) {
+        const rodPos = groundPlane.point(0, this.deps.world.getRodVirtualPos(bounds));
+        pullDirection = this.#pullDirection
+          .set(rodPos.x - pos.x, rodPos.y - pos.y)
+          .normalize();
+      }
+
+      this.deps.float.update(
+        plane.bounds,
+        dt,
+        envData.env,
+        plane.checkWater,
+        input,
+        reelPower,
+        pullDirection,
+      );
+    } finally {
+      groundPlane.exit();
+    }
 
     const stepInfo = this.deps.float.getBiteStepInfo?.();
     if (isSpinning && stepInfo && stepInfo.isGuaranteed && input.isPulling) {

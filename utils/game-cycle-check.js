@@ -155,6 +155,7 @@ const GAMEPLAY_FILES = [
   "src/dev/fishing/fight_diagnostics_snapshot_builder.js",
   "src/game/domain/fishing/stamina_system.js",
   "src/game/application/fishing/fishing_controller.js",
+  "src/game/application/world/ground_plane_scope.js",
   "src/game/application/fishing/cast_service.js",
   "src/game/application/fishing/fight_session_factory.js",
   "src/game/application/fishing/fishing_force_service.js",
@@ -1915,6 +1916,56 @@ function runGroundPlaneFightCheck() {
   checks.length = recorded;
 }
 runGroundPlaneFightCheck();
+
+// The waiting and biting states update the tackle inside GroundPlaneScope. Silent: on a 40 m profile a float that
+// drifts with the current and is pulled toward the rod moves, in ground metres, exactly as on a flat lake 40 m tall.
+function runGroundPlaneWaitingCheck() {
+  const recorded = checks.length;
+  const run = (distanceProfile, bounds) => {
+    const config = createConfig();
+    const equipment = createTestBuild({});
+    const cast = createCast({ config, equipment, distanceMeters: 25, distanceProfile, bounds });
+    const scope = new GroundPlaneScope();
+    const float = cast.floatEntity;
+    const pull = { x: 0, y: 0 };
+    const environment = { current: { speedPxPerSec: 30, direction: { x: 1, y: 0.2 } } };
+    const trace = [];
+    for (let frame = 0; frame < 240; frame++) {
+      const plane = scope.enter({ metric: cast.waterMetric, entity: float, bounds: cast.bounds,
+        checkWater: () => ({ depth: 3 }) });
+      try {
+        const isPulling = frame % 60 < 30;
+        let pullDirection = null;
+        if (isPulling) {
+          const rod = scope.point(0, cast.rodVirtualPos);
+          const position = float.getPosition();
+          const length = Math.hypot(rod.x - position.x, rod.y - position.y) || 1;
+          pull.x = (rod.x - position.x) / length;
+          pull.y = (rod.y - position.y) / length;
+          pullDirection = pull;
+        }
+        float.update(plane.bounds, 1000 / 30, environment, plane.checkWater,
+          { isPulling, pullDirection, idleRetrieveParams: null }, 1, pullDirection);
+      } finally {
+        scope.exit();
+      }
+      const position = float.getPosition();
+      trace.push(cast.waterMetric.toGround(position.x, position.y, { x: 0, y: 0 }));
+    }
+    return trace;
+  };
+  const far = run({ enabled: true, linearShare: 0.5, maxMeters: 40 }, undefined);
+  const lake = run(null, { left: 0, right: 1000, top: 0, bottom: 2000 });
+  const moved = Math.hypot(far[far.length - 1].x - far[0].x, far[far.length - 1].y - far[0].y);
+  if (moved < 0.5) throw new Error("the waiting float must move on the 40 m profile, moved " + moved + " m");
+  far.forEach((ground, frame) => {
+    if (Math.abs(ground.x - lake[frame].x) > 1e-6 || Math.abs(ground.y - lake[frame].y) > 1e-6) {
+      throw new Error("in ground metres the waiting float differs from the flat lake at frame " + frame);
+    }
+  });
+  checks.length = recorded;
+}
+runGroundPlaneWaitingCheck();
 
 const exhaustionCase = runLongFightUntilTransition({
   equipment: createTestBuild({

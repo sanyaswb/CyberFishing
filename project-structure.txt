@@ -385,7 +385,6 @@
 │  │  │  │  ├── catch_resolution_service.js
 │  │  │  │  ├── drag_control_service.js
 │  │  │  │  ├── fight_fish_motion_stage.js
-│  │  │  │  ├── fight_ground_plane.js
 │  │  │  │  ├── fight_landing_tension_stage.js
 │  │  │  │  ├── fight_line_constraint.js
 │  │  │  │  ├── fight_line_recovery_stage.js
@@ -491,7 +490,8 @@
 │  │  │  └── world
 │  │  │     ├── current_location.js
 │  │  │     ├── environment_system.js
-│  │  │     └── game_world.js
+│  │  │     ├── game_world.js
+│  │  │     └── ground_plane_scope.js
 │  │  ├── config
 │  │  │  ├── databases
 │  │  │  │  ├── fish

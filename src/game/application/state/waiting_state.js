@@ -1,6 +1,7 @@
 import { CastPowerAim } from "../casting/cast_power_aim.js";
 import { FishingCastExposureResolver } from "../../domain/fishing/fishing_cast_exposure_resolver.js";
 import { GameState } from "./game_state.js";
+import { GroundPlaneScope } from "../world/ground_plane_scope.js";
 import { IdleRetrievePolicyResolver } from "../../domain/fishing/idle_retrieve_policy_resolver.js";
 import { LandingPolicyResolver } from "../../domain/fishing/landing_policy_resolver.js";
 import { Vector2 } from "../../../engine/math/vector2.js";
@@ -28,6 +29,7 @@ export class WaitingState extends GameState {
     idleRetrieveParams: null,
   };
   #pullDirection = new Vector2(0, 0);
+  #groundPlane = new GroundPlaneScope();
   #baitCandidates = [];
   #recastAim;
   #landingPolicyResolver;
@@ -84,23 +86,35 @@ export class WaitingState extends GameState {
       ? this.#getIdleRetrieveParams(eq)
       : null;
 
-    let pullDirection = null;
-    if (effectiveInput.isPulling) {
-      const rodPos = this.deps.world.getRodVirtualPos(bounds);
-      pullDirection = this.#pullDirection
-        .set(rodPos.x - pos.x, rodPos.y - pos.y)
-        .normalize();
-    }
-
-    this.deps.float.update(
+    // The tackle drifts, retrieves and sinks on the water metric's ground plane (see GroundPlaneScope).
+    const groundPlane = this.#groundPlane;
+    const plane = groundPlane.enter({
+      metric: this.deps.world.getWaterMetric(),
+      entity: this.deps.float,
       bounds,
-      dt,
-      envData.env,
-      (vx, vy) => this.deps.world.checkWater(vx, vy),
-      effectiveInput,
-      reelPower,
-      pullDirection,
-    );
+      checkWater: (vx, vy) => this.deps.world.checkWater(vx, vy),
+    });
+    try {
+      let pullDirection = null;
+      if (effectiveInput.isPulling) {
+        const rodPos = groundPlane.point(0, this.deps.world.getRodVirtualPos(bounds));
+        pullDirection = this.#pullDirection
+          .set(rodPos.x - pos.x, rodPos.y - pos.y)
+          .normalize();
+      }
+
+      this.deps.float.update(
+        plane.bounds,
+        dt,
+        envData.env,
+        plane.checkWater,
+        effectiveInput,
+        reelPower,
+        pullDirection,
+      );
+    } finally {
+      groundPlane.exit();
+    }
 
     const updatedPos = this.deps.float.getPosition();
 

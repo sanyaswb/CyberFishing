@@ -59,5 +59,5 @@ Add observations here in any form; Claude turns them into numbered entries.
   depth track; while the track is open, a dashed cast limit line dims the unreachable water. The cast bar is removed.
   The owner checks the visuals.
 - G-006 Perspective metres on the water: in progress, [053](../specs/053-water-metric/spec.md). Six steps: the
-  metric, casting, the fight, rod and landing (done), then water entities move onto it unchanged;
+  metric, casting, the fight, rod and landing, water entities (done, structural);
   the test location then gets `maxMeters: 30`.

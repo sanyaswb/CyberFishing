@@ -1,6 +1,6 @@
 # Feature Specification: Perspective metres on the water (water metric)
 
-**Created**: 2026-10-11 · **Status**: Steps 1–4 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
+**Created**: 2026-10-11 · **Status**: Steps 1–5 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
 
 ## Owner request (2026-10-11)
 Distances are flat today: 1 m is always 50 px, so the castable water of the test location (520..1160 virtual px,
@@ -38,7 +38,7 @@ edge):
    unchanged.
 3. **The fight on the ground plane:** the whole fight step (line distance and constraint, radial split, fish forces
    and velocities, retrieve, rod pull and lateral control, pole sector, landing distances) runs in ground base pixels
-   through `FightGroundPlane`. Uniform → unchanged.
+   through `GroundPlaneScope`. Uniform → unchanged.
 4. **Rod and landing on the map:** the net zone check in the playing state, the empty-tackle landing in the waiting
    state, the fight area render frames (pole sector, line radius, landing and net zones) and the DEV fight
    diagnostics convert plane distances to the map. Uniform → unchanged.
@@ -68,13 +68,12 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
   ground plane of the metric: X = centerX + sideways metres × pixelsPerMeter, Y = shoreY − metres × pixelsPerMeter.
   Every existing `pixelsPerMeter` conversion inside the step then means ground metres. `WaterMetric` gained
   `toBasePlane`/`fromBasePlane` and the exact velocity derivative (`velocityToBasePlane`/`velocityFromBasePlane`).
-- `FightGroundPlane` (owned by `FishingForceService`, the only entry into the step) hands the step a tackle facade,
-  plane bounds (bounding box of the virtual water), a plane water lookup and plane rod positions. The facade owns the
-  plane position and velocity during the step, because stages mutate them in place; the tackle's virtual vectors
-  are written back around its movement and after the step (`try/finally`).
-- The tackle moves with the virtual velocity that brings it, over its own clamped step
-  (`WaterEntity.getStepSeconds`), exactly to the plane point position + velocity × step. A first-order velocity
-  conversion drifted by about 4·10⁻⁵ m per frame for a fast fish on the curve.
+- `GroundPlaneScope` (owned by `FishingForceService`, the only entry into the step) converts the tackle's own
+  position and velocity to the plane in place, hands the step plane bounds (bounding box of the virtual water), a
+  plane water lookup and plane rod points, and converts the tackle back after the step (`try/finally`). Nothing
+  reads the tackle in between, so every stage, the tackle's own movement and the current drift run in ground metres.
+  (The first version wrapped the tackle in a facade and corrected its velocity per step; converting in place is
+  simpler and exact.)
 - A uniform metric hands the step the original objects (no facade), so the uniform fight is the same code path.
 - The playing state passes `world.getWaterMetric()` in the fight context (`MutableFightFrameContext.waterMetric`).
 
@@ -84,8 +83,9 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
     300 frames (line within 1e-6 m, position within 1e-4 px);
   - on a 40 m profile a fish cast to 25 m fights, in ground metres, exactly as on a flat lake 40 m tall
     (1e-5 m per frame over 300 frames), and the line length equals the metric's ground distance on every frame.
-- Mutation evidence: an unconverted tackle velocity, a missing write-back after the step and missing plane bounds
-  each fail the check.
+- Mutation evidence: a missing write-back after the step, virtual bounds instead of plane bounds and a broken plane
+  water lookup each fail the check. The incoming velocity only feeds a diagnostic in the fight; the waiting check
+  below catches both velocity conversions.
 - `water-metric`: the plane maps invert, the velocity derivative matches finite differences, uniform maps are
   `Object.is` identities.
 - Game-cycle report unchanged (SHA256 `7b9baea3…d5b6`); 40/40 checks; production 480 modules.
@@ -102,6 +102,18 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
   `pixelsPerMeter` mismatch that predates the metric (casting reads it once at startup, the fight reads it live).
 
 ## Step 4 evidence
+- 40/40 checks; game-cycle report unchanged (SHA256 `7b9baea3…d5b6`).
+
+## Step 5: water entities
+- The waiting and biting states update the tackle inside `GroundPlaneScope` (drift with the current, idle retrieve,
+  sinking, bite movement, pulls toward the rod). The rod point is converted for the pull direction.
+- The current drift during the fight already runs on the plane since step 3.
+- Not converted (map pixels, outside the plan): chum zones and the bait boat, `FightService.getDiagnostics`.
+
+## Step 5 evidence
+- Silent game-cycle check `runGroundPlaneWaitingCheck`: on a 40 m profile a float cast to 25 m that drifts with the
+  current and is pulled toward the rod every other second moves, in ground metres, exactly as on a flat lake 40 m tall
+  (1e-6 m over 240 frames). Skipping either velocity conversion fails it at frame 1.
 - 40/40 checks; game-cycle report unchanged (SHA256 `7b9baea3…d5b6`).
 
 ## Configuration (owner request 2026-10-11)
