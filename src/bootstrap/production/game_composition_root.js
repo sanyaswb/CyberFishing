@@ -879,7 +879,10 @@ export class GameCompositionRoot {
       canvasMetrics,
       clock,
       locationConfig: this.#config.locations,
-      waterMetricResolver: new LocationWaterMetricResolver({ pixelsPerMeter: castDistanceCalculator.pixelsPerMeter }),
+      waterMetricResolver: new LocationWaterMetricResolver({
+        pixelsPerMeter: castDistanceCalculator.pixelsPerMeter,
+        logger: new ConsoleLogger(),
+      }),
     });
     const equipment = new EquipmentService(systems.inventory);
     const fishing = new FishingController({

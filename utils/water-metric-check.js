@@ -92,20 +92,35 @@ function checkBasePixels() {
 }
 
 function checkResolver() {
-  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50 });
+  const errors = [];
+  const resolver = new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: { error: (message) => errors.push(message) } });
   const bounds = { left: 0, right: 2560, top: 520, bottom: 1160 };
   const uniform = resolver.resolve(bounds, undefined);
   assert.equal(uniform.isUniform, true, "a location without distanceProfile gets a uniform metric");
   assert.equal(uniform.shoreY, 1160, "the shore line is the bottom edge of the castable water");
   assert.equal(resolver.resolve({ ...bounds }, null), uniform, "unchanged inputs return the same metric");
-  const profiled = resolver.resolve(bounds, { maxMeters: 30, linearShare: 0.5 });
-  assert.notEqual(profiled, uniform, "a profile rebuilds the metric");
+  const profile = { enabled: false, linearShare: 0.5, maxMeters: 30 };
+  assert.equal(resolver.resolve(bounds, profile), uniform, "a disabled profile keeps the uniform metric");
+  profile.enabled = true;
+  const profiled = resolver.resolve(bounds, profile);
+  assert.notEqual(profiled, uniform, "enabling the profile rebuilds the metric");
   assert(Math.abs(profiled.topMeters - 30) < 1e-9, "the profile reaches maxMeters at the top edge");
-  assert.equal(resolver.resolve(bounds, { maxMeters: 30, linearShare: 0.5 }), profiled,
-    "an equal profile object keeps the metric");
+  assert.equal(resolver.resolve(bounds, { ...profile }), profiled, "an equal profile object keeps the metric");
   assert.equal(profiled.toGround(1280, 520, { x: NaN, y: NaN }).x, 0, "the centre line is between the side edges");
-  assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, { maxMeters: 30, linearShare: 0.5 }), profiled,
-    "changed bounds rebuild the metric");
+  profile.linearShare = 0.25;
+  const edited = resolver.resolve(bounds, profile);
+  assert(edited !== profiled && edited.metersFromShore(900) > 5.2 + 1e-6,
+    "a live linearShare edit rebuilds the metric");
+  profile.maxMeters = 10;
+  assert.equal(resolver.resolve(bounds, profile), edited, "an invalid live edit keeps the previous metric");
+  assert.equal(resolver.resolve(bounds, profile), edited, "the rejected input is not rebuilt every frame");
+  assert(errors.length === 1 && /below the uniform 12.80 m/u.test(errors[0]), "the rejection is logged once");
+  profile.maxMeters = 30;
+  assert.notEqual(resolver.resolve(bounds, profile), edited, "a valid edit after a rejection applies again");
+  assert.notEqual(resolver.resolve({ ...bounds, top: 600 }, profile), edited, "changed bounds rebuild the metric");
+  assert.throws(() => new LocationWaterMetricResolver({ pixelsPerMeter: 50, logger: null })
+    .resolve(bounds, { enabled: true, linearShare: 0.5, maxMeters: 10 }), /below the uniform/u,
+  "an invalid profile at startup fails fast");
 }
 
 function checkValidation() {
@@ -126,5 +141,5 @@ checkValidation();
 console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
-  "pixels follow the curve; the location resolver reuses its metric until bounds or profile change; invalid profiles " +
-  "are rejected.");
+  "pixels follow the curve; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
+  "the previous metric on an invalid live edit; invalid profiles are rejected.");

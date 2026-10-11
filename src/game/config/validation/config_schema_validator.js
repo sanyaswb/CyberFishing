@@ -872,6 +872,25 @@ export class ConfigSchemaValidator {
       if (map?.environment?.current) {
         this.#requireFiniteNumber(`${path}.environment.current.speedPxPerSec`, map.environment.current.speedPxPerSec, { min: 0 });
       }
+      if (map?.distanceProfile !== undefined) {
+        this.#validateDistanceProfile(`${path}.distanceProfile`, map.distanceProfile);
+      }
+    }
+  }
+
+  // Ranges only: whether maxMeters reaches past the uniform distance depends on the castable zone and is checked
+  // when the water metric is built. Labels are shared by all locations (MAP_DB.distanceProfile.*).
+  #validateDistanceProfile(path, profile) {
+    if (!profile || typeof profile !== "object") {
+      this.#error(path, "must be an object");
+      return;
+    }
+    if (typeof profile.enabled !== "boolean") this.#error(`${path}.enabled`, "expected boolean");
+    this.#requireFiniteNumber(`${path}.linearShare`, profile.linearShare, { min: 0 });
+    if (Number(profile.linearShare) >= 1) this.#error(`${path}.linearShare`, `expected < 1, got ${profile.linearShare}`);
+    this.#requireFiniteNumber(`${path}.maxMeters`, profile.maxMeters, { min: Number.MIN_VALUE });
+    for (const key of ["enabled", "linearShare", "maxMeters"]) {
+      this.#requireParameterLabel(`MAP_DB.distanceProfile.${key}`);
     }
   }
 

@@ -1251,6 +1251,18 @@
     "label": "Show fight line radius",
     "description": "Shows the yellow unrestricted radial movement boundary defined by the currently released line length."
   },
+  "MAP_DB.distanceProfile.enabled": {
+    "label": "Перспектива відстаней увімкнена",
+    "description": "Вмикає перспективні метри на воді цієї локації. Вимкнено: 1 м = physics.simulation.pixelsPerMeter по всій воді."
+  },
+  "MAP_DB.distanceProfile.linearShare": {
+    "label": "Частка звичайної шкали",
+    "description": "Частка висоти зони закиду від берега, де діє звичайна шкала (0.5 = 50%). Вище метрів на піксель плавно більшає. 0 = стиснення від самого берега; має бути менше 1."
+  },
+  "MAP_DB.distanceProfile.maxMeters": {
+    "label": "Метрів до дальнього краю",
+    "description": "Відстань від берега до верхнього краю зони закиду в метрах. Більше значення = сильніше стиснення вдалині. Не менше звичайної шкали (висота зони / pixelsPerMeter), інакше гра відхиляє профіль."
+  },
   "stamina.mechanics.powerDebuff.enabled": {
     "label": "Frame power debuff enabled",
     "description": "Enables frame-based fish power synchronization from currentExhaustion / maxEndurance."

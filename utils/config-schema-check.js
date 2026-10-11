@@ -70,6 +70,12 @@ function checkNegativeFixtures() {
   assert.equal(validate().errors.length, 0, "resetting the override restores a valid config");
   assert(has(validate({ projectVersion: { version: "invalid" } }), /PROJECT_VERSION_CONFIG\.version/u),
     "an invalid project version is reported");
+  const mapDb = JSON.parse(JSON.stringify(options.mapDb));
+  mapDb.test.distanceProfile = { enabled: "yes", linearShare: 1, maxMeters: 0 };
+  const profileResult = validate({ mapDb });
+  assert(has(profileResult, /distanceProfile\.enabled: expected boolean/u) &&
+    has(profileResult, /distanceProfile\.linearShare: expected < 1/u) &&
+    has(profileResult, /distanceProfile\.maxMeters: expected >=/u), "an invalid location distance profile is reported");
   assert.equal(config, context.runtimeConfig);
 }
 

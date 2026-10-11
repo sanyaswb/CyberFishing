@@ -61,6 +61,19 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
   scale still applies on top of it. With a profile the far spread therefore shrinks twice; the owner tunes it in play
   (accuracy percent or the sprite factor).
 
+## Configuration (owner request 2026-10-11)
+The owner tunes the curve in config: where the compression starts and how strong it is.
+- `MAP_DB.<location>.distanceProfile = { enabled, linearShare, maxMeters }`, shown and edited live in DevTools under
+  "БАЗА ЛОКАЦІЙ (MAP_DB)". `linearShare` is the share of the castable height from the shore with the base scale
+  (0.5 = 50 %). `maxMeters` is the strength: the distance from the shore to the top edge of the castable zone.
+- The test location carries `{ enabled: false, linearShare: 0.5, maxMeters: 30 }`. Enabling it before step 6 bends
+  only casting; the fight still measures the uniform scale.
+- A live edit applies on the next frame (MAP_DB edits reload the location config; the resolver compares values).
+  An edit that makes the profile invalid is rejected: the previous metric stays and the error is logged once.
+  At startup an invalid profile fails fast.
+- `ConfigSchemaValidator` checks the ranges (`enabled` boolean, 0 ≤ `linearShare` < 1, `maxMeters` > 0) and the
+  shared labels `MAP_DB.distanceProfile.*` in `parameter_labels.json`.
+
 ## Step 2 evidence
 - `water-metric` check: uniform base-pixel methods equal the old expressions (`Object.is`) over 500 random points;
   on the 30 m profile they follow the curve (top edge 1500 base px); the resolver reuses its metric until the bounds or
