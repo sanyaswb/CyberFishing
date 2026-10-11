@@ -160,6 +160,24 @@ function checkResolver() {
   "an invalid profile at startup fails fast");
 }
 
+// The production test location: castable zone rows 13..29 of 40 px cells (520..1160 virtual px).
+function checkTestLocationProfile() {
+  const { CONFIG } = runtime.importModule("src/game/config/runtime/game_config.js");
+  const locations = CONFIG.locations;
+  const map = locations.map.test;
+  const zone = map.zones.castable[0];
+  const bounds = { left: zone.x * locations.cellSize, right: (zone.x + zone.w) * locations.cellSize,
+    top: zone.y * locations.cellSize, bottom: (zone.y + zone.h) * locations.cellSize };
+  const metric = new LocationWaterMetricResolver({ pixelsPerMeter: CONFIG.physics.simulation.pixelsPerMeter, logger: null })
+    .resolve(bounds, map.distanceProfile);
+  assert.equal(map.distanceProfile.enabled, true, "the test location has perspective metres enabled");
+  assert(Math.abs(metric.topMeters - map.distanceProfile.maxMeters) < 1e-9,
+    "the far edge of the test location lies at maxMeters");
+  assert(Math.abs(metric.metersFromShore(bounds.bottom - (bounds.bottom - bounds.top) * map.distanceProfile.linearShare) -
+    (bounds.bottom - bounds.top) * map.distanceProfile.linearShare / CONFIG.physics.simulation.pixelsPerMeter) < 1e-9,
+  "the near share of the test location keeps the base scale");
+}
+
 function checkValidation() {
   assert.throws(() => new WaterMetric({ ...LOCATION, maxMeters: 10 }), /below the uniform 12.80 m/u,
     "a maxMeters below the uniform distance is rejected");
@@ -175,9 +193,10 @@ checkPerspectiveCurve();
 checkBasePixels();
 checkGroundPlane();
 checkResolver();
+checkTestLocationProfile();
 checkValidation();
 console.log("Water metric passed: the uniform metric equals the plain pixelsPerMeter arithmetic (metres and base " +
   "pixels); the perspective curve keeps the base scale up to linearShare, joins without a kink, reaches maxMeters at " +
   "the top edge, inverts exactly and compresses lateral distances by the square root of the depth compression; base " +
   "pixels and the ground plane (positions, velocities) follow the curve and invert; the location resolver reuses its metric until bounds or the enabled profile change and keeps " +
-  "the previous metric on an invalid live edit; invalid profiles are rejected.");
+  "the previous metric on an invalid live edit; the test location reaches maxMeters at its far edge; invalid profiles are rejected.");

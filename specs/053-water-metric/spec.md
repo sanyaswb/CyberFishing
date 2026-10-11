@@ -1,6 +1,6 @@
 # Feature Specification: Perspective metres on the water (water metric)
 
-**Created**: 2026-10-11 · **Status**: Steps 1–5 of 6 implemented · **Kind**: gameplay mechanic, staged (backlog G-006)
+**Created**: 2026-10-11 · **Status**: Implemented (steps 1–6); the owner tunes it in play · **Kind**: gameplay mechanic, staged (backlog G-006)
 
 ## Owner request (2026-10-11)
 Distances are flat today: 1 m is always 50 px, so the castable water of the test location (520..1160 virtual px,
@@ -116,13 +116,23 @@ Steps 2–5 are structural (unchanged game-cycle report). Step 6 is the gameplay
   (1e-6 m over 240 frames). Skipping either velocity conversion fails it at frame 1.
 - 40/40 checks; game-cycle report unchanged (SHA256 `7b9baea3…d5b6`).
 
+## Step 6: enabled on the test location
+- `MAP_DB.test.distanceProfile.enabled = true` (`linearShare: 0.5`, `maxMeters: 30`): 3.2 m at 160 px from the shore,
+  6.4 m at mid-height, 30 m at the far edge of the castable zone.
+- The game-cycle report does not change: it fights on its own lake, not on `MAP_DB`. The water metric check now
+  requires the profile on the test location and its 30 m far edge (failed before the change).
+- Points for the owner's play check:
+  - the accuracy spread far away shrinks twice (metric and sprite perspective; see step 2);
+  - `chumCastDistance: 680` is now base pixels, 13.6 m: the hand chum no longer reaches the far half of the water;
+  - chum zones, the bait boat and the sprite perspective (`perspective.angleTop/angleBottom`) stay in map pixels;
+  - casting reads `physics.simulation.pixelsPerMeter` once at startup, the fight reads it live (predates the metric).
+
 ## Configuration (owner request 2026-10-11)
 The owner tunes the curve in config: where the compression starts and how strong it is.
 - `MAP_DB.<location>.distanceProfile = { enabled, linearShare, maxMeters }`, shown and edited live in DevTools under
   "БАЗА ЛОКАЦІЙ (MAP_DB)". `linearShare` is the share of the castable height from the shore with the base scale
   (0.5 = 50 %). `maxMeters` is the strength: the distance from the shore to the top edge of the castable zone.
-- The test location carries `{ enabled: false, linearShare: 0.5, maxMeters: 30 }`. Enabling it before step 6 bends
-  only casting; the fight still measures the uniform scale.
+- The test location carries `{ enabled: true, linearShare: 0.5, maxMeters: 30 }` since step 6.
 - A live edit applies on the next frame (MAP_DB edits reload the location config; the resolver compares values).
   An edit that makes the profile invalid is rejected: the previous metric stays and the error is logged once.
   At startup an invalid profile fails fast.

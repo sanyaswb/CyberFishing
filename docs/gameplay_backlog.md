@@ -58,6 +58,6 @@ Add observations here in any form; Claude turns them into numbered entries.
 - G-005 Depth selection UX: done in [052](../specs/052-depth-selector-ux/spec.md). A float button with a slide-down
   depth track; while the track is open, a dashed cast limit line dims the unreachable water. The cast bar is removed.
   The owner checks the visuals.
-- G-006 Perspective metres on the water: in progress, [053](../specs/053-water-metric/spec.md). Six steps: the
-  metric, casting, the fight, rod and landing, water entities (done, structural);
-  the test location then gets `maxMeters: 30`.
+- G-006 Perspective metres on the water: done in [053](../specs/053-water-metric/spec.md). One water metric per location
+  (`MAP_DB.<id>.distanceProfile`, live in DevTools); casting, the fight and the tackle run in ground metres. The test
+  location reaches 30 m at its far edge. Owner play check pending: accuracy far away, hand chum reach (13.6 m).
