@@ -39,11 +39,6 @@ Actual: "Огрузка light", "Кріплення fixed".
 Notes: `InventoryItemParametersResolver` first adds rows from the raw effective stats. The mapped `displayStats` row
 with the same parameter id is then skipped as already rendered.
 
-### G-004 DEV: give any catalog item to the inventory (P2, open)
-Found: 2026-10-11, owner decision for G-002: the sliding float exists only in the catalog.
-Expected: DEV tools can add any catalog item to the inventory, so catalog-only items can be tested in game.
-Actual: no such tool; catalog-only items cannot be obtained.
-
 ## Owner play notes
 
 Add observations here in any form; Claude turns them into numbered entries.
@@ -58,3 +53,5 @@ Add observations here in any form; Claude turns them into numbered entries.
   disposed.
 - G-002 Sliding float: done in [050](../specs/050-sliding-float/spec.md). A new catalog item; with it the selected
   depth costs no cast distance. Max depth stays line − rod, and the fixed float keeps line − depth.
+- G-004 DEV item grant: done in [051](../specs/051-dev-item-grant/spec.md). DevTools → "🎁 ВИДАТИ ПРЕДМЕТ" adds any
+  catalog item to the inventory, including the sliding float.

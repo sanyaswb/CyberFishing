@@ -2,6 +2,7 @@ import { INVENTORY_MESSAGES } from "../../game/presentation/inventory/inventory_
 import { EffectiveItemRarityResolver } from "../../game/domain/items/rarity/effective_item_rarity_resolver.js";
 import { InventoryInstanceIdFactory } from "../../game/application/inventory/inventory_instance_id_factory.js";
 import { InventoryItemFactory } from "../../game/application/inventory/inventory_item_factory.js";
+import { InventoryItemGrantService } from "../../game/application/inventory/inventory_item_grant_service.js";
 import { InventoryItemViewContext } from "../../game/application/inventory/inventory_item_view_context.js";
 import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
 import { InventoryRuntimeDisplayStatsResolver } from "../../game/application/inventory/inventory_runtime_display_stats_resolver.js";
@@ -105,6 +106,13 @@ export function createPlayerInventory({
     tackleLoadLimitPolicy: new TackleLoadLimitPolicy(),
     itemDatabase,
     itemViewContext,
+    itemGrant: new InventoryItemGrantService({
+      repository: inventory.repository,
+      transaction: inventory.transaction,
+      definitionLookup: (itemId) => inventory.hydrator.getDefinition(itemId),
+      instanceIdFactory: (prefix) => instanceIds.create(prefix),
+      notify: () => inventory.facade.notify(),
+    }),
   });
   return playerInventory;
 }

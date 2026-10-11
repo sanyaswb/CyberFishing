@@ -181,6 +181,8 @@
 │  │  └── spec.md
 │  ├── 050-sliding-float
 │  │  └── spec.md
+│  ├── 051-dev-item-grant
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -427,6 +429,7 @@
 │  │  │  │  ├── inventory_gameplay_commands.js
 │  │  │  │  ├── inventory_instance_id_factory.js
 │  │  │  │  ├── inventory_item_factory.js
+│  │  │  │  ├── inventory_item_grant_service.js
 │  │  │  │  ├── inventory_item_hydrator.js
 │  │  │  │  ├── inventory_item_removal_service.js
 │  │  │  │  ├── inventory_item_view_context.js

@@ -777,6 +777,8 @@ export class GameCompositionRoot {
           this.#createDevTools, "devTools", [this.#config, hookedFishProfileSynchronizer, {
             itemProgressionDebugProvider,
             itemProgressionResolver,
+            // DEV item grant; DevTools exist only in Development, so production never calls it.
+            grantCatalogItem: (itemId, quantity) => inventory.grantCatalogItem(itemId, quantity),
           }], ["dispose"],
         ))),
         { cache: this.#storageCache, labels: HUD_LABELS, logger: new ConsoleLogger() },

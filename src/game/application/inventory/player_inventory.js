@@ -11,6 +11,7 @@ export class PlayerInventory {
   #tackleLoadLimitPolicy;
   #itemDatabase;
   #itemViewContext;
+  #itemGrant;
   #removeInventoryListener = null;
   #isLocked = false;
   #equippedCache = null;
@@ -24,6 +25,7 @@ export class PlayerInventory {
     tackleLoadLimitPolicy,
     itemDatabase,
     itemViewContext,
+    itemGrant,
   }) {
     this.#messages = messages;
     this.#facade = inventory.facade;
@@ -34,6 +36,7 @@ export class PlayerInventory {
     this.#tackleLoadLimitPolicy = tackleLoadLimitPolicy;
     this.#itemDatabase = itemDatabase;
     this.#itemViewContext = itemViewContext;
+    this.#itemGrant = itemGrant;
     this.#removeInventoryListener = this.#facade.subscribe(() => {
       this.#equippedCache = null;
       this.#events.emit("inventory-changed", {
@@ -112,6 +115,12 @@ export class PlayerInventory {
 
   consumeItem(instanceId, amount = 1) {
     return this.#gameplayBridge.consumeItem(instanceId, amount);
+  }
+
+  // Adds new catalog items to the inventory (used by the DEV item grant); not blocked by the tackle lock because
+  // equipment does not change.
+  grantCatalogItem(itemId, quantity = 1) {
+    return this.#itemGrant.grant(itemId, quantity);
   }
 
   consumeHandChum() {

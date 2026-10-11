@@ -209,8 +209,43 @@ function checkInstanceIds() {
   assert.equal(other.create("loadout"), `loadout_${NOW}_1`, "another factory starts its own counter");
 }
 
+// Catalog items can be added to the inventory (the DEV item grant uses this port); the save and the change event
+// follow, and the item survives a restart.
+function checkCatalogItemGrant() {
+  const key = "player_inventory_v2";
+  const { inventory, cache, forwarded } = compose();
+  const before = items(inventory).length;
+  const writesBefore = cache.writes.length;
+  const eventsBefore = forwarded.filter((entry) => entry.type === "inventory-changed").length;
+  const granted = inventory.grantCatalogItem("float_sliding");
+  assert.equal(granted.success, true, "a catalog item is granted");
+  assert.equal(items(inventory).length, before + 1, "the granted item appears in the inventory view");
+  assert(items(inventory).some((item) => item.itemId === "float_sliding" && item.instanceId === granted.instanceId),
+    "the view shows the granted catalog item");
+  assert.equal(cache.writes.length, writesBefore + 1, "the grant saves the inventory once");
+  assert(cache.values.get(key).items.some((item) => item.instanceId === granted.instanceId &&
+    item.itemId === "float_sliding" && item.quantity === 1), "the saved snapshot holds the granted item");
+  assert.equal(forwarded.filter((entry) => entry.type === "inventory-changed").length, eventsBefore + 1,
+    "the grant announces one inventory change");
+
+  const stack = inventory.grantCatalogItem("bread", 3);
+  assert.equal(cache.values.get(key).items.find((item) => item.instanceId === stack.instanceId).quantity, 3,
+    "a grant keeps the requested quantity");
+
+  const writesAfterGrants = cache.writes.length;
+  const unknown = inventory.grantCatalogItem("missing_item");
+  assert.equal(unknown.success, false, "an unknown item id is rejected");
+  assert.equal(cache.writes.length, writesAfterGrants, "a rejected grant does not save");
+  assert.equal(inventory.grantCatalogItem("float_sliding", 0).success, false, "a non-positive quantity is rejected");
+
+  const restarted = compose({ cache });
+  assert(items(restarted.inventory).some((item) => item.instanceId === granted.instanceId),
+    "the granted item survives a restart");
+}
+
 checkFreshStart();
 checkStartingInventory();
+checkCatalogItemGrant();
 checkLegacySaveMigration();
 checkPlayerInventoryPort();
 checkLineCapacityContext();
@@ -218,4 +253,4 @@ checkInstanceIds();
 console.log("Player inventory passed: fresh start creates the current-format inventory directly (same bytes as the former " +
   "legacy conversion, starting equipment rejected) without writing legacy keys; a legacy save migrates " +
   "(sinker -> feeder rig); lock policy, change events, cached equipment with rod display stats, tackle load " +
-  "limit, readiness, provider validation, refresh, dispose, the id fallback and the live line-capacity context behave as composed in production.");
+  "limit, readiness, provider validation, refresh, dispose, the id fallback, the live line-capacity context and the catalog item grant behave as composed in production.");

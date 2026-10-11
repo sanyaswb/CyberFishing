@@ -21,6 +21,7 @@ export class DevTools {
   #parameterAliases;
   #itemProgressionDebugProvider;
   #itemProgressionResolver;
+  #grantCatalogItem;
   #storageCache;
   #reelRetrieveProbeState = Object.freeze({ status: "unavailable" });
   #isDisposed = false;
@@ -63,6 +64,7 @@ export class DevTools {
     {
       itemProgressionDebugProvider = null,
       itemProgressionResolver = null,
+      grantCatalogItem = null,
       configRuntime = null,
       configValidation = null,
       catalogs,
@@ -93,6 +95,7 @@ export class DevTools {
     this.#parameterAliases = new DevToolsParameterAliasRegistry();
     this.#itemProgressionDebugProvider = itemProgressionDebugProvider;
     this.#itemProgressionResolver = itemProgressionResolver;
+    this.#grantCatalogItem = grantCatalogItem;
     const { ui, tooltipProvider } = createUI(() => this.toggle(), this.#config);
     this.#ui = ui;
     tooltipProvider.ready.then(() => {
@@ -199,6 +202,7 @@ export class DevTools {
     const debugContent = this.#renderConfigDebugSection(body);
     this.#renderReelRetrieveDiagnosticSection(debugContent);
     this.#renderLocationDebugSection(debugContent);
+    this.#renderItemGrantSection(body);
 
     // 3. ITEM_DB (БАЗА ПРЕДМЕТІВ)
     if (typeof this.#catalogs.items !== "undefined") {
@@ -477,6 +481,25 @@ export class DevTools {
       path[0] === "CONFIG" && path[1] === "spawns" && key === "fishes";
 
     return isConfigLocationsMap || isConfigSpawnsFishes;
+  }
+
+  // One button per catalog item adds it to the player's inventory, so catalog-only items can be tested in game.
+  #renderItemGrantSection(body) {
+    if (typeof this.#grantCatalogItem !== "function" || typeof this.#catalogs.items === "undefined") return;
+    const content = this.#createSectionWithCache("🎁 ВИДАТИ ПРЕДМЕТ", body);
+    for (const category of Object.keys(this.#catalogs.items)) {
+      if (this.#excludeKeys.includes(category)) continue;
+      for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
+        if (!item?.itemType) continue;
+        const label = `${item.icon || ""} ${item.name || itemId} (${itemId})`.trim();
+        let granted = 0;
+        this.#ui.createButtonRow(label, content, (event) => {
+          const result = this.#grantCatalogItem(itemId, 1);
+          if (result?.success) granted += 1;
+          event.currentTarget.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;
+        });
+      }
+    }
   }
 
   #createSectionWithCache(labelStr, parentElement, path = null) {

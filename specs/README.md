@@ -41,6 +41,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [048](048-game-cycle-baseline/spec.md) | Tracked game-cycle baseline; gameplay changes re-baseline as a reviewed diff | Done | — |
 | [049](049-fishing-services-composition/spec.md) | One fishing services composition for production and game-cycle | Done | — |
 | [050](050-sliding-float/spec.md) | Sliding float: depth costs no cast distance (gameplay G-002) | Done | — |
+| [051](051-dev-item-grant/spec.md) | DEV item grant: any catalog item into the inventory (G-004) | Done | — |
 
 ## Archived
 
