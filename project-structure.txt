@@ -187,6 +187,8 @@
 │  │  └── spec.md
 │  ├── 053-water-metric
 │  │  └── spec.md
+│  ├── 054-bait-boat-water-metric
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

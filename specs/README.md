@@ -44,6 +44,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [051](051-dev-item-grant/spec.md) | DEV item grant: any catalog item into the inventory (G-004) | Done | — |
 | [052](052-depth-selector-ux/spec.md) | Depth on the float button, slide-down track, cast limit line (G-005) | Done | — |
 | [053](053-water-metric/spec.md) | Perspective metres on the water: one `WaterMetric` per location; casting, fight and tackle in ground metres (G-006) | Implemented | — |
+| [054](054-bait-boat-water-metric/spec.md) | Bait boat speed and motion on the water metric (G-007) | Specified | — |
 
 ## Archived
 
