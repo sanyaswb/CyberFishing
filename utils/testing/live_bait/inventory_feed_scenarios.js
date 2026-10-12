@@ -1,0 +1,86 @@
+const assert = require("node:assert/strict");
+
+module.exports = async function checkInventoryFeed() {
+  const { composeLiveBait } = await import("../../../src/bootstrap/production/live_bait_composition.js");
+  const { LIVE_BAIT_CONFIG } = await import("../../../src/game/config/raw/live_bait/live_bait_config.js");
+  const { ITEM_DB } = await import("../../../src/game/config/databases/item_catalog.js");
+  const { InventorySubfilterResolver } = await import("../../../src/game/presentation/inventory/inventory_subfilter_resolver.js");
+  const { InventoryCatalogItemSync } = await import("../../../src/game/application/inventory/inventory_catalog_item_sync.js");
+  const { FlatInventoryItemRepository } = await import("../../../src/game/domain/inventory/flat_inventory_item_repository.js");
+  const { BrowserSnapshotTransaction } = await import("../../../src/platform/browser/storage/browser_snapshot_transaction.js");
+  const { InventoryItemGrantService } = await import("../../../src/game/application/inventory/inventory_item_grant_service.js");
+  const featureKey = "fishing_game_player_live_bait_v1", inventoryKey = "fishing_game_player_inventory_v2";
+  const journalKey = "fishing_game_aquarium_feed_transaction_v1";
+  const simple = LIVE_BAIT_CONFIG.defaultFeedId, premium = "aquarium_feed_premium_500";
+  const fish = { id: "crucian_stalker", weight: .1, name: "Crucian" };
+  const ordinary = { instanceId: "worm", itemId: "oil_worm", quantity: 7, location: { kind: "INVENTORY" } };
+  const initial = { schemaVersion: 4, items: [ordinary], assemblies: [], equipment: {}, loadouts: [], settings: { autoBait: true } };
+  const values = new Map([[inventoryKey, JSON.stringify(initial)]]);
+  let fail = false, now = 1000;
+  const storage = { getItem: (key) => values.get(key) ?? null, removeItem: (key) => values.delete(key),
+    setItem: (key, raw) => { if (fail && key === featureKey) throw new Error("quota"); values.set(key, raw); } };
+  const create = () => composeLiveBait({ storage, clock: { nowMs: () => now }, rng: { next: () => .5 },
+    config: LIVE_BAIT_CONFIG, fishDb: [{ id: fish.id, name: fish.name }] });
+  const s = create(); s.buyAquarium(); s.convertCatch(fish, "one"); s.convertCatch(fish, "two");
+  s.buyFeed(simple); s.buyFeed(simple); s.buyFeed(simple); s.buyFeed(premium);
+  let inventory = JSON.parse(values.get(inventoryKey));
+  assert.equal(inventory.items.find((item) => item.itemId === simple).quantity, 3);
+  assert.deepEqual(inventory.items.find((item) => item.itemId === ordinary.itemId), ordinary);
+  assert.deepEqual(inventory.settings, initial.settings);
+  assert.equal(Object.hasOwn(JSON.parse(values.get(featureKey)).feedSupply, "stock"), false, "feature save cannot own another stock copy");
+  assert.equal(s.getView().feedItems.filter((item) => item.count > 0).length, 2);
+  const before = values.get(inventoryKey);
+  assert.equal(s.feedAquarium(simple, 4).reason, "no_feed");
+  assert.equal(s.feedAquarium(simple, 1.5).reason, "invalid_quantity");
+  assert.equal(values.get(inventoryKey), before);
+  assert.equal(s.feedAquarium(simple, 2).ok, true);
+  assert.equal(s.getView().aquarium.feed.quantity, 2);
+  assert.equal(s.getView().aquarium.feed.durationMs, 55 * 60000);
+  assert.equal(s.getView().feedItems.find((item) => item.id === simple).count, 1);
+  assert.equal(create().getView().feedItems.find((item) => item.id === simple).count, 1);
+  assert.equal(s.feedAquarium(simple).ok, true);
+  assert.equal(s.getView().feedItems.filter((item) => item.count > 0).length, 1);
+  fail = true;
+  assert.equal(s.feedAquarium(premium).ok, false, "write failure cannot report success");
+  assert(values.has(journalKey), "interrupted two-key write retains recovery intent");
+  fail = false;
+  const recovered = create();
+  assert.equal(recovered.error, null);
+  assert.equal(recovered.getView().aquarium.feed.id, premium);
+  assert.equal(recovered.getView().feedStock, 0, "recovery consumes exactly once");
+  assert.equal(values.has(journalKey), false);
+  assert.equal(create().getView().feedStock, 0, "another reload cannot restore consumed packs");
+
+  const legacy = JSON.parse(values.get(featureKey)); legacy.schemaVersion = 3;
+  legacy.feedSupply.stock = { [simple]: 4 };
+  delete legacy.aquarium.feed.quantity;
+  values.set(featureKey, JSON.stringify(legacy));
+  assert.equal(create().getView().feedStock, 4);
+  assert.equal(create().getView().feedStock, 4, "legacy migration is exactly once");
+  assert.equal(JSON.parse(values.get(featureKey)).schemaVersion, 4);
+  assert.equal(Object.hasOwn(JSON.parse(values.get(featureKey)).feedSupply, "stock"), false);
+  for (const item of Object.values(ITEM_DB.aquariumFeeds)) {
+    assert.equal(item.itemType, "aquarium_feed");
+    assert.equal(new InventorySubfilterResolver().resolve(item, { categoryId: "chums" }).id, "aquarium-feed");
+  }
+  const repo = new FlatInventoryItemRepository({ items: initial.items });
+  let notifications = 0;
+  const sync = new InventoryCatalogItemSync({ repository: repo, itemIds: Object.keys(ITEM_DB.aquariumFeeds), notify: () => notifications++ });
+  sync.synchronize(JSON.parse(values.get(inventoryKey)).items);
+  assert.equal(repo.list().find((item) => item.itemId === simple).quantity, 4);
+  sync.synchronize(JSON.parse(values.get(inventoryKey)).items);
+  assert.equal(notifications, 1, "equal stock refresh cannot rebuild inventory UI");
+  assert.deepEqual(repo.get("worm"), ordinary);
+  const granted = new FlatInventoryItemRepository();
+  let id = 0;
+  const grant = new InventoryItemGrantService({ repository: granted, transaction: { runAtomic: (operation) => operation() },
+    definitionLookup: (itemId) => ITEM_DB.aquariumFeeds[itemId], instanceIdFactory: () => `grant-${++id}`, notify() {} });
+  grant.grant(simple); grant.grant(simple); grant.grant(simple);
+  assert.equal(granted.size, 1, "identical packs form one inventory quantity stack");
+  assert.equal(granted.list()[0].quantity, 3);
+  const transaction = new BrowserSnapshotTransaction({ storage, journalKey, keys: [featureKey, inventoryKey] });
+  assert.equal(transaction.commit([{ key: inventoryKey, before: "stale", after: "{}" }]).reason, "stale_revision");
+  values.set(journalKey, JSON.stringify([{ key: "unrelated-save", before: null, after: "overwrite" }]));
+  assert.equal(transaction.recover().reason, "invalid_transaction");
+  assert.equal(values.has("unrelated-save"), false);
+};

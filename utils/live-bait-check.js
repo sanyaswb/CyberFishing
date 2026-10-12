@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 async function main() {
   await require("./testing/live_bait/keepnet_lifecycle_scenarios")();
   await require("./testing/live_bait/shared_feed_scenarios")();
+  await require("./testing/live_bait/inventory_feed_scenarios")();
+  await require("./testing/live_bait/feed_picker_scenarios")();
   const { composeLiveBait } = await import("../src/bootstrap/production/live_bait_composition.js");
   const { LIVE_BAIT_CONFIG } = await import("../src/game/config/raw/live_bait/live_bait_config.js");
   const { LiveBaitMotionAdapter } = await import("../src/game/application/live_bait/live_bait_motion_adapter.js");
@@ -18,8 +20,8 @@ async function main() {
   const { VictoryLayoutResolver } = await import("../src/game/presentation/screens/victory_layout_resolver.js");
   const { VictoryActionGestureResolver } = await import("../src/game/presentation/input/victory_action_gesture_resolver.js");
   let now = 1000;
-  const values = new Map();
-  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
   const clock = { nowMs: () => now };
   const rng = { next: () => 0 };
   const fishDb = [
@@ -145,7 +147,7 @@ async function main() {
   const stalePeer = create();
   assert.equal(stale.buyFeed().ok, true);
   assert.equal(stalePeer.buyFeed().ok, true, "a second page refreshes before its command");
-  assert.equal(stalePeer.getView().feedStock, stale.getView().feedStock + 1);
+  assert.equal(stalePeer.getView().feedStock, stale.getView().feedStock, "both pages read the same authoritative inventory stock");
   const firstWriter = new LiveBaitSnapshotStore(new LiveBaitLocalStore(storage));
   const secondWriter = new LiveBaitSnapshotStore(new LiveBaitLocalStore(storage));
   const firstState = firstWriter.load(now, fishDb, LIVE_BAIT_CONFIG).state;

@@ -31,7 +31,7 @@ export class UiEventShield {
     });
 
     element.addEventListener("contextmenu", (e) => e.preventDefault());
-    element.style.touchAction = "none";
+    element.style.touchAction = "auto";
     element.style.pointerEvents = "all";
   }
 }

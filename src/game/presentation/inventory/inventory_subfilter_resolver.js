@@ -24,6 +24,7 @@ export class InventorySubfilterResolver {
     fishing_bait: Object.freeze({ id: "baits", label: "Наживки" }),
     chum_mix: Object.freeze({ id: "chums", label: "Прикормки" }),
     groundbait: Object.freeze({ id: "chums", label: "Прикормки" }),
+    aquarium_feed: Object.freeze({ id: "aquarium-feed", label: "Для акваріуму" }),
     boat: Object.freeze({ id: "boats", label: "Кораблики" }),
     chum_delivery: Object.freeze({ id: "boats", label: "Кораблики" }),
     net: Object.freeze({ id: "nets", label: "Підсаки" }),

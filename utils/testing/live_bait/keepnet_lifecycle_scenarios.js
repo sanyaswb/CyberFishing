@@ -10,8 +10,8 @@ module.exports = async function checkKeepnetLifecycle() {
     rarity: { isResolved: true, halfSteps: 3, maxHalfSteps: 12, unitsPerStar: 2 } };
   function fixture(overrides = {}) {
     let now = 1000;
-    const values = new Map();
-    const storage = { getItem: (id) => values.get(id) ?? null, setItem: (id, value) => values.set(id, value) };
+    const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]);
+    const storage = { getItem: (id) => values.get(id) ?? null, setItem: (id, value) => values.set(id, value), removeItem: (id) => values.delete(id) };
     const create = () => composeLiveBait({ storage, fishDb, config: { ...LIVE_BAIT_CONFIG, ...overrides },
       rng: { next: () => .25 }, clock: { nowMs: () => now } });
     return { values, create, tick: (ms) => { now += ms; } };
@@ -36,7 +36,7 @@ module.exports = async function checkKeepnetLifecycle() {
   assert.equal(migrated.error, null, "schema 1 saves still load");
   assert.equal(migrated.getView().liveBaits[0].rarity, null, "lost historical rarity is explicitly unknown");
   migrated.buyFeed();
-  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 3);
+  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 4);
   const corrupt = JSON.parse(metadata.values.get(key));
   corrupt.fish[0].rarity = { halfSteps: 50, maxHalfSteps: 12, unitsPerStar: 2 };
   const corruptBytes = JSON.stringify(corrupt);

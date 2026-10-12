@@ -13,6 +13,7 @@ import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
+import { AquariumFeedPicker } from "../../game/presentation/house/aquarium_feed_picker.js";
 
 export function startFishermanHouse() {
   const { documentTarget, windowTarget } = getBrowserStartupEnvironment();
@@ -46,9 +47,12 @@ export function startFishermanHouse() {
   };
   windowTarget.addEventListener("message", onPreview);
   let presenter;
+  const feedPicker = new AquariumFeedPicker({ documentRef: documentTarget,
+    button: documentTarget.querySelector("[data-house-feed-toggle]"), list: documentTarget.querySelector("[data-house-feed-list]"),
+    labels: HOUSE_LABELS.feedPicker, onFeed: (id, quantity) => presenter.perform("feed", id, quantity) });
   const view = new HouseView({ documentRef: documentTarget, windowTarget,
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, aquariumCapacities: CONFIG.liveBait.capacities,
-    returnTo, fullscreenDocument, fishView,
+    returnTo, fullscreenDocument, fishView, feedPicker,
     onReturn: hostWindow ? () => hostWindow.postMessage({ type: EMBEDDED_PAGE_RETURN_MESSAGE }, windowTarget.location.origin) : null,
     toggleFullscreen: () => fullscreenDocument.fullscreenElement
       ? fullscreenDocument.exitFullscreen() : fullscreenDocument.documentElement.requestFullscreen(),
@@ -62,5 +66,5 @@ export function startFishermanHouse() {
   windowTarget.addEventListener("focus", onFocus);
   return { dispose() { windowTarget.clearInterval(careTimer); windowTarget.clearInterval(displayTimer);
     windowTarget.removeEventListener("focus", onFocus); windowTarget.removeEventListener("message", onPreview);
-    fishView.dispose(); timeDisplay.dispose(); view.dispose(); } };
+    feedPicker.dispose(); fishView.dispose(); timeDisplay.dispose(); view.dispose(); } };
 }

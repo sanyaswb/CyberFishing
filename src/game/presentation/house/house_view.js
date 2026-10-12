@@ -19,11 +19,10 @@ export class HouseView {
   #lastTouchY = 0;
   #noticeTimer = null;
   #fishView;
-  #feedChoice;
-  #feedChoiceKey = "";
+  #feedPicker;
 
   constructor({ documentRef, windowTarget, perform, roomConfig, uiConfig, aquariumCapacities,
-    returnTo, toggleFullscreen, fullscreenDocument, onReturn, fishView }) {
+    returnTo, toggleFullscreen, fullscreenDocument, onReturn, fishView, feedPicker }) {
     this.#document = documentRef;
     this.#window = windowTarget;
     this.#root = documentRef.body;
@@ -35,8 +34,7 @@ export class HouseView {
     this.#fullscreenDocument = fullscreenDocument;
     this.#onReturn = onReturn;
     this.#fishView = fishView;
-    this.#feedChoice = documentRef.querySelector("[data-house-feed-choice]");
-    this.#feedChoice.addEventListener("change", this.#selectFeed);
+    this.#feedPicker = feedPicker;
     for (const name of ["level", "capacity", "unowned", "owned", "slot-count", "feed-slots",
       "next-feed", "feed-stock", "auto-status", "bait-count", "live-baits", "keepnet-warning",
       "dead-count", "catch-count", "catches", "notice", "aquarium-image", "room-track",
@@ -63,7 +61,6 @@ export class HouseView {
   }
 
   dispose() {
-    this.#feedChoice.removeEventListener("change", this.#selectFeed);
     if (this.#noticeTimer !== null) this.#window.clearTimeout(this.#noticeTimer);
     this.#root.removeEventListener("click", this.#handleClick);
     this.#root.removeEventListener("wheel", this.#handleWheel);
@@ -102,7 +99,7 @@ export class HouseView {
     upgrade.hidden = !aquarium.owned;
     upgrade.disabled = aquarium.level >= aquarium.maxLevel;
     upgrade.textContent = model.upgradeLabel;
-    get("slot-count").textContent = aquarium.feed?.name || "";
+    get("slot-count").textContent = aquarium.feed ? `${aquarium.feed.name} ×${aquarium.feed.quantity}` : "";
     get("feed-stock").textContent = String(model.feedStock);
     get("next-feed").textContent = model.nextFeedLabel;
     get("auto-status").textContent = model.autoStatus;
@@ -111,7 +108,7 @@ export class HouseView {
     get("keepnet-warning").hidden = !model.liveBaits.some((fish) => fish.location === "keepnet");
     get("dead-count").hidden = model.deadCount === 0;
     get("dead-count").textContent = model.deadCount > 0 ? `Живців втрачено: ${model.deadCount}` : "";
-    this.#document.querySelector('[data-house-action="feed"]').disabled = !model.canFeed;
+    this.#feedPicker.update(model);
     this.#document.querySelector('[data-house-action="buyAutoFeeder"]').hidden = aquarium.autoFeeder.owned;
     const toggle = this.#document.querySelector('[data-house-action="toggleAutoFeeder"]');
     toggle.hidden = !aquarium.autoFeeder.owned;
@@ -205,17 +202,7 @@ export class HouseView {
       this.#nodes.get("feed-track").setAttribute("aria-valuenow", String(Math.round(feed.percentage)));
       this.#nodes.get("feed-time").textContent = model.feedTimeLabel;
     }
-    const key = JSON.stringify(model.feedItems.map((item) => [item.id, item.count]));
-    if (key !== this.#feedChoiceKey) {
-      this.#feedChoice.replaceChildren(...model.feedItems.map((item) => {
-        const option = this.#el("option", "", `${item.name} · ${item.durationMs / 60000} хв · запас ${item.count}`);
-        option.value = item.id; return option;
-      }));
-      this.#feedChoiceKey = key;
-    }
-    this.#feedChoice.value = model.selectedFeedId;
   }
-  #selectFeed = () => this.#perform("selectFeed", this.#feedChoice.value);
 
   #renderFish(container, fish, live) {
     const rows = fish.map((entry) => {

@@ -472,14 +472,19 @@ export class DevTools {
   // One button per catalog item adds it to the player's inventory, so catalog-only items can be tested in game.
   #renderItemGrantSection(body) {
     if (typeof this.#grantCatalogItem !== "function" || typeof this.#catalogs.items === "undefined") return;
-    const content = this.#createSectionWithCache("🎁 ВИДАТИ ПРЕДМЕТ", body);
+    const content = this.#createSectionWithCache("🎁 БЕЗКОШТОВНИЙ МАГАЗИН", body);
+    const labels = { rods: "🎣 Вудки", reels: "🧵 Котушки", lines: "🧶 Ліски", hooks: "🪝 Гачки",
+      leaders: "🪢 Поводки", floats: "🥢 Поплавки", nets: "🕸️ Підсаки", misc: "☣️ Інше",
+      baits: "🪱 Наживки та снасті", chums: "🍞 Прикормки для риболовлі",
+      aquariumFeeds: "🐟 Прикормки для акваріума", deliveryMethods: "🚤 Доставка", builds: "📦 Комплекти" };
     for (const category of Object.keys(this.#catalogs.items)) {
       if (this.#excludeKeys.includes(category)) continue;
+      const section = this.#createSectionWithCache(labels[category] || category, content);
       for (const [itemId, item] of Object.entries(this.#catalogs.items[category] || {})) {
         if (!item?.itemType) continue;
-        const label = `${item.icon || ""} ${item.name || itemId} (${itemId})`.trim();
+        const label = `${item.icon || ""} ${item.name || itemId} · Безкоштовно`.trim();
         let granted = 0;
-        this.#ui.createButtonRow(label, content, (event) => {
+        this.#ui.createButtonRow(label, section, (event) => {
           const result = this.#grantCatalogItem(itemId, 1);
           if (result?.success) granted += 1;
           event.currentTarget.innerText = result?.success ? `${label} ✓×${granted}` : `${label} ✗`;

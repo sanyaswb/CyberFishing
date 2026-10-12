@@ -442,7 +442,8 @@ class InventoryStaticContractCheck {
         style.includes(".inventory-assembly-editor,") &&
         style.includes(".inventory-saved-loadout-preview,") &&
         style.includes(".inventory-horizontal-scroll") &&
-        style.includes("touch-action: pan-y"),
+        style.includes("touch-action: pan-x pan-y") &&
+        style.includes("-webkit-overflow-scrolling: touch"),
       "Every left panel and horizontal filter must share scrollbar and swipe styles",
     );
   }
@@ -1120,8 +1121,11 @@ class InventoryStaticContractCheck {
       pointerType: "touch",
       clientX: 70,
     });
-    assert.strictEqual(categoryNavigation.scrollLeft, 100);
-    assert.strictEqual(touchSwipe.defaultPrevented, true);
+    assert.strictEqual(categoryNavigation.scrollLeft, 50, "touch position is owned by native scrolling");
+    assert.strictEqual(touchSwipe.defaultPrevented, false, "the browser must retain kinetic touch scrolling");
+    assert.strictEqual(categoryNavigation.hasPointerCapture(30), false);
+    // The fake DOM has no native gesture engine; emulate the browser's resulting scroll position.
+    categoryNavigation.scrollLeft = 100;
     assert.ok(
       !categoryNavigation.classList.contains("inventory-horizontal-scroll--dragging"),
       "Touch swipe must release the horizontal drag state",

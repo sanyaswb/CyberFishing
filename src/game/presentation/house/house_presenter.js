@@ -49,7 +49,7 @@ export class HousePresenter {
     });
   }
 
-  perform(action, id) {
+  perform(action, id, quantity = 1) {
     const service = this.#liveBait;
     let result;
     switch (action) {
@@ -57,9 +57,7 @@ export class HousePresenter {
       case "finishRoom": result = this.#room.finish(); break;
       case "buyAquarium": result = service.buyAquarium(); break;
       case "upgrade": result = service.upgradeAquarium(); break;
-      case "buyFeed": result = service.buyFeed(service.getView().selectedFeedId); break;
-      case "selectFeed": result = service.selectAquariumFeed(id); break;
-      case "feed": result = service.feedAquarium(); break;
+      case "feed": result = service.feedAquarium(id, quantity); break;
       case "buyAutoFeeder": result = service.buyAutoFeeder(); break;
       case "toggleAutoFeeder": result = service.setAutoFeeder(!service.getView().aquarium.autoFeeder.enabled); break;
       case "select": result = service.selectBait(id); break;
@@ -73,5 +71,6 @@ export class HousePresenter {
     const message = result?.ok ? this.#labels.success[action]
       : this.#labels.errors[result?.reason] || this.#labels.errors.failed;
     this.#view.announce(message, result?.ok !== true);
+    return result;
   }
 }

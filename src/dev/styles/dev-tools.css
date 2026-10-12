@@ -1,4 +1,22 @@
 /* DEV Tools panel, editor fields, switches and scrollbars. */
+.devtools__action {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-accent);
+  border-radius: var(--ui-radius-control);
+  color: var(--ui-text);
+  background: rgba(var(--ui-accent-rgb), 0.12);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.devtools__action:hover, .devtools__action:focus-visible {
+  background: rgba(var(--ui-accent-rgb), 0.24);
+  outline: 2px solid var(--ui-success);
+  outline-offset: 2px;
+}
 
 .devtools {
   position: fixed;

@@ -12,9 +12,9 @@ module.exports = async function checkSharedFeed() {
     rarity: { halfSteps: 2, maxHalfSteps: 12, unitsPerStar: 2 } };
   function fixture(overrides = {}) {
     let now = 1000;
-    const values = new Map(), rng = new SeededRng(42);
+    const values = new Map([["fishing_game_player_inventory_v2", JSON.stringify({ schemaVersion: 4, items: [], assemblies: [], equipment: {}, loadouts: [], settings: {} })]]), rng = new SeededRng(42);
     const create = () => composeLiveBait({ storage: { getItem: (id) => values.get(id) ?? null,
-      setItem: (id, raw) => values.set(id, raw) }, clock: { nowMs: () => now }, rng, fishDb,
+      setItem: (id, raw) => values.set(id, raw), removeItem: (id) => values.delete(id) }, clock: { nowMs: () => now }, rng, fishDb,
       config: { ...config, ...overrides } });
     return { values, create, tick: (ms) => now += ms, now: () => now };
   }
@@ -87,7 +87,7 @@ module.exports = async function checkSharedFeed() {
   assert.equal(migrated.error, null); assert.equal(migrated.getView().feedStock, 2);
   assert.equal(migrated.getView().liveBaits[0].remainingMs, 5000);
   assert.equal(migrated.getView().liveBaits[0].isUnique, null);
-  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 3);
+  migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 4);
   legacy.tick(5000); migrated.advance(); assert.equal(migrated.getView().liveBaits.length, 0);
 
   const motion = new AquariumFishMotion({ config: config.visual, rng: new SeededRng(123) });

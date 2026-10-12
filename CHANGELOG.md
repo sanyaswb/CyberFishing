@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.34.1 - Inventory Aquarium Feed and Mobile Controls
+
+- Aquarium feed packs are separate inventory catalog items, available in grouped DEV free-shop sections. Identical packs stack, and Groundbait has a For aquarium checkbox filter.
+- Aquarium Feed opens only available inventory packs with image/count/name/[+] rows. Single packs feed immediately; multiple packs use a centered quantity slider, step buttons, confirmation and cancellation. Protection scales with combined pack mass.
+- Inventory is the sole stock owner; feature snapshot v4 migrates prior feed stock once and journals inventory consumption with feed activation for recoverable two-key saves.
+- Restore native kinetic touch scrolling in inventory categories/subfilters without accidental swipe clicks. Style DEV shop buttons consistently.
+
 ## v0.34.0 - Shared Aquarium Feed
 
 - All species up to 100 g share one live-bait identity. Aquarium feeding uses eleven packs across Simple/Good/Premium, a shared bar above the tank, and population-adjusted protection.

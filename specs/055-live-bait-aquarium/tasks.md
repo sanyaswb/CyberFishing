@@ -148,3 +148,12 @@ Deliver US1 as the first reviewable mechanic, validate it, then add Keepnet, Aqu
 - [X] T063 Generate reduced thumbnails with convert-images.js; animate fish inside a configurable zone with DEV-editable size, speed, direction and green grid.
 - [X] T064 Preserve anomaly/unique catch facts; show square safe stacks using rarity/weight representatives and retain exact-ID details.
 - [X] T065 Run focused checks, Architecture, Quick, Full and browser smoke for game/DEV/house. Record evidence and version/changelog.
+
+## Phase 11: Inventory feed and mobile controls (v0.34.1)
+
+- [X] T066 Catalog every aquarium pack as an inventory item; group and style the DEV free shop.
+- [X] T067 Add Groundbait/For aquarium checkbox filter and restore native mobile horizontal scrolling; physical-phone feel acceptance belongs to the owner.
+- [X] T068 Use inventory as sole feed-stock owner, migrate old feature stock once and persist consumption/activation with recovery.
+- [X] T069 Add available-only row list and centered quantity slider with immediate single-pack action, bounds, cancellation and exact consumption.
+- [X] T070 Cover quantity, migration/failure recovery, catalog/filter and UI interactions; Architecture 2/2, Quick 17/17 and Full 43/43 passed. Further browser/mobile checks are delegated to the owner at their explicit request.
+- [X] T071 Update v0.34.1/changelog, commit/push source and deploy verified GitHub Pages release.

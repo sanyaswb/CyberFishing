@@ -341,8 +341,18 @@ export class GameCompositionRoot {
     const { projector, locId, rng, locationResources, locCfg, location } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
     });
+    const {
+      inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
+    } = await this.#composePlayerInventory({
+      own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
+      baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
+    });
     const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
-      config: this.#config.liveBait, fishDb: FISH_DB, rng });
+      config: this.#config.liveBait, fishDb: FISH_DB, rng,
+      synchronizeInventory: (items) => inventory.synchronizeAquariumFeed(items) });
+    const onFeedStorage = (event) => { if (event.key === "fishing_game_player_inventory_v2") liveBait.synchronizeInventory(); };
+    this.#windowTarget.addEventListener("storage", onFeedStorage);
+    own({ dispose: () => this.#windowTarget.removeEventListener("storage", onFeedStorage) });
     // A new fishing session has no in-flight cast to own a persisted hook fish.
     liveBait.recoverInterruptedCast();
     const liveBaitCandidate = new LiveBaitBaitCandidatePort(liveBait, FISH_DB);
@@ -352,12 +362,6 @@ export class GameCompositionRoot {
       return physics ? new LiveBaitMotionAdapter({ physics, multiplier: this.#config.liveBait.motionMultiplier,
         rng }) : null;
     };
-    const {
-      inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
-    } = await this.#composePlayerInventory({
-      own, itemRarityResolver, itemProgressionResolver, itemConditionResolver, itemFreshnessResolver,
-      baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
-    });
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
     const gameTimeClock = composeGameTime({
       storage: this.#windowTarget.localStorage,

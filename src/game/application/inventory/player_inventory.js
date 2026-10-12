@@ -12,6 +12,7 @@ export class PlayerInventory {
   #itemDatabase;
   #itemViewContext;
   #itemGrant;
+  #catalogItemSync;
   #removeInventoryListener = null;
   #isLocked = false;
   #equippedCache = null;
@@ -26,6 +27,7 @@ export class PlayerInventory {
     itemDatabase,
     itemViewContext,
     itemGrant,
+    catalogItemSync = null,
   }) {
     this.#messages = messages;
     this.#facade = inventory.facade;
@@ -37,6 +39,7 @@ export class PlayerInventory {
     this.#itemDatabase = itemDatabase;
     this.#itemViewContext = itemViewContext;
     this.#itemGrant = itemGrant;
+    this.#catalogItemSync = catalogItemSync;
     this.#removeInventoryListener = this.#facade.subscribe(() => {
       this.#equippedCache = null;
       this.#events.emit("inventory-changed", {
@@ -122,6 +125,7 @@ export class PlayerInventory {
   grantCatalogItem(itemId, quantity = 1) {
     return this.#itemGrant.grant(itemId, quantity);
   }
+  synchronizeAquariumFeed(items) { this.#catalogItemSync?.synchronize(items); }
 
   consumeHandChum() {
     return this.consumeEquipped("handChum", 1, true);

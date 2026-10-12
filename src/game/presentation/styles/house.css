@@ -114,8 +114,6 @@
 .house__aquarium-feed-body { position: relative; flex: 1; min-width: 0; height: 32px; display: flex; align-items: center; }
 .house__aquarium-feed-body .house__feed-slot-track { width: 100%; margin: 0; }
 .house__aquarium-feed-body span { position: absolute; top: 23px; left: 0; white-space: nowrap; }
-.house__feed-choice { display: grid; gap: 8px; margin: 10px 0; }
-.house__feed-choice select { min-height: 44px; background: #102e2b; color: #effff6; border: 1px solid #5b8e7c; border-radius: 6px; font: inherit; max-width: 100%; }
 .house__header {
   position: fixed;
   z-index: 20;
@@ -616,3 +614,19 @@
     transition: none;
   }
 }
+
+.house__feed-list { display: grid; gap: 8px; max-height: 280px; overflow-y: auto; padding: 8px; margin: 10px 0; border: 1px solid #3f565f; border-radius: 7px; background: #061218; }
+.house__feed-item { display: grid; grid-template-columns: 56px minmax(0,1fr) 44px; gap: 12px; align-items: center; padding: 8px; border: 1px solid #284851; border-radius: 6px; background: #14232b; }
+.house__feed-thumbnail { width: 56px; height: 56px; border-radius: 5px; padding: 4px; }
+.house__feed-item-image { width: 40px; height: 40px; object-fit: contain; }
+.house__feed-emoji { position: absolute; top: 2px; left: 3px; font-size: 12px; }
+.house__feed-item-name { font-size: 14px; overflow-wrap: anywhere; }
+.house__feed-square { width: 44px; height: 44px; padding: 0; border: 1px solid var(--inventory-accent); border-radius: 5px; color: var(--inventory-accent); background: #14313b; font: 700 24px/1 system-ui; cursor: pointer; touch-action: manipulation; }
+.house__feed-square:focus-visible { outline: 2px solid var(--inventory-success); outline-offset: 2px; }
+.house__feed-square:disabled { opacity: .4; }
+.house__feed-dialog { width: min(420px, calc(100vw - 24px)); padding: 20px; border: 1px solid var(--inventory-accent); border-radius: 9px; color: #ecfff8; background: #101f29; }
+.house__feed-dialog::backdrop { background: #020810d9; }
+.house__feed-dialog-title { margin: 0 0 12px; text-align: center; font: 600 18px/1.4 system-ui; }
+.house__feed-quantity { display: block; text-align: center; margin-bottom: 16px; font: 700 24px/1.2 system-ui; }
+.house__feed-quantity-controls { display: grid; grid-template-columns: 44px minmax(0,1fr) 44px; gap: 12px; align-items: center; margin-bottom: 20px; }
+.house__feed-range { width: 100%; min-height: 44px; margin: 0; accent-color: var(--inventory-accent); touch-action: pan-x; }

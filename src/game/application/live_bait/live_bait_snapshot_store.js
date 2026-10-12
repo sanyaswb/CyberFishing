@@ -15,7 +15,9 @@ export class LiveBaitSnapshotStore {
     const known = new Set(fishDb.map((fish) => fish.id));
     const locations = new Set(["keepnet", "aquarium", "hook", "dead", "consumed", "released"]);
     const fish = state?.fish;
-    if (![1, 2, 3].includes(state?.schemaVersion) || !Number.isSafeInteger(state.revision) || state.revision < 0 ||
+    if (![1, 2, 3, 4].includes(state?.schemaVersion) ||
+      (state.schemaVersion === 4 && Object.hasOwn(state, "pendingLegacyStock")) ||
+      !Number.isSafeInteger(state.revision) || state.revision < 0 ||
       !Number.isFinite(state.lastAppliedAtMs) || state.lastAppliedAtMs < 0 ||
       !Array.isArray(fish) || !state.resolvedCatchIds || Array.isArray(state.resolvedCatchIds) ||
       typeof state.resolvedCatchIds !== "object" || !state.aquarium || !state.feedSupply ||
@@ -41,7 +43,7 @@ export class LiveBaitSnapshotStore {
         (entry.purpose === "catch" && !["keepnet", "released"].includes(entry.disposition)) ||
         (state.schemaVersion < 3 && entry.purpose === "live_bait" && (!Number.isFinite(entry.deathOrder) ||
           entry.deathOrder < 0 || entry.deathOrder >= 1)) ||
-        (state.schemaVersion === 3 && (![true, false, null].includes(entry.hasAnomaly) ||
+        (state.schemaVersion >= 3 && (![true, false, null].includes(entry.hasAnomaly) ||
           ![true, false, null].includes(entry.isUnique) ||
           !(entry.anomaly === null || typeof entry.anomaly === "string") ||
           !(entry.starvationDeadlineMs === null || (Number.isFinite(entry.starvationDeadlineMs) && entry.starvationDeadlineMs >= 0)))) ||
@@ -57,7 +59,7 @@ export class LiveBaitSnapshotStore {
     }
     if (fish.filter((item) => item.disposition === "aquarium").length >
       (state.aquarium.owned ? config.capacities[state.aquarium.level - 1] : 0)) return { ok: false, reason: "invalid_snapshot" };
-    if (state.schemaVersion === 3 && (
+    if (state.schemaVersion >= 3 && (
       (state.aquarium.starvation && state.aquarium.feed?.remainingMs > 0) ||
       fish.some((entry) => entry.starvationDeadlineMs !== null &&
         (entry.disposition !== "aquarium" || !state.aquarium.starvation ||
@@ -71,21 +73,29 @@ export class LiveBaitSnapshotStore {
       state.schemaVersion = 2;
     }
     if (state.schemaVersion === 2) this.#migrate(state, config);
+    if (state.schemaVersion === 3) {
+      state.pendingLegacyStock = state.feedSupply.stock;
+      delete state.feedSupply.stock;
+      if (state.aquarium.feed) state.aquarium.feed.quantity = 1;
+      state.schemaVersion = 4;
+    }
     return { ok: true, state };
   }
-  save(state) {
-    const next = { ...state, revision: state.revision + 1 };
+  save(state, changes = []) {
+    const { pendingLegacyStock, ...facts } = state;
+    const { stock, ...feedSupply } = state.feedSupply;
+    const next = { ...facts, feedSupply, revision: state.revision + 1 };
     const raw = JSON.stringify(next);
-    const result = this.#storage.write(raw, this.#raw);
+    const result = this.#storage.write(raw, this.#raw, changes);
     if (!result.ok) return result;
     this.#raw = raw;
     state.revision = next.revision;
     return { ok: true, revision: next.revision };
   }
   #empty(nowMs, config) {
-    return { schemaVersion: 3, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
+    return { schemaVersion: 4, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
       aquarium: { owned: false, level: 0, feed: null, starvation: null },
-      feedSupply: { stock: {}, selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null };
+      feedSupply: { selectedFeedId: config.defaultFeedId, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null };
   }
   #validCare(state, known, config) {
     const supply = state.feedSupply, aquarium = state.aquarium;
@@ -94,12 +104,14 @@ export class LiveBaitSnapshotStore {
       Object.keys(aquarium.feedBySpecies).every((id) => known.has(id)) &&
       Object.values(aquarium.feedBySpecies).every((value) => Number.isFinite(value) && value >= 0 && value <= 1);
     const feed = aquarium.feed, episode = aquarium.starvation;
-    return !!supply.stock && !Array.isArray(supply.stock) && typeof supply.stock === "object" &&
-      Object.entries(supply.stock).every(([id, count]) => Object.hasOwn(config.aquariumFeeds, id) && Number.isSafeInteger(count) && count >= 0) &&
-      Object.hasOwn(config.aquariumFeeds, supply.selectedFeedId) &&
+    const validStock = state.schemaVersion === 4 ? !Object.hasOwn(supply, "stock") :
+      !!supply.stock && !Array.isArray(supply.stock) && typeof supply.stock === "object" &&
+      Object.entries(supply.stock).every(([id, count]) => Object.hasOwn(config.aquariumFeeds, id) && Number.isSafeInteger(count) && count >= 0);
+    return validStock && Object.hasOwn(config.aquariumFeeds, supply.selectedFeedId) &&
       (feed === null || (!!feed && Object.hasOwn(config.aquariumFeeds, feed.itemId) &&
         Number.isFinite(feed.durationMs) && feed.durationMs > 0 && Number.isFinite(feed.remainingMs) &&
         feed.remainingMs >= 0 && feed.remainingMs <= feed.durationMs && this.#validSeed(feed.seed))) &&
+      (state.schemaVersion < 4 || feed === null || (Number.isSafeInteger(feed.quantity) && feed.quantity > 0)) &&
       (episode === null || (!!episode && Number.isFinite(episode.startedAtMs) && episode.startedAtMs >= 0 &&
         Number.isFinite(episode.windowMs) && episode.windowMs > 0 && this.#validSeed(episode.seed)));
   }

@@ -610,7 +610,7 @@ export class InventoryViewModelFactory {
       return ["bait", "fishing_bait"].includes(itemType);
     }
     if (categoryId === "chums") {
-      return ["chum_mix", "groundbait"].includes(itemType);
+      return ["chum_mix", "groundbait", "aquarium_feed"].includes(itemType);
     }
     if (categoryId === "boats") {
       return ["boat", "chum_delivery"].includes(itemType);

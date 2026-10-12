@@ -9,10 +9,10 @@ export class LiveBaitCareService {
     this.#calculator = calculator;
     this.#starvation = starvation;
   }
-  feed(state, itemId, seed) {
+  feed(state, itemId, seed, quantity = 1) {
     const count = state.fish.filter((fish) => fish.disposition === "aquarium").length;
-    const durationMs = this.#calculator.duration(itemId, count);
-    state.aquarium.feed = { itemId, durationMs, remainingMs: durationMs, seed };
+    const durationMs = this.#calculator.duration(itemId, count, quantity);
+    state.aquarium.feed = { itemId, quantity, durationMs, remainingMs: durationMs, seed };
     state.aquarium.starvation = null;
     for (const fish of state.fish) fish.starvationDeadlineMs = null;
   }
@@ -23,7 +23,7 @@ export class LiveBaitCareService {
     const feed = aquarium.feed;
     if (feed?.remainingMs > 0) {
       const elapsed = feed.durationMs - feed.remainingMs;
-      feed.durationMs = this.#calculator.duration(feed.itemId, inhabitants.length);
+      feed.durationMs = this.#calculator.duration(feed.itemId, inhabitants.length, feed.quantity);
       feed.remainingMs = Math.max(0, feed.durationMs - elapsed);
     }
     this.#autoFill(state, inhabitants.length);

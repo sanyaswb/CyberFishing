@@ -141,10 +141,10 @@ The aquarium, feed portions, automatic feeder, and each one-level capacity upgra
 
 ## Assumptions
 
-- The Every catalog species is eligible up to 100 g.
+- Every catalog species is eligible up to 100 g.
 - Aquarium losses represent starvation. Predator interaction inside the aquarium is outside this revision.
 - The explicit capacity table is authoritative where the informal progression formula is discontinuous (levels 4→5 and 9→10).
-- Feed pack stock is owned by the aquarium feature, separate from ordinary groundbait and equipment inventory.
+- Inventory owns aquarium-feed pack stock, separate from ordinary groundbait. The aquarium feature stores active protection, selection and feeder settings.
 - One-fish durations are the table baseline; penalties apply to N−1 additional fish. Refeeding replaces rather than accumulates duration. New arrivals during starvation join the remaining episode window and cannot extend its end.
 - The feature remains client-authoritative until the separately specified backend foundation is implemented; cloud progress format changes require their own coordinated contract update.
 - The owner has supplied all five room levels, three light variants per level, the aquarium overlay, and the renovation overlay under `assets/house/room-1/`.
@@ -165,3 +165,14 @@ This revision supersedes species-specific feed allocation and the unused death-o
 - **FR-029**: Snapshot v1/v2 MUST migrate to v3 without changing inventory v4 or resurrecting terminal fish. Old feed stock becomes Simple 500 g packs. The smallest occupied old slot fraction becomes shared Simple protection; existing starvation time is retained for legacy unfed fish. Unknown historical anomaly/unique facts MUST remain unknown rather than inferred from current rarity balance.
 
 Acceptance: verify every table entry for one and three fish; all inhabitants protected while feed is positive; distinct repeatable random deadlines bounded by each quality window; rescue and re-depletion; long offline intervals and backward clocks; stock exhaustion; ordinary groundbait isolation; safe legacy migration; representative art and special-fish isolation; bounded visual movement and DEV editing.
+
+## Owner revision: inventory feed packs and mobile controls (v0.34.1)
+
+- **FR-030**: Each of the eleven aquarium-feed packs is a separate catalog item held in the existing inventory. DEV Tools acts as a temporary free shop, grouped into labeled sections with buttons in the DEV style. Acquired packs appear under Groundbait → For aquarium; ordinary fishing groundbait remains separate in use.
+- **FR-031**: Inventory categories and checkbox subfilters support smooth native touch scrolling with inertia on phones, preserving mouse grab/wheel controls and taps on checkboxes.
+- **FR-032**: The aquarium Feed button toggles its own list container. Only available positive-quantity inventory packs appear. Each wrapper row has a square image/emoji and quantity badge on the left, name in the center and square [+] action on the right. No free acquisition control remains on the aquarium page.
+- **FR-033**: A pack count of one feeds immediately. With two or more, open a centered accessible quantity dialog showing quantity, square [−]/[+] controls, a draggable horizontal slider from 1 to available count, Confirm and Cancel. Cancellation consumes nothing; stale counts must not overspend.
+- **FR-034**: Feeding quantity Q consumes exactly Q inventory packs and sets shared protection to max(minimum, pack base × Q − penalty × (N−1)). Population penalty applies once to the combined amount; feeding still replaces current protection. The active cell records pack and applied quantity. The feeder consumes one selected pack per refill.
+- **FR-035**: Inventory records are the sole stock owner. Prior feature stock migrates once into inventory. Feature snapshot v4 removes persisted stock and adds active quantity; inventory remains schema v4. Feed consumption and feature activation commit together with recoverable write-ahead persistence. Corrupt bytes, stale writes, storage failures, read projection, reload and interrupted migration cannot duplicate packs or claim unsaved success.
+
+Acceptance: buy each pack in DEV, inspect Groundbait/For aquarium filter, use one/count/multi slider/Cancel, deplete exact quantities, reload and recover interrupted writes. Verify a two-item stock produces exactly two rows. Test phone category/subfilter swipe and checkbox taps, plus desktop mouse dragging.

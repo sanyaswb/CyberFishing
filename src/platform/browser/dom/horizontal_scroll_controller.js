@@ -18,6 +18,7 @@ export class HorizontalScrollController {
       startX: 0,
       startScrollLeft: 0,
       suppressClickUntil: 0,
+      touch: false,
     };
     const handlers = {
       wheel: (event) => this.#onWheel(element, event),
@@ -74,6 +75,7 @@ export class HorizontalScrollController {
     if (event?.isPrimary === false || Number(event?.button) > 0) return;
     if (this.#maximumScrollLeft(element) <= 0) return;
     state.active = true;
+    state.touch = event?.pointerType === "touch";
     state.dragging = false;
     state.pointerId = event?.pointerId ?? null;
     state.startX = Number(event?.clientX) || 0;
@@ -84,6 +86,11 @@ export class HorizontalScrollController {
   #onPointerMove(element, state, event) {
     if (!state.active || !this.#matchesPointer(state, event)) return;
     const offset = (Number(event?.clientX) || 0) - state.startX;
+    // Keep native touch panning and inertia, while suppressing a swipe's accidental click.
+    if (state.touch) {
+      if (Math.abs(offset) >= this.#dragThresholdPx) state.suppressClickUntil = Date.now() + 250;
+      return;
+    }
     if (!state.dragging && Math.abs(offset) < this.#dragThresholdPx) return;
 
     if (!state.dragging) {

@@ -89,7 +89,8 @@
 .inventory-horizontal-scroll {
   cursor: grab;
   overscroll-behavior-x: contain;
-  touch-action: pan-y;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .inventory-horizontal-scroll.inventory-horizontal-scroll--dragging {

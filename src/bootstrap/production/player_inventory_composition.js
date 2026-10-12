@@ -3,6 +3,7 @@ import { EffectiveItemRarityResolver } from "../../game/domain/items/rarity/effe
 import { InventoryInstanceIdFactory } from "../../game/application/inventory/inventory_instance_id_factory.js";
 import { InventoryItemFactory } from "../../game/application/inventory/inventory_item_factory.js";
 import { InventoryItemGrantService } from "../../game/application/inventory/inventory_item_grant_service.js";
+import { InventoryCatalogItemSync } from "../../game/application/inventory/inventory_catalog_item_sync.js";
 import { InventoryItemViewContext } from "../../game/application/inventory/inventory_item_view_context.js";
 import { InventoryItemViewFactory } from "../../game/presentation/inventory/inventory_item_view_factory.js";
 import { InventoryRuntimeDisplayStatsResolver } from "../../game/application/inventory/inventory_runtime_display_stats_resolver.js";
@@ -113,6 +114,8 @@ export function createPlayerInventory({
       instanceIdFactory: (prefix) => instanceIds.create(prefix),
       notify: () => inventory.facade.notify(),
     }),
+    catalogItemSync: new InventoryCatalogItemSync({ repository: inventory.repository,
+      itemIds: Object.keys(itemDB.aquariumFeeds || {}), notify: () => inventory.facade.notify() }),
   });
   return playerInventory;
 }

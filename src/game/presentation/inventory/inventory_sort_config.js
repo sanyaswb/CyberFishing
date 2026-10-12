@@ -49,6 +49,7 @@ export const INVENTORY_SORT_CONFIG = Object.freeze({
     "fishing_bait",
     "chum_mix",
     "groundbait",
+    "aquarium_feed",
     "boat",
     "chum_delivery",
     "net",

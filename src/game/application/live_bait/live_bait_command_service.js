@@ -13,13 +13,15 @@ export class LiveBaitCommandService {
   #state;
   #error = null;
   #catchDisposition;
-  constructor({ config, fishDb, store, clock, rng, care }) {
+  #inventoryPort;
+  constructor({ config, fishDb, store, clock, rng, care, inventoryPort }) {
     this.#config = config;
     this.#fishDb = new Map(fishDb.map((fish) => [fish.id, fish]));
     this.#store = store;
     this.#clock = clock;
     this.#rng = rng;
     this.#care = care;
+    this.#inventoryPort = inventoryPort;
     this.#catchDisposition = new CatchDispositionService({ config, fishDb, rng });
     const loaded = store.load(clock.nowMs(), fishDb, config);
     if (!loaded.ok) this.#error = loaded.reason;
@@ -29,6 +31,7 @@ export class LiveBaitCommandService {
     }
   }
   get error() { return this.#error; }
+  synchronizeInventory() { this.#inventoryPort.synchronize(); }
   canConvert(fish) { return this.#catchDisposition.canConvert(fish); }
   createCatchId() { return `catch-${this.#clock.nowMs()}-${this.#state?.revision ?? 0}-${Math.floor(this.#rng.next() * 0x100000000).toString(36)}`; }
   resolveCatch(catchId, fish, action) {
@@ -111,13 +114,15 @@ export class LiveBaitCommandService {
     if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
     state.feedSupply.selectedFeedId = itemId; return null;
   }); }
-  feedAquarium(itemId = null) { return this.#commit((state) => {
+  feedAquarium(itemId = null, quantity = 1) { return this.#commit((state) => {
     if (!state.aquarium.owned) return "aquarium_required";
     itemId ??= state.feedSupply.selectedFeedId;
     if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
+    if (!Number.isSafeInteger(quantity) || quantity < 1) return "invalid_quantity";
     if (!state.fish.some((fish) => fish.disposition === "aquarium")) return "nothing_to_feed";
-    if (!new FeedSupplyState(state.feedSupply).consume(itemId)) return "no_feed";
-    this.#care.feed(state, itemId, Math.floor(this.#rng.next() * 4294967296)); return null;
+    if (!new FeedSupplyState(state.feedSupply).consume(itemId, quantity)) return "no_feed";
+    state.feedSupply.selectedFeedId = itemId;
+    this.#care.feed(state, itemId, Math.floor(this.#rng.next() * 4294967296), quantity); return null;
   }); }
   buyAutoFeeder() { return this.#commit((state) => new FeedSupplyState(state.feedSupply).installFeeder() ? null : "already_owned"); }
   installAutoFeeder() { return this.buyAutoFeeder(); }
@@ -135,8 +140,11 @@ export class LiveBaitCommandService {
     const synced = this.#syncLatest();
     if (!synced.ok) return synced;
     const next = JSON.parse(JSON.stringify(this.#state));
-    if (!this.#care.settle(next)) return { ok: true, revision: this.#state.revision };
-    const saved = this.#store.save(next);
+    const stock = this.#loadStock(next);
+    if (!stock.ok) return stock;
+    const changed = this.#care.settle(next);
+    if (!changed && !next.pendingLegacyStock) return { ok: true, revision: this.#state.revision };
+    const saved = this.#save(next, stock);
     if (saved.ok) this.#state = next;
     else this.#handleSaveFailure(saved);
     return saved;
@@ -149,6 +157,8 @@ export class LiveBaitCommandService {
     // Read-only event-time projection: the display must agree with the next care settlement,
     // including deaths and automatic refills, without writing on every display tick.
     const state = JSON.parse(JSON.stringify(this.#state));
+    const stock = this.#loadStock(state);
+    if (!stock.ok) { this.#error = stock.reason; return this.getView(); }
     this.#care.settle(state);
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
     const feed = state.aquarium.feed;
@@ -160,7 +170,7 @@ export class LiveBaitCommandService {
     const inhabitants = liveBaits.filter((fish) => fish.location === "aquarium");
     const starvation = state.aquarium.starvation;
     const feedView = feed ? { ...this.#config.aquariumFeeds[feed.itemId],
-      remainingMs: feed.remainingMs, durationMs: feed.durationMs,
+      quantity: feed.quantity, remainingMs: feed.remainingMs, durationMs: feed.durationMs,
       percentage: feed.durationMs > 0 ? feed.remainingMs / feed.durationMs * 100 : 0 } : null;
     return { error: null, feedStock: Object.values(state.feedSupply.stock).reduce((sum, count) => sum + count, 0),
       feedItems: Object.values(this.#config.aquariumFeeds).map((item) => ({ ...item, count: state.feedSupply.stock[item.id] || 0 })),
@@ -184,11 +194,13 @@ export class LiveBaitCommandService {
     const synced = this.#syncLatest();
     if (!synced.ok) return synced;
     const next = JSON.parse(JSON.stringify(this.#state));
+    const stock = this.#loadStock(next);
+    if (!stock.ok) return stock;
     const settled = this.#care.settle(next);
     const reason = mutate(next);
     if (!reason) this.#care.synchronize(next);
     if (reason && !settled) return { ok: false, reason };
-    const saved = this.#store.save(next);
+    const saved = this.#save(next, stock);
     if (saved.ok) this.#state = next;
     else this.#handleSaveFailure(saved);
     return saved.ok && reason ? { ok: false, reason } : saved;
@@ -207,6 +219,25 @@ export class LiveBaitCommandService {
     return { id: fish.id, sourceSpeciesId: fish.speciesId, name: fish.name, weightKg: fish.weightKg,
       level: fish.level, imagePath: fish.imagePath, rarity: CaughtFishRarity.capture(fish.rarity),
       anomaly: fish.anomaly, hasAnomaly: fish.hasAnomaly, isUnique: fish.isUnique };
+  }
+  #loadStock(state) {
+    const plan = this.#inventoryPort.read();
+    if (!plan.ok) return plan;
+    state.feedSupply.stock = { ...plan.stock };
+    for (const [id, quantity] of Object.entries(state.pendingLegacyStock || {}))
+      state.feedSupply.stock[id] = (state.feedSupply.stock[id] || 0) + quantity;
+    return plan;
+  }
+  #save(state, plan) {
+    const prepared = this.#inventoryPort.prepare(plan, state.feedSupply.stock);
+    if (!prepared.ok) return prepared;
+    const saved = this.#store.save(state, prepared.changes);
+    if (saved.ok) {
+      delete state.pendingLegacyStock;
+      if (prepared.changes.length) this.#inventoryPort.synchronize(prepared.snapshot);
+      delete state.feedSupply.stock;
+    }
+    return saved;
   }
   #leaveAquarium(state, fish) {
     if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null)
