@@ -27,6 +27,7 @@ export const PREDATOR_FISH = [
     },
 
     baitMultipliers: {
+      live_crucian: 2.4,
       oil_worm: 2.0,
       test_spinner: 1.0,
       test_wobbler_sinking: 1.0,

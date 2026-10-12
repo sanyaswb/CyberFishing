@@ -103,6 +103,8 @@ export class WaitingState extends GameState {
           .normalize();
       }
 
+      this.deps.getLiveBaitMotion?.()?.update(dt, this.deps.float);
+
       this.deps.float.update(
         plane.bounds,
         dt,
@@ -131,6 +133,7 @@ export class WaitingState extends GameState {
       this.deps.eatenBaits,
       baitCandidates,
     );
+    this.deps.liveBaitCandidate?.appendIfHooked(eq, baitCandidates);
 
     const biteEnv = this.deps.world.getBiteEnv();
 
@@ -154,6 +157,8 @@ export class WaitingState extends GameState {
     }
 
     if (hooked) {
+      const liveBaitFishId = this.deps.liveBaitCandidate?.fishIdForBite(hooked);
+      if (liveBaitFishId) hooked.liveBaitFishId = liveBaitFishId;
       this.deps.float.startBite(effectiveInput.isPulling, hooked.biteSequence);
       this.deps.commands.setState("biting", { fish: hooked });
     }

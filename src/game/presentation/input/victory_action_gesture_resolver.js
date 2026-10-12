@@ -22,6 +22,7 @@ export class VictoryActionGestureResolver {
     if (!this.#isFinitePoint(point)) return null;
     if (this.#isPointInside(point, actions?.claim)) return "claim";
     if (this.#isPointInside(point, actions?.release)) return "release";
+    if (actions?.liveBait?.width > 0 && this.#isPointInside(point, actions.liveBait)) return "live_bait";
     return null;
   }
 

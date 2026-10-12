@@ -1,5 +1,6 @@
 import { DynamicZone } from "./dynamic_zone.js";
 import { GridCell } from "./grid_cell.js";
+import { backgroundTimeBlend } from "../time/background_time_blend.js";
 
 export class LocationMap {
   #locationsConfig;
@@ -314,31 +315,7 @@ export class LocationMap {
         time = now.getHours() + now.getMinutes() / 60;
       }
 
-      let evA = 0,
-        niA = 0;
-
-      if (time >= 9 && time < 17) {
-        evA = 0;
-        niA = 0;
-      } else if (time >= 17 && time < 19) {
-        evA = (time - 17) / 2;
-        niA = 0;
-      } else if (time >= 19 && time < 21) {
-        evA = 1;
-        niA = (time - 19) / 2;
-      } else if (time >= 21 || time < 5) {
-        evA = 1;
-        niA = 1;
-      } else if (time >= 5 && time < 7) {
-        evA = 1;
-        niA = 1 - (time - 5) / 2;
-      } else if (time >= 7 && time < 9) {
-        evA = 1 - (time - 7) / 2;
-        niA = 0;
-      }
-
-      this.#bgOpacities.evening = evA;
-      this.#bgOpacities.night = niA;
+      backgroundTimeBlend(time, this.#bgOpacities);
     }
 
     if (locCfg.enableDynamicZones !== false) {

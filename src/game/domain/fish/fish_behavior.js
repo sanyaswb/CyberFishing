@@ -521,4 +521,12 @@ export class FishBehavior {
         1.0,
     };
   }
+
+  writeMotionInto(target) {
+    target.name = this.#currentStateName;
+    target.speedMultiplier = nonNegative(Math.abs(this.#currentMove));
+    target.radial = this.#currentRadialIntent;
+    target.lateral = this.#currentLateralIntent;
+    return target;
+  }
 }

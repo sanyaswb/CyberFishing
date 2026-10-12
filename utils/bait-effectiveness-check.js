@@ -98,11 +98,13 @@ class BaitEffectivenessCheck {
     Assertion.equal(spinner.stars, 3, "half-strength lure receives three stars");
     Assertion.near(
       spinner.relativeEffectiveness,
-      0.5,
-      "stars are relative to the best bait for the same fish",
+      1 / 2.4,
+      "stars are relative to the new live-crucian maximum for perch",
     );
     const worm = resolver.resolve(perch, "oil_worm");
-    Assertion.equal(worm.stars, 5, "best bait receives five stars");
+    Assertion.equal(worm.stars, 5, "oil worm remains highly effective for perch");
+    const live = resolver.resolve(perch, "live_crucian");
+    Assertion.equal(live.stars, 5, "live crucian is the best perch bait");
   }
 
   #checkCatalogAndKnowledgePolicy() {

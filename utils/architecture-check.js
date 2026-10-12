@@ -12,6 +12,7 @@ const PROJECT_ROOT = path.resolve(__dirname, "..");
 const LAYERS = Object.freeze([
   ["src/entrypoints/game", "entrypoint/game"],
   ["src/entrypoints/dev", "entrypoint/dev"],
+  ["src/entrypoints/house", "entrypoint/house"],
   ["src/bootstrap/production/", "bootstrap/production"],
   ["src/bootstrap/development/", "bootstrap/development"],
   ["src/engine/", "engine"],
@@ -41,6 +42,7 @@ const ALLOWED_IMPORTS = Object.freeze({
   "bootstrap/development": ["bootstrap/development", "bootstrap/production", "dev", ...PRODUCTION_LAYERS],
   "entrypoint/game": ["bootstrap/production"],
   "entrypoint/dev": ["bootstrap/development"],
+  "entrypoint/house": ["bootstrap/production"],
 });
 
 // Only these layers may touch browser/host globals (DOM, Canvas, storage, audio, timers, console).
@@ -65,6 +67,7 @@ const ECMASCRIPT_GLOBALS = new Set([
 const ENTRIES = Object.freeze({
   production: { page: "index.html", entry: "src/entrypoints/game.entry.js" },
   development: { page: "dev.html", entry: "src/entrypoints/dev.entry.js" },
+  house: { page: "fisherman-house.html", entry: "src/entrypoints/house.entry.js" },
 });
 
 // Analyses an authored source set ({ "src/...js": text, "index.html": text }) and lists rule violations.
@@ -81,7 +84,7 @@ class ArchitectureRules {
     }
     this.#checkCycles();
     for (const [kind, { page, entry }] of Object.entries(ENTRIES)) this.#checkPage(kind, page, entry);
-    const production = this.reachable(ENTRIES.production.entry);
+    const production = new Set([...this.reachable(ENTRIES.production.entry), ...this.reachable(ENTRIES.house.entry)]);
     for (const file of production) {
       const layer = ArchitectureRules.layerOf(file);
       if (layer === "dev" || layer === "bootstrap/development") this.#fail(`production reaches DEV module ${file}`);
@@ -291,11 +294,13 @@ function checkFixtures() {
   const pages = {
     "index.html": '<body><script type="module" src="src/entrypoints/game.entry.js?v=1.0.0"></script></body>',
     "dev.html": '<body><script type="module" src="src/entrypoints/dev.entry.js"></script></body>',
+    "fisherman-house.html": '<body><script type="module" src="src/entrypoints/house.entry.js"></script></body>',
   };
   const base = {
     ...pages,
     "src/entrypoints/game.entry.js": 'import "../bootstrap/production/start.js";',
     "src/entrypoints/dev.entry.js": 'import "../bootstrap/development/start.js";',
+    "src/entrypoints/house.entry.js": 'import "../bootstrap/production/start.js";',
     "src/bootstrap/production/start.js": 'import { Rule } from "../../game/domain/rule.js"; new Rule();',
     "src/bootstrap/development/start.js": 'import "../production/start.js"; import "../../dev/panel.js";',
     "src/game/domain/rule.js": 'import { clamp } from "../../engine/math.js"; export class Rule { value() { return clamp(Math.PI); } }',
@@ -310,6 +315,7 @@ function checkFixtures() {
     ["layer direction", { "src/game/domain/rule.js": 'import "../../platform/dom.js"; export class Rule {}', "src/platform/dom.js": "" }, /imports src\/platform\/dom\.js \(platform\)/u],
     ["raw config imports", { "src/game/config/raw/fish.js": 'import "../../../engine/math.js";' }, /game\/config\/raw\) imports src\/engine\/math\.js/u],
     ["game entry imports DEV bootstrap", { "src/entrypoints/game.entry.js": 'import "../bootstrap/development/start.js";' }, /entrypoint\/game\) imports/u],
+    ["house entry imports DEV bootstrap", { "src/entrypoints/house.entry.js": 'import "../bootstrap/development/start.js";' }, /entrypoint\/house\) imports/u],
     ["production reaches DEV", { "src/bootstrap/production/start.js": 'import "../../dev/panel.js";' }, /bootstrap\/production\) imports src\/dev\/panel\.js/u],
     ["host global", { "src/game/domain/rule.js": "export class Rule { save() { localStorage.clear(); } }" }, /uses host global localStorage/u],
     ["import cycle", { "src/engine/math.js": 'import "./other.js"; export const clamp = (v) => v;', "src/engine/other.js": 'import "./math.js";' }, /import cycle/u],
@@ -341,7 +347,7 @@ if (violations.length > 0) {
   for (const violation of violations) console.error(`- ${violation}`);
   throw new Error(`${violations.length} architecture violation(s)`);
 }
-const production = rules.reachable(ENTRIES.production.entry);
+const production = new Set([...rules.reachable(ENTRIES.production.entry), ...rules.reachable(ENTRIES.house.entry)]);
 const development = rules.reachable(ENTRIES.development.entry);
 console.log(`Architecture passed: ${rules.graph.size} modules; production ${production.size} modules / ` +
   `${rules.edgeCount(production)} imports, DEV ${development.size} / ${rules.edgeCount(development)}; ` +

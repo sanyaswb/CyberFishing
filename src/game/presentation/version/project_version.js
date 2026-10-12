@@ -5,7 +5,7 @@
  * - every delivered patch must update CURRENT_PROJECT_VERSION;
  * - keep this file and CHANGELOG.md in sync for every delivered patch.
  */
-export const CURRENT_PROJECT_VERSION = "0.32.1";
+export const CURRENT_PROJECT_VERSION = "0.33.0";
 
 export const PROJECT_VERSION_CONFIG = Object.freeze({
   id: "cyber-fishing",
@@ -13,12 +13,12 @@ export const PROJECT_VERSION_CONFIG = Object.freeze({
   version: CURRENT_PROJECT_VERSION,
   label: `v${CURRENT_PROJECT_VERSION}`,
   channel: "prototype",
-  codename: "inventory-equipment-ux",
+  codename: "live-bait-aquarium",
   updatedAt: "2026-10-11",
   notes: Object.freeze([
-    "Inventory cards keep square equipment compartments, equal spacing and minimal resource meters inside their bounds",
-    "Rod replacement opens a preview; removing an unsaved equipped rod offers saving or disassembling its components",
-    "Saved loadout members share a color, return intact when unequipped and disassemble only through a long press",
+    "Small crucian catches can become individual live bait with a real-time lifetime and half-speed swim on one hook",
+    "The separate keepnet shows catches and live bait; the fisherman's house offers an aquarium with species feed slots",
+    "Aquarium, upgrades, feed and automatic feeder currently cost nothing and persist locally",
   ]),
 });
 

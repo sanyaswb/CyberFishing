@@ -28,6 +28,7 @@ export class GameRenderIntent {
       mode: "",
       reason: "",
       fish: null,
+      canLiveBait: false,
     };
   }
 
@@ -54,6 +55,7 @@ export class GameRenderIntent {
     this.outcome.mode = "";
     this.outcome.reason = "";
     this.outcome.fish = null;
+    this.outcome.canLiveBait = false;
     return this;
   }
 }

@@ -201,6 +201,24 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "live-bait",
+    title: "Live bait, aquarium care and snapshot",
+    file: "utils/live-bait-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
+    id: "house",
+    title: "Fisherman's house, shared game time and room upgrades",
+    file: "utils/house-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
+    id: "embedded-page-overlay",
+    title: "Embedded house navigation and return lifecycle",
+    file: "utils/embedded-page-overlay-check.js",
+    suites: ["quick", "tools"],
+  },
+  {
     id: "devtools-links",
     title: "DevTools linked parameters",
     file: "utils/dev-tools-linked-parameter-check.js",

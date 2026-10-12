@@ -23,6 +23,7 @@ export class DevTools {
   #itemProgressionResolver;
   #grantCatalogItem;
   #storageCache;
+  #openHouse;
   #isDisposed = false;
   #onDebugLiveUpdate = (event) => {
     if (this.#isDisposed) return;
@@ -64,9 +65,11 @@ export class DevTools {
       debugModulesSource,
       createUI,
       storageCache,
+      openHouse = null,
     } = {},
   ) {
     this.#storageCache = storageCache;
+    this.#openHouse = openHouse;
     if (
       !hookedFishProfileSynchronizer ||
       typeof hookedFishProfileSynchronizer.synchronize !== "function"
@@ -124,6 +127,7 @@ export class DevTools {
     const body = this.#ui.body;
     this.#ui.clearValueBindings();
     body.innerHTML = "";
+    if (this.#openHouse) this.#ui.createButtonRow("Будинок рибалки 🏠", body, () => this.#openHouse());
     this.#activeFishKey = this.#getActiveFishKey();
     this.#activeFishShapeKey = this.#getActiveFishShapeKey();
 

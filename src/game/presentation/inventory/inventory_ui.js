@@ -26,6 +26,7 @@ export class InventoryUI {
   #warningTimer = null;
   #warningTimers;
   #isOpen = false;
+  #onOpen = null;
   #isMounted = false;
   #dynamicRefreshElapsedMs = 0;
 
@@ -129,6 +130,7 @@ export class InventoryUI {
   }
 
   open() {
+    this.#onOpen?.();
     if (!this.#isMounted) this.mount();
     this.#isOpen = true;
     this.#rootNode.classList.add("inventory-modal--open");
@@ -136,6 +138,8 @@ export class InventoryUI {
     this.#dispatch({ type: this.#actionTypes.OPEN });
     this.refresh();
   }
+
+  setOnOpen(callback) { this.#onOpen = callback; }
 
   close() {
     this.#inventoryRenderSignature = null;

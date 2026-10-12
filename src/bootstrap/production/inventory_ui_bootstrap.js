@@ -21,8 +21,16 @@ import { InventoryResourceMeterResolver } from "../../game/presentation/inventor
 import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/inventory/inventory_saved_loadout_preview_renderer.js";
 import { InventoryTooltipPresenter } from "../../game/presentation/inventory/inventory_tooltip_presenter.js";
 import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
+import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
 
 export class InventoryUiBootstrap {
+  static createKeepnet({ documentRef, liveBait, inventoryUI }) {
+    if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
+    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI });
+    inventoryUI.setOnOpen(() => keepnetUI.close());
+    return keepnetUI;
+  }
+
   static create({ autoMount = true, autoOpen = false, ...options } = {}) {
     const ui = new InventoryUI({
       ...options,

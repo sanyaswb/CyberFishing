@@ -12,6 +12,8 @@ export class GameApplication {
   #input;
   #ui;
   #inventoryUI;
+  #keepnetUI;
+  #keepnetRefreshElapsedMs = 0;
   #chum;
   #bite;
   #inventory;
@@ -54,6 +56,11 @@ export class GameApplication {
   #equipmentRules;
   #baitRules;
   #fishingFacade;
+  #liveBait;
+  #liveBaitMotion = null;
+  #liveBaitCastId = null;
+  #createLiveBaitMotion;
+  #liveBaitCareElapsedMs = 0;
   #castRodScreenX = null;
   #removeInventoryChangedListener = null;
   // Reusable debug context object — allocated once, never recreated per frame.
@@ -164,6 +171,7 @@ export class GameApplication {
     this.#input = runtime.input;
     this.#ui = runtime.ui;
     this.#inventoryUI = runtime.inventoryUI;
+    this.#keepnetUI = runtime.keepnetUI || null;
     this.#chum = runtime.chum;
     this.#bite = runtime.bite;
     this.#inventory = runtime.inventory;
@@ -188,6 +196,8 @@ export class GameApplication {
       throw new TypeError("GameApplication requires LocationAssetLoader");
     }
     this.#fishingController = runtime.fishing;
+    this.#liveBait = runtime.liveBait || null;
+    this.#createLiveBaitMotion = runtime.createLiveBaitMotion || null;
     this.#net = runtime.net;
     this.#castPenalty = runtime.castPenalty;
     this.#equipmentRules = runtime.equipmentRules;
@@ -202,6 +212,7 @@ export class GameApplication {
       },
       draw: () => this.draw(),
       getFloat: () => this.#float,
+      getLiveBaitMotion: () => this.#liveBaitMotion,
       getNet: () => this.#net,
       getCurrentHookDepth: () => this.currentHookDepth,
       getCastStartTime: () => this.castStartTime,
@@ -521,6 +532,23 @@ export class GameApplication {
 
   setState(name, data = {}) {
     const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    if (this.#liveBaitCastId) {
+      const castId = this.#liveBaitCastId;
+      if (name === "playing") {
+        if (data?.fish?.liveBaitFishId === castId) this.#liveBait.settleBaitLoss(castId);
+        else this.#liveBait.endLiveBaitCast(castId);
+        this.#liveBaitCastId = null;
+        this.#liveBaitMotion = null;
+      } else if (name === "failed" && (currentName === "waiting" || currentName === "biting")) {
+        this.#liveBait.settleBaitLoss(castId);
+        this.#liveBaitCastId = null;
+        this.#liveBaitMotion = null;
+      } else if (name === "scouting" && (currentName === "waiting" || currentName === "biting")) {
+        this.#liveBait.endLiveBaitCast(castId);
+        this.#liveBaitCastId = null;
+        this.#liveBaitMotion = null;
+      }
+    }
     const rodWasRetrieved = this.#shouldConsumeWetFeederChum(
       currentName,
       name,
@@ -576,6 +604,22 @@ export class GameApplication {
   }
 
   update(dt) {
+    this.#keepnetRefreshElapsedMs += Math.max(0, dt);
+    if (this.#keepnetRefreshElapsedMs >= this.#config.liveBait?.displayTickMs) {
+      this.#keepnetRefreshElapsedMs = 0;
+      if (this.#keepnetUI?.isOpen) this.#keepnetUI.refresh();
+    }
+    if (this.#liveBait) {
+      this.#liveBaitCareElapsedMs += Math.max(0, dt);
+      if (this.#liveBaitCareElapsedMs >= this.#config.liveBait.careTickMs) {
+        this.#liveBaitCareElapsedMs = 0;
+        this.#liveBait.advance();
+        if (this.#liveBaitCastId && this.#liveBait.getSelectedBait()?.fishId !== this.#liveBaitCastId) {
+          this.#liveBaitCastId = null;
+          this.#liveBaitMotion = null;
+        }
+      }
+    }
     const timeScale = this.#config.debug?.timeScale || 1;
     this.#syncDragControlAvailability();
     const input = this.#input.getState();
@@ -684,6 +728,11 @@ export class GameApplication {
 
   castLine(vx, vy, cellDepth, options = {}) {
     const currentName = this.#stateMachine?.currentName || this.#gameStateName;
+    if (this.#liveBaitCastId && ["waiting", "biting"].includes(currentName)) {
+      this.#liveBait.endLiveBaitCast(this.#liveBaitCastId);
+      this.#liveBaitCastId = null;
+      this.#liveBaitMotion = null;
+    }
     if (
       currentName === "waiting" ||
       currentName === "biting" ||
@@ -698,6 +747,20 @@ export class GameApplication {
       ? options.rodScreenX
       : null;
     const result = this.#fishingFacade.castLine(vx, vy, cellDepth, options);
+    if (result?.success && this.#liveBait) {
+      const selected = this.#liveBait.getSelectedBait();
+      const eq = this.#inventory.getEquipped();
+      if (selected && selected.disposition !== "hook") {
+        const hookCount = (eq?.hooks || []).filter(Boolean).length;
+        const cast = this.#liveBait.beginLiveBaitCast(selected.fishId, {
+          hookCount, compatible: eq?.hooks?.[0]?.itemType === "hook", free: !(eq?.baits || []).some(Boolean),
+        });
+        if (cast.ok) {
+          this.#liveBaitCastId = selected.fishId;
+          this.#liveBaitMotion = this.#createLiveBaitMotion?.(selected.sourceSpeciesId) || null;
+        }
+      }
+    }
     if (!result?.success) {
       this.#castRodScreenX = null;
     }
@@ -841,6 +904,10 @@ export class GameApplication {
     if (this.#disposed) return;
     this.#disposed = true;
     this.stop();
+    if (this.#liveBaitCastId) {
+      this.#liveBait?.endLiveBaitCast(this.#liveBaitCastId);
+      this.#liveBaitCastId = null;
+    }
     this.#stateMachine?.dispose();
     this.#removeInventoryChangedListener?.();
     this.#removeInventoryChangedListener = null;
@@ -850,6 +917,8 @@ export class GameApplication {
     this.#chum?.dispose?.();
     this.#inventory?.dispose?.();
     this.#inventoryUI?.dispose?.();
+    this.#keepnetUI?.dispose?.();
+    this.#liveBaitMotion = null;
     this.#depthUI?.dispose?.();
     this.#timeUI?.dispose?.();
     this.#holdUI?.dispose?.();

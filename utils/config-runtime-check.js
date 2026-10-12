@@ -556,7 +556,8 @@ async function checkNativeDevelopmentLifecycle() {
   assert.equal(Game,source.importModule('src/bootstrap/production/game.js').Game,'one native class per VM context');
   assert.notEqual(Game,new SourceRuntime().importModule('src/bootstrap/production/game.js').Game,'different VM realms retain isolated module identity');
   resetBuild();const first=startup.startDevelopmentGame();assert.equal(startup.startDevelopmentGame(),first);resolveBuild(app);
-  const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);assert.equal(listeners.size,1);
+  const game=await first;assert(game instanceof Game);assert.equal(counts.root,1);assert.equal(counts.start,1);
+  assert.deepEqual([...listeners.keys()].sort(),['message','pagehide'],'house return and page cleanup listeners are active');
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
   const {GameplayOverrideReader} = source.importModule('src/dev/runtime/gameplay_override_reader.js');

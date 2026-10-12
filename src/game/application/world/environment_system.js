@@ -28,23 +28,28 @@ export class EnvironmentSystem {
     gustDurationMs: null,
   };
   #rng;
+  #gameTimeClock;
 
   constructor(
     config,
     initialTime = 12,
     rng,
     spawnConfig = {},
+    gameTimeClock = null,
   ) {
     this.#config = config;
     this.#spawnConfig = spawnConfig;
     this.#rng = rng;
+    this.#gameTimeClock = gameTimeClock;
     this.#gameTimeHours = initialTime;
     this.#syncSnapshot();
   }
 
   update(dt, timeScale) {
-    this.#gameTimeHours =
-      (this.#gameTimeHours + (dt / 3600000) * timeScale) % 24;
+    this.#gameTimeClock?.setTimeScale(timeScale);
+    this.#gameTimeHours = this.#gameTimeClock
+      ? this.#gameTimeClock.getHours()
+      : (this.#gameTimeHours + (dt / 3600000) * timeScale) % 24;
     const hour = Math.floor(this.#gameTimeHours);
 
     if (hour !== this.#lastHour) {

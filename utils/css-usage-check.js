@@ -114,7 +114,8 @@ function projectVocabulary() {
   };
   walk("src");
   production.addHtml(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"));
-  for (const page of ["index.html", "dev.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
+  production.addHtml(fs.readFileSync(path.join(ROOT, "fisherman-house.html"), "utf8"));
+  for (const page of ["index.html", "dev.html", "fisherman-house.html"]) development.addHtml(fs.readFileSync(path.join(ROOT, page), "utf8"));
   return { production, development, injected };
 }
 
@@ -142,7 +143,8 @@ assert.deepEqual(staticStyleViolations('`<span style="--debug-overlay-color:${co
 
 const composition = validatePageStyleComposition();
 const vocabulary = projectVocabulary();
-const stylesheets = composition.development;
+const stylesheets = [...composition.development, ...composition.house.filter(({ file }) =>
+  !composition.development.some((entry) => entry.file === file))];
 let total = 0;
 for (const { file, css } of [...stylesheets, ...vocabulary.injected]) {
   const dev = file.startsWith("src/dev/");

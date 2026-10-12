@@ -17,13 +17,14 @@ export class VictoryLayoutResolver {
     },
     claim: {},
     release: {},
+    liveBait: {},
   };
 
   constructor({ diagnostics = null } = {}) {
     diagnostics?.recordVictoryLayoutCreated();
   }
 
-  resolve({ width, height, config, statCount = 3 }) {
+  resolve({ width, height, config, statCount = 3, canLiveBait = false }) {
     const viewportWidth = Math.max(1, Number(width) || 1);
     const viewportHeight = Math.max(1, Number(height) || 1);
     const margin = Math.max(8, Number(config?.viewportMargin) || 24);
@@ -102,12 +103,13 @@ export class VictoryLayoutResolver {
     const pillWidth =
       (panelWidth - padding * 2 - pillGap * (columns - 1)) / columns;
     const buttonsY = statsY + statsHeight + gap;
+    const buttonCount = canLiveBait ? 3 : 2;
     const buttonWidth = Math.min(
       configuredButtonWidth,
-      (panelWidth - padding * 2 - configuredButtonGap) / 2,
+      (panelWidth - padding * 2 - configuredButtonGap * (buttonCount - 1)) / buttonCount,
     );
     const buttonsX =
-      panelX + (panelWidth - buttonWidth * 2 - configuredButtonGap) / 2;
+      panelX + (panelWidth - buttonWidth * buttonCount - configuredButtonGap * (buttonCount - 1)) / 2;
 
     this.#setRect(
       this.#layout.panel,
@@ -152,6 +154,9 @@ export class VictoryLayoutResolver {
       buttonWidth,
       buttonHeight,
     );
+    this.#setRect(this.#layout.liveBait,
+      buttonsX + (buttonWidth + configuredButtonGap) * 2,
+      buttonsY, canLiveBait ? buttonWidth : 0, buttonHeight);
     this.#layout.stats.x = panelX + padding;
     this.#layout.stats.y = statsY;
     this.#layout.stats.width = panelWidth - padding * 2;

@@ -120,6 +120,7 @@ export class BitingState extends GameState {
           .normalize();
       }
 
+      this.deps.getLiveBaitMotion?.()?.update(dt, this.deps.float);
       this.deps.float.update(
         plane.bounds,
         dt,

@@ -28,9 +28,34 @@ try {
   const page = tree.read("index.html").toString("utf8");
   for (const [, href] of page.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) assert(files.has(href), `stylesheet ${href} is released`);
   assert(files.has("src/entrypoints/game.entry.js"));
+  if (tree.has("dev.html")) {
+    const devPage = tree.read("dev.html").toString("utf8");
+    assert(files.has("dev.html"));
+    assert(files.has("src/entrypoints/dev.entry.js"));
+    assert(files.has("src/dev/styles/dev-tools.css"));
+    for (const metadata of tree.paths().filter((file) => file.startsWith("src/dev/metadata/") && file.endsWith(".json"))) {
+      assert(files.has(metadata), `DEV metadata ${metadata} is released`);
+    }
+    for (const [, href] of devPage.matchAll(/href="([^"?]+\.css)[^"]*"/gu)) {
+      assert(files.has(href), `DEV stylesheet ${href} is released`);
+    }
+    assert.equal(fs.readFileSync(path.join(site, "dev.html"), "utf8"),
+      devPage.replace("<head>\n", `<head>\n    <base href="releases/${release.id}/" />\n`),
+      "the root DEV page resolves its files inside the release");
+  }
+  if (tree.has("fisherman-house.html")) {
+    assert(files.has("fisherman-house.html"));
+    assert(files.has("src/entrypoints/house.entry.js"));
+    assert(files.has("src/game/presentation/styles/house.css"));
+    assert(files.has("assets/house/room-1/room--1_aqua.png"));
+    assert(files.has("assets/house/room-1/under-renovation.png"));
+    for (let level = 1; level <= 5; level++) {
+      const prefix = `assets/house/room-1/lvl-${level}/room--1-`;
+      assert([...files].filter((file) => file.startsWith(prefix)).length === 3,
+        `room level ${level} has day, evening and night backgrounds`);
+    }
+  }
   for (const file of tree.paths().filter((file) => file.startsWith("assets/"))) assert(files.has(file), `asset ${file} is released`);
-  assert.equal([...files].some((file) => file.startsWith("src/dev/") || file === "dev.html"), false, "DEV code stays out");
-
   // The release is closed: every module it contains imports only released modules (dynamic imports included).
   const modules = [...files].filter((file) => file.endsWith(".js"));
   const resolvedTargets = new Set();
@@ -62,7 +87,7 @@ try {
   assert.throws(() => PagesReleaseBuilder.rootPage("<head>\n<base href=\"x/\">", "1.0.0-abcdef0"), /must not declare <base>/u);
   const fakeTree = { read: (file) => Buffer.from(file === "index.html"
     ? '<link rel="stylesheet" href="https://cdn.example/x.css"><script type="module" src="src/e.js"></script>' : ""),
-  has: () => true, paths: () => [] };
+  has: (file) => !["fisherman-house.html", "dev.html"].includes(file), paths: () => [] };
   assert.throws(() => ReleaseFileSet.collect(fakeTree), /project-relative paths/u, "external stylesheets are rejected");
 
   console.log(`Pages release passed: ${release.id} with ${release.files.length} committed files (page, stylesheets, ` +

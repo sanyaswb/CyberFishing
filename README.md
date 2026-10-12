@@ -11,8 +11,10 @@ Browser fishing game (native ES modules, Canvas 2D). [Demo](https://sanyaswb.git
 ## Publishing (GitHub Pages)
 
 Each release is an immutable directory `releases/<version>-<commit>/` on the `gh-pages` branch with the committed
-page, stylesheets, production modules and assets; the root `index.html` points at the newest one through
-`<base href>`. Older directories and files stay, so cached pages keep a consistent set of files.
+game, DEV and house pages, their stylesheets and module graphs, and assets. The root `index.html` and `dev.html`
+point at the newest release through `<base href>`. Older directories and files stay, so cached pages keep a
+consistent set of files. The public DEV build is available at
+[sanyaswb.github.io/CyberFishing/dev.html](https://sanyaswb.github.io/CyberFishing/dev.html).
 
 ```bash
 git worktree add ../cyber-fishing-pages gh-pages
@@ -20,4 +22,4 @@ npm run release:pages -- --site ../cyber-fishing-pages
 ```
 
 The script builds the committed `HEAD` (or `--ref <commit>`) and refuses to overwrite a published release. Review the
-site checkout, then commit `releases/<id>` and `index.html` there and push `gh-pages`.
+site checkout, then commit `releases/<id>`, `index.html` and `dev.html` there and push `gh-pages`.

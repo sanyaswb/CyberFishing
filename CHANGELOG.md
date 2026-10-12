@@ -1,5 +1,15 @@
 # CyberFishing changelog
 
+## v0.33.0 - Live Bait and Fisherman's House
+
+- GitHub Pages now publishes the DEV build at `/dev.html` alongside the immutable game release for remote testing.
+- Crucian up to 100 g can become an individual live bait on the victory screen. Its real-time lifetime, one-hook cast, predator attraction and swim-only movement at configurable 50% source speed are persisted separately from inventory.
+- Added a separate Keepnet dialog beside Inventory, plus a Fisherman's House page with horizontally navigable rooms and a layered aquarium on the table.
+- Aquarium care uses species feed bars, count-based decay, real-time starvation, finite feed stock and an optional automatic feeder. Acquisition and one-level-at-a-time upgrades show “Безкоштовно” until currency is implemented.
+- Added focused live-bait, architecture and packaged-page checks; existing inventory save schema remains unchanged.
+- The house now uses full-screen day/evening/night art for five room levels, a shared persistent game clock, bottom menus, and timed room renovations that can be completed for free.
+- Its sliding header now reuses the location clock, and the aquarium stays aligned to the table at different viewport sizes. Room and aquarium upgrades show the next level's bonus with segmented progress bars.
+
 ## v0.32.1 - Inventory and Equipment UX
 
 - Inventory cards use thin rarity borders, evenly spaced square equipment compartments and resource meters below the contents; line capacity appears on spools and reels containing line, with reel fill relative to its capacity. Filters have symmetric spacing and item previews select the compatible category.

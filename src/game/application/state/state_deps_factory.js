@@ -107,6 +107,8 @@ export class StateDepsFactory {
       projector: root.projector,
       biteSystem: root.bite,
       fishing: root.fishing,
+      liveBaitCandidate: root.liveBaitCandidate,
+      getLiveBaitMotion: root.getLiveBaitMotion,
       floatRef: root.floatRef,
       get float() {
         return this.floatRef();
@@ -137,6 +139,7 @@ export class StateDepsFactory {
       projector: root.projector,
       biteSystem: root.bite,
       fishing: root.fishing,
+      getLiveBaitMotion: root.getLiveBaitMotion,
       floatRef: root.floatRef,
       get float() {
         return this.floatRef();
@@ -203,6 +206,7 @@ export class StateDepsFactory {
       getViewportSize: root.getViewportSize,
       victoryLayoutResolver: root.victoryLayoutResolver,
       victoryActionGestureResolver: root.victoryActionGestureResolver,
+      liveBait: root.liveBait,
       commands: Object.freeze({
         setState: root.setState,
       }),

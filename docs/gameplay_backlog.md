@@ -20,6 +20,13 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
+### G-008 Live bait and aquarium care are not implemented (P2, in progress)
+Found: 2026-10-11, owner request, index/dev v0.32.1.
+Reproduce: land a 0.100 kg `crucian_stalker`, open the catch outcome, then inspect Inventory and the house page.
+Expected: a third action converts the exact catch into live bait; the keepnet or fed aquarium owns its survival timer, and one selected survivor can be cast once. See [spec 055](../specs/055-live-bait-aquarium/spec.md).
+Actual: Claim/Release only return to scouting; no caught-fish storage, survival, house runtime, or live-bait cast path exists.
+Notes: use a fake clock and seeded RNG to check eligibility, single disposition, death/feeding, reload, and one-hook consumption.
+
 ### G-001 Fish developer diagnostics in the production console (P3, open)
 Found: 2026-10-10, Claude, reading the fight composition (v0.32.0).
 Reproduce: `index.html`, fight a fish until it is exhausted in phase 2, or until it breaks out of the centre while

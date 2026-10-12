@@ -1,15 +1,15 @@
 export class TimeDisplay {
-  constructor() {
-    this.container = document.createElement("div");
+  constructor({ documentRef = document, mount = documentRef.body } = {}) {
+    this.container = documentRef.createElement("div");
     this.container.className = "time-display";
 
-    this.emojiSpan = document.createElement("span");
-    this.timeSpan = document.createElement("span");
+    this.emojiSpan = documentRef.createElement("span");
+    this.timeSpan = documentRef.createElement("span");
     this.timeSpan.className = "time-display__time";
 
     this.container.appendChild(this.emojiSpan);
     this.container.appendChild(this.timeSpan);
-    document.body.appendChild(this.container);
+    mount.appendChild(this.container);
   }
 
   update(gameTimeHours) {

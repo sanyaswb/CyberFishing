@@ -3,8 +3,10 @@ import { ITEM_PROGRESSION_CONFIG } from "../items/item_progression_config.js";
 import { ITEM_STAT_OVERRIDE_CONFIG } from "../raw/items/item_stat_overrides.js";
 import { MAP_DB } from "../raw/locations/location_database.js";
 import { PHYSICS_CONFIG } from "../physics/physics_config.js";
+import { LIVE_BAIT_CONFIG } from "../raw/live_bait/live_bait_config.js";
 
 export const CONFIG = {
+  liveBait: LIVE_BAIT_CONFIG,
   canvas: {
     id: "gameCanvas",
     backgroundColor: "#0f171e",
@@ -83,7 +85,7 @@ export const CONFIG = {
   debug: {
     overlay: true,
     overlayUpdateMs: 150,
-    initialTime: null, // Початковий час. 17.5 = 17:30. Якщо поставити null, гра візьме реальний час.
+    initialTime: null, // Початковий час. 17.5 = 17:30. null бере спільний стартовий час із game_time_config.js.
     timeScale: 240, // Швидкість часу. 1 = реальний час. 60 = 1 ігрова година минає за 1 реальну хвилину.
 
     inventory: {

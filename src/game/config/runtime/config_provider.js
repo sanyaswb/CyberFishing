@@ -38,6 +38,9 @@ export class ConfigProvider {
   get feederConfig() {
     return this.#config.feederConfig || {};
   }
+  get liveBait() {
+    return this.#config.liveBait || null;
+  }
   get raw() {
     return this.#config;
   }

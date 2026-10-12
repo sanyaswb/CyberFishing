@@ -11,10 +11,12 @@ const VERSION_COPY_CONFIG = Object.freeze({
   versionFile: "src/game/presentation/version/project_version.js",
   entries: Object.freeze([
     "src",
+    "assets",
     "utils",
     "CHANGELOG.md",
     "index.html",
     "dev.html",
+    "fisherman-house.html",
   ]),
 });
 

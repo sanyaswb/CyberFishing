@@ -55,7 +55,7 @@ export class OutcomeRenderFrameBuilder {
     if (intent.mode === "failed") {
       this.#buildGameOver(target.gameOver, intent.reason);
     } else if (intent.mode === "victory") {
-      this.#buildVictory(target.victory, intent.fish || {});
+      this.#buildVictory(target.victory, intent.fish || {}, intent.canLiveBait === true);
     }
   }
 
@@ -91,7 +91,7 @@ export class OutcomeRenderFrameBuilder {
     target.description = description;
   }
 
-  #buildVictory(target, source) {
+  #buildVictory(target, source, canLiveBait = false) {
     const fish = target.fish || (target.fish = {});
     const id = String(source.id || "unknown");
     const level = Number(source.level) || 1;
@@ -134,11 +134,13 @@ export class OutcomeRenderFrameBuilder {
     target.nowMs = this.#clock.realNow ?? this.#clock.now;
     target.fish = fish;
     target.config = config;
+    target.canLiveBait = canLiveBait;
     const layoutContext = this.#layoutContext;
     layoutContext.width = this.#canvasMetrics.width;
     layoutContext.height = this.#canvasMetrics.height;
     layoutContext.config = config;
     layoutContext.statCount = stats.count;
+    layoutContext.canLiveBait = canLiveBait;
     target.layout = this.#layoutResolver.resolve(layoutContext);
     target.spriteId = this.#assetIdForSource(imagePath, "fish");
     target.spritePath = imagePath;

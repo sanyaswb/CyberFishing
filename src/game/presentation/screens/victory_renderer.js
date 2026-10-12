@@ -132,6 +132,7 @@ export class VictoryRenderer {
       theme.neutralColor,
       false,
     );
+    if (model.canLiveBait) this.#drawButton(layout.liveBait, "На живця", color, false);
     surface.restore();
   }
 

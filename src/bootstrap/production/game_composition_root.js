@@ -49,6 +49,7 @@ import { DepthSelector } from "../../platform/browser/ui/depth_selector.js";
 import { DerivedStatMetricStrategy } from "../../game/domain/items/progression/derived_stat_metric_strategy.js";
 import { EffectiveItemStatsResolver } from "../../game/domain/items/effective_item_stats_resolver.js";
 import { EnvironmentSystem } from "../../game/application/world/environment_system.js";
+import { composeGameTime } from "./game_time_composition.js";
 import { GameWorld } from "../../game/application/world/game_world.js";
 import { LocationWaterMetricResolver } from "../../game/domain/locations/location_water_metric_resolver.js";
 import { CurrentLocation } from "../../game/application/world/current_location.js";
@@ -102,6 +103,10 @@ import { NumericStatMetricStrategy } from "../../game/domain/items/progression/n
 import { OffscreenCanvasFactory } from "../../platform/browser/canvas/offscreen_canvas_factory.js";
 import { OutcomeStyleResolver } from "../../game/presentation/styles/outcome_style_resolver.js";
 import { createPlayerInventory } from "./player_inventory_composition.js";
+import { composeLiveBait } from "./live_bait_composition.js";
+import { LiveBaitBaitCandidatePort } from "../../game/application/live_bait/live_bait_bait_candidate_port.js";
+import { LiveBaitMotionAdapter } from "../../game/application/live_bait/live_bait_motion_adapter.js";
+import { LiveBaitMotionProfileResolver } from "../../game/domain/live_bait/live_bait_motion_profile_resolver.js";
 import { RarityAnimationResolver } from "../../game/presentation/screens/rarity_animation_resolver.js";
 import { RarityConfigValidator } from "../../game/config/validation/rarity_config_validator.js";
 import { RarityVisualResolver } from "../../game/presentation/styles/rarity_visual_resolver.js";
@@ -336,6 +341,15 @@ export class GameCompositionRoot {
     const { projector, locId, rng, locationResources, locCfg, location } = await this.#composeLocation({
       assetPreloadCoordinator, locationAssetLoader,
     });
+    const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
+      config: this.#config.liveBait, fishDb: FISH_DB, rng });
+    const liveBaitCandidate = new LiveBaitBaitCandidatePort(liveBait, FISH_DB);
+    const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(FISH_DB);
+    const createLiveBaitMotion = (speciesId) => {
+      const physics = liveBaitMotionProfiles.resolve(speciesId);
+      return physics ? new LiveBaitMotionAdapter({ physics, multiplier: this.#config.liveBait.motionMultiplier,
+        rng }) : null;
+    };
     const {
       inventory, BrowserTimeoutScheduler, castDistanceCalculator, physicsConfig,
     } = await this.#composePlayerInventory({
@@ -343,15 +357,22 @@ export class GameCompositionRoot {
       baitEffectivenessCatalogResolver, effectiveItemStatsResolver, itemStatOverridePolicy,
     });
     const { chumConfigObj, eq } = this.#composeChumConfig({ inventory, effectiveItemStatsResolver });
+    const gameTimeClock = composeGameTime({
+      storage: this.#windowTarget.localStorage,
+      now: () => Date.now(),
+      initialHours: this.#config.debug?.initialTime,
+      timeScale: this.#config.debug?.timeScale || 1,
+    });
     const { systems } = this.#composeWorldSystems({
       projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
       itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
       fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
+      gameTimeClock,
     });
     this.#composeInventoryUi({
       inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
       itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-      physicsConfig,
+      physicsConfig, liveBait,
     });
     const {
       world, fishing, equipment, net, castPenalty, depthUI, timeUI, holdUI, equipmentRules, baitRules,
@@ -361,6 +382,9 @@ export class GameCompositionRoot {
       physicsConfig, own,
     });
     return {
+      liveBait,
+      liveBaitCandidate,
+      createLiveBaitMotion,
       location,
       rng,
       projector: systems.projector,
@@ -372,6 +396,7 @@ export class GameCompositionRoot {
       bite: systems.bite,
       inventory: systems.inventory,
       inventoryUI: systems.inventoryUI,
+      keepnetUI: systems.keepnetUI,
       world,
       rendering: {
         imageAssets,
@@ -751,6 +776,7 @@ export class GameCompositionRoot {
     projector, locId, rng, locationResources, locCfg, own, canvas, hookedFishProfileSynchronizer,
     itemProgressionDebugProvider, itemProgressionResolver, chumConfigObj, debugEvents, devFlags, fishRarityResolver,
     fishAnomalyVariantResolver, fishVisualVariantResolver, baitEffectivenessResolver, inventory, clock,
+    gameTimeClock,
   }) {
     const systems = {
       projector,
@@ -766,6 +792,7 @@ export class GameCompositionRoot {
         this.#config.debug?.initialTime ?? 12,
         rng,
         this.#config.spawns,
+        gameTimeClock,
       ),
       input: own(new InputController(canvas, Number(this.#config.ui?.rod?.x) || null, {
         runtimeConfig: this.#runtimeConfig,
@@ -829,7 +856,7 @@ export class GameCompositionRoot {
   #composeInventoryUi({
     inventory, systems, own, BrowserTimeoutScheduler, itemRarityDomAdapter, rarityVisualResolver,
     itemProgressionDomAdapter, itemConditionDomAdapter, degradationColorResolver, castDistanceCalculator,
-    physicsConfig,
+    physicsConfig, liveBait,
   }) {
     const inventoryFacade = inventory.inventoryFacade;
     if (!inventoryFacade) {
@@ -855,6 +882,9 @@ export class GameCompositionRoot {
         rarityVisualResolver,
       }),
     }));
+    const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
+      liveBait, inventoryUI: systems.inventoryUI });
+    if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     return {  };
   }
 
@@ -1083,6 +1113,9 @@ export class GameCompositionRoot {
       victoryLayoutResolver: runtime.rendering.victoryLayoutResolver,
       victoryActionGestureResolver:
         runtime.interaction.victoryActionGestureResolver,
+      liveBait: runtime.liveBait,
+      liveBaitCandidate: runtime.liveBaitCandidate,
+      getLiveBaitMotion: appPorts.getLiveBaitMotion,
       hookedFishOverride: this.#createOptionalDiagnostic(
         this.#createHookedFishOverride, "hookedFishOverride", [{
           config,

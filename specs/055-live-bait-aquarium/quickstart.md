@@ -1,0 +1,66 @@
+# Quickstart Validation: Live Bait and Aquarium
+
+This guide records implementation checks for the local live-bait feature and the owner's revised five-level house.
+
+## Starting evidence (2026-10-11, before code changes)
+
+- `node utils/game-cycle-check.js`: passed; victory peak line stress 1.3%, line-break peak 262.5%, and the existing report matched its baseline.
+- `node utils/inventory-save-round-trip-check.js`: passed; 15 items, 3 assemblies, 1 loadout, with schema 3/2 byte-identical after upgrade.
+- Preserved the owner's untracked `fisherman-house.html`, `src/entrypoints/house.entry.js`, and `src/game/presentation/house/{house_presenter.js,house_labels.js}`. The page's current image references were unresolved and the entry's startup import did not exist.
+
+## Prerequisites
+
+1. Keep the supplied room art under `assets/house/room-1/`; see [local-save-and-assets.md](contracts/local-save-and-assets.md).
+2. Use a clean browser test profile; retain existing `player_inventory_v2` bytes for compatibility comparison.
+3. Use deterministic fish/care clock and RNG fixtures in focused checks; do not create a production dependency on DEV fixed-catch code.
+
+## Checks
+
+```powershell
+node utils/live-bait-check.js
+node utils/house-check.js
+npm run check:architecture
+npm run check:quick
+npm run check
+npm run dev
+```
+
+Record the game-cycle output before this gameplay change and rebaseline only deliberate differences with the established repository command, documenting why. Old non-live-bait cases must remain identical. Run page/release checks after registering house entry and assets.
+
+## Implementation evidence (2026-10-11)
+
+- `node utils/live-bait-check.js`: passed eligibility, exactly-once outcomes, individual hook identity, local save conflicts and corruption, clock-driven death, feed priority, all 10 capacities, automatic feeder, third victory action, and source `swim` at configured 50% speed.
+- `npm run check:architecture`, `npm run check:quick`, and `npm run check`: passed; the full suite reported 40 checks. `git diff --check` passed.
+- `node utils/game-cycle-check.js`: unchanged baseline. `node utils/inventory-save-round-trip-check.js`: unchanged inventory bytes (15 items, 3 assemblies, 1 loadout; schema 3/2 byte-identical).
+- Browser smoke on `dev.html`, `index.html`, and `fisherman-house.html`: both game pages loaded; Keepnet and Inventory opened separately and switched without overlapping; the DevTools house button navigated; two room buttons worked; the transparent aquarium aligned with the table; aquarium installation, one-step upgrade, free feed acquisition, feeder installation, and reload persistence worked. A DEV-only startup crash exposed a missing `ConfigProvider.liveBait` getter and was fixed before this record.
+- `utils/pages-release-check.js` passed for the last committed release. Its new house-page path can only be exercised by this check after this work is committed; the working-tree house page and both supplied PNGs were verified in the browser.
+- Manual catch-to-victory and live-bait cast feel remain for the owner's play check before release. The deterministic acceptance paths are covered by `utils/live-bait-check.js`.
+
+## House revision evidence (2026-10-12)
+
+- `node utils/house-check.js`: passed shared persisted game time, live time-scale edits, the exact location blend curve, all fifteen level/phase backgrounds, both transparent overlays, room upgrade durations, reload continuity, automatic elapsed completion, free finish, maximum level and corrupt-save recovery.
+- `npm run check`: passed 41 checks, including unchanged game-cycle and inventory round-trip checks. Architecture and CSS checks passed.
+- Browser smoke: `index.html` and `dev.html` loaded with the shared time display and the DEV house button; the house loaded all three light layers for level 1. The bottom sheet opened, renovation showed a countdown over the undimmed supplied art, reload preserved the timer, free finish selected level 2 art, aquarium installation worked, and the header appeared on downward scroll and hid on upward scroll.
+- The immutable Pages release checker still tests committed HEAD; its updated room-asset assertions will run against the new house only after these uncommitted files are committed. Working-tree art presence is checked by `utils/house-check.js`.
+
+## Manual browser scenarios
+
+1. On `dev.html`, land a 100 g `crucian_stalker` and a 101 g fish. The third action appears only for the first. Claim, Release, and Use as live bait each resolve once. Ordinary-bait fishing remains playable on `index.html`.
+2. Open Inventory and Keepnet with adjacent buttons. Keepnet has left visual/parameters and right fish/filters. Live countdown advances, feed controls are absent, and switching dialogs leaves focus coherent.
+3. Use the DEV house button. `fisherman-house.html` has no missing module/CSS requests; the current room fills the viewport, the three time layers use the shared game clock, and the aquarium stays on a separate layer above the table. Room navigation is ready for future rooms.
+4. Install aquarium, add fish, acquire feed, exercise different slot percentages/counts, and check priority. Step levels 1–10 and verify capacities 5/6/7/8/16/18/20/22/24/48.
+5. Enable feeder with finite stock, leave, advance fake time, and reopen. Stock falls only for fills; fed fish survive, unfed fish die in saved order, and reload does not kill or reroll again.
+6. Select surviving bait and cast with one compatible free hook. Verify source `swim` movement only at configured half speed, attraction, one-time loss or safe return, and expired bait rejection.
+7. Present corrupt/unknown-version snapshot and verify visible recoverable error with original bytes intact. Compare inventory v4 bytes before/after unrelated house actions.
+8. Check immutable release output includes house HTML, dependencies, and all seventeen room art files; navigate from packaged page without 404.
+
+The owner should play-check motion and feeding feel before release, as `DEVELOPMENT_RULES.md` requires.
+
+## Implementation audit (2026-10-12)
+
+- `tasks.md` has 45 tasks marked complete and 7 open after convergence. The remaining work is T039–T040 and T048–T052. T040 is partially done: `CHANGELOG.md`, the project version (`0.33.0`), and the spec-029 cloud-contract note are present; the owner's movement/care play check is still pending.
+- Current working-tree checks passed: `node utils/live-bait-check.js`, `node utils/house-check.js`, `npm run check:architecture`, `npm run check:quick`, `npm run check` (42 checks), and `git diff --check`. The Full suite's Pages check exercises committed `0.32.1-b974601`; it has not validated the uncommitted house page and art in a `0.33.0` release.
+- The house page currently contains one `data-house-room` viewport. Navigation controls are hidden when fewer than two rooms exist, so T048 and the multi-room part of FR-014 remain open.
+- `deathOrder` is sampled and saved but is not read by care settlement. A persisted random tie order for simultaneous starvation deaths remains open (T050).
+- A full aquarium falls back to the keepnet as specified, but the successful victory action closes without showing that reason (T051).
+- Prior browser smoke is recorded above. This audit did not repeat the full catch-to-cast, ordinary-bait, offline-care, or packaged-release browser scenarios in T039/T052. T049's repeated deterministic acceptance runs are also outstanding.

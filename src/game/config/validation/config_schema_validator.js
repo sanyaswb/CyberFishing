@@ -55,6 +55,7 @@ export class ConfigSchemaValidator {
     this.#validateStaminaMechanicsConfig();
     this.#validateFishCategories();
     this.#validateRarityConfig();
+    this.#validateLiveBaitConfig();
     this.#validateFishDb();
     this.#validateItemDb();
     this.#validateMapDb();
@@ -399,6 +400,42 @@ export class ConfigSchemaValidator {
       if (!this.#hasParameterLabel(path, "locations")) {
         this.#error(path, "missing parameter label in parameter_labels.json");
       }
+    }
+  }
+
+  #validateLiveBaitConfig() {
+    const cfg = this.config.liveBait;
+    if (!cfg || typeof cfg !== "object") { this.#error("CONFIG.liveBait", "missing live bait config"); return; }
+    for (const [key, min, max] of [
+      ["lifetimeMinMs", 1, Infinity], ["lifetimeMaxMs", 1, Infinity],
+      ["motionMultiplier", 0, 1], ["oneFishFeedMs", 1, Infinity],
+      ["extraFishDrainFactor", 0, Infinity], ["autoFeedTriggerFraction", 0, 1],
+      ["freeFeedPortions", 1, Infinity], ["careTickMs", 1, Infinity],
+      ["displayTickMs", 1, Infinity], ["keepnetCapacity", 1, Infinity],
+    ]) this.#requireFiniteNumber(`CONFIG.liveBait.${key}`, cfg[key], { min, max });
+    this.#requireMinLessOrEqualMax("CONFIG.liveBait.lifetimeMinMs", cfg.lifetimeMinMs,
+      "CONFIG.liveBait.lifetimeMaxMs", cfg.lifetimeMaxMs);
+    for (const key of ["freeFeedPortions", "careTickMs", "displayTickMs", "keepnetCapacity"]) {
+      if (!Number.isSafeInteger(cfg[key])) this.#error(`CONFIG.liveBait.${key}`, "expected safe integer");
+    }
+    if (!Array.isArray(cfg.capacities) || cfg.capacities.length !== 10 ||
+      cfg.capacities.some((value, index) => !Number.isSafeInteger(value) || value < 1 ||
+        (index > 0 && value <= cfg.capacities[index - 1]))) this.#error("CONFIG.liveBait.capacities", "expected ten increasing positive integer capacities");
+    if (!cfg.eligibility || typeof cfg.eligibility !== "object" || !Object.keys(cfg.eligibility).length) {
+      this.#error("CONFIG.liveBait.eligibility", "expected eligible fish map");
+    } else for (const [speciesId, rule] of Object.entries(cfg.eligibility)) {
+      const sourceFish = this.fishDb.find((fish) => fish.id === speciesId);
+      if (!sourceFish) this.#error(`CONFIG.liveBait.eligibility.${speciesId}`, "unknown source species");
+      else if (!sourceFish.physics?.behaviorProfile?.behaviors?.swim || !sourceFish.physics?.movementProfile) {
+        this.#error(`CONFIG.liveBait.eligibility.${speciesId}`, "source species needs swim movement");
+      }
+      this.#requireFiniteNumber(`CONFIG.liveBait.eligibility.${speciesId}.maxWeightKg`, rule?.maxWeightKg, { min: 0.001 });
+      const bait = rule?.baitId ? this.itemDb.baits?.[rule.baitId] : null;
+      if (!bait || bait.itemType !== "bait") this.#error(`CONFIG.liveBait.eligibility.${speciesId}.baitId`, "unknown bait archetype");
+      else if (bait.sourceSpeciesId !== speciesId) this.#error(`CONFIG.liveBait.eligibility.${speciesId}.baitId`, "bait source species mismatch");
+    }
+    for (const key of ["aquarium", "upgrade", "feed", "autoFeeder"]) {
+      if (cfg.prices?.[key] !== 0) this.#error(`CONFIG.liveBait.prices.${key}`, "must be zero while currency is absent");
     }
   }
 

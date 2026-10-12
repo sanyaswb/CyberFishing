@@ -406,6 +406,17 @@ export const ITEM_DB = {
   },
 
   baits: {
+    live_crucian: {
+      id: "live_crucian",
+      name: "Живець: карась",
+      itemType: "bait",
+      icon: "🐟",
+      sourceSpeciesId: "crucian_stalker",
+      rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
+      progressionProfile: { groupId: "bait.natural" },
+      requiresTag: "bait",
+      gameplayStats: {},
+    },
     feeder_spring_basic: {
       id: "feeder_spring_basic",
       name: "Базова пружина",

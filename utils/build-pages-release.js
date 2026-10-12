@@ -1,8 +1,8 @@
 "use strict";
 
 // Builds an immutable GitHub Pages release from a commit (owner decision 1, spec 038):
-//   <site>/releases/<version>-<commit>/  index.html, its stylesheets, the production module graph, tracked assets
-//   <site>/index.html                    the release page with <base href="releases/<version>-<commit>/">
+//   <site>/releases/<version>-<commit>/  game and DEV pages, their module graphs, tracked assets
+//   <site>/index.html and <site>/dev.html  release pages with <base href="releases/<version>-<commit>/">
 // Files are the committed bytes. A published release directory is never overwritten, and nothing else in the site
 // is removed, so older tabs and cached pages keep a consistent set of files. Publishing (commit and push of the
 // site checkout) is a separate, manual step.
@@ -13,8 +13,11 @@ const { spawnSync } = require("node:child_process");
 const acorn = require("acorn");
 
 const PAGE = "index.html";
+const DEV_PAGE = "dev.html";
+const HOUSE_PAGE = "fisherman-house.html";
 const VERSION_FILE = "src/game/presentation/version/project_version.js";
 const ASSETS_PREFIX = "assets/";
+const DEV_METADATA_PREFIX = "src/dev/metadata/";
 
 class GitCommitTree {
   #rootDir;
@@ -90,21 +93,28 @@ class GitCommitTree {
   }
 }
 
-// What the production page needs: the page, its stylesheets, the module graph of its entry and the assets that
-// gameplay addresses by path at runtime.
+// What the published pages need: their stylesheets, module graphs and the assets that gameplay addresses by path.
 class ReleaseFileSet {
   static collect(tree) {
-    const page = tree.read(PAGE).toString("utf8");
-    const files = new Set([PAGE]);
-    for (const href of ReleaseFileSet.#attributeValues(page, "link", "href", /\brel="stylesheet"/u)) {
-      files.add(ReleaseFileSet.#projectPath(tree, href));
+    const pages = [PAGE];
+    if (tree.has(DEV_PAGE)) pages.push(DEV_PAGE);
+    if (tree.has(HOUSE_PAGE)) pages.push(HOUSE_PAGE);
+    const files = new Set(pages);
+    for (const pageName of pages) {
+      const page = tree.read(pageName).toString("utf8");
+      for (const href of ReleaseFileSet.#attributeValues(page, "link", "href", /\brel="stylesheet"/u)) {
+        files.add(ReleaseFileSet.#projectPath(tree, href));
+      }
+      const entries = ReleaseFileSet.#attributeValues(page, "script", "src", /\btype="module"/u);
+      if (entries.length !== 1) throw new Error(`${pageName} must load exactly one module entry`);
+      for (const file of ReleaseFileSet.#moduleGraph(tree, ReleaseFileSet.#projectPath(tree, entries[0]))) {
+        files.add(file);
+      }
     }
-    const entries = ReleaseFileSet.#attributeValues(page, "script", "src", /\btype="module"/u);
-    if (entries.length !== 1) throw new Error(`${PAGE} must load exactly one module entry`);
-    for (const file of ReleaseFileSet.#moduleGraph(tree, ReleaseFileSet.#projectPath(tree, entries[0]))) {
-      files.add(file);
+    for (const file of tree.paths()) {
+      if (file.startsWith(ASSETS_PREFIX) || (tree.has(DEV_PAGE) &&
+        file.startsWith(DEV_METADATA_PREFIX) && file.endsWith(".json"))) files.add(file);
     }
-    for (const file of tree.paths()) if (file.startsWith(ASSETS_PREFIX)) files.add(file);
     return [...files].sort();
   }
 
@@ -207,6 +217,10 @@ class PagesReleaseBuilder {
     }
     fs.renameSync(stagingDir, releaseDir);
     fs.writeFileSync(path.join(siteDir, PAGE), PagesReleaseBuilder.rootPage(contents.get(PAGE).toString("utf8"), id));
+    if (files.includes(DEV_PAGE)) {
+      fs.writeFileSync(path.join(siteDir, DEV_PAGE),
+        PagesReleaseBuilder.rootPage(contents.get(DEV_PAGE).toString("utf8"), id));
+    }
     return Object.freeze({ id, releaseDir, files: Object.freeze(files), bytes });
   }
 
@@ -235,7 +249,7 @@ if (require.main === module) {
     const tree = new GitCommitTree({ rootDir: path.resolve(__dirname, ".."), ref });
     const release = new PagesReleaseBuilder({ tree }).build(site);
     console.log(`Release ${release.id}: ${release.files.length} files, ${release.bytes} bytes in ${release.releaseDir}.`);
-    console.log("Root index.html now loads it. Review, then commit and push the site checkout to publish.");
+    console.log("Root index.html and dev.html now load it. Review, then commit and push the site checkout to publish.");
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;

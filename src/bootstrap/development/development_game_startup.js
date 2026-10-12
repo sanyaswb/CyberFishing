@@ -39,6 +39,8 @@ import { activateBrowserStartupInterface, getBrowserStartupEnvironment, publishB
 import { createDebugConsoleRuntime } from "./debug_console_bootstrap.js";
 import { createDebugOverlayRuntime } from "./debug_overlay_bootstrap.js";
 import { createProductionConfigContext } from "../production/game_config_composition.js";
+import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
+import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
 
 let startup;
 // One loop guard and one listener counter per page: a restarted DEV game shares them with the previous one.
@@ -79,12 +81,17 @@ async function startGame() {
       overrideStore: configRuntime.overrideStore, projectVersion: PROJECT_VERSION_CONFIG}),
   });
   let consoleRuntime, overlayRuntime, game, watchdog;
+  const houseOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
+    src: "fisherman-house.html?returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
+    onEnter: () => game?.stop(),
+    onExit: () => { void game?.start().catch((error) => windowTarget.console.error(error)); } });
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
     if (disposed) return;
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
+    houseOverlay.dispose();
     watchdog?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
@@ -116,6 +123,7 @@ async function startGame() {
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
       createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
+        openHouse: () => houseOverlay.open(),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,
         createUI: (toggle, liveConfig) => {
           const tooltipProvider = new DevToolsParameterTooltipProvider();

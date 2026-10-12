@@ -9,7 +9,7 @@ const DEV_STYLES = "src/dev/styles/";
 
 // HTML is the CSS composition root. Tests read the same ordered assets as the browser.
 function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", html = null } = {}) {
-  if (page !== "index.html" && page !== "dev.html") throw new Error(`Unknown native page: ${page}`);
+  if (!["index.html", "dev.html", "fisherman-house.html"].includes(page)) throw new Error(`Unknown native page: ${page}`);
   const source = html ?? fs.readFileSync(path.join(projectRoot, page), "utf8");
   const stylesheets = [];
   const seen = new Set();
@@ -28,7 +28,7 @@ function readPageStylesheets({ projectRoot = DEFAULT_ROOT, page = "index.html", 
       throw new Error(`Stylesheet has no presentation/DEV owner: ${file}`);
     }
     if (!file.endsWith(".css")) throw new Error(`Stylesheet must be CSS: ${file}`);
-    if (page === "index.html" && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
+    if (page !== "dev.html" && file.startsWith(DEV_STYLES)) throw new Error(`Production loads DEV CSS: ${file}`);
     if (seen.has(file)) throw new Error(`Duplicate stylesheet: ${file}`);
     if (!fs.existsSync(absolute)) throw new Error(`Missing stylesheet: ${file}`);
     seen.add(file);
@@ -47,6 +47,7 @@ function readPageCss(options = {}) {
 function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   const production = readPageStylesheets({ projectRoot });
   const development = readPageStylesheets({ projectRoot, page: "dev.html" });
+  const house = readPageStylesheets({ projectRoot, page: "fisherman-house.html" });
   const productionPaths = production.map(({ file }) => file);
   const reused = development.filter(({ file }) => file.startsWith(PRODUCTION_STYLES)).map(({ file }) => file);
   if (JSON.stringify(reused) !== JSON.stringify(productionPaths) ||
@@ -55,12 +56,12 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   }
   if (!development.some(({ file }) => file.startsWith(DEV_STYLES))) throw new Error("DEV page has no DEV stylesheet");
   const version = JSON.parse(fs.readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
-  for (const { file, href } of [...production, ...development]) {
+  for (const { file, href } of [...production, ...development, ...house]) {
     if (new URL(href, "http://project.local/").searchParams.get("v") !== version) {
       throw new Error(`Stylesheet cache version differs from project version: ${file}`);
     }
   }
-  const linked = new Set(development.map(({ file }) => file));
+  const linked = new Set([...development, ...house].map(({ file }) => file));
   const walk = (relative) => {
     for (const entry of fs.readdirSync(path.join(projectRoot, relative), { withFileTypes: true })) {
       const file = relative + entry.name;
@@ -70,7 +71,7 @@ function validatePageStyleComposition(projectRoot = DEFAULT_ROOT) {
   };
   walk(PRODUCTION_STYLES);
   walk(DEV_STYLES);
-  return { production, development };
+  return { production, development, house };
 }
 
 module.exports = { readPageStylesheets, readPageCss, validatePageStyleComposition };
