@@ -1,9 +1,6 @@
-import { DraggableButton } from "../dom/draggable_button.js";
 import { UiEventShield } from "../dom/ui_event_shield.js";
 
 export class GameControls {
-  #config;
-  #cache;
   #fullscreenBtn;
   #netBtn;
   #isNetReady = false;
@@ -15,17 +12,18 @@ export class GameControls {
   #logger;
   #onFullscreenChange = () => {
     if (!this.#fullscreenBtn) return;
-    this.#fullscreenBtn.innerHTML = document.fullscreenElement ? "🗗" : "⛶";
+    const active = Boolean(document.fullscreenElement);
+    this.#fullscreenBtn.classList.toggle("game-control--fullscreen-hidden", active);
+    this.#fullscreenBtn.disabled = active;
+    this.#fullscreenBtn.setAttribute("aria-hidden", String(active));
   };
 
-  constructor(config, lifecycle, { cache, labels, logger } = {}) {
-    this.#cache = cache;
+  constructor(config, lifecycle, { labels, logger } = {}) {
     this.#labels = labels;
     this.#logger = logger;
     if (lifecycle != null && typeof lifecycle.dispose !== "function") {
       throw new TypeError("GameControls requires devTools");
     }
-    this.#config = config;
     this.#initFullscreenBtn();
     this.#initNetBtn();
     this.#initContinueBtn();
@@ -44,24 +42,21 @@ export class GameControls {
   #initFullscreenBtn() {
     this.#fullscreenBtn = document.createElement("button");
     this.#fullscreenBtn.className = "game-control game-control--fullscreen";
+    this.#fullscreenBtn.type = "button";
     this.#fullscreenBtn.innerHTML = "⛶";
-
-    new DraggableButton(
-      this.#fullscreenBtn,
-      () => {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch((err) => {
-            this.#logger.warn(
-              `Error attempting to enable full-screen mode: ${err.message}`,
-            );
-          });
-        } else {
-          document.exitFullscreen();
-        }
-      },
-      this.#config,
-      { id: "btn_fullscreen", cache: this.#cache },
-    );
+    this.#fullscreenBtn.setAttribute("aria-label", this.#labels.fullscreen);
+    this.#fullscreenBtn.title = this.#labels.fullscreen;
+    this.#fullscreenBtn.hidden = typeof document.documentElement.requestFullscreen !== "function";
+    UiEventShield.makeSolid(this.#fullscreenBtn);
+    this.#fullscreenBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch((err) => {
+          this.#logger?.warn(
+            `Error attempting to enable full-screen mode: ${err.message}`,
+          );
+        });
+      }
+    });
 
     document.addEventListener(
       "fullscreenchange",
@@ -69,23 +64,20 @@ export class GameControls {
     );
 
     document.body.appendChild(this.#fullscreenBtn);
+    this.#onFullscreenChange();
   }
 
   #initNetBtn() {
     this.#netBtn = document.createElement("button");
-    this.#netBtn.className = "game-control game-control--net";
+    this.#netBtn.className = "game-control game-control--net game-toolbar-button game-toolbar-button--net";
+    this.#netBtn.type = "button";
     this.#netBtn.innerHTML = "🕸️";
-
-    new DraggableButton(
-      this.#netBtn,
-      () => {
-        if (this.#isNetReady && this.onNetClick) {
-          this.onNetClick();
-        }
-      },
-      this.#config,
-      { id: "btn_net", cache: this.#cache },
-    );
+    this.#netBtn.setAttribute("aria-label", this.#labels.landingNet);
+    this.#netBtn.title = this.#labels.landingNet;
+    UiEventShield.makeSolid(this.#netBtn);
+    this.#netBtn.addEventListener("click", () => {
+      if (this.#isNetReady) this.onNetClick?.();
+    });
 
     document.body.appendChild(this.#netBtn);
   }
@@ -94,6 +86,7 @@ export class GameControls {
     if (!this.#netBtn) return;
 
     this.#isNetReady = isReady;
+    this.#netBtn.setAttribute("aria-disabled", String(!isReady));
 
     if (!hasNet) {
       this.hideNetButton();

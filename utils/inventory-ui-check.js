@@ -451,7 +451,9 @@ class InventoryStaticContractCheck {
   #assertVisualContract(style) {
     for (const selector of [
       ".inventory-modal",
-      ".inventory-backpack-button",
+      ".game-toolbar-button",
+      ".game-toolbar-button--inventory",
+      ".ui-modal-close",
       ".inventory-loadout-shell",
       ".inventory-loadout-panel__primary",
       ".inventory-loadout-panel__auxiliary",

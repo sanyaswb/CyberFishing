@@ -42,6 +42,8 @@
   cursor: not-allowed;
 }
 
+.inventory-modal,
+.inventory-list-grid,
 .inventory-categories,
 .inventory-subfilters,
 .inventory-sort-options,
@@ -54,6 +56,8 @@
     var(--inventory-scrollbar-track);
 }
 
+.inventory-modal::-webkit-scrollbar,
+.inventory-list-grid::-webkit-scrollbar,
 .inventory-categories::-webkit-scrollbar,
 .inventory-subfilters::-webkit-scrollbar,
 .inventory-sort-options::-webkit-scrollbar,
@@ -65,6 +69,8 @@
   height: var(--inventory-scrollbar-size);
 }
 
+.inventory-modal::-webkit-scrollbar-track,
+.inventory-list-grid::-webkit-scrollbar-track,
 .inventory-categories::-webkit-scrollbar-track,
 .inventory-subfilters::-webkit-scrollbar-track,
 .inventory-sort-options::-webkit-scrollbar-track,
@@ -75,6 +81,8 @@
   background: var(--inventory-scrollbar-track);
 }
 
+.inventory-modal::-webkit-scrollbar-thumb,
+.inventory-list-grid::-webkit-scrollbar-thumb,
 .inventory-categories::-webkit-scrollbar-thumb,
 .inventory-subfilters::-webkit-scrollbar-thumb,
 .inventory-sort-options::-webkit-scrollbar-thumb,
@@ -86,6 +94,8 @@
   background: var(--inventory-scrollbar-thumb);
 }
 
+.inventory-modal::-webkit-scrollbar-thumb:hover,
+.inventory-list-grid::-webkit-scrollbar-thumb:hover,
 .inventory-categories::-webkit-scrollbar-thumb:hover,
 .inventory-subfilters::-webkit-scrollbar-thumb:hover,
 .inventory-sort-options::-webkit-scrollbar-thumb:hover,

@@ -12,7 +12,7 @@ const context = vm.createContext({
     set() {},
   },
   document: {
-    createElement() { return { style: {}, addEventListener() {}, remove() {} }; },
+    createElement() { return { style: {}, attributes: {}, setAttribute(key, value) { this.attributes[key] = String(value); }, addEventListener() {}, remove() {} }; },
     body: { appendChild() {} },
     addEventListener() {},
     removeEventListener() {},

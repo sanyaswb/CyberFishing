@@ -16,3 +16,10 @@
   pointer-events: none;
   user-select: none;
 }
+
+@media (max-width: 520px) {
+  .game-version-badge {
+    left: var(--ui-edge-left);
+    bottom: calc(var(--ui-edge-bottom) + var(--ui-toolbar-size) + 12px);
+  }
+}

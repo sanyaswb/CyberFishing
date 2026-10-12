@@ -3,9 +3,14 @@ import { UiEventShield } from "../dom/ui_event_shield.js";
 const CHUM_VISUAL_STATES = new Set(["disabled", "empty", "aiming", "moving", "ready"]);
 
 export class ChumControls {
-  constructor(onClickCallback) {
+  #labels;
+
+  constructor(onClickCallback, { labels } = {}) {
+    this.#labels = labels;
     this.button = document.createElement("button");
-    this.button.className = "game-control chum-control";
+    this.button.className = "game-control chum-control game-toolbar-button game-toolbar-button--chum";
+    this.button.type = "button";
+    this.button.setAttribute("aria-label", labels?.chumAction || "");
     this.button.innerText = "🍞";
     this.button.hidden = true;
 
@@ -39,20 +44,24 @@ export class ChumControls {
     } else if (state === "aiming") {
       text = "🚫";
     } else {
-      // The boat shows only its icon; hand chum also shows the remaining amount.
+      // Keep quantities in the accessible label; the toolbar contains only icons.
       if (method === "boat") {
         text = "🚤";
       } else {
-        text = `🍞(${count})`;
+        text = "🍞";
       }
     }
 
+    const label = method === "boat"
+      ? this.#labels?.chumBoatAction || ""
+      : this.#labels?.chumActionCount(count) || "";
     // Skip DOM updates when the displayed state has not changed.
     if (
       this.currentState === state &&
       this.currentMethod === method &&
       this.button.hidden === !isVisible &&
-      this.button.innerText === text
+      this.button.innerText === text &&
+      this.button.title === label
     ) {
       return;
     }
@@ -61,11 +70,13 @@ export class ChumControls {
     this.currentMethod = method;
     this.button.hidden = !isVisible;
     this.button.innerText = text;
+    this.button.title = label;
+    this.button.setAttribute("aria-label", label);
 
     const visualState = CHUM_VISUAL_STATES.has(state)
       ? state
       : "idle";
-    this.button.className = "game-control chum-control chum-control--" + visualState;
+    this.button.className = "game-control game-toolbar-button game-toolbar-button--chum chum-control chum-control--" + visualState;
   }
 
   dispose() {

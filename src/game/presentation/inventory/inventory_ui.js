@@ -316,7 +316,7 @@ export class InventoryUI {
 
   #buildShell() {
     this.#backpackButtonNode = this.#dom.button(
-      "inventory-backpack-button",
+      "inventory-backpack-button game-toolbar-button game-toolbar-button--inventory",
       "🎒",
       { title: "Відкрити інвентар" },
     );

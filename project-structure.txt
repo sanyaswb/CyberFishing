@@ -72,6 +72,22 @@
 │  │        ├── crucian_stalker--4-uniq.webp
 │  │        ├── crucian_stalker--5-uniq.webp
 │  │        └── crucian_stalker--6-uniq.webp
+│  ├── fish-thumbnails
+│  │  └── crucian_stalker
+│  │     ├── standart
+│  │     │  ├── crucian_stalker--1.webp
+│  │     │  ├── crucian_stalker--2.webp
+│  │     │  ├── crucian_stalker--3.webp
+│  │     │  ├── crucian_stalker--4.webp
+│  │     │  ├── crucian_stalker--5.webp
+│  │     │  └── crucian_stalker--6.webp
+│  │     └── unique
+│  │        ├── crucian_stalker--1-uniq.webp
+│  │        ├── crucian_stalker--2-uniq.webp
+│  │        ├── crucian_stalker--3-uniq.webp
+│  │        ├── crucian_stalker--4-uniq.webp
+│  │        ├── crucian_stalker--5-uniq.webp
+│  │        └── crucian_stalker--6-uniq.webp
 │  ├── house
 │  │  └── room-1
 │  │     ├── lvl-1
@@ -96,6 +112,10 @@
 │  │     │  └── room--1-nightLight--on-lvl--5.jpg
 │  │     ├── room--1_aqua.png
 │  │     └── under-renovation.png
+│  ├── items
+│  │  ├── aquarium-feed-good.svg
+│  │  ├── aquarium-feed-premium.svg
+│  │  └── aquarium-feed-simple.svg
 │  └── locations
 │     └── test
 │        ├── bg_test--day.webp
@@ -465,6 +485,7 @@
 │  │  │  │  ├── exact_inventory_auto_refill_port.js
 │  │  │  │  ├── freshest_refill_candidate_policy.js
 │  │  │  │  ├── inventory_application_error.js
+│  │  │  │  ├── inventory_catalog_item_sync.js
 │  │  │  │  ├── inventory_command_result.js
 │  │  │  │  ├── inventory_command_service.js
 │  │  │  │  ├── inventory_context_item_filter.js
@@ -514,6 +535,7 @@
 │  │  │  │  ├── runtime_display_stat_formatter.js
 │  │  │  │  └── runtime_display_stat_writer.js
 │  │  │  ├── live_bait
+│  │  │  │  ├── aquarium_feed_inventory_port.js
 │  │  │  │  ├── catch_disposition_service.js
 │  │  │  │  ├── live_bait_bait_candidate_port.js
 │  │  │  │  ├── live_bait_care_service.js
@@ -772,10 +794,10 @@
 │  │  │  │  └── line_allocation_policy.js
 │  │  │  ├── live_bait
 │  │  │  │  ├── aquarium_care_calculator.js
+│  │  │  │  ├── aquarium_starvation_policy.js
 │  │  │  │  ├── aquarium_state.js
 │  │  │  │  ├── caught_fish_collection.js
 │  │  │  │  ├── caught_fish_rarity.js
-│  │  │  │  ├── feed_slot_priority_policy.js
 │  │  │  │  ├── feed_supply_state.js
 │  │  │  │  ├── live_bait_eligibility_policy.js
 │  │  │  │  └── live_bait_motion_profile_resolver.js
@@ -830,6 +852,10 @@
 │  │     │  ├── rod_line_renderer.js
 │  │     │  └── rod_visual_offset_system.js
 │  │     ├── house
+│  │     │  ├── aquarium_feed_picker.js
+│  │     │  ├── aquarium_fish_motion.js
+│  │     │  ├── aquarium_fish_view.js
+│  │     │  ├── fish_thumbnail_path.js
 │  │     │  ├── house_labels.js
 │  │     │  ├── house_presenter.js
 │  │     │  └── house_view.js
@@ -930,7 +956,8 @@
 │  │     │  │  ├── draggable-control.css
 │  │     │  │  ├── game-controls.css
 │  │     │  │  ├── hold-charges.css
-│  │     │  │  └── time-display.css
+│  │     │  │  ├── time-display.css
+│  │     │  │  └── toolbar.css
 │  │     │  ├── hud_style_resolver.js
 │  │     │  ├── inventory
 │  │     │  │  ├── assembly-editor.css
@@ -947,6 +974,7 @@
 │  │     │  │  ├── theme.css
 │  │     │  │  └── tooltips.css
 │  │     │  ├── keepnet.css
+│  │     │  ├── modal-controls.css
 │  │     │  ├── outcome_style_resolver.js
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
@@ -1003,7 +1031,9 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── storage
+│        │  ├── browser_snapshot_transaction.js
 │        │  ├── game_time_local_store.js
+│        │  ├── inventory_snapshot_local_store.js
 │        │  ├── live_bait_local_store.js
 │        │  ├── local_storage_cache.js
 │        │  └── room_progress_local_store.js
@@ -1079,7 +1109,10 @@
    │  ├── keepnet
    │  │  └── test_document.js
    │  ├── live_bait
-   │  │  └── keepnet_lifecycle_scenarios.js
+   │  │  ├── feed_picker_scenarios.js
+   │  │  ├── inventory_feed_scenarios.js
+   │  │  ├── keepnet_lifecycle_scenarios.js
+   │  │  └── shared_feed_scenarios.js
    │  ├── runtime
    │  │  ├── chum_test_composition.js
    │  │  ├── config_test_composition.js

@@ -1,32 +1,5 @@
 /* Backpack, modal lifecycle and inventory screen layout. */
 
-.inventory-backpack-button {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: var(--ui-layer-backpack);
-  display: grid;
-  width: 50px;
-  height: 50px;
-  place-items: center;
-  border: 2px solid #ffd22e;
-  border-radius: 9px;
-  background: rgba(11, 20, 25, 0.9);
-  color: var(--ui-text);
-  cursor: pointer;
-  font:
-    24px/1 system-ui,
-    sans-serif;
-  touch-action: manipulation;
-}
-
-.inventory-backpack-button:hover,
-.inventory-backpack-button:focus-visible {
-  border-color: #fff071;
-  outline: none;
-  box-shadow: 0 0 12px rgba(255, 210, 46, 0.48);
-}
-
 .inventory-modal {
   position: fixed;
   inset: 0;
@@ -81,7 +54,10 @@
 
 @media (max-width: 820px) {
   .inventory-modal {
-    --inventory-card-size: 82px;
+    /* 320px: reserve panel borders/padding, three equal gaps and both scrolling surfaces. */
+    --inventory-card-size: min(82px, calc((100vw - 72px) / 4));
+    --inventory-socket-size: min(66px, var(--inventory-card-size));
+    --inventory-mobile-gap: 6px;
     --inventory-panel-min-height: 560px;
     padding: 9px;
     overflow-y: auto;
@@ -91,6 +67,8 @@
     display: flex;
     overflow: visible;
     flex-direction: column;
+    gap: 16px;
+    padding-top: 16px;
   }
 
   .inventory-main__left,

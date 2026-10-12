@@ -21,10 +21,11 @@ export class InventoryHeaderRenderer {
     );
 
     const close = this.#dom.button(
-      "inventory-header__close",
-      "× Закрити",
+      "inventory-header__close ui-modal-close",
+      "×",
       { title: "Закрити інвентар" },
     );
+    close.setAttribute("aria-label", "Закрити інвентар");
     close.addEventListener("click", () => onClose?.());
     top.appendChild(close);
     return top;

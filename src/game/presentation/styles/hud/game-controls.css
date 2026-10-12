@@ -1,40 +1,48 @@
 /* Shared game control appearance and component state variants. */
 
 .game-control--fullscreen,
-.game-control--net,
 .game-control--continue {
-  position: absolute;
+  position: fixed;
   font-family: var(--ui-font-mono);
   font-weight: bold;
   z-index: var(--ui-layer-controls);
-  transition: all 0.2s ease;
 }
 .game-control--fullscreen {
-  top: 15px;
-  right: 15px;
-  padding: 8px 16px;
+  top: var(--ui-edge-top);
+  right: calc(var(--ui-edge-right) + var(--ui-clock-width) + var(--ui-toolbar-gap));
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   background-color: rgba(15, 23, 30, 0.8);
   color: var(--ui-success);
   border: 1px solid var(--ui-success);
   border-radius: var(--ui-radius-control);
   cursor: pointer;
   touch-action: none;
+  font-size: 24px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 280ms ease, visibility 0s;
 }
 
 .game-control--net {
-  bottom: 20px;
-  right: 100px;
-  padding: 12px;
-  border-radius: var(--ui-radius-panel);
-  font-size: 16px;
   display: none;
-  touch-action: none;
-  color: var(--ui-text);
-  border-width: 2px;
-  border-style: solid;
-  transform: scale(0);
-  justify-content: center;
-  align-items: center;
+  transform: scale(0.85);
+}
+
+.game-control--fullscreen:active {
+  transform: none;
+}
+
+.game-control--fullscreen[hidden] { display: none; }
+
+.game-control--fullscreen.game-control--fullscreen-hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 280ms ease, visibility 0s 280ms;
 }
 
 .game-control--continue {
@@ -50,6 +58,7 @@
   border: 2px solid var(--ui-accent);
   cursor: pointer;
   box-shadow: 0 0 15px rgba(var(--ui-accent-rgb), 0.4);
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .game-control--fullscreen:hover {
@@ -66,12 +75,12 @@
 }
 
 .game-control--net-visible {
-  display: flex;
+  display: grid;
 }
 
 .game-control--net-entered {
   transform: scale(1);
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 
 .game-control--net-entered:active {
@@ -79,19 +88,22 @@
 }
 
 .game-control--net-ready {
-  background-color: rgba(var(--ui-success-rgb), 0.7);
-  border-color: var(--ui-success);
   cursor: pointer;
-  box-shadow: 0 0 15px rgba(var(--ui-success-rgb), 0.5);
+  opacity: 1;
 }
 
 .game-control--net-unready {
-  background-color: rgba(128, 128, 128, 0.3);
-  border-color: #aaa;
   cursor: not-allowed;
-  box-shadow: none;
+  opacity: 0.5;
 }
 
 .game-control--continue-visible {
   display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-control--fullscreen,
+  .game-control--fullscreen.game-control--fullscreen-hidden,
+  .game-control--net-entered,
+  .game-control--continue { transition: none; }
 }

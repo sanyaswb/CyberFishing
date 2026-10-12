@@ -195,7 +195,18 @@ function checkBrowserWidgets() {
   assert.equal(button.style.left,'260px');assert.equal(button.style.top,'160px');drag.onPointerUp({...point,clientX:476,clientY:357});assert(saved.has('drag_pos_probe'));assert.equal(clicks,1);
   assert(!button.classList.contains('draggable-control--dragging'),'releasing clears drag feedback');
   const controls=new c.GameControls({ui:{draggableButtons:false}},{dispose(){disposed++;}},{cache,labels:c.HUD_LABELS,logger:{warn(){}}});
-  const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++);
+  const fullscreen=document.body.children.find(node=>node.className==='game-control game-control--fullscreen');
+  fullscreen.emit('click');document.emit('fullscreenchange');
+  assert(fullscreen.classList.contains('game-control--fullscreen-hidden')&&fullscreen.disabled,
+    'the fullscreen button fades only after the browser confirms fullscreen');
+  assert.equal(fullscreen.innerHTML,'⛶','fullscreen keeps the original icon');
+  document.exitFullscreen();document.emit('fullscreenchange');
+  assert(!fullscreen.classList.contains('game-control--fullscreen-hidden')&&!fullscreen.disabled,
+    'exiting fullscreen restores the button');
+  const depth=new c.DepthSelector(),time=new c.TimeDisplay(),hold=new c.HoldCharges(),chum=new c.ChumControls(()=>clicks++,{labels:c.HUD_LABELS});
+  chum.setState('idle','hand',4);
+  assert.equal(chum.button.innerText,'🍞','chum is an icon-only toolbar action');
+  assert(chum.button.attrs['aria-label'].includes('4'),'the accessible label retains the quantity');
   depth.show(20,3,value=>{depth.lastChange=value;});const initialQueries=queries;let circle=null;
   for(let frame=0;frame<120;frame++) {
     controls.updateNetButtonState(frame>=30,frame>=60);controls.updateContinueButtonState(frame>=90);controls.setOutcomeOverlayActive(frame>=100);

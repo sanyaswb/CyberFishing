@@ -191,19 +191,38 @@
 }
 
 @media (max-width: 820px) {
+  .inventory-loadout-panel,
+  .inventory-saved-loadout-preview {
+    padding: 10px;
+  }
+
+  .inventory-loadout-panel__primary {
+    grid-template-columns: minmax(0, 1fr) var(--inventory-card-size);
+    gap: 12px;
+    padding-left: 0;
+  }
+
   .inventory-loadout-panel__auxiliary {
     --inventory-auxiliary-card-size: var(--inventory-card-size);
+    gap: var(--inventory-mobile-gap);
+    padding-left: 0;
+    justify-content: center;
+  }
+
+  .inventory-saved-loadout-preview__slots {
+    gap: 12px var(--inventory-mobile-gap);
+    justify-content: center;
+  }
+
+  .inventory-field__label,
+  .inventory-saved-loadout-preview__label {
+    font-size: 11px;
   }
 }
 
 @media (max-width: 520px) {
   .inventory-loadout-save {
     flex-direction: column;
-  }
-
-  .inventory-loadout-panel__primary {
-    grid-template-columns: 1fr 104px;
-    gap: 14px;
   }
 
   .inventory-saved-loadout-preview__slots {

@@ -12,6 +12,8 @@ export class KeepnetUI {
   #root;
   #button;
   #closeButton;
+  #helpButton;
+  #helpText;
   #back;
   #heading;
   #right;
@@ -35,8 +37,9 @@ export class KeepnetUI {
     this.#model = model;
     this.#cards = cards;
     this.#labels = labels;
-    this.#button = this.#el("button", "keepnet-button", labels.button);
+    this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet", labels.button);
     this.#button.type = "button";
+    this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
     this.#button.addEventListener("click", this.#toggle);
     this.#root = this.#el("div", "keepnet-modal");
@@ -46,10 +49,24 @@ export class KeepnetUI {
     this.#root.setAttribute("aria-hidden", "true");
     const header = this.#el("header", "keepnet-modal__header");
     header.append(this.#el("h2", "keepnet-modal__title", labels.title));
-    this.#closeButton = this.#el("button", "keepnet-modal__close", labels.close);
+    const headerActions = this.#el("div", "keepnet-modal__header-actions");
+    this.#helpButton = this.#el("button", "keepnet-modal__help", "?");
+    this.#helpButton.type = "button";
+    this.#helpButton.setAttribute("aria-label", labels.help);
+    this.#helpButton.setAttribute("aria-expanded", "false");
+    this.#helpButton.setAttribute("aria-controls", "keepnet-help");
+    this.#helpButton.addEventListener("click", () => this.#setHelpVisible(true));
+    this.#helpText = this.#el("div", "keepnet-modal__help-text", `${labels.status}\n${labels.note}`);
+    this.#helpText.id = "keepnet-help";
+    this.#helpText.hidden = true;
+    this.#helpText.setAttribute("role", "note");
+    this.#closeButton = this.#el("button", "keepnet-modal__close ui-modal-close", "×");
     this.#closeButton.type = "button";
+    this.#closeButton.setAttribute("aria-label", labels.close);
+    this.#closeButton.title = labels.close;
     this.#closeButton.addEventListener("click", () => this.close());
-    header.append(this.#closeButton);
+    headerActions.append(this.#helpButton, this.#closeButton);
+    header.append(headerActions, this.#helpText);
     const main = this.#el("main", "keepnet-modal__main");
     this.#main = main;
     const left = this.#el("section", "keepnet-modal__left");
@@ -57,7 +74,7 @@ export class KeepnetUI {
     this.#count = this.#el("p", "keepnet-modal__count");
     this.#status = this.#el("p", "keepnet-modal__status");
     this.#status.setAttribute("role", "status");
-    left.append(this.#count, this.#status, this.#el("p", "keepnet-modal__note", labels.note));
+    left.append(this.#count, this.#status);
     this.#right = this.#el("section", "keepnet-modal__right");
     this.#back = this.#el("button", "keepnet-modal__back", labels.back);
     this.#back.type = "button";
@@ -119,6 +136,7 @@ export class KeepnetUI {
   close() {
     if (!this.#open) return;
     this.#open = false;
+    this.#setHelpVisible(false);
     this.#pendingRelease = null;
     this.#root.classList.remove("keepnet-modal--open");
     this.#root.setAttribute("aria-hidden", "true");
@@ -133,8 +151,9 @@ export class KeepnetUI {
     if (!group) this.#detailSpecies = null;
     if (!model.filtered.some((fish) => fish.id === this.#pendingRelease)) this.#pendingRelease = null;
     this.#count.textContent = this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount);
-    const status = model.error ? this.#labels.error(model.error) : this.#notice || this.#labels.status;
+    const status = model.error ? this.#labels.error(model.error) : this.#notice;
     if (this.#status.textContent !== status) this.#status.textContent = status;
+    this.#status.hidden = !status;
     this.#back.hidden = !group;
     this.#heading.textContent = group ? this.#labels.details(group.name, group.count) : this.#labels.contents;
     const speciesSignature = JSON.stringify(model.species);
@@ -175,6 +194,7 @@ export class KeepnetUI {
   }
   dispose() {
     this.close();
+    this.#setHelpVisible(false);
     this.#button.removeEventListener("click", this.#toggle);
     this.#root.removeEventListener("keydown", this.#handleKey);
     this.#button.remove(); this.#root.remove();
@@ -224,15 +244,29 @@ export class KeepnetUI {
     return el;
   }
   #option(value, label) { const option = this.#el("option", "", label); option.value = value; return option; }
+  #setHelpVisible(visible) {
+    if (!this.#helpText || this.#helpText.hidden === !visible) return;
+    this.#helpText.hidden = !visible;
+    this.#helpButton.setAttribute("aria-expanded", String(visible));
+    if (visible) this.#document.addEventListener("click", this.#dismissHelp, true);
+    else this.#document.removeEventListener("click", this.#dismissHelp, true);
+  }
+  // Capture sees the next click even on controls that shield their bubbling events.
+  #dismissHelp = (event) => {
+    this.#setHelpVisible(false);
+    // A second press on ? dismisses the hint without reopening it in the button's handler.
+    if (this.#helpButton.contains(event.target)) event.stopPropagation();
+  };
   #toggle = () => this.#open ? this.close() : this.open();
   #handleKey = (event) => {
     if (event.key === "Escape") {
       event.preventDefault(); event.stopPropagation();
-      if (this.#pendingRelease) { this.#pendingRelease = null; this.refresh(); }
+      if (!this.#helpText.hidden) this.#setHelpVisible(false);
+      else if (this.#pendingRelease) { this.#pendingRelease = null; this.refresh(); }
       else if (this.#detailSpecies) this.#goBack();
       else this.close();
     } else if (event.key === "Tab") {
-      const controls = [this.#closeButton, ...(!this.#back.hidden ? [this.#back] : []),
+      const controls = [this.#helpButton, this.#closeButton, ...(!this.#back.hidden ? [this.#back] : []),
         this.#kind, this.#species, ...this.#cardFocusables];
       const index = controls.indexOf(this.#document.activeElement);
       if (index < 0 || (event.shiftKey && index === 0) || (!event.shiftKey && index === controls.length - 1)) {

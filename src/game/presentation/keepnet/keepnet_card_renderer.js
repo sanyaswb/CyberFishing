@@ -8,6 +8,7 @@ export class KeepnetCardRenderer {
   group(group, onOpen) {
     const card = this.#button("keepnet-modal__group", "", `species:${group.id}`, () => onOpen(group.id));
     card.setAttribute("aria-label", this.#labels.details(group.name, group.count));
+    card.title = `${this.#labels.details(group.name, group.count)} · ${this.#labels.totalWeight(group.totalWeightKg)}`;
     const badge = this.#el("span", "keepnet-modal__badge", String(group.count));
     badge.setAttribute("aria-label", this.#labels.groupCount(group.count));
     card.append(this.#image(group), this.#el("strong", "keepnet-modal__fish-name", group.name),

@@ -14,6 +14,13 @@
   --ui-font-mono: monospace;
   --ui-radius-control: 4px;
   --ui-radius-panel: 8px;
+  --ui-edge-top: max(12px, env(safe-area-inset-top, 0px));
+  --ui-edge-right: max(12px, env(safe-area-inset-right, 0px));
+  --ui-edge-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  --ui-edge-left: max(12px, env(safe-area-inset-left, 0px));
+  --ui-toolbar-size: 48px;
+  --ui-toolbar-gap: 8px;
+  --ui-clock-width: 116px;
   --ui-layer-badge: 9800;
   --ui-layer-backpack: 9900;
   --ui-layer-hud: 9998;

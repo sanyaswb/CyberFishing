@@ -4,13 +4,14 @@ const { SourceRuntime } = require('../core/source_runtime');
 // Exercise the real controller, UI and power aim against deterministic external ports.
 function checkChumComposition() {
   const nodes=[];
-  const document={createElement(){const node={style:{},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
+  const document={createElement(){const node={style:{},attributes:{},setAttribute(key,value){this.attributes[key]=String(value);},events:{},addEventListener(type,fn){this.events[type]=fn;},remove(){this.removed=true;}};nodes.push(node);return node;},body:{appendChild(){}}};
   const runtime=new SourceRuntime({globals:{document,console:{log(){}}}});
   runtime.load('src/platform/browser/ui/chum_controls.js',{expose:['ChumControls']});
   runtime.load('src/game/domain/locations/water_metric.js',{expose:['WaterMetric']});
   runtime.load('src/game/application/casting/cast_power_aim.js');
   runtime.load('src/game/application/chum/chum_controller.js',{expose:['ChumController']});
   runtime.load('src/game/presentation/fishing/fishing_messages.js',{expose:['FISHING_MESSAGES']});
+  runtime.load('src/game/presentation/hud/hud_labels.js',{expose:['HUD_LABELS']});
   runtime.context.ChumController=require('./constructor_defaults').bindConstructorDefaults(runtime.context.ChumController,{messages:runtime.context.FISHING_MESSAGES});
   const bounds={left:0,right:800,top:0,bottom:600},clock={now:1000},boats=[],drops=[],consumed=[],warnings=[],invalid=[];
   const waterMetric=new runtime.context.WaterMetric({pixelsPerMeter:50,shoreY:bounds.bottom,topY:bounds.top,centerX:400});
@@ -26,9 +27,9 @@ function checkChumComposition() {
     fishing:{consumeHandChum(item){consumed.push(item);return true;},consumeDeliveryChum(index){consumed.push(index);}},location:{chumCastDistance:300},clock,config,
     rng:{next:()=>0.5},getViewportSize:()=>({width:800,height:600}),panViewport(){},depthUI:{hide(){hidden++;}},getDynamicBounds:()=>bounds,getWaterMetric:()=>waterMetric,
     getRodVirtualPos:()=>({x:400,y:600}),checkWater:()=>water?{depth:2}:null,markInvalidCast(pos){invalid.push(pos);},canPlayerCast:()=>canCast,getGameStateName:()=>state,
-    createUi:(onClick)=>new runtime.context.ChumControls(onClick)});
+    createUi:(onClick)=>new runtime.context.ChumControls(onClick,{labels:runtime.context.HUD_LABELS})});
   assert.equal(controller.ui.button.hidden,true);
-  const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');assert.equal(controller.ui.button.hidden,false);
+  const input={clickPos:null};controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞');assert.match(controller.ui.button.attributes['aria-label'],/3/);assert.equal(controller.ui.button.hidden,false);
   // Visibility follows equipped items, including changes with the same empty UI state.
   equipped.handChum=null;controller.refreshActiveHandChum();controller.updateUI();assert.equal(controller.ui.button.hidden,true);
   const warningsBeforeHiddenClick=warnings.length;controller.ui.button.events.click({});assert.equal(warnings.length,warningsBeforeHiddenClick);
@@ -37,7 +38,7 @@ function checkChumComposition() {
   equipped.delivery=null;controller.updateUI();assert.equal(controller.ui.button.hidden,true);
   equipped.delivery={effectiveStats:{manualControl:true,sections:2}};controller.updateUI();assert.equal(controller.ui.button.hidden,false);
   equipped.delivery=null;equipped.handChum=hand;equipped.deliveryChums=[{id:'first'},null,{id:'second'}];controller.refreshActiveHandChum();
-  controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞(3)');assert.equal(controller.ui.button.hidden,false);
+  controller.updateUI();assert.equal(controller.ui.button.innerText,'🍞');assert.match(controller.ui.button.attributes['aria-label'],/3/);assert.equal(controller.ui.button.hidden,false);
   controller.handleClick();assert.equal(controller.isAiming,true);assert.equal(hidden,1);
   input.clickPos={x:400,y:500};controller.handleAiming(input,bounds,16);assert.equal(input.clickPos,null);assert.equal(drops.length,0);
   clock.now+=250;input.clickPos={x:400,y:450};controller.handleAiming(input,bounds,16);

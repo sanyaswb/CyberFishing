@@ -39,6 +39,25 @@ async function main() {
   const close = documentRef.byClass("keepnet-modal__close")[0];
   const back = documentRef.byClass("keepnet-modal__back")[0];
   assert.equal(documentRef.activeElement, close);
+  const help = documentRef.byClass("keepnet-modal__help")[0];
+  const hint = documentRef.byClass("keepnet-modal__help-text")[0];
+  assert(hint.hidden && documentRef.byClass("keepnet-modal__status")[0].hidden,
+    "routine explanations stay inside the closed help popover");
+  help.click();
+  assert(!hint.hidden && help.getAttribute("aria-expanded") === "true");
+  assert(hint.textContent.includes("Живці мають власний відлік життя"));
+  documentRef.fire("click", { target: root });
+  assert(hint.hidden, "the next click anywhere dismisses the hint");
+  help.click();
+  assert(documentRef.fire("click", { target: help }).stopped,
+    "a second click on help dismisses it without reopening");
+  assert(hint.hidden);
+  help.click();
+  root.fire("keydown", { key: "Escape" });
+  assert(hint.hidden && ui.isOpen, "Escape dismisses help before navigating or closing the dialog");
+  help.click(); ui.close(); ui.open();
+  assert(hint.hidden, "closing and reopening the dialog resets help");
+  assert.equal(documentRef.listeners.get("click").size, 0, "help document listeners are released");
   assert.equal(documentRef.byClass("keepnet-modal__group").length, 2);
   assert.equal(documentRef.byClass("keepnet-modal__badge")[0].textContent, "3");
   const group = documentRef.byKey("species:crucian_stalker");
@@ -80,7 +99,7 @@ async function main() {
   const last = documentRef.byKey("bait:release");
   last.focus();
   assert.equal(root.fire("keydown", { key: "Tab" }).prevented, true);
-  assert.equal(documentRef.activeElement, close);
+  assert.equal(documentRef.activeElement, help, "focus wraps to the first header action in DOM order");
   root.fire("keydown", { key: "Tab", shiftKey: true });
   assert.equal(documentRef.activeElement, last);
   root.fire("keydown", { key: "Escape" });
@@ -100,7 +119,9 @@ async function main() {
   ui.close();
   ui.showCatchResult({ ok: false, reason: "keepnet_full" });
   assert(documentRef.byClass("keepnet-modal__status")[0].textContent.includes("Садок заповнений"));
+  help.click();
   ui.dispose(); assert.equal(documentRef.body.children.length, 0);
+  assert.equal(documentRef.listeners.get("click").size, 0, "disposing an open hint removes its capture listener");
   const notifications = [];
   const transitions = [];
   let catchResult = { ok: false, reason: "keepnet_full" };

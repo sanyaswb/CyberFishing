@@ -1190,7 +1190,7 @@ export class GameCompositionRoot {
       markInvalidCast: appPorts.markInvalidCast,
       canPlayerCast: appPorts.canPlayerCast,
       getGameStateName: appPorts.getGameStateName,
-      createUi: (onClick) => new ChumControls(onClick),
+      createUi: (onClick) => new ChumControls(onClick, { labels: HUD_LABELS }),
       chumRules: runtime.chumRules,
       boatRules: runtime.boatRules,
     }));

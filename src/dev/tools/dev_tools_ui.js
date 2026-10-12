@@ -267,7 +267,8 @@ export class DevToolsUI {
     UiEventShield.makeSolid(this.#btn);
 
     this.#dragButton = new DraggableButton(this.#btn, this.#onToggleCallback, config, {
-      id: "devtools_btn",
+      // Old saved coordinates were next to the clock; start the new corner layout at its CSS anchor.
+      id: "devtools_btn_corner",
       cache: this.#storageCache,
       noTransform: true,
     });

@@ -5,5 +5,10 @@ export const HUD_LABELS = Object.freeze({
   depthTrack: "Вибір глибини",
   castLimit: (meters) => `закид до ${meters} м`,
   holdActive: "УТРИМАННЯ",
+  fullscreen: "На весь екран",
+  landingNet: "Підсака",
+  chumAction: "Прикормка",
+  chumActionCount: (count) => `Прикормка · ${count} порцій`,
+  chumBoatAction: "Кораблик для прикормки",
   continueAfterOutcome: "ПРОДОВЖИТИ",
 });

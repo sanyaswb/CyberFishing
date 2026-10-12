@@ -28,7 +28,7 @@ class TestElement {
   }
   removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
   fire(type, fields = {}) {
-    const event = { key: "", shiftKey: false, prevented: false, stopped: false,
+    const event = { target: this, key: "", shiftKey: false, prevented: false, stopped: false,
       preventDefault() { this.prevented = true; }, stopPropagation() { this.stopped = true; }, ...fields };
     for (const listener of this.listeners.get(type) || []) listener(event);
     return event;
@@ -38,7 +38,17 @@ class TestElement {
 }
 
 class TestDocument {
-  constructor() { this.body = new TestElement(this, "body"); this.activeElement = this.body; }
+  constructor() { this.body = new TestElement(this, "body"); this.activeElement = this.body; this.listeners = new Map(); }
+  addEventListener(type, listener) {
+    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
+    this.listeners.get(type).add(listener);
+  }
+  removeEventListener(type, listener) { this.listeners.get(type)?.delete(listener); }
+  fire(type, fields = {}) {
+    const event = { target: this.body, stopped: false, stopPropagation() { this.stopped = true; }, ...fields };
+    for (const listener of this.listeners.get(type) || []) listener(event);
+    return event;
+  }
   createElement(tag) { return new TestElement(this, tag); }
   all(predicate, root = this.body) {
     return [...(predicate(root) ? [root] : []), ...root.children.flatMap((child) => this.all(predicate, child))];

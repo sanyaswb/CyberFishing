@@ -85,7 +85,11 @@
 
 @media (max-width: 520px) {
   .inventory-assembly-editor {
-    padding: 14px;
+    padding: 10px;
+  }
+
+  .inventory-assembly-editor__sockets {
+    gap: var(--inventory-mobile-gap);
   }
 
   .inventory-assembly-editor__actions {

@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.34.2 - HUD and Mobile Dialog Layout
+
+- Fade the fullscreen button after entry, keep its icon unchanged, and restore it on exit. Anchor the clock at the top right and DEV settings at the top left.
+- Center the depth float vertically; constrain the expanded track above the bottom toolbar. Show the depth below the collapsed float or to the right of the expanded slider.
+- Align chum, landing net, keepnet and inventory in evenly spaced 48px icon-only slots with shared styling; use matching close buttons in both dialogs.
+- Move keepnet explanations into a circular help button with a dismissible popover. Give inventory filters breathing room and fit at least four item/catch icons per row at 320px.
+- Visual browser acceptance is performed by the owner; code checks cover help dismissal, fullscreen lifecycle and existing gameplay behavior.
+
 ## v0.34.1 - Inventory Aquarium Feed and Mobile Controls
 
 - Aquarium feed packs are separate inventory catalog items, available in grouped DEV free-shop sections. Identical packs stack, and Groundbait has a For aquarium checkbox filter.
