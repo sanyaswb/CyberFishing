@@ -1,0 +1,25 @@
+/* time-display DOM appearance. */
+
+.time-display {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: rgba(var(--ui-surface-rgb), 0.85);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  padding: 6px 16px;
+  color: var(--ui-text);
+  font-family: var(--ui-font-mono);
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: var(--ui-layer-hud);
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.time-display__time {
+  color: var(--ui-accent);
+}

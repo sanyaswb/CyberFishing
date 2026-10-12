@@ -1,0 +1,98 @@
+export class DebugService {
+  #config;
+  #debugModulesSource;
+  #currentBaits = [];
+  constructor(config, debugModulesSource) {
+    this.#config = config;
+    this.#debugModulesSource = debugModulesSource;
+  }
+
+  update(context) {
+    if (!this.#config.debug?.overlay && !this.#hasEnabledConsoleModules())
+      return;
+    if (!context || typeof context.emitDebugEvent !== "function") return;
+    context.emitDebugEvent("debug-live-update", this.#buildPayload(context));
+  }
+
+  #hasEnabledConsoleModules() {
+    const modules = {
+      ...(this.#config.debug?.consoleModules || {}),
+      ...(this.#debugModulesSource?.() || {}),
+    };
+    for (const key of Object.keys(modules)) {
+      if (modules[key]) return true;
+    }
+    return false;
+  }
+
+  #buildPayload(context) {
+    const env = context.getEnvSnapshot();
+    const pos = context.getFloatPosition();
+    const ed = context.getBiteEnv();
+    const eq = context.getEquipment();
+    const input = context.getInputState?.() || {};
+    const currentBaits = this.#currentBaits;
+    currentBaits.length = 0;
+    const equippedBaits = eq?.baits || [];
+    for (let i = 0; i < equippedBaits.length; i++) {
+      if (equippedBaits[i]) currentBaits.push(equippedBaits[i]);
+    }
+    const currentHookSize =
+      eq?.hooks?.[0]?.effectiveStats?.hookSizeGrade ||
+      eq?.baits?.[0]?.effectiveStats?.hookSizeGrade ||
+      1;
+    const detail = {
+      gameState: context.getGameStateName(),
+      floatX: Math.round(pos.x),
+      floatY: Math.round(pos.y),
+      hookDepth: ed.hookDepth,
+      bottomDepth: ed.bottomDepth,
+      lineLength: ed.lineLength,
+      baits: currentBaits.map((bait) => bait.itemId || bait.id),
+      phase: env.phase,
+      isRaining: env.isRaining,
+      isFoggy: env.isFoggy,
+      equipment: eq,
+      eq,
+      liveChances: context.getLiveChances(ed, {
+        hookSize: currentHookSize,
+        baitCandidates: currentBaits,
+        exposureMs: context.getCastExposureMs?.() || 0,
+        isPulling: input.isPulling,
+      }),
+      chumZones: context.getChumZones(),
+    };
+
+    const activeBoat = context.getActiveBoat();
+    const boatHasSonar = eq?.delivery?.effectiveStats?.hasSonar ?? false;
+    if (activeBoat && boatHasSonar && detail.gameState === "scouting") {
+      const boatCell = context.checkWater(activeBoat.pos.x, activeBoat.pos.y);
+      const boatChum = context.getChumDataAt(
+        activeBoat.pos.x,
+        activeBoat.pos.y,
+      );
+      detail.isBoatSonar = true;
+      detail.floatX = Math.round(activeBoat.pos.x);
+      detail.floatY = Math.round(activeBoat.pos.y);
+      detail.bottomDepth = boatCell?.depth || 0;
+      const boatEd = {
+        ...ed,
+        bottomDepth: detail.bottomDepth,
+        hookDepth: detail.bottomDepth,
+        zoneBonus: boatCell?.multiplier || boatCell?.bonus || 1.0,
+        chumBonus: boatChum.bonus || 1.0,
+        chumTargets: boatChum.targets || [],
+      };
+      detail.liveChances = context.getLiveChances(boatEd, {
+        hookSize: currentHookSize,
+        baitCandidates: currentBaits,
+        exposureMs: 0,
+        isPulling: false,
+      });
+    }
+
+    const stateDebug = context.getStateDebugData();
+    if (stateDebug) Object.assign(detail, stateDebug);
+    return detail;
+  }
+}

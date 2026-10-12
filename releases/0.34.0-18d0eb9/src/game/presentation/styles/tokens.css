@@ -1,0 +1,24 @@
+/* Shared DOM palette and stacking roles. Canvas visual descriptors stay injected. */
+:root {
+  --ui-accent: #00ccff;
+  --ui-accent-rgb: 0, 204, 255;
+  --ui-success: #00ff80;
+  --ui-success-rgb: 0, 255, 128;
+  --ui-danger: #ff4444;
+  --ui-warning: #ffaa00;
+  --ui-info: #73c2fb;
+  --ui-muted: #8a9bac;
+  --ui-text: #fff;
+  --ui-border: #4a5b6c;
+  --ui-surface-rgb: 11, 21, 32;
+  --ui-font-mono: monospace;
+  --ui-radius-control: 4px;
+  --ui-radius-panel: 8px;
+  --ui-layer-badge: 9800;
+  --ui-layer-backpack: 9900;
+  --ui-layer-hud: 9998;
+  --ui-layer-controls: 9999;
+  --ui-layer-panel: 10000;
+  --ui-layer-tooltip: 10001;
+  --ui-layer-outcome: 20000;
+}
