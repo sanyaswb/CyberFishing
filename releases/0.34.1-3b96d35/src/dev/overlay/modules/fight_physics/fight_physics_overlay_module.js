@@ -1,0 +1,71 @@
+import { FIGHT_PHYSICS_RENDER_KEYS } from "../../config/overlay_modules_config.js";
+import { OverlayModule } from "../../overlay_module.js";
+
+export class FightPhysicsOverlayModule extends OverlayModule {
+  #groups;
+
+  constructor({
+    settingsStore,
+    htmlBuilder,
+    groups = null,
+  } = {}) {
+    super("fightPhysics", { settingsStore, htmlBuilder });
+    this.#groups = groups;
+  }
+
+  isActive(data) {
+    return (
+      this.shouldRender(data) &&
+      (this.settingsStore?.isEnabled?.("fightPhysics") ||
+        this.settingsStore?.anyEnabled?.(FIGHT_PHYSICS_RENDER_KEYS))
+    );
+  }
+
+  shouldRender(data) {
+    return data.gameState === "playing";
+  }
+
+  render(data) {
+    const lineRemaining = Math.max(0, Number(data.lineRemainingMeters) || 0);
+    const lineMaxRemaining = Math.max(
+      0,
+      Number(data.lineMaxRemainingMeters) || 0,
+    );
+    const rodStrokeUsed = Math.max(
+      0,
+      Number(data.rodStrokeUnrecoveredMeters) || 0,
+    );
+    const rodStrokeCapacity = Math.max(
+      0,
+      Number(data.rodStrokeCapacityMeters) || 0,
+    );
+    const normalized = {
+      ...data,
+      lineRemaining,
+      lineMaxRemaining,
+      rodStrokeUsed,
+      rodStrokeCapacity,
+    };
+
+    let html = this.formatHeader("FIGHT PHYSICS", "#73c2fb");
+    html += this.#groups
+      .map((group) => this.#renderGroup(group, normalized))
+      .join("");
+    return html + `<div class="debug-overlay__spacer"></div>`;
+  }
+
+  #renderGroup(group, data) {
+    const forceDefaultSummary =
+      group.key === "fightCore" &&
+      this.settingsStore?.isEnabled?.("fightPhysics");
+    const body = group.sections
+      .map((section, index) =>
+        section.render(data, { force: forceDefaultSummary && index === 0 }),
+      )
+      .join("");
+
+    if (!body) return "";
+
+    return `<div class="debug-overlay__text debug-overlay__text--muted debug-overlay__physics-title">${this.htmlBuilder.escapeHtml(group.title)}</div>${body}`;
+  }
+}
