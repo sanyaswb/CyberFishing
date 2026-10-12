@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.33.1 - Keepnet Species Cards
+
+- Keepnet groups fish by species with thumbnails and quantity badges. Open a species in the same dialog to inspect each fish's image, weight, saved rarity, level and survival timer; convert, select, transfer or confirm release by individual ID.
+- Preserve caught rarity and live-bait artwork in snapshot v2, with validated v1 migration and explicit unknown historical ratings. Countdown updates retain focus, images and scrolling.
+- Fix expired bait between care ticks, incorrect feed protection outside the aquarium, configured automatic feeder thresholds, hook return capacity and interrupted casts after reload. Full aquarium/keepnet outcomes now explain where the catch went or why it could not be kept.
+- Add deterministic DOM interaction coverage, 100 outcome/cast cycles and 24-hour offline/reload acceptance. Visual browser acceptance remains with the owner.
+
 ## v0.33.0 - Live Bait and Fisherman's House
 
 - GitHub Pages now publishes the DEV build at `/dev.html` alongside the immutable game release for remote testing.

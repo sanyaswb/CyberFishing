@@ -64,3 +64,15 @@ The owner should play-check motion and feeding feel before release, as `DEVELOPM
 - `deathOrder` is sampled and saved but is not read by care settlement. A persisted random tie order for simultaneous starvation deaths remains open (T050).
 - A full aquarium falls back to the keepnet as specified, but the successful victory action closes without showing that reason (T051).
 - Prior browser smoke is recorded above. This audit did not repeat the full catch-to-cast, ordinary-bait, offline-care, or packaged-release browser scenarios in T039/T052. T049's repeated deterministic acceptance runs are also outstanding.
+
+## Keepnet follow-up (2026-10-12, v0.33.1)
+
+This supersedes the preceding audit for T049/T051 and Keepnet behavior. 53 tasks are complete and five remain open: T039, T040, T048, T050, T052.
+
+- Added species cards and count badges, same-dialog individual details, exact caught artwork/weight/rarity, existing fish actions with release confirmation, keyboard navigation and stable timer refresh. UI grouping never creates a second writable fish collection.
+- Reproduced rarity loss with a failing assertion before the fix. Snapshot v2 captures the numeric rating, validates v1 migration, retains unknown old rarity as null, and protects corrupt bytes. Live bait now includes its exact image and rating in the read model.
+- Regression checks cover expired candidates between care ticks, mixed aquarium/keepnet fish of one species, read-only auto-feed projection, nonzero feeder threshold, elapsed care on rejected commands, hook capacity reservations, and recovery of surviving interrupted casts without reviving expired fish.
+- `utils/live-bait-check.js` includes 100 eligible/ineligible outcomes and exactly-once hook loss/reload cycles; a 24-hour absence produces the same full read model before and after reload. `utils/keepnet-check.js` exercises production Keepnet composition with a DOM test double, including distinct individual images/ratings, missing images, filters, countdown focus/scroll retention, command actions, release confirmation, expiry, Back/Escape/Tab and victory failure/fallback notifications.
+- Architecture and Quick passed; Full passed 43 checks. The unchanged game-cycle baseline and existing inventory save checks pass. Full's release check before commit tested the prior committed release; publication must use the new commit.
+- Browser visual checks were not run at the owner's explicit request. Owner acceptance: open `dev.html`, retain two fish of one species with different weights/ratings, verify card count and thumbnails, inspect details, use filters/Back, select a live bait and test the mobile layout.
+- Remaining care gap: `deathOrder` is persisted but simultaneous starvation deaths still have no per-episode random tie ordering (T050). This update preserves the existing lifetime/death balance; it does not claim that requirement complete. Multi-room work (T048) and owner visual/feel acceptance remain separate.

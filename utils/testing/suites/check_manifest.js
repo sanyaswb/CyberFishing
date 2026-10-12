@@ -207,6 +207,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["quick", "gameplay"],
   },
   {
+    id: "keepnet",
+    title: "Keepnet grouping, details and interaction lifecycle",
+    file: "utils/keepnet-check.js",
+    suites: ["quick", "gameplay"],
+  },
+  {
     id: "house",
     title: "Fisherman's house, shared game time and room upgrades",
     file: "utils/house-check.js",

@@ -22,11 +22,16 @@ import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/in
 import { InventoryTooltipPresenter } from "../../game/presentation/inventory/inventory_tooltip_presenter.js";
 import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
 import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
+import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
+import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
+import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 
 export class InventoryUiBootstrap {
   static createKeepnet({ documentRef, liveBait, inventoryUI }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI });
+    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI,
+      model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
+      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }) });
     inventoryUI.setOnOpen(() => keepnetUI.close());
     return keepnetUI;
   }

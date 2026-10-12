@@ -46,14 +46,20 @@ export class VictoryState extends GameState {
     });
     if (!action || this.#resolved) return;
     if (action === "live_bait" && !this.deps.liveBait?.canConvert(fish)) return;
+    let result;
     if (this.deps.liveBait) {
-      const result = this.deps.liveBait.resolveCatch(this.#catchId, fish, action);
-      if (!result.ok) return;
+      result = this.deps.liveBait.resolveCatch(this.#catchId, fish, action);
+      if (!result.ok) {
+        input.pointerReleased = false;
+        this.deps.onCatchResult?.(result);
+        return;
+      }
     }
     this.#resolved = true;
 
     input.pointerReleased = false;
     this.deps.commands.setState("scouting");
+    if (result) this.deps.onCatchResult?.(result);
   }
 
   getRenderState(target, bounds) {

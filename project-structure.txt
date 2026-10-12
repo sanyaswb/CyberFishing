@@ -72,6 +72,30 @@
 │  │        ├── crucian_stalker--4-uniq.webp
 │  │        ├── crucian_stalker--5-uniq.webp
 │  │        └── crucian_stalker--6-uniq.webp
+│  ├── house
+│  │  └── room-1
+│  │     ├── lvl-1
+│  │     │  ├── room--1-day-lvl--1.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--1.jpg
+│  │     │  └── room--1-nightLight--on-lvl--1.jpg
+│  │     ├── lvl-2
+│  │     │  ├── room--1-day-lvl--2.jpg
+│  │     │  ├── room--1-eveningLight--off-lvl--2.jpg
+│  │     │  └── room--1-nightLight--on-lvl--2.jpg
+│  │     ├── lvl-3
+│  │     │  ├── room--1-day-lvl--3.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--3.jpg
+│  │     │  └── room--1-nightLight--on-lvl--3.jpg
+│  │     ├── lvl-4
+│  │     │  ├── room--1-day-lvl--4.jpg
+│  │     │  ├── room--1-eveningLight--off-lvl--4.jpg
+│  │     │  └── room--1-nightLight--off-lvl--4.jpg
+│  │     ├── lvl-5
+│  │     │  ├── room--1-day-lvl--5.jpg
+│  │     │  ├── room--1-eveningLight--on-lvl--5.jpg
+│  │     │  └── room--1-nightLight--on-lvl--5.jpg
+│  │     ├── room--1_aqua.png
+│  │     └── under-renovation.png
 │  └── locations
 │     └── test
 │        ├── bg_test--day.webp
@@ -94,6 +118,7 @@
 │  ├── simplified_fight_physics_model.md
 │  ├── stats_and_balance_spec.md
 │  └── styles.md
+├── fisherman-house.html
 ├── index.html
 ├── package-lock.json
 ├── package.json
@@ -189,6 +214,18 @@
 │  │  └── spec.md
 │  ├── 054-bait-boat-water-metric
 │  │  └── spec.md
+│  ├── 055-live-bait-aquarium
+│  │  ├── checklists
+│  │  │  └── requirements.md
+│  │  ├── contracts
+│  │  │  ├── live-bait-actions.md
+│  │  │  └── local-save-and-assets.md
+│  │  ├── data-model.md
+│  │  ├── plan.md
+│  │  ├── quickstart.md
+│  │  ├── research.md
+│  │  ├── spec.md
+│  │  └── tasks.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -204,9 +241,12 @@
 │  │     ├── game_config_composition.js
 │  │     ├── game_render_composition.js
 │  │     ├── game_startup.js
+│  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
+│  │     ├── house_startup.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_ui_bootstrap.js
+│  │     ├── live_bait_composition.js
 │  │     └── player_inventory_composition.js
 │  ├── dev
 │  │  ├── core
@@ -367,7 +407,8 @@
 │  │     └── render_pass.js
 │  ├── entrypoints
 │  │  ├── dev.entry.js
-│  │  └── game.entry.js
+│  │  ├── game.entry.js
+│  │  └── house.entry.js
 │  ├── game
 │  │  ├── application
 │  │  │  ├── casting
@@ -403,6 +444,8 @@
 │  │  │  │  ├── mutable_fight_frame_context.js
 │  │  │  │  ├── reel_service.js
 │  │  │  │  └── tension_service.js
+│  │  │  ├── house
+│  │  │  │  └── room_upgrade_service.js
 │  │  │  ├── input
 │  │  │  │  ├── fight_input_action_composer.js
 │  │  │  │  └── pull_input_mapper.js
@@ -470,6 +513,13 @@
 │  │  │  │  ├── rod_cast_display_stats_writer.js
 │  │  │  │  ├── runtime_display_stat_formatter.js
 │  │  │  │  └── runtime_display_stat_writer.js
+│  │  │  ├── live_bait
+│  │  │  │  ├── catch_disposition_service.js
+│  │  │  │  ├── live_bait_bait_candidate_port.js
+│  │  │  │  ├── live_bait_care_service.js
+│  │  │  │  ├── live_bait_command_service.js
+│  │  │  │  ├── live_bait_motion_adapter.js
+│  │  │  │  └── live_bait_snapshot_store.js
 │  │  │  ├── session
 │  │  │  │  ├── game_application.js
 │  │  │  │  ├── inactive_debug_events.js
@@ -511,20 +561,26 @@
 │  │  │  │  │  ├── peaceful_fish.js
 │  │  │  │  │  ├── predator_fish.js
 │  │  │  │  │  └── rare_fish.js
+│  │  │  │  ├── house
+│  │  │  │  │  └── house_config.js
 │  │  │  │  ├── inventory
 │  │  │  │  │  └── item_assembly_profiles.js
 │  │  │  │  ├── items
 │  │  │  │  │  ├── item_database.js
 │  │  │  │  │  └── item_stat_overrides.js
+│  │  │  │  ├── live_bait
+│  │  │  │  │  └── live_bait_config.js
 │  │  │  │  ├── locations
 │  │  │  │  │  └── location_database.js
-│  │  │  │  └── physics
-│  │  │  │     ├── environment_physics.js
-│  │  │  │     ├── fight_physics.js
-│  │  │  │     ├── physics_units_and_naming.js
-│  │  │  │     ├── retrieve_physics.js
-│  │  │  │     ├── tackle_physics.js
-│  │  │  │     └── tension_physics.js
+│  │  │  │  ├── physics
+│  │  │  │  │  ├── environment_physics.js
+│  │  │  │  │  ├── fight_physics.js
+│  │  │  │  │  ├── physics_units_and_naming.js
+│  │  │  │  │  ├── retrieve_physics.js
+│  │  │  │  │  ├── tackle_physics.js
+│  │  │  │  │  └── tension_physics.js
+│  │  │  │  └── time
+│  │  │  │     └── game_time_config.js
 │  │  │  ├── runtime
 │  │  │  │  ├── config_override_store.js
 │  │  │  │  ├── config_provider.js
@@ -656,6 +712,8 @@
 │  │  │  │  ├── tackle_stress_accumulator.js
 │  │  │  │  ├── tackle_stress_system.js
 │  │  │  │  └── weakest_tackle_limit_resolver.js
+│  │  │  ├── house
+│  │  │  │  └── room_progress.js
 │  │  │  ├── inventory
 │  │  │  │  ├── flat_inventory_item_repository.js
 │  │  │  │  ├── inventory_capacity_policy.js
@@ -712,6 +770,15 @@
 │  │  │  │     └── item_rarity_strategy_registry.js
 │  │  │  ├── line
 │  │  │  │  └── line_allocation_policy.js
+│  │  │  ├── live_bait
+│  │  │  │  ├── aquarium_care_calculator.js
+│  │  │  │  ├── aquarium_state.js
+│  │  │  │  ├── caught_fish_collection.js
+│  │  │  │  ├── caught_fish_rarity.js
+│  │  │  │  ├── feed_slot_priority_policy.js
+│  │  │  │  ├── feed_supply_state.js
+│  │  │  │  ├── live_bait_eligibility_policy.js
+│  │  │  │  └── live_bait_motion_profile_resolver.js
 │  │  │  ├── loadouts
 │  │  │  │  ├── equipment_loadout.js
 │  │  │  │  ├── equipment_loadout_repository.js
@@ -732,19 +799,22 @@
 │  │  │  │  ├── chum_rules.js
 │  │  │  │  ├── equipment_rules.js
 │  │  │  │  └── player_cast_rules.js
-│  │  │  └── tackle
-│  │  │     ├── bait_factory.js
-│  │  │     ├── equipment.js
-│  │  │     ├── feeder_entity.js
-│  │  │     ├── float_entity.js
-│  │  │     ├── hook.js
-│  │  │     ├── jig_entity.js
-│  │  │     ├── net.js
-│  │  │     ├── reel.js
-│  │  │     ├── rod.js
-│  │  │     ├── spinner_entity.js
-│  │  │     ├── water_entity.js
-│  │  │     └── wobbler_entity.js
+│  │  │  ├── tackle
+│  │  │  │  ├── bait_factory.js
+│  │  │  │  ├── equipment.js
+│  │  │  │  ├── feeder_entity.js
+│  │  │  │  ├── float_entity.js
+│  │  │  │  ├── hook.js
+│  │  │  │  ├── jig_entity.js
+│  │  │  │  ├── net.js
+│  │  │  │  ├── reel.js
+│  │  │  │  ├── rod.js
+│  │  │  │  ├── spinner_entity.js
+│  │  │  │  ├── water_entity.js
+│  │  │  │  └── wobbler_entity.js
+│  │  │  └── time
+│  │  │     ├── background_time_blend.js
+│  │  │     └── game_time_clock.js
 │  │  └── presentation
 │  │     ├── casting
 │  │     │  └── cast_scene_renderer.js
@@ -759,6 +829,10 @@
 │  │     │  ├── line_visual_state_controller.js
 │  │     │  ├── rod_line_renderer.js
 │  │     │  └── rod_visual_offset_system.js
+│  │     ├── house
+│  │     │  ├── house_labels.js
+│  │     │  ├── house_presenter.js
+│  │     │  └── house_view.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js
 │  │     │  ├── fight_hud_renderer.js
@@ -810,6 +884,11 @@
 │  │     │  ├── item_quality_resolver.js
 │  │     │  ├── rod_cast_display_labels.js
 │  │     │  └── terminal_line_slot_label_resolver.js
+│  │     ├── keepnet
+│  │     │  ├── keepnet_card_renderer.js
+│  │     │  ├── keepnet_labels.js
+│  │     │  ├── keepnet_ui.js
+│  │     │  └── keepnet_view_model.js
 │  │     ├── rarity
 │  │     │  └── rarity_visual_config.js
 │  │     ├── rendering
@@ -844,6 +923,7 @@
 │  │     │  ├── degradation_color_resolver.js
 │  │     │  ├── fight_area_style_resolver.js
 │  │     │  ├── game-shell.css
+│  │     │  ├── house.css
 │  │     │  ├── hud
 │  │     │  │  ├── chum-control.css
 │  │     │  │  ├── depth-selector.css
@@ -866,6 +946,7 @@
 │  │     │  │  ├── slots.css
 │  │     │  │  ├── theme.css
 │  │     │  │  └── tooltips.css
+│  │     │  ├── keepnet.css
 │  │     │  ├── outcome_style_resolver.js
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
@@ -922,13 +1003,18 @@
 │        │  ├── canvas_metrics_provider.js
 │        │  └── game_loop.js
 │        ├── storage
-│        │  └── local_storage_cache.js
+│        │  ├── game_time_local_store.js
+│        │  ├── live_bait_local_store.js
+│        │  ├── local_storage_cache.js
+│        │  └── room_progress_local_store.js
 │        ├── time
 │        │  ├── browser_timeout_scheduler.js
+│        │  ├── browser_wall_clock.js
 │        │  └── game_clock.js
 │        └── ui
 │           ├── chum_controls.js
 │           ├── depth_selector.js
+│           ├── embedded_page_overlay.js
 │           ├── game_controls.js
 │           ├── hold_charges.js
 │           └── time_display.js
@@ -946,12 +1032,14 @@
    ├── degradation-color-check.js
    ├── dev-server.js
    ├── dev-tools-linked-parameter-check.js
+   ├── embedded-page-overlay-check.js
    ├── fish-rarity-check.js
    ├── float-depth-cast-check.js
    ├── game-application-composition-check.js
    ├── game-cycle-check.js
    ├── git-version-copy.js
    ├── hook-domain-semantics-check.js
+   ├── house-check.js
    ├── inventory-cast-and-lure-check.js
    ├── inventory-equipment-check.js
    ├── inventory-equipment-hydration-check.js
@@ -969,7 +1057,9 @@
    ├── item-rarity-roundtrip-check.js
    ├── item-stat-contract-check.js
    ├── item-state-hardening-check.js
+   ├── keepnet-check.js
    ├── line-allocation-check.js
+   ├── live-bait-check.js
    ├── pages-release-check.js
    ├── platform-runtime-check.js
    ├── player-inventory-check.js
@@ -986,6 +1076,10 @@
    │  │  └── source_runtime.js
    │  ├── doubles
    │  │  └── delegating_inventory_capacity_policy.js
+   │  ├── keepnet
+   │  │  └── test_document.js
+   │  ├── live_bait
+   │  │  └── keepnet_lifecycle_scenarios.js
    │  ├── runtime
    │  │  ├── chum_test_composition.js
    │  │  ├── config_test_composition.js

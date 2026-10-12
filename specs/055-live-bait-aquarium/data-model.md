@@ -32,4 +32,8 @@ Application state holds at most one `selectedFishId` referring to a living bait 
 
 ## Save Snapshot v1
 
-`schemaVersion: 1`, `revision` (nonnegative integer), `lastAppliedAtMs`, `fish[]`, `resolvedCatchIds`, `aquarium`, `feedSupply`, `selectedFishId`. See [local-save-and-assets.md](contracts/local-save-and-assets.md). This is a new local key and does not alter inventory schema v4. Future cloud progress needs an explicit contract/version extension and validation.
+`schemaVersion: 2`, `revision` (nonnegative integer), `lastAppliedAtMs`, `fish[]`, `resolvedCatchIds`, `aquarium`, `feedSupply`, `selectedFishId`. See [local-save-and-assets.md](contracts/local-save-and-assets.md). The existing local key is retained and inventory schema v4 is unchanged. V1 is validated then migrated in memory; the next successful write persists v2. Catch rarity is a detached `{ halfSteps, maxHalfSteps, unitsPerStar }` snapshot, a legacy nonempty text label, or `null` when unknown. Previously discarded rarity cannot be recovered. Images remain the exact caught variant paths. Future cloud progress needs an explicit contract/version extension and validation.
+
+## Keepnet projection and return reservation
+
+Species groups exist only in presentation: group count, total weight and thumbnail do not replace individual fish records. Filters precede grouping; the detail list sorts by descending weight with stable ID ties. Hook fish count toward keepnet capacity as reserved return slots. A new fishing session explicitly recovers surviving interrupted hook fish; house composition does not. Read views settle a detached snapshot using the same event-time care service, without storage writes or new random samples. Rejected commands persist any care already elapsed before reporting their rejection.

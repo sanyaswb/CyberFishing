@@ -1,3 +1,5 @@
+import { CaughtFishRarity } from "../../domain/live_bait/caught_fish_rarity.js";
+
 export class LiveBaitSnapshotStore {
   #storage;
   #raw = null;
@@ -13,7 +15,7 @@ export class LiveBaitSnapshotStore {
     const known = new Set(fishDb.map((fish) => fish.id));
     const locations = new Set(["keepnet", "aquarium", "hook", "dead", "consumed", "released"]);
     const fish = state?.fish;
-    if (state?.schemaVersion !== 1 || !Number.isSafeInteger(state.revision) || state.revision < 0 ||
+    if (![1, 2].includes(state?.schemaVersion) || !Number.isSafeInteger(state.revision) || state.revision < 0 ||
       !Number.isFinite(state.lastAppliedAtMs) || state.lastAppliedAtMs < 0 ||
       !Array.isArray(fish) || !state.resolvedCatchIds || Array.isArray(state.resolvedCatchIds) ||
       typeof state.resolvedCatchIds !== "object" || !state.aquarium || !state.feedSupply ||
@@ -33,10 +35,10 @@ export class LiveBaitSnapshotStore {
     }
     const ids = new Set();
     for (const entry of fish) {
-      if (typeof entry.id !== "string" || !entry.id || ids.has(entry.id) || !known.has(entry.speciesId) ||
+      if (!entry || typeof entry.id !== "string" || !entry.id || ids.has(entry.id) || !known.has(entry.speciesId) ||
         !Object.hasOwn(state.resolvedCatchIds, entry.id) ||
         typeof entry.name !== "string" || typeof entry.imagePath !== "string" ||
-        typeof entry.rarity !== "string" || !Number.isFinite(entry.level) ||
+        !(state.schemaVersion === 1 ? typeof entry.rarity === "string" : CaughtFishRarity.isValid(entry.rarity)) || !Number.isFinite(entry.level) ||
         !Number.isFinite(entry.weightKg) || entry.weightKg <= 0 || !locations.has(entry.disposition) ||
         !["catch", "live_bait"].includes(entry.purpose) || !Number.isFinite(entry.caughtAtMs) ||
         entry.caughtAtMs < 0 ||
@@ -55,6 +57,11 @@ export class LiveBaitSnapshotStore {
     }
     if (fish.filter((item) => item.disposition === "aquarium").length >
       (state.aquarium.owned ? config.capacities[state.aquarium.level - 1] : 0)) return { ok: false, reason: "invalid_snapshot" };
+    // Keep the existing storage key. Validate v1 before migrating; unknown/corrupt bytes are untouched.
+    if (state.schemaVersion === 1) {
+      for (const entry of fish) entry.rarity = CaughtFishRarity.capture(entry.rarity);
+      state.schemaVersion = 2;
+    }
     return { ok: true, state };
   }
   save(state) {
@@ -67,7 +74,7 @@ export class LiveBaitSnapshotStore {
     return { ok: true, revision: next.revision };
   }
   #empty(nowMs) {
-    return { schemaVersion: 1, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
+    return { schemaVersion: 2, revision: 0, lastAppliedAtMs: nowMs, fish: [], resolvedCatchIds: {},
       aquarium: { owned: false, level: 0, feedBySpecies: {} },
       feedSupply: { portions: 0, autoFeederOwned: false, autoFeederEnabled: false }, selectedFishId: null };
   }

@@ -343,6 +343,8 @@ export class GameCompositionRoot {
     });
     const liveBait = composeLiveBait({ storage: this.#windowTarget.localStorage,
       config: this.#config.liveBait, fishDb: FISH_DB, rng });
+    // A new fishing session has no in-flight cast to own a persisted hook fish.
+    liveBait.recoverInterruptedCast();
     const liveBaitCandidate = new LiveBaitBaitCandidatePort(liveBait, FISH_DB);
     const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(FISH_DB);
     const createLiveBaitMotion = (speciesId) => {
@@ -1114,6 +1116,7 @@ export class GameCompositionRoot {
       victoryActionGestureResolver:
         runtime.interaction.victoryActionGestureResolver,
       liveBait: runtime.liveBait,
+      onCatchResult: (result) => runtime.keepnetUI?.showCatchResult(result),
       liveBaitCandidate: runtime.liveBaitCandidate,
       getLiveBaitMotion: appPorts.getLiveBaitMotion,
       hookedFishOverride: this.#createOptionalDiagnostic(

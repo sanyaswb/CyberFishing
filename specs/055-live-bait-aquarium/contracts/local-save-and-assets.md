@@ -2,7 +2,7 @@
 
 ## Local snapshot
 
-- Key: `player_live_bait_v1` through an injected adapter using the existing storage prefix; `schemaVersion` is exactly `1`.
+- Key: `player_live_bait_v1` through an injected adapter using the existing storage prefix; new writes use `schemaVersion: 2`. V1 remains readable, is fully validated before migration, and is persisted as v2 on the next successful write. Empty legacy rarity becomes `null`; nonempty legacy labels are preserved. V2 rarity accepts a bounded integer rating snapshot (`halfSteps`, `maxHalfSteps`, `unitsPerStar`), legacy text or `null`. Refresh older open builds before using this save with the new release.
 - Canonical fields: `revision`, `lastAppliedAtMs`, `fish[]`, `resolvedCatchIds`, `aquarium`, `feedSupply`, `selectedFishId`. Serialize no computed bar widths, formatted countdowns, DOM state, raw species physics, or full config copies.
 - Validate finite weights/timestamps, safe integer counts/revisions, known dispositions, unique fish/catch IDs, catalog species, reference integrity, capacity, and `[0,1]` feed fractions before hydration. Preserve unknown/corrupt stored bytes and surface an error.
 - Save once after an accepted command/care settlement, never every frame. Detect observed stale revisions from another page/tab and surface conflict before overwriting; do not automatically merge. Browser localStorage does not provide atomic compare-and-swap, so truly simultaneous cross-tab writes remain a documented limitation until authoritative storage exists.

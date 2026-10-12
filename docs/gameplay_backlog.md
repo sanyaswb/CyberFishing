@@ -58,6 +58,57 @@ Notes: task in [054](../specs/054-bait-boat-water-metric/spec.md) (ground plane 
 
 ## Owner play notes
 
+## Fixed in v0.33.1
+
+### G-009 Retained catches lose rarity and live-bait art (P2, done)
+Found: 2026-10-12, Keepnet review.
+Reproduce: retain a catch with numeric rarity 3/12, convert it and reload.
+Expected: both catch and live bait show the same image and rating.
+Actual: the save accepted strings only and discarded numeric rarity; live-bait views omitted art.
+Fix/evidence: validated snapshot v2 and v1 migration; `keepnet_lifecycle_scenarios.js` failed on the missing rating before the fix and passes after it. Lost historical ratings remain unknown.
+
+### G-010 Live-bait display and candidates disagree with elapsed care (P2, done)
+Found: 2026-10-12, Keepnet review.
+Reproduce: advance a fake clock past life expiry before the 10-second care tick, or keep the same species in a fed aquarium and an unfed keepnet.
+Expected: expired fish are unavailable; aquarium feed protects only aquarium residents.
+Actual: selected bait remained an attraction candidate; keepnet countdown incorrectly reused aquarium protection; auto-feed projection was absent.
+Fix/evidence: detached event-time read projection, exact hook expiry check and persisted elapsed care even when a command is rejected; deterministic clock checks pass.
+
+### G-011 Hook return can overflow the keepnet (P2, done)
+Found: 2026-10-12, Keepnet review.
+Reproduce: use a one-slot keepnet, cast its live fish, claim another catch, retrieve the bait.
+Expected: capacity reserves the returning individual.
+Actual: a hook freed its slot and retrieval could exceed capacity.
+Fix/evidence: hook reservation and aquarium-cast capacity check; capacity regression passes.
+
+### G-012 Automatic feeder ignores a nonzero configured trigger (P2, done)
+Found: 2026-10-12, Keepnet review.
+Reproduce: configure 50% trigger and ten-second feed duration, advance six seconds with one spare portion.
+Expected: refill at five seconds, then display 90%.
+Actual: settlement only scheduled feed exhaustion, leaving 40% at six seconds.
+Fix/evidence: schedule the configured threshold as a care event; online/read/offline projections agree at 90%.
+
+### G-013 Reload strands a living bait on an interrupted hook (P2, done)
+Found: 2026-10-12, Keepnet review.
+Reproduce: reload a fishing session after moving a selected fish to hook.
+Expected: the surviving individual returns to the keepnet with remaining life.
+Actual: new session has no cast ID but saved fish stays on hook and blocks selection.
+Fix/evidence: fishing bootstrap explicitly recovers interrupted casts; house startup preserves active casts; reload checks verify life and identity, with no resurrection.
+
+### G-014 Keepnet cannot inspect same-species catches clearly (P3, done)
+Found: 2026-10-12, owner request.
+Reproduce: retain several fish of one species with different weights and images.
+Expected: one species thumbnail/count and a same-dialog list of individuals with weight and rarity.
+Actual: flat text-only cards, no details and a full DOM rebuild every countdown tick.
+Fix/evidence: species projection, card renderer and stable dialog refresh; `keepnet-check.js` covers navigation, exact IDs, images, ratings, actions, filters and focus.
+
+### G-015 Full aquarium/keepnet outcomes lack a visible explanation (P2, done)
+Found: 2026-10-12, spec 055 T051 and Keepnet review.
+Reproduce: convert at victory with a full aquarium, or claim into a full keepnet.
+Expected: show fallback destination or rejection and allow retry after freeing capacity.
+Actual: fallback closed silently; rejected claims gave no feedback.
+Fix/evidence: committed outcome metadata and injected presentation callback open Keepnet with the reason; victory retry/duplicate-input checks pass.
+
 Add observations here in any form; Claude turns them into numbered entries.
 
 ## Done / verified

@@ -122,10 +122,19 @@ Deliver US1 as the first reviewable mechanic, validate it, then add Keepnet, Aqu
 ## Phase 7: Convergence
 
 - [ ] T048 Add a second accessible room viewport (with a placeholder until room art is supplied), then verify left/right controls, keyboard or swipe navigation, and retained aquarium state per FR-014 and US3/AC5 (partial).
-- [ ] T049 Run deterministic acceptance checks for 100 eligible/ineligible catch outcomes, 100 repeated outcome/cast lifecycles, and a 24-hour absence plus reload with one-display-tick accuracy per SC-001, SC-002, and SC-003 (partial).
+- [X] T049 Run deterministic acceptance checks for 100 eligible/ineligible catch outcomes, 100 repeated outcome/cast lifecycles, and a 24-hour absence plus reload with one-display-tick accuracy per SC-001, SC-002, and SC-003 (`utils/testing/live_bait/keepnet_lifecycle_scenarios.js`).
 
 ## Phase 8: Convergence
 
 - [ ] T050 Use and persist a randomized death tie order for fish with the same starvation deadline, assigned once per starvation episode; verify that reload and refeeding preserve the surviving fish and do not reroll outcomes per FR-010 and US3/AC4 (partial).
-- [ ] T051 Show a visible reason when an eligible catch falls back to the keepnet because the aquarium is full, while preserving the single successful disposition change per FR-005 and the aquarium-full edge case (partial).
+- [X] T051 Show a visible reason when an eligible catch falls back to the keepnet because the aquarium is full, while preserving the single successful disposition change per FR-005 and the aquarium-full edge case. Victory reports the committed result through an injected callback; Keepnet displays the reason. Rejected full-keepnet outcomes remain retryable.
 - [ ] T052 After the house files are committed, verify the immutable release contains `fisherman-house.html`, its module/style graph, and all seventeen room assets; smoke the packaged house page and record the result per T037 and plan: release evidence (partial).
+
+## Phase 9: Keepnet detail review (owner request, 2026-10-12)
+
+- [X] T053 Group Keepnet read models by species after filtering; show thumbnail and bottom-right count, preserving individual IDs and capacity accounting.
+- [X] T054 Reuse the Keepnet dialog for individual images, weight, rarity, level and timer; add Back/Escape navigation, keyboard focus containment, missing-image fallback, mobile controls, and timer-only DOM updates.
+- [X] T055 Preserve caught rarity/art for catches and live bait; validate and migrate snapshot v1 to v2 without rewriting inventory saves or inventing lost historical rarity.
+- [X] T056 Expose conversion, selection, aquarium transfer and confirmed release through existing application commands; report stale/expired/capacity failures and retain ownership in the application.
+- [X] T057 Fix event-time display projection, expired hook candidates, rejected-command care settlement, configured feeder thresholds, hook return reservations and explicit interrupted-cast recovery at fishing-session startup.
+- [X] T058 Register deterministic Keepnet DOM interaction checks; cover legacy/corrupt saves, mixed protected/unprotected fish, reload, filters, expiry and exact fish actions. Run Architecture, Quick and Full; browser visuals remain owner acceptance.

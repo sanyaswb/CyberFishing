@@ -2,6 +2,7 @@
 const assert = require("node:assert/strict");
 
 async function main() {
+  await require("./testing/live_bait/keepnet_lifecycle_scenarios")();
   const { composeLiveBait } = await import("../src/bootstrap/production/live_bait_composition.js");
   const { LIVE_BAIT_CONFIG } = await import("../src/game/config/raw/live_bait/live_bait_config.js");
   const { LiveBaitMotionAdapter } = await import("../src/game/application/live_bait/live_bait_motion_adapter.js");

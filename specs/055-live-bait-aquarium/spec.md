@@ -37,6 +37,9 @@ The player opens a “Keepnet” button next to Inventory. It opens a matching t
 1. **Given** claimed catches and live fish, **when** Keepnet opens, **then** the left side shows its view and parameters and the right side shows fish with functional filters.
 2. **Given** a live fish in the keepnet, **when** the panel is open, **then** its countdown is visible and updates without needing a page reload.
 3. **Given** either panel is open, **when** the other button is used, **then** focus and closing behavior remain coherent and the player is not left behind overlapping modal dialogs.
+4. **Given** several retained fish of the same species, **when** Keepnet opens, **then** one thumbnail card represents that species with its individual count in the bottom-right corner. Filters apply before grouping; capacity still counts individuals.
+5. **Given** a species card, **when** it is activated, **then** the same dialog shows every individual with its own caught image, weight, saved rarity, level and live-bait timer. Back/Escape restores the species overview; countdown refresh retains focus, images and scroll position.
+6. **Given** an individual detail card, **when** the player converts, selects, transfers or releases it, **then** the existing application command acts on that exact fish ID. Release requires an inline confirmation, stale/expired fish report an error, and the last removed individual returns the dialog to the overview.
 
 ---
 
@@ -113,6 +116,8 @@ The aquarium, feed portions, automatic feeder, and each one-level capacity upgra
 - **FR-021**: During renovation the room MUST show a dark translucent overlay, the supplied transparent `under-renovation.png` at full brightness, a central countdown and a completion button.
 - **FR-022**: The house page MUST use a full-viewport room scene, compact functional controls, and upward-opening bottom menus. Decorative headings and prose without an action or useful state MUST be removed.
 - **FR-023**: The fixed translucent house header MUST slide into view on downward scroll and hide on upward scroll.
+- **FR-024**: Keepnet MUST group thumbnails by species and show individual count at the bottom right. Its species detail view MUST reuse the same dialog and preserve individual IDs, artwork, weight and rarity. Rarity lost by earlier saves MUST be labeled unknown, never reconstructed as a historical fact from current balance rules.
+- **FR-025**: A live bait on the hook MUST reserve one keepnet slot for safe retrieval. A new fishing session MUST return an interrupted surviving hook fish to the keepnet without resetting its lifetime; creating the house service MUST NOT cancel an active cast. Expiry, feed projection and automatic feeder thresholds MUST agree between display updates, commands and offline settlement.
 
 ### Key Entities *(include if feature involves data)*
 

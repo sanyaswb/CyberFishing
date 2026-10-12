@@ -27,7 +27,9 @@ export class LiveBaitCareService {
       for (const [speciesId, count] of groups) {
         const food = state.aquarium.feedBySpecies[speciesId] || 0;
         fractionBefore.set(speciesId, food);
-        if (food > 0) step = Math.min(step, Math.max(0.001, this.#calculator.timeToEmpty(food, count)));
+        const trigger = state.feedSupply.autoFeederEnabled && state.feedSupply.portions > 0
+          ? this.#config.autoFeedTriggerFraction : 0;
+        if (food > 0) step = Math.min(step, Math.max(0.001, this.#calculator.timeToEmpty(Math.max(0, food - trigger), count)));
       }
       for (const fish of state.fish) {
         if (fish.purpose !== "live_bait" || !["keepnet", "hook", "aquarium"].includes(fish.disposition)) continue;

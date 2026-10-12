@@ -207,6 +207,7 @@ export class StateDepsFactory {
       victoryLayoutResolver: root.victoryLayoutResolver,
       victoryActionGestureResolver: root.victoryActionGestureResolver,
       liveBait: root.liveBait,
+      onCatchResult: root.onCatchResult,
       commands: Object.freeze({
         setState: root.setState,
       }),

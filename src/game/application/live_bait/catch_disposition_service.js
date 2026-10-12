@@ -1,6 +1,7 @@
 import { AquariumState } from "../../domain/live_bait/aquarium_state.js";
 import { CaughtFishCollection } from "../../domain/live_bait/caught_fish_collection.js";
 import { LiveBaitEligibilityPolicy } from "../../domain/live_bait/live_bait_eligibility_policy.js";
+import { CaughtFishRarity } from "../../domain/live_bait/caught_fish_rarity.js";
 
 export class CatchDispositionService {
   #config;
@@ -29,13 +30,13 @@ export class CatchDispositionService {
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
     const toAquarium = action === "live_bait" && aquarium.owned && collection.countAt("aquarium") < aquarium.capacity;
     const location = toAquarium ? "aquarium" : "keepnet";
-    if (location === "keepnet" && collection.countAt("keepnet") >= this.#config.keepnetCapacity) return "keepnet_full";
+    if (location === "keepnet" && collection.countAt("keepnet") + collection.countAt("hook") >= this.#config.keepnetCapacity) return "keepnet_full";
     const lifetime = action === "live_bait" ? this.#sampleLifetime() : null;
     collection.resolve(catchId, action, {
       id: catchId, speciesId, name: String(fish.name || this.#fishDb.get(speciesId).name), weightKg,
       level: Number.isFinite(fish.level) ? fish.level : 1,
       imagePath: typeof fish.imagePath === "string" ? fish.imagePath : "",
-      rarity: typeof fish.rarity === "string" ? fish.rarity : "",
+      rarity: CaughtFishRarity.capture(fish.rarity),
       purpose: action === "live_bait" ? "live_bait" : "catch", disposition: location,
       caughtAtMs: state.lastAppliedAtMs, sampledLifetimeMs: lifetime, remainingLifetimeMs: lifetime,
       deathOrder: action === "live_bait" ? this.#rng.next() : null,
