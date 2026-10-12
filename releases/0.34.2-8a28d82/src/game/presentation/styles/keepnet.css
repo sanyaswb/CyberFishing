@@ -1,0 +1,174 @@
+/* Keepnet dialog, help popover and catch cards. Toolbar/close appearance is shared. */
+.keepnet-modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--ui-layer-panel);
+  display: none;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 15px 22px;
+  background: linear-gradient(#020a0eef, #081a1ef7);
+  color: #edf8f4;
+  font: 15px/1.45 system-ui, sans-serif;
+}
+.keepnet-modal--open { display: flex; }
+.keepnet-modal *, .keepnet-modal *::before, .keepnet-modal *::after { box-sizing: border-box; }
+.keepnet-modal [hidden] { display: none; }
+.keepnet-modal__header {
+  position: relative;
+  display: flex;
+  flex: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #457975;
+}
+.keepnet-modal__title { margin: 0; font-size: 1.6rem; }
+.keepnet-modal__header-actions { display: flex; align-items: center; gap: 10px; }
+.keepnet-modal__help {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #73aaa0;
+  border-radius: 50%;
+  background: rgba(115, 170, 160, 0.1);
+  color: #b9eee0;
+  font: 700 20px/1 system-ui, sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.keepnet-modal__help:hover { background: rgba(115, 170, 160, 0.24); }
+.keepnet-modal__help-text {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--ui-layer-tooltip);
+  width: min(320px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid #73aaa0;
+  border-radius: 12px;
+  background: #102728;
+  color: #d5eee6;
+  box-shadow: 0 8px 24px #0008;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+.keepnet-modal__help:focus-visible,
+.keepnet-modal__filter:focus-visible,
+.keepnet-modal__group:focus-visible,
+.keepnet-modal__back:focus-visible,
+.keepnet-modal__action:focus-visible { outline: 2px solid #fce89f; outline-offset: 2px; }
+.keepnet-modal__main {
+  display: grid;
+  grid-template-columns: minmax(240px, .85fr) minmax(0, 1.9fr);
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+  padding-top: 15px;
+}
+.keepnet-modal__left, .keepnet-modal__right {
+  min-width: 0;
+  overflow-y: auto;
+  padding: 16px;
+  border: 1px solid #3a6662;
+  background: #102728;
+  border-radius: 7px;
+}
+.keepnet-modal__visual {
+  display: grid;
+  place-items: center;
+  height: 35%;
+  min-height: 150px;
+  font-size: 5rem;
+  background: radial-gradient(#255d58, #0a181b);
+  border: 1px solid #4c8c83;
+  border-radius: 7px;
+}
+.keepnet-modal__section-title { margin: 13px 0; }
+.keepnet-modal__count { font-size: 1.2rem; font-weight: 700; }
+.keepnet-modal__status { color: #b9d7d0; }
+.keepnet-modal__filters { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 16px; }
+.keepnet-modal__filter {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #588d86;
+  border-radius: 4px;
+  background: #123536;
+  color: white;
+  font: inherit;
+}
+.keepnet-modal__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 10px; }
+.keepnet-modal__fish, .keepnet-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #467972;
+  border-radius: 8px;
+  background: #173738;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.keepnet-modal__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
+.keepnet-modal__group:hover { background: #214b49; border-color: #94dfd0; }
+.keepnet-modal__group .keepnet-modal__thumbnail { position: relative; flex: 1; min-height: 0; }
+.keepnet-modal__group .keepnet-modal__image { position: absolute; inset: 0; height: 100%; max-height: none; }
+.keepnet-modal__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: radial-gradient(#31625a, #11282a); border-radius: 5px; overflow: hidden; }
+.keepnet-modal__image { width: 100%; height: 112px; object-fit: contain; padding: 6px; }
+.keepnet-modal__image-fallback { font-size: 3rem; }
+.keepnet-modal__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #b9eee0; color: #092822; font-weight: 800; text-align: center; }
+.keepnet-modal__back, .keepnet-modal__action {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid #73aaa0;
+  border-radius: 5px;
+  background: #214841;
+  color: #f2fff9;
+  font: inherit;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.keepnet-modal__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+.keepnet-modal__fish-rarity { color: #f0dba7; }
+.keepnet-modal__fish-level { color: #b1cbc5; font-size: .85rem; }
+.keepnet-modal__fish-name { font-size: .92rem; }
+.keepnet-modal__fish-weight { color: #afc8c1; }
+.keepnet-modal__fish-timer { color: #f2cf8d; }
+.keepnet-modal__empty { grid-column: 1 / -1; color: #afc8c1; }
+
+@media (max-width: 740px) {
+  .keepnet-modal { padding: 8px; overflow: hidden; }
+  .keepnet-modal__main { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+  .keepnet-modal__left, .keepnet-modal__right { overflow: visible; padding: 10px; flex: none; }
+  .keepnet-modal__visual { display: none; }
+  .keepnet-modal__left .keepnet-modal__section-title { margin: 0 0 8px; font-size: 14px; }
+  .keepnet-modal__count { margin: 0; font-size: 14px; }
+  .keepnet-modal__status { margin: 8px 0 0; font-size: 13px; }
+  .keepnet-modal__filters { gap: 8px; }
+  .keepnet-modal__filter { flex: 1 1 120px; }
+  /* 320px: 16px outer padding + 22px panel insets + 18px gaps leaves four 66px cards. */
+  .keepnet-modal__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .keepnet-modal__group { padding: 4px; }
+  .keepnet-modal__group .keepnet-modal__fish-name,
+  .keepnet-modal__group .keepnet-modal__fish-weight { display: none; }
+  .keepnet-modal__group .keepnet-modal__thumbnail { height: auto; }
+  .keepnet-modal__badge { right: 4px; bottom: 4px; min-width: 20px; padding: 1px 4px; font-size: 11px; }
+  .keepnet-modal__fish { padding: 4px; gap: 4px; font-size: 11px; }
+  .keepnet-modal__fish .keepnet-modal__thumbnail { aspect-ratio: 1; height: auto; }
+  .keepnet-modal__fish .keepnet-modal__image { height: 100%; padding: 2px; }
+  .keepnet-modal__fish-name, .keepnet-modal__fish-level { font-size: 11px; }
+  .keepnet-modal__image-fallback { font-size: 24px; }
+  .keepnet-modal__actions { flex-direction: column; gap: 4px; }
+  .keepnet-modal__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
+}

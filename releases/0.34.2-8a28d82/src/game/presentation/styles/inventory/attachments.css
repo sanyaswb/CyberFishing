@@ -1,0 +1,64 @@
+/* Equipment compartments stay inside the card's content grid. */
+
+.inventory-attachments {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  gap: var(--inventory-card-gap);
+  pointer-events: none;
+}
+
+.inventory-attachments--reel-line,
+.inventory-attachments--hook {
+  grid-column: 2;
+  grid-row: 1;
+  grid-template-rows: repeat(var(--inventory-badge-count), var(--inventory-attachment-size));
+  align-content: start;
+  justify-items: end;
+  align-items: start;
+}
+
+.inventory-attachments--bottom,
+.inventory-attachments--boat-cargo {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: repeat(var(--inventory-badge-count), var(--inventory-attachment-size));
+  justify-content: end;
+  justify-items: end;
+  align-items: end;
+}
+
+.inventory-attachment-badge {
+  --rarity-color: #68757b;
+  display: flex;
+  width: var(--inventory-attachment-size);
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: var(--inventory-image-inset);
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--rarity-color);
+  background: rgba(9, 17, 20, 0.85);
+  color: var(--ui-text);
+}
+
+.inventory-attachment-badge--empty {
+  border-color: rgba(142, 150, 154, 0.35);
+  background: rgba(142, 150, 154, 0.16);
+}
+
+.inventory-attachment-badge__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.inventory-attachment-badge__icon {
+  font:
+    min(20px, calc(var(--inventory-attachment-size) - 2 * var(--inventory-image-inset) - 2px))/1 system-ui,
+    sans-serif;
+}
