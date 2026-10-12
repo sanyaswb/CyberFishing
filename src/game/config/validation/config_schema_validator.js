@@ -408,8 +408,8 @@ export class ConfigSchemaValidator {
     if (!cfg || typeof cfg !== "object") { this.#error("CONFIG.liveBait", "missing live bait config"); return; }
     for (const [key, min, max] of [
       ["lifetimeMinMs", 1, Infinity], ["lifetimeMaxMs", 1, Infinity],
-      ["motionMultiplier", 0, 1], ["oneFishFeedMs", 1, Infinity],
-      ["extraFishDrainFactor", 0, Infinity], ["autoFeedTriggerFraction", 0, 1],
+      ["motionMultiplier", 0, 1], ["minimumFeedMs", 1, Infinity], ["maxWeightKg", 0.001, Infinity],
+      ["autoFeedTriggerFraction", 0, 0.99],
       ["freeFeedPortions", 1, Infinity], ["careTickMs", 1, Infinity],
       ["displayTickMs", 1, Infinity], ["keepnetCapacity", 1, Infinity],
     ]) this.#requireFiniteNumber(`CONFIG.liveBait.${key}`, cfg[key], { min, max });
@@ -421,19 +421,33 @@ export class ConfigSchemaValidator {
     if (!Array.isArray(cfg.capacities) || cfg.capacities.length !== 10 ||
       cfg.capacities.some((value, index) => !Number.isSafeInteger(value) || value < 1 ||
         (index > 0 && value <= cfg.capacities[index - 1]))) this.#error("CONFIG.liveBait.capacities", "expected ten increasing positive integer capacities");
-    if (!cfg.eligibility || typeof cfg.eligibility !== "object" || !Object.keys(cfg.eligibility).length) {
-      this.#error("CONFIG.liveBait.eligibility", "expected eligible fish map");
-    } else for (const [speciesId, rule] of Object.entries(cfg.eligibility)) {
-      const sourceFish = this.fishDb.find((fish) => fish.id === speciesId);
-      if (!sourceFish) this.#error(`CONFIG.liveBait.eligibility.${speciesId}`, "unknown source species");
-      else if (!sourceFish.physics?.behaviorProfile?.behaviors?.swim || !sourceFish.physics?.movementProfile) {
-        this.#error(`CONFIG.liveBait.eligibility.${speciesId}`, "source species needs swim movement");
-      }
-      this.#requireFiniteNumber(`CONFIG.liveBait.eligibility.${speciesId}.maxWeightKg`, rule?.maxWeightKg, { min: 0.001 });
-      const bait = rule?.baitId ? this.itemDb.baits?.[rule.baitId] : null;
-      if (!bait || bait.itemType !== "bait") this.#error(`CONFIG.liveBait.eligibility.${speciesId}.baitId`, "unknown bait archetype");
-      else if (bait.sourceSpeciesId !== speciesId) this.#error(`CONFIG.liveBait.eligibility.${speciesId}.baitId`, "bait source species mismatch");
+    if (!this.itemDb.baits?.[cfg.baitId] || this.itemDb.baits[cfg.baitId].itemType !== "bait")
+      this.#error("CONFIG.liveBait.baitId", "unknown common bait archetype");
+    const source = this.fishDb.find((fish) => fish.id === cfg.motionSourceSpeciesId);
+    if (!source?.physics?.movementProfile || !source?.physics?.behaviorProfile?.behaviors?.swim)
+      this.#error("CONFIG.liveBait.motionSourceSpeciesId", "common bait needs swim movement");
+    if (!cfg.aquariumFeeds || !Object.hasOwn(cfg.aquariumFeeds, cfg.defaultFeedId))
+      this.#error("CONFIG.liveBait.defaultFeedId", "unknown aquarium feed");
+    for (const [id, item] of Object.entries(cfg.aquariumFeeds || {})) {
+      if (item.id !== id || item.itemType !== "aquarium_feed") this.#error(
+        "CONFIG.liveBait.aquariumFeeds." + id, "invalid aquarium feed identity");
+      for (const key of ["grams", "durationMs", "starvationWindowMs"])
+        this.#requireFiniteNumber("CONFIG.liveBait.aquariumFeeds." + id + "." + key, item[key], { min: 1 });
+      this.#requireFiniteNumber("CONFIG.liveBait.aquariumFeeds." + id + ".extraFishPenaltyMs", item.extraFishPenaltyMs, { min: 0 });
     }
+    const visual = cfg.visual || {};
+    for (const [key, min, max] of [["fishSizePx", 1, 200], ["sizeSpread", 0, .95],
+      ["speedMinPxPerSecond", 0, 100], ["speedMaxPxPerSecond", 0, 100],
+      ["directionMinMs", 1, Infinity], ["directionMaxMs", 1, Infinity], ["gridSizePx", 1, 100]])
+      this.#requireFiniteNumber("CONFIG.liveBait.visual." + key, visual[key], { min, max });
+    if (typeof visual.showZone !== "boolean") this.#error("CONFIG.liveBait.visual.showZone", "expected boolean");
+    for (const key of ["x", "y", "width", "height"])
+      this.#requireFiniteNumber("CONFIG.liveBait.visual.zone." + key, visual.zone?.[key], { min: 0, max: 1 });
+    if (!(visual.zone?.width > 0 && visual.zone?.height > 0) ||
+      visual.zone.x + visual.zone.width > 1 || visual.zone.y + visual.zone.height > 1)
+      this.#error("CONFIG.liveBait.visual.zone", "expected positive bounded zone");
+    if (visual.speedMinPxPerSecond > visual.speedMaxPxPerSecond || visual.directionMinMs > visual.directionMaxMs)
+      this.#error("CONFIG.liveBait.visual", "minimum exceeds maximum");
     for (const key of ["aquarium", "upgrade", "feed", "autoFeeder"]) {
       if (cfg.prices?.[key] !== 0) this.#error(`CONFIG.liveBait.prices.${key}`, "must be zero while currency is absent");
     }

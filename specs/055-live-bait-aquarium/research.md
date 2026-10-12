@@ -37,3 +37,7 @@
 **Decision**: Use the owner-provided capacity table verbatim and present acquisition/upgrades as Free.  
 **Rationale**: The informal progression formula does not generate the jumps at levels 5 and 10. No wallet or payment system is in scope.  
 **Alternative considered**: Deriving capacity from the prose formula would contradict explicit values.
+
+## Owner shared-feed revision (2026-10-12)
+
+The shared aquarium record removes species-slot priority. Stable episode seeds and per-fish deadlines allow pure display projection and offline settlement without rerolling. Existing fish art provides individual skins; reduced derivatives avoid loading 2700 px assets for tiny sprites. The conversion utility previously compressed images but had no resize mode, so --thumbnails adds explicit bounded resizing without touching originals. Legacy special status was absent from snapshots; retaining unknown as null and separating those cards avoids an invented ordinary classification.

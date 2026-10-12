@@ -50,7 +50,7 @@ async function main() {
   assert.equal(documentRef.byClass("keepnet-modal__fish").length, 3);
   assert.equal(documentRef.activeElement, back);
   const images = documentRef.byClass("keepnet-modal__image");
-  assert.deepEqual(images.map((image) => image.src), ["assets/fish/a.webp", "assets/fish/b.webp", "assets/fish/a.webp"]);
+  assert.deepEqual(images.map((image) => image.src), ["assets/fish-thumbnails/a.webp", "assets/fish-thumbnails/b.webp", "assets/fish-thumbnails/a.webp"]);
   assert(documentRef.byClass("keepnet-modal__fish-rarity")[0].textContent.includes("1,5 / 6"));
   assert.equal(documentRef.byClass("keepnet-modal__fish-weight")[0].textContent, "100 г");
   images[0].fire("error");

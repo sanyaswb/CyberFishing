@@ -92,13 +92,30 @@
 .house__background--night {
   opacity: var(--house-night, 0);
 }
-.house__aquarium-image {
+.house__aquarium-stage {
   position: absolute;
   width: 31%;
   left: 34.5%;
   top: 30%;
+  aspect-ratio: 1664 / 960;
+}
+.house__aquarium-image, .house__aquarium-fish {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.house__aquarium-image {
   filter: drop-shadow(0 12px 14px #000a);
 }
+.house__aquarium-fish { pointer-events: none; }
+.house__aquarium-feed { position: absolute; bottom: 94%; left: 9%; width: 78%; display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 25px; background: #061c1de0; color: #d7ffe9; font: 12px/1.2 system-ui; }
+.house__aquarium-feed img { width: 32px; height: 32px; border-radius: 50%; flex: none; }
+.house__aquarium-feed-body { position: relative; flex: 1; min-width: 0; height: 32px; display: flex; align-items: center; }
+.house__aquarium-feed-body .house__feed-slot-track { width: 100%; margin: 0; }
+.house__aquarium-feed-body span { position: absolute; top: 23px; left: 0; white-space: nowrap; }
+.house__feed-choice { display: grid; gap: 8px; margin: 10px 0; }
+.house__feed-choice select { min-height: 44px; background: #102e2b; color: #effff6; border: 1px solid #5b8e7c; border-radius: 6px; font: inherit; max-width: 100%; }
 .house__header {
   position: fixed;
   z-index: 20;
@@ -451,24 +468,6 @@
   flex-wrap: wrap;
   gap: 12px;
   margin: 10px 0;
-}
-.house__feed-slots {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 8px 0;
-}
-.house__feed-slot {
-  flex: 1 0 110px;
-  min-width: 110px;
-  max-width: 240px;
-  padding: 8px;
-  border: 1px solid #a2bcb088;
-  border-radius: 7px;
-  background: #25342b;
-}
-.house__feed-slot-label {
-  font-size: 0.84rem;
 }
 .house__feed-slot-track {
   height: 10px;

@@ -1,3 +1,5 @@
+import { fishThumbnailPath } from "../house/fish_thumbnail_path.js";
+
 export class KeepnetCardRenderer {
   #document;
   #labels;
@@ -57,7 +59,7 @@ export class KeepnetCardRenderer {
       image.alt = fish.name; image.loading = "lazy"; image.decoding = "async";
       fallback.hidden = true;
       image.addEventListener("error", () => { image.hidden = true; fallback.hidden = false; }, { once: true });
-      image.src = fish.imagePath;
+      image.src = fishThumbnailPath(fish.imagePath);
       media.append(image);
     }
     return media;

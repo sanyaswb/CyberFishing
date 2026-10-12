@@ -13,8 +13,9 @@ Application commands return `{ ok: boolean, reason?: string, revision?: number }
 | `endLiveBaitCast(fishId)` | Fish still living on hook | Return it to keepnet with remaining life. |
 | `installAquarium()` | Not owned | Own level 1, capacity from table. |
 | `upgradeAquarium()` | Owned, level < 10 | Increase level exactly one. |
-| `getFeed()` | Valid free action | Increase feed stock by configured amount. |
-| `feedAquarium()` | Owned, stock > 0, non-full slot | Decrement one portion and fill priority slot to 100%. |
+| `getFeed(itemId)` | Valid aquarium-feed pack | Increase that pack stock by configured amount. |
+| `selectAquariumFeed(itemId)` | Known aquarium-feed pack | Select the pack used for manual/automatic feeding. |
+| `feedAquarium(itemId?)` | Owned, inhabitants, selected/explicit pack stock > 0 | Consume one pack, replace shared protection and cancel surviving starvation deadlines. |
 | `installAutoFeeder()` / `setAutoFeeder(enabled)` | Valid ownership | Own/toggle feeder without creating feed. |
 | `transferToAquarium(fishId)` | Living keepnet bait, owned aquarium, space | Move same fish and preserve remaining life. |
 

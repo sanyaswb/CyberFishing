@@ -7,16 +7,18 @@ export class EmbeddedPageOverlay {
   #title;
   #onEnter;
   #onExit;
+  #onReady;
   #frame = null;
   #disposed = false;
 
-  constructor({ documentRef, windowTarget, src, title, onEnter, onExit }) {
+  constructor({ documentRef, windowTarget, src, title, onEnter, onExit, onReady }) {
     this.#document = documentRef;
     this.#window = windowTarget;
     this.#src = src;
     this.#title = title;
     this.#onEnter = onEnter;
     this.#onExit = onExit;
+    this.#onReady = onReady;
     windowTarget.addEventListener("message", this.#handleMessage);
   }
 
@@ -27,6 +29,9 @@ export class EmbeddedPageOverlay {
     frame.title = this.#title;
     frame.allowFullscreen = true;
     frame.src = this.#src;
+    frame.addEventListener("load", () => {
+      if (!this.#disposed && this.#frame === frame) this.#onReady?.(frame.contentWindow);
+    }, { once: true });
     this.#onEnter?.();
     this.#frame = frame;
     this.#document.body.appendChild(frame);

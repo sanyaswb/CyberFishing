@@ -346,7 +346,7 @@ export class GameCompositionRoot {
     // A new fishing session has no in-flight cast to own a persisted hook fish.
     liveBait.recoverInterruptedCast();
     const liveBaitCandidate = new LiveBaitBaitCandidatePort(liveBait, FISH_DB);
-    const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(FISH_DB);
+    const liveBaitMotionProfiles = new LiveBaitMotionProfileResolver(FISH_DB, this.#config.liveBait.motionSourceSpeciesId);
     const createLiveBaitMotion = (speciesId) => {
       const physics = liveBaitMotionProfiles.resolve(speciesId);
       return physics ? new LiveBaitMotionAdapter({ physics, multiplier: this.#config.liveBait.motionMultiplier,

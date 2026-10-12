@@ -11,14 +11,22 @@ export class KeepnetViewModel {
       (speciesId === "all" || speciesId === fish.sourceSpeciesId))
       .sort((a, b) => b.weightKg - a.weightKg || a.id.localeCompare(b.id));
     const bySpecies = new Map();
+    const rarityScore = (fish) => typeof fish.rarity === "object" && fish.rarity !== null ? fish.rarity.halfSteps / fish.rarity.maxHalfSteps : -1;
     for (const fish of filtered) {
-      let group = bySpecies.get(fish.sourceSpeciesId);
+      const separate = fish.hasAnomaly !== false || fish.isUnique !== false;
+      const key = separate ? `fish:${fish.id}` : fish.sourceSpeciesId;
+      let group = bySpecies.get(key);
       if (!group) {
-        group = { id: fish.sourceSpeciesId, name: fish.name, imagePath: fish.imagePath,
+        group = { id: key, name: fish.name, imagePath: fish.imagePath,
           count: 0, totalWeightKg: 0, fish: [] };
         bySpecies.set(group.id, group);
       }
-      if (!group.imagePath) group.imagePath = fish.imagePath;
+      const current = group.fish.find((entry) => entry.id === group.representativeId);
+      if (!current || rarityScore(fish) > rarityScore(current) ||
+        (rarityScore(fish) === rarityScore(current) && fish.weightKg > current.weightKg)) {
+        group.imagePath = fish.imagePath;
+        group.representativeId = fish.id;
+      }
       group.fish.push(fish);
       group.count++;
       group.totalWeightKg += fish.weightKg;

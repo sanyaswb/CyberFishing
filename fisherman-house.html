@@ -7,11 +7,11 @@
     <title>Будинок рибалки · CyberFishing</title>
     <link rel="preload" as="image" href="assets/house/room-1/lvl-1/room--1-day-lvl--1.jpg" />
     <link rel="preload" as="image" href="assets/house/room-1/room--1_aqua.png" />
-    <link rel="stylesheet" href="src/game/presentation/styles/tokens.css?v=0.33.1" />
-    <link rel="stylesheet" href="src/game/presentation/styles/hud/time-display.css?v=0.33.1" />
-    <link rel="stylesheet" href="src/game/presentation/styles/inventory/theme.css?v=0.33.1" />
-    <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-parameters.css?v=0.33.1" />
-    <link rel="stylesheet" href="src/game/presentation/styles/house.css?v=0.33.1" />
+    <link rel="stylesheet" href="src/game/presentation/styles/tokens.css?v=0.34.0" />
+    <link rel="stylesheet" href="src/game/presentation/styles/hud/time-display.css?v=0.34.0" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/theme.css?v=0.34.0" />
+    <link rel="stylesheet" href="src/game/presentation/styles/inventory/item-parameters.css?v=0.34.0" />
+    <link rel="stylesheet" href="src/game/presentation/styles/house.css?v=0.34.0" />
   </head>
   <body class="house">
     <a class="house__skip" href="#house-dock">До меню будинку</a>
@@ -28,7 +28,17 @@
               <img class="house__background" data-house-background="day" alt="Постапокаліптична кімната рибалки" fetchpriority="high" />
               <img class="house__background house__background--evening" data-house-background="evening" alt="" aria-hidden="true" />
               <img class="house__background house__background--night" data-house-background="night" alt="" aria-hidden="true" />
-              <img class="house__aquarium-image" data-house-aquarium-image alt="Акваріум для живця на столі" hidden />
+              <div class="house__aquarium-stage" data-house-aquarium-stage hidden>
+                <img class="house__aquarium-image" data-house-aquarium-image alt="Акваріум для живця на столі" />
+                <canvas class="house__aquarium-fish" data-house-aquarium-fish aria-label="Живці плавають усередині акваріума"></canvas>
+                <div class="house__aquarium-feed" data-house-feed-bar hidden>
+                  <img data-house-feed-image alt="Прикормка для акваріума" />
+                  <div class="house__aquarium-feed-body">
+                    <div class="house__feed-slot-track" data-house-feed-track role="progressbar" aria-label="Запас прикормки" aria-valuemin="0" aria-valuemax="100"><div class="house__feed-slot-fill" data-house-feed-fill></div></div>
+                    <span data-house-feed-time></span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -65,12 +75,12 @@
         <div data-house-unowned><button class="house__button house__button--primary" data-house-action="buyAquarium" type="button">Встановити · Безкоштовно</button></div>
         <div data-house-owned hidden>
           <button class="house__button" data-house-action="upgrade" type="button">Покращити · Безкоштовно</button>
-          <div class="house__stat-row"><strong>Прикормка</strong><span data-house-slot-count>0 видів</span></div>
-          <div class="house__feed-slots" data-house-feed-slots></div>
+          <div class="house__stat-row"><strong>Спільна прикормка</strong><span data-house-slot-count></span></div>
           <div class="house__action-row"><button class="house__button house__button--primary" data-house-action="feed" type="button">Засипати прикормку</button><span data-house-next-feed></span></div>
         </div>
         <div class="house__stat-row"><strong>Запас прикормки</strong><span data-house-feed-stock>0</span></div>
-        <button class="house__button" data-house-action="buyFeed" type="button">Отримати порцію · Безкоштовно</button>
+        <label class="house__feed-choice">Прикормка для акваріума <select data-house-feed-choice aria-label="Якість і фасування прикормки"></select></label>
+        <button class="house__button" data-house-action="buyFeed" type="button">Отримати вибране фасування · Безкоштовно</button>
         <div class="house__stat-row"><strong>Автогодівниця</strong><span data-house-auto-status>Вручну</span></div>
         <button class="house__button" data-house-action="buyAutoFeeder" type="button">Встановити · Безкоштовно</button>
         <button class="house__button" data-house-action="toggleAutoFeeder" type="button" hidden>Увімкнути</button>
@@ -91,6 +101,6 @@
       </div>
       <p class="house__notice" role="status" aria-live="polite" data-house-notice></p>
     </main>
-    <script type="module" src="src/entrypoints/house.entry.js?v=0.33.1"></script>
+    <script type="module" src="src/entrypoints/house.entry.js?v=0.34.0"></script>
   </body>
 </html>

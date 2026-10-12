@@ -60,6 +60,7 @@ async function startGame() {
   const configRuntime = createProductionConfigContext(config => {
     config.debug.godMode.enabled = true;
     config.debug.fixedCatch.enabled = true;
+    config.liveBait = { ...config.liveBait, visual: { ...config.liveBait.visual, showZone: true } };
   });
   publishBrowserStartupConfig(windowTarget, configRuntime, PROJECT_VERSION_CONFIG);
   const disposeInterface = activateBrowserStartupInterface(documentTarget, () => GameVersionBadge.mountById());
@@ -81,10 +82,15 @@ async function startGame() {
       overrideStore: configRuntime.overrideStore, projectVersion: PROJECT_VERSION_CONFIG}),
   });
   let consoleRuntime, overlayRuntime, game, watchdog;
+  let housePreviewWindow = null;
+  const updateHousePreview = () => housePreviewWindow?.postMessage({ type: "cyber-fishing:aquarium-preview",
+    visual: JSON.parse(JSON.stringify(CONFIG.liveBait.visual)) }, windowTarget.location.origin);
+  documentTarget.addEventListener("debug-live-update", updateHousePreview);
   const houseOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
     src: "fisherman-house.html?returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
     onEnter: () => game?.stop(),
-    onExit: () => { void game?.start().catch((error) => windowTarget.console.error(error)); } });
+    onReady: (frameWindow) => { housePreviewWindow = frameWindow; updateHousePreview(); },
+    onExit: () => { housePreviewWindow = null; void game?.start().catch((error) => windowTarget.console.error(error)); } });
   let gameReady = false;
   let disposed = false;
   const cleanup = () => {
@@ -92,6 +98,7 @@ async function startGame() {
     disposed = true;
     browserLifecycle.removePagehideListener(cleanup);
     houseOverlay.dispose();
+    documentTarget.removeEventListener("debug-live-update", updateHousePreview);
     watchdog?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();

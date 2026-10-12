@@ -1,7 +1,5 @@
 import { AquariumState } from "../../domain/live_bait/aquarium_state.js";
-import { FeedSlotPriorityPolicy } from "../../domain/live_bait/feed_slot_priority_policy.js";
 import { FeedSupplyState } from "../../domain/live_bait/feed_supply_state.js";
-import { AquariumCareCalculator } from "../../domain/live_bait/aquarium_care_calculator.js";
 import { CatchDispositionService } from "./catch_disposition_service.js";
 import { CaughtFishRarity } from "../../domain/live_bait/caught_fish_rarity.js";
 
@@ -15,7 +13,6 @@ export class LiveBaitCommandService {
   #state;
   #error = null;
   #catchDisposition;
-  #priority = new FeedSlotPriorityPolicy();
   constructor({ config, fishDb, store, clock, rng, care }) {
     this.#config = config;
     this.#fishDb = new Map(fishDb.map((fish) => [fish.id, fish]));
@@ -53,7 +50,7 @@ export class LiveBaitCommandService {
     if (!fish || fish.purpose !== "live_bait" || !["aquarium", "keepnet"].includes(fish.disposition)) return "bait_unavailable";
     fish.disposition = "released";
     if (state.selectedFishId === id) state.selectedFishId = null;
-    this.#pruneSlots(state); return null;
+    return null;
   }); }
   convertStoredCatch(id) { return this.#commit((state) => this.#catchDisposition.convertStored(state, id)); }
   selectBait(id) { return this.#commit((state) => {
@@ -68,10 +65,11 @@ export class LiveBaitCommandService {
     if (this.#error) return null;
     const fish = this.#state?.fish.find((entry) => entry.id === this.#state.selectedFishId);
     if (!fish || fish.purpose !== "live_bait" || !["aquarium", "keepnet", "hook"].includes(fish.disposition)) return null;
-    const rule = this.#config.eligibility[fish.speciesId];
-    if (!rule || (fish.disposition !== "aquarium" &&
-      fish.remainingLifetimeMs <= Math.max(0, this.#clock.nowMs() - this.#state.lastAppliedAtMs))) return null;
-    return { fishId: fish.id, baitId: rule.baitId, sourceSpeciesId: fish.speciesId, weightKg: fish.weightKg, disposition: fish.disposition };
+    const elapsed = Math.max(0, this.#clock.nowMs() - this.#state.lastAppliedAtMs);
+    if (fish.disposition !== "aquarium" && fish.remainingLifetimeMs <= elapsed) return null;
+    if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null &&
+      fish.starvationDeadlineMs <= this.#state.lastAppliedAtMs + elapsed) return null;
+    return { fishId: fish.id, baitId: this.#config.baitId, sourceSpeciesId: fish.speciesId, weightKg: fish.weightKg, disposition: fish.disposition };
   }
   beginLiveBaitCast(id, hookContext = {}) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);
@@ -79,7 +77,7 @@ export class LiveBaitCommandService {
     if (hookContext.compatible !== true || hookContext.free !== true || hookContext.hookCount !== 1) return "incompatible_hook";
     if (state.fish.some((entry) => entry.disposition === "hook")) return "hook_busy";
     if (fish.disposition === "aquarium" && state.fish.filter((entry) => entry.disposition === "keepnet").length >= this.#config.keepnetCapacity) return "keepnet_full";
-    fish.disposition = "hook"; this.#pruneSlots(state); return null;
+    this.#leaveAquarium(state, fish); fish.disposition = "hook"; return null;
   }); }
   settleBaitLoss(id) { return this.#commit((state) => {
     const fish = state.fish.find((entry) => entry.id === id);
@@ -104,15 +102,22 @@ export class LiveBaitCommandService {
   buyAquarium() { return this.#commit((state) => new AquariumState(state.aquarium, this.#config.capacities).install() ? null : "already_owned"); }
   installAquarium() { return this.buyAquarium(); }
   upgradeAquarium() { return this.#commit((state) => new AquariumState(state.aquarium, this.#config.capacities).upgrade() ? null : "max_level"); }
-  buyFeed() { return this.#commit((state) => { new FeedSupplyState(state.feedSupply).acquire(this.#config.freeFeedPortions); return null; }); }
-  getFeed() { return this.buyFeed(); }
-  feedAquarium() { return this.#commit((state) => {
+  buyFeed(itemId = this.#config.defaultFeedId) { return this.#commit((state) => {
+    if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
+    new FeedSupplyState(state.feedSupply).acquire(itemId, this.#config.freeFeedPortions); return null;
+  }); }
+  getFeed(itemId) { return this.buyFeed(itemId); }
+  selectAquariumFeed(itemId) { return this.#commit((state) => {
+    if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
+    state.feedSupply.selectedFeedId = itemId; return null;
+  }); }
+  feedAquarium(itemId = null) { return this.#commit((state) => {
     if (!state.aquarium.owned) return "aquarium_required";
-    if (state.feedSupply.portions <= 0) return "no_feed";
-    const slot = this.#priority.choose(this.#slots(state));
-    if (!slot) return "nothing_to_feed";
-    state.aquarium.feedBySpecies[slot.speciesId] = 1;
-    state.feedSupply.portions--; return null;
+    itemId ??= state.feedSupply.selectedFeedId;
+    if (!Object.hasOwn(this.#config.aquariumFeeds, itemId)) return "invalid_feed";
+    if (!state.fish.some((fish) => fish.disposition === "aquarium")) return "nothing_to_feed";
+    if (!new FeedSupplyState(state.feedSupply).consume(itemId)) return "no_feed";
+    this.#care.feed(state, itemId, Math.floor(this.#rng.next() * 4294967296)); return null;
   }); }
   buyAutoFeeder() { return this.#commit((state) => new FeedSupplyState(state.feedSupply).installFeeder() ? null : "already_owned"); }
   installAutoFeeder() { return this.buyAutoFeeder(); }
@@ -123,7 +128,7 @@ export class LiveBaitCommandService {
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
     if (!aquarium.owned) return "aquarium_required";
     if (state.fish.filter((item) => item.disposition === "aquarium").length >= aquarium.capacity) return "aquarium_full";
-    fish.disposition = "aquarium"; aquarium.ensureSlot(fish.speciesId); return null;
+    fish.disposition = "aquarium"; return null;
   }); }
   advance() {
     if (this.#error) return { ok: false, reason: this.#error };
@@ -139,42 +144,39 @@ export class LiveBaitCommandService {
   getView() {
     if (this.#error) return { error: this.#error, feedStock: 0, selectedBaitId: null, liveBaits: [], keepnet: [],
       keepnetCapacity: this.#config.keepnetCapacity, keepnetReservedCount: 0,
-      aquarium: { owned: false, level: 0, capacity: 0, count: 0, slots: [], autoFeeder: { owned: false, enabled: false } }, deadCount: 0 };
+      feedItems: [], selectedFeedId: this.#config.defaultFeedId,
+      aquarium: { owned: false, level: 0, capacity: 0, count: 0, feed: null, starvation: null, autoFeeder: { owned: false, enabled: false } }, deadCount: 0 };
     // Read-only event-time projection: the display must agree with the next care settlement,
     // including deaths and automatic refills, without writing on every display tick.
     const state = JSON.parse(JSON.stringify(this.#state));
     this.#care.settle(state);
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
-    const calculator = new AquariumCareCalculator(this.#config);
-    const slotsNow = this.#slots(state).map((slot) => ({ ...slot,
-      protectionMs: calculator.timeToEmpty(slot.foodFraction, slot.count),
-    }));
+    const feed = state.aquarium.feed;
+    const now = state.lastAppliedAtMs;
     const liveBaits = state.fish.filter((fish) => fish.purpose === "live_bait" && ["keepnet", "aquarium", "hook"].includes(fish.disposition))
-      .map((fish) => ({ id: fish.id, sourceSpeciesId: fish.speciesId, name: fish.name, weightKg: fish.weightKg,
-        level: fish.level, imagePath: fish.imagePath, rarity: CaughtFishRarity.capture(fish.rarity), location: fish.disposition,
-        remainingMs: fish.disposition === "aquarium" && state.aquarium.feedBySpecies[fish.speciesId] > 0
-          ? null : fish.remainingLifetimeMs,
-        selected: fish.id === state.selectedFishId }));
-    const slots = slotsNow.map((slot) => ({ sourceSpeciesId: slot.speciesId,
-      name: this.#fishDb.get(slot.speciesId)?.name || slot.speciesId, count: slot.count,
-      foodPercent: slot.foodFraction * 100, remainingFeedMs: slot.foodFraction * this.#config.oneFishFeedMs /
-        (1 + (slot.count - 1) * this.#config.extraFishDrainFactor),
-      starving: slot.foodFraction <= 0, nextDeathAt: slot.foodFraction <= 0 ?
-        Math.min(...state.fish.filter((fish) => fish.disposition === "aquarium" && fish.speciesId === slot.speciesId)
-          .map((fish) => state.lastAppliedAtMs + slot.protectionMs + fish.remainingLifetimeMs)) : null }));
-    const nextFeed = this.#priority.choose(slotsNow);
-    return { error: null, feedStock: state.feedSupply.portions, selectedBaitId: state.selectedFishId, liveBaits,
+      .map((fish) => ({ ...this.#fishView(fish), location: fish.disposition,
+        remainingMs: fish.disposition === "aquarium" ? fish.starvationDeadlineMs === null ? null : Math.max(0, fish.starvationDeadlineMs - now)
+          : fish.remainingLifetimeMs, selected: fish.id === state.selectedFishId }));
+    const inhabitants = liveBaits.filter((fish) => fish.location === "aquarium");
+    const starvation = state.aquarium.starvation;
+    const feedView = feed ? { ...this.#config.aquariumFeeds[feed.itemId],
+      remainingMs: feed.remainingMs, durationMs: feed.durationMs,
+      percentage: feed.durationMs > 0 ? feed.remainingMs / feed.durationMs * 100 : 0 } : null;
+    return { error: null, feedStock: Object.values(state.feedSupply.stock).reduce((sum, count) => sum + count, 0),
+      feedItems: Object.values(this.#config.aquariumFeeds).map((item) => ({ ...item, count: state.feedSupply.stock[item.id] || 0 })),
+      selectedFeedId: state.feedSupply.selectedFeedId, selectedBaitId: state.selectedFishId, liveBaits,
       keepnet: state.fish.filter((fish) => fish.purpose === "catch" && fish.disposition === "keepnet")
-        .map((fish) => ({ id: fish.id, sourceSpeciesId: fish.speciesId, name: fish.name, weightKg: fish.weightKg, level: fish.level,
-          imagePath: fish.imagePath, rarity: CaughtFishRarity.capture(fish.rarity), canConvert: this.canConvert(fish) })),
+        .map((fish) => ({ ...this.#fishView(fish), canConvert: this.canConvert(fish) })),
       keepnetCapacity: this.#config.keepnetCapacity,
       keepnetReservedCount: state.fish.filter((fish) => fish.disposition === "hook").length,
       aquarium: { owned: aquarium.owned, level: aquarium.level, capacity: aquarium.capacity,
         count: state.fish.filter((fish) => fish.disposition === "aquarium").length,
         nextUpgradeCapacity: aquarium.level < this.#config.capacities.length ? this.#config.capacities[aquarium.level] : null,
         maxLevel: this.#config.capacities.length,
-        autoFeeder: { owned: state.feedSupply.autoFeederOwned, enabled: state.feedSupply.autoFeederEnabled }, slots },
-      nextFeedSpeciesId: nextFeed?.speciesId ?? null, prices: this.#config.prices,
+        autoFeeder: { owned: state.feedSupply.autoFeederOwned, enabled: state.feedSupply.autoFeederEnabled }, feed: feedView,
+        starvation: starvation ? { remainingMs: Math.max(0, starvation.startedAtMs + starvation.windowMs - now),
+          nextDeathMs: inhabitants.length ? Math.min(...inhabitants.map((fish) => fish.remainingMs)) : null } : null },
+      prices: this.#config.prices,
       deadCount: state.fish.filter((fish) => fish.disposition === "dead").length };
   }
   #commit(mutate) {
@@ -184,6 +186,7 @@ export class LiveBaitCommandService {
     const next = JSON.parse(JSON.stringify(this.#state));
     const settled = this.#care.settle(next);
     const reason = mutate(next);
+    if (!reason) this.#care.synchronize(next);
     if (reason && !settled) return { ok: false, reason };
     const saved = this.#store.save(next);
     if (saved.ok) this.#state = next;
@@ -200,13 +203,14 @@ export class LiveBaitCommandService {
     if (result.reason === "stale_revision") this.#syncLatest();
     else this.#error = result.reason;
   }
-  #slots(state) {
-    const counts = new Map();
-    for (const fish of state.fish) if (fish.disposition === "aquarium") counts.set(fish.speciesId, (counts.get(fish.speciesId) || 0) + 1);
-    return [...counts].map(([speciesId, count]) => ({ speciesId, count, foodFraction: state.aquarium.feedBySpecies[speciesId] || 0 }));
+  #fishView(fish) {
+    return { id: fish.id, sourceSpeciesId: fish.speciesId, name: fish.name, weightKg: fish.weightKg,
+      level: fish.level, imagePath: fish.imagePath, rarity: CaughtFishRarity.capture(fish.rarity),
+      anomaly: fish.anomaly, hasAnomaly: fish.hasAnomaly, isUnique: fish.isUnique };
   }
-  #pruneSlots(state) {
-    const occupied = new Set(state.fish.filter((fish) => fish.disposition === "aquarium").map((fish) => fish.speciesId));
-    for (const id of Object.keys(state.aquarium.feedBySpecies)) if (!occupied.has(id)) delete state.aquarium.feedBySpecies[id];
+  #leaveAquarium(state, fish) {
+    if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null)
+      fish.remainingLifetimeMs = Math.min(fish.remainingLifetimeMs, Math.max(0, fish.starvationDeadlineMs - state.lastAppliedAtMs));
+    fish.starvationDeadlineMs = null;
   }
 }

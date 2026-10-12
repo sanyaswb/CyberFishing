@@ -4,44 +4,37 @@ export class HousePresenter {
   #liveBait;
   #view;
   #labels;
-  #now;
   #room;
   #gameTime;
   #blend = { evening: 0, night: 0 };
 
-  constructor({ liveBait, room, gameTime, view, labels, now }) {
+  constructor({ liveBait, room, gameTime, view, labels }) {
     this.#liveBait = liveBait;
     this.#room = room;
     this.#gameTime = gameTime;
     this.#view = view;
     this.#labels = labels;
-    this.#now = now;
   }
 
   refresh() {
     const state = this.#liveBait.getView();
     const labels = this.#labels;
     const aquarium = state.aquarium;
-    const now = this.#now();
-    const slots = aquarium.slots.map((slot) => ({
-      ...slot,
-      percentage: Math.max(0, Math.min(100, slot.foodPercent)),
-      status: slot.starving
-        ? slot.nextDeathAt === null ? labels.noFood : labels.starvation(labels.duration(slot.nextDeathAt - now))
-        : labels.feedLeft(labels.duration(slot.remainingFeedMs)),
-    }));
-    const priority = slots.find((slot) => slot.sourceSpeciesId === state.nextFeedSpeciesId);
+    const selectedFeed = state.feedItems.find((item) => item.id === state.selectedFeedId);
+    const starvation = aquarium.starvation;
     const room = this.#room.getView();
     backgroundTimeBlend(this.#gameTime.getHours(), this.#blend);
     this.#view.render({
       ...state,
-      aquarium: { ...aquarium, slots },
+      aquarium,
       levelLabel: aquarium.owned ? labels.level(aquarium.level) : labels.absent,
       upgradeLabel: aquarium.nextUpgradeCapacity ? labels.upgrade(aquarium.nextUpgradeCapacity) : labels.maxLevel,
-      nextFeedLabel: priority ? labels.feedNext(priority.name) : slots.length ? labels.allFed : "",
-      canFeed: aquarium.owned && !!priority && state.feedStock > 0,
+      nextFeedLabel: selectedFeed?.name || "",
+      feedTimeLabel: starvation ? labels.starvationWindow(labels.duration(starvation.remainingMs), labels.duration(starvation.nextDeathMs))
+        : aquarium.feed ? labels.feedLeft(labels.duration(aquarium.feed.remainingMs)) : labels.noFood,
+      canFeed: aquarium.owned && aquarium.count > 0 && selectedFeed?.count > 0,
       autoStatus: !aquarium.autoFeeder.owned ? labels.manual : !aquarium.autoFeeder.enabled
-        ? labels.automaticPaused : state.feedStock > 0 ? labels.automatic : labels.automaticEmpty,
+        ? labels.automaticPaused : selectedFeed?.count > 0 ? labels.automatic : labels.automaticEmpty,
       autoToggleLabel: aquarium.autoFeeder.enabled ? labels.disableFeeder : labels.enableFeeder,
       liveBaits: state.liveBaits.map((fish) => ({
         ...fish,
@@ -64,7 +57,8 @@ export class HousePresenter {
       case "finishRoom": result = this.#room.finish(); break;
       case "buyAquarium": result = service.buyAquarium(); break;
       case "upgrade": result = service.upgradeAquarium(); break;
-      case "buyFeed": result = service.buyFeed(); break;
+      case "buyFeed": result = service.buyFeed(service.getView().selectedFeedId); break;
+      case "selectFeed": result = service.selectAquariumFeed(id); break;
       case "feed": result = service.feedAquarium(); break;
       case "buyAutoFeeder": result = service.buyAutoFeeder(); break;
       case "toggleAutoFeeder": result = service.setAutoFeeder(!service.getView().aquarium.autoFeeder.enabled); break;

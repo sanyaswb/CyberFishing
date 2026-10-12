@@ -1342,5 +1342,53 @@
   "debug.inventory.showEffectiveStats": {
     "label": "Inventory: EffectiveItemStats",
     "description": "Показує у tooltip інвентарю технічну секцію EffectiveItemStats. За замовчуванням вимкнено."
+  },
+  "CONFIG.liveBait.visual.fishSizePx": {
+    "label": "Розмір риби в акваріумі, px",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.sizeSpread": {
+    "label": "Розкид розміру, частка",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.speedMinPxPerSecond": {
+    "label": "Мінімальна швидкість, px/с",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.speedMaxPxPerSecond": {
+    "label": "Максимальна швидкість, px/с",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.directionMinMs": {
+    "label": "Мінімальний час зміни напрямку, ms",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.directionMaxMs": {
+    "label": "Максимальний час зміни напрямку, ms",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.showZone": {
+    "label": "Зелена зона акваріума",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.gridSizePx": {
+    "label": "Крок зеленої сітки, px",
+    "description": "Візуальний рух риб у будинку. Зміни застосовуються при відкритті будинку з DEV."
+  },
+  "CONFIG.liveBait.visual.zone.x": {
+    "label": "Зона акваріума: x",
+    "description": "Координата або розмір як частка зображення акваріума (0–1)."
+  },
+  "CONFIG.liveBait.visual.zone.y": {
+    "label": "Зона акваріума: y",
+    "description": "Координата або розмір як частка зображення акваріума (0–1)."
+  },
+  "CONFIG.liveBait.visual.zone.width": {
+    "label": "Зона акваріума: width",
+    "description": "Координата або розмір як частка зображення акваріума (0–1)."
+  },
+  "CONFIG.liveBait.visual.zone.height": {
+    "label": "Зона акваріума: height",
+    "description": "Координата або розмір як частка зображення акваріума (0–1)."
   }
 }

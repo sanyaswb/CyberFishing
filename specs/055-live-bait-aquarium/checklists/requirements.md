@@ -27,4 +27,4 @@
 
 ## Notes
 
-The owner-selected capacity table supersedes the informal formula at its two jumps. Numeric defaults other than the 100 g eligibility threshold and capacity table remain configurable design choices rather than hardcoded requirements.
+The owner-selected capacity table supersedes the informal formula at its two jumps. The owner revision explicitly sets all eleven feed-pack durations, quality penalties and starvation windows. One-fish baseline, replacement feeding, new-arrival behavior, migration and unknown special status are documented assumptions. The current spec passes the existing checklist.

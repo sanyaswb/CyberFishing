@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.34.0 - Shared Aquarium Feed
+
+- All species up to 100 g share one live-bait identity. Aquarium feeding uses eleven packs across Simple/Good/Premium, a shared bar above the tank, and population-adjusted protection.
+- Feed depletion starts independent saved starvation deadlines within 1/3/6 hours; refeeding rescues survivors. Automatic feeding consumes the selected pack from finite stock. Snapshot v3 migrates prior feature saves without changing inventory v4.
+- Animate reduced fish thumbnails inside a configurable aquarium zone; DEV controls size, variation, speed, direction intervals and a green grid. Originals remain intact.
+- Keepnet stacks show the rarest/heaviest representative; anomalous, unique and unknown-status legacy catches stay separate.
+
 ## v0.33.1 - Keepnet Species Cards
 
 - Keepnet groups fish by species with thumbnails and quantity badges. Open a species in the same dialog to inspect each fish's image, weight, saved rarity, level and survival timer; convert, select, transfer or confirm release by individual ID.

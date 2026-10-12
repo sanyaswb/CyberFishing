@@ -439,4 +439,30 @@ async function main() {
   }
 }
 
-main();
+async function createThumbnails(args) {
+  const option = (name, fallback) => {
+    const index = args.indexOf(name);
+    return index < 0 ? fallback : args[index + 1];
+  };
+  const input = path.resolve(BASE_DIR, option('--input', 'assets/fish'));
+  const output = path.resolve(BASE_DIR, option('--output', 'assets/fish-thumbnails'));
+  const size = Number(option('--size', '128'));
+  if (!Number.isSafeInteger(size) || size < 1 || size > 1024 || input === output ||
+    path.relative(BASE_DIR, output).startsWith('..')) throw new Error('Invalid thumbnail options');
+  const files = glob.sync('**/*.{png,jpg,jpeg,webp,avif}', { cwd: input, nodir: true });
+  for (const relative of files) {
+    const source = path.join(input, relative);
+    const target = path.join(output, relative.replace(/\.[^.]+$/, '.webp'));
+    if (source === target) throw new Error('Thumbnail must not overwrite source');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    await sharp(source).resize(size, size, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 }).toFile(target);
+  }
+  console.log(`Created ${files.length} thumbnails at max ${size}px in ${path.relative(BASE_DIR, output)}`);
+}
+
+if (process.argv.includes('--thumbnails')) {
+  createThumbnails(process.argv.slice(2)).catch((error) => {
+    console.error(error.message); process.exitCode = 1;
+  }).finally(() => rl.close());
+} else main();

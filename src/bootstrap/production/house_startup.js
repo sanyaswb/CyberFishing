@@ -11,6 +11,8 @@ import { RoomProgressLocalStore } from "../../platform/browser/storage/room_prog
 import { composeGameTime } from "./game_time_composition.js";
 import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded_page_overlay.js";
+import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
+import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
 
 export function startFishermanHouse() {
   const { documentTarget, windowTarget } = getBrowserStartupEnvironment();
@@ -32,10 +34,21 @@ export function startFishermanHouse() {
     initialHours: CONFIG.debug?.initialTime, timeScale: CONFIG.debug?.timeScale || 1 });
   const timeDisplay = new TimeDisplay({ documentRef: documentTarget,
     mount: documentTarget.querySelector("[data-house-time-mount]") });
+  const fishView = new AquariumFishView({ canvas: documentTarget.querySelector("[data-house-aquarium-fish]"),
+    windowTarget, motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => Math.random() } }),
+    createImage: () => new windowTarget.Image(),
+    observeResize: (canvas, callback) => {
+      const observer = new windowTarget.ResizeObserver(callback); observer.observe(canvas); return observer;
+    } });
+  const onPreview = (event) => {
+    if (hostWindow && event.source === hostWindow && event.origin === windowTarget.location.origin &&
+      event.data?.type === "cyber-fishing:aquarium-preview") fishView.setConfig(event.data.visual);
+  };
+  windowTarget.addEventListener("message", onPreview);
   let presenter;
   const view = new HouseView({ documentRef: documentTarget, windowTarget,
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, aquariumCapacities: CONFIG.liveBait.capacities,
-    returnTo, fullscreenDocument,
+    returnTo, fullscreenDocument, fishView,
     onReturn: hostWindow ? () => hostWindow.postMessage({ type: EMBEDDED_PAGE_RETURN_MESSAGE }, windowTarget.location.origin) : null,
     toggleFullscreen: () => fullscreenDocument.fullscreenElement
       ? fullscreenDocument.exitFullscreen() : fullscreenDocument.documentElement.requestFullscreen(),
@@ -47,5 +60,7 @@ export function startFishermanHouse() {
   const displayTimer = windowTarget.setInterval(() => { gameTime.sync(); refresh(); }, CONFIG.liveBait.displayTickMs);
   const onFocus = () => { gameTime.sync(); liveBait.advance(); refresh(); };
   windowTarget.addEventListener("focus", onFocus);
-  return { dispose() { windowTarget.clearInterval(careTimer); windowTarget.clearInterval(displayTimer); windowTarget.removeEventListener("focus", onFocus); timeDisplay.dispose(); view.dispose(); } };
+  return { dispose() { windowTarget.clearInterval(careTimer); windowTarget.clearInterval(displayTimer);
+    windowTarget.removeEventListener("focus", onFocus); windowTarget.removeEventListener("message", onPreview);
+    fishView.dispose(); timeDisplay.dispose(); view.dispose(); } };
 }

@@ -5,10 +5,13 @@ import { LiveBaitCommandService } from "../../game/application/live_bait/live_ba
 import { LiveBaitSnapshotStore } from "../../game/application/live_bait/live_bait_snapshot_store.js";
 import { BrowserWallClock } from "../../platform/browser/time/browser_wall_clock.js";
 import { LiveBaitLocalStore } from "../../platform/browser/storage/live_bait_local_store.js";
+import { AquariumCareCalculator } from "../../game/domain/live_bait/aquarium_care_calculator.js";
+import { AquariumStarvationPolicy } from "../../game/domain/live_bait/aquarium_starvation_policy.js";
 
 export function composeLiveBait({ storage, clock = new BrowserWallClock(), rng = { next: () => Math.random() },
   config = CONFIG.liveBait, fishDb = FISH_DB } = {}) {
   const store = new LiveBaitSnapshotStore(new LiveBaitLocalStore(storage));
-  const care = new LiveBaitCareService({ clock, config });
+  const care = new LiveBaitCareService({ clock, config,
+    calculator: new AquariumCareCalculator(config), starvation: new AquariumStarvationPolicy() });
   return new LiveBaitCommandService({ config, fishDb, store, clock, rng, care });
 }

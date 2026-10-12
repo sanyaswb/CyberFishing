@@ -28,12 +28,15 @@ module.exports = async function checkKeepnetLifecycle() {
   assert.equal(service.getView().liveBaits[0].rarity.halfSteps, 3, "read models cannot mutate stored rarity");
   const old = JSON.parse(metadata.values.get(key));
   old.schemaVersion = 1; old.fish[0].rarity = "";
+  old.aquarium.feedBySpecies = {}; delete old.aquarium.feed; delete old.aquarium.starvation;
+  old.feedSupply.portions = 0; delete old.feedSupply.stock; delete old.feedSupply.selectedFeedId;
+  old.fish[0].deathOrder = .25;
   metadata.values.set(key, JSON.stringify(old));
   const migrated = metadata.create();
   assert.equal(migrated.error, null, "schema 1 saves still load");
   assert.equal(migrated.getView().liveBaits[0].rarity, null, "lost historical rarity is explicitly unknown");
   migrated.buyFeed();
-  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 2);
+  assert.equal(JSON.parse(metadata.values.get(key)).schemaVersion, 3);
   const corrupt = JSON.parse(metadata.values.get(key));
   corrupt.fish[0].rarity = { halfSteps: 50, maxHalfSteps: 12, unitsPerStar: 2 };
   const corruptBytes = JSON.stringify(corrupt);
@@ -71,17 +74,19 @@ module.exports = async function checkKeepnetLifecycle() {
   protection.tick(1000);
   assert.deepEqual(mixed.getView().liveBaits.map((entry) => entry.id), ["protected"], "aquarium feed cannot protect keepnet fish of the same species");
 
-  const automatic = fixture({ oneFishFeedMs: 10000, autoFeedTriggerFraction: .5,
+  const automatic = fixture({ minimumFeedMs: 1,
+    aquariumFeeds: { ...LIVE_BAIT_CONFIG.aquariumFeeds, [LIVE_BAIT_CONFIG.defaultFeedId]: {
+      ...LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId], durationMs: 10000 } }, autoFeedTriggerFraction: .5,
     lifetimeMinMs: 1000, lifetimeMaxMs: 1000 });
   const fed = automatic.create();
   fed.buyAquarium(); fed.convertCatch(fish, "fed"); fed.buyFeed(); fed.feedAquarium(); fed.buyAutoFeeder(); fed.buyFeed();
   automatic.tick(6000);
   const bytesBeforeView = automatic.values.get(key);
   assert.equal(fed.getView().feedStock, 0, "read model projects automatic feeding between care ticks");
-  assert(Math.abs(fed.getView().aquarium.slots[0].foodPercent - 90) < .001, "feeder fires at its configured threshold");
+  assert(Math.abs(fed.getView().aquarium.feed.percentage - 90) < .001, "feeder fires at its configured threshold");
   assert.equal(automatic.values.get(key), bytesBeforeView, "view projection never writes storage");
   fed.advance();
-  assert(Math.abs(fed.getView().aquarium.slots[0].foodPercent - 90) < .001);
+  assert(Math.abs(fed.getView().aquarium.feed.percentage - 90) < .001);
 
   const recovery = fixture({ lifetimeMinMs: 1000, lifetimeMaxMs: 1000 });
   const interrupted = recovery.create();
@@ -121,7 +126,6 @@ module.exports = async function checkKeepnetLifecycle() {
   const beforeReload = offline.getView();
   const afterReload = absence.create().getView();
   assert.deepEqual(afterReload, beforeReload, "24-hour absence matches reload to less than a display tick");
-  assert.equal(afterReload.aquarium.slots[0].foodPercent, 0);
-  assert.equal(afterReload.liveBaits[0].remainingMs, LIVE_BAIT_CONFIG.lifetimeMinMs +
-    Math.floor(.25 * (LIVE_BAIT_CONFIG.lifetimeMaxMs - LIVE_BAIT_CONFIG.lifetimeMinMs + 1)));
+  assert.equal(afterReload.aquarium.feed.percentage, 0);
+  assert.equal(afterReload.liveBaits.length, 0, "24-hour absence exhausts simple protection and starvation window");
 };

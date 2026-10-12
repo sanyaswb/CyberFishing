@@ -13,10 +13,10 @@ export class CatchDispositionService {
     this.#config = config;
     this.#fishDb = new Map(fishDb.map((fish) => [fish.id, fish]));
     this.#rng = rng;
-    this.#eligibility = new LiveBaitEligibilityPolicy(config.eligibility);
+    this.#eligibility = new LiveBaitEligibilityPolicy(config);
   }
 
-  canConvert(fish) { return !!this.#eligibility.resolve(fish); }
+  canConvert(fish) { return this.#fishDb.has(fish?.speciesId ?? fish?.sourceSpeciesId ?? fish?.id) && !!this.#eligibility.resolve(fish); }
 
   resolve(state, catchId, fish, action) {
     if (!["claim", "release", "live_bait"].includes(action)) return "invalid_action";
@@ -37,11 +37,13 @@ export class CatchDispositionService {
       level: Number.isFinite(fish.level) ? fish.level : 1,
       imagePath: typeof fish.imagePath === "string" ? fish.imagePath : "",
       rarity: CaughtFishRarity.capture(fish.rarity),
+      anomaly: typeof fish.anomaly === "string" ? fish.anomaly : null,
+      hasAnomaly: fish.hasAnomaly === true || (!!fish.anomaly && fish.anomaly !== "none"),
+      isUnique: fish.isUnique === true || fish.hasAnomaly === true || (!!fish.anomaly && fish.anomaly !== "none"),
       purpose: action === "live_bait" ? "live_bait" : "catch", disposition: location,
       caughtAtMs: state.lastAppliedAtMs, sampledLifetimeMs: lifetime, remainingLifetimeMs: lifetime,
-      deathOrder: action === "live_bait" ? this.#rng.next() : null,
+      starvationDeadlineMs: null,
     });
-    if (toAquarium) aquarium.ensureSlot(speciesId);
     return null;
   }
 
@@ -52,11 +54,9 @@ export class CatchDispositionService {
     fish.purpose = "live_bait";
     fish.sampledLifetimeMs = this.#sampleLifetime();
     fish.remainingLifetimeMs = fish.sampledLifetimeMs;
-    fish.deathOrder = this.#rng.next();
     const aquarium = new AquariumState(state.aquarium, this.#config.capacities);
     if (aquarium.owned && state.fish.filter((item) => item.disposition === "aquarium").length < aquarium.capacity) {
       fish.disposition = "aquarium";
-      aquarium.ensureSlot(fish.speciesId);
     }
     return null;
   }

@@ -1,74 +1,93 @@
-import { AquariumCareCalculator } from "../../domain/live_bait/aquarium_care_calculator.js";
-import { FeedSlotPriorityPolicy } from "../../domain/live_bait/feed_slot_priority_policy.js";
-
 export class LiveBaitCareService {
   #clock;
   #config;
   #calculator;
-  #priority = new FeedSlotPriorityPolicy();
-  constructor({ clock, config }) {
+  #starvation;
+  constructor({ clock, config, calculator, starvation }) {
     this.#clock = clock;
     this.#config = config;
-    this.#calculator = new AquariumCareCalculator(config);
+    this.#calculator = calculator;
+    this.#starvation = starvation;
+  }
+  feed(state, itemId, seed) {
+    const count = state.fish.filter((fish) => fish.disposition === "aquarium").length;
+    const durationMs = this.#calculator.duration(itemId, count);
+    state.aquarium.feed = { itemId, durationMs, remainingMs: durationMs, seed };
+    state.aquarium.starvation = null;
+    for (const fish of state.fish) fish.starvationDeadlineMs = null;
+  }
+  synchronize(state) {
+    const aquarium = state.aquarium;
+    const inhabitants = state.fish.filter((fish) => fish.disposition === "aquarium");
+    for (const fish of state.fish) if (fish.disposition !== "aquarium") fish.starvationDeadlineMs = null;
+    const feed = aquarium.feed;
+    if (feed?.remainingMs > 0) {
+      const elapsed = feed.durationMs - feed.remainingMs;
+      feed.durationMs = this.#calculator.duration(feed.itemId, inhabitants.length);
+      feed.remainingMs = Math.max(0, feed.durationMs - elapsed);
+    }
+    this.#autoFill(state, inhabitants.length);
+    if (!inhabitants.length || aquarium.feed?.remainingMs > 0) {
+      aquarium.starvation = null;
+      for (const fish of inhabitants) fish.starvationDeadlineMs = null;
+      return;
+    }
+    if (!aquarium.starvation) {
+      const item = this.#config.aquariumFeeds[aquarium.feed?.itemId || this.#config.defaultFeedId];
+      aquarium.starvation = { startedAtMs: state.lastAppliedAtMs,
+        windowMs: item.starvationWindowMs, seed: aquarium.feed?.seed ?? 0 };
+    }
+    for (const fish of inhabitants) if (fish.starvationDeadlineMs === null) fish.starvationDeadlineMs =
+      this.#starvation.deadline(aquarium.starvation, fish.id, state.lastAppliedAtMs);
   }
   settle(state) {
     const now = Math.max(state.lastAppliedAtMs, this.#clock.nowMs());
-    if (now === state.lastAppliedAtMs) return false;
-    let changed = false;
+    const before = JSON.stringify([state.aquarium, state.fish.map((fish) => fish.starvationDeadlineMs)]);
+    this.synchronize(state);
+    let changed = before !== JSON.stringify([state.aquarium, state.fish.map((fish) => fish.starvationDeadlineMs)]);
     while (state.lastAppliedAtMs < now) {
-      this.#autoFill(state);
-      const available = now - state.lastAppliedAtMs;
-      let step = available;
-      const groups = new Map();
-      const fractionBefore = new Map();
-      for (const fish of state.fish) if (fish.purpose === "live_bait" && fish.disposition === "aquarium") {
-        groups.set(fish.speciesId, (groups.get(fish.speciesId) || 0) + 1);
-      }
-      for (const [speciesId, count] of groups) {
-        const food = state.aquarium.feedBySpecies[speciesId] || 0;
-        fractionBefore.set(speciesId, food);
-        const trigger = state.feedSupply.autoFeederEnabled && state.feedSupply.portions > 0
-          ? this.#config.autoFeedTriggerFraction : 0;
-        if (food > 0) step = Math.min(step, Math.max(0.001, this.#calculator.timeToEmpty(Math.max(0, food - trigger), count)));
+      let step = now - state.lastAppliedAtMs;
+      const feed = state.aquarium.feed;
+      const stock = state.feedSupply.stock[state.feedSupply.selectedFeedId] || 0;
+      if (feed?.remainingMs > 0) {
+        const trigger = state.feedSupply.autoFeederEnabled && stock > 0
+          ? feed.durationMs * this.#config.autoFeedTriggerFraction : 0;
+        step = Math.min(step, Math.max(1, feed.remainingMs - trigger));
       }
       for (const fish of state.fish) {
-        if (fish.purpose !== "live_bait" || !["keepnet", "hook", "aquarium"].includes(fish.disposition)) continue;
-        if (fish.disposition === "aquarium" && (state.aquarium.feedBySpecies[fish.speciesId] || 0) > 0) continue;
-        step = Math.min(step, Math.max(0.001, fish.remainingLifetimeMs));
+        if (fish.purpose !== "live_bait") continue;
+        if (["keepnet", "hook"].includes(fish.disposition)) step = Math.min(step, Math.max(1, fish.remainingLifetimeMs));
+        else if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null)
+          step = Math.min(step, Math.max(1, fish.starvationDeadlineMs - state.lastAppliedAtMs));
       }
-      for (const [speciesId, count] of groups) {
-        const fraction = state.aquarium.feedBySpecies[speciesId] || 0;
-        if (fraction > 0) state.aquarium.feedBySpecies[speciesId] = this.#calculator.after(fraction, count, step);
-      }
-      for (const fish of state.fish) {
-        if (fish.purpose !== "live_bait" || !["keepnet", "hook", "aquarium"].includes(fish.disposition)) continue;
-        if (fish.disposition === "aquarium" && fractionBefore.get(fish.speciesId) > 0) continue;
-        fish.remainingLifetimeMs = Math.max(0, fish.remainingLifetimeMs - step);
-        if (fish.remainingLifetimeMs <= 0) { fish.disposition = "dead"; if (state.selectedFishId === fish.id) state.selectedFishId = null; }
-      }
+      if (feed?.remainingMs > 0) feed.remainingMs = Math.max(0, feed.remainingMs - step);
       state.lastAppliedAtMs += step;
+      for (const fish of state.fish) {
+        if (fish.purpose !== "live_bait") continue;
+        if (["keepnet", "hook"].includes(fish.disposition)) {
+          fish.remainingLifetimeMs = Math.max(0, fish.remainingLifetimeMs - step);
+          if (fish.remainingLifetimeMs === 0) this.#die(state, fish);
+        } else if (fish.disposition === "aquarium" && fish.starvationDeadlineMs !== null &&
+          fish.starvationDeadlineMs <= state.lastAppliedAtMs) this.#die(state, fish);
+      }
+      this.synchronize(state);
       changed = true;
-      this.#removeEmptySlots(state);
-      this.#autoFill(state);
     }
     return changed;
   }
-  #autoFill(state) {
-    if (!state.feedSupply.autoFeederOwned || !state.feedSupply.autoFeederEnabled) return;
-    const counts = new Map();
-    for (const fish of state.fish) if (fish.disposition === "aquarium") counts.set(fish.speciesId, (counts.get(fish.speciesId) || 0) + 1);
-    while (state.feedSupply.portions > 0) {
-      const candidates = [...counts].map(([speciesId, count]) => ({ speciesId, count,
-        foodFraction: state.aquarium.feedBySpecies[speciesId] || 0 }))
-        .filter((slot) => slot.foodFraction <= this.#config.autoFeedTriggerFraction);
-      const slot = this.#priority.choose(candidates);
-      if (!slot) return;
-      state.aquarium.feedBySpecies[slot.speciesId] = 1;
-      state.feedSupply.portions--;
-    }
+  #die(state, fish) {
+    fish.disposition = "dead";
+    fish.remainingLifetimeMs = 0;
+    fish.starvationDeadlineMs = null;
+    if (state.selectedFishId === fish.id) state.selectedFishId = null;
   }
-  #removeEmptySlots(state) {
-    const occupied = new Set(state.fish.filter((fish) => fish.disposition === "aquarium").map((fish) => fish.speciesId));
-    for (const id of Object.keys(state.aquarium.feedBySpecies)) if (!occupied.has(id)) delete state.aquarium.feedBySpecies[id];
+  #autoFill(state, count) {
+    const supply = state.feedSupply;
+    const feed = state.aquarium.feed;
+    if (!count || !supply.autoFeederOwned || !supply.autoFeederEnabled ||
+      !(supply.stock[supply.selectedFeedId] > 0) ||
+      (feed && feed.remainingMs > feed.durationMs * this.#config.autoFeedTriggerFraction)) return;
+    supply.stock[supply.selectedFeedId]--;
+    this.feed(state, supply.selectedFeedId, this.#starvation.nextSeed(feed?.seed ?? 0));
   }
 }

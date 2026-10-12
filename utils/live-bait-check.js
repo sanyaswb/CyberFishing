@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 async function main() {
   await require("./testing/live_bait/keepnet_lifecycle_scenarios")();
+  await require("./testing/live_bait/shared_feed_scenarios")();
   const { composeLiveBait } = await import("../src/bootstrap/production/live_bait_composition.js");
   const { LIVE_BAIT_CONFIG } = await import("../src/game/config/raw/live_bait/live_bait_config.js");
   const { LiveBaitMotionAdapter } = await import("../src/game/application/live_bait/live_bait_motion_adapter.js");
@@ -13,7 +14,6 @@ async function main() {
   const { CONFIG } = await import("../src/game/config/runtime/game_config.js");
   const { FISH_DB } = await import("../src/game/config/databases/fish_database.js");
   const { ITEM_DB } = await import("../src/game/config/databases/item_catalog.js");
-  const { FeedSlotPriorityPolicy } = await import("../src/game/domain/live_bait/feed_slot_priority_policy.js");
   const { KeepnetViewModel } = await import("../src/game/presentation/keepnet/keepnet_view_model.js");
   const { VictoryLayoutResolver } = await import("../src/game/presentation/screens/victory_layout_resolver.js");
   const { VictoryActionGestureResolver } = await import("../src/game/presentation/input/victory_action_gesture_resolver.js");
@@ -30,7 +30,7 @@ async function main() {
   const service = create();
   assert.equal(service.canConvert({ id: "crucian_stalker", weight: .100 }), true);
   assert.equal(service.canConvert({ id: "crucian_stalker", weight: .101 }), false);
-  assert.equal(service.canConvert({ id: "minnow", weight: .05 }), false);
+  assert.equal(service.canConvert({ id: "minnow", weight: .05 }), true);
   assert.equal(service.canConvert({ id: "crucian_stalker", weight: NaN }), false);
   const fish = { id: "crucian_stalker", weight: .1, level: 1, name: "Crucian" };
   assert.equal(service.resolveCatch("one", fish, "live_bait").ok, true);
@@ -77,32 +77,24 @@ async function main() {
   assert.equal(aquarium.convertCatch(fish, "a").ok, true);
   assert.equal(aquarium.getView().liveBaits.find((item) => item.id === "a").location, "aquarium");
   assert.equal(aquarium.feedAquarium().ok, true);
-  assert.equal(aquarium.getView().aquarium.slots[0].foodPercent, 100);
+  assert.equal(aquarium.getView().aquarium.feed.percentage, 100);
   assert.equal(aquarium.getView().feedStock, 0);
-  now += LIVE_BAIT_CONFIG.oneFishFeedMs / 2;
+  now += LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].durationMs / 2;
   assert.equal(aquarium.advance().ok, true);
-  assert(Math.abs(aquarium.getView().aquarium.slots[0].foodPercent - 50) < .001);
+  assert(Math.abs(aquarium.getView().aquarium.feed.percentage - 50) < .001);
   assert.equal(aquarium.getView().liveBaits.find((item) => item.id === "a").remainingMs, null);
   aquarium.buyFeed();
   aquarium.feedAquarium();
-  assert.equal(aquarium.getView().aquarium.slots[0].foodPercent, 100);
+  assert.equal(aquarium.getView().aquarium.feed.percentage, 100);
   aquarium.buyAutoFeeder();
   aquarium.buyFeed();
-  now += LIVE_BAIT_CONFIG.oneFishFeedMs;
+  now += LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].durationMs;
   aquarium.advance();
   assert.equal(aquarium.getView().feedStock, 0, "auto feeder consumes finite stock");
-  assert.equal(aquarium.getView().aquarium.slots[0].foodPercent, 100);
-  now += LIVE_BAIT_CONFIG.oneFishFeedMs + LIVE_BAIT_CONFIG.lifetimeMinMs;
+  assert.equal(aquarium.getView().aquarium.feed.percentage, 100);
+  now += LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].durationMs + LIVE_BAIT_CONFIG.aquariumFeeds[LIVE_BAIT_CONFIG.defaultFeedId].starvationWindowMs;
   aquarium.advance();
   assert.equal(aquarium.getView().liveBaits.some((item) => item.id === "a"), false, "starvation eventually kills");
-
-  const policy = new FeedSlotPriorityPolicy();
-  assert.equal(policy.choose([{ speciesId: "z", count: 1, foodFraction: .2 },
-    { speciesId: "a", count: 2, foodFraction: .2 }]).speciesId, "a");
-  assert.equal(policy.choose([{ speciesId: "z", count: 2, foodFraction: .2 },
-    { speciesId: "a", count: 2, foodFraction: .2 }]).speciesId, "a");
-  assert.equal(policy.choose([{ speciesId: "z", count: 10, foodFraction: .3 },
-    { speciesId: "a", count: 1, foodFraction: .2 }]).speciesId, "a");
 
   const layout = new VictoryLayoutResolver();
   const actions = layout.resolve({ width: 800, height: 900, config: {}, canLiveBait: true });
@@ -144,10 +136,10 @@ async function main() {
   assert(configIssues.some((issue) => issue.path === "CONFIG.liveBait.motionMultiplier"));
   assert(configIssues.some((issue) => issue.path.includes("CONFIG.liveBait.lifetimeMinMs")));
   const mismatchedItems = { ...ITEM_DB, baits: { ...ITEM_DB.baits,
-    live_crucian: { ...ITEM_DB.baits.live_crucian, sourceSpeciesId: "minnow" } } };
+    live_crucian: null } };
   const catalogIssues = new ConfigSchemaValidator({ config: CONFIG, fishDb: FISH_DB,
     itemDb: mismatchedItems, mapDb: CONFIG.locations.map }).validate().errors;
-  assert(catalogIssues.some((issue) => issue.path === "CONFIG.liveBait.eligibility.crucian_stalker.baitId"));
+  assert(catalogIssues.some((issue) => issue.path === "CONFIG.liveBait.baitId"));
 
   const stale = create();
   const stalePeer = create();

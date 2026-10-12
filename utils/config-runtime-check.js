@@ -532,7 +532,7 @@ function checkLocationMapConfigChanges() {
 async function checkNativeDevelopmentLifecycle() {
   const counts={root:0,start:0,gameDispose:0,consoleDispose:0,overlayDispose:0,watchdogDispose:0};
   const listeners=new Map(), windowTarget={console,addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type,fn){if(listeners.get(type)===fn)listeners.delete(type);}};
-  const config={rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
+  const config={liveBait:{visual:{showZone:false}},rarity:{},spawns:{fishes:[]},locations:{map:{}},debug:{godMode:{enabled:false,noEquipmentLoss:true},fixedCatch:{enabled:false},consoleModules:{},memoryWatchdog:{enabled:true}}};
   const composition = new SourceRuntime({moduleStubs:{'src/game/config/runtime/game_config.js':{CONFIG:config}}})
     .importModule('src/bootstrap/production/game_config_composition.js');
   let configRuntime;
@@ -542,7 +542,7 @@ async function checkNativeDevelopmentLifecycle() {
   class Root { constructor(config,options){counts.root++;this.options=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
   const resource=key=>({dispose(){counts[key]++;}});
   const source=new SourceRuntime({moduleStubs:{
-    'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget:{}}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
+    'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget:{addEventListener(){},removeEventListener(){}}}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},

@@ -126,7 +126,7 @@ Deliver US1 as the first reviewable mechanic, validate it, then add Keepnet, Aqu
 
 ## Phase 8: Convergence
 
-- [ ] T050 Use and persist a randomized death tie order for fish with the same starvation deadline, assigned once per starvation episode; verify that reload and refeeding preserve the surviving fish and do not reroll outcomes per FR-010 and US3/AC4 (partial).
+- [X] T050 Superseded by the owner's shared-feed starvation-window revision (T061). Randomized simultaneous-death tie ordering is no longer a gameplay requirement.
 - [X] T051 Show a visible reason when an eligible catch falls back to the keepnet because the aquarium is full, while preserving the single successful disposition change per FR-005 and the aquarium-full edge case. Victory reports the committed result through an injected callback; Keepnet displays the reason. Rejected full-keepnet outcomes remain retryable.
 - [ ] T052 After the house files are committed, verify the immutable release contains `fisherman-house.html`, its module/style graph, and all seventeen room assets; smoke the packaged house page and record the result per T037 and plan: release evidence (partial).
 
@@ -138,3 +138,13 @@ Deliver US1 as the first reviewable mechanic, validate it, then add Keepnet, Aqu
 - [X] T056 Expose conversion, selection, aquarium transfer and confirmed release through existing application commands; report stale/expired/capacity failures and retain ownership in the application.
 - [X] T057 Fix event-time display projection, expired hook candidates, rejected-command care settlement, configured feeder thresholds, hook return reservations and explicit interrupted-cast recovery at fishing-session startup.
 - [X] T058 Register deterministic Keepnet DOM interaction checks; cover legacy/corrupt saves, mixed protected/unprotected fish, reload, filters, expiry and exact fish actions. Run Architecture, Quick and Full; browser visuals remain owner acceptance.
+
+## Phase 10: Shared feed owner revision (2026-10-12)
+
+- [X] T059 Rewrite current specification, plan and data model for shared aquarium feed, common live bait up to 100 g and safe special-fish stacks.
+- [X] T060 Add eleven aquarium-feed packs across three qualities, population-adjusted durations, finite stock selection and schema-v3 migration.
+- [X] T061 Replace species care with shared feed and independently randomized persistent episode deadlines; cover projection, rescue, re-depletion, transfers and offline automatic feeding.
+- [X] T062 Show the feed image/bar above the aquarium, pack selection and quality/countdown labels.
+- [X] T063 Generate reduced thumbnails with convert-images.js; animate fish inside a configurable zone with DEV-editable size, speed, direction and green grid.
+- [X] T064 Preserve anomaly/unique catch facts; show square safe stacks using rarity/weight representatives and retain exact-ID details.
+- [X] T065 Run focused checks, Architecture, Quick, Full and browser smoke for game/DEV/house. Record evidence and version/changelog.

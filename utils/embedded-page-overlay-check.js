@@ -18,15 +18,16 @@ async function main() {
   const documentRef = {
     createElement: (tag) => {
       assert.equal(tag, "iframe");
-      return { contentWindow: {}, remove() { this.removed = true; } };
+      return { contentWindow: {}, addEventListener(name, listener) { this[name] = listener; }, remove() { this.removed = true; } };
     },
     body: { appendChild: (frame) => frames.push(frame) },
   };
   let entered = 0;
   let exited = 0;
+  let readyWindow = null;
   const overlay = new EmbeddedPageOverlay({ documentRef, windowTarget,
     src: "fisherman-house.html?embedded=1", title: "House",
-    onEnter: () => entered++, onExit: () => exited++ });
+    onEnter: () => entered++, onExit: () => exited++, onReady: (frameWindow) => readyWindow = frameWindow });
   overlay.open();
   overlay.open();
   assert.equal(frames.length, 1, "opening twice keeps one house page");
@@ -34,6 +35,8 @@ async function main() {
   assert.equal(frames[0].src, "fisherman-house.html?embedded=1");
   assert.equal(frames[0].className, "embedded-page-overlay");
   assert.equal(frames[0].allowFullscreen, true);
+  frames[0].load();
+  assert.equal(readyWindow, frames[0].contentWindow, "preview receives only the loaded frame window");
   const message = listeners.get("message");
   message({ source: {}, origin: windowTarget.location.origin,
     data: { type: EMBEDDED_PAGE_RETURN_MESSAGE } });

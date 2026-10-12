@@ -129,3 +129,7 @@ Add observations here in any form; Claude turns them into numbered entries.
 - G-006 Perspective metres on the water: done in [053](../specs/053-water-metric/spec.md). One water metric per location
   (`MAP_DB.<id>.distanceProfile`, live in DevTools); casting, the fight and the tackle run in ground metres. The test
   location reaches 30 m at its far edge. Accuracy stays in map pixels (owner). Owner play check pending: hand chum reach (13.6 m).
+
+### Shared aquarium feeding and safe fish stacks (2026-10-12, P2)
+
+Reproduction: retain several species, add feed and let it expire; current care allocates separate species slots and uses keepnet lifetimes, while equal-death random order is unused. Keepnet groups special catches with ordinary catches. Expected: one shared three-quality pack bar, population penalties, saved independent starvation deadlines within 1/3/6 hours, and separate special-fish cards with rarity/weight stack representatives. Spec: specs/055-live-bait-aquarium/spec.md, T059–T065. Focused deterministic coverage is recorded in quickstart after validation.

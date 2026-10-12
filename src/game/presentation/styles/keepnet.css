@@ -17,8 +17,10 @@
 .keepnet-modal__filter { max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid #588d86; border-radius: 4px; background: #123536; color: white; font: inherit; }
 .keepnet-modal__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill,minmax(185px,1fr)); gap: 10px; }
 .keepnet-modal__fish, .keepnet-modal__group { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 11px; border: 1px solid #467972; border-radius: 8px; background: #173738; color: inherit; font: inherit; text-align: left; overflow-wrap: anywhere; }
-.keepnet-modal__group { position: relative; padding-bottom: 38px; cursor: pointer; }
+.keepnet-modal__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
 .keepnet-modal__group:hover { background: #214b49; border-color: #94dfd0; }
+.keepnet-modal__group .keepnet-modal__thumbnail { position: relative; flex: 1; min-height: 0; }
+.keepnet-modal__group .keepnet-modal__image { position: absolute; inset: 0; height: 100%; max-height: none; }
 .keepnet-modal__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: radial-gradient(#31625a,#11282a); border-radius: 5px; overflow: hidden; }
 .keepnet-modal__image { width: 100%; height: 112px; object-fit: contain; padding: 6px; }
 .keepnet-modal__image-fallback { font-size: 3rem; }

@@ -18,9 +18,12 @@ export class HouseView {
   #lastScrollY = 0;
   #lastTouchY = 0;
   #noticeTimer = null;
+  #fishView;
+  #feedChoice;
+  #feedChoiceKey = "";
 
   constructor({ documentRef, windowTarget, perform, roomConfig, uiConfig, aquariumCapacities,
-    returnTo, toggleFullscreen, fullscreenDocument, onReturn }) {
+    returnTo, toggleFullscreen, fullscreenDocument, onReturn, fishView }) {
     this.#document = documentRef;
     this.#window = windowTarget;
     this.#root = documentRef.body;
@@ -31,13 +34,17 @@ export class HouseView {
     this.#toggleFullscreen = toggleFullscreen;
     this.#fullscreenDocument = fullscreenDocument;
     this.#onReturn = onReturn;
+    this.#fishView = fishView;
+    this.#feedChoice = documentRef.querySelector("[data-house-feed-choice]");
+    this.#feedChoice.addEventListener("change", this.#selectFeed);
     for (const name of ["level", "capacity", "unowned", "owned", "slot-count", "feed-slots",
       "next-feed", "feed-stock", "auto-status", "bait-count", "live-baits", "keepnet-warning",
       "dead-count", "catch-count", "catches", "notice", "aquarium-image", "room-track",
       "room-count", "room-prev", "room-next", "room-navigation", "header", "dock", "scrim", "fullscreen",
       "room-level-panel", "room-max-level", "room-next-level", "room-duration",
       "room-segments", "room-level-list", "aquarium-segments", "aquarium-level-list",
-      "renovation", "renovation-level", "renovation-time"])
+      "renovation", "renovation-level", "renovation-time", "aquarium-stage", "feed-bar",
+      "feed-image", "feed-track", "feed-fill", "feed-time"])
       this.#nodes.set(name, documentRef.querySelector(`[data-house-${name}]`));
     this.#rooms = [...documentRef.querySelectorAll("[data-house-room]")];
     documentRef.querySelector("[data-house-return]").href = returnTo;
@@ -56,6 +63,7 @@ export class HouseView {
   }
 
   dispose() {
+    this.#feedChoice.removeEventListener("change", this.#selectFeed);
     if (this.#noticeTimer !== null) this.#window.clearTimeout(this.#noticeTimer);
     this.#root.removeEventListener("click", this.#handleClick);
     this.#root.removeEventListener("wheel", this.#handleWheel);
@@ -88,11 +96,13 @@ export class HouseView {
     get("unowned").hidden = aquarium.owned;
     get("owned").hidden = !aquarium.owned;
     get("aquarium-image").hidden = !aquarium.owned;
+    get("aquarium-stage").hidden = !aquarium.owned;
+    this.#fishView.show(model.liveBaits.filter((fish) => fish.location === "aquarium"), aquarium.owned);
     const upgrade = this.#document.querySelector('[data-house-action="upgrade"]');
     upgrade.hidden = !aquarium.owned;
     upgrade.disabled = aquarium.level >= aquarium.maxLevel;
     upgrade.textContent = model.upgradeLabel;
-    get("slot-count").textContent = `${aquarium.slots.length} видів`;
+    get("slot-count").textContent = aquarium.feed?.name || "";
     get("feed-stock").textContent = String(model.feedStock);
     get("next-feed").textContent = model.nextFeedLabel;
     get("auto-status").textContent = model.autoStatus;
@@ -106,7 +116,7 @@ export class HouseView {
     const toggle = this.#document.querySelector('[data-house-action="toggleAutoFeeder"]');
     toggle.hidden = !aquarium.autoFeeder.owned;
     toggle.textContent = model.autoToggleLabel;
-    this.#renderSlots(get("feed-slots"), aquarium.slots);
+    this.#renderFeed(model);
     this.#renderFish(get("live-baits"), model.liveBaits, true);
     this.#renderFish(get("catches"), model.keepnet, false);
     this.#renderRoom(model.room);
@@ -184,24 +194,28 @@ export class HouseView {
     if (targetLevel !== null) segments.children[targetLevel - 1]?.style.setProperty("--house-progress", `${Math.round(progress * 100)}%`);
   }
 
-  #renderSlots(container, slots) {
-    const parts = slots.map((slot) => {
-      const row = this.#el("div", "house__feed-slot");
-      const label = this.#el("div", "house__feed-slot-label", `${slot.name} · ${slot.count} риб · ${Math.round(slot.percentage)}%`);
-      const track = this.#el("div", "house__feed-slot-track");
-      const fill = this.#el("div", "house__feed-slot-fill");
-      fill.style.setProperty("--house-feed", `${slot.percentage}%`);
-      track.append(fill);
-      track.setAttribute("role", "progressbar");
-      track.setAttribute("aria-valuenow", String(Math.round(slot.percentage)));
-      track.setAttribute("aria-valuemin", "0");
-      track.setAttribute("aria-valuemax", "100");
-      track.setAttribute("aria-label", slot.name);
-      row.append(label, track, this.#el("small", "house__muted", slot.status));
-      return row;
-    });
-    container.replaceChildren(...(parts.length ? parts : [this.#el("p", "house__muted", "Немає видових слотів.")]));
+  #renderFeed(model) {
+    const feed = model.aquarium.feed;
+    this.#nodes.get("feed-bar").hidden = !feed;
+    if (feed) {
+      const image = this.#nodes.get("feed-image");
+      if (image.getAttribute("src") !== feed.imagePath) image.src = feed.imagePath;
+      image.alt = feed.name;
+      this.#nodes.get("feed-fill").style.setProperty("--house-feed", `${feed.percentage}%`);
+      this.#nodes.get("feed-track").setAttribute("aria-valuenow", String(Math.round(feed.percentage)));
+      this.#nodes.get("feed-time").textContent = model.feedTimeLabel;
+    }
+    const key = JSON.stringify(model.feedItems.map((item) => [item.id, item.count]));
+    if (key !== this.#feedChoiceKey) {
+      this.#feedChoice.replaceChildren(...model.feedItems.map((item) => {
+        const option = this.#el("option", "", `${item.name} · ${item.durationMs / 60000} хв · запас ${item.count}`);
+        option.value = item.id; return option;
+      }));
+      this.#feedChoiceKey = key;
+    }
+    this.#feedChoice.value = model.selectedFeedId;
   }
+  #selectFeed = () => this.#perform("selectFeed", this.#feedChoice.value);
 
   #renderFish(container, fish, live) {
     const rows = fish.map((entry) => {

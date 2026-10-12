@@ -99,7 +99,8 @@ export class KeepnetUI {
       const fish = this.#liveBait.getView().liveBaits.find((entry) => entry.id === result.fishId);
       this.#filter = { kind: "all", speciesId: "all" };
       this.#kind.value = "all";
-      this.#detailSpecies = fish?.sourceSpeciesId ?? null;
+      this.#detailSpecies = fish ? fish.hasAnomaly !== false || fish.isUnique !== false
+        ? `fish:${fish.id}` : fish.sourceSpeciesId : null;
     }
     this.refresh();
   }

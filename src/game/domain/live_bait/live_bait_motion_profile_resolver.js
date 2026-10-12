@@ -1,8 +1,9 @@
 export class LiveBaitMotionProfileResolver {
   #fishById;
-  constructor(fishDb) { this.#fishById = new Map(fishDb.map((fish) => [fish.id, fish])); }
+  #commonSpeciesId;
+  constructor(fishDb, commonSpeciesId = null) { this.#fishById = new Map(fishDb.map((fish) => [fish.id, fish])); this.#commonSpeciesId = commonSpeciesId; }
   resolve(speciesId) {
-    const physics = this.#fishById.get(speciesId)?.physics;
+    const physics = this.#fishById.get(this.#commonSpeciesId || speciesId)?.physics;
     const swim = physics?.behaviorProfile?.behaviors?.swim;
     if (!physics?.movementProfile || !swim) return null;
     return {
