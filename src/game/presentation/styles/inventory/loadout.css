@@ -53,11 +53,12 @@
 }
 
 .inventory-loadout-panel__primary {
-  --inventory-rod-height: max(clamp(310px, 46vh, 405px), calc(var(--inventory-cascade-count, 3) * var(--inventory-card-size) + (var(--inventory-cascade-count, 3) - 1) * 12px));
+  /* Scale the 9:16 rod compartment as a whole when the dependent slots need more height. */
+  --inventory-rod-width: max(clamp(170px, 10.1vw, 194px), calc((max(1, var(--inventory-cascade-count, 3)) * var(--inventory-card-size) + (max(1, var(--inventory-cascade-count, 3)) - 1) * 12px) * 9 / 16));
   display: grid;
   grid-template-columns:
-    clamp(170px, 10.1vw, 194px)
-    clamp(94px, 5.2vw, 110px);
+    var(--inventory-rod-width)
+    var(--inventory-card-size);
   gap: clamp(18px, 2.1vw, 40px);
   align-items: stretch;
   justify-content: start;
@@ -95,12 +96,6 @@
 
 .inventory-loadout-panel__auxiliary .inventory-item-card {
   --inventory-slot-size: var(--inventory-auxiliary-card-size);
-}
-
-.inventory-loadout-panel__primary
-.inventory-field--rod
-.inventory-item-card__icon {
-  font-size: clamp(68px, 9vw, 126px);
 }
 
 .inventory-saved-loadout-preview {
@@ -191,7 +186,6 @@
   }
 
   .inventory-loadout-panel__primary {
-    grid-template-columns: minmax(0, 1fr) var(--inventory-card-size);
     gap: 12px;
     padding-left: 0;
   }

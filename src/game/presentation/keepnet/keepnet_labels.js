@@ -1,9 +1,9 @@
 const formatNumber = (value) => String(Math.round(value * 1000) / 1000).replace(".", ",");
 
 export const KEEPNET_LABELS = Object.freeze({
-  button: "🐟", open: "Відкрити садок", title: "Садок", close: "Закрити садок",
+  open: "Відкрити садок", title: "Садок", close: "Закрити садок",
   help: "Як користуватися садком",
-  parameters: "Параметри садка", contents: "Збережена риба", back: "← Усі види",
+  capacity: "Місткість садка", back: "← Усі види",
   note: "У садку немає прикормки. Живці мають власний відлік життя. Натисніть на вид, щоб оглянути кожну рибу.",
   status: "Прикормка доступна лише в акваріумі",
   kindLabel: "Тип риби", speciesLabel: "Вид риби", allSpecies: "Усі види",
@@ -15,6 +15,7 @@ export const KEEPNET_LABELS = Object.freeze({
   done: "Зміни збережено.", moved: "Рибу перенесено в акваріум.",
   fallback: "Акваріум заповнений. Живця залишено в садку з власним таймером.",
   count: (count, capacity, live, reserved) => `${count} / ${capacity} риб · ${live} живців${reserved ? ` · ${reserved} місце на гачку` : ""}`,
+  occupancy: (count, capacity) => `${count} / ${capacity}`,
   groupCount: (count) => `Кількість: ${count}`,
   details: (name, count) => `${name} · ${count} шт.`,
   weight: (kg) => `${formatNumber(kg * 1000)} г`,

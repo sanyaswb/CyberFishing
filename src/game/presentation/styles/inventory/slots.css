@@ -22,7 +22,11 @@
 }
 
 .inventory-field--rod .inventory-slot {
-  height: var(--inventory-rod-height, clamp(310px, 46vh, 405px));
+  aspect-ratio: 9 / 16;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .inventory-field--socket .inventory-slot {
@@ -77,6 +81,8 @@
   display: block;
   width: 70%;
   height: 70%;
+  max-width: 100%;
+  max-height: 100%;
   min-width: 0;
   min-height: 0;
   object-fit: contain;

@@ -55,7 +55,7 @@ Performance:
 - hot-loop read models (for example the fight frame) are reused objects written in place; diagnostics snapshots are built only when DEV composes them;
 - normalized configuration is computed once per runtime config revision, not per frame.
 
-UI design changes follow the owner's [minimal-text design direction](specs/056-inventory-icon-design/spec.md#design-direction-for-future-changes), including recognizable vector placeholders, selected-item artwork, grouped controls, contextual explanations and the 320px/four-icons layout constraint.
+Before creating or changing any design/UI element, read and follow [DESIGN_RULES.md](DESIGN_RULES.md) and [docs/styles.md](docs/styles.md). DESIGN_RULES is the current source for component/style reuse, BEM, tokens, Grid/Flex responsibilities, the 320px logical layout with proportional scaling below it, inventory's four mobile columns, keepnet's two mobile columns and shared parameter-meter semantics. Completed design specs remain historical records.
 
 For large structural changes: first inspect actual dependencies/consumers, define target boundary and folder structure, then implement. For small changes, do not redesign unrelated architecture.
 

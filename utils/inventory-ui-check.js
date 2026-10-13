@@ -532,8 +532,9 @@ class InventoryStaticContractCheck {
     );
     assert.ok(
       !style.includes(".inventory-charge") &&
-        style.includes("--inventory-resource-fill-start: #48cf15") &&
-        style.includes("--inventory-resource-fill-end: #c4ff1d"),
+        style.includes("background: var(--inventory-resource-color, var(--ui-border))") &&
+        !style.includes("--inventory-resource-fill-start") &&
+        !style.includes("--inventory-resource-fill-end"),
       "All thumbnail resources must share one reusable meter and color source",
     );
     assert.ok(

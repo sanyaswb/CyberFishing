@@ -50,7 +50,9 @@
 │     ├── speckit
 │     │  └── workflow.yml
 │     └── workflow-registry.json
+├── AGENTS.md
 ├── CHANGELOG.md
+├── DESIGN_RULES.md
 ├── DEVELOPMENT_RULES.md
 ├── README.md
 ├── assets
@@ -129,6 +131,7 @@
 │        ├── chum.svg
 │        ├── float.svg
 │        ├── gas-mask.svg
+│        ├── keepnet.svg
 │        ├── line.svg
 │        ├── net.svg
 │        ├── reel.svg
@@ -262,6 +265,16 @@
 │  ├── 056-inventory-icon-design
 │  │  ├── checklists
 │  │  │  └── requirements.md
+│  │  └── spec.md
+│  ├── 057-modular-ui-catalog
+│  │  ├── checklists
+│  │  │  └── requirements.md
+│  │  ├── contracts
+│  │  │  └── ui-components.md
+│  │  ├── data-model.md
+│  │  ├── plan.md
+│  │  ├── quickstart.md
+│  │  ├── research.md
 │  │  └── spec.md
 │  └── README.md
 ├── src

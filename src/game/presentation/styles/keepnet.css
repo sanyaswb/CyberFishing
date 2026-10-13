@@ -1,5 +1,9 @@
 /* Keepnet dialog, help popover and catch cards. Toolbar/close appearance is shared. */
+.keepnet-button__icon { width: 66%; height: 66%; object-fit: contain; pointer-events: none; }
 .keepnet-modal {
+  --keepnet-list-gap: 10px;
+  --keepnet-image-inset: 3px;
+  --keepnet-visual-inset: 14px;
   position: fixed;
   inset: 0;
   z-index: var(--ui-layer-panel);
@@ -82,15 +86,25 @@
 .keepnet-modal__visual {
   display: grid;
   place-items: center;
-  height: 35%;
-  min-height: 150px;
-  font-size: 5rem;
+  height: clamp(150px, 32vh, 300px);
+  overflow: hidden;
   background: radial-gradient(#255d58, #0a181b);
   border: 1px solid #4c8c83;
   border-radius: 7px;
 }
+.keepnet-modal__icon { display: block; width: min(100%, 220px); height: 100%; padding: var(--keepnet-visual-inset); object-fit: contain; }
+.keepnet-modal__count { margin: 12px 0 6px; color: var(--ui-text); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.keepnet-modal__capacity {
+  --inventory-parameter-meter-height: 12px;
+  padding: 2px;
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: rgba(var(--ui-surface-rgb), .9);
+  pointer-events: auto;
+}
+.keepnet-modal__capacity .inventory-resource-meter__track { border-radius: inherit; }
 .keepnet-modal__section-title { margin: 13px 0; }
-.keepnet-modal__count { font-size: 1.2rem; font-weight: 700; }
 .keepnet-modal__status { color: #b9d7d0; }
 .keepnet-modal__filters { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 16px; }
 .keepnet-modal__filter {
@@ -104,7 +118,7 @@
   color: white;
   font: inherit;
 }
-.keepnet-modal__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 10px; }
+.keepnet-modal__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: var(--keepnet-list-gap); }
 .keepnet-modal__fish, .keepnet-modal__group {
   display: flex;
   flex-direction: column;
@@ -124,7 +138,7 @@
 .keepnet-modal__group .keepnet-modal__thumbnail { position: relative; flex: 1; min-height: 0; }
 .keepnet-modal__group .keepnet-modal__image { position: absolute; inset: 0; height: 100%; max-height: none; }
 .keepnet-modal__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: radial-gradient(#31625a, #11282a); border-radius: 5px; overflow: hidden; }
-.keepnet-modal__image { width: 100%; height: 112px; object-fit: contain; padding: 6px; }
+.keepnet-modal__image { display: block; width: 100%; height: 112px; object-fit: cover; object-position: center; padding: var(--keepnet-image-inset); }
 .keepnet-modal__image-fallback { font-size: 3rem; }
 .keepnet-modal__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #b9eee0; color: #092822; font-weight: 800; text-align: center; }
 .keepnet-modal__back, .keepnet-modal__action {
@@ -148,17 +162,18 @@
 .keepnet-modal__empty { grid-column: 1 / -1; color: #afc8c1; }
 
 @media (max-width: 740px) {
-  .keepnet-modal { padding: 8px; overflow: hidden; }
+  .keepnet-modal { --keepnet-list-gap: 6px; --keepnet-image-inset: 2px; padding: 8px; overflow: hidden; }
   .keepnet-modal__main { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
   .keepnet-modal__left, .keepnet-modal__right { overflow: visible; padding: 10px; flex: none; }
-  .keepnet-modal__visual { display: none; }
-  .keepnet-modal__left .keepnet-modal__section-title { margin: 0 0 8px; font-size: 14px; }
-  .keepnet-modal__count { margin: 0; font-size: 14px; }
+  .keepnet-modal__visual { grid-template-columns: minmax(0, 1fr); height: auto; padding: var(--keepnet-visual-inset); }
+  /* The square spacer sets a minimum; a taller intrinsic image grows the same grid row. */
+  .keepnet-modal__visual::before { content: ""; grid-area: 1 / 1; width: 100%; aspect-ratio: 1; }
+  .keepnet-modal__icon { grid-area: 1 / 1; width: 100%; height: auto; min-width: 0; padding: 0; }
   .keepnet-modal__status { margin: 8px 0 0; font-size: 13px; }
   .keepnet-modal__filters { gap: 8px; }
   .keepnet-modal__filter { flex: 1 1 120px; }
-  /* 320px: 16px outer padding + 22px panel insets + 18px gaps leaves four 66px cards. */
-  .keepnet-modal__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  /* The owner's current mobile keepnet layout has two equal columns. */
+  .keepnet-modal__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .keepnet-modal__group { padding: 4px; }
   .keepnet-modal__group .keepnet-modal__fish-name,
   .keepnet-modal__group .keepnet-modal__fish-weight { display: none; }
@@ -166,7 +181,7 @@
   .keepnet-modal__badge { right: 4px; bottom: 4px; min-width: 20px; padding: 1px 4px; font-size: 11px; }
   .keepnet-modal__fish { padding: 4px; gap: 4px; font-size: 11px; }
   .keepnet-modal__fish .keepnet-modal__thumbnail { aspect-ratio: 1; height: auto; }
-  .keepnet-modal__fish .keepnet-modal__image { height: 100%; padding: 2px; }
+  .keepnet-modal__fish .keepnet-modal__image { height: 100%; }
   .keepnet-modal__fish-name, .keepnet-modal__fish-level { font-size: 11px; }
   .keepnet-modal__image-fallback { font-size: 24px; }
   .keepnet-modal__actions { flex-direction: column; gap: 4px; }

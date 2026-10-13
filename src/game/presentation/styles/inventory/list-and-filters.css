@@ -225,8 +225,9 @@
   display: grid;
   min-height: 0;
   flex: 1;
-  grid-template-columns: repeat(auto-fill, var(--inventory-card-size));
-  grid-auto-rows: var(--inventory-card-size);
+  /* Every column shares the remaining width; the small-screen minimum still permits four columns. */
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--inventory-card-size), calc((100% - 3 * var(--inventory-list-gap) - 1px) / 4)), 1fr));
+  grid-auto-rows: auto;
   gap: var(--inventory-list-gap);
   align-content: start;
   overflow-y: auto;
@@ -235,8 +236,15 @@
 
 .inventory-list-item {
   position: relative;
-  width: var(--inventory-card-size);
-  height: var(--inventory-card-size);
+  container-type: inline-size;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
+.inventory-list-item > .inventory-item-card {
+  --inventory-slot-size: 100cqw;
 }
 
 .inventory-list-item.inventory-list-item--selected,
@@ -278,10 +286,6 @@
     --inventory-list-inset: 8px;
     --inventory-list-gap: var(--inventory-mobile-gap);
     gap: 16px;
-  }
-
-  .inventory-list-grid {
-    justify-content: center;
   }
 
   .inventory-subfilters,

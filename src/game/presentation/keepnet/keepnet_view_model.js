@@ -1,3 +1,5 @@
+import { clampUnitFinite } from "../../../engine/math/number_normalization.js";
+
 export class KeepnetViewModel {
   build(state, { kind = "all", speciesId = "all" } = {}) {
     const catches = state.keepnet.map((fish) => ({ ...fish, kind: "catch", remainingMs: null }));
@@ -32,7 +34,12 @@ export class KeepnetViewModel {
       group.totalWeightKg += fish.weightKg;
     }
     const groups = [...bySpecies.values()].sort((a, b) => a.name.localeCompare(b.name, "uk"));
+    // Hook reservations still occupy capacity so the selected fish can return.
+    const occupied = all.length + (state.keepnetReservedCount || 0);
+    const capacityPercent = state.keepnetCapacity > 0
+      ? clampUnitFinite(occupied / state.keepnetCapacity) * 100 : 100;
     return { count: all.length, capacity: state.keepnetCapacity, liveCount: live.length,
+      capacityPercent,
       reservedCount: state.keepnetReservedCount || 0, aquarium: state.aquarium,
       species, groups, filtered, kind, speciesId, error: state.error };
   }

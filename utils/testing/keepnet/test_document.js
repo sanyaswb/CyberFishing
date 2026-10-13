@@ -3,6 +3,11 @@ class TestElement {
     this.document = document; this.tagName = tag; this.children = []; this.parentNode = null;
     this.dataset = {}; this.attributes = {}; this.listeners = new Map(); this.hidden = false;
     this.className = ""; this.value = ""; this.scrollTop = 0; this.text = "";
+    const properties = new Map();
+    this.style = {
+      setProperty: (name, value) => properties.set(name, String(value)),
+      getPropertyValue: (name) => properties.get(name) || "",
+    };
     this.classList = {
       add: (name) => { this.className = [...new Set([...this.className.split(" "), name])].join(" "); },
       remove: (name) => { this.className = this.className.split(" ").filter((entry) => entry !== name).join(" "); },
@@ -12,6 +17,7 @@ class TestElement {
   set textContent(value) { this.replaceChildren(); this.text = String(value); }
   get textContent() { return this.text + this.children.map((child) => child.textContent).join(""); }
   append(...children) { for (const child of children) { child.remove(); child.parentNode = this; this.children.push(child); } }
+  appendChild(child) { this.append(child); return child; }
   replaceChildren(...children) { for (const child of [...this.children]) child.remove(); this.text = ""; this.append(...children); }
   remove() {
     if (this.contains(this.document.activeElement)) this.document.activeElement = this.document.body;

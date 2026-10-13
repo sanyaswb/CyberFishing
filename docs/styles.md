@@ -1,5 +1,7 @@
 # Presentation styles
 
+Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
+
 Native HTML pages compose the stylesheet order. `index.html` loads 22 production assets;
 `dev.html` reuses that exact prefix and appends three DEV assets. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.

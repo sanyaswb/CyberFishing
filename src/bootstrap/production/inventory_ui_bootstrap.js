@@ -27,10 +27,13 @@ import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_car
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
 
 export class InventoryUiBootstrap {
-  static createKeepnet({ documentRef, liveBait, inventoryUI }) {
+  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
     const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
+      resourceMeterRenderer: new InventoryResourceMeterRenderer({
+        domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
+      }),
       cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }) });
     inventoryUI.setOnOpen(() => keepnetUI.close());
     return keepnetUI;
@@ -99,7 +102,7 @@ export class InventoryUiBootstrap {
       resourceMeterResolver || new InventoryResourceMeterResolver();
     const resolvedResourceMeterRenderer =
       resourceMeterRenderer ||
-      new InventoryResourceMeterRenderer({ domFactory: dom });
+      new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
     const itemParametersResolver =
       new InventoryItemParametersResolver({
         resourceMeterResolver: resolvedResourceMeterResolver,

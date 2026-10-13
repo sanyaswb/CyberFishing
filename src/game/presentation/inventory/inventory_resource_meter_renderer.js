@@ -1,8 +1,10 @@
 export class InventoryResourceMeterRenderer {
   #dom;
+  #colors;
 
-  constructor({ domFactory } = {}) {
+  constructor({ domFactory, degradationColorResolver = null } = {}) {
     this.#dom = domFactory;
+    this.#colors = degradationColorResolver;
   }
 
   update(host, model) {
@@ -55,13 +57,21 @@ export class InventoryResourceMeterRenderer {
     return meter;
   }
 
+  updateReading(meter, model) {
+    this.#applyModel(meter, model);
+  }
+
   #applyModel(meter, model) {
     meter.style.setProperty(
       "--inventory-resource-percent",
       `${model.percent}%`,
     );
+    // Occupancy grows toward danger; remaining resources shrink toward it.
+    const color = this.#colors?.resolvePercent(model.remainingPercent ?? model.percent);
+    meter.style.setProperty("--inventory-resource-color", color?.cssColor || "");
     meter.setAttribute("aria-valuenow", String(model.percent));
     meter.setAttribute("aria-label", model.label);
+    meter.title = model.label;
   }
 
   #findDirectMeter(host) {

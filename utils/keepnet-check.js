@@ -7,6 +7,11 @@ async function main() {
   const { KeepnetViewModel } = await import("../src/game/presentation/keepnet/keepnet_view_model.js");
   const { VictoryState } = await import("../src/game/application/state/victory_state.js");
   const { LIVE_BAIT_CONFIG } = await import("../src/game/config/raw/live_bait/live_bait_config.js");
+  const { DEGRADATION_COLOR_CONFIG } = await import("../src/game/presentation/visual/degradation_color_config.js");
+  const { DegradationColorResolver } = await import("../src/game/presentation/styles/degradation_color_resolver.js");
+  const { InventoryResourceMeterRenderer } = await import("../src/game/presentation/inventory/inventory_resource_meter_renderer.js");
+  const { InventoryDomFactory } = await import("../src/platform/browser/dom/inventory_dom_factory.js");
+  const colors = new DegradationColorResolver({ configProvider: () => DEGRADATION_COLOR_CONFIG });
   const documentRef = new TestDocument();
   let now = 1000;
   const values = new Map();
@@ -25,12 +30,31 @@ async function main() {
   assert.equal(projection.groups.length, 2);
   assert.deepEqual(projection.groups[0].fish.map((item) => item.id), ["one", "two", "bait"]);
   assert.equal(projection.count, 4, "capacity counts individuals, not stacks");
+  assert.equal(projection.capacityPercent, 4);
+  assert.equal(new KeepnetViewModel().build(source, { kind: "live_bait" }).capacityPercent, 4,
+    "filtering never changes the occupied capacity");
+  const empty = { ...source, keepnet: [], liveBaits: [], keepnetReservedCount: 0 };
+  assert.equal(new KeepnetViewModel().build(empty).capacityPercent, 0);
+  assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 4 }).capacityPercent, 100);
+  assert.equal(new KeepnetViewModel().build({ ...source, keepnetCapacity: 3 }).capacityPercent, 100,
+    "overcapacity cannot overflow the meter");
+  const meters = new InventoryResourceMeterRenderer({ domFactory: new InventoryDomFactory(documentRef),
+    degradationColorResolver: colors });
+  const reading = meters.create({ id: "capacity", percent: 40, label: "Remaining resource" });
+  assert.equal(reading.style.getPropertyValue("--inventory-resource-color"), colors.resolvePercent(40).cssColor);
+  meters.updateReading(reading, { percent: 60, remainingPercent: 40, label: "Occupied capacity" });
+  assert.equal(reading.style.getPropertyValue("--inventory-resource-color"), colors.resolvePercent(40).cssColor,
+    "equal remaining space and remaining resources use the same shared color scale");
+  meters.updateReading(reading, { percent: 100, remainingPercent: 0, label: "Full capacity" });
+  assert.equal(reading.style.getPropertyValue("--inventory-resource-color"), colors.resolvePercent(0).cssColor);
+  meters.updateReading(reading, { percent: 0, remainingPercent: 100, label: "Empty capacity" });
+  assert.equal(reading.style.getPropertyValue("--inventory-resource-color"), colors.resolvePercent(100).cssColor);
   assert.equal(new KeepnetViewModel().build(source, { speciesId: "missing" }).filtered.length, 4, "stale filter resets before projection");
   assert.equal(new KeepnetViewModel().build(source, { kind: "live_bait" }).groups[0].count, 1);
   assert.equal(source.keepnet.length, 3, "grouping never changes ownership");
   let inventoryClosed = 0;
   let onInventoryOpen;
-  const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service,
+  const ui = InventoryUiBootstrap.createKeepnet({ documentRef, liveBait: service, degradationColorResolver: colors,
     inventoryUI: { close: () => { inventoryClosed++; }, setOnOpen: (handler) => { onInventoryOpen = handler; } } });
   const button = documentRef.byClass("keepnet-button")[0];
   button.click();
@@ -38,6 +62,17 @@ async function main() {
   const root = documentRef.byClass("keepnet-modal")[0];
   const close = documentRef.byClass("keepnet-modal__close")[0];
   const back = documentRef.byClass("keepnet-modal__back")[0];
+  const capacity = documentRef.byClass("keepnet-modal__capacity")[0];
+  const capacityCount = documentRef.byClass("keepnet-modal__count")[0];
+  assert.equal(capacity.getAttribute("role"), "meter");
+  assert.equal(capacity.getAttribute("aria-valuenow"), "4");
+  assert(capacity.title.includes("4 / 100"), "exact capacity stays available as a contextual hint");
+  assert.equal(documentRef.byClass("keepnet-modal__section-title")[0].hidden, true);
+  assert.equal(documentRef.byClass("keepnet-modal__icon")[0].src, "assets/ui/inventory/keepnet.svg");
+  assert.equal(capacity.textContent, "", "the capacity meter has no permanent numeric label");
+  assert.equal(capacityCount.textContent, "4 / 100");
+  assert.equal(capacity.parentNode.children.indexOf(capacityCount) + 1,
+    capacity.parentNode.children.indexOf(capacity), "the occupancy counter sits directly above its meter");
   assert.equal(documentRef.activeElement, close);
   const help = documentRef.byClass("keepnet-modal__help")[0];
   const hint = documentRef.byClass("keepnet-modal__help-text")[0];
@@ -83,10 +118,18 @@ async function main() {
   now += 1000; ui.refresh();
   assert.equal(documentRef.activeElement, select, "countdown refresh retains focus");
   assert.equal(documentRef.byClass("keepnet-modal__image")[0], images[0], "timer refresh does not reload images");
+  assert.equal(documentRef.byClass("keepnet-modal__capacity")[0], capacity, "timer refresh retains the shared meter node");
   assert.equal(panel.scrollTop, 137);
   assert.equal(mobilePanel.scrollTop, 121);
   assert(documentRef.byClass("keepnet-modal__fish-timer")[2].textContent.includes("0:09"));
   select.click(); assert.equal(service.getSelectedBait().fishId, "bait");
+  assert.equal(service.beginLiveBaitCast("bait", { compatible: true, free: true, hookCount: 1 }).ok, true);
+  ui.refresh();
+  assert.equal(capacity.getAttribute("aria-valuenow"), "4", "a hooked bait still reserves its return slot");
+  assert.equal(capacityCount.textContent, "4 / 100", "visible occupancy also includes the reserved return slot");
+  assert(capacity.title.includes("1 місце на гачку"));
+  assert.equal(service.endLiveBaitCast("bait").ok, true);
+  ui.refresh();
   documentRef.byKey("one:convert").click();
   assert.equal(service.getView().liveBaits.length, 2);
   documentRef.byKey("two:release").click();
@@ -146,6 +189,6 @@ async function main() {
   assert.deepEqual(transitions, ["scouting"]);
   assert.equal(outcomes, 2, "retry succeeds once after capacity is freed");
   assert.equal(notifications[1].notice, "aquarium_full");
-  console.log("Keepnet passed: species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation.");
+  console.log("Keepnet passed: shared capacity colors and hook reservations, species stacks, individual images/weight/rarity, filters, live countdown, actions, expiry, focus and navigation.");
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });

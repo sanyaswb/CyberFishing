@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.34.4 - Inventory Scaling, Keepnet Layout and Design Rules
+
+- Preserve the rod compartment's 9:16 proportions, redraw its vector placeholder without line/hook, fill inventory rows with evenly scaled square cards and geometrically center the shared close icon.
+- Add a keepnet vector icon, remove redundant section headings, use cover-cropped fish thumbnails and show occupied/reserved capacity through the shared resource meter with a numeric counter above it.
+- Use two mobile keepnet columns and an illustration container that is at least square and grows for portrait artwork. Resource meters reuse the existing injected degradation color scale.
+- Add mandatory English design rules for reuse, BEM, tokens, Grid/Flex, the 320px logical baseline and current inventory/keepnet column counts. Prepare spec 057 and its implementation plan for an isolated UI catalog; catalog and below-320px surface scaling remain planned work.
+- Preserve gameplay and save formats. Browser and visual acceptance remain with the owner.
+
 ## v0.34.3 - Inventory Icons and Automatic Refill Pills
 
 - Replace equipment/socket labels with centered monochrome vector placeholders; actual equipped artwork takes their place. Keep accessible names and contextual hints, including in saved loadout previews.

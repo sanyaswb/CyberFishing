@@ -1,5 +1,6 @@
 /* Shared close affordance for the inventory and keepnet dialogs. */
 .ui-modal-close {
+  position: relative;
   display: grid;
   place-items: center;
   box-sizing: border-box;
@@ -11,11 +12,25 @@
   border-radius: var(--ui-radius-panel);
   background: rgba(255, 68, 68, 0.12);
   color: #ff8e9b;
-  font: 28px/1 system-ui, sans-serif;
+  /* Keep the accessible button name; draw the cross without a font baseline. */
+  font: 0/1 system-ui, sans-serif;
   cursor: pointer;
   touch-action: manipulation;
   transition: background-color 160ms ease, border-color 160ms ease;
 }
+.ui-modal-close::before,
+.ui-modal-close::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  content: "";
+}
+.ui-modal-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.ui-modal-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .ui-modal-close:hover { background: rgba(255, 68, 68, 0.24); border-color: var(--ui-danger); }
 .ui-modal-close:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {

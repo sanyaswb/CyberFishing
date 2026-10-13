@@ -1,9 +1,12 @@
+import { inventorySlotIconPath } from "../inventory/inventory_slot_icons.js";
+
 export class KeepnetUI {
   #document;
   #liveBait;
   #inventoryUI;
   #model;
   #cards;
+  #meters;
   #labels;
   #filter = { kind: "all", speciesId: "all" };
   #detailSpecies = null;
@@ -20,6 +23,7 @@ export class KeepnetUI {
   #main;
   #kind;
   #list;
+  #capacity;
   #count;
   #species;
   #status;
@@ -30,14 +34,16 @@ export class KeepnetUI {
   #rendered = new Map();
   #cardFocusables = [];
 
-  constructor({ documentRef, liveBait, inventoryUI, model, cards, labels }) {
+  constructor({ documentRef, liveBait, inventoryUI, model, cards, labels, resourceMeterRenderer }) {
     this.#document = documentRef;
     this.#liveBait = liveBait;
     this.#inventoryUI = inventoryUI;
     this.#model = model;
     this.#cards = cards;
+    this.#meters = resourceMeterRenderer;
     this.#labels = labels;
-    this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet", labels.button);
+    this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
+    this.#button.append(this.#icon("keepnet-button__icon"));
     this.#button.type = "button";
     this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
@@ -70,16 +76,20 @@ export class KeepnetUI {
     const main = this.#el("main", "keepnet-modal__main");
     this.#main = main;
     const left = this.#el("section", "keepnet-modal__left");
-    left.append(this.#el("div", "keepnet-modal__visual", "🐟"), this.#el("h3", "keepnet-modal__section-title", labels.parameters));
+    const visual = this.#el("div", "keepnet-modal__visual");
+    visual.append(this.#icon("keepnet-modal__icon", labels.title));
+    this.#capacity = this.#meters.create({ id: "keepnet-capacity", percent: 0,
+      remainingPercent: 100, label: labels.capacity }, { variant: "summary", showIcon: false });
+    this.#capacity.classList.add("keepnet-modal__capacity");
     this.#count = this.#el("p", "keepnet-modal__count");
     this.#status = this.#el("p", "keepnet-modal__status");
     this.#status.setAttribute("role", "status");
-    left.append(this.#count, this.#status);
+    left.append(visual, this.#count, this.#capacity, this.#status);
     this.#right = this.#el("section", "keepnet-modal__right");
     this.#back = this.#el("button", "keepnet-modal__back", labels.back);
     this.#back.type = "button";
     this.#back.addEventListener("click", this.#goBack);
-    this.#heading = this.#el("h3", "keepnet-modal__section-title", labels.contents);
+    this.#heading = this.#el("h3", "keepnet-modal__section-title");
     const filters = this.#el("div", "keepnet-modal__filters");
     this.#kind = this.#el("select", "keepnet-modal__filter");
     this.#kind.setAttribute("aria-label", labels.kindLabel);
@@ -150,12 +160,17 @@ export class KeepnetUI {
     const group = model.groups.find((entry) => entry.id === this.#detailSpecies);
     if (!group) this.#detailSpecies = null;
     if (!model.filtered.some((fish) => fish.id === this.#pendingRelease)) this.#pendingRelease = null;
-    this.#count.textContent = this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount);
+    this.#meters.updateReading(this.#capacity, { percent: model.capacityPercent,
+      remainingPercent: 100 - model.capacityPercent,
+      label: `${this.#labels.capacity}: ${this.#labels.count(model.count, model.capacity, model.liveCount, model.reservedCount)}` });
+    const count = this.#labels.occupancy(model.count + model.reservedCount, model.capacity);
+    if (this.#count.textContent !== count) this.#count.textContent = count;
     const status = model.error ? this.#labels.error(model.error) : this.#notice;
     if (this.#status.textContent !== status) this.#status.textContent = status;
     this.#status.hidden = !status;
     this.#back.hidden = !group;
-    this.#heading.textContent = group ? this.#labels.details(group.name, group.count) : this.#labels.contents;
+    this.#heading.hidden = !group;
+    this.#heading.textContent = group ? this.#labels.details(group.name, group.count) : "";
     const speciesSignature = JSON.stringify(model.species);
     if (speciesSignature !== this.#speciesSignature) {
       this.#species.replaceChildren(this.#option("all", this.#labels.allSpecies),
@@ -244,6 +259,13 @@ export class KeepnetUI {
     return el;
   }
   #option(value, label) { const option = this.#el("option", "", label); option.value = value; return option; }
+  #icon(className, alt = "") {
+    const image = this.#el("img", className);
+    image.src = inventorySlotIconPath("keepnet");
+    image.alt = alt;
+    image.draggable = false;
+    return image;
+  }
   #setHelpVisible(visible) {
     if (!this.#helpText || this.#helpText.hidden === !visible) return;
     this.#helpText.hidden = !visible;

@@ -8,6 +8,7 @@ const ICONS = Object.freeze({
   tackle: "assets/ui/inventory/tackle.svg",
   hook: "assets/ui/inventory/tackle.svg",
   net: "assets/ui/inventory/net.svg",
+  keepnet: "assets/ui/inventory/keepnet.svg",
   handChum: "assets/ui/inventory/chum.svg",
   chum: "assets/ui/inventory/chum.svg",
   cargo: "assets/ui/inventory/chum.svg",
