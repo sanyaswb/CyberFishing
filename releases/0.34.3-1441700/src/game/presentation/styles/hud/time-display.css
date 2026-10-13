@@ -1,0 +1,29 @@
+/* time-display DOM appearance. */
+
+.time-display {
+  position: fixed;
+  top: var(--ui-edge-top);
+  right: var(--ui-edge-right);
+  background: rgba(var(--ui-surface-rgb), 0.85);
+  border: 2px solid var(--ui-border);
+  border-radius: var(--ui-radius-panel);
+  box-sizing: border-box;
+  width: var(--ui-clock-width);
+  min-height: 44px;
+  padding: 6px 10px;
+  color: var(--ui-text);
+  font-family: var(--ui-font-mono);
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: var(--ui-layer-hud);
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.time-display__time {
+  color: var(--ui-accent);
+}

@@ -1,0 +1,56 @@
+/* Browser game surface, victory stacking and scouting fade. */
+
+.game-shell {
+  margin: 0;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.game-shell__canvas {
+  background-color: #0f171e;
+}
+
+body.game-shell--outcome-active .game-shell__canvas {
+  position: relative;
+  z-index: var(--ui-layer-outcome);
+}
+
+body.game-shell--pointer-hold .game-control {
+  opacity: 0.18;
+  transition: opacity 180ms ease-out;
+}
+
+body.game-shell--pointer-release .game-control {
+  opacity: 1;
+  transition: none;
+}
+
+/* Native interaction policy scoped to the game page. */
+.game-shell * {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+:where(.game-shell) button,
+:where(.game-shell) a {
+  transition: transform 0.12s ease-out;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+:where(.game-shell) button:active,
+:where(.game-shell) a:active {
+  transform: scale(0.96);
+}
+
+.game-shell :focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 3px;
+}
