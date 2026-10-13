@@ -117,6 +117,12 @@ const CHECK_DEFINITIONS = Object.freeze([
     suites: ["inventory"],
   },
   {
+    id: "inventory-auto-refill-stock",
+    title: "Read-only automatic refill reserve counts",
+    file: "utils/inventory-auto-refill-stock-check.js",
+    suites: ["quick", "inventory"],
+  },
+  {
     id: "bait-effectiveness",
     title: "Contextual bait effectiveness",
     file: "utils/bait-effectiveness-check.js",

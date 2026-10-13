@@ -53,20 +53,21 @@
 }
 
 .inventory-loadout-panel__primary {
+  --inventory-rod-height: max(clamp(310px, 46vh, 405px), calc(var(--inventory-cascade-count, 3) * var(--inventory-card-size) + (var(--inventory-cascade-count, 3) - 1) * 12px));
   display: grid;
   grid-template-columns:
     clamp(170px, 10.1vw, 194px)
     clamp(94px, 5.2vw, 110px);
   gap: clamp(18px, 2.1vw, 40px);
-  align-items: start;
+  align-items: stretch;
   justify-content: start;
   padding-left: clamp(14px, 1.8vw, 34px);
 }
 
 .inventory-loadout-panel__cascade {
-  display: grid;
-  grid-auto-rows: max-content;
-  grid-template-columns: var(--inventory-card-size);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   gap: 12px;
 }
 
@@ -144,16 +145,9 @@
   gap: 5px;
 }
 
-.inventory-saved-loadout-preview__label {
-  overflow: hidden;
-  color: #afb8bc;
-  font-size: 11px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .inventory-saved-loadout-preview__well {
+  display: grid;
+  place-items: center;
   position: relative;
   width: var(--inventory-card-size);
   height: var(--inventory-card-size);
@@ -214,10 +208,6 @@
     justify-content: center;
   }
 
-  .inventory-field__label,
-  .inventory-saved-loadout-preview__label {
-    font-size: 11px;
-  }
 }
 
 @media (max-width: 520px) {

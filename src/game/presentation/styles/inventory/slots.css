@@ -4,24 +4,12 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 5px;
+  flex: none;
 }
 
 .inventory-field--semantic,
 .inventory-field--auxiliary {
   width: var(--inventory-card-size);
-}
-
-.inventory-field__label {
-  overflow: hidden;
-  color: #aeb3b5;
-  font-family: system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .inventory-slot {
@@ -34,7 +22,7 @@
 }
 
 .inventory-field--rod .inventory-slot {
-  height: clamp(310px, 46vh, 405px);
+  height: var(--inventory-rod-height, clamp(310px, 46vh, 405px));
 }
 
 .inventory-field--socket .inventory-slot {
@@ -74,36 +62,38 @@
 }
 
 .inventory-slot__empty-button {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   border: 0;
+  padding: 0;
   background: transparent;
-  color: #171b1c;
   cursor: pointer;
-  font:
-    400 clamp(38px, 4vw, 64px)/1 system-ui,
-    sans-serif;
 }
 
-.inventory-slot--locked .inventory-slot__empty-button {
-  position: relative;
-  color: transparent;
+.inventory-slot-icon {
+  display: block;
+  width: 70%;
+  height: 70%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  pointer-events: none;
 }
 
-.inventory-slot--locked .inventory-slot__empty-button::before,
+.inventory-field--rod .inventory-slot-icon { height: 82%; }
+
 .inventory-slot--locked .inventory-slot__empty-button::after {
   position: absolute;
-  top: 50%;
-  left: 13%;
-  width: 74%;
-  height: 1px;
-  background: #b82d37;
+  bottom: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--inventory-warning);
   content: "";
-  transform: rotate(45deg);
-}
-
-.inventory-slot--locked .inventory-slot__empty-button::after {
-  transform: rotate(-45deg);
 }
 
 @keyframes inventory-compatible-slot-pulse {

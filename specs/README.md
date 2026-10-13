@@ -46,6 +46,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [053](053-water-metric/spec.md) | Perspective metres on the water: one `WaterMetric` per location; casting, fight and tackle in ground metres (G-006) | Implemented | — |
 | [054](054-bait-boat-water-metric/spec.md) | Bait boat speed and motion on the water metric (G-007) | Specified | — |
 | [055](055-live-bait-aquarium/spec.md) | Live bait, keepnet, aquarium and Fisherman's House: [plan](055-live-bait-aquarium/plan.md), [tasks](055-live-bait-aquarium/tasks.md) | Implementation in progress; 5 tasks open | v0.33.1 |
+| [056](056-inventory-icon-design/spec.md) | Minimal-text inventory design, vector placeholders, automatic refill pills and scrollbar spacing | Implemented; owner checks visuals | v0.34.3 |
 
 ## Archived
 

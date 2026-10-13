@@ -69,12 +69,6 @@
   width: var(--inventory-socket-size);
 }
 
-.inventory-assembly-editor__sockets .inventory-field__label {
-  min-height: 28px;
-  justify-content: center;
-  text-align: center;
-}
-
 .inventory-assembly-editor__actions {
   display: grid;
   width: var(--inventory-assembly-card-width);

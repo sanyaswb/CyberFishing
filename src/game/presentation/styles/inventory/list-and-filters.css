@@ -12,16 +12,19 @@
 
 .inventory-categories {
   display: flex;
-  min-height: 40px;
+  min-height: calc(44px + var(--inventory-scrollbar-size) + 8px);
   gap: 10px;
   flex: none;
-  padding: 1px 1px 0;
+  align-items: flex-start;
+  padding: 1px 1px 8px;
+  scrollbar-gutter: stable;
   overflow-x: auto;
 }
 
 .inventory-categories__toggle {
   display: grid;
   min-width: 42px;
+  height: 42px;
   flex: 0 0 42px;
   place-items: center;
   padding: 4px;
@@ -38,6 +41,7 @@
 
 .inventory-categories__button {
   flex: 0 0 auto;
+  min-height: 42px;
   padding: 5px 12px;
   border: 1px solid #68bfe9;
   border-radius: 999px;
@@ -72,10 +76,11 @@
 .inventory-subfilters,
 .inventory-sort-options {
   display: none;
-  min-height: var(--inventory-filter-height);
+  min-height: calc(var(--inventory-filter-height) + var(--inventory-scrollbar-size));
   gap: var(--inventory-filter-gap);
   align-items: center;
-  padding: 8px 12px;
+  padding: 8px 12px 14px;
+  scrollbar-gutter: stable;
   overflow-x: auto;
   border: 1px solid #3f565f;
   border-radius: 7px;
@@ -277,10 +282,6 @@
 
   .inventory-list-grid {
     justify-content: center;
-  }
-
-  .inventory-categories {
-    min-height: 44px;
   }
 
   .inventory-subfilters,

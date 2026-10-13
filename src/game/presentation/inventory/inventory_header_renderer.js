@@ -1,3 +1,5 @@
+import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+
 export class InventoryHeaderRenderer {
   #dom;
 
@@ -11,20 +13,12 @@ export class InventoryHeaderRenderer {
     { onClose = null, onAutoBaitChange = null, onAutoChumChange = null } = {},
   ) {
     const top = this.#dom.element("header", "inventory-header");
-    top.appendChild(this.#renderLoad(header));
-    top.appendChild(this.#renderActiveTackle(header));
-    top.appendChild(
-      this.#renderSettings(settings, {
-        onAutoBaitChange,
-        onAutoChumChange,
-      }),
-    );
-
-    const close = this.#dom.button(
-      "inventory-header__close ui-modal-close",
-      "×",
-      { title: "Закрити інвентар" },
-    );
+    top.append(this.#renderLoad(header), this.#renderSettings(header, settings, {
+      onAutoBaitChange, onAutoChumChange,
+    }));
+    const close = this.#dom.button("inventory-header__close ui-modal-close", "×", {
+      title: "Закрити інвентар",
+    });
     close.setAttribute("aria-label", "Закрити інвентар");
     close.addEventListener("click", () => onClose?.());
     top.appendChild(close);
@@ -33,120 +27,62 @@ export class InventoryHeaderRenderer {
 
   #renderLoad(header) {
     const load = this.#dom.element("div", "inventory-load");
-    load.append(
-      this.#dom.element("span", "inventory-load__icon", "🧱"),
-      this.#dom.element(
-        "span",
-        "inventory-load__label",
-        `${header.loadLabel}:`,
-      ),
-      this.#dom.element(
-        "strong",
-        "inventory-load__value",
-        `${this.#format(header.loadValue)} ${header.loadUnit}`,
-      ),
-    );
+    load.title = `${header.loadLabel}: ${this.#format(header.loadValue)} ${header.loadUnit}`;
+    load.setAttribute("aria-label", load.title);
+    const icon = this.#dom.image(inventorySlotIconPath("weight"), "");
+    icon.className = "inventory-load__icon";
+    icon.setAttribute("aria-hidden", "true");
+    load.append(icon, this.#dom.element("strong", "inventory-load__value",
+      `${this.#format(header.loadValue)} ${header.loadUnit}`));
     return load;
   }
 
-  #renderActiveTackle(header) {
-    const active = this.#dom.element(
-      "div",
-      "inventory-active-tackle",
-    );
-    active.append(
-      this.#renderIndicator("Наживка", header.activeBaits, "🪱"),
-      this.#renderIndicator("Прикормка", header.activeChums, "🟫"),
-    );
-    return active;
-  }
-
-  #renderIndicator(labelText, items, fallbackIcon) {
-    const indicator = this.#dom.element(
-      "section",
-      "inventory-active-indicator",
-    );
-    indicator.appendChild(
-      this.#dom.element(
-        "div",
-        "inventory-active-indicator__label",
-        labelText,
-      ),
-    );
-    const content = this.#dom.element(
-      "div",
-      "inventory-active-indicator__items",
-    );
-    if (!items.length) {
-      content.appendChild(
-        this.#dom.element(
-          "span",
-          "inventory-active-indicator__empty",
-          "—",
-        ),
-      );
-    } else {
-      items.forEach((item) => {
-        const itemNode = this.#dom.element(
-          "span",
-          "inventory-active-indicator__item",
-        );
-        itemNode.title = String(item.name || labelText);
-        const image = this.#dom.image(
-          item.iconUrl || item.imageUrl,
-          item.name || "",
-        );
-        if (image) {
-          itemNode.appendChild(image);
-        } else {
-          itemNode.textContent = String(item.icon || item.emoji || fallbackIcon);
-        }
-        content.appendChild(itemNode);
-      });
-    }
-    indicator.appendChild(content);
-    return indicator;
-  }
-
-  #renderSettings(
-    settings,
-    { onAutoBaitChange = null, onAutoChumChange = null } = {},
-  ) {
-    const container = this.#dom.element(
-      "div",
-      "inventory-auto-settings",
-    );
+  #renderSettings(header, settings, { onAutoBaitChange, onAutoChumChange }) {
+    const container = this.#dom.element("div", "inventory-auto-settings");
     container.append(
-      this.#createToggle(
-        "inventory-auto-bait",
-        "Автонаживляння",
-        settings.autoBait,
-        onAutoBaitChange,
-      ),
-      this.#createToggle(
-        "inventory-auto-chum",
-        "Автоприкормка",
-        settings.autoChum,
-        onAutoChumChange,
-      ),
+      this.#createToggle("inventory-auto-bait", "bait", "Наживка", "Автонаживляння",
+        header.activeBaits, settings.autoBait, header.baitStock, onAutoBaitChange),
+      this.#createToggle("inventory-auto-chum", "chum", "Прикормка", "Автоприкормка",
+        header.activeChums, settings.autoChum, header.chumStock, onAutoChumChange),
     );
     return container;
   }
 
-  #createToggle(id, labelText, checked, onChange) {
+  #createToggle(id, slotId, name, modeLabel, items, checked, stock = 0, onChange) {
     const label = this.#dom.element("label", "inventory-toggle");
+    label.title = items.length ? items.map((item) => item.name || name).join(", ") : name;
+    const content = this.#dom.element("span", "inventory-active-indicator__items");
+    content.setAttribute("aria-label", name);
+    if (!items.length) {
+      const icon = this.#dom.image(inventorySlotIconPath(slotId), "");
+      icon.className = "inventory-active-indicator__placeholder";
+      icon.setAttribute("aria-hidden", "true");
+      content.appendChild(icon);
+    } else {
+      for (const item of items) {
+        const media = this.#dom.element("span", "inventory-active-indicator__item");
+        media.title = item.name || name;
+        const image = this.#dom.image(item.iconUrl || item.imageUrl, item.name || name);
+        if (image) media.appendChild(image);
+        else media.textContent = String(item.icon || item.emoji || "");
+        content.appendChild(media);
+      }
+    }
+
     const input = this.#dom.element("input");
     input.id = id;
     input.type = "checkbox";
     input.checked = checked;
+    input.setAttribute("role", "switch");
+    input.setAttribute("aria-label", `${modeLabel}. Доступно в інвентарі: ${stock}`);
     input.addEventListener("change", () => onChange?.(input.checked));
     const control = this.#dom.element("span", "inventory-toggle__control");
-    const text = this.#dom.element(
-      "span",
-      "inventory-toggle__label",
-      labelText,
+    control.setAttribute("aria-hidden", "true");
+    control.append(
+      this.#dom.element("span", "inventory-toggle__count", String(stock)),
+      this.#dom.element("span", "inventory-toggle__thumb", "A"),
     );
-    label.append(input, control, text);
+    label.append(content, input, control);
     return label;
   }
 

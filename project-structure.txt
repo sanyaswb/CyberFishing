@@ -116,12 +116,25 @@
 │  │  ├── aquarium-feed-good.svg
 │  │  ├── aquarium-feed-premium.svg
 │  │  └── aquarium-feed-simple.svg
-│  └── locations
-│     └── test
-│        ├── bg_test--day.webp
-│        ├── bg_test--evening.webp
-│        ├── bg_test--night.webp
-│        └── test-depth.webp
+│  ├── locations
+│  │  └── test
+│  │     ├── bg_test--day.webp
+│  │     ├── bg_test--evening.webp
+│  │     ├── bg_test--night.webp
+│  │     └── test-depth.webp
+│  └── ui
+│     └── inventory
+│        ├── bait.svg
+│        ├── boat.svg
+│        ├── chum.svg
+│        ├── float.svg
+│        ├── gas-mask.svg
+│        ├── line.svg
+│        ├── net.svg
+│        ├── reel.svg
+│        ├── rod.svg
+│        ├── tackle.svg
+│        └── weight.svg
 ├── dev.html
 ├── docs
 │  ├── architecture.md
@@ -246,6 +259,10 @@
 │  │  ├── research.md
 │  │  ├── spec.md
 │  │  └── tasks.md
+│  ├── 056-inventory-icon-design
+│  │  ├── checklists
+│  │  │  └── requirements.md
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -485,6 +502,7 @@
 │  │  │  │  ├── exact_inventory_auto_refill_port.js
 │  │  │  │  ├── freshest_refill_candidate_policy.js
 │  │  │  │  ├── inventory_application_error.js
+│  │  │  │  ├── inventory_auto_refill_stock_read_model.js
 │  │  │  │  ├── inventory_catalog_item_sync.js
 │  │  │  │  ├── inventory_command_result.js
 │  │  │  │  ├── inventory_command_service.js
@@ -897,6 +915,7 @@
 │  │     │  ├── inventory_rod_removal_renderer.js
 │  │     │  ├── inventory_rule_messages.js
 │  │     │  ├── inventory_saved_loadout_preview_renderer.js
+│  │     │  ├── inventory_slot_icons.js
 │  │     │  ├── inventory_sort_config.js
 │  │     │  ├── inventory_subfilter_resolver.js
 │  │     │  ├── inventory_tooltip_presenter.js
@@ -1070,6 +1089,7 @@
    ├── git-version-copy.js
    ├── hook-domain-semantics-check.js
    ├── house-check.js
+   ├── inventory-auto-refill-stock-check.js
    ├── inventory-cast-and-lure-check.js
    ├── inventory-equipment-check.js
    ├── inventory-equipment-hydration-check.js

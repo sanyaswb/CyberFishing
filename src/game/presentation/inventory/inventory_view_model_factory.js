@@ -3,6 +3,12 @@ import { EQUIPMENT_SLOT_PRESENTATION } from "./equipment_slot_presentation.js";
 import { EquipmentSlotAvailabilityState } from "./equipment_slot_availability_policy.js";
 import { InventoryItemLocation } from "../../domain/inventory/inventory_item_location.js";
 import { EquipmentState } from "../../domain/equipment/equipment_state.js";
+import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
+
+const BAIT_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_BAIT]);
+const CHUM_REFILL_SCOPES = Object.freeze([
+  AutoRefillScope.TACKLE_CHUM, AutoRefillScope.HAND_CHUM, AutoRefillScope.BOAT_CHUM,
+]);
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
@@ -37,6 +43,7 @@ export class InventoryViewModelFactory {
   #rodChangePlanner;
   #equipmentReadModelFactory;
   #settings;
+  #autoRefillStock;
   #loadValueProvider;
 
   constructor({
@@ -57,6 +64,7 @@ export class InventoryViewModelFactory {
     rodChangePlanner,
     equipmentReadModelFactory,
     settings,
+    autoRefillStock = null,
     loadValueProvider = null,
   } = {}) {
     Object.assign(this, {});
@@ -77,6 +85,7 @@ export class InventoryViewModelFactory {
     this.#rodChangePlanner = rodChangePlanner;
     this.#equipmentReadModelFactory = equipmentReadModelFactory;
     this.#settings = settings;
+    this.#autoRefillStock = autoRefillStock;
     this.#loadValueProvider = loadValueProvider;
     if (
       !this.#attachmentTargetResolver?.listTargets ||
@@ -127,7 +136,8 @@ export class InventoryViewModelFactory {
       .filter(
         (item) => ["bait", "fishing_bait"].includes(this.#itemType(item)),
       );
-    const activeChums = [equipmentReadModel.feederChum]
+    const activeChums = [equipmentReadModel.feederChum, equipmentReadModel.handChum,
+      ...(equipmentReadModel.deliveryChums || [])]
       .map((item) => this.#createProjectedItemView(item))
       .filter(
         (item) => ["chum_mix", "groundbait"].includes(this.#itemType(item)),
@@ -143,6 +153,10 @@ export class InventoryViewModelFactory {
         activeTackle: {
           baits: activeBaits,
           chums: activeChums,
+        },
+        refillStock: {
+          bait: this.#autoRefillStock?.count({ items: activeBaits, scopes: BAIT_REFILL_SCOPES }) || 0,
+          chum: this.#autoRefillStock?.count({ items: activeChums, scopes: CHUM_REFILL_SCOPES }) || 0,
         },
       },
       settings: this.#settings.snapshot(),

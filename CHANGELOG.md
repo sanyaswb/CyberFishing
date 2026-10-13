@@ -1,5 +1,13 @@
 # CyberFishing changelog
 
+## v0.34.3 - Inventory Icons and Automatic Refill Pills
+
+- Replace equipment/socket labels with centered monochrome vector placeholders; actual equipped artwork takes their place. Keep accessible names and contextual hints, including in saved loadout previews.
+- Align the dependent equipment slots over the rod compartment's height, with three slots at the top, middle and bottom.
+- Combine bait/groundbait imagery and large A switches in two pill containers. Enabled switches show green A illumination and matching inventory reserve counts; disabled switches hide the count.
+- Reserve filter scrollbar space and keep mobile controls within the 320px layout. Record the minimal-text design direction in spec 056.
+- Counts reuse actual refill eligibility, exclude reserved/equipped/attached items, deduplicate matching choices and preserve the existing refill behavior and save format. Visual acceptance stays with the owner.
+
 ## v0.34.2 - HUD and Mobile Dialog Layout
 
 - Fade the fullscreen button after entry, keep its icon unchanged, and restore it on exit. Anchor the clock at the top right and DEV settings at the top left.

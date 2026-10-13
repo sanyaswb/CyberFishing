@@ -59,6 +59,8 @@ export class InventoryViewModelNormalizer {
       loadUnit: this.#text(source.loadUnit, "кг"),
       activeBaits: this.#array(activeTackle.baits || source.activeBaits),
       activeChums: this.#array(activeTackle.chums || source.activeChums),
+      baitStock: Math.max(0, Math.floor(this.#finite(source.refillStock?.bait ?? source.baitStock, 0))),
+      chumStock: Math.max(0, Math.floor(this.#finite(source.refillStock?.chum ?? source.chumStock, 0))),
     });
   }
 

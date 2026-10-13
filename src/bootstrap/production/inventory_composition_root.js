@@ -39,6 +39,7 @@ import { InventoryUiState } from "../../game/application/inventory/inventory_ui_
 import { InventoryEquipmentLineReadinessPolicy } from "../../game/application/inventory/inventory_equipment_line_readiness_policy.js";
 import { InventoryEquipmentTransitionAdapter } from "../../game/application/inventory/inventory_equipment_transition_adapter.js";
 import { InventoryFacade } from "../../game/application/inventory/inventory_facade.js";
+import { InventoryAutoRefillStockReadModel } from "../../game/application/inventory/inventory_auto_refill_stock_read_model.js";
 import { InventoryGameplayBridge } from "../../game/application/inventory/inventory_gameplay_bridge.js";
 import { InventoryItemHydrator } from "../../game/application/inventory/inventory_item_hydrator.js";
 import { InventoryItemOrderResolver } from "../../game/presentation/inventory/inventory_item_order_resolver.js";
@@ -387,6 +388,10 @@ export class InventoryCompositionRoot {
       rodChangePlanner,
       equipmentReadModelFactory,
       settings,
+      autoRefillStock: new InventoryAutoRefillStockReadModel({
+        repository, inventoryPort: refillInventoryPort, signaturePolicy,
+        targetProvider: autoRefillTargetProvider,
+      }),
       loadValueProvider,
     });
     const itemRemoval = new InventoryItemRemovalService({

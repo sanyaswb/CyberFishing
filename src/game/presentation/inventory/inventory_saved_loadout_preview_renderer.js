@@ -1,3 +1,5 @@
+import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+
 export class InventorySavedLoadoutPreviewRenderer {
   #dom;
   #itemRenderer;
@@ -83,13 +85,8 @@ export class InventorySavedLoadoutPreviewRenderer {
     );
     field.dataset.slotId = String(slot.slotId || "");
     field.classList.toggle("inventory-saved-loadout-preview__field--active", slot.active === true);
-    field.appendChild(
-      this.#dom.element(
-        "div",
-        "inventory-saved-loadout-preview__label",
-        slot.label,
-      ),
-    );
+    field.setAttribute("aria-label", slot.label);
+    field.title = slot.label;
     const well = this.#dom.element(
       "div",
       "inventory-saved-loadout-preview__well",
@@ -106,6 +103,12 @@ export class InventorySavedLoadoutPreviewRenderer {
     } else {
       well.classList.add("inventory-saved-loadout-preview__well--empty");
       well.setAttribute("aria-label", `${slot.label}: порожньо`);
+      const placeholder = this.#dom.image(inventorySlotIconPath(slot.slotId), "");
+      if (placeholder) {
+        placeholder.className = "inventory-slot-icon";
+        placeholder.setAttribute("aria-hidden", "true");
+        well.appendChild(placeholder);
+      }
     }
     field.appendChild(well);
     return field;

@@ -31,14 +31,18 @@ export class InventoryRefillInventoryPort {
 
   takeOneExact(signature) {
     const candidates = this.#repository.list().filter(
-      (item) =>
-        InventoryItemLocation.isInventory(item.location) &&
-        !this.#isReserved(item) &&
-        this.#repository.getChildren(item.instanceId).length === 0 &&
-        this.#signaturePolicy.matches(item, signature),
+      (item) => this.#isCandidate(item, signature),
     );
     const source = this.#candidatePolicy.select(candidates);
     return source ? this.#repository.splitOne(source.instanceId) : null;
+  }
+
+  countExact(signature) {
+    let count = 0;
+    for (const item of this.#repository.list()) {
+      if (this.#isCandidate(item, signature)) count += item.quantity ?? 1;
+    }
+    return count;
   }
 
   returnOne(item) {
@@ -55,5 +59,12 @@ export class InventoryRefillInventoryPort {
 
   #isReserved(item) {
     return this.#reservationPolicy.isReserved(item);
+  }
+
+  #isCandidate(item, signature) {
+    return InventoryItemLocation.isInventory(item.location) &&
+      !this.#isReserved(item) &&
+      this.#repository.getChildren(item.instanceId).length === 0 &&
+      this.#signaturePolicy.matches(item, signature);
   }
 }

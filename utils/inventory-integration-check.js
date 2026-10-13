@@ -1490,8 +1490,10 @@ vm.runInContext(
 
   const header = flow.facade.getViewModel().header.activeTackle;
   assertIntegration(
-    header.baits.length === 1 && header.chums.length === 1,
-    "top indicators show only bait and chum nested in active tackle (baits=" +
+    header.baits.length === 1 && header.chums.length === 2 &&
+      header.chums.some((item) => item.instanceId === flow.equipmentState.getRootInstanceId("handChum")) &&
+      header.chums.some((item) => item.location?.parentInstanceId === springDraft),
+    "top controls show nested tackle bait/chum and the separately equipped hand chum (baits=" +
       header.baits.length +
       ", chums=" +
       header.chums.length +

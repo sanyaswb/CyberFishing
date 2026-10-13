@@ -1,189 +1,142 @@
-/* Equipment summary, automatic refill toggles and close control. */
-
+/* Two consumable pills combine equipped artwork with an accessible automatic-refill switch. */
 .inventory-header {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr) auto;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(328px, auto) 44px;
+  gap: 16px;
   align-items: center;
-  min-height: 58px;
-  padding-bottom: 10px;
+  min-height: 84px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(113, 202, 255, 0.58);
 }
-
 .inventory-load {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   align-items: center;
   min-width: 0;
   font-size: 13px;
 }
-
-.inventory-load__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.inventory-load__icon { width: 28px; height: 28px; object-fit: contain; }
+.inventory-load__value { color: var(--inventory-success); white-space: nowrap; }
+.inventory-auto-settings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
 }
-
-.inventory-load__value {
-  color: var(--inventory-success);
-  white-space: nowrap;
-}
-
-.inventory-active-tackle {
+.inventory-toggle {
+  --inventory-toggle-height: 44px;
+  --inventory-toggle-thumb: 36px;
   display: flex;
-  align-self: stretch;
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-}
-
-.inventory-active-indicator {
-  display: flex;
-  min-width: 122px;
-  flex-direction: column;
+  position: relative;
   align-items: center;
-  justify-content: center;
-  padding: 3px 14px;
-  background: rgba(58, 64, 68, 0.78);
+  gap: 8px;
+  min-width: 0;
+  height: 60px;
+  padding: 7px;
+  border: 1px solid #56636b;
+  border-radius: 999px;
+  background: #202a30;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
 }
-
-.inventory-active-indicator + .inventory-active-indicator {
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.inventory-active-indicator__label {
-  font-family: system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-}
-
 .inventory-active-indicator__items {
   display: flex;
-  min-height: 30px;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  min-width: 0;
+  overflow: hidden;
 }
-
 .inventory-active-indicator__item {
   display: grid;
-  width: 26px;
-  height: 26px;
   place-items: center;
-  font-size: 23px;
+  min-width: 0;
+  flex: 1 1 0;
+  height: 100%;
+  font-size: 26px;
 }
-
-.inventory-active-indicator__item img {
+.inventory-active-indicator__item img,
+.inventory-active-indicator__placeholder {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
-
-.inventory-active-indicator__empty {
-  color: #7c8589;
-}
-
-.inventory-auto-settings {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px 14px;
-}
-
-.inventory-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-  font-size: 11px;
-  user-select: none;
-}
-
 .inventory-toggle input {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
-  pointer-events: none;
 }
-
 .inventory-toggle__control {
   position: relative;
-  width: 34px;
-  height: 18px;
-  border: 1px solid #58636a;
+  flex: 1;
+  min-width: 88px;
+  height: var(--inventory-toggle-height);
+  border: 1px solid #65727b;
   border-radius: 999px;
-  background: #222b30;
-  transition: 150ms ease;
+  background: #111b22;
+  transition: border-color 160ms ease, background-color 160ms ease;
 }
-
-.inventory-toggle__control::after {
+.inventory-toggle__thumb {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
+  top: 3px;
+  left: 3px;
+  display: grid;
+  place-items: center;
+  width: var(--inventory-toggle-thumb);
+  height: var(--inventory-toggle-thumb);
+  border: 1px solid #7a8791;
   border-radius: 50%;
-  background: #b7bec2;
-  content: "";
-  transition: 150ms ease;
+  background: #333f48;
+  color: #a6b0b8;
+  font: 800 19px/1 system-ui, sans-serif;
+  transition: left 180ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
-
+.inventory-toggle__count {
+  position: absolute;
+  inset: 0 calc(var(--inventory-toggle-thumb) + 7px) 0 7px;
+  display: grid;
+  place-items: center;
+  color: #dce5e9;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms ease;
+}
 .inventory-toggle input:checked + .inventory-toggle__control {
+  border-color: rgba(var(--inventory-success-rgb), 0.7);
+  background: rgba(var(--inventory-success-rgb), 0.08);
+}
+.inventory-toggle input:checked + .inventory-toggle__control .inventory-toggle__thumb {
+  left: calc(100% - var(--inventory-toggle-thumb) - 3px);
   border-color: var(--inventory-success);
-  background: rgba(var(--inventory-success-rgb), 0.22);
+  color: var(--inventory-success);
+  text-shadow: 0 0 8px rgba(var(--inventory-success-rgb), 0.65);
+  box-shadow: 0 0 10px rgba(var(--inventory-success-rgb), 0.2);
 }
-
-.inventory-toggle input:checked + .inventory-toggle__control::after {
-  transform: translateX(16px);
-  background: var(--inventory-success);
+.inventory-toggle input:checked + .inventory-toggle__control .inventory-toggle__count {
+  opacity: 1;
+  visibility: visible;
 }
-
 .inventory-toggle input:focus-visible + .inventory-toggle__control {
   outline: 2px solid var(--inventory-accent);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
-
-@media (max-width: 1180px) {
-  .inventory-header {
-    grid-template-columns: minmax(180px, 1fr) auto auto auto;
-    gap: 10px;
-  }
-}
-
 @media (max-width: 820px) {
-  .inventory-header {
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-  }
-
-  .inventory-header__close {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .inventory-active-tackle {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-content: center;
-  }
-
-  .inventory-auto-settings {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    justify-content: center;
-  }
+  .inventory-header { grid-template-columns: minmax(0, 1fr) 44px; gap: 10px; }
+  .inventory-header__close { grid-column: 2; grid-row: 1; }
+  .inventory-auto-settings { grid-column: 1 / -1; grid-row: 2; gap: 8px; }
 }
-
 @media (max-width: 520px) {
-  .inventory-load__label,
-  .inventory-toggle__label {
-    display: none;
-  }
+  .inventory-toggle { gap: 6px; padding: 6px; }
+  .inventory-active-indicator__items { flex-basis: 32px; width: 32px; height: 36px; }
+  .inventory-toggle__control { min-width: 80px; }
+  .inventory-toggle__count { font-size: 10px; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .inventory-toggle__control,
-  .inventory-toggle__control::after {
-    transition: none;
-  }
+  .inventory-toggle__control, .inventory-toggle__thumb, .inventory-toggle__count { transition: none; }
 }

@@ -973,6 +973,25 @@ class InventoryStaticContractCheck {
       warningTimers: new BrowserTimeoutScheduler(sandbox),
     });
     ui.open();
+    const headerPills = this.#findAllByClass(ui.rootNode, "inventory-toggle");
+    assert.strictEqual(headerPills.length, 2, "bait and groundbait each have one combined control");
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__thumb").length, 2);
+    assert(headerPills.every((pill) => this.#findByClass(pill, "inventory-toggle__thumb").textContent === "A"));
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-active-indicator__placeholder").length, 2,
+      "unset consumables use vector placeholders");
+    const headerRenderer = new sandbox.InventoryHeaderRenderer({ domFactory: new sandbox.InventoryDomFactory(document) });
+    let toggled = null;
+    const selectedHeader = headerRenderer.render({ loadLabel: "Load", loadValue: 1, loadUnit: "kg",
+      activeBaits: [{ name: "Worm", imageUrl: "assets/worm.svg" }],
+      activeChums: [{ name: "Mix", imageUrl: "assets/mix.svg" }], baitStock: 17, chumStock: 8 },
+      { autoBait: true, autoChum: false }, { onAutoBaitChange: (value) => { toggled = value; } });
+    assert.strictEqual(this.#findAllByClass(selectedHeader, "inventory-active-indicator__placeholder").length, 0,
+      "selected item artwork replaces both category illustrations");
+    assert.deepStrictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__count").map((node) => node.textContent), ["17", "8"]);
+    const selectedSwitch = this.#findById(selectedHeader, "inventory-auto-bait");
+    assert(selectedSwitch.checked && selectedSwitch.getAttribute("aria-label").includes("17"));
+    selectedSwitch.checked = false; selectedSwitch.emit("change");
+    assert.strictEqual(toggled, false, "the combined pill keeps the authoritative settings callback");
     assert.strictEqual(dispatched[0].type, sandbox.InventoryActionType.OPEN);
     dispatched.length = 0;
 
@@ -1430,6 +1449,7 @@ class InventoryStaticContractCheck {
     assert.strictEqual(dispatched.length, 1);
 
     const autoBait = this.#findById(ui.rootNode, "inventory-auto-bait");
+    assert.strictEqual(autoBait.getAttribute("role"), "switch");
     autoBait.checked = true;
     autoBait.emit("change");
     this.#assertLast(dispatched, {
@@ -2199,7 +2219,7 @@ class InventoryStaticContractCheck {
 
     const baitSocket = this.#field(ui.rootNode, "bait");
     assert.strictEqual(
-      this.#findByClass(baitSocket, "inventory-field__label").textContent,
+      baitSocket.getAttribute("aria-label"),
       "Наживка — гачок 1",
     );
     const baitWell = this.#findByClass(baitSocket, "inventory-slot");

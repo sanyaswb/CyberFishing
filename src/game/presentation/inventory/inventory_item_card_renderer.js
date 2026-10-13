@@ -1,3 +1,5 @@
+import { inventorySlotIconPath } from "./inventory_slot_icons.js";
+
 export class InventoryItemCardRenderer {
   #dom;
   #attachmentRenderer;
@@ -59,11 +61,8 @@ export class InventoryItemCardRenderer {
       `inventory-field inventory-field--${variant}`,
     );
     field.dataset.slotId = String(slot.slotId || "");
-    const label = this.#dom.element(
-      "div",
-      "inventory-field__label",
-      slot.label,
-    );
+    field.setAttribute("aria-label", slot.label);
+    field.title = slot.label;
     const well = this.#dom.element(
       "div",
       `inventory-slot inventory-slot--${slot.state}`,
@@ -95,6 +94,12 @@ export class InventoryItemCardRenderer {
         "aria-label",
         isBlocked ? slot.warning || slot.label : slot.label,
       );
+      const placeholder = this.#dom.image(inventorySlotIconPath(slot.slotId), "");
+      if (placeholder) {
+        placeholder.className = "inventory-slot-icon";
+        placeholder.setAttribute("aria-hidden", "true");
+        emptyButton.appendChild(placeholder);
+      }
       emptyButton.addEventListener("click", () => {
         if (isBlocked) {
           onUnavailable?.(slot.warning);
@@ -105,7 +110,7 @@ export class InventoryItemCardRenderer {
       well.appendChild(emptyButton);
     }
 
-    field.append(label, well);
+    field.appendChild(well);
     return field;
   }
 

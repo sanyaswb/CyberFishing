@@ -34,6 +34,7 @@ export class InventoryLoadoutPanelRenderer {
     const dependentSlots = model.mainSlots.filter(
       (slot) => slot.slotId !== "rod",
     );
+    primary.style.setProperty("--inventory-cascade-count", String(dependentSlots.length));
     if (rod) {
       primary.appendChild(
         this.#renderSlot(rod, "rod", {
