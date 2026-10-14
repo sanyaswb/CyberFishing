@@ -37,6 +37,7 @@ export class InventoryViewModelNormalizer {
 
     return Object.freeze({
       isOpen: source.isOpen !== false,
+      equipmentFeedback: source.equipmentFeedback || null,
       sections: Object.freeze({ activeId: INVENTORY_SECTIONS.items.some((section) => section.id === source.sections?.activeId)
         ? source.sections.activeId : INVENTORY_SECTIONS.defaultSectionId,
         backpackItemCount: this.#finite(source.sections?.backpackItemCount, 0) }),
@@ -63,9 +64,20 @@ export class InventoryViewModelNormalizer {
       loadUnit: this.#text(source.loadUnit, "кг"),
       activeBaits: this.#array(activeTackle.baits || source.activeBaits),
       activeChums: this.#array(activeTackle.chums || source.activeChums),
+      baitSlots: this.#normalizeConsumableSlots(source.baitSlots, activeTackle.baits || source.activeBaits),
+      chumSlots: this.#normalizeConsumableSlots(source.chumSlots, activeTackle.chums || source.activeChums),
       baitStock: Math.max(0, Math.floor(this.#finite(source.refillStock?.bait ?? source.baitStock, 0))),
       chumStock: Math.max(0, Math.floor(this.#finite(source.refillStock?.chum ?? source.chumStock, 0))),
     });
+  }
+
+  #normalizeConsumableSlots(slots, items) {
+    const source = Array.isArray(slots) ? slots : this.#array(items).map((item) => ({ item, available: true }));
+    return Object.freeze(source.map((slot, slotIndex) => Object.freeze({
+      slotIndex, available: slot.available === true, highlighted: slot.highlighted === true, item: slot.item || null,
+      stock: Math.max(0, Math.floor(this.#finite(slot.stock, 0))),
+      showCount: slot.showCount !== false,
+    })));
   }
 
   #normalizeSettings(source = {}) {

@@ -110,6 +110,7 @@ export class InventoryItemTreeViewFactory {
   #appendAttachmentSlots(parent, profileId, badges) {
     const profile = this.#profileRegistry.resolveForItem(parent, profileId);
     for (const slot of profile?.slots || []) {
+      if (slot.id === "bait") continue;
       const capacity = this.#profileRegistry.getSlotCapacity(parent, slot);
       for (let index = 0; index < capacity; index++) {
         const raw = this.#repository.getChild(parent.instanceId, slot.id, index);

@@ -12,6 +12,11 @@ export class InventoryActionContract {
     }
 
     switch (action.type) {
+      case types.CONSUMABLE_SLOT_ACTIVATE:
+        if (!["bait", "chum"].includes(action.kind) || !Number.isInteger(action.slotIndex) || action.slotIndex < 0) {
+          throw new TypeError("Invalid inventory consumable slot");
+        }
+        break;
       case types.ROD_REMOVAL_CHOICE:
         if (!["save", "disassemble", "cancel"].includes(action.choice)) {
           throw new TypeError("Invalid rod removal choice");

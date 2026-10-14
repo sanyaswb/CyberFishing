@@ -6,9 +6,7 @@ import { EquipmentState } from "../../domain/equipment/equipment_state.js";
 import { AutoRefillScope } from "../../domain/equipment/auto_refill_scope.js";
 
 const BAIT_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_BAIT]);
-const CHUM_REFILL_SCOPES = Object.freeze([
-  AutoRefillScope.TACKLE_CHUM, AutoRefillScope.HAND_CHUM, AutoRefillScope.BOAT_CHUM,
-]);
+const CHUM_REFILL_SCOPES = Object.freeze([AutoRefillScope.TACKLE_CHUM]);
 
 export class InventoryViewModelFactory {
   static #categories = Object.freeze([
@@ -45,6 +43,7 @@ export class InventoryViewModelFactory {
   #settings;
   #autoRefillStock;
   #loadValueProvider;
+  #consumableTargets;
 
   constructor({
     repository,
@@ -66,6 +65,7 @@ export class InventoryViewModelFactory {
     settings,
     autoRefillStock = null,
     loadValueProvider = null,
+    consumableTargets,
   } = {}) {
     Object.assign(this, {});
     this.#repository = repository;
@@ -87,6 +87,10 @@ export class InventoryViewModelFactory {
     this.#settings = settings;
     this.#autoRefillStock = autoRefillStock;
     this.#loadValueProvider = loadValueProvider;
+    this.#consumableTargets = consumableTargets;
+    if (!consumableTargets?.list || !consumableTargets?.resolve) {
+      throw new TypeError("InventoryViewModelFactory requires consumableTargets");
+    }
     if (
       !this.#attachmentTargetResolver?.listTargets ||
       !this.#attachmentTargetResolver?.findPlacementTargets
@@ -121,13 +125,22 @@ export class InventoryViewModelFactory {
       Boolean(editingRootInstanceId) &&
       this.#assemblyStates.has(editingRootInstanceId);
     const inventoryContext = {
-      mode: isAttachmentEditor ? "assembly" : "loadout",
-      rootInstanceId: editingRootInstanceId,
+      mode: uiState.consumableKind ? "consumable" : isAttachmentEditor ? "assembly" : "loadout",
+      rootInstanceId: uiState.consumableKind ? this.#equipmentState.getRootInstanceId("tackle") : editingRootInstanceId,
     };
-    const visibleInventoryItems = this.#contextItemFilter.filter(
+    let visibleInventoryItems = this.#contextItemFilter.filter(
       accessibleRawItems,
       inventoryContext,
     );
+    if (isAttachmentEditor && !uiState.consumableKind) {
+      visibleInventoryItems = visibleInventoryItems.filter((item) =>
+        !["bait", "fishing_bait"].includes(this.#itemType(this.#itemViews.create(item.instanceId))));
+    }
+    if (uiState.consumableKind) {
+      const targets = this.#consumableTargets.list(uiState.consumableKind);
+      visibleInventoryItems = accessibleRawItems.filter((item) =>
+        targets.some((target) => this.#attachmentTargetResolver.accepts(target, item)));
+    }
     const selectedRaw = uiState.selectedInstanceId
       ? this.#repository.get(uiState.selectedInstanceId)
       : null;
@@ -136,8 +149,7 @@ export class InventoryViewModelFactory {
       .filter(
         (item) => ["bait", "fishing_bait"].includes(this.#itemType(item)),
       );
-    const activeChums = [equipmentReadModel.feederChum, equipmentReadModel.handChum,
-      ...(equipmentReadModel.deliveryChums || [])]
+    const activeChums = this.#consumableTargets.list("chum").map((target) => target.occupied)
       .map((item) => this.#createProjectedItemView(item))
       .filter(
         (item) => ["chum_mix", "groundbait"].includes(this.#itemType(item)),
@@ -147,11 +159,14 @@ export class InventoryViewModelFactory {
     );
     return {
       isOpen: uiState.isOpen === true,
+      equipmentFeedback: uiState.equipmentFeedback || null,
       sections: {
         activeId: uiState.activeSectionId,
         backpackItemCount: accessibleRawItems.reduce((total, item) => total + Math.max(1, Number(item.quantity) || 1), 0),
       },
       header: {
+        baitSlots: this.#createConsumableSlots("bait", uiState),
+        chumSlots: this.#createConsumableSlots("chum", uiState),
         loadValue: Number(this.#loadValueProvider?.() || 0),
         loadUnit: "кг",
         activeTackle: {
@@ -194,6 +209,19 @@ export class InventoryViewModelFactory {
         savedLoadout,
       },
     };
+  }
+
+  #createConsumableSlots(kind, uiState) {
+    const targets = this.#consumableTargets.list(kind);
+    const sharedReserve = targets.length > 0 && targets.every((target) => target.occupied) &&
+      this.#autoRefillStock?.shareReserve(targets.map((target) => target.occupied));
+    return targets.map((target, slotIndex) => {
+      const item = target.occupied ? this.#itemViews.create(target.occupied.instanceId) : null;
+      return { slotIndex, available: true, highlighted: uiState.consumableKind === kind && target.socketId === uiState.pickedSocketId,
+        showCount: !sharedReserve,
+        stock: item ? this.#autoRefillStock?.count({ items: [item] }) || 0 : 0,
+        item };
+    });
   }
 
   #createEquipmentPanel(
@@ -299,7 +327,7 @@ export class InventoryViewModelFactory {
             .map((target) => target.socketId)
         : [],
     );
-    let sockets = targets
+    let sockets = targets.filter((target) => target.slotId !== "bait")
       .map((target) => {
         const hasCompatibleItem = accessibleRawItems.some((candidate) =>
           this.#attachmentTargetResolver.accepts(target, candidate),
@@ -500,7 +528,7 @@ export class InventoryViewModelFactory {
   }
 
   #createInventory(uiState, accessibleRawItems, rod, context = {}) {
-    const contextFiltered = context.mode === "assembly";
+    const contextFiltered = ["assembly", "consumable"].includes(context.mode);
     const itemViews = this.#createItemViews(accessibleRawItems);
     const compatibleInstanceIds = contextFiltered
       ? new Set(itemViews.map((item) => item.instanceId))

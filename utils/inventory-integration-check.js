@@ -96,6 +96,7 @@ const files = [
   "src/game/presentation/inventory/inventory_view_model_normalizer.js",
   "src/game/application/inventory/inventory_application_error.js",
   "src/game/application/inventory/inventory_command_service.js",
+  "src/game/application/inventory/equipment_consumable_target_resolver.js",
   "src/game/application/inventory/inventory_gameplay_bridge.js",
   "src/game/application/inventory/inventory_facade.js",
   "src/bootstrap/production/inventory_composition_root.js",
@@ -265,6 +266,8 @@ vm.runInContext(
       rarityProfile: { mode: "authored", tier: 1, maxTier: 5, isUnique: false },
       gameplayStats: {},
     },
+    bread: { id: "bread", name: "Bread", itemType: "bait", gameplayStats: {} },
+    pellet: { id: "pellet", name: "Pellet", itemType: "bait", gameplayStats: {} },
     chum: {
       id: "chum",
       name: "Chum",
@@ -699,6 +702,20 @@ vm.runInContext(
 
   // Spec 070: one pick flow. An empty cell or craft socket opens the backpack at the compatible items and the activated
   // card returns to the equipment section, equipped or with its craft panel open.
+  const feedbackFlow = makeComposition({ items: [raw("feedback-rod", "rodPole"), raw("feedback-hook", "hook")] });
+  dispatch(feedbackFlow, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+  dispatch(feedbackFlow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "feedback-rod" });
+  assertIntegration(feedbackFlow.commands.getUiState().activeSectionId === "equipment" &&
+    feedbackFlow.facade.getViewModel().equipmentFeedback?.slotId === "rod",
+    "a rod equipped from the backpack returns to equipment with one feedback event");
+  dispatch(feedbackFlow, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+  dispatch(feedbackFlow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "feedback-hook" });
+  assertIntegration(feedbackFlow.commands.getUiState().panelMode === "loadout" &&
+    feedbackFlow.commands.getUiState().activeSectionId === "equipment" &&
+    feedbackFlow.equipmentState.getRootInstanceId("tackle") &&
+    feedbackFlow.facade.getViewModel().equipmentFeedback?.slotId === "tackle",
+    "a hook equips directly without a craft panel containing no visible sockets");
+
   const pick = makeComposition({
     items: [raw("pick-rod", "rodFeeder"), raw("pick-reel", "reel"), raw("pick-line", "line")],
   });
@@ -748,6 +765,107 @@ vm.runInContext(
   dispatch(pick, InventoryActionType.OPEN);
   assertIntegration(pickUi().highlightedEquipmentSlotId === null && pickUi().activeSectionId === "equipment",
     "closing the inventory ends the pick and restores the equipment section");
+
+  const consumablePick = makeComposition({
+    items: [raw("consumable-rod", "rodFeeder"),
+      raw("consumable-spring", "spring", 1, { statOverrides: { hooksCount: 2 } }),
+      ...[0, 1].map((index) => raw("consumable-hook-" + index, "hook", 1, {
+        location: InventoryItemLocation.attached("consumable-spring", "hook", index),
+      })),
+      raw("worms", "bait", 5), raw("bread", "bread", 4), raw("cast-chum", "chum", 3)],
+    equipment: { ...emptyEquipment(), rod: "consumable-rod", tackle: "consumable-spring" },
+    assemblies: [{ rootInstanceId: "consumable-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+  });
+  const consumableUi = () => consumablePick.commands.getUiState();
+  const consumableHeader = () => consumablePick.facade.getViewModel().header;
+  const baitAt = (index) => consumablePick.assemblyReader.getChild("consumable-hook-" + index, "bait", 0);
+  assertIntegration(consumableHeader().baitSlots.length === 2 &&
+    consumableHeader().baitSlots.every((slot) => slot.available && !slot.item),
+    "two equipped hooks keep two available empty bait icons");
+  dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "backpack" });
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
+  assertIntegration(baitAt(0)?.itemId === "bait" && !baitAt(1) && consumableUi().activeSectionId === "backpack",
+    "the first bait click equips the first empty slot and keeps the list open");
+  assertIntegration(consumableHeader().baitSlots.every((slot) => slot.showCount),
+    "a partly filled tackle retains the count for its filled slot");
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "bread" });
+  assertIntegration(baitAt(1)?.itemId === "bread" && consumablePick.repository.require("bread").quantity === 3,
+    "the next click equips the second slot and consumes exactly one item");
+  const beforeReplacement = JSON.stringify(consumablePick.snapshotFactory.create());
+  const proposed = dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
+  assertIntegration(proposed.requiresSocketChoice &&
+    JSON.stringify(consumablePick.snapshotFactory.create()) === beforeReplacement &&
+    consumableHeader().baitSlots.map((slot) => Boolean(slot.highlighted)).join(",") === "false,true",
+    "worm beside worm + bread proposes only bread without mutating inventory");
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
+  assertIntegration(baitAt(1)?.itemId === "bait" && consumablePick.repository.require("worms").quantity === 3 &&
+    consumablePick.repository.list().filter((item) => item.itemId === "bread" && item.location.kind === "INVENTORY")
+      .reduce((total, item) => total + item.quantity, 0) === 4 &&
+    consumableHeader().baitSlots.every((slot) => !slot.highlighted),
+    "a repeated click confirms one replacement, returns the old bait and clears highlighting");
+  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 0 });
+  assertIntegration(consumablePick.facade.getViewModel().inventory.items.every((item) =>
+    item.itemType === "bait" && item.compatibleWithHighlightedSlot),
+    "a header icon highlights the available bait candidates");
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "bread" });
+  assertIntegration(baitAt(0)?.itemId === "bread" && baitAt(1)?.itemId === "bait",
+    "the header chooses exactly which occupied slot to replace");
+  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "chum", slotIndex: 0 });
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "cast-chum" });
+  assertIntegration(consumableHeader().activeTackle.chums.length === 1 &&
+    consumablePick.equipmentState.getRootInstanceId("handChum") === null,
+    "the chum header equips the cast tackle without equipping hand chum");
+  dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "keepnet" });
+  assertIntegration(consumableUi().consumableKind === null && consumableUi().pickedSocketId === null,
+    "section navigation cancels the consumable pick");
+
+  const extraHooks = makeComposition({
+    items: [raw("extra-rod", "rodFeeder"), raw("extra-spring", "spring"), raw("extra-bait", "bait", 6),
+      ...[0, 1, 2].map((index) => raw("extra-hook-" + index, "hook", 1, {
+        location: InventoryItemLocation.attached("extra-spring", "hook", index),
+      }))],
+    equipment: { ...emptyEquipment(), rod: "extra-rod", tackle: "extra-spring" },
+    assemblies: [{ rootInstanceId: "extra-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+  });
+  for (const index of [0, 1, 2]) {
+    dispatch(extraHooks, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "extra-bait" });
+    assertIntegration(Boolean(extraHooks.assemblyReader.getChild("extra-hook-" + index, "bait", 0)),
+      "sequential clicks reach every additional hook");
+  }
+  assertIntegration(extraHooks.facade.getViewModel().header.baitSlots.length === 3 &&
+    extraHooks.facade.getViewModel().header.baitSlots.every((slot) => slot.stock === 3) &&
+    extraHooks.facade.getViewModel().header.baitSlots.every((slot) => slot.showCount === false) &&
+    extraHooks.facade.getViewModel().header.refillStock.bait === 3 &&
+    extraHooks.repository.require("extra-bait").quantity === 3,
+    "three hooks have three icons with per-bait reserves and a deduplicated shared total");
+  dispatch(extraHooks, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 1 });
+  dispatch(extraHooks, InventoryActionType.CLOSE);
+  assertIntegration(extraHooks.commands.getUiState().consumableKind === null &&
+    extraHooks.commands.getUiState().activeSectionId === "equipment", "closing cancels the header pick");
+
+  const switcherSketch = makeComposition({
+    items: [raw("sketch-rod", "rodFeeder"), raw("sketch-spring", "spring"),
+      raw("sketch-worm", "bait", 13), raw("sketch-bread", "bread", 81), raw("sketch-pellet", "pellet", 11),
+      ...[0, 1, 2].map((index) => raw("sketch-hook-" + index, "hook", 1, {
+        location: InventoryItemLocation.attached("sketch-spring", "hook", index),
+      }))],
+    equipment: { ...emptyEquipment(), rod: "sketch-rod", tackle: "sketch-spring" },
+    assemblies: [{ rootInstanceId: "sketch-spring", profileId: "feeder_spring_basic", status: "PREPARED" }],
+  });
+  for (const name of ["worm", "bread", "pellet"]) {
+    dispatch(switcherSketch, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "sketch-" + name });
+  }
+  const sketchHeader = switcherSketch.facade.getViewModel().header;
+  assertIntegration(sketchHeader.baitSlots.map((slot) => slot.stock).join(",") === "12,80,10" &&
+    sketchHeader.baitSlots.every((slot) => slot.showCount) &&
+    sketchHeader.refillStock.bait === 102 && sketchHeader.refillStock.chum === 0,
+    "the sketch's three individual reserve counts and total come from authoritative inventory stock");
+  const sketchFirstBaitIds = [0, 1].map((index) => switcherSketch.assemblyReader.getChild("sketch-hook-" + index, "bait", 0).instanceId);
+  dispatch(switcherSketch, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 2 });
+  dispatch(switcherSketch, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "sketch-worm" });
+  assertIntegration(switcherSketch.assemblyReader.getChild("sketch-hook-2", "bait", 0).itemId === "bait" &&
+    [0, 1].every((index) => switcherSketch.assemblyReader.getChild("sketch-hook-" + index, "bait", 0).instanceId === sketchFirstBaitIds[index]),
+    "the third header icon replaces only the third bait");
 
   const directLureEquipment = makeComposition({
     items: [
@@ -842,12 +960,12 @@ vm.runInContext(
     compartmentCard("empty-spring-card").attachments.every((slot) => slot.empty),
     "a bare feeder shows its configured three hooks and chum compartment");
   const partialSlots = compartmentCard("partial-spring-card").attachments;
-  assertIntegration(partialSlots.length === 5 &&
-    partialSlots.filter((slot) => slot.empty).length === 4 &&
+  assertIntegration(partialSlots.length === 4 &&
+    partialSlots.filter((slot) => slot.empty).length === 3 &&
     partialSlots.some((slot) => slot.kind === "hook" && slot.slotIndex === 1 && !slot.empty) &&
-    partialSlots.some((slot) => slot.kind === "bait" && slot.empty),
-    "nested hooks retain their index and expose empty bait compartments");
-  assertIntegration(compartmentCard("empty-hook-card").attachments[0]?.empty === true &&
+    !partialSlots.some((slot) => slot.kind === "bait"),
+    "hooks retain their index without nesting bait in their cards");
+  assertIntegration(compartmentCard("empty-hook-card").attachments.length === 0 &&
     compartmentCard("empty-reel-card").attachments[0]?.kind === "line" &&
     !compartmentCard("empty-reel-card").reelLineCapacity &&
     compartmentCard("no-compartments-card").attachments.length === 0,
@@ -1026,10 +1144,10 @@ vm.runInContext(
       .inventory.items.map((item) => item.instanceId),
   );
   assertIntegration(
-    nestedSpringCandidates.has("context-bait") &&
+    !nestedSpringCandidates.has("context-bait") &&
       nestedSpringCandidates.has("context-hooks") &&
       nestedSpringCandidates.has("context-chum"),
-    "adding a hook automatically exposes bait through the same nested-slot resolver",
+    "a spring editor exposes hooks and chum while bait is chosen in the header",
   );
   dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextSpringRoot,
@@ -1044,8 +1162,8 @@ vm.runInContext(
     .getViewModel()
     .inventory.items.map((item) => item.instanceId);
   assertIntegration(
-    hookCandidateIds.length === 1 && hookCandidateIds[0] === "context-bait",
-    "a standalone hook editor shows only bait",
+    hookCandidateIds.length === 0 && contextualFiltering.facade.getViewModel().panel.assembly.sockets.length === 0,
+    "a standalone hook editor has no nested bait picker",
   );
   dispatch(contextualFiltering, InventoryActionType.ASSEMBLY_BACK, {
     rootInstanceId: contextHookRoot,
@@ -1310,8 +1428,8 @@ vm.runInContext(
     stablePlacementOrdering.facade
       .getViewModel()
       .inventory.items.map((item) => item.instanceId)
-      .join(",") === "stable-hooks,stable-bait",
-    "newly compatible bait appears after the placement source instead of moving it",
+      .join(",") === "stable-hooks",
+    "placing a hook keeps the placement source without exposing nested bait",
   );
   dispatch(
     stablePlacementOrdering,
@@ -1340,8 +1458,8 @@ vm.runInContext(
       stablePlacementOrdering.facade
         .getViewModel()
         .inventory.items.map((item) => item.instanceId)
-        .join(",") === "stable-bait,stable-hooks",
-    "normal rarity sorting resumes after all compatible empty cells are filled",
+        .join(",") === "stable-hooks",
+    "filling hook cells retains the remaining hooks without exposing nested bait",
   );
 
   const repeatedSocketPlacement = makeComposition({
@@ -1445,20 +1563,22 @@ vm.runInContext(
     { instanceId: "hook-stack" },
   ).rootInstanceId;
   assertIntegration(
-    flow.assemblyStates.require(hookDraft).isDraft,
-    "new hook assembly starts as draft",
+    flow.assemblyStates.require(hookDraft).isPrepared && flow.commands.getUiState().panelMode === "loadout" &&
+      flow.equipmentState.getRootInstanceId("tackle") === hookDraft,
+    "a new compatible hook is prepared and equipped directly without an empty craft panel",
   );
   dispatch(flow, InventoryActionType.INVENTORY_ITEM_ACTIVATE, {
     instanceId: "bait-stack",
   });
+  dispatch(flow, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "tackle" });
   const completedHookEditor = flow.facade.getViewModel().panel.assembly;
   assertIntegration(
-    completedHookEditor.showDisassemble === true &&
-      completedHookEditor.showEquip === true &&
-      completedHookEditor.showUnequip === false &&
+    completedHookEditor.showDisassemble === false &&
+      completedHookEditor.showEquip === false &&
+      completedHookEditor.showUnequip === true &&
       completedHookEditor.root.assemblyCompletion.isComplete === true &&
       completedHookEditor.root.assemblyCompletion.hasAnyComponent === true,
-    "an unequipped assembly with an attached component exposes Disassemble",
+    "inspecting the directly equipped hook exposes Unequip and retains complete bait state",
   );
   dispatch(flow, InventoryActionType.ASSEMBLY_EQUIP, {
     rootInstanceId: hookDraft,
@@ -1577,10 +1697,9 @@ vm.runInContext(
 
   const header = flow.facade.getViewModel().header.activeTackle;
   assertIntegration(
-    header.baits.length === 1 && header.chums.length === 2 &&
-      header.chums.some((item) => item.instanceId === flow.equipmentState.getRootInstanceId("handChum")) &&
+    header.baits.length === 1 && header.chums.length === 1 &&
       header.chums.some((item) => item.location?.parentInstanceId === springDraft),
-    "top controls show nested tackle bait/chum and the separately equipped hand chum (baits=" +
+    "top controls show only cast tackle consumables, excluding hand chum and boat cargo (baits=" +
       header.baits.length +
       ", chums=" +
       header.chums.length +

@@ -58,6 +58,12 @@ async function main() {
   const selected = { items: [{ instanceId: "on-hook", quantity: 999, name: "Projected name" },
     { instanceId: "on-hook" }], scopes: [AutoRefillScope.TACKLE_BAIT] };
   const before = JSON.stringify(repository.list());
+  assert(stock.shareReserve([repository.get("old"), repository.get("fresh"), repository.get("on-hook")]),
+    "quantity, custody and freshness do not create different bait reserve choices");
+  assert(!stock.shareReserve([repository.get("on-hook"), repository.get("different")]),
+    "different variants retain their separate item counts even with the same catalog ID");
+  assert(!stock.shareReserve([]));
+  assert(!stock.shareReserve([{ instanceId: "missing" }]));
   for (let i = 0; i < 25; i++) assert.equal(stock.count(selected), 7);
   assert.equal(JSON.stringify(repository.list()), before, "stock projection never splits, consumes or updates inventory");
   assert.equal(stock.count({ scopes: [AutoRefillScope.TACKLE_BAIT] }), 7,

@@ -6,6 +6,13 @@ const path = require("node:path");
 const { TestDocument } = require("./testing/keepnet/test_document");
 
 async function main() {
+  const { UiCatalogDocumentScope } = await import("../src/dev/ui_catalog/ui_catalog_document_scope.js");
+  const svg = {};
+  const svgScope = new UiCatalogDocumentScope({ documentRef: { createElementNS(namespace, tag) {
+    assert.equal(namespace, "http://www.w3.org/2000/svg"); assert.equal(tag, "svg"); return svg;
+  } }, root: {}, windowTarget: {} });
+  assert.equal(svgScope.createElementNS("http://www.w3.org/2000/svg", "svg"), svg,
+    "the preview document forwards native namespace creation for production section icons");
   const { UiCatalogPage } = await import("../src/dev/ui_catalog/ui_catalog_page.js");
   const navigationDocument = new TestDocument();
   const returnLink = navigationDocument.createElement("a");
@@ -46,7 +53,7 @@ async function main() {
     assert(families.has(family), `FR-002 family missing: ${family}`);
   }
   assert.equal(new Set(UI_CATALOG_DEFINITIONS.map(({ id }) => id)).size, UI_CATALOG_DEFINITIONS.length);
-  assert.deepEqual(UI_CATALOG_WIDTHS, [240, 280, 319, 320, 640, 740, 960, 1280]);
+  assert.deepEqual(UI_CATALOG_WIDTHS, [240, 280, 319, 320, 520, 521, 600, 640, 740, 820, 821, 960, 1280]);
   for (const definition of UI_CATALOG_DEFINITIONS) {
     assert(definition.states.some(([id]) => id === "normal"), definition.id);
     assert(definition.contract && definition.description, definition.id);

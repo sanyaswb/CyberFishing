@@ -80,7 +80,6 @@
   background: var(--inventory-equipment-well);
   pointer-events: auto;
 }
-.keepnet-section__capacity .inventory-resource-meter__track { border-radius: inherit; }
 .keepnet-section__section-title { margin: 13px 0; }
 .keepnet-section__status { color: #c9c9c9; }
 .keepnet-section__filters { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 16px; }

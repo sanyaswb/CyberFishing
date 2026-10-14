@@ -66,6 +66,9 @@ Use Flexbox for small one-dimensional groups: an icon with a number, card action
 
 ## 7. Inventory and keepnet grids
 
+Before changing inventory interactions, read [inventory behavior](docs/inventory-behavior.md): section shortcuts,
+consumable slot selection/replacement, automatic/manual counts and equipment feedback are part of the UI contract.
+
 | Container | Mobile composition | Below 320px |
 | --- | --- | --- |
 | Inventory items | 4 equal columns | Preserve 4 columns and scale proportionally |

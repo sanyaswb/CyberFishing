@@ -12,6 +12,9 @@ export class InventoryUiState {
   #selectedInstanceId = null;
   #highlightedEquipmentSlotId = null;
   #pickedSocketId = null;
+  #consumableKind = null;
+  #equipmentFeedback = null;
+  #equipmentFeedbackRevision = 0;
   #panelMode = "loadout";
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
@@ -36,6 +39,8 @@ export class InventoryUiState {
       selectedInstanceId: this.#selectedInstanceId,
       highlightedEquipmentSlotId: this.#highlightedEquipmentSlotId,
       pickedSocketId: this.#pickedSocketId,
+      consumableKind: this.#consumableKind,
+      equipmentFeedback: this.#equipmentFeedback,
       panelMode: this.#panelMode,
       editingRootInstanceId: this.#editingRootInstanceId,
       viewingLoadoutId: this.#viewingLoadoutId,
@@ -47,7 +52,9 @@ export class InventoryUiState {
   get selectedInstanceId() { return this.#selectedInstanceId; }
   get highlightedEquipmentSlotId() { return this.#highlightedEquipmentSlotId; }
   get pickedSocketId() { return this.#pickedSocketId; }
-  get isPicking() { return this.#highlightedEquipmentSlotId !== null || this.#pickedSocketId !== null; }
+  get isConsumablePick() { return this.#consumableKind !== null; }
+  get consumableKind() { return this.#consumableKind; }
+  get isPicking() { return this.#highlightedEquipmentSlotId !== null || this.#pickedSocketId !== null || this.isConsumablePick; }
   get panelMode() { return this.#panelMode; }
   get editingRootInstanceId() { return this.#editingRootInstanceId; }
   get viewingLoadoutId() { return this.#viewingLoadoutId; }
@@ -72,9 +79,22 @@ export class InventoryUiState {
     this.#pickedSocketId = socketId;
   }
 
+  pickForConsumable(kind, socketId = null) {
+    this.showLoadoutPanel();
+    this.#startPick();
+    this.#pickedSocketId = socketId;
+    this.#consumableKind = kind;
+  }
+
   completePick() {
     this.#activeSectionId = "equipment";
     this.#clearPick();
+  }
+
+  equipmentEquipped(slotId, instanceId) {
+    this.showLoadoutPanel();
+    this.#activeSectionId = "equipment";
+    this.#equipmentFeedback = Object.freeze({ revision: ++this.#equipmentFeedbackRevision, slotId, instanceId });
   }
 
   open() {
@@ -191,5 +211,6 @@ export class InventoryUiState {
   #clearPick() {
     this.#highlightedEquipmentSlotId = null;
     this.#pickedSocketId = null;
+    this.#consumableKind = null;
   }
 }

@@ -31,6 +31,7 @@ export class InventoryCommandService {
   #fallbackSequence = 0;
   #uiState;
   #itemRemoval;
+  #consumableTargets;
 
   constructor({
     messages,
@@ -60,6 +61,7 @@ export class InventoryCommandService {
     now = null,
     uiState,
     itemRemoval,
+    consumableTargets,
   } = {}) {
     this.#messages = messages;
     this.#repository = repository;
@@ -87,6 +89,7 @@ export class InventoryCommandService {
     this.#actionTypes = actionTypes;
     this.#uiState = uiState;
     this.#itemRemoval = itemRemoval;
+    this.#consumableTargets = consumableTargets;
     this.#assertDependencies();
   }
 
@@ -118,8 +121,11 @@ export class InventoryCommandService {
         this.#uiState.selectCategory(action.categoryId);
         return this.#success();
       case InventoryActionType.SECTION_SELECT:
+        if (action.sectionId === "backpack" && !this.#uiState.isPicking) this.#uiState.showLoadoutPanel();
         this.#uiState.selectSection(action.sectionId);
         return this.#success();
+      case InventoryActionType.CONSUMABLE_SLOT_ACTIVATE:
+        return this.#pickConsumable(action.kind, action.slotIndex);
       case InventoryActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
       case InventoryActionType.SORT_CRITERION_SELECT:
@@ -168,9 +174,21 @@ export class InventoryCommandService {
 
   // A card activated during a pick (spec 070) returns to the equipment section once it is equipped or opened.
   #activateInventoryItem(instanceId) {
+    const source = this.#repository.get(instanceId);
+    const kind = source ? this.#type(source) : null;
+    if (!this.#uiState.highlightedEquipmentSlotId &&
+        (this.#uiState.panelMode !== "assembly" || this.#uiState.isConsumablePick) &&
+        (kind === "bait" || (kind === "chum_mix" && this.#uiState.isConsumablePick))) {
+      const consumableKind = kind === "bait" ? "bait" : "chum";
+      if (this.#uiState.isConsumablePick || this.#consumableTargets.list(consumableKind).length) {
+        return this.#activateConsumable(source, consumableKind);
+      }
+    }
     const picking = this.#uiState.isPicking;
     const result = this.#activateInventoryItemInPanel(instanceId);
-    if (picking && result.success && !result.requiresSocketChoice) this.#uiState.completePick();
+    if (picking && result.success && !result.requiresSocketChoice) {
+      this.#uiState.completePick();
+    }
     return result;
   }
 
@@ -224,6 +242,9 @@ export class InventoryCommandService {
     }
 
     const highlightedSlotId = this.#uiState.highlightedEquipmentSlotId;
+    if (this.#type(source) === "hook" && this.#validateEquipment(highlightedSlotId || "tackle", source).isValid) {
+      return this.#equipHook(source, highlightedSlotId || "tackle");
+    }
     if (
       highlightedSlotId &&
       this.#validateEquipment(highlightedSlotId, source).isValid
@@ -321,6 +342,47 @@ export class InventoryCommandService {
       return this.#success({ highlightedSlotId: slotId });
     }
     return this.#equipLooseRoot(selectedId, slotId);
+  }
+
+  #pickConsumable(kind, slotIndex) {
+    const target = this.#consumableTargets.resolve(kind, slotIndex);
+    if (!target) return this.#failure(this.#messages.consumableSlotUnavailable);
+    this.#uiState.pickForConsumable(kind, target.socketId);
+    return this.#success({ pickedSocketId: target.socketId });
+  }
+
+  #equipHook(source, slotId) {
+    const validation = this.#validateEquipment(slotId, source);
+    if (!validation.isValid) return this.#failure(validation.reason || this.#messages.itemIncompatible);
+    const rootInstanceId = this.#transaction.runAtomic(() => {
+      const id = this.#assemblyStates.has(source.instanceId) ? source.instanceId :
+        this.#assemblyService.startAssembly(source.instanceId);
+      this.#assemblyService.prepare(id);
+      this.#equipRootWithinTransaction(id, slotId);
+      return id;
+    });
+    return this.#equipmentSuccess({ rootInstanceId, equippedInstanceId: rootInstanceId, slotId });
+  }
+
+  #activateConsumable(source, kind) {
+    const targets = this.#consumableTargets.list(kind)
+      .filter((target) => this.#attachmentTargetResolver.accepts(target, source));
+    if (!targets.length) return this.#failure(this.#messages.consumableSlotUnavailable);
+    const explicit = this.#uiState.consumableKind === kind
+      ? targets.find((target) => target.socketId === this.#uiState.pickedSocketId) : null;
+    const selectedId = this.#uiState.selectedInstanceId;
+    const empty = targets.find((target) => !target.occupied);
+    if ((explicit && (!selectedId || selectedId === source.instanceId)) || empty) {
+      const target = explicit && (!selectedId || selectedId === source.instanceId) ? explicit : empty;
+      const result = this.#fillAssemblyTarget(target.rootInstanceId, source, target);
+      if (result.success) this.#uiState.pickForConsumable(kind);
+      return result;
+    }
+    // Prefer a different bait: selecting a worm beside worm + bread proposes replacing only the bread.
+    const target = targets.find((candidate) => candidate.occupied.itemId !== source.itemId) || targets[0];
+    this.#uiState.pickForConsumable(kind, target.socketId);
+    this.#uiState.select(source.instanceId);
+    return this.#success({ requiresSocketChoice: true });
   }
 
   #unequipSlot(slotId) {
@@ -753,7 +815,7 @@ export class InventoryCommandService {
   #hasEmptyAssemblySockets(rootInstanceId) {
     return this.#attachmentTargetResolver
       .listTargets(rootInstanceId)
-      .some((target) => !target.occupied);
+      .some((target) => target.slotId !== "bait" && !target.occupied);
   }
 
   #validateActivationReadiness(slotId, instanceId) {
@@ -986,6 +1048,9 @@ export class InventoryCommandService {
 
   #equipmentSuccess(extra = {}) {
     this.#uiState.focusCompatibleCategory();
+    const slotId = extra.slotId || (extra.equippedAll ? "rod" : null);
+    const instanceId = extra.equippedInstanceId || (slotId ? this.#equipmentState.getRootInstanceId(slotId) : null);
+    if (slotId && instanceId) this.#uiState.equipmentEquipped(slotId, instanceId);
     return this.#success(extra);
   }
 
@@ -1016,6 +1081,7 @@ export class InventoryCommandService {
       [this.#sortConfig, "sortConfig"],
       [this.#uiState, "uiState"],
       [this.#itemRemoval, "itemRemoval"],
+      [this.#consumableTargets, "consumableTargets"],
     ];
     for (const [dependency, name] of dependencies) {
       if (!dependency) throw new TypeError(`InventoryCommandService requires ${name}`);

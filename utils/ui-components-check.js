@@ -34,11 +34,57 @@ assert.equal(documentRef.byClass("inventory-toggle__thumb")[0].textContent, "A")
 input.checked = true; input.fire("change"); assert.equal(selected, true);
 switches.update(toggle, { checked: false, disabled: true, stock: 8 });
 assert(!input.checked && input.disabled && toggle.classList.contains("inventory-toggle--disabled"));
-assert.equal(count.textContent, "8");
+assert.equal(count.textContent, "0", "manual mode counts equipped portions rather than backpack stock");
 assert.equal(documentRef.byClass("inventory-toggle__placeholder")[0], image, "stock updates retain artwork identity");
-assert(input.getAttribute("aria-label").includes("8"));
+assert(input.getAttribute("aria-label").includes("Споряджено: 0"));
 switches.dispose(toggle); input.checked = false; input.fire("change"); assert.equal(selected, true);
 assert.equal(input.listeners.get("change").size, 0);
+
+let baitSlot = null;
+const picker = switches.create({ name: "Bait", modeLabel: "Automatic bait",
+  checked: true, stock: 102,
+  placeholderUrl: "assets/ui/inventory/bait.svg", onSlotActivate: index => { baitSlot = index; },
+  slots: [12, 80, 10].map((stock, index) => ({ available: true, highlighted: index === 0,
+    stock, item: { name: "Bait " + index, icon: "B" } })) });
+documentRef.body.append(picker);
+const pickerButtons = picker.children[0].children;
+assert.equal(pickerButtons.length, 3, "the owner's v2 sketch exposes each of the three bait slots");
+assert.deepEqual([...pickerButtons].map(button => button.children[1].textContent), ["12", "80", "10"],
+  "every equipped bait shows its exact matching reserve below its artwork");
+assert.equal(pickerButtons[0].children[0].children[0].textContent, "B", "an equipped item's artwork replaces its category placeholder");
+assert(pickerButtons[0].children[0].children[0].classList.contains("inventory-toggle__glyph"),
+  "emoji artwork has an explicit visual box inside the circular frame");
+const firstArtwork = pickerButtons[0].children[0];
+const firstVisual = firstArtwork.children[0];
+switches.update(picker, { checked: true, stock: 102, slots: [12, 80, 10].map((stock, index) =>
+  ({ available: true, highlighted: index === 0, stock, item: { name: "Bait " + index, icon: "B" } })) });
+assert.equal(picker.children[0].children[0], pickerButtons[0], "switch updates retain the consumable buttons");
+assert.equal(pickerButtons[0].children[0], firstArtwork, "unchanged consumable artwork retains its DOM identity");
+assert.equal(firstArtwork.children[0], firstVisual, "unchanged emoji updates retain the bounded visual node");
+assert(picker.classList.contains("inventory-toggle--multiple"));
+assert.equal(pickerButtons[0].getAttribute("aria-pressed"), "true");
+assert(pickerButtons[0].classList.contains("inventory-toggle__item--available"));
+pickerButtons[1].click(); assert.equal(baitSlot, 1);
+pickerButtons[2].click(); assert.equal(baitSlot, 2, "the third icon has its own pick action");
+assert.equal(picker.children[1].children[0].checked, true, "the bait button is separate from the switch label");
+const pickerInput = picker.children[1].children[0];
+pickerInput.checked = false; pickerInput.fire("change");
+assert.equal(picker.children[1].children[1].children[0].textContent, "3",
+  "turning automatic mode off immediately shows the three equipped portions");
+assert.deepEqual([...pickerButtons].map(button => button.children[1].textContent), ["1", "1", "1"],
+  "manual mode shows one equipped portion below each different bait");
+switches.update(picker, { slots: [0, 1, 2].map(() => ({ available: true, showCount: false,
+  stock: 12, item: { name: "Worm", icon: "W" } })), stock: 12 });
+assert([...pickerButtons].every(button => button.children[1].hidden),
+  "identical baits keep every selectable icon but only the total count");
+assert.equal(picker.children[1].children[1].children[0].textContent, "3");
+pickerInput.checked = true; pickerInput.fire("change");
+assert.equal(picker.children[1].children[1].children[0].textContent, "12",
+  "automatic mode uses the shared reserve once");
+assert([...pickerButtons].every(button => button.children[1].hidden));
+switches.dispose(picker);
+pickerButtons[0].click(); assert.equal(baitSlot, 2, "disposed bait buttons cannot call their previous host");
+assert.equal(pickerButtons[0].listeners.get("click").size, 0);
 
 const compact = switches.create({ variant: "control", name: "Feeder", modeLabel: "Automatic feeder", checked: true });
 documentRef.body.append(compact);

@@ -154,6 +154,7 @@
 │  ├── fish_config_architecture.md
 │  ├── fishing_physics_formula_map.md
 │  ├── gameplay_backlog.md
+│  ├── inventory-behavior.md
 │  ├── line_and_rod_stroke_debug.md
 │  ├── physics_units_and_naming.md
 │  ├── refactoring_remaining.md
@@ -312,6 +313,8 @@
 │  ├── 070-inventory-slot-pick
 │  │  └── spec.md
 │  ├── 071-bamboo-rod-skin
+│  │  └── spec.md
+│  ├── 072-inventory-consumable-controls
 │  │  └── spec.md
 │  └── README.md
 ├── src
@@ -568,6 +571,7 @@
 │  │  │  │  ├── configured_inventory_seeder.js
 │  │  │  │  ├── display_stats_resolver.js
 │  │  │  │  ├── equipment_auto_refill_target_provider.js
+│  │  │  │  ├── equipment_consumable_target_resolver.js
 │  │  │  │  ├── equipment_inventory_context_filter_strategy.js
 │  │  │  │  ├── equipment_read_model_factory.js
 │  │  │  │  ├── equipment_service.js
@@ -989,6 +993,8 @@
 │  │     │  ├── inventory_item_parameters_resolver.js
 │  │     │  ├── inventory_item_tree_view_factory.js
 │  │     │  ├── inventory_item_view_factory.js
+│  │     │  ├── inventory_load_meter_config.js
+│  │     │  ├── inventory_load_renderer.js
 │  │     │  ├── inventory_loadout_panel_renderer.js
 │  │     │  ├── inventory_messages.js
 │  │     │  ├── inventory_resource_meter_renderer.js

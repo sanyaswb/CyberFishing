@@ -4,28 +4,35 @@ export class InventoryHeaderRenderer {
   #dom;
   #closeButtons;
   #autoSwitches;
+  #loadRenderer;
   #bindings = new Map();
 
-  constructor({ domFactory, closeButtonRenderer, autoSwitchRenderer } = {}) {
+  constructor({ domFactory, closeButtonRenderer, autoSwitchRenderer, loadRenderer } = {}) {
     this.#dom = domFactory;
     this.#closeButtons = closeButtonRenderer;
     this.#autoSwitches = autoSwitchRenderer;
+    this.#loadRenderer = loadRenderer;
   }
 
   render(
     header,
     settings,
-    { onClose = null, onAutoBaitChange = null, onAutoChumChange = null } = {},
+    { onClose = null, onAutoBaitChange = null, onAutoChumChange = null, onConsumableActivate = null } = {},
   ) {
     const top = this.#dom.element("header", "inventory-header");
-    top.append(this.#renderLoad(header), this.#renderSettings(header, settings, {
-      onAutoBaitChange, onAutoChumChange,
-    }));
+    const row = this.#dom.element("div", "inventory-header__controls");
+    const controls = this.#renderSettings(header, settings, {
+      onAutoBaitChange, onAutoChumChange, onConsumableActivate,
+    });
     const close = this.#closeButtons.create({
       className: "inventory-header__close", label: "Закрити інвентар", onClose,
     });
-    top.appendChild(close);
-    this.#bindings.set(top, { close, switches: [...top.children[1].children] });
+    row.append(controls, close);
+    const load = this.#loadRenderer.create();
+    load.classList.add("inventory-header__load");
+    top.append(row, load);
+    this.#bindings.set(top, { close, switches: [...controls.children], load });
+    this.updateLoad(top, header);
     return top;
   }
 
@@ -40,36 +47,36 @@ export class InventoryHeaderRenderer {
     }
   }
 
-  #renderLoad(header) {
-    const load = this.#dom.element("div", "inventory-load");
-    load.title = `${header.loadLabel}: ${this.#format(header.loadValue)} ${header.loadUnit}`;
-    load.setAttribute("aria-label", load.title);
-    const icon = this.#dom.image(inventorySlotIconPath("weight"), "");
-    icon.className = "inventory-load__icon";
-    icon.setAttribute("aria-hidden", "true");
-    load.append(icon, this.#dom.element("strong", "inventory-load__value",
-      `${this.#format(header.loadValue)} ${header.loadUnit}`));
-    return load;
+  update(node, header, settings) {
+    const binding = this.#bindings.get(node);
+    if (!binding) return;
+    this.updateLoad(node, header);
+    this.#autoSwitches.update(binding.switches[0], { slots: header.baitSlots,
+      checked: settings.autoBait, stock: header.baitStock });
+    this.#autoSwitches.update(binding.switches[1], { slots: header.chumSlots,
+      checked: settings.autoChum, stock: header.chumStock });
   }
 
-  #renderSettings(header, settings, { onAutoBaitChange, onAutoChumChange }) {
+  updateLoad(node, header) {
+    const binding = this.#bindings.get(node);
+    if (binding) this.#loadRenderer.update(binding.load, header);
+  }
+
+  #renderSettings(header, settings, { onAutoBaitChange, onAutoChumChange, onConsumableActivate }) {
     const container = this.#dom.element("div", "inventory-auto-settings");
     container.append(
       this.#createToggle("inventory-auto-bait", "bait", "Наживка", "Автонаживляння",
-        header.activeBaits, settings.autoBait, header.baitStock, onAutoBaitChange),
+        header.baitSlots || header.activeBaits.map((item) => ({ item, available: true })), settings.autoBait, header.baitStock, onAutoBaitChange, onConsumableActivate),
       this.#createToggle("inventory-auto-chum", "chum", "Прикормка", "Автоприкормка",
-        header.activeChums, settings.autoChum, header.chumStock, onAutoChumChange),
+        header.chumSlots || header.activeChums.map((item) => ({ item, available: true })), settings.autoChum, header.chumStock, onAutoChumChange, onConsumableActivate),
     );
     return container;
   }
 
-  #createToggle(id, slotId, name, modeLabel, items, checked, stock = 0, onChange) {
-    return this.#autoSwitches.create({ id, name, modeLabel, items, checked, stock, onChange,
+  #createToggle(id, slotId, name, modeLabel, slots, checked, stock = 0, onChange, onActivate) {
+    return this.#autoSwitches.create({ id, name, modeLabel, slots, checked, stock, onChange,
+      onSlotActivate: (slotIndex) => onActivate?.(slotId, slotIndex),
       placeholderUrl: inventorySlotIconPath(slotId) });
   }
 
-  #format(value) {
-    const number = Number(value) || 0;
-    return Number.isInteger(number) ? String(number) : number.toFixed(1);
-  }
 }

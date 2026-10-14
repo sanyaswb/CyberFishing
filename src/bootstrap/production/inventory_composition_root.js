@@ -33,6 +33,7 @@ import { InventoryItemReservationPolicy } from "../../game/domain/inventory/inve
 import { InventoryItemSnapshotMapper } from "../../game/application/inventory/persistence/inventory_item_snapshot_mapper.js";
 import { InventoryActionType } from "../../game/presentation/inventory/inventory_action_type.js";
 import { InventoryCommandService } from "../../game/application/inventory/inventory_command_service.js";
+import { EquipmentConsumableTargetResolver } from "../../game/application/inventory/equipment_consumable_target_resolver.js";
 import { InventoryGameplayCommands } from "../../game/application/inventory/inventory_gameplay_commands.js";
 import { InventoryItemRemovalService } from "../../game/application/inventory/inventory_item_removal_service.js";
 import { InventoryUiState } from "../../game/application/inventory/inventory_ui_state.js";
@@ -370,7 +371,9 @@ export class InventoryCompositionRoot {
     const itemOrderResolver = new InventoryItemOrderResolver({
       config: INVENTORY_SORT_CONFIG,
     });
+    const consumableTargets = new EquipmentConsumableTargetResolver({ equipmentState, attachmentTargetResolver });
     const viewModels = new InventoryViewModelFactory({
+      consumableTargets,
       repository,
       assemblyStates,
       attachmentTargetResolver,
@@ -404,6 +407,7 @@ export class InventoryCompositionRoot {
       now,
     });
     const commands = new InventoryCommandService({
+      consumableTargets,
       messages: INVENTORY_MESSAGES,
       repository,
       assemblyStates,

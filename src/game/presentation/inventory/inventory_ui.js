@@ -20,6 +20,8 @@ export class InventoryUI {
   #backpackButtonNode;
   #rootNode;
   #headerHost;
+  #headerNode = null;
+  #lastEquipmentFeedbackRevision = 0;
   #warningNode;
   #leftHost;
   #rightHost;
@@ -224,6 +226,7 @@ export class InventoryUI {
     this.#renderHeader(viewModel);
     this.#renderLeftPanel(viewModel.panel);
     this.#applySection(viewModel.sections);
+    this.#showEquipmentFeedback(viewModel.equipmentFeedback);
     const signature = JSON.stringify({
       ...viewModel.inventory, savedLoadout: undefined, mode: undefined,
       items: viewModel.inventory.items.map((item) => ({
@@ -267,15 +270,7 @@ export class InventoryUI {
       this.#savedLoadoutRenderer.updateDynamicVisuals(this.#leftHost, viewModel.panel.savedLoadout);
     }
 
-    const loadValue = this.#firstNodeByClass(
-      this.#headerHost,
-      "inventory-load__value",
-    );
-    if (loadValue) {
-      const value = Number(viewModel.header.loadValue) || 0;
-      const formatted = Number.isInteger(value) ? String(value) : value.toFixed(1);
-      loadValue.textContent = `${formatted} ${viewModel.header.loadUnit}`;
-    }
+    this.#headerRenderer.updateLoad(this.#headerNode, viewModel.header);
   }
 
   #createDynamicItemIndex(viewModel) {
@@ -343,6 +338,7 @@ export class InventoryUI {
     }
     this.#longPressController.dispose();
     this.#headerRenderer.dispose?.();
+    this.#headerNode = null;
     this.#tooltipPresenter.dispose();
     this.#backpackButtonNode.remove();
     this.#rootNode.remove();
@@ -358,7 +354,7 @@ export class InventoryUI {
       { title: "Відкрити інвентар" },
     );
     this.#backpackButtonNode.setAttribute("aria-label", "Відкрити інвентар");
-    this.#backpackButtonNode.addEventListener("click", () => this.toggle());
+    this.#backpackButtonNode.addEventListener("click", () => this.toggleSection("backpack"));
 
     this.#rootNode = this.#dom.element("div", "inventory-modal");
     this.#rootNode.setAttribute("role", "dialog");
@@ -425,12 +421,18 @@ export class InventoryUI {
   }
 
   #renderHeader(viewModel) {
-    this.#headerRenderer.dispose?.();
+    if (this.#headerNode) {
+      this.#headerRenderer.update(this.#headerNode, viewModel.header, viewModel.settings);
+      return;
+    }
     const header = this.#headerRenderer.render(
       viewModel.header,
       viewModel.settings,
       {
         onClose: () => this.close(),
+        onConsumableActivate: (kind, slotIndex) => this.#dispatch({
+          type: this.#actionTypes.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex,
+        }),
         onAutoBaitChange: (enabled) =>
           this.#dispatch({
             type: this.#actionTypes.AUTO_BAIT_CHANGE,
@@ -444,6 +446,17 @@ export class InventoryUI {
       },
     );
     this.#dom.replaceChildren(this.#headerHost, header);
+    this.#headerNode = header;
+  }
+
+  #showEquipmentFeedback(feedback) {
+    if (!feedback || feedback.revision === this.#lastEquipmentFeedbackRevision) return;
+    this.#lastEquipmentFeedbackRevision = feedback.revision;
+    if (!this.#isOpen || this.#activeSectionId !== "equipment") return;
+    const field = this.#nodesByClass(this.#equipmentHost, "inventory-field")
+      .find((node) => node.dataset.slotId === feedback.slotId);
+    const slot = this.#firstNodeByClass(field, "inventory-slot");
+    slot?.classList.add("inventory-slot--equipped-flash");
   }
 
   #renderLeftPanel(panel) {

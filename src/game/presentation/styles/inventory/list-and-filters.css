@@ -1,6 +1,8 @@
 /* Inventory categories, subfilters, sort controls, item selection and grid. */
 
 .inventory-list-panel {
+  --inventory-panel: var(--inventory-equipment-panel);
+  --inventory-panel-border: transparent;
   --inventory-list-inset: 14px;
   --inventory-list-gap: 10px;
   display: grid;
@@ -319,9 +321,5 @@
       display: none;
     }
 
-    .inventory-modal--section-backpack .inventory-list-panel {
-      --inventory-panel: transparent;
-      --inventory-panel-border: transparent;
-    }
   }
 }

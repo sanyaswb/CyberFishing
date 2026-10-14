@@ -3,6 +3,7 @@ export const InventoryActionType = Object.freeze({
   OPEN: "inventory/open",
   CLOSE: "inventory/close",
   SECTION_SELECT: "inventory/section-select",
+  CONSUMABLE_SLOT_ACTIVATE: "inventory/consumable-slot-activate",
   CATEGORY_SELECT: "inventory/category-select",
   SUBFILTER_TOGGLE: "inventory/subfilter-toggle",
   SORT_CRITERION_SELECT: "inventory/sort-criterion-select",

@@ -55,6 +55,21 @@
   pointer-events: none;
   animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite;
 }
+.inventory-slot--equipped-flash::after {
+  position: absolute;
+  z-index: 18;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--inventory-success);
+  content: "";
+  pointer-events: none;
+  animation: inventory-equipped-flash calc(var(--ui-duration-normal) * 2) var(--ui-ease-standard) 1 both;
+}
+@keyframes inventory-equipped-flash {
+  0% { opacity: 0; }
+  30% { opacity: 0.4; }
+  100% { opacity: 0; }
+}
 
 .inventory-slot.inventory-slot--filled {
   border: 0;
@@ -114,6 +129,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .inventory-slot--equipped-flash::after { animation: none; opacity: 0; }
   .inventory-slot.inventory-slot--highlighted::after {
     opacity: 0.35;
     animation: none;

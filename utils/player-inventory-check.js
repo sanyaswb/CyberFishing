@@ -121,6 +121,8 @@ function checkPlayerInventoryPort() {
   assert.deepEqual({ ...blocked }, { success: false, warning: "Витягніть снасть з води, щоб змінити спорядження.", refresh: false },
     "equipment changes are blocked while tackle is in the water");
   assert.equal(inventory.dispatchInventoryAction({ type: actions.OPEN }).success, true, "opening stays allowed while locked");
+  assert.equal(inventory.dispatchInventoryAction({ type: actions.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 0 }).success,
+    false, "the consumable picker stays blocked while tackle is in the water");
   assert.equal(inventory.getEquipped().rod, null);
 
   inventory.setLock(false);

@@ -28,6 +28,20 @@ export class UiCatalogInventoryFixture {
     }));
     items[0].condition = { available: true, percent: this.#value, metricLabel: "Стан" };
     const empty = state === "empty";
+    const sameConsumables = state === "same-consumables";
+    const selectedConsumables = state === "selected-consumables";
+    const fullConsumables = state === "full-consumables";
+    const uniformBaits = sameConsumables || selectedConsumables;
+    const consumables = state === "consumables" || uniformBaits || fullConsumables;
+    const baits = consumables ? [
+      { ...items[4], name: "Черв'як", iconUrl: "", icon: "🪱" },
+      { ...items[4], instanceId: "catalog-bread", name: uniformBaits ? "Черв'як" : "Хліб", iconUrl: "", icon: uniformBaits ? "🪱" : "🍞" },
+      ...(selectedConsumables ? [] : [{ ...items[4], instanceId: "catalog-corn", name: uniformBaits ? "Черв'як" : "Кукурудза", iconUrl: "", icon: uniformBaits ? "🪱" : "🌽" }]),
+    ] : empty ? [] : [items[4]];
+    const chums = selectedConsumables || fullConsumables
+      ? [{ ...items[5], iconUrl: "", icon: "🍞", name: "Базова суміш" },
+        ...(fullConsumables ? [{ ...items[5], instanceId: "catalog-chum-2", iconUrl: "", icon: "🌾", name: "Зернова суміш" }] : [])]
+      : empty || consumables ? [] : [items[5]];
     const slot = (slotId, label, item, index) => ({ slotId, label,
       state: state === "locked" && index > 0 ? "locked" : item && !empty ? "filled" : "empty",
       item: state === "locked" && index > 0 || empty ? null : item,
@@ -37,9 +51,15 @@ export class UiCatalogInventoryFixture {
       : [slot("rod", "Вудилище", items[0], 0), slot("reel", "Котушка", items[1], 1),
         slot("terminalLine", "Ліска", items[2], 2), slot("tackle", "Оснастка", null, 3), slot("float", "Поплавок", items[3], 4)];
     this.#model = {
-      isOpen: true, settings: { autoBait: true, autoChum: false },
+      isOpen: true, settings: { autoBait: true, autoChum: consumables },
       sections: { activeId: this.#sectionId, backpackItemCount: empty ? 0 : items.reduce((total, item) => total + item.quantity, 0) },
-      header: { loadValue: 4.5, loadUnit: "кг", activeBaits: empty ? [] : [items[4]], activeChums: empty ? [] : [items[5]], baitStock: empty ? 0 : 12, chumStock: empty ? 0 : 12 },
+      header: { loadValue: selectedConsumables ? 1 : 4.5, loadUnit: "кг", activeBaits: baits, activeChums: chums,
+        baitSlots: baits.map((item, index) => ({ item, available: true, highlighted: selectedConsumables && index === 0,
+          showCount: consumables && !uniformBaits,
+          stock: selectedConsumables ? 48 : consumables && !uniformBaits ? [12, 80, 10][index] : 12 })),
+        chumSlots: chums.map((item, index) => ({ item, available: true, showCount: fullConsumables, stock: fullConsumables ? [14, 8][index] : selectedConsumables ? 14 : 12 })),
+        baitStock: selectedConsumables ? 48 : consumables && !uniformBaits ? 102 : empty ? 0 : 12,
+        chumStock: fullConsumables ? 22 : selectedConsumables ? 14 : empty || consumables ? 0 : 12 },
       panel: { mode: ["assembly", "removal", "save"].includes(state) ? "assembly" : state === "saved" ? "saved-loadout" : "loadout",
         loadout: { mainSlots, auxiliarySlots: [slot("handChum", "Прикормка рукою", items[5], 0), slot("net", "Підсака", items[6], 0),
           slot("delivery", "Кораблик", items[7], 0), slot("gasMask", "Протигаз", null, 0)] },

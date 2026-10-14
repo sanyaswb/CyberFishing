@@ -12,6 +12,7 @@ export class UiCatalogDocumentScope {
   get activeElement() { return this.#document.activeElement; }
   get fullscreenElement() { return null; }
   createElement(tag) { return this.#document.createElement(tag); }
+  createElementNS(namespace, tag) { return this.#document.createElementNS(namespace, tag); }
   querySelector(selector) { return this.body.querySelector(selector); }
   querySelectorAll(selector) { return this.body.querySelectorAll(selector); }
   getElementById(id) { return this.body.querySelector(`[id="${id}"]`); }

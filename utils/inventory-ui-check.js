@@ -32,6 +32,8 @@ const UI_SCRIPT_ORDER = Object.freeze([
   ["inventory_item_parameters_renderer.js", "src/game/presentation/inventory/inventory_item_parameters_renderer.js"],
   ["inventory_item_card_renderer.js", "src/game/presentation/inventory/inventory_item_card_renderer.js"],
   ["inventory_header_renderer.js", "src/game/presentation/inventory/inventory_header_renderer.js"],
+  ["inventory_load_renderer.js", "src/game/presentation/inventory/inventory_load_renderer.js"],
+  ["inventory_load_meter_config.js", "src/game/presentation/inventory/inventory_load_meter_config.js"],
   ["inventory_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js"],
   ["inventory_assembly_editor_renderer.js", "src/game/presentation/inventory/inventory_assembly_editor_renderer.js"],
   ["inventory_saved_loadout_preview_renderer.js", "src/game/presentation/inventory/inventory_saved_loadout_preview_renderer.js"],
@@ -1055,9 +1057,12 @@ class InventoryStaticContractCheck {
     assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__placeholder").length, 2,
       "unset consumables use vector placeholders");
     const headerDom = new sandbox.InventoryDomFactory(document);
+    const loadRenderer = new sandbox.InventoryLoadRenderer({ domFactory: headerDom,
+      resourceMeterRenderer: new sandbox.InventoryResourceMeterRenderer({ domFactory: headerDom }),
+      config: sandbox.INVENTORY_LOAD_METER_CONFIG });
     const headerRenderer = new sandbox.InventoryHeaderRenderer({ domFactory: headerDom,
       closeButtonRenderer: new sandbox.UiCloseButtonRenderer({ domFactory: headerDom }),
-      autoSwitchRenderer: new sandbox.UiAutoSwitchRenderer({ domFactory: headerDom }) });
+      autoSwitchRenderer: new sandbox.UiAutoSwitchRenderer({ domFactory: headerDom }), loadRenderer });
     let toggled = null;
     const selectedHeader = headerRenderer.render({ loadLabel: "Load", loadValue: 1, loadUnit: "kg",
       activeBaits: [{ name: "Worm", imageUrl: "assets/worm.svg" }],
@@ -1065,11 +1070,38 @@ class InventoryStaticContractCheck {
       { autoBait: true, autoChum: false }, { onAutoBaitChange: (value) => { toggled = value; } });
     assert.strictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__placeholder").length, 0,
       "selected item artwork replaces both category illustrations");
-    assert.deepStrictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__count").map((node) => node.textContent), ["17", "8"]);
+    assert.strictEqual(this.#findByClass(selectedHeader, "inventory-header__load"), selectedHeader.children[1],
+      "the load scale belongs to the header's separate lower row");
+    assert.strictEqual(this.#findAllByClass(selectedHeader.children[0], "inventory-load").length, 0,
+      "the upper row remains available for consumables and close");
+    const loadScale = loadRenderer.create();
+    loadRenderer.update(loadScale, { loadLabel: "Load", loadValue: 1, loadUnit: "kg" });
+    const loadMeter = this.#findByClass(loadScale, "inventory-resource-meter");
+    assert.strictEqual(loadMeter.style.getPropertyValue("--inventory-resource-percent"), "1%",
+      "one kilogram fills one percent of the owner's fixed 100kg scale");
+    assert.strictEqual(this.#findByClass(loadScale, "inventory-load__value").textContent, "1 kg");
+    loadRenderer.update(loadScale, { loadLabel: "Load", loadValue: 120, loadUnit: "kg" });
+    assert.strictEqual(loadMeter.style.getPropertyValue("--inventory-resource-percent"), "100%");
+    assert.strictEqual(this.#findByClass(loadScale, "inventory-resource-meter"), loadMeter,
+      "load changes retain the shared meter node");
+    assert.deepStrictEqual(this.#findAllByClass(selectedHeader, "inventory-toggle__count").map((node) => node.textContent), ["17", "1"],
+      "automatic mode shows reserve; manual mode shows the equipped portion");
     const selectedSwitch = this.#findById(selectedHeader, "inventory-auto-bait");
     assert(selectedSwitch.checked && selectedSwitch.getAttribute("aria-label").includes("17"));
     selectedSwitch.checked = false; selectedSwitch.emit("change");
     assert.strictEqual(toggled, false, "the combined pill keeps the authoritative settings callback");
+    const baitPickView = this.#loadoutViewModel();
+    baitPickView.header.baitSlots = [{ available: true, item: null }, { available: true, item: null }];
+    ui.render(baitPickView);
+    const baitButtons = this.#findAllByClass(this.#findByClass(ui.rootNode, "inventory-auto-settings"), "inventory-toggle__item");
+    baitButtons[1].click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 1 });
+    assert.strictEqual(this.#findById(ui.rootNode, "inventory-auto-bait").checked, false,
+      "selecting bait does not toggle automatic mode");
+    assert.ok(baitButtons[0].classList.contains("inventory-toggle__item--available"));
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle--multiple").length, 1);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__placeholder").length, 3);
+    ui.render(currentView);
     assert.strictEqual(dispatched[0].type, sandbox.InventoryActionType.OPEN);
     dispatched.length = 0;
 
@@ -1181,8 +1213,32 @@ class InventoryStaticContractCheck {
     ui.render(currentView);
     assert.strictEqual(this.#findByClass(mainNode, "inventory-section-tabs"), sectionTabs,
       "re-rendering the inventory keeps the tab bar identity");
+    ui.render(sectionView("keepnet"));
+    ui.close();
+    this.#findByClass(document.body, "inventory-backpack-button").click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.SECTION_SELECT, sectionId: "backpack" });
+    ui.render(sectionView("keepnet"));
+    this.#findByClass(document.body, "inventory-backpack-button").click();
+    assert.ok(ui.isOpen, "the backpack shortcut switches away from an open keepnet");
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.SECTION_SELECT, sectionId: "backpack" });
+    ui.render(currentView);
 
     // The rod condition meter appears only on an equipped rod with an available condition.
+    const stableHeader = this.#findByClass(ui.rootNode, "inventory-header");
+    const stableSwitch = this.#findById(ui.rootNode, "inventory-auto-bait");
+    const switchedView = { ...currentView, settings: { autoBait: true, autoChum: false } };
+    ui.render(switchedView);
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-header"), stableHeader,
+      "automatic-mode changes retain the header so CSS transitions can run");
+    assert.strictEqual(this.#findById(ui.rootNode, "inventory-auto-bait"), stableSwitch,
+      "automatic-mode changes retain the focused checkbox and its bindings");
+    const feedbackView = { ...currentView, equipmentFeedback: { revision: 1, slotId: "rod", instanceId: "rod-active" } };
+    ui.render(feedbackView);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-slot--equipped-flash").length, 1);
+    ui.render(feedbackView);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-slot--equipped-flash").length, 0,
+      "an unchanged equipment event never replays its one-time green feedback");
+    ui.render(currentView);
     const primaryOf = () => this.#findByClass(ui.rootNode, "inventory-loadout-panel__primary");
     assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-loadout-panel__rod-condition").length, 0);
     assert.ok(!primaryOf().classList.contains("inventory-loadout-panel__primary--single"));
@@ -2563,6 +2619,7 @@ class InventoryStaticContractCheck {
     return [
       { type: actions.OPEN },
       { type: actions.CLOSE },
+      { type: actions.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 0 },
       { type: actions.CATEGORY_SELECT, categoryId: "all" },
       { type: actions.SUBFILTER_TOGGLE, filterId: "hooks", enabled: true },
       { type: actions.SORT_CRITERION_SELECT, criterionId: "rarity" },

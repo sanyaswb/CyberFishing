@@ -10,6 +10,8 @@ import { InventoryRodRemovalRenderer } from "../../game/presentation/inventory/i
 import { InventoryBalanceParameterResolver } from "../../game/presentation/inventory/inventory_balance_parameter_resolver.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
+import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
+import { INVENTORY_LOAD_METER_CONFIG } from "../../game/presentation/inventory/inventory_load_meter_config.js";
 import { InventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
 import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inventory_item_card_renderer.js";
 import { InventoryItemParametersRenderer } from "../../game/presentation/inventory/inventory_item_parameters_renderer.js";
@@ -141,6 +143,8 @@ export class InventoryUiBootstrap {
       new InventoryHeaderRenderer({ domFactory: dom,
         closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: dom }),
         autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }),
+        loadRenderer: new InventoryLoadRenderer({ domFactory: dom,
+          resourceMeterRenderer: resolvedResourceMeterRenderer, config: INVENTORY_LOAD_METER_CONFIG }),
       });
     const resolvedLoadoutRenderer =
       loadoutRenderer ||

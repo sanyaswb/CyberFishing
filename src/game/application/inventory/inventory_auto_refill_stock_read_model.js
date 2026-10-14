@@ -28,4 +28,18 @@ export class InventoryAutoRefillStockReadModel {
     for (const signature of signatures.values()) count += this.#inventoryPort.countExact(signature);
     return count;
   }
+
+  shareReserve(items) {
+    if (!items.length) return false;
+    let firstKey;
+    for (const reference of items) {
+      const raw = reference?.instanceId ? this.#repository.get(reference.instanceId) : null;
+      const signature = raw ? this.#signaturePolicy.create(raw) : null;
+      if (!signature) return false;
+      const key = this.#signaturePolicy.toKey(signature);
+      if (firstKey !== undefined && key !== firstKey) return false;
+      firstKey = key;
+    }
+    return true;
+  }
 }
