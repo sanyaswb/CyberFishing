@@ -57,7 +57,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [064](064-house-dev-config/spec.md) | House DevTools apply live aquarium visual edits; shared DEV config validation and item catalog | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner check pending | — |
 | [065](065-dev-house-override-handoff/spec.md) | One DEV override handoff between the location and the embedded House replaces the separate visual/time messages | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner check pending | — |
 | [066](066-house-review-cleanup/spec.md) | House review cleanup: view texts in HOUSE_LABELS, plural fish counters, token colors/layers, fish canvas resize and shared visual validation, HouseView split | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
-| [067](067-inventory-sections/spec.md) | Grey unit-scaled equipment container (rod condition, adaptive dependent column, four wells) and icon section tabs as a visual stub; step 2 section switching planned | Step 1 implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
+| [067](067-inventory-sections/spec.md) | Grey unit-scaled equipment container (rod condition, adaptive dependent column, four wells), icon section tabs and section switching: equipment, backpack summary, keepnet as an inventory section | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
 
 ## Archived
 

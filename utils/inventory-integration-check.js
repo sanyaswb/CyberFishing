@@ -407,6 +407,15 @@ vm.runInContext(
     rodUx.equipmentState.getRootInstanceId("rod") === null && lineMeters(rodUx, "ux-line") === 8 &&
     rodUx.repository.require("ux-bait").location.kind === "ATTACHED",
     "saving without a name assigns one automatically and preserves exact roots, nested bait and line length");
+  // Spec 067: the inventory section is navigation state; it survives closing and clears a highlighted slot.
+  assertIntegration(rodUx.facade.getViewModel().sections.activeId === "equipment" &&
+    rodUx.facade.getViewModel().sections.backpackItemCount > 0, "the inventory opens at equipment with a backpack count");
+  dispatch(rodUx, InventoryActionType.SECTION_SELECT, { sectionId: "keepnet" });
+  dispatch(rodUx, InventoryActionType.CLOSE);
+  dispatch(rodUx, InventoryActionType.OPEN);
+  assertIntegration(rodUx.facade.getViewModel().sections.activeId === "keepnet" &&
+    rodUx.commands.getUiState().highlightedEquipmentSlotId === null, "the selected section persists for the session");
+  dispatch(rodUx, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
   dispatch(rodUx, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
   const savedRodCard = rodUx.facade.getViewModel().inventory.items.find((item) => item.loadoutId === savedRodUx.loadoutId);
   assertIntegration(savedRodCard.icon !== "🧰" && savedRodCard.attachments.length === 2 &&

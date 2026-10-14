@@ -1,4 +1,5 @@
 import { InventoryActionType } from "./inventory_action_type.js";
+import { INVENTORY_SECTIONS } from "./inventory_sections.js";
 
 export class InventoryActionContract {
   static assert(action) {
@@ -18,6 +19,11 @@ export class InventoryActionContract {
         break;
       case types.CATEGORY_SELECT:
         this.#requireId(action.categoryId, "categoryId");
+        break;
+      case types.SECTION_SELECT:
+        if (!INVENTORY_SECTIONS.items.some((section) => section.id === action.sectionId)) {
+          throw new RangeError(`Unknown inventory section: ${action.sectionId}`);
+        }
         break;
       case types.SUBFILTER_TOGGLE:
         this.#requireId(action.filterId, "filterId");

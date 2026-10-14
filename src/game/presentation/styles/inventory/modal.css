@@ -62,6 +62,13 @@
   grid-area: tabs;
 }
 
+/* Every section keeps its hosts; only the active section's hosts are visible (spec 067). */
+.inventory-main__section {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
 @container ui-surface (max-width: 1180px) {
   .inventory-main {
     grid-template-columns: minmax(370px, 0.9fr) minmax(0, 1.35fr);
@@ -99,6 +106,10 @@
 
   .inventory-main__left {
     container-type: inline-size;
+  }
+
+  .inventory-main__section {
+    height: auto;
   }
 
   .inventory-main__right {

@@ -1,7 +1,7 @@
 const formatNumber = (value) => String(Math.round(value * 1000) / 1000).replace(".", ",");
 
 export const KEEPNET_LABELS = Object.freeze({
-  open: "Відкрити садок", title: "Садок", close: "Закрити садок",
+  open: "Відкрити садок", title: "Садок",
   help: "Як користуватися садком",
   capacity: "Місткість садка", back: "← Усі види",
   note: "У садку немає прикормки. Живці мають власний відлік життя. Натисніть на вид, щоб оглянути кожну рибу.",

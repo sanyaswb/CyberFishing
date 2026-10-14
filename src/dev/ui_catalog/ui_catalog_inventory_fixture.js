@@ -6,6 +6,7 @@ export class UiCatalogInventoryFixture {
   #model;
   #state = "normal";
   #value = 67;
+  #sectionId = "equipment";
   constructor({ actionTypes, rarityVisualResolver }) {
     this.#actionTypes = actionTypes;
     this.#rarityResolver = rarityVisualResolver;
@@ -37,6 +38,7 @@ export class UiCatalogInventoryFixture {
         slot("terminalLine", "Ліска", items[2], 2), slot("tackle", "Оснастка", null, 3), slot("float", "Поплавок", items[3], 4)];
     this.#model = {
       isOpen: true, settings: { autoBait: true, autoChum: false },
+      sections: { activeId: this.#sectionId, backpackItemCount: empty ? 0 : items.reduce((total, item) => total + item.quantity, 0) },
       header: { loadValue: 4.5, loadUnit: "кг", activeBaits: empty ? [] : [items[4]], activeChums: empty ? [] : [items[5]], baitStock: empty ? 0 : 12, chumStock: empty ? 0 : 12 },
       panel: { mode: ["assembly", "removal", "save"].includes(state) ? "assembly" : state === "saved" ? "saved-loadout" : "loadout",
         loadout: { mainSlots, auxiliarySlots: [slot("handChum", "Прикормка рукою", items[5], 0), slot("net", "Підсака", items[6], 0),
@@ -71,7 +73,10 @@ export class UiCatalogInventoryFixture {
     else if (this.#state === "error") return { warning: "Демонстраційна помилка: дія недоступна", refresh: false };
     else if (action.type === types.AUTO_BAIT_CHANGE) model.settings.autoBait = action.enabled;
     else if (action.type === types.AUTO_CHUM_CHANGE) model.settings.autoChum = action.enabled;
-    else if (action.type === types.CATEGORY_SELECT) {
+    else if (action.type === types.SECTION_SELECT) {
+      this.#sectionId = action.sectionId;
+      model.sections.activeId = action.sectionId;
+    } else if (action.type === types.CATEGORY_SELECT) {
       for (const category of inventory.categories) category.selected = category.id === action.categoryId;
     } else if (action.type === types.INVENTORY_ITEM_ACTIVATE) inventory.selectedInstanceId = action.instanceId;
     else if (action.type === types.INVENTORY_ITEM_LONG_PRESS) {

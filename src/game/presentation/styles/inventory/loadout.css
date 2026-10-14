@@ -110,6 +110,33 @@
   height: 100%;
 }
 
+/* The backpack section reuses the container with one cell: the backpack illustration and the carried item count. */
+.inventory-backpack-summary {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  place-items: center;
+  min-height: 0;
+  padding: var(--inventory-equipment-inset);
+  border-radius: var(--inventory-slot-radius);
+  background: var(--inventory-equipment-cell);
+}
+
+.inventory-backpack-summary__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.inventory-backpack-summary__count {
+  color: var(--inventory-equipment-tab-icon-active);
+  font-size: calc(var(--inventory-equipment-unit) * 0.11);
+  font-variant-numeric: tabular-nums;
+}
+
 .inventory-loadout-panel .inventory-item-card {
   border-radius: var(--inventory-slot-radius);
 }

@@ -147,6 +147,10 @@ export class InventoryViewModelFactory {
     );
     return {
       isOpen: uiState.isOpen === true,
+      sections: {
+        activeId: uiState.activeSectionId,
+        backpackItemCount: accessibleRawItems.reduce((total, item) => total + Math.max(1, Number(item.quantity) || 1), 0),
+      },
       header: {
         loadValue: Number(this.#loadValueProvider?.() || 0),
         loadUnit: "кг",

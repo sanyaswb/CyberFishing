@@ -1,5 +1,5 @@
 // Navigation state of the inventory UI: open/closed, category, filters, sorting, selection, highlighted
-// equipment slot, panel mode (loadout or assembly editor) and the pending placement order. Commands change it
+// equipment slot, panel mode (loadout or assembly editor), the visible section and the pending placement order. Commands change it
 // only through these named transitions; snapshot() is what view models read.
 export class InventoryUiState {
   #isOpen = false;
@@ -15,6 +15,8 @@ export class InventoryUiState {
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
   #rodRemovalStep = null;
+  // Equipment, backpack or keepnet (spec 067). It survives closing for the rest of the session.
+  #activeSectionId = "equipment";
 
   constructor({ sortConfig } = {}) {
     this.#sortCriterionIds = [...(sortConfig?.defaults?.criterionIds || [])];
@@ -36,6 +38,7 @@ export class InventoryUiState {
       editingRootInstanceId: this.#editingRootInstanceId,
       viewingLoadoutId: this.#viewingLoadoutId,
       rodRemovalStep: this.#rodRemovalStep,
+      activeSectionId: this.#activeSectionId,
     });
   }
 
@@ -46,6 +49,12 @@ export class InventoryUiState {
   get viewingLoadoutId() { return this.#viewingLoadoutId; }
   get placementOrderKey() { return this.#placementOrderKey; }
   get rodRemovalStep() { return this.#rodRemovalStep; }
+  get activeSectionId() { return this.#activeSectionId; }
+
+  selectSection(sectionId) {
+    this.#activeSectionId = sectionId;
+    this.#highlightedEquipmentSlotId = null;
+  }
 
   open() {
     this.#isOpen = true;

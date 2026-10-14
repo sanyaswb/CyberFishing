@@ -1,97 +1,85 @@
 import { inventorySlotIconPath } from "../inventory/inventory_slot_icons.js";
 
-export class KeepnetUI {
+// The inventory's keepnet section (spec 067): the summary (illustration, occupancy, status, help) belongs in the
+// inventory's left container and the content (groups, details, filters, fish cards) in its right host. The toolbar
+// keepnet button opens the inventory at this section.
+export class KeepnetSectionView {
   #document;
   #liveBait;
-  #inventoryUI;
   #model;
   #cards;
   #meters;
   #labels;
+  #openSection;
+  #toggleSection;
   #filter = { kind: "all", speciesId: "all" };
   #detailSpecies = null;
   #pendingRelease = null;
   #notice = "";
-  #root;
   #button;
-  #closeButton;
-  #closeButtons;
+  #summary;
+  #content;
   #helpButton;
   #helpText;
   #back;
   #heading;
-  #right;
-  #main;
   #kind;
   #list;
   #capacity;
   #count;
   #species;
   #status;
-  #lastFocus = null;
-  #open = false;
+  #visible = false;
   #signature = "";
   #speciesSignature = "";
   #rendered = new Map();
   #cardFocusables = [];
 
-  constructor({ documentRef, liveBait, inventoryUI, model, cards, labels, resourceMeterRenderer, closeButtonRenderer,
-    mountNode = documentRef.body, buttonMountNode = mountNode }) {
+  constructor({ documentRef, liveBait, model, cards, labels, resourceMeterRenderer, openSection, toggleSection,
+    buttonMountNode }) {
     this.#document = documentRef;
     this.#liveBait = liveBait;
-    this.#inventoryUI = inventoryUI;
     this.#model = model;
     this.#cards = cards;
     this.#meters = resourceMeterRenderer;
     this.#labels = labels;
-    this.#closeButtons = closeButtonRenderer;
+    this.#openSection = openSection;
+    this.#toggleSection = toggleSection;
     this.#button = this.#el("button", "keepnet-button game-toolbar-button game-toolbar-button--keepnet");
     this.#button.append(this.#icon("keepnet-button__icon"));
     this.#button.type = "button";
     this.#button.title = labels.open;
     this.#button.setAttribute("aria-label", labels.open);
     this.#button.addEventListener("click", this.#toggle);
-    this.#root = this.#el("div", "keepnet-modal");
-    this.#root.setAttribute("role", "dialog");
-    this.#root.setAttribute("aria-modal", "true");
-    this.#root.setAttribute("aria-label", labels.title);
-    this.#root.setAttribute("aria-hidden", "true");
-    const header = this.#el("header", "keepnet-modal__header");
-    header.append(this.#el("h2", "keepnet-modal__title", labels.title));
-    const headerActions = this.#el("div", "keepnet-modal__header-actions");
-    this.#helpButton = this.#el("button", "keepnet-modal__help", "?");
+    this.#summary = this.#el("section", "keepnet-section__summary");
+    this.#summary.setAttribute("aria-label", labels.title);
+    this.#helpButton = this.#el("button", "keepnet-section__help", "?");
     this.#helpButton.type = "button";
     this.#helpButton.setAttribute("aria-label", labels.help);
     this.#helpButton.setAttribute("aria-expanded", "false");
     this.#helpButton.setAttribute("aria-controls", "keepnet-help");
     this.#helpButton.addEventListener("click", () => this.#setHelpVisible(true));
-    this.#helpText = this.#el("div", "keepnet-modal__help-text", `${labels.status}\n${labels.note}`);
+    this.#helpText = this.#el("div", "keepnet-section__help-text", `${labels.status}\n${labels.note}`);
     this.#helpText.id = "keepnet-help";
     this.#helpText.hidden = true;
     this.#helpText.setAttribute("role", "note");
-    this.#closeButton = this.#closeButtons.create({ className: "keepnet-modal__close",
-      label: labels.close, onClose: () => this.close() });
-    headerActions.append(this.#helpButton, this.#closeButton);
-    header.append(headerActions, this.#helpText);
-    const main = this.#el("main", "keepnet-modal__main");
-    this.#main = main;
-    const left = this.#el("section", "keepnet-modal__left");
-    const visual = this.#el("div", "keepnet-modal__visual");
-    visual.append(this.#icon("keepnet-modal__icon", labels.title));
+    const visual = this.#el("div", "keepnet-section__visual");
+    visual.append(this.#icon("keepnet-section__icon", labels.title), this.#helpButton, this.#helpText);
     this.#capacity = this.#meters.create({ id: "keepnet-capacity", percent: 0,
       remainingPercent: 100, label: labels.capacity }, { variant: "summary", showIcon: false });
-    this.#capacity.classList.add("keepnet-modal__capacity");
-    this.#count = this.#el("p", "keepnet-modal__count");
-    this.#status = this.#el("p", "keepnet-modal__status");
+    this.#capacity.classList.add("keepnet-section__capacity");
+    this.#count = this.#el("p", "keepnet-section__count");
+    this.#status = this.#el("p", "keepnet-section__status");
     this.#status.setAttribute("role", "status");
-    left.append(visual, this.#count, this.#capacity, this.#status);
-    this.#right = this.#el("section", "keepnet-modal__right");
-    this.#back = this.#el("button", "keepnet-modal__back", labels.back);
+    this.#summary.append(visual, this.#count, this.#capacity, this.#status);
+    this.#content = this.#el("section", "keepnet-section__content");
+    this.#content.setAttribute("aria-label", labels.title);
+    this.#back = this.#el("button", "keepnet-section__back", labels.back);
     this.#back.type = "button";
     this.#back.addEventListener("click", this.#goBack);
-    this.#heading = this.#el("h3", "keepnet-modal__section-title");
-    const filters = this.#el("div", "keepnet-modal__filters");
-    this.#kind = this.#el("select", "keepnet-modal__filter");
+    this.#heading = this.#el("h3", "keepnet-section__section-title");
+    const filters = this.#el("div", "keepnet-section__filters");
+    this.#kind = this.#el("select", "keepnet-section__filter");
     this.#kind.setAttribute("aria-label", labels.kindLabel);
     for (const [value, label] of labels.kinds) this.#kind.append(this.#option(value, label));
     this.#kind.value = "all";
@@ -100,7 +88,7 @@ export class KeepnetUI {
       this.#pendingRelease = null;
       this.refresh();
     });
-    this.#species = this.#el("select", "keepnet-modal__filter");
+    this.#species = this.#el("select", "keepnet-section__filter");
     this.#species.setAttribute("aria-label", labels.speciesLabel);
     this.#species.addEventListener("change", () => {
       this.#filter.speciesId = this.#species.value;
@@ -109,19 +97,32 @@ export class KeepnetUI {
       this.refresh();
     });
     filters.append(this.#kind, this.#species);
-    this.#list = this.#el("div", "keepnet-modal__list");
-    this.#right.append(this.#back, this.#heading, filters, this.#list);
-    main.append(left, this.#right);
-    this.#root.append(header, main);
-    this.#root.addEventListener("keydown", this.#handleKey);
+    this.#list = this.#el("div", "keepnet-section__list");
+    this.#content.append(this.#back, this.#heading, filters, this.#list);
+    this.#summary.addEventListener("keydown", this.#handleKey);
+    this.#content.addEventListener("keydown", this.#handleKey);
     buttonMountNode.appendChild(this.#button);
-    mountNode.appendChild(this.#root);
     this.refresh();
   }
-  get isOpen() { return this.#open; }
+  get summaryNode() { return this.#summary; }
+  get contentNode() { return this.#content; }
+  // Game timers refresh the keepnet only while its section is visible.
+  get isOpen() { return this.#visible; }
+  setVisible(visible) {
+    if (visible === this.#visible) return;
+    this.#visible = visible;
+    if (visible) {
+      this.#notice = "";
+      this.#liveBait.advance();
+      this.refresh();
+    } else {
+      this.#setHelpVisible(false);
+      this.#pendingRelease = null;
+    }
+  }
   showCatchResult(result) {
     if (result.ok && !result.notice) return;
-    this.open();
+    this.#openSection();
     this.#notice = result.ok ? this.#labels.fallback : this.#labels.error(result.reason);
     if (result.fishId) {
       const fish = this.#liveBait.getView().liveBaits.find((entry) => entry.id === result.fishId);
@@ -132,30 +133,8 @@ export class KeepnetUI {
     }
     this.refresh();
   }
-  open() {
-    if (this.#open) return;
-    this.#inventoryUI?.close();
-    this.#lastFocus = this.#document.activeElement;
-    this.#open = true;
-    this.#notice = "";
-    this.#root.classList.add("keepnet-modal--open");
-    this.#root.removeAttribute("aria-hidden");
-    this.#liveBait.advance();
-    this.refresh();
-    this.#closeButton.focus();
-  }
-  close() {
-    if (!this.#open) return;
-    this.#open = false;
-    this.#setHelpVisible(false);
-    this.#pendingRelease = null;
-    this.#root.classList.remove("keepnet-modal--open");
-    this.#root.setAttribute("aria-hidden", "true");
-    this.#lastFocus?.focus?.();
-    this.#lastFocus = null;
-  }
   refresh() {
-    if (!this.#open && this.#signature) return;
+    if (!this.#visible && this.#signature) return;
     const model = this.#model.build(this.#liveBait.getView(), this.#filter);
     this.#filter.speciesId = model.speciesId;
     const group = model.groups.find((entry) => entry.id === this.#detailSpecies);
@@ -187,8 +166,7 @@ export class KeepnetUI {
       const active = this.#document.activeElement;
       const focusKey = active?.dataset?.keepnetFocus;
       const hadCardFocus = this.#cardFocusables.includes(active);
-      const scroll = this.#right.scrollTop;
-      const mobileScroll = this.#main.scrollTop;
+      const scroll = this.#content.scrollTop;
       this.#rendered.clear();
       const rendered = group ? group.fish.map((fish) => {
         const card = this.#cards.fish(fish, { aquarium: model.aquarium,
@@ -198,34 +176,33 @@ export class KeepnetUI {
       }) : model.groups.map((item) => this.#cards.group(item, this.#openSpecies));
       this.#cardFocusables = rendered.flatMap((card) => card.focusables);
       this.#list.replaceChildren(...(rendered.length ? rendered.map((card) => card.element) :
-        [this.#el("p", "keepnet-modal__empty", this.#labels.empty)]));
+        [this.#el("p", "keepnet-section__empty", this.#labels.empty)]));
       this.#signature = signature;
-      this.#right.scrollTop = scroll;
-      this.#main.scrollTop = mobileScroll;
+      this.#content.scrollTop = scroll;
       if (hadCardFocus) (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === focusKey) ||
-        (group ? this.#back : this.#closeButton)).focus();
-      else if (active === this.#back && !group) this.#closeButton.focus();
+        (group ? this.#back : this.#kind)).focus();
+      else if (active === this.#back && !group) this.#kind.focus();
     }
     if (group) for (const fish of group.fish) this.#rendered.get(fish.id)?.update(fish);
   }
   dispose() {
-    this.close();
+    this.setVisible(false);
     this.#setHelpVisible(false);
     this.#button.removeEventListener("click", this.#toggle);
-    this.#root.removeEventListener("keydown", this.#handleKey);
-    this.#closeButtons.dispose(this.#closeButton);
-    this.#button.remove(); this.#root.remove();
+    this.#summary.removeEventListener("keydown", this.#handleKey);
+    this.#content.removeEventListener("keydown", this.#handleKey);
+    this.#button.remove(); this.#summary.remove(); this.#content.remove();
     this.#rendered.clear(); this.#cardFocusables = [];
   }
   #openSpecies = (id) => {
     this.#detailSpecies = id; this.#pendingRelease = null;
-    this.refresh(); this.#right.scrollTop = 0; this.#main.scrollTop = 0; this.#back.focus();
+    this.refresh(); this.#content.scrollTop = 0; this.#back.focus();
   };
   #goBack = () => {
     const id = this.#detailSpecies;
     this.#detailSpecies = null; this.#pendingRelease = null;
-    this.refresh(); this.#right.scrollTop = 0; this.#main.scrollTop = 0;
-    (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === `species:${id}`) || this.#closeButton).focus();
+    this.refresh(); this.#content.scrollTop = 0;
+    (this.#cardFocusables.find((el) => el.dataset.keepnetFocus === `species:${id}`) || this.#kind).focus();
   };
   #act = (fish, action) => {
     if (action === "release" || action === "cancel-release") {
@@ -281,22 +258,14 @@ export class KeepnetUI {
     // A second press on ? dismisses the hint without reopening it in the button's handler.
     if (this.#helpButton.contains(event.target)) event.stopPropagation();
   };
-  #toggle = () => this.#open ? this.close() : this.open();
+  #toggle = () => this.#toggleSection();
+  // Escape steps back inside the section (hint, pending release, species details); otherwise it is not handled here.
   #handleKey = (event) => {
-    if (event.key === "Escape") {
-      event.preventDefault(); event.stopPropagation();
-      if (!this.#helpText.hidden) this.#setHelpVisible(false);
-      else if (this.#pendingRelease) { this.#pendingRelease = null; this.refresh(); }
-      else if (this.#detailSpecies) this.#goBack();
-      else this.close();
-    } else if (event.key === "Tab") {
-      const controls = [this.#helpButton, this.#closeButton, ...(!this.#back.hidden ? [this.#back] : []),
-        this.#kind, this.#species, ...this.#cardFocusables];
-      const index = controls.indexOf(this.#document.activeElement);
-      if (index < 0 || (event.shiftKey && index === 0) || (!event.shiftKey && index === controls.length - 1)) {
-        event.preventDefault();
-        controls[event.shiftKey ? controls.length - 1 : 0].focus();
-      }
-    }
+    if (event.key !== "Escape") return;
+    if (!this.#helpText.hidden) this.#setHelpVisible(false);
+    else if (this.#pendingRelease) { this.#pendingRelease = null; this.refresh(); }
+    else if (this.#detailSpecies) this.#goBack();
+    else return;
+    event.preventDefault(); event.stopPropagation();
   };
 }

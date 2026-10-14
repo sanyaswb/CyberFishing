@@ -1,189 +1,170 @@
-/* Keepnet dialog, help popover and catch cards. Toolbar/close appearance is shared. */
+/* Keepnet section of the inventory (spec 067): summary on the left, groups/details on the right, catch cards.
+   Toolbar appearance and the shared resource meter are reused. */
 .keepnet-button__icon { width: 66%; height: 66%; object-fit: contain; pointer-events: none; }
-.keepnet-modal {
+
+.keepnet-section__summary,
+.keepnet-section__content {
   --keepnet-list-gap: 10px;
   --keepnet-image-inset: 3px;
   --keepnet-visual-inset: 14px;
-  position: fixed;
-  inset: 0;
-  z-index: var(--ui-layer-panel);
-  display: none;
-  flex-direction: column;
   box-sizing: border-box;
+  height: 100%;
   min-width: 0;
-  padding: 15px 22px;
-  background: linear-gradient(#020a0eef, #081a1ef7);
-  color: #edf8f4;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: var(--inventory-panel-radius, 10px);
+  background: var(--inventory-equipment-surface);
+  color: #ececec;
   font: 15px/1.45 system-ui, sans-serif;
 }
-.keepnet-modal--open { display: grid; grid-template-rows: auto minmax(0, 1fr); }
-.keepnet-modal *, .keepnet-modal *::before, .keepnet-modal *::after { box-sizing: border-box; }
-.keepnet-modal [hidden] { display: none; }
-.keepnet-modal__header {
+.keepnet-section__summary [hidden],
+.keepnet-section__content [hidden] { display: none; }
+
+.keepnet-section__visual {
   position: relative;
-  display: flex;
-  flex: none;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #457975;
+  display: grid;
+  place-items: center;
+  height: clamp(150px, calc(var(--ui-logical-height, 100dvh) * .32), 300px);
+  overflow: visible;
+  border-radius: var(--inventory-panel-radius, 10px);
+  background: var(--inventory-equipment-cell);
 }
-.keepnet-modal__title { margin: 0; font-size: 1.6rem; }
-.keepnet-modal__header-actions { display: flex; align-items: center; gap: 10px; }
-.keepnet-modal__help {
+.keepnet-section__icon { display: block; width: min(100%, 220px); height: 100%; padding: var(--keepnet-visual-inset); object-fit: contain; }
+.keepnet-section__help {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid #73aaa0;
+  border: 1px solid var(--inventory-equipment-tab-border);
   border-radius: 50%;
-  background: rgba(115, 170, 160, 0.1);
-  color: #b9eee0;
+  background: var(--inventory-equipment-panel);
+  color: var(--inventory-equipment-tab-icon-active);
   font: 700 20px/1 system-ui, sans-serif;
   cursor: pointer;
   touch-action: manipulation;
 }
-.ui-surface--desktop-hover .keepnet-modal__help:hover { background: rgba(115, 170, 160, 0.24); }
-.keepnet-modal__help-text {
+.ui-surface--desktop-hover .keepnet-section__help:hover { background: var(--inventory-equipment-tab-active); }
+.keepnet-section__help-text {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: 52px;
+  right: 8px;
   z-index: var(--ui-layer-tooltip);
   width: min(320px, calc(var(--ui-logical-width, 100vw) - 32px));
   padding: 12px 14px;
-  border: 1px solid #73aaa0;
+  border: 1px solid var(--inventory-equipment-tab-border);
   border-radius: 12px;
-  background: #102728;
-  color: #d5eee6;
+  background: var(--inventory-equipment-panel);
+  color: #dedede;
   box-shadow: 0 8px 24px #0008;
   font-size: 13px;
   line-height: 1.55;
   white-space: pre-line;
 }
-.keepnet-modal__help:focus-visible,
-.keepnet-modal__filter:focus-visible,
-.keepnet-modal__group:focus-visible,
-.keepnet-modal__back:focus-visible,
-.keepnet-modal__action:focus-visible { outline: 2px solid #fce89f; outline-offset: 2px; }
-.keepnet-modal__main {
-  display: grid;
-  grid-template-columns: minmax(240px, .85fr) minmax(0, 1.9fr);
-  gap: 18px;
-  flex: 1;
-  min-height: 0;
-  padding-top: 15px;
-}
-.keepnet-modal__left, .keepnet-modal__right {
-  min-width: 0;
-  overflow-y: auto;
-  padding: 16px;
-  border: 1px solid #3a6662;
-  background: #102728;
-  border-radius: 7px;
-}
-.keepnet-modal__visual {
-  display: grid;
-  place-items: center;
-  height: clamp(150px, calc(var(--ui-logical-height, 100dvh) * .32), 300px);
-  overflow: hidden;
-  background: radial-gradient(#255d58, #0a181b);
-  border: 1px solid #4c8c83;
-  border-radius: 7px;
-}
-.keepnet-modal__icon { display: block; width: min(100%, 220px); height: 100%; padding: var(--keepnet-visual-inset); object-fit: contain; }
-.keepnet-modal__count { margin: 12px 0 6px; color: var(--ui-text); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.keepnet-modal__capacity {
+.keepnet-section__help:focus-visible,
+.keepnet-section__filter:focus-visible,
+.keepnet-section__group:focus-visible,
+.keepnet-section__back:focus-visible,
+.keepnet-section__action:focus-visible { outline: 2px solid var(--ui-focus-color); outline-offset: 2px; }
+.keepnet-section__count { margin: 12px 0 6px; color: var(--ui-text); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.keepnet-section__capacity {
   --inventory-parameter-meter-height: 12px;
   padding: 2px;
   overflow: hidden;
-  border: 1px solid var(--ui-border);
+  border: 1px solid var(--inventory-equipment-tab-border);
   border-radius: 999px;
-  background: rgba(var(--ui-surface-rgb), .9);
+  background: var(--inventory-equipment-well);
   pointer-events: auto;
 }
-.keepnet-modal__capacity .inventory-resource-meter__track { border-radius: inherit; }
-.keepnet-modal__section-title { margin: 13px 0; }
-.keepnet-modal__status { color: #b9d7d0; }
-.keepnet-modal__filters { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 16px; }
-.keepnet-modal__filter {
+.keepnet-section__capacity .inventory-resource-meter__track { border-radius: inherit; }
+.keepnet-section__section-title { margin: 13px 0; }
+.keepnet-section__status { color: #c9c9c9; }
+.keepnet-section__filters { display: flex; gap: 9px; flex-wrap: wrap; margin-bottom: 16px; }
+.keepnet-section__filter {
   min-width: 0;
   max-width: 100%;
   min-height: 44px;
   padding: 8px;
-  border: 1px solid #588d86;
+  border: 1px solid var(--inventory-equipment-tab-border);
   border-radius: 4px;
-  background: #123536;
+  background: var(--inventory-equipment-panel);
   color: white;
   font: inherit;
 }
-.keepnet-modal__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: var(--keepnet-list-gap); }
-.keepnet-modal__fish, .keepnet-modal__group {
+.keepnet-section__list { display: grid; align-content: start; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: var(--keepnet-list-gap); }
+.keepnet-section__fish, .keepnet-section__group {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
   padding: 11px;
-  border: 1px solid #467972;
+  border: 1px solid #444;
   border-radius: 8px;
-  background: #173738;
+  background: var(--inventory-equipment-panel);
   color: inherit;
   font: inherit;
   text-align: left;
   overflow-wrap: anywhere;
 }
-.keepnet-modal__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
-.ui-surface--desktop-hover .keepnet-modal__group:hover { background: #214b49; border-color: #94dfd0; }
-.keepnet-modal__group .keepnet-modal__thumbnail { position: relative; flex: 1; min-height: 0; }
-.keepnet-modal__group .keepnet-modal__image { position: absolute; inset: 0; height: 100%; max-height: none; }
-.keepnet-modal__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: radial-gradient(#31625a, #11282a); border-radius: 5px; overflow: hidden; }
-.keepnet-modal__image { display: block; width: 100%; height: 112px; object-fit: cover; object-position: center; padding: var(--keepnet-image-inset); }
-.keepnet-modal__image-fallback { font-size: 3rem; }
-.keepnet-modal__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #b9eee0; color: #092822; font-weight: 800; text-align: center; }
-.keepnet-modal__back, .keepnet-modal__action {
+.keepnet-section__group { position: relative; aspect-ratio: 1; padding-bottom: 38px; cursor: pointer; }
+.ui-surface--desktop-hover .keepnet-section__group:hover { background: var(--inventory-equipment-tab-active); border-color: var(--inventory-equipment-tab-border); }
+.keepnet-section__group .keepnet-section__thumbnail { position: relative; flex: 1; min-height: 0; }
+.keepnet-section__group .keepnet-section__image { position: absolute; inset: 0; height: 100%; max-height: none; }
+.keepnet-section__thumbnail { display: grid; place-items: center; width: 100%; height: 112px; background: var(--inventory-equipment-cell); border-radius: 5px; overflow: hidden; }
+.keepnet-section__image { display: block; width: 100%; height: 112px; object-fit: cover; object-position: center; padding: var(--keepnet-image-inset); }
+.keepnet-section__image-fallback { font-size: 3rem; }
+.keepnet-section__badge { position: absolute; right: 8px; bottom: 8px; min-width: 28px; padding: 2px 7px; border-radius: 6px; background: #d4d4d4; color: #1c1c1c; font-weight: 800; text-align: center; }
+.keepnet-section__back, .keepnet-section__action {
   min-height: 44px;
   max-width: 100%;
   padding: 7px 10px;
-  border: 1px solid #73aaa0;
+  border: 1px solid var(--inventory-equipment-tab-border);
   border-radius: 5px;
-  background: #214841;
-  color: #f2fff9;
+  background: var(--inventory-equipment-cell);
+  color: #f2f2f2;
   font: inherit;
   cursor: pointer;
   overflow-wrap: anywhere;
 }
-.keepnet-modal__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
-.keepnet-modal__fish-rarity { color: #f0dba7; }
-.keepnet-modal__fish-level { color: #b1cbc5; font-size: .85rem; }
-.keepnet-modal__fish-name { font-size: .92rem; }
-.keepnet-modal__fish-weight { color: #afc8c1; }
-.keepnet-modal__fish-timer { color: #f2cf8d; }
-.keepnet-modal__empty { grid-column: 1 / -1; color: #afc8c1; }
+.keepnet-section__actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
+.keepnet-section__fish-rarity { color: #f0dba7; }
+.keepnet-section__fish-level { color: #bdbdbd; font-size: .85rem; }
+.keepnet-section__fish-name { font-size: .92rem; }
+.keepnet-section__fish-weight { color: #bdbdbd; }
+.keepnet-section__fish-timer { color: #f2cf8d; }
+.keepnet-section__empty { grid-column: 1 / -1; color: #bdbdbd; }
 
-@container ui-surface (max-width: 740px) {
-  .keepnet-modal { --keepnet-list-gap: 6px; --keepnet-image-inset: 2px; padding: 8px; overflow: hidden; }
-  .keepnet-modal__main { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; overflow-y: auto; }
-  .keepnet-modal__left, .keepnet-modal__right { overflow: visible; padding: 10px; flex: none; }
-  .keepnet-modal__visual { grid-template-columns: minmax(0, 1fr); height: auto; padding: var(--keepnet-visual-inset); }
+@container ui-surface (max-width: 820px) {
+  .keepnet-section__summary, .keepnet-section__content {
+    --keepnet-list-gap: 6px;
+    --keepnet-image-inset: 2px;
+    height: auto;
+    overflow: visible;
+    padding: 10px;
+  }
+  .keepnet-section__visual { grid-template-columns: minmax(0, 1fr); height: auto; padding: var(--keepnet-visual-inset); }
   /* The square spacer sets a minimum; a taller intrinsic image grows the same grid row. */
-  .keepnet-modal__visual::before { content: ""; grid-area: 1 / 1; width: 100%; aspect-ratio: 1; }
-  .keepnet-modal__icon { grid-area: 1 / 1; width: 100%; height: auto; min-width: 0; padding: 0; }
-  .keepnet-modal__status { margin: 8px 0 0; font-size: 13px; }
-  .keepnet-modal__filters { gap: 8px; }
-  .keepnet-modal__filter { flex: 1 1 120px; }
+  .keepnet-section__visual::before { content: ""; grid-area: 1 / 1; width: 100%; aspect-ratio: 1; }
+  .keepnet-section__icon { grid-area: 1 / 1; width: 100%; height: auto; min-width: 0; padding: 0; }
+  .keepnet-section__status { margin: 8px 0 0; font-size: 13px; }
+  .keepnet-section__filters { gap: 8px; }
+  .keepnet-section__filter { flex: 1 1 120px; }
   /* The owner's current mobile keepnet layout has two equal columns. */
-  .keepnet-modal__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .keepnet-modal__group { padding: 4px; }
-  .keepnet-modal__group .keepnet-modal__fish-name,
-  .keepnet-modal__group .keepnet-modal__fish-weight { display: none; }
-  .keepnet-modal__group .keepnet-modal__thumbnail { height: auto; }
-  .keepnet-modal__badge { right: 4px; bottom: 4px; min-width: 20px; padding: 1px 4px; font-size: 11px; }
-  .keepnet-modal__fish { padding: 4px; gap: 4px; font-size: 11px; }
-  .keepnet-modal__fish .keepnet-modal__thumbnail { aspect-ratio: 1; height: auto; }
-  .keepnet-modal__fish .keepnet-modal__image { height: 100%; }
-  .keepnet-modal__fish-name, .keepnet-modal__fish-level { font-size: 11px; }
-  .keepnet-modal__image-fallback { font-size: 24px; }
-  .keepnet-modal__actions { flex-direction: column; gap: 4px; }
-  .keepnet-modal__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
+  .keepnet-section__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .keepnet-section__group { padding: 4px; }
+  .keepnet-section__group .keepnet-section__fish-name,
+  .keepnet-section__group .keepnet-section__fish-weight { display: none; }
+  .keepnet-section__group .keepnet-section__thumbnail { height: auto; }
+  .keepnet-section__badge { right: 4px; bottom: 4px; min-width: 20px; padding: 1px 4px; font-size: 11px; }
+  .keepnet-section__fish { padding: 4px; gap: 4px; font-size: 11px; }
+  .keepnet-section__fish .keepnet-section__thumbnail { aspect-ratio: 1; height: auto; }
+  .keepnet-section__fish .keepnet-section__image { height: 100%; }
+  .keepnet-section__fish-name, .keepnet-section__fish-level { font-size: 11px; }
+  .keepnet-section__image-fallback { font-size: 24px; }
+  .keepnet-section__actions { flex-direction: column; gap: 4px; }
+  .keepnet-section__action { width: 100%; padding: 4px 2px; font-size: 11px; line-height: 1.25; }
 }

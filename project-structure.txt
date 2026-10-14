@@ -126,6 +126,7 @@
 │  │     └── test-depth.webp
 │  └── ui
 │     ├── inventory
+│     │  ├── backpack.svg
 │     │  ├── bait.svg
 │     │  ├── boat.svg
 │     │  ├── chum.svg
@@ -965,6 +966,7 @@
 │  │     │  ├── inventory_assembly_editor_renderer.js
 │  │     │  ├── inventory_assembly_parameter_section_resolver.js
 │  │     │  ├── inventory_attachment_badge_renderer.js
+│  │     │  ├── inventory_backpack_summary_renderer.js
 │  │     │  ├── inventory_balance_parameter_resolver.js
 │  │     │  ├── inventory_facade_contract.js
 │  │     │  ├── inventory_grid_renderer.js
@@ -1002,7 +1004,7 @@
 │  │     ├── keepnet
 │  │     │  ├── keepnet_card_renderer.js
 │  │     │  ├── keepnet_labels.js
-│  │     │  ├── keepnet_ui.js
+│  │     │  ├── keepnet_section_view.js
 │  │     │  └── keepnet_view_model.js
 │  │     ├── rarity
 │  │     │  └── rarity_visual_config.js

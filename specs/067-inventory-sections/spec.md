@@ -2,7 +2,7 @@
 
 Owner instructions: 2026-10-14, the grey equipment reference (tall rod cell with a condition bar, a column of
 dependent slots, a row of four auxiliary wells, three bottom tabs). Step 1 redesigns the equipment container and adds
-the tab bar as a visual stub; step 2 (separate change) implements section switching.
+the tab bar as a visual stub; step 2 implements section switching (owner: "do every step, resolve conflicts yourself").
 
 ## Step 1 — equipment container and tab bar stub (this change)
 
@@ -49,45 +49,50 @@ color comes from the shared degradation colors, not from the reference image.
 - Empty-slot border/background become component properties (`--inventory-slot-border`, `--inventory-slot-background`)
   with the previous values as defaults; the equipment container overrides them.
 
-## Step 2 — section switching (target architecture, not implemented)
+## Step 2 — section switching (implemented)
 
 ### State and actions
 
 - `InventoryUiState` (application navigation state, already owning category, sort and panel mode) owns
-  `activeSection: "equipment" | "backpack" | "keepnet"`; default `equipment` when the inventory opens.
+  `activeSectionId: "equipment" | "backpack" | "keepnet"`; default `equipment`, kept for the rest of the session.
 - New action `SECTION_SELECT { sectionId }` in `InventoryActionType` / `InventoryActionContract`, handled by the
-  inventory command path that already handles navigation actions; the view model exposes `sections` and
-  `activeSection`. `InventoryUI` stops owning the transient value.
+  inventory command path that already handles navigation actions (allowed while tackle is in the water); the view
+  model exposes `sections: { activeId, backpackItemCount }`. `InventoryUI` keeps no section state of its own: a tab
+  dispatches the action and the rendered view model shows the section.
 
 ### Layout per section
 
 | Section | Two-column layout (separate containers) | Single column (portrait/phones) |
 | --- | --- | --- |
-| Equipment | left: loadout (step 1); right: backpack list | loadout only |
-| Backpack | left: backpack illustration in the large cell + load (`inventory-load` value/limit); right: every item | item list only |
-| Keepnet | left: keepnet parameters (occupancy `0 / 100` meter, warnings, grouping); right: fish cards | keepnet only |
+| Equipment | left: loadout (step 1); right: the item list | loadout, tabs, item list |
+| Backpack | left: backpack illustration (`assets/ui/inventory/backpack.svg`) and carried item count; right: the item list | summary, tabs, item list |
+| Keepnet | left: keepnet summary (illustration, help, occupancy `0 / 100` meter, status); right: filters, groups, fish cards | summary, tabs, fish |
 
-Single column: the tab bar stays at the bottom of the inventory (thumb zone); a section change replaces the visible
-region without rebuilding the others (`hidden`), preserving scroll, focus and the item-list render signature.
+Each section keeps one host per side (`inventory-main__section--equipment|backpack|items|keepnet`); a change only
+toggles `hidden`, so scroll, focus, images and the item-list render signature survive. The single column keeps the
+same summary/content pair as the two-column layout, stacked, so equipping from the list below works as before.
 
 ### Keepnet integration
 
 `KeepnetUI` is a separate modal (own toolbar button, mount, close, focus, timers); `InventoryUiBootstrap.createKeepnet`
 closes it when the inventory opens. Target:
 
-- split it into `KeepnetSummaryView` (parameters, left) and `KeepnetListView` (cards, right), both reusing
-  `KeepnetViewModel`, `KeepnetCardRenderer`, `KEEPNET_LABELS` and the shared resource meter;
-- the inventory composes them for its keepnet section; the toolbar keepnet button opens the inventory at
-  `keepnet`; the separate keepnet modal is removed after migration;
-- keepnet refresh work runs only while its section is visible; live bait services and save formats are unchanged.
+- `KeepnetUI` (modal) became `KeepnetSectionView`: `summaryNode` and `contentNode` are mounted by
+  `InventoryUI.attachKeepnetSection`; it reuses `KeepnetViewModel`, `KeepnetCardRenderer`, `KEEPNET_LABELS`
+  and the shared resource meter. The `keepnet-modal` block became `keepnet-section` in the grey palette;
+- the toolbar keepnet button toggles the inventory at `keepnet`; a catch notice opens it there
+  (`showCatchResult`); the separate dialog, its close button, focus trap and `setOnOpen` coupling are removed;
+- `isOpen` means "section visible", so game timers refresh the keepnet only then; Escape steps back inside the
+  section (help, pending release, details) and is otherwise left to the inventory; live bait services and save
+  formats are unchanged.
 
-### Open owner decisions for step 2
+### Decisions (delegated by the owner)
 
-1. Single column, equipment section: activating an empty slot currently highlights compatible items in the list
-   below. Options: switch to backpack filtered by the slot, or open a picker sheet over the equipment.
-2. Whether the active section persists between openings (session only or saved UI preference).
-3. Whether the toolbar keeps a separate keepnet button once the keepnet is a section.
-4. Backpack illustration asset.
+1. Single column keeps the item list below every equipment/backpack summary, so empty-slot activation still
+   highlights compatible items without a picker or forced tab change.
+2. The active section persists for the session (navigation state), not in saves.
+3. The toolbar keeps its keepnet button as a shortcut to the keepnet section.
+4. A vector backpack illustration in the placeholder style (`assets/ui/inventory/backpack.svg`).
 
 ### Accessibility and checks
 
@@ -95,9 +100,12 @@ closes it when the inventory opens. Target:
 in the modal. Checks: section state transitions and default, contract rejection of unknown sections, hidden sections
 keep their DOM identity, keepnet timers stop when hidden, open/close/remount leave no listeners.
 
-## Verification (step 1)
+## Verification
 
 Focused inventory UI checks for structure (rod-only modifier, dependent count, meter only on an equipped rod with
 condition, four wells, tab roles/active state/keyboard), CSS contracts (unit-based sizing, slot properties, hover
-scoped to the desktop-hover modifier, reduced motion) and the UI catalog; Architecture, Quick and Full. The owner
+scoped to the desktop-hover modifier, reduced motion) and the UI catalog. Step 2: section state persists across
+close/open and clears the highlighted slot (integration); unknown sections are rejected; tabs dispatch and follow the
+rendered state; section hosts toggle without rebuilding the item list; backpack count; keepnet attach/visibility,
+toolbar toggle, catch notice, Escape steps and disposal (keepnet check). Architecture, Quick and Full pass; the owner
 performs visual acceptance; no browser testing by Claude.

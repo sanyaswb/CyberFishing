@@ -30,13 +30,13 @@ export const UI_CATALOG_DEFINITIONS = Object.freeze([
     styles: ["src/game/presentation/styles/inventory/modal.css", "src/game/presentation/styles/inventory/loadout.css", "src/game/presentation/styles/inventory/section-tabs.css", "src/game/presentation/styles/inventory/slots.css", "src/game/presentation/styles/inventory/item-cards.css", "src/game/presentation/styles/inventory/list-and-filters.css", "src/game/presentation/styles/inventory/assembly-editor.css", "src/game/presentation/styles/inventory/tooltips.css"],
   },
   {
-    id: "keepnet", name: "Садок: вікно, поля, підказка та підтвердження",
+    id: "keepnet", name: "Садок: розділ інвентаря, поля, підказка та підтвердження",
     families: ["dialogs", "fields", "messages", "confirmations", "keepnet"], height: 680,
-    description: "Справжній KeepnetUI: два мобільні стовпці, групування, фільтри, ? та Escape, підтвердження відпускання й повернення фокусу. Резерв живця на гачку враховується незалежно від фільтра.",
-    contract: "KeepnetUI + KeepnetViewModel + KeepnetCardRenderer. getView та всі callbacks працюють лише з демонстраційними даними. Оновлення часу зберігає зображення та scroll.",
+    description: "Справжній KeepnetSectionView (розділ інвентаря, spec 067): параметри ліворуч, дві мобільні колонки риби праворуч, групування, фільтри, ? та Escape, підтвердження відпускання. Резерв живця на гачку враховується незалежно від фільтра.",
+    contract: "KeepnetSectionView + KeepnetViewModel + KeepnetCardRenderer. getView та всі callbacks працюють лише з демонстраційними даними. Оновлення часу зберігає зображення та scroll.",
     states: [["normal", "Групи риб"], ["empty", "Порожній"], ["reserved", "Місце на гачку"], ["zero", "Нульова місткість"], ["over", "Переповнений"], ["error", "Помилка"], ["missing", "Відсутній asset"], ["portrait", "Портретна ілюстрація"], ["wide", "Широка ілюстрація"], ["square", "Квадратна ілюстрація"]],
     reading: { min: 0, max: 600, value: 180, label: "Демонстраційний час живця, с" },
-    sources: ["src/game/presentation/keepnet/keepnet_ui.js", "src/game/presentation/keepnet/keepnet_view_model.js", "src/game/presentation/keepnet/keepnet_card_renderer.js"],
+    sources: ["src/game/presentation/keepnet/keepnet_section_view.js", "src/game/presentation/keepnet/keepnet_view_model.js", "src/game/presentation/keepnet/keepnet_card_renderer.js"],
     styles: ["src/game/presentation/styles/keepnet.css"],
   },
   {

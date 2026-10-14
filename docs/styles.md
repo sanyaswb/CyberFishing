@@ -23,7 +23,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |
 | `src/dev/styles/dev-tools.css` | DEV editor and toggle |
 | `src/dev/styles/overlay.css`, `overlay-content.css` | Diagnostic window/interaction and diagnostic content |
-| `styles/house.css`, `keepnet.css` | House/Keepnet composition and component-specific geometry; shared actions/meters/close/switch are reused |
+| `styles/house.css`, `keepnet.css` | House composition; the inventory's keepnet section (`keepnet-section`, spec 067) and its cards; shared actions/meters/close/switch are reused |
 | `src/dev/styles/ui-catalog.css` | Catalog page, fixture controls and external placement of examples |
 
 Layout belongs to the component containing an element. Appearance shared across components belongs

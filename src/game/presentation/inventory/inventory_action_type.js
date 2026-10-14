@@ -2,6 +2,7 @@ export const InventoryActionType = Object.freeze({
   ROD_REMOVAL_CHOICE: "inventory/rod-removal-choice",
   OPEN: "inventory/open",
   CLOSE: "inventory/close",
+  SECTION_SELECT: "inventory/section-select",
   CATEGORY_SELECT: "inventory/category-select",
   SUBFILTER_TOGGLE: "inventory/subfilter-toggle",
   SORT_CRITERION_SELECT: "inventory/sort-criterion-select",

@@ -16,6 +16,7 @@ import { InventoryItemParametersRenderer } from "../../game/presentation/invento
 import { InventoryItemParametersResolver } from "../../game/presentation/inventory/inventory_item_parameters_resolver.js";
 import { InventoryLoadoutPanelRenderer } from "../../game/presentation/inventory/inventory_loadout_panel_renderer.js";
 import { InventorySectionTabsRenderer } from "../../game/presentation/inventory/inventory_section_tabs_renderer.js";
+import { InventoryBackpackSummaryRenderer } from "../../game/presentation/inventory/inventory_backpack_summary_renderer.js";
 import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { InventoryLongPressController } from "../../platform/browser/dom/inventory_long_press_controller.js";
 import { InventoryResourceMeterRenderer } from "../../game/presentation/inventory/inventory_resource_meter_renderer.js";
@@ -23,7 +24,7 @@ import { InventoryResourceMeterResolver } from "../../game/presentation/inventor
 import { InventorySavedLoadoutPreviewRenderer } from "../../game/presentation/inventory/inventory_saved_loadout_preview_renderer.js";
 import { InventoryTooltipPresenter } from "../../game/presentation/inventory/inventory_tooltip_presenter.js";
 import { InventoryUI } from "../../game/presentation/inventory/inventory_ui.js";
-import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
+import { KeepnetSectionView } from "../../game/presentation/keepnet/keepnet_section_view.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
@@ -31,18 +32,19 @@ import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_butto
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
 
 export class InventoryUiBootstrap {
-  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver,
-    mountNode = documentRef?.body, buttonMountNode = mountNode }) {
+  // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
+  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, buttonMountNode = documentRef?.body }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
-    const keepnetUI = new KeepnetUI({ documentRef, liveBait, inventoryUI, mountNode, buttonMountNode,
+    const keepnet = new KeepnetSectionView({ documentRef, liveBait, buttonMountNode,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
-      closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: new InventoryDomFactory(documentRef) }),
+      openSection: () => inventoryUI.openSection("keepnet"),
+      toggleSection: () => inventoryUI.toggleSection("keepnet"),
       resourceMeterRenderer: new InventoryResourceMeterRenderer({
         domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
       }),
       cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }) });
-    inventoryUI.setOnOpen(() => keepnetUI.close());
-    return keepnetUI;
+    inventoryUI.attachKeepnetSection(keepnet);
+    return keepnet;
   }
 
   static create({ autoMount = true, autoOpen = false, ...options } = {}) {
@@ -185,6 +187,7 @@ export class InventoryUiBootstrap {
       resolvedInventoryRenderer,
       sections: INVENTORY_SECTIONS,
       sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
+      backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
     };
   }
 }

@@ -1,3 +1,4 @@
+import { INVENTORY_SECTIONS } from "./inventory_sections.js";
 import { INVENTORY_SORT_CONFIG } from "./inventory_sort_config.js";
 
 export class InventoryViewModelNormalizer {
@@ -36,6 +37,9 @@ export class InventoryViewModelNormalizer {
 
     return Object.freeze({
       isOpen: source.isOpen !== false,
+      sections: Object.freeze({ activeId: INVENTORY_SECTIONS.items.some((section) => section.id === source.sections?.activeId)
+        ? source.sections.activeId : INVENTORY_SECTIONS.defaultSectionId,
+        backpackItemCount: this.#finite(source.sections?.backpackItemCount, 0) }),
       header: this.#normalizeHeader(source.header),
       settings: this.#normalizeSettings(source.settings),
       tooltipContext: this.#normalizeTooltipContext(source.tooltipContext),

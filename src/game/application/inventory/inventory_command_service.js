@@ -117,6 +117,9 @@ export class InventoryCommandService {
       case InventoryActionType.CATEGORY_SELECT:
         this.#uiState.selectCategory(action.categoryId);
         return this.#success();
+      case InventoryActionType.SECTION_SELECT:
+        this.#uiState.selectSection(action.sectionId);
+        return this.#success();
       case InventoryActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
       case InventoryActionType.SORT_CRITERION_SELECT:

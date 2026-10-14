@@ -1101,23 +1101,54 @@ class InventoryStaticContractCheck {
     assert.deepStrictEqual(activeTabs(), ["equipment"]);
     assert.deepStrictEqual(tabs.map((tab) => [tab.getAttribute("aria-selected"), tab.tabIndex]),
       [["true", 0], ["false", -1], ["false", -1]]);
-    const equipmentBeforeTabs = this.#findByClass(ui.rootNode, "inventory-loadout-panel");
+    // Step 2: a tab dispatches SECTION_SELECT; the rendered view model decides the visible section hosts.
+    dispatched.length = 0;
     tabs[1].click();
-    assert.deepStrictEqual(activeTabs(), ["backpack"]);
-    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-loadout-panel"), equipmentBeforeTabs,
-      "step 1 tabs change only their own state, not the inventory content");
-    tabList.emit("keydown", { key: "ArrowRight", target: tabs[1] });
-    assert.deepStrictEqual(activeTabs(), ["keepnet"]);
-    assert.strictEqual(document.activeElement, tabs[2], "arrow keys move focus with the selection");
-    tabList.emit("keydown", { key: "ArrowRight", target: tabs[2] });
-    assert.deepStrictEqual(activeTabs(), ["equipment"], "arrow keys wrap around");
-    tabList.emit("keydown", { key: "End", target: tabs[0] });
-    assert.deepStrictEqual(activeTabs(), ["keepnet"]);
+    assert.deepStrictEqual(dispatched.map((action) => [action.type, action.sectionId]),
+      [[sandbox.InventoryActionType.SECTION_SELECT, "backpack"]]);
+    assert.deepStrictEqual(activeTabs(), ["equipment"], "the tab follows the authoritative state, not the click");
+    tabList.emit("keydown", { key: "ArrowLeft", target: tabs[0] });
     tabList.emit("keydown", { key: "Home", target: tabs[2] });
-    assert.deepStrictEqual(activeTabs(), ["equipment"]);
+    tabList.emit("keydown", { key: "End", target: tabs[0] });
+    assert.deepStrictEqual(dispatched.slice(1).map((action) => action.sectionId), ["keepnet", "equipment", "keepnet"],
+      "arrow keys wrap and Home/End select the first and last sections");
+    assert.strictEqual(document.activeElement, tabs[2], "keyboard selection moves focus");
+    assert.throws(() => sandbox.InventoryActionContract.assert({ type: sandbox.InventoryActionType.SECTION_SELECT, sectionId: "shop" }),
+      /Unknown inventory section/);
+    const host = (sectionId) => this.#findByClass(ui.rootNode, "inventory-main__section--" + sectionId);
+    const leftHosts = ["equipment", "backpack"].map(host);
+    const [equipmentSection, backpackSection] = leftHosts;
+    const itemsSection = host("items");
+    const keepnetSections = this.#findAllByClass(ui.rootNode, "inventory-main__section--keepnet");
+    assert.strictEqual(keepnetSections.length, 2, "the keepnet section has a summary host and a content host");
+    assert.ok(equipmentHost.contains(equipmentSection) && equipmentHost.contains(backpackSection) && equipmentHost.contains(keepnetSections[0]));
+    assert.ok(itemsHost.contains(itemsSection) && itemsHost.contains(keepnetSections[1]));
+    const visibleSections = () => [equipmentSection, backpackSection, keepnetSections[0], itemsSection, keepnetSections[1]]
+      .map((node) => !node.hidden);
+    assert.deepStrictEqual(visibleSections(), [true, false, false, true, false]);
+    const keepnetVisibility = [];
+    const keepnetSummary = document.createElement("section"), keepnetContent = document.createElement("section");
+    ui.attachKeepnetSection({ summaryNode: keepnetSummary, contentNode: keepnetContent,
+      setVisible: (visible) => keepnetVisibility.push(visible) });
+    assert.ok(keepnetSections[0].contains(keepnetSummary) && keepnetSections[1].contains(keepnetContent));
+    const gridBeforeSections = this.#findByClass(itemsHost, "inventory-list-panel");
+    const sectionView = (activeId) => ({ ...currentView, sections: { activeId, backpackItemCount: 7 } });
+    ui.render(sectionView("backpack"));
+    assert.deepStrictEqual(visibleSections(), [false, true, false, true, false], "backpack: summary left, the item list right");
+    assert.deepStrictEqual(activeTabs(), ["backpack"]);
+    assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__count").textContent, "Предметів у рюкзаку: 7");
+    assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__image").src, "assets/ui/inventory/backpack.svg");
+    ui.render(sectionView("keepnet"));
+    assert.deepStrictEqual(visibleSections(), [false, false, true, false, true], "keepnet: parameters left, fish right");
+    assert.strictEqual(keepnetVisibility.at(-1), ui.isOpen, "the keepnet refreshes only while its section is visible");
+    ui.render(sectionView("equipment"));
+    assert.deepStrictEqual(visibleSections(), [true, false, false, true, false]);
+    assert.strictEqual(keepnetVisibility.at(-1), false);
+    assert.strictEqual(this.#findByClass(itemsHost, "inventory-list-panel"), gridBeforeSections,
+      "switching sections keeps the item list DOM");
     ui.render(currentView);
     assert.strictEqual(this.#findByClass(mainNode, "inventory-section-tabs"), sectionTabs,
-      "re-rendering the inventory keeps the tab bar identity and state");
+      "re-rendering the inventory keeps the tab bar identity");
 
     // The rod condition meter appears only on an equipped rod with an available condition.
     const primaryOf = () => this.#findByClass(ui.rootNode, "inventory-loadout-panel__primary");

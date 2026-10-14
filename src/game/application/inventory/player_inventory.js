@@ -66,6 +66,7 @@ export class PlayerInventory {
       this.#actions.OPEN,
       this.#actions.CLOSE,
       this.#actions.CATEGORY_SELECT,
+      this.#actions.SECTION_SELECT,
       this.#actions.ASSEMBLY_BACK,
       this.#actions.AUTO_BAIT_CHANGE,
       this.#actions.AUTO_CHUM_CHANGE,

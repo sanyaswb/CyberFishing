@@ -25,13 +25,18 @@ export class InventoryUI {
   #rightHost;
   #sectionTabsRenderer;
   #sectionTabsNode;
-  // Step 1 of spec 067: transient visual selection; InventoryUiState owns it once sections switch content.
-  #activeSectionId;
+  #backpackSummaryRenderer;
+  #backpackSummaryNode;
+  // Section hosts (spec 067): each section keeps its DOM while hidden; InventoryUiState owns the active section.
+  #sectionHosts = new Map();
+  #equipmentHost;
+  #itemsHost;
+  #keepnetSection = null;
+  #activeSectionId = null;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
   #isOpen = false;
-  #onOpen = null;
   #isMounted = false;
   #dynamicRefreshElapsedMs = 0;
 
@@ -114,7 +119,7 @@ export class InventoryUI {
     this.#savedLoadoutRenderer = presentation.resolvedSavedLoadoutRenderer;
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
     this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
-    this.#activeSectionId = presentation.sections.defaultSectionId;
+    this.#backpackSummaryRenderer = presentation.backpackSummaryRenderer;
     this.#buildShell();
   }
 
@@ -142,7 +147,6 @@ export class InventoryUI {
   }
 
   open() {
-    this.#onOpen?.();
     if (!this.#isMounted) this.mount();
     this.#isOpen = true;
     this.#rootNode.classList.add("inventory-modal--open");
@@ -151,7 +155,23 @@ export class InventoryUI {
     this.refresh();
   }
 
-  setOnOpen(callback) { this.#onOpen = callback; }
+  // The keepnet section view is composed after the inventory (it opens the inventory at its own section).
+  attachKeepnetSection(view) {
+    this.#keepnetSection = view;
+    this.#sectionHosts.get("keepnet").left.appendChild(view.summaryNode);
+    this.#sectionHosts.get("keepnet").right.appendChild(view.contentNode);
+    view.setVisible(this.#isOpen && this.#activeSectionId === "keepnet");
+  }
+
+  openSection(sectionId) {
+    if (!this.#isOpen) this.open();
+    this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId });
+  }
+
+  toggleSection(sectionId) {
+    if (this.#isOpen && this.#activeSectionId === sectionId) this.close();
+    else this.openSection(sectionId);
+  }
 
   close() {
     this.#inventoryRenderSignature = null;
@@ -159,6 +179,7 @@ export class InventoryUI {
     this.#isOpen = false;
     this.#rootNode.classList.remove("inventory-modal--open");
     this.#rootNode.setAttribute("aria-hidden", "true");
+    this.#keepnetSection?.setVisible(false);
     this.#longPressController.clear();
     this.#tooltipPresenter.hide();
     this.#dynamicRefreshElapsedMs = 0;
@@ -200,6 +221,7 @@ export class InventoryUI {
     this.#tooltipPresenter.setContext(viewModel.tooltipContext);
     this.#renderHeader(viewModel);
     this.#renderLeftPanel(viewModel.panel);
+    this.#applySection(viewModel.sections);
     const signature = JSON.stringify({
       ...viewModel.inventory, savedLoadout: undefined, mode: undefined,
       items: viewModel.inventory.items.map((item) => ({
@@ -359,14 +381,42 @@ export class InventoryUI {
       "div",
       "inventory-main__right",
     );
-    this.#sectionTabsNode = this.#sectionTabsRenderer.create({ activeId: this.#activeSectionId,
-      onSelect: (sectionId) => {
-        this.#activeSectionId = sectionId;
-        this.#sectionTabsRenderer.update(this.#sectionTabsNode, sectionId);
-      } });
+    this.#sectionTabsNode = this.#sectionTabsRenderer.create({ activeId: null,
+      onSelect: (sectionId) => this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId }) });
     this.#sectionTabsNode.classList.add("inventory-main__tabs");
     main.append(this.#leftHost, this.#sectionTabsNode, this.#rightHost);
+    this.#equipmentHost = this.#section("equipment", "left");
+    this.#backpackSummaryNode = this.#backpackSummaryRenderer.create();
+    this.#section("backpack", "left").appendChild(this.#backpackSummaryNode);
+    this.#section("keepnet", "left");
+    this.#itemsHost = this.#section("items", "right");
+    this.#section("keepnet", "right");
     this.#rootNode.append(this.#headerHost, this.#warningNode, main);
+  }
+
+  // One host per section and side; hidden hosts keep their DOM, scroll and the item-list render signature.
+  #section(sectionId, side) {
+    const host = this.#dom.element("div", `inventory-main__section inventory-main__section--${sectionId}`);
+    host.hidden = true;
+    (side === "left" ? this.#leftHost : this.#rightHost).appendChild(host);
+    const hosts = this.#sectionHosts.get(sectionId) || {};
+    hosts[side] = host;
+    this.#sectionHosts.set(sectionId, hosts);
+    return host;
+  }
+
+  #applySection(sections) {
+    this.#backpackSummaryRenderer.update(this.#backpackSummaryNode, sections.backpackItemCount);
+    const sectionId = sections.activeId;
+    if (sectionId !== this.#activeSectionId) {
+      this.#activeSectionId = sectionId;
+      const visible = new Set([this.#sectionHosts.get(sectionId).left,
+        sectionId === "keepnet" ? this.#sectionHosts.get("keepnet").right : this.#itemsHost]);
+      for (const hosts of this.#sectionHosts.values())
+        for (const host of [hosts.left, hosts.right]) if (host) host.hidden = !visible.has(host);
+      this.#sectionTabsRenderer.update(this.#sectionTabsNode, sectionId);
+    }
+    this.#keepnetSection?.setVisible(this.#isOpen && sectionId === "keepnet");
   }
 
   #renderHeader(viewModel) {
@@ -393,7 +443,7 @@ export class InventoryUI {
 
   #renderLeftPanel(panel) {
     if (panel.mode === "saved-loadout") {
-      this.#renderSavedLoadout(this.#leftHost, panel.savedLoadout);
+      this.#renderSavedLoadout(this.#equipmentHost, panel.savedLoadout);
       return;
     }
     if (panel.mode === "assembly") {
@@ -432,7 +482,7 @@ export class InventoryUI {
           }),
         onWarning: (message) => this.showWarning(message),
       });
-      this.#dom.replaceChildren(this.#leftHost, editor);
+      this.#dom.replaceChildren(this.#equipmentHost, editor);
       return;
     }
 
@@ -451,7 +501,7 @@ export class InventoryUI {
         }),
       onWarning: (message) => this.showWarning(message),
     });
-    this.#dom.replaceChildren(this.#leftHost, loadout);
+    this.#dom.replaceChildren(this.#equipmentHost, loadout);
   }
 
   #renderSavedLoadout(host, model) {
@@ -522,7 +572,7 @@ export class InventoryUI {
           instanceId: item.instanceId,
         }),
     });
-    this.#dom.replaceChildren(this.#rightHost, grid);
+    this.#dom.replaceChildren(this.#itemsHost, grid);
   }
 
   #dispatch(action) {

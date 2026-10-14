@@ -9,7 +9,7 @@ import { InventoryResourceMeterRenderer } from "../../game/presentation/inventor
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
 import { UiCloseButtonRenderer } from "../../game/presentation/ui/ui_close_button_renderer.js";
 import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_renderer.js";
-import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
+import { KeepnetSectionView } from "../../game/presentation/keepnet/keepnet_section_view.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
@@ -99,9 +99,16 @@ export function startUiCatalog() {
       if (id === "keepnet") {
         const scope = own(scopeFor(surface.mountRoot));
         const fixture = new UiCatalogKeepnetFixture();
-        const ui = own(new KeepnetUI({ documentRef: scope, mountNode: surface.mountRoot, liveBait: fixture, inventoryUI: null,
+        // The production section view without an inventory: the catalog places its two halves side by side.
+        let ui;
+        ui = own(new KeepnetSectionView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
+          openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen),
           model: new KeepnetViewModel(), cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
-          labels: KEEPNET_LABELS, resourceMeterRenderer: meters, closeButtonRenderer: close }));
+          labels: KEEPNET_LABELS, resourceMeterRenderer: meters }));
+        const layout = dom.element("div", "ui-catalog-preview__keepnet");
+        layout.append(ui.summaryNode, ui.contentNode);
+        surface.mountRoot.appendChild(layout);
+        own({ dispose: () => layout.remove() });
         return new UiCatalogKeepnetExample({ fixture, ui, documentScope: scope, surface, status });
       }
       if (id === "house") {
