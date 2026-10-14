@@ -185,12 +185,19 @@ export class InventoryItemCardRenderer {
     return card;
   }
 
+  // A skin's thumbnail shows only its lower part, bottom-aligned; an equipment cell may show the whole artwork (spec 071).
   #renderMainVisual(card, item) {
     const visual = this.#dom.element("span", "inventory-item-card__visual");
+    const thumbnail = item.equipmentArtUrl ? null : item.skin?.thumbnail;
     const image = this.#dom.image(
-      item.iconUrl || item.imageUrl || item.src,
+      item.equipmentArtUrl || thumbnail?.src || item.iconUrl || item.imageUrl || item.src,
       "",
     );
+    if (thumbnail && image) {
+      visual.classList.add("inventory-item-card__visual--cropped");
+      visual.style.setProperty("--inventory-item-art-visible-height", String(thumbnail.visibleHeight));
+      visual.style.setProperty("--inventory-item-art-focus-x", String(thumbnail.focusX));
+    }
     if (image) {
       image.className = "inventory-item-card__image";
       image.setAttribute("aria-hidden", "true");

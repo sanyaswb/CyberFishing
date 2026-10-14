@@ -124,6 +124,15 @@ export const ITEM_DB = {
       itemType: "rod",
       variant: "float",
       icon: "🎣",
+      // Перший скін (spec 071): мініатюра показує нижню половину малюнка; клітинка вудки — весь малюнок з ліскою чи без.
+      skin: {
+        id: "bamboo-rod-v1",
+        thumbnail: { src: "assets/items/rods/bamboo-rod-ecip-v1.png", visibleHeight: 0.5, focusX: 0.31 },
+        equipment: {
+          withLine: "assets/items/rods/bamboo-rod-ecip-v1.png",
+          withoutLine: "assets/items/rods/bamboo-rod-unecip-v1.png",
+        },
+      },
       rarityProfile: {
         mode: "authored",
         tier: 5,

@@ -173,6 +173,7 @@ export class InventoryViewModelFactory {
           equipmentReadModel.rod,
           selectedRaw,
           uiState.highlightedEquipmentSlotId,
+          Boolean(equipmentReadModel.line),
         ),
         assembly: this.#createAssemblyEditor(
           editingRootInstanceId,
@@ -200,6 +201,7 @@ export class InventoryViewModelFactory {
     rod,
     selectedRaw,
     highlightedSlotId = null,
+    hasLine = false,
   ) {
     const mainSlots = [];
     const auxiliarySlots = [];
@@ -214,6 +216,9 @@ export class InventoryViewModelFactory {
       const equippedItem = equippedItemView
         ? { ...equippedItemView, equipped: true }
         : null;
+      // A skinned rod shows its whole artwork in its cell, with or without the equipped line (spec 071).
+      const rodArtwork = slotId === "rod" ? equippedItem?.skin?.equipment : null;
+      if (rodArtwork) equippedItem.equipmentArtUrl = hasLine ? rodArtwork.withLine : rodArtwork.withoutLine;
       const slot = {
         slotId,
         label: this.#equipmentLabel(slotId, rod, equippedItem),

@@ -1999,6 +1999,24 @@ class InventoryStaticContractCheck {
       ).textContent,
       "⚡",
     );
+    // Spec 071: a skin thumbnail is bottom-cropped; an equipment cell's artwork shows whole.
+    const skin = { thumbnail: { src: "rod-thumb.png", visibleHeight: 0.5, focusX: 0.31 },
+      equipment: { withLine: "rod-line.png", withoutLine: "rod-bare.png" } };
+    const skinnedCard = isolatedItemRenderer.renderInventoryItem({ instanceId: "skin-rod", name: "Rod", icon: "R", skin });
+    const skinnedVisual = this.#findByClass(skinnedCard, "inventory-item-card__visual");
+    assert.ok(skinnedVisual.classList.contains("inventory-item-card__visual--cropped") &&
+      skinnedVisual.style.getPropertyValue("--inventory-item-art-visible-height") === "0.5" &&
+      skinnedVisual.style.getPropertyValue("--inventory-item-art-focus-x") === "0.31" &&
+      this.#findByClass(skinnedCard, "inventory-item-card__image").src === "rod-thumb.png",
+      "A skin thumbnail shows the lower half of its artwork");
+    const skinnedCell = isolatedItemRenderer.renderItem({ instanceId: "skin-rod", name: "Rod", icon: "R", skin,
+      equipmentArtUrl: "rod-line.png" }, { variant: "rod" });
+    assert.ok(!this.#findByClass(skinnedCell, "inventory-item-card__visual").classList
+      .contains("inventory-item-card__visual--cropped") &&
+      this.#findByClass(skinnedCell, "inventory-item-card__image").src === "rod-line.png",
+      "The equipment cell shows the whole artwork");
+    assert.match(this.#reader.readStyle(), /\.inventory-item-card__visual--cropped \.inventory-item-card__image\s*\{[^}]*height:\s*calc\(100cqh \/ var\(--inventory-item-art-visible-height, 1\)\);/,
+      "The cropped thumbnail scales its artwork by the visible height share");
     const attachedInventoryItem = isolatedItemRenderer.renderItem({
       instanceId: "attached-inventory-item",
       name: "Attached inventory item",

@@ -149,6 +149,22 @@
   user-select: none;
 }
 
+/* Skin thumbnail (spec 071): the artwork is scaled so only its lower visible-height share fits the card, aligned to the
+   bottom; the focus share of its width sits at the card centre. */
+.inventory-item-card__visual--cropped {
+  position: relative;
+}
+
+.inventory-item-card__visual--cropped .inventory-item-card__image {
+  position: absolute;
+  bottom: var(--inventory-image-inset, 0px);
+  left: 50%;
+  width: auto;
+  max-width: none;
+  height: calc(100cqh / var(--inventory-item-art-visible-height, 1));
+  transform: translateX(calc(var(--inventory-item-art-focus-x, 0.5) * -100%));
+}
+
 .inventory-item-card__icon {
   display: flex;
   width: 100%;

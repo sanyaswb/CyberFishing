@@ -117,7 +117,10 @@
 │  ├── items
 │  │  ├── aquarium-feed-good.svg
 │  │  ├── aquarium-feed-premium.svg
-│  │  └── aquarium-feed-simple.svg
+│  │  ├── aquarium-feed-simple.svg
+│  │  └── rods
+│  │     ├── bamboo-rod-ecip-v1.png
+│  │     └── bamboo-rod-unecip-v1.png
 │  ├── locations
 │  │  └── test
 │  │     ├── bg_test--day.webp
@@ -307,6 +310,8 @@
 │  ├── 069-portrait-inventory-container
 │  │  └── spec.md
 │  ├── 070-inventory-slot-pick
+│  │  └── spec.md
+│  ├── 071-bamboo-rod-skin
 │  │  └── spec.md
 │  └── README.md
 ├── src
