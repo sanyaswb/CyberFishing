@@ -30,3 +30,16 @@ Correction to the review: the schema already validated `liveBait.visual`; the de
 
 Evidence: house-check resize counters; live-bait shared-feed scenario rejects the same invalid settings the rule set
 reports and accepts a valid grid edit; catalog and schema checks pass.
+
+## 3. House stacking scale and redundant colors
+
+- The eight House layers (room navigation 3, scrim 4, sheet 5, dock 6, renovation 10, notice 12, header 20, skip
+  link 30) are `--house-layer-*` component properties in the `.house` block: one ordered list instead of numbers
+  spread over the file. Values are unchanged; z-index inside one element (sticky handle, renovation controls) stays
+  local. The House page has no `--ui-layer-*` overlays, so its scale stays component-owned.
+- Removed House overrides equal to the inventory theme defaults (`--inventory-danger-background/-text`); the primary
+  action's hover/text reference the control values they duplicated; the inventory theme's danger text uses
+  `--ui-danger-text` (same value and meaning).
+
+Correction to the review: most House colors already live in the `.house` theme block; the remaining literals have a
+single consumer and stay local (docs/styles.md). No visual value changes.

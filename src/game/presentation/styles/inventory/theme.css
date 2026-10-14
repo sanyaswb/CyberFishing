@@ -32,7 +32,7 @@
   --inventory-primary-background: rgba(var(--inventory-success-rgb), 0.2);
   --inventory-primary-text: #6affbd;
   --inventory-danger-background: rgba(var(--inventory-danger-rgb), 0.16);
-  --inventory-danger-text: #ff8e9b;
+  --inventory-danger-text: var(--ui-danger-text);
   --inventory-muted-text: #c2c9cc;
   --inventory-panel-border: rgba(201, 216, 218, 0.23);
   --inventory-panel-radius: 10px;

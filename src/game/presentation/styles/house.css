@@ -13,6 +13,15 @@
   --house-dock-label-height: 24px;
   --house-panel-width: min(1100px, 100%);
   --house-panel-inline-padding: 20px;
+  /* House stacking order, lowest first; z-index values inside one element stay local to it. */
+  --house-layer-room-navigation: 3;
+  --house-layer-scrim: 4;
+  --house-layer-sheet: 5;
+  --house-layer-dock: 6;
+  --house-layer-renovation: 10;
+  --house-layer-notice: 12;
+  --house-layer-header: 20;
+  --house-layer-skip: 30;
   --inventory-parameter-meter-height: 9px;
   --inventory-resource-track: #071312;
   --inventory-control-min-height: 39px;
@@ -26,10 +35,8 @@
   --inventory-control-font-size: 16px;
   --inventory-primary-border: #b2d5a2;
   --inventory-primary-background: #5c815d;
-  --inventory-primary-hover-background: #4e7761;
-  --inventory-primary-text: #f2f7ef;
-  --inventory-danger-background: rgba(var(--inventory-danger-rgb), 0.16);
-  --inventory-danger-text: #ff8e9b;
+  --inventory-primary-hover-background: var(--inventory-control-hover-background);
+  --inventory-primary-text: var(--inventory-control-text);
   margin: 0;
   min-width: 0;
   min-height: 100dvh;
@@ -193,7 +200,7 @@
   position: fixed;
   left: -9999px;
   top: 8px;
-  z-index: 30;
+  z-index: var(--house-layer-skip);
   padding: 8px 12px;
   color: var(--ui-text);
   background: #183131;
@@ -210,7 +217,7 @@
 
 .house__header {
   position: fixed;
-  z-index: 20;
+  z-index: var(--house-layer-header);
   top: 0;
   left: 0;
   right: 0;
@@ -260,7 +267,7 @@
 
 .house__room-navigation {
   position: fixed;
-  z-index: 3;
+  z-index: var(--house-layer-room-navigation);
   top: 50%;
   left: 14px;
   right: 14px;
@@ -295,7 +302,7 @@
 
 .house__scrim {
   position: fixed;
-  z-index: 4;
+  z-index: var(--house-layer-scrim);
   inset: 0;
   background: #0009;
   touch-action: none;
@@ -303,7 +310,7 @@
 
 .house__dock {
   position: fixed;
-  z-index: 6;
+  z-index: var(--house-layer-dock);
   bottom: 0;
   left: 50%;
   width: var(--house-panel-width);
@@ -391,7 +398,7 @@
 .house__sheet {
   --house-panel-background: var(--house-sheet-background);
   position: fixed;
-  z-index: 5;
+  z-index: var(--house-layer-sheet);
   bottom: 0;
   left: 50%;
   display: block;
@@ -587,7 +594,7 @@
 
 .house__renovation {
   position: fixed;
-  z-index: 10;
+  z-index: var(--house-layer-renovation);
   inset: 0;
   display: grid;
   place-items: center;
@@ -631,7 +638,7 @@
 
 .house__notice {
   position: fixed;
-  z-index: 12;
+  z-index: var(--house-layer-notice);
   top: 140px;
   left: 50%;
   max-width: min(600px, 90%);
