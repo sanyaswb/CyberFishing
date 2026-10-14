@@ -431,7 +431,7 @@ export class InventoryUI {
       {
         onClose: () => this.close(),
         onConsumableActivate: (kind, slotIndex) => this.#dispatch({
-          type: this.#actionTypes.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex,
+          type: this.#actionTypes.CONSUMABLE_SLOT_ACTIVATE, kind, slotIndex, listVisible: this.#isItemListVisible(),
         }),
         onAutoBaitChange: (enabled) =>
           this.#dispatch({
@@ -477,6 +477,7 @@ export class InventoryUI {
             slotId: socket.slotId,
             slotIndex: socket.slotIndex,
             parentInstanceId: socket.parentInstanceId,
+            listVisible: this.#isItemListVisible(),
           }),
         onEquip: () =>
           this.#dispatch({
@@ -510,6 +511,7 @@ export class InventoryUI {
           type: this.#actionTypes.EQUIPMENT_SLOT_ACTIVATE,
           slotId: slot.slotId,
           instanceId: slot.item?.instanceId || null,
+          listVisible: this.#isItemListVisible(),
         }),
       onSlotLongPress: (slot) =>
         this.#dispatch({
@@ -591,6 +593,11 @@ export class InventoryUI {
         }),
     });
     this.#dom.replaceChildren(this.#itemsHost, grid);
+  }
+
+  // The item list is on screen when its host has a layout box; CSS stays the only owner of the breakpoints (spec 074).
+  #isItemListVisible() {
+    return !this.#itemsHost.hidden && this.#itemsHost.getClientRects().length > 0;
   }
 
   #dispatch(action) {

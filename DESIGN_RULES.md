@@ -74,6 +74,8 @@ consumable slot selection/replacement, automatic/manual counts and equipment fee
 | Inventory items | 4 equal columns | Preserve 4 columns and scale proportionally |
 | Keepnet fish | 2 equal columns until the owner changes this rule | Preserve 2 columns and scale proportionally |
 
+A browsable collection (backpack items, keepnet fish) is two containers of the shared `inventory-collection` block: filters in their own panel, a gap, then the scrolling items panel. Decorative illustrations lie inside the items panel; do not stack filters and items in one panel or layer a separate column underneath ([spec 074](specs/074-header-sections-and-collections/spec.md)). A pick never switches sections when the item list is already visible; read visibility from the rendered layout, not from duplicated breakpoints.
+
 Use equal gaps between cards. Internal spacing and icon dimensions should be consistent within each card type. Earlier specifications describing four keepnet columns remain historical; the current keepnet rule is two columns.
 
 ## 8. Illustrations, proportions and minimal text

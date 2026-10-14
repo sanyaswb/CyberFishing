@@ -125,7 +125,7 @@ export class InventoryCommandService {
         this.#uiState.selectSection(action.sectionId);
         return this.#success();
       case InventoryActionType.CONSUMABLE_SLOT_ACTIVATE:
-        return this.#pickConsumable(action.kind, action.slotIndex);
+        return this.#pickConsumable(action.kind, action.slotIndex, action.listVisible === true);
       case InventoryActionType.SUBFILTER_TOGGLE:
         return this.#toggleSubfilter(action.filterId, action.enabled);
       case InventoryActionType.SORT_CRITERION_SELECT:
@@ -139,7 +139,7 @@ export class InventoryCommandService {
       case InventoryActionType.INVENTORY_ITEM_LONG_PRESS:
         return this.#longPressInventoryItem(action.instanceId);
       case InventoryActionType.EQUIPMENT_SLOT_ACTIVATE:
-        return this.#activateEquipmentSlot(action.slotId);
+        return this.#activateEquipmentSlot(action.slotId, action.listVisible === true);
       case InventoryActionType.EQUIPMENT_SLOT_LONG_PRESS:
         return this.#unequipSlot(action.slotId);
       case InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE:
@@ -328,7 +328,8 @@ export class InventoryCommandService {
     return this.#disassembleAssembly(instanceId);
   }
 
-  #activateEquipmentSlot(slotId) {
+  // listVisible: the item list is already on screen (landscape), so the pick keeps the section (spec 074).
+  #activateEquipmentSlot(slotId, listVisible = false) {
     const equippedId = this.#equipmentState.getRootInstanceId(slotId);
     if (equippedId) {
       this.#uiState.clearHighlightedSlot();
@@ -338,16 +339,24 @@ export class InventoryCommandService {
 
     const selectedId = this.#uiState.selectedInstanceId;
     if (!selectedId || !this.#repository.has(selectedId)) {
-      this.#uiState.pickForSlot(slotId);
+      this.#uiState.pickForSlot(slotId, { showBackpack: !listVisible });
       return this.#success({ highlightedSlotId: slotId });
     }
     return this.#equipLooseRoot(selectedId, slotId);
   }
 
-  #pickConsumable(kind, slotIndex) {
+  // A header slot applies a backpack item waiting for confirmation at the first press, on the proposed slot or another
+  // one (spec 074); without one it opens the pick for that slot.
+  #pickConsumable(kind, slotIndex, listVisible) {
     const target = this.#consumableTargets.resolve(kind, slotIndex);
     if (!target) return this.#failure(this.#messages.consumableSlotUnavailable);
-    this.#uiState.pickForConsumable(kind, target.socketId);
+    const pending = this.#uiState.consumableKind === kind && this.#repository.get(this.#uiState.selectedInstanceId);
+    if (pending && this.#attachmentTargetResolver.accepts(target, pending)) {
+      const result = this.#fillAssemblyTarget(target.rootInstanceId, pending, target);
+      if (result.success) this.#uiState.pickForConsumable(kind);
+      return result;
+    }
+    this.#uiState.pickForConsumable(kind, target.socketId, { showBackpack: !listVisible });
     return this.#success({ pickedSocketId: target.socketId });
   }
 
@@ -423,7 +432,7 @@ export class InventoryCommandService {
       if (this.#equipmentState.getRootInstanceId("rod") !== rootInstanceId) {
         return this.#failure(this.#messages.equipRodBeforeComponents);
       }
-      return this.#activateEquipmentSlot(action.slotId);
+      return this.#activateEquipmentSlot(action.slotId, action.listVisible === true);
     }
     if (!rootInstanceId || !this.#assemblyStates.has(rootInstanceId)) {
       return this.#failure(this.#messages.assemblyNotFound);
@@ -449,7 +458,7 @@ export class InventoryCommandService {
       );
     }
     if (!occupied) {
-      this.#uiState.pickForSocket(action.socketId);
+      this.#uiState.pickForSocket(action.socketId, { showBackpack: action.listVisible !== true });
       return this.#success({ pickedSocketId: action.socketId });
     }
 

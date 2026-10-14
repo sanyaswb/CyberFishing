@@ -291,32 +291,6 @@
       flex: 1;
       min-height: 0;
     }
-
-    /* Backpack: the illustration fills the section behind the item list. */
-    .inventory-main__section--backpack,
-    .inventory-main__section--backpack .inventory-loadout-shell {
-      height: 100%;
-    }
-
-    .inventory-main__section--backpack .inventory-loadout-panel {
-      height: 100%;
-      grid-template-rows: minmax(0, 1fr);
-      align-content: stretch;
-    }
-
-    .inventory-main__section--backpack .inventory-loadout-panel__primary,
-    .inventory-main__section--backpack .inventory-backpack-summary {
-      height: 100%;
-      background: transparent;
-    }
-
-    .inventory-main__section--backpack .inventory-backpack-summary__image {
-      opacity: 0.12;
-    }
-
-    .inventory-main__section--backpack .inventory-backpack-summary__count {
-      display: none;
-    }
   }
 
   .inventory-saved-loadout-preview {

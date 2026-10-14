@@ -765,6 +765,11 @@ vm.runInContext(
   dispatch(pick, InventoryActionType.OPEN);
   assertIntegration(pickUi().highlightedEquipmentSlotId === null && pickUi().activeSectionId === "equipment",
     "closing the inventory ends the pick and restores the equipment section");
+  dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "reel", listVisible: true });
+  assertIntegration(pickUi().highlightedEquipmentSlotId === "reel" && pickUi().activeSectionId === "equipment" &&
+    pick.facade.getViewModel().inventory.activeCategoryId === "compatible",
+    "with the item list visible an empty cell highlights it without switching to the backpack");
+  dispatch(pick, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
 
   const consumablePick = makeComposition({
     items: [raw("consumable-rod", "rodFeeder"),
@@ -810,11 +815,29 @@ vm.runInContext(
   dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "bread" });
   assertIntegration(baitAt(0)?.itemId === "bread" && baitAt(1)?.itemId === "bait",
     "the header chooses exactly which occupied slot to replace");
-  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "chum", slotIndex: 0 });
+  // Spec 074: with a backpack item waiting for confirmation, a header slot applies it at the first press.
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "bread" });
+  assertIntegration(consumableHeader().baitSlots.map((slot) => Boolean(slot.highlighted)).join(",") === "false,true",
+    "bread beside bread + worm proposes the worm slot");
+  const breadBeforeHeaderApply = consumablePick.repository.require("bread").quantity;
+  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 1 });
+  assertIntegration(baitAt(1)?.itemId === "bread" && consumablePick.repository.require("bread").quantity === breadBeforeHeaderApply - 1 &&
+    consumableUi().selectedInstanceId === null && consumableUi().activeSectionId === "backpack",
+    "pressing the proposed header circle applies the waiting item at once");
+  dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "worms" });
+  assertIntegration(consumableHeader().baitSlots.map((slot) => Boolean(slot.highlighted)).join(",") === "true,false",
+    "worm beside two breads proposes the first slot");
+  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "bait", slotIndex: 1 });
+  assertIntegration(baitAt(0)?.itemId === "bread" && baitAt(1)?.itemId === "bait" && consumableUi().selectedInstanceId === null,
+    "pressing another header circle applies the waiting item to that slot at once");
+  dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
+  dispatch(consumablePick, InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, { kind: "chum", slotIndex: 0, listVisible: true });
+  assertIntegration(consumableUi().activeSectionId === "equipment" && consumableUi().consumableKind === "chum",
+    "with the item list visible a header pick keeps the equipment section");
   dispatch(consumablePick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "cast-chum" });
   assertIntegration(consumableHeader().activeTackle.chums.length === 1 &&
-    consumablePick.equipmentState.getRootInstanceId("handChum") === null,
-    "the chum header equips the cast tackle without equipping hand chum");
+    consumablePick.equipmentState.getRootInstanceId("handChum") === null && consumableUi().activeSectionId === "equipment",
+    "the chum header equips the cast tackle without equipping hand chum or leaving the visible list");
   dispatch(consumablePick, InventoryActionType.SECTION_SELECT, { sectionId: "keepnet" });
   assertIntegration(consumableUi().consumableKind === null && consumableUi().pickedSocketId === null,
     "section navigation cancels the consumable pick");

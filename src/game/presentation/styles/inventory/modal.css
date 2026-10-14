@@ -140,14 +140,9 @@
       height: 100%;
     }
 
-    /* The backpack summary lies under the item list as its background. */
+    /* The backpack illustration lies inside the items panel (spec 074); the summary column is not shown. */
     .inventory-modal--section-backpack .inventory-main__left {
-      grid-area: right;
-      max-height: none;
-    }
-
-    .inventory-modal--section-backpack .inventory-main__right {
-      z-index: 1;
+      display: none;
     }
   }
 }

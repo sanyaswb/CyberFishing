@@ -318,6 +318,8 @@
 │  │  └── spec.md
 │  ├── 073-glyph-ink-centring
 │  │  └── spec.md
+│  ├── 074-header-sections-and-collections
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

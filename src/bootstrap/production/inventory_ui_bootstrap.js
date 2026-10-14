@@ -177,6 +177,7 @@ export class InventoryUiBootstrap {
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
+        backdropImage: INVENTORY_SECTIONS.backpackImage,
       });
     return {
       dom,

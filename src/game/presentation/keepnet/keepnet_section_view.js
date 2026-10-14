@@ -98,8 +98,16 @@ export class KeepnetSectionView {
     });
     filters.append(this.#kind, this.#species);
     this.#list = this.#el("div", "keepnet-section__list");
-    // A decorative keepnet behind the fish list; CSS shows it only in the portrait layout (spec 068).
-    this.#content.append(this.#icon("keepnet-section__backdrop"), this.#back, this.#heading, filters, this.#list);
+    // Shared collection (spec 074): back/heading/filters panel, a gap, then the fish list over the faded keepnet,
+    // which CSS shows only in portrait.
+    const controls = this.#el("div", "keepnet-section__controls inventory-collection__controls inventory-panel");
+    const items = this.#el("div", "keepnet-section__items inventory-collection__items inventory-panel");
+    const backdrop = this.#icon("keepnet-section__backdrop");
+    backdrop.classList.add("inventory-collection__backdrop");
+    controls.append(this.#back, this.#heading, filters);
+    items.append(backdrop, this.#list);
+    this.#content.classList.add("inventory-collection");
+    this.#content.append(controls, items);
     this.#summary.addEventListener("keydown", this.#handleKey);
     this.#content.addEventListener("keydown", this.#handleKey);
     buttonMountNode.appendChild(this.#button);

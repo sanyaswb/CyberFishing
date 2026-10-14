@@ -253,6 +253,11 @@ class FakeElement {
     this.attributes.set(name, String(value));
   }
 
+  // Layout boxes: checks set layoutVisible to model a rendered (landscape) item list (spec 074).
+  getClientRects() {
+    return this.layoutVisible === true ? [{}] : [];
+  }
+
   getAttribute(name) {
     return this.attributes.get(name) ?? null;
   }
@@ -475,17 +480,24 @@ class InventoryStaticContractCheck {
       "portrait summary, content and tabs reserve their own rows");
     assert.match(portraitModal, /grid-template-areas:\s*"left"\s+"right"\s+"tabs";/,
       "the portrait tab bar is the last row");
-    assert.match(portraitModal, /\.inventory-modal--section-backpack \.inventory-main__left\s*\{\s*grid-area:\s*right;/,
-      "the backpack summary lies under the item list");
+    assert.match(portraitModal, /\.inventory-modal--section-backpack \.inventory-main__left\s*\{\s*display:\s*none;/,
+      "portrait shows the backpack illustration inside the items panel, not as a summary column");
     assert.match(portraitLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
       "portrait equipment must not inherit a percentage height from the desktop grid");
     assert.match(portraitLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
       "portrait equipment must not shrink its auxiliary row into the item container");
     assert.match(portraitLoadout, /calc\(\(var\(--ui-logical-height, 100dvh\) - var\(--ui-logical-width, 100vw\) \* 0\.15 - 96px\) \/ 4\.56\)/,
       "portrait equipment fits between the header and the bottom tabs");
-    assert.match(portraitList, /\.inventory-list-panel\s*\{\s*height:\s*100%;/, "the portrait item panel fills its row");
-    assert.match(portraitList, /\.inventory-list-grid\s*\{[^}]*scrollbar-width:\s*none;/,
+    // Spec 074: backpack and keepnet share the collection block — filters panel, gap, scrolling items panel.
+    const sharedControls = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/shared-controls.css"), "utf8");
+    assert.match(sharedControls, /\.inventory-collection\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*gap:\s*var\(--inventory-collection-gap, 10px\);[^}]*height:\s*100%;/,
+      "a collection is a filters row, a gap and the items row filling the section");
+    const portraitCollection = sharedControls.split("@media (orientation: portrait)")[1];
+    assert.match(portraitCollection, /\.inventory-collection__items > :not\(\.inventory-collection__backdrop\)\s*\{\s*scrollbar-width:\s*none;/,
       "the portrait item list scrolls without a visible scrollbar");
+    assert.match(portraitCollection, /\.inventory-collection__backdrop\s*\{[^}]*display:\s*block;[^}]*opacity:\s*0\.12;/,
+      "portrait shows the faded backdrop inside the items panel");
+    assert.ok(portraitList.includes(".inventory-list-grid"), "the portrait list keeps its gutter rule");
     // Spec 069: one full-screen dark container; equipment owns the content row; the header is a rounded mini panel.
     assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*padding:\s*env\(safe-area-inset-top, 0px\) 0 env\(safe-area-inset-bottom, 0px\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
       "the portrait inventory is one dark container without outer padding");
@@ -497,8 +509,15 @@ class InventoryStaticContractCheck {
       .split("@media (orientation: portrait)")[1];
     assert.match(mobileHeader, /\.inventory-header\s*\{[^}]*border-radius:\s*var\(--inventory-header-radius\);[^}]*background:\s*var\(--inventory-equipment-panel\);/,
       "the portrait header is a rounded mini panel");
-    assert.match(style, /\.inventory-list-grid\s*\{[^}]*grid-row:\s*4;/,
-      "items must keep their scroll track when the filter/sort rows are hidden");
+    assert.match(style, /\.inventory-list-panel__controls\s*\{\s*display:\s*grid;\s*grid-template-rows:\s*auto auto auto;/,
+      "filters keep their own panel, so hidden filter/sort rows never move the item list");
+    // Spec 074: wide layouts place the header's two sections over the content columns in one row.
+    assert.match(style, /\.inventory-header__controls\s*\{\s*grid-column:\s*2;\s*grid-row:\s*1;/,
+      "the switches and close share the right section's row");
+    assert.match(style, /\.inventory-header__load\s*\{\s*grid-column:\s*1;\s*grid-row:\s*1;/,
+      "the load meter is the left section of the same row");
+    assert.match(style, /\.inventory-toggle__item--highlighted \.inventory-toggle__artwork::after\s*\{[^}]*animation:\s*inventory-compatible-slot-pulse/,
+      "the selected header circle pulses green inside like a highlighted cell");
     for (const selector of [
       ".inventory-modal",
       ".game-toolbar-button",
@@ -1095,7 +1114,15 @@ class InventoryStaticContractCheck {
     ui.render(baitPickView);
     const baitButtons = this.#findAllByClass(this.#findByClass(ui.rootNode, "inventory-auto-settings"), "inventory-toggle__item");
     baitButtons[1].click();
-    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 1 });
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 1,
+      listVisible: false });
+    // Spec 074: a rendered item host (landscape) reports the visible list, so the pick keeps the section.
+    const listHost = this.#findByClass(ui.rootNode, "inventory-main__section--items");
+    listHost.layoutVisible = true;
+    baitButtons[1].click();
+    this.#assertLast(dispatched, { type: sandbox.InventoryActionType.CONSUMABLE_SLOT_ACTIVATE, kind: "bait", slotIndex: 1,
+      listVisible: true });
+    listHost.layoutVisible = false;
     assert.strictEqual(this.#findById(ui.rootNode, "inventory-auto-bait").checked, false,
       "selecting bait does not toggle automatic mode");
     assert.ok(baitButtons[0].classList.contains("inventory-toggle__item--available"));
@@ -1194,6 +1221,14 @@ class InventoryStaticContractCheck {
       setVisible: (visible) => keepnetVisibility.push(visible) });
     assert.ok(keepnetSections[0].contains(keepnetSummary) && keepnetSections[1].contains(keepnetContent));
     const gridBeforeSections = this.#findByClass(itemsHost, "inventory-list-panel");
+    // Spec 074: the filters panel, then the items panel holding the faded backpack and the grid.
+    const [listControls, listItems] = gridBeforeSections.children;
+    assert.ok(gridBeforeSections.classList.contains("inventory-collection") &&
+      listControls.classList.contains("inventory-collection__controls") &&
+      listControls.contains(this.#findByClass(gridBeforeSections, "inventory-categories")) &&
+      listItems.classList.contains("inventory-collection__items") &&
+      listItems.contains(this.#findByClass(gridBeforeSections, "inventory-list-grid")),
+    "the backpack list is a filters panel and an items panel");
     const sectionView = (activeId) => ({ ...currentView, sections: { activeId, backpackItemCount: 7 } });
     ui.render(sectionView("backpack"));
     assert.deepStrictEqual(visibleSections(), [false, true, false, true, false], "backpack: summary left, the item list right");
@@ -1644,6 +1679,7 @@ class InventoryStaticContractCheck {
       type: sandbox.InventoryActionType.EQUIPMENT_SLOT_ACTIVATE,
       slotId: "reel",
       instanceId: null,
+      listVisible: false,
     });
 
     dispatched.length = 0;
@@ -2469,6 +2505,7 @@ class InventoryStaticContractCheck {
       slotId: "hook",
       slotIndex: 0,
       parentInstanceId: "assembly-active",
+      listVisible: false,
     });
 
     const baitSocket = this.#field(ui.rootNode, "bait");

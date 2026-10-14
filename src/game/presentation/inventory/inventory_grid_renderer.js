@@ -2,6 +2,7 @@ export class InventoryGridRenderer {
   #dom;
   #itemRenderer;
   #horizontalScrollController;
+  #backdropImage;
   #subfiltersExpanded = false;
   #sortExpanded = false;
 
@@ -10,8 +11,10 @@ export class InventoryGridRenderer {
     itemRenderer,
     horizontalScrollController = null,
     createHorizontalScrollController,
+    backdropImage = "",
   } = {}) {
     this.#dom = domFactory;
+    this.#backdropImage = backdropImage;
     this.#itemRenderer = itemRenderer;
     this.#horizontalScrollController =
       horizontalScrollController || createHorizontalScrollController();
@@ -29,10 +32,11 @@ export class InventoryGridRenderer {
       onItemLongPress = null,
     } = {},
   ) {
-    const panel = this.#dom.element(
-      "section",
-      "inventory-list-panel inventory-panel inventory-panel--full-height",
-    );
+    // Shared collection (spec 074): the filters panel, a gap, then the items panel over the faded backpack.
+    const panel = this.#dom.element("section", "inventory-list-panel inventory-collection");
+    const controls = this.#dom.element("div",
+      "inventory-list-panel__controls inventory-collection__controls inventory-panel");
+    const items = this.#dom.element("div", "inventory-list-panel__items inventory-collection__items inventory-panel");
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
       onSortCriterionSelect,
@@ -55,12 +59,15 @@ export class InventoryGridRenderer {
     this.#horizontalScrollController.attach(categories);
     this.#horizontalScrollController.attach(subfilters);
     this.#horizontalScrollController.attach(sortOptions);
-    panel.appendChild(categories);
-    panel.appendChild(subfilters);
-    panel.appendChild(sortOptions);
-    panel.appendChild(
-      this.#renderItems(model, { onItemActivate, onItemLongPress }),
-    );
+    controls.append(categories, subfilters, sortOptions);
+    const backdrop = this.#dom.image(this.#backdropImage, "");
+    if (backdrop) {
+      backdrop.className = "inventory-collection__backdrop";
+      backdrop.setAttribute("aria-hidden", "true");
+      items.appendChild(backdrop);
+    }
+    items.appendChild(this.#renderItems(model, { onItemActivate, onItemLongPress }));
+    panel.append(controls, items);
     return panel;
   }
 

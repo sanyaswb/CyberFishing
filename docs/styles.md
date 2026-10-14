@@ -19,7 +19,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/inventory/theme.css` | Inventory palette and shared dimensions; portal scrollbar tokens |
 | `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout (left container, section tabs, right content areas) |
 | `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
-| `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance |
+| `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
 | `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the load-scale icon/readout composition; header placement belongs to `header.css` |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |
@@ -50,23 +50,23 @@ The pill, its track and close button share `--inventory-header-control-height`: 
 a 26px thumb and 22px artwork circle. There is no separate outer height or vertical pill padding; the track's
 border aligns with the pill border. The same compact geometry applies in both phone orientations.
 The shared header unit grows with `cqi` up to 2px in portrait; landscape caps the common row height at 44px.
-Desktop controls are 44px high, and a symmetric three-column header row centers the switch group relative to
-the whole header while keeping close on the right. Portrait keeps its composition through 820px, without a
+Desktop controls are 44px high. Above 820px the header has two sections in one row over the content columns:
+the load meter over the left panel, the switch group (centred) and close (right) over the right panel. Portrait keeps its composition through 820px, without a
 520px jump. The existing UI surface scales the composition once below 320px. Only cast-tackle chum appears here; hand/boat
 consumables keep their equipment views. Hook cards/craft panels omit bait compartments. Highlighting belongs
 to the projected inventory pick state and keyboard focus remains visible; item presses never toggle the switch.
 
-The load scale is `inventory-header__load`, the lower row inside `inventory-header`, below its consumable/close
-row. It spans the mobile header's content width or the desktop left-panel column. Header and main share the
+The load scale is `inventory-header__load`: on mobile the lower row inside `inventory-header`, below its
+consumable/close row, spanning the header's content width; on desktop the left section of the single header row. Header and main share the
 container-owned `--inventory-content-columns`/`--inventory-content-gap`, avoiding duplicated width formulas.
 Its icon/readout composition reuses `InventoryResourceMeterRenderer`
 and `resource-meters.css` (including the shared summary-track radius). `InventoryLoadRenderer` maps kilograms
 to the fixed presentation config maximum of 100kg, so 1kg fills 1%. It does not compute gameplay load limits.
 
-The backpack list uses its existing `inventory-panel` mix with an opaque equipment-panel background and the
-shared panel radius. `inventory-list-panel` fills the available content height with its own padding; portrait
-placement reserves outer side/bottom insets in `modal.css`. Only the item grid scrolls vertically. The former
-transparent portrait override is removed, so the item area reads as a separate rounded container.
+The backpack list (`inventory-list-panel`) and the keepnet content mix the shared `inventory-collection` block:
+an `inventory-panel` with the filters, a gap, then an `inventory-panel` with the items. Only the items panel's
+list scrolls vertically; in portrait it hides its scrollbar and shows the faded backpack/keepnet backdrop inside
+the items panel, and the backpack's summary column is not shown. Portrait placement reserves outer insets in `modal.css`.
 
 `UiSurfaceAdapter` exposes `hoverEnabled` and adds `ui-surface--desktop-hover` only for a UI and
 landscape viewport wider than 1024px with a fine hover-capable pointer and no touch/coarse input.

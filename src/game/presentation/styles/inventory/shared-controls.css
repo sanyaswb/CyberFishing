@@ -117,6 +117,77 @@
   height: 100%;
 }
 
+/* Collection (spec 074): a filters panel, a gap, then the items panel. Only the items panel's list scrolls, over an
+   optional faded backdrop that portrait shows in place of the separate summary column. Backpack and keepnet mix the
+   elements into their own blocks together with inventory-panel. */
+.inventory-collection {
+  --inventory-panel: var(--inventory-equipment-panel);
+  --inventory-panel-border: transparent;
+  --inventory-collection-inset: 14px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--inventory-collection-gap, 10px);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.inventory-collection__controls {
+  min-width: 0;
+  padding: var(--inventory-collection-inset);
+}
+
+.inventory-collection__items {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--inventory-collection-inset);
+  overflow: hidden;
+}
+
+.inventory-collection__items > :not(.inventory-collection__backdrop) {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.inventory-collection__backdrop {
+  display: none;
+}
+
+@container ui-surface (max-width: 820px) {
+  .inventory-collection {
+    --inventory-collection-inset: 8px;
+    --inventory-collection-gap: var(--inventory-mobile-gap);
+  }
+
+  @media (orientation: portrait) {
+    .inventory-collection__items > :not(.inventory-collection__backdrop) {
+      scrollbar-width: none;
+    }
+
+    .inventory-collection__items > :not(.inventory-collection__backdrop)::-webkit-scrollbar {
+      display: none;
+    }
+
+    .inventory-collection__backdrop {
+      position: absolute;
+      top: 15%;
+      left: 15%;
+      display: block;
+      width: 70%;
+      height: 70%;
+      object-fit: contain;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+  }
+}
+
 .inventory-action {
   min-height: var(--inventory-control-min-height, 37px);
   padding: var(--inventory-control-padding);

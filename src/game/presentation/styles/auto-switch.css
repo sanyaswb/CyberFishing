@@ -61,8 +61,25 @@
 .inventory-toggle__placeholder { opacity: var(--inventory-consumable-placeholder-muted, 0.32); }
 .inventory-toggle__item--available .inventory-toggle__placeholder { opacity: var(--inventory-consumable-placeholder-ready, 0.86); }
 .inventory-toggle__item:focus-visible { outline: none; }
-.inventory-toggle__item:focus-visible .inventory-toggle__artwork,
-.inventory-toggle__item--highlighted .inventory-toggle__artwork { border-color: var(--inventory-accent, var(--ui-accent)); }
+.inventory-toggle__item:focus-visible .inventory-toggle__artwork { border-color: var(--inventory-accent, var(--ui-accent)); }
+/* The selected/proposed slot (spec 074): green outline and the highlighted equipment cells' green pulse inside the
+   circle (inventory-compatible-slot-pulse, slots.css). */
+.inventory-toggle__item--highlighted .inventory-toggle__artwork {
+  position: relative;
+  isolation: isolate;
+  border-color: var(--inventory-success, var(--ui-success));
+}
+.inventory-toggle__item--highlighted .inventory-toggle__artwork::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: var(--inventory-success, var(--ui-success));
+  content: "";
+  opacity: 0.2;
+  pointer-events: none;
+  animation: inventory-compatible-slot-pulse 2400ms ease-in-out infinite;
+}
 .inventory-toggle__switch {
   display: flex;
   align-items: center;
@@ -166,4 +183,5 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .inventory-toggle__control, .inventory-toggle__thumb, .inventory-toggle__count { transition: none; }
+  .inventory-toggle__item--highlighted .inventory-toggle__artwork::after { opacity: 0.35; animation: none; }
 }

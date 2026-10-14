@@ -71,6 +71,16 @@ async function main() {
   const backdrop = documentRef.byClass("keepnet-section__backdrop")[0];
   assert(content.contains(backdrop) && backdrop.alt === "" && backdrop.src === "assets/ui/inventory/keepnet.svg",
     "a decorative keepnet lies behind the fish list (shown in portrait)");
+  // Spec 074: the shared collection — back/heading/filters panel, then the fish-list panel with the backdrop.
+  const keepnetControls = documentRef.byClass("keepnet-section__controls")[0];
+  const keepnetItems = documentRef.byClass("keepnet-section__items")[0];
+  assert(content.classList.contains("inventory-collection") && content.children[0] === keepnetControls &&
+    content.children[1] === keepnetItems && keepnetControls.classList.contains("inventory-collection__controls") &&
+    keepnetControls.contains(documentRef.byClass("keepnet-section__filters")[0]) &&
+    keepnetItems.classList.contains("inventory-collection__items") && keepnetItems.contains(backdrop) &&
+    keepnetItems.contains(documentRef.byClass("keepnet-section__list")[0]) &&
+    backdrop.classList.contains("inventory-collection__backdrop"),
+  "the keepnet content is a filters panel and a fish-list panel");
   const back = documentRef.byClass("keepnet-section__back")[0];
   const capacity = documentRef.byClass("keepnet-section__capacity")[0];
   const capacityCount = documentRef.byClass("keepnet-section__count")[0];

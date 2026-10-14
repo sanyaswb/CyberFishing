@@ -69,19 +69,20 @@ export class InventoryUiState {
 
   // Pick (spec 070): an empty equipment cell or craft socket opens the backpack at the compatible items; activating a
   // card completes the pick and returns to the equipment section.
-  pickForSlot(slotId) {
-    this.#startPick();
+  // showBackpack: false keeps the current section when the item list is already visible beside it (spec 074).
+  pickForSlot(slotId, { showBackpack = true } = {}) {
+    this.#startPick(showBackpack);
     this.#highlightedEquipmentSlotId = slotId;
   }
 
-  pickForSocket(socketId) {
-    this.#startPick();
+  pickForSocket(socketId, { showBackpack = true } = {}) {
+    this.#startPick(showBackpack);
     this.#pickedSocketId = socketId;
   }
 
-  pickForConsumable(kind, socketId = null) {
+  pickForConsumable(kind, socketId = null, { showBackpack = false } = {}) {
     this.showLoadoutPanel();
-    this.#startPick();
+    this.#startPick(showBackpack);
     this.#pickedSocketId = socketId;
     this.#consumableKind = kind;
   }
@@ -201,9 +202,9 @@ export class InventoryUiState {
     this.clearPlacementOrder();
   }
 
-  #startPick() {
+  #startPick(showBackpack) {
     this.#clearPick();
-    this.#activeSectionId = "backpack";
+    if (showBackpack) this.#activeSectionId = "backpack";
     this.#selectedInstanceId = null;
     this.focusCompatibleCategory();
   }
