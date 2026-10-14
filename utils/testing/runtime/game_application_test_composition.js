@@ -28,13 +28,15 @@ async function checkGameApplicationComposition(diagnostics = true) {
   const windowTarget=target(),documentTarget=target(),clock={now:1000},bounds={left:0,right:800,top:0,bottom:600};
   const config={ui:{rod:{x:'center'}},casting:{enabled:true},debug:{timeScale:2},locations:{lake:{enabled:true}},physics:{fight:{rodControl:{}}}};
   const input={panDeltaX:3,panDeltaY:9,pointerDown:false,isPulling:false},physics={},biteEnv={},fightDebug={};
-  const equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
+  let equipment={rod:{variant:'float',effectiveStats:{hasReel:true}},reel:{effectiveStats:{hasDrag:true}},baits:[{instanceId:'original-bait'}]};
+  let lineEquipped=true;
   const net={updateConfig(value){this.config=value;}},rng={next:()=>0.5};
   const projector={screenToVirtual(x,y,out){out.x=x;out.y=y;return out;},virtualToScreen(x,y,out){out.x=x;out.y=y;return out;}};
   let resizeCalls=0;
   const canvasMetrics={width:800,height:600,resizeToViewport(){resizeCalls++;this.width=900;}};
   let appPorts,freshness,onInventory,stateContext,debugContext,locationFails=false,victoryFails=false,castResult={success:false,reason:'missing_rod'};
-  const inventory={getEquipped:()=>equipment,setFreshnessExposureProvider(fn){freshness=fn;},onInventoryChanged(fn){onInventory=fn;return()=>{disposed.push('inventory-listener');onInventory=null;};},setLock(value){this.locked=value;},refreshItemData(){events.push('items');},handleRodRetrieved(context){events.push(['retrieved',context]);},dispose(){disposed.push('inventory');}};
+  // Like PlayerInventory, a changed equipment is a new object; readiness needs a rod and its line.
+  const inventory={getEquipped:()=>equipment,evaluateCastReadiness:()=>({canCast:Boolean(equipment.rod)&&lineEquipped}),setFreshnessExposureProvider(fn){freshness=fn;},onInventoryChanged(fn){onInventory=fn;return()=>{disposed.push('inventory-listener');onInventory=null;};},setLock(value){this.locked=value;},refreshItemData(){events.push('items');},handleRodRetrieved(context){events.push(['retrieved',context]);},dispose(){disposed.push('inventory');}};
   const stateMachine={currentName:'scouting',currentState:{handleNetClick(){events.push('net-click');}},setState(name,data){this.currentName=name;this.data=data;appPorts.onStateChanged(name);},handleInput(value){assert.equal(value,input);events.push('input');},update(dt,area,context){assert.equal(dt,16);assert.equal(area,bounds);stateContext??=context;assert.equal(context,stateContext);assert.equal(context.env,physics);assert.equal(context.biteEnv,biteEnv);assert.equal(context.input,input);events.push('state');},dispose(){disposed.push('state');}};
   const chumController={isAiming:false,activeBoat:null,ui:{},setAiming(value){this.isAiming=value;},updateUI(){events.push('chum-ui');},refreshActiveHandChum(){events.push('hand-refresh');},handleGlobalBoatControl(value){assert.equal(value,input);events.push('boat');},handleAiming(value,area,dt){assert.equal(value,input);assert.equal(area,bounds);assert.equal(dt,16);events.push('chum-aim');},handleClick(){this.isAiming=true;},toggleAim(){this.isAiming=!this.isAiming;},dispose(){disposed.push('controller');}};
   const loop={start:()=>true,stop(){disposed.push('loop');}};
@@ -69,14 +71,18 @@ async function checkGameApplicationComposition(diagnostics = true) {
   }
   const app=new source.context.GameApplication({canvas:{},canvasMetrics,config,compositionRoot,devFlags,audio:{},debugEvents,diagnostics:sessionDiagnostics,listeners,windowTarget,documentTarget,runtime,clock,fishDatabase:source.context.FISH_DB,logger:new source.context.ConsoleLogger()});
   assert.equal(runtime.input.pointerPanEnabled,false,'equipped scouting preserves casting input from startup');
-  const equippedRod=equipment.rod;
-  equipment.rod=null;app.update(16);
+  const readyEquipment=equipment;
+  lineEquipped=false;equipment={...readyEquipment};app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,true,'a rod that cannot cast pans the map instead of starting a cast (spec 076)');
+  lineEquipped=true;equipment={...readyEquipment};app.update(16);
+  assert.equal(runtime.input.pointerPanEnabled,false,'a cast-ready rod keeps its casting gesture');
+  equipment={...readyEquipment,rod:null};app.update(16);
   assert.equal(runtime.input.pointerPanEnabled,true,'bare scouting enables map navigation before reading input');
   app.isAimingChum=true;app.update(16);
   assert.equal(runtime.input.pointerPanEnabled,false,'chum aiming keeps its casting gesture without a rod');
   app.isAimingChum=false;stateMachine.currentName='playing';app.update(16);
   assert.equal(runtime.input.pointerPanEnabled,false,'fight input never becomes map navigation');
-  equipment.rod=equippedRod;stateMachine.currentName='scouting';
+  equipment=readyEquipment;stateMachine.currentName='scouting';
   assert.equal(app.clock,clock);assert.equal(app.rng,rng);assert.equal(app.config.raw,config);assert.equal(app.net,net);assert.equal(app.locationId,'lake');assert.equal(app.chumCastDistance,300);assert.equal(app.start(),true);
   assert.equal(listenerCounter.getActiveCount(),dev?3:2,'production subscribes no DEV hook');
   const viewport=app.getViewportSize(),rod=app.getRodVirtualPos(bounds),base=app.getBaseRodVirtualPos(bounds);

@@ -1421,6 +1421,28 @@ class InventoryStaticContractCheck {
       "Miniatures must not show item names",
     );
 
+    // Spec 076: the item list scrolls by a mouse drag over a card, and neither a drag nor a touch swipe selects it.
+    const listGrid = this.#findByClass(ui.rootNode, "inventory-list-grid");
+    assert.ok(listGrid.classList.contains("inventory-vertical-scroll"), "the item list owns vertical drag scrolling");
+    listGrid.scrollHeight = 900;
+    listGrid.clientHeight = 300;
+    listGrid.scrollTop = 100;
+    const listPointer = (type, pointerType, pointerId, clientY) =>
+      listGrid.emit(type, { pointerType, pointerId, clientX: 50, clientY, detail: 1 });
+    listPointer("pointerdown", "mouse", 41, 200);
+    listPointer("pointermove", "mouse", 41, 140);
+    assert.strictEqual(listGrid.scrollTop, 160, "dragging up over a card scrolls the list down");
+    listPointer("pointerup", "mouse", 41, 140);
+    assert.ok(listGrid.emit("click", { detail: 1 }).defaultPrevented, "the drag's click never selects the card");
+    listPointer("pointerdown", "touch", 42, 200);
+    listPointer("pointermove", "touch", 42, 150);
+    assert.strictEqual(listGrid.scrollTop, 160, "touch keeps the browser's native scrolling");
+    listPointer("pointercancel", "touch", 42, 150);
+    assert.ok(listGrid.emit("click", { detail: 1 }).defaultPrevented, "a touch swipe never selects the card");
+    listPointer("pointerdown", "mouse", 43, 200);
+    listPointer("pointerup", "mouse", 43, 201);
+    assert.strictEqual(listGrid.emit("click", { detail: 1 }).defaultPrevented, false, "a press without a drag still selects");
+
     const categoryToggle = this.#findByClass(
       ui.rootNode,
       "inventory-categories__toggle",

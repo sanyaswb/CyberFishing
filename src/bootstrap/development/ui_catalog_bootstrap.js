@@ -104,7 +104,8 @@ export function startUiCatalog() {
         ui = own(new KeepnetSectionView({ documentRef: scope, buttonMountNode: surface.mountRoot, liveBait: fixture,
           openSection: () => ui.setVisible(true), toggleSection: () => ui.setVisible(!ui.isOpen),
           model: new KeepnetViewModel(), cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
-          labels: KEEPNET_LABELS, resourceMeterRenderer: meters }));
+          labels: KEEPNET_LABELS, resourceMeterRenderer: meters,
+          listScrollController: InventoryUiBootstrap.createListScrollController(surface) }));
         const layout = dom.element("div", "ui-catalog-preview__keepnet");
         layout.append(ui.summaryNode, ui.contentNode);
         surface.mountRoot.appendChild(layout);

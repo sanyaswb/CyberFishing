@@ -908,7 +908,7 @@ export class GameCompositionRoot {
       }),
     }));
     const keepnetUI = InventoryUiBootstrap.createKeepnet({ documentRef: this.#documentTarget,
-      liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver,
+      liveBait, inventoryUI: systems.inventoryUI, degradationColorResolver, uiSurface: this.#uiSurface,
       buttonMountNode: this.#toolbarMountNode || this.#uiSurface?.mountRoot || this.#documentTarget.body });
     if (keepnetUI) systems.keepnetUI = own(keepnetUI);
     return {  };

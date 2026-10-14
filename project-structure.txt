@@ -322,6 +322,8 @@
 │  │  └── spec.md
 │  ├── 075-backpack-pager-and-capacity
 │  │  └── spec.md
+│  ├── 076-scroll-input-fixes
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

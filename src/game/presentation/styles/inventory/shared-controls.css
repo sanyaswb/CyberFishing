@@ -159,6 +159,16 @@
   display: none;
 }
 
+/* Item and fish lists scroll by mouse drag too (spec 076); touch keeps native panning. A drag never activates a card. */
+.inventory-vertical-scroll {
+  overscroll-behavior-y: contain;
+}
+
+.inventory-vertical-scroll.inventory-vertical-scroll--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
 @container ui-surface (max-width: 820px) {
   .inventory-collection {
     --inventory-collection-inset: 8px;

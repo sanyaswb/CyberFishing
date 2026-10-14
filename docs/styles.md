@@ -19,7 +19,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/inventory/theme.css` | Inventory palette and shared dimensions; portal scrollbar tokens |
 | `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout (left container, section tabs, right content areas) |
 | `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
-| `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
+| `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet, and the lists' `inventory-vertical-scroll` drag state (spec 076) ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
 | `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the `inventory-scale` icon/meter/reading composition (load and backpack capacity, `InventoryScaleRenderer`); header placement belongs to `header.css` |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |

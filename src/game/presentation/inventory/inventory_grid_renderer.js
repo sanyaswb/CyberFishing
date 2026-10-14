@@ -2,6 +2,7 @@ export class InventoryGridRenderer {
   #dom;
   #itemRenderer;
   #horizontalScrollController;
+  #listScrollController;
   #backdropImage;
   #pager;
   #subfiltersExpanded = false;
@@ -12,11 +13,13 @@ export class InventoryGridRenderer {
     itemRenderer,
     horizontalScrollController = null,
     createHorizontalScrollController,
+    listScrollController,
     backdropImage = "",
     pagerRenderer,
   } = {}) {
     this.#dom = domFactory;
     this.#backdropImage = backdropImage;
+    this.#listScrollController = listScrollController;
     this.#pager = pagerRenderer;
     this.#itemRenderer = itemRenderer;
     this.#horizontalScrollController =
@@ -71,7 +74,10 @@ export class InventoryGridRenderer {
       backdrop.setAttribute("aria-hidden", "true");
       items.appendChild(backdrop);
     }
-    items.appendChild(this.#renderItems(model, { onItemActivate, onItemLongPress }));
+    const grid = this.#renderItems(model, { onItemActivate, onItemLongPress });
+    // Dragging over a card scrolls the list instead of activating the card (spec 076).
+    this.#listScrollController.attach(grid);
+    items.appendChild(grid);
     const pager = this.#pager.create([items, backpackView], {
       viewportClassName: "inventory-list-panel__items inventory-collection__items inventory-panel",
     });

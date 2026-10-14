@@ -1,6 +1,10 @@
 import { nonNegativeFiniteOr } from "../../../engine/math/number_normalization.js";
 
+// Drag-to-scroll with click suppression for pointer drags along one axis: horizontal filter rows (default) and, with
+// axis "y", the vertical item list (spec 076). Mouse drags scroll programmatically; touch keeps native panning and
+// inertia, and a swipe never activates the card under the finger.
 export class HorizontalScrollController {
+  #axis;
   #dragThresholdPx;
   #bindings = new WeakMap();
   #uiSurface;
@@ -12,10 +16,11 @@ export class HorizontalScrollController {
   #nowMs;
   #wheelGestureGapMs;
 
-  constructor({ dragThresholdPx = 6, uiSurface = null, manualTouch = false,
+  constructor({ axis = "x", dragThresholdPx = 6, uiSurface = null, manualTouch = false,
     getPanConfig = null, className = "inventory-horizontal-scroll",
     dragClassName = "inventory-horizontal-scroll--dragging", onVerticalGesture = null,
     nowMs = Date.now, wheelGestureGapMs = 180 } = {}) {
+    this.#axis = axis === "y" ? "y" : "x";
     this.#dragThresholdPx = Math.max(0, Number(dragThresholdPx) || 0);
     this.#uiSurface = uiSurface;
     this.#manualTouch = manualTouch;
@@ -87,7 +92,8 @@ export class HorizontalScrollController {
   }
 
   #onWheel(element, state, event) {
-    if (event?.ctrlKey) return;
+    // Vertical lists keep the browser's own wheel scrolling.
+    if (event?.ctrlKey || this.#axis === "y") return;
     const vertical = Number(event?.deltaY) || 0;
     const horizontal = Number(event?.deltaX) || 0;
     if (this.#onVerticalGesture) {
@@ -108,7 +114,7 @@ export class HorizontalScrollController {
       : horizontal;
     if (!delta) return;
     const previous = Number(element.scrollLeft) || 0;
-    const maximum = this.#maximumScrollLeft(element);
+    const maximum = this.#maximumScroll(element);
     const mode = Number(event?.deltaMode) || 0;
     let logicalDelta = mode === 1 ? delta * (config ? nonNegativeFiniteOr(config.wheelStepPx, 40) : 16) : mode === 2 ? delta * element.clientWidth :
       (this.#uiSurface?.physicalToLogicalDelta({ x: delta }).x ?? delta);
@@ -123,7 +129,7 @@ export class HorizontalScrollController {
   #onPointerDown(element, state, event) {
     if (state.active) return;
     if (event?.isPrimary === false || Number(event?.button) > 0) return;
-    if (this.#maximumScrollLeft(element) <= 0 && !this.#onVerticalGesture) return;
+    if (this.#maximumScroll(element) <= 0 && !this.#onVerticalGesture) return;
     state.active = true;
     state.touch = event?.pointerType === "touch";
     state.dragging = false;
@@ -132,14 +138,16 @@ export class HorizontalScrollController {
     state.startY = Number(event?.clientY) || 0;
     state.panDistance = 0;
     state.axis = null;
-    state.startScrollLeft = Number(element.scrollLeft) || 0;
+    state.startScrollLeft = this.#scroll(element);
     state.suppressClickUntil = 0;
     if (this.#manualTouch && state.pointerId !== null) element.setPointerCapture?.(state.pointerId);
   }
 
   #onPointerMove(element, state, event) {
     if (!state.active || !this.#matchesPointer(state, event)) return;
-    const offset = (Number(event?.clientX) || 0) - state.startX;
+    const offset = this.#axis === "y"
+      ? (Number(event?.clientY) || 0) - state.startY
+      : (Number(event?.clientX) || 0) - state.startX;
     // Keep native touch panning and inertia, while suppressing a swipe's accidental click.
     if (state.touch && !this.#manualTouch) {
       if (Math.abs(offset) >= this.#dragThresholdPx) state.suppressClickUntil = Date.now() + 250;
@@ -152,7 +160,8 @@ export class HorizontalScrollController {
     if (!state.dragging) {
       state.dragging = true;
       const vertical = (Number(event?.clientY) || 0) - state.startY;
-      state.axis = this.#onVerticalGesture && Math.abs(vertical) > Math.abs(offset) ? "vertical" : "horizontal";
+      state.axis = this.#axis === "x" && this.#onVerticalGesture && Math.abs(vertical) > Math.abs(offset)
+        ? "vertical" : "horizontal";
       if (state.axis === "vertical") this.#onVerticalGesture(vertical);
       element.classList?.add(this.#dragClassName);
       if (
@@ -169,18 +178,20 @@ export class HorizontalScrollController {
       return;
     }
 
-    const maximum = this.#maximumScrollLeft(element);
-    const logicalOffset = this.#uiSurface?.physicalToLogicalDelta({ x: offset }).x ?? offset;
+    const maximum = this.#maximumScroll(element);
+    const logicalOffset = this.#axis === "y"
+      ? this.#uiSurface?.physicalToLogicalDelta({ y: offset }).y ?? offset
+      : this.#uiSurface?.physicalToLogicalDelta({ x: offset }).x ?? offset;
     const config = this.#getPanConfig?.();
     let next;
     if (config) {
       let distance = logicalOffset * nonNegativeFiniteOr(config.sensitivity, 1) * (config.inverted === false ? 1 : -1);
       const limit = nonNegativeFiniteOr(config.maxDistancePx);
       if (limit > 0) distance = Math.max(-limit, Math.min(limit, distance));
-      next = Math.max(0, Math.min(maximum, element.scrollLeft + distance - state.panDistance));
+      next = Math.max(0, Math.min(maximum, this.#scroll(element) + distance - state.panDistance));
       state.panDistance = distance;
     } else next = Math.max(0, Math.min(maximum, state.startScrollLeft - logicalOffset));
-    if (next !== element.scrollLeft) element.scrollLeft = next;
+    if (next !== this.#scroll(element)) this.#setScroll(element, next);
     state.suppressClickUntil = Date.now() + 250;
     event.preventDefault?.();
   }
@@ -216,10 +227,18 @@ export class HorizontalScrollController {
     return state.pointerId === null || event?.pointerId === state.pointerId;
   }
 
-  #maximumScrollLeft(element) {
-    return Math.max(
-      0,
-      (Number(element.scrollWidth) || 0) - (Number(element.clientWidth) || 0),
-    );
+  #scroll(element) {
+    return Number(this.#axis === "y" ? element.scrollTop : element.scrollLeft) || 0;
+  }
+
+  #setScroll(element, value) {
+    if (this.#axis === "y") element.scrollTop = value;
+    else element.scrollLeft = value;
+  }
+
+  #maximumScroll(element) {
+    return this.#axis === "y"
+      ? Math.max(0, (Number(element.scrollHeight) || 0) - (Number(element.clientHeight) || 0))
+      : Math.max(0, (Number(element.scrollWidth) || 0) - (Number(element.clientWidth) || 0));
   }
 }

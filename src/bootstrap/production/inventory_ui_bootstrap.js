@@ -38,7 +38,8 @@ import { UiAutoSwitchRenderer } from "../../game/presentation/ui/ui_auto_switch_
 
 export class InventoryUiBootstrap {
   // The keepnet is the inventory's keepnet section (spec 067); its toolbar button opens the inventory there.
-  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, buttonMountNode = documentRef?.body }) {
+  static createKeepnet({ documentRef, liveBait, inventoryUI, degradationColorResolver, uiSurface = null,
+    buttonMountNode = documentRef?.body }) {
     if (!documentRef?.body?.append || typeof documentRef.createElement !== "function") return null;
     const keepnet = new KeepnetSectionView({ documentRef, liveBait, buttonMountNode,
       model: new KeepnetViewModel(), labels: KEEPNET_LABELS,
@@ -47,9 +48,16 @@ export class InventoryUiBootstrap {
       resourceMeterRenderer: new InventoryResourceMeterRenderer({
         domFactory: new InventoryDomFactory(documentRef), degradationColorResolver,
       }),
-      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }) });
+      cards: new KeepnetCardRenderer({ documentRef, labels: KEEPNET_LABELS }),
+      listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface) });
     inventoryUI.attachKeepnetSection(keepnet);
     return keepnet;
+  }
+
+  // Vertical drag-to-scroll for item and fish lists (spec 076); filters keep the horizontal default.
+  static createListScrollController(uiSurface) {
+    return new HorizontalScrollController({ uiSurface, axis: "y", className: "inventory-vertical-scroll",
+      dragClassName: "inventory-vertical-scroll--dragging" });
   }
 
   static create({ autoMount = true, autoOpen = false, ...options } = {}) {
@@ -180,6 +188,7 @@ export class InventoryUiBootstrap {
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
+        listScrollController: InventoryUiBootstrap.createListScrollController(uiSurface),
         backdropImage: INVENTORY_SECTIONS.backpackImage,
         pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
           tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),

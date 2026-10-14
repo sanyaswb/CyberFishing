@@ -17,6 +17,8 @@ export class GameApplication {
   #chum;
   #bite;
   #inventory;
+  #castReadinessEquipment = null;
+  #castReady = false;
   #gameStateName = "scouting";
   #canvasMetrics;
   #viewportResizePending = false;
@@ -671,7 +673,17 @@ export class GameApplication {
     const reelHasDrag = !!eq.reel && eq.reel.effectiveStats?.hasDrag !== false;
     this.#input.setDragControlEnabled(rodAllowsReel && reelHasDrag);
     const stateName = this.#stateMachine?.currentName || this.#gameStateName;
-    this.#input.setPointerPanEnabled(stateName === "scouting" && !this.isAimingChum && !eq.rod);
+    this.#input.setPointerPanEnabled(stateName === "scouting" && !this.isAimingChum && !this.#canCast(eq));
+  }
+
+  // A drag pans the map whenever it cannot cast (spec 076): no rod, or a rod without its reel or line. getEquipped()
+  // keeps one object until the equipment changes, so readiness is evaluated once per change, not per frame.
+  #canCast(eq) {
+    if (eq !== this.#castReadinessEquipment) {
+      this.#castReadinessEquipment = eq;
+      this.#castReady = this.#inventory.evaluateCastReadiness().canCast === true;
+    }
+    return this.#castReady;
   }
 
   #applyViewportPan(input) {

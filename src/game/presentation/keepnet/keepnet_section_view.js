@@ -36,7 +36,7 @@ export class KeepnetSectionView {
   #cardFocusables = [];
 
   constructor({ documentRef, liveBait, model, cards, labels, resourceMeterRenderer, openSection, toggleSection,
-    buttonMountNode }) {
+    buttonMountNode, listScrollController }) {
     this.#document = documentRef;
     this.#liveBait = liveBait;
     this.#model = model;
@@ -98,6 +98,8 @@ export class KeepnetSectionView {
     });
     filters.append(this.#kind, this.#species);
     this.#list = this.#el("div", "keepnet-section__list inventory-collection__list");
+    // Dragging over a fish card scrolls the list instead of opening the card (spec 076).
+    listScrollController.attach(this.#list);
     // Shared collection (spec 074): back/heading/filters panel, a gap, then the fish list over the faded keepnet,
     // which CSS shows only in portrait.
     const controls = this.#el("div", "keepnet-section__controls inventory-collection__controls inventory-panel");
