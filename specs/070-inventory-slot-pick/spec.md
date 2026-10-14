@@ -17,6 +17,8 @@ landscape layout where the item list sits beside the loadout; in portrait the eq
    panel or completing the pick ends it. Category, subfilter and sort changes keep it, so the player can browse.
 5. **Rod craft panel availability.** Its empty sockets use the loadout availability policy, so a socket without an
    accessible compatible item shows the same warning instead of opening an empty backpack.
+6. **Rodless rod cell (follow-up).** Without a rod the single rod cell fills the free height of the equipment
+   section (its reference height stays the minimum and the gaps stay), because a rod is taller than wide.
 
 Landscape keeps the item list beside the loadout on the equipment tab; direct card activation there is unchanged.
 No gameplay, save or formula changes.

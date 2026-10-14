@@ -94,6 +94,18 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* Without a rod the single rod cell grows into the free height above the auxiliary row: a rod is taller than wide.
+   The reference height stays its minimum, so the gaps between the panels are kept (spec 070 follow-up). */
+.inventory-main__section--equipment .inventory-loadout-panel:has(> .inventory-loadout-panel__primary--single) {
+  grid-template-rows: minmax(0, 1fr) max-content;
+  align-content: stretch;
+}
+
+.inventory-main__section--equipment .inventory-loadout-panel__primary--single {
+  height: auto;
+  min-height: calc(var(--inventory-equipment-unit) * 3 + var(--inventory-equipment-gap) * 2 + var(--inventory-equipment-inset) * 2);
+}
+
 .inventory-loadout-panel__cascade {
   display: grid;
   grid-auto-rows: minmax(0, 1fr);
@@ -267,6 +279,17 @@
       flex: none;
       grid-template-rows: max-content max-content;
       align-content: start;
+    }
+
+    /* A rodless equipment section fills the content row so its rod cell can grow (spec 070 follow-up). */
+    .inventory-main__section--equipment:has(.inventory-loadout-panel__primary--single),
+    .inventory-main__section--equipment:has(.inventory-loadout-panel__primary--single) .inventory-loadout-shell {
+      height: 100%;
+    }
+
+    .inventory-main__section--equipment .inventory-loadout-panel:has(> .inventory-loadout-panel__primary--single) {
+      flex: 1;
+      min-height: 0;
     }
 
     /* Backpack: the illustration fills the section behind the item list. */

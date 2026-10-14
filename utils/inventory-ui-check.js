@@ -633,6 +633,14 @@ class InventoryStaticContractCheck {
       /\.inventory-loadout-panel__primary--single\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/,
       "Without dependent slots the rod cell spans the primary panel",
     );
+    assert.match(
+      style,
+      /\.inventory-main__section--equipment \.inventory-loadout-panel:has\(> \.inventory-loadout-panel__primary--single\)\s*\{\s*grid-template-rows:\s*minmax\(0,\s*1fr\)\s+max-content;/,
+      "Without a rod the rod cell grows into the free height of the equipment section",
+    );
+    assert.match(mobileLoadout.split("@media (orientation: portrait)")[1],
+      /\.inventory-main__section--equipment:has\(\.inventory-loadout-panel__primary--single\) \.inventory-loadout-shell\s*\{\s*height:\s*100%;/,
+      "A rodless portrait equipment section fills the content row");
     assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(style), "The rod cell no longer keeps a fixed 9:16 proportion");
     assert.ok(
       style.includes(
