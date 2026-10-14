@@ -90,7 +90,8 @@ module.exports = async function checkSharedFeed() {
   migrated.buyFeed(); assert.equal(JSON.parse(legacy.values.get(key)).schemaVersion, 5);
   legacy.tick(5000); migrated.advance(); assert.equal(migrated.getView().liveBaits.length, 0);
 
-  const motion = new AquariumFishMotion({ config: config.visual, rng: new SeededRng(123) });
+  const { aquariumVisualIssues, isUsableAquariumVisual } = await import("../../../src/game/config/validation/aquarium_visual_issues.js");
+  const motion = new AquariumFishMotion({ config: config.visual, rng: new SeededRng(123), isValidConfig: isUsableAquariumVisual });
   assert.equal(config.visual.fishSizePx, 60); assert.equal(config.visual.zone.width, .80);
   motion.setBounds(400, 250); motion.setFish(Array.from({ length: 48 }, (_, i) => ({ id: String(i), imagePath: "" })));
   for (let i = 0; i < 1000; i++) motion.update(100);
@@ -102,4 +103,14 @@ module.exports = async function checkSharedFeed() {
     assert(entry.y + entry.drawSize / 2 <= (z.y + z.height) * 250 + 1e-9);
   }
   assert.equal(motion.setConfig({ ...config.visual, zone: { x: 1, y: 0, width: 1, height: 1 } }), false);
+  // One rule set: the motion rejects exactly what the config schema reports.
+  assert.deepEqual(aquariumVisualIssues(config.visual), []);
+  for (const invalid of [{ gridSizePx: 0 }, { gridSizePx: "10" }, { fishSizePx: 201 }, { showZone: "yes" },
+    { speedMinPxPerSecond: 7, speedMaxPxPerSecond: 6 }, { directionMinMs: 6000 }, { zone: { x: .5, y: 0, width: .6, height: .5 } }]) {
+    const candidate = { ...config.visual, ...invalid };
+    assert(aquariumVisualIssues(candidate).length > 0, JSON.stringify(invalid));
+    assert.equal(motion.setConfig(candidate), false, JSON.stringify(invalid));
+  }
+  assert.equal(motion.setConfig({ ...config.visual, gridSizePx: 20, showZone: true }), true);
+  assert.equal(motion.config.gridSizePx, 20);
 };

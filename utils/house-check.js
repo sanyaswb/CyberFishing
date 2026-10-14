@@ -383,7 +383,24 @@ function checkHouseConfigUpdates() {
   assert.equal(listeners.get("config-updated").size, 0, "disposal removes the config listener");
 }
 
+async function checkAquariumCanvasResize() {
+  const { AquariumFishView } = await import("../src/game/presentation/house/aquarium_fish_view.js");
+  let rect = { width: 200, height: 100 }, writes = 0, transforms = 0, bounds = 0, resize;
+  const size = { width: 300, height: 150 };
+  const canvas = { getBoundingClientRect: () => rect, getContext: () => ({ setTransform() { transforms++; } }) };
+  for (const key of ["width", "height"]) Object.defineProperty(canvas, key, { get: () => size[key], set: value => { writes++; size[key] = value; } });
+  const view = new AquariumFishView({ canvas, windowTarget: { devicePixelRatio: 2 }, motion: { setBounds() { bounds++; } },
+    createImage: () => ({}), observeResize: (target, callback) => { resize = callback; return { disconnect() {} }; }, style: {} });
+  assert.deepEqual([size.width, size.height, writes, transforms, bounds], [400, 200, 2, 1, 1]);
+  for (let index = 0; index < 100; index++) resize();
+  assert.deepEqual([writes, transforms, bounds], [2, 1, 1], "unchanged observer deliveries never reset the aquarium bitmap");
+  rect = { width: 210, height: 100 }; resize();
+  assert.deepEqual([size.width, writes, bounds], [420, 4, 2], "a changed size resizes once");
+  view.dispose();
+}
+
 async function main() {
+  await checkAquariumCanvasResize();
   checkHouseConfigUpdates();
   await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");

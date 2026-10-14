@@ -16,3 +16,17 @@ commit; behavior is unchanged unless a section says otherwise; the game-cycle ba
 - House startup no longer passes `now` to `HousePresenter`, which never read it.
 
 Evidence: house-check covers the plural table; House/catalog checks render through the injected labels.
+
+## 2. Aquarium canvas: resize guard, injected colors, one visual rule set
+
+- `AquariumFishView` assigns the canvas size only when the device-pixel size or ratio changes (DESIGN_RULES §13: an
+  unchanged assignment resets the bitmap). 100 unchanged observer deliveries write nothing.
+- Its Canvas colors (DEV zone grid, placeholder fish) come from the injected `AQUARIUM_FISH_VIEW_STYLE` descriptor.
+- `CONFIG.liveBait.visual` has one rule set, `game/config/validation/aquarium_visual_issues.js`: the config schema
+  reports it and bootstrap injects `isUsableAquariumVisual` into `AquariumFishMotion`, which used to repeat the
+  rules inline. Numeric settings must be real numbers (a numeric string is rejected by both now).
+
+Correction to the review: the schema already validated `liveBait.visual`; the defect was the duplicated rule set.
+
+Evidence: house-check resize counters; live-bait shared-feed scenario rejects the same invalid settings the rule set
+reports and accepts a valid grid edit; catalog and schema checks pass.

@@ -1,3 +1,4 @@
+import { aquariumVisualIssues } from "./aquarium_visual_issues.js";
 import { ConfigValidationResult } from "./config_validation_result.js";
 import { FISH_CATEGORIES } from "../databases/fish/fish_categories.js";
 import { PHYSICS_UNITS_AND_NAMING } from "../raw/physics/physics_units_and_naming.js";
@@ -436,19 +437,8 @@ export class ConfigSchemaValidator {
         this.#requireFiniteNumber("CONFIG.liveBait.aquariumFeeds." + id + "." + key, item[key], { min: 1 });
       this.#requireFiniteNumber("CONFIG.liveBait.aquariumFeeds." + id + ".extraFishPenaltyMs", item.extraFishPenaltyMs, { min: 0 });
     }
-    const visual = cfg.visual || {};
-    for (const [key, min, max] of [["fishSizePx", 1, 200], ["sizeSpread", 0, .95],
-      ["speedMinPxPerSecond", 0, 100], ["speedMaxPxPerSecond", 0, 100],
-      ["directionMinMs", 1, Infinity], ["directionMaxMs", 1, Infinity], ["gridSizePx", 1, 100]])
-      this.#requireFiniteNumber("CONFIG.liveBait.visual." + key, visual[key], { min, max });
-    if (typeof visual.showZone !== "boolean") this.#error("CONFIG.liveBait.visual.showZone", "expected boolean");
-    for (const key of ["x", "y", "width", "height"])
-      this.#requireFiniteNumber("CONFIG.liveBait.visual.zone." + key, visual.zone?.[key], { min: 0, max: 1 });
-    if (!(visual.zone?.width > 0 && visual.zone?.height > 0) ||
-      visual.zone.x + visual.zone.width > 1 || visual.zone.y + visual.zone.height > 1)
-      this.#error("CONFIG.liveBait.visual.zone", "expected positive bounded zone");
-    if (visual.speedMinPxPerSecond > visual.speedMaxPxPerSecond || visual.directionMinMs > visual.directionMaxMs)
-      this.#error("CONFIG.liveBait.visual", "minimum exceeds maximum");
+    for (const [path, message] of aquariumVisualIssues(cfg.visual))
+      this.#error(path ? "CONFIG.liveBait.visual." + path : "CONFIG.liveBait.visual", message);
     for (const key of ["aquarium", "upgrade", "feed", "autoFeeder"]) {
       if (cfg.prices?.[key] !== 0) this.#error(`CONFIG.liveBait.prices.${key}`, "must be zero while currency is absent");
     }

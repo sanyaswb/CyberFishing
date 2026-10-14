@@ -13,6 +13,8 @@ import { TimeDisplay } from "../../platform/browser/ui/time_display.js";
 import { EMBEDDED_PAGE_RETURN_MESSAGE } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
+import { AQUARIUM_FISH_VIEW_STYLE } from "../../game/presentation/house/aquarium_fish_view_style.js";
+import { isUsableAquariumVisual } from "../../game/config/validation/aquarium_visual_issues.js";
 import { AquariumFeedPicker } from "../../game/presentation/house/aquarium_feed_picker.js";
 import { UiSurfaceAdapter } from "../../platform/browser/dom/ui_surface_adapter.js";
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
@@ -70,7 +72,8 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
   sceneDetachers.push(sceneScroll.attach(documentTarget.querySelector("[data-house-scrim]")));
   for (const button of documentTarget.querySelectorAll("[data-house-panel-button]")) sceneDetachers.push(sceneScroll.attach(button));
   const fishView = new AquariumFishView({ canvas: documentTarget.querySelector("[data-house-aquarium-fish]"),
-    windowTarget, motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => Math.random() } }),
+    windowTarget, motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => Math.random() }, isValidConfig: isUsableAquariumVisual }),
+    style: AQUARIUM_FISH_VIEW_STYLE,
     createImage: () => new windowTarget.Image(),
     observeResize: (canvas, callback) => {
       const observer = new windowTarget.ResizeObserver(callback); observer.observe(canvas); return observer;

@@ -11,8 +11,10 @@ export class AquariumFishView {
   #last = null;
   #visible = false;
   #createImage;
-  constructor({ canvas, windowTarget, motion, createImage, observeResize }) {
-    this.#canvas = canvas; this.#window = windowTarget; this.#motion = motion;
+  #style;
+  #ratio = 0;
+  constructor({ canvas, windowTarget, motion, createImage, observeResize, style }) {
+    this.#canvas = canvas; this.#window = windowTarget; this.#motion = motion; this.#style = style;
     this.#context = canvas.getContext("2d");
     this.#createImage = createImage;
     this.#observer = observeResize(canvas, this.#resize);
@@ -41,8 +43,10 @@ export class AquariumFishView {
   #resize = () => {
     const rect = this.#canvas.getBoundingClientRect();
     const ratio = this.#window.devicePixelRatio || 1;
-    this.#canvas.width = Math.max(1, Math.round(rect.width * ratio));
-    this.#canvas.height = Math.max(1, Math.round(rect.height * ratio));
+    const width = Math.max(1, Math.round(rect.width * ratio)), height = Math.max(1, Math.round(rect.height * ratio));
+    // Assigning even an unchanged size resets the bitmap and its context (DESIGN_RULES §13).
+    if (width === this.#canvas.width && height === this.#canvas.height && ratio === this.#ratio) return;
+    this.#canvas.width = width; this.#canvas.height = height; this.#ratio = ratio;
     this.#context.setTransform(ratio, 0, 0, ratio, 0, 0);
     this.#motion.setBounds(rect.width, rect.height);
   };
@@ -59,8 +63,8 @@ export class AquariumFishView {
     const config = this.#motion.config, zone = config.zone;
     const x = zone.x * width, y = zone.y * height, w = zone.width * width, h = zone.height * height;
     if (config.showZone) {
-      context.fillStyle = "rgba(0,255,90,0.12)"; context.fillRect(x, y, w, h);
-      context.strokeStyle = "rgba(30,255,120,0.65)"; context.lineWidth = 1; context.beginPath();
+      context.fillStyle = this.#style.zoneFill; context.fillRect(x, y, w, h);
+      context.strokeStyle = this.#style.zoneStroke; context.lineWidth = 1; context.beginPath();
       for (let dx = 0; dx <= w; dx += config.gridSizePx) { context.moveTo(x + dx, y); context.lineTo(x + dx, y + h); }
       for (let dy = 0; dy <= h; dy += config.gridSizePx) { context.moveTo(x, y + dy); context.lineTo(x + w, y + dy); }
       context.stroke(); context.strokeRect(x, y, w, h);
@@ -70,7 +74,7 @@ export class AquariumFishView {
       const image = this.#images.get(fish.imagePath);
       context.save(); context.translate(fish.x, fish.y); context.scale(fish.vx < 0 ? -1 : 1, 1);
       if (image?.complete && image.naturalWidth > 0) context.drawImage(image, -fish.drawSize / 2, -fish.drawSize / 2, fish.drawSize, fish.drawSize);
-      else { context.fillStyle = "#99e4bd"; context.beginPath(); context.ellipse(0, 0, fish.drawSize / 2, fish.drawSize / 4, 0, 0, Math.PI * 2); context.fill(); }
+      else { context.fillStyle = this.#style.placeholderFish; context.beginPath(); context.ellipse(0, 0, fish.drawSize / 2, fish.drawSize / 4, 0, 0, Math.PI * 2); context.fill(); }
       context.restore();
     }
     context.restore();

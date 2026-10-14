@@ -216,7 +216,7 @@ async function checkHouseExample() {
   const [{ HouseView }, { AquariumFeedPicker }, { AquariumFishView }, { AquariumFishMotion }, { UiCatalogHouseExample },
     { UiCatalogFrameScheduler }, { InventoryResourceMeterRenderer }, { InventoryDomFactory }, { UiCloseButtonRenderer },
     { UiAutoSwitchRenderer }, { DegradationColorResolver }, { DEGRADATION_COLOR_CONFIG }, { HOUSE_CONFIG }, { HOUSE_LABELS },
-    { CONFIG }, { TimeDisplay }] = await Promise.all([
+    { CONFIG }, { TimeDisplay }, { isUsableAquariumVisual }, { AQUARIUM_FISH_VIEW_STYLE }] = await Promise.all([
     import("../src/game/presentation/house/house_view.js"), import("../src/game/presentation/house/aquarium_feed_picker.js"),
     import("../src/game/presentation/house/aquarium_fish_view.js"), import("../src/game/presentation/house/aquarium_fish_motion.js"),
     import("../src/dev/ui_catalog/ui_catalog_house_example.js"), import("../src/dev/ui_catalog/ui_catalog_frame_scheduler.js"),
@@ -225,7 +225,7 @@ async function checkHouseExample() {
     import("../src/game/presentation/styles/degradation_color_resolver.js"), import("../src/game/presentation/visual/degradation_color_config.js"),
     import("../src/game/config/raw/house/house_config.js"), import("../src/game/presentation/house/house_labels.js"),
     import("../src/game/config/runtime/game_config.js"), import("../src/platform/browser/ui/time_display.js"),
-  ]);
+    import("../src/game/config/validation/aquarium_visual_issues.js"), import("../src/game/presentation/house/aquarium_fish_view_style.js")]);
   const documentRef = productionHouseDocument();
   const dom = new InventoryDomFactory(documentRef);
   const listeners = new Map(), timers = new Map(); let timerId = 0, disconnected = 0;
@@ -244,7 +244,8 @@ async function checkHouseExample() {
     setTimeout: (callback) => { const id = ++timerId; timers.set(id, callback); return id; }, clearTimeout: (id) => timers.delete(id) };
   const scheduler = new UiCatalogFrameScheduler({ windowTarget });
   const fishView = new AquariumFishView({ canvas: documentRef.querySelector("[data-house-aquarium-fish]"), windowTarget: scheduler,
-    motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => .5 } }), createImage: () => ({ complete: false }),
+    motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => .5 }, isValidConfig: isUsableAquariumVisual }),
+    style: AQUARIUM_FISH_VIEW_STYLE, createImage: () => ({ complete: false }),
     observeResize: () => ({ disconnect: () => { disconnected++; } }) });
   let example;
   const feedPicker = new AquariumFeedPicker({ documentRef, button: documentRef.querySelector("[data-house-feed-toggle]"),

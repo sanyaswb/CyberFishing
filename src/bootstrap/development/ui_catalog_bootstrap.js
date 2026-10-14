@@ -16,6 +16,8 @@ import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.j
 import { HouseView } from "../../game/presentation/house/house_view.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
+import { AQUARIUM_FISH_VIEW_STYLE } from "../../game/presentation/house/aquarium_fish_view_style.js";
+import { isUsableAquariumVisual } from "../../game/config/validation/aquarium_visual_issues.js";
 import { AquariumFeedPicker } from "../../game/presentation/house/aquarium_feed_picker.js";
 import { AquariumCareCalculator } from "../../game/domain/live_bait/aquarium_care_calculator.js";
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
@@ -135,7 +137,8 @@ export function startUiCatalog() {
           const detach = sceneScroll.attach(button); sceneDetachers.push(detach); own({ dispose: detach });
         }
         const fishView = own(new AquariumFishView({ canvas: scope.querySelector("[data-house-aquarium-fish]"), windowTarget: scheduler,
-          motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => .5 } }),
+          motion: new AquariumFishMotion({ config: CONFIG.liveBait.visual, rng: { next: () => .5 }, isValidConfig: isUsableAquariumVisual }),
+          style: AQUARIUM_FISH_VIEW_STYLE,
           createImage: () => { const image = new windowTarget.Image(); image.addEventListener("load", () => scheduler.flush(), { once: true }); return image; },
           observeResize: (canvas, callback) => {
             const observer = new windowTarget.ResizeObserver(() => { callback(); scheduler.flush(); });

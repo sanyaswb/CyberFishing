@@ -686,6 +686,7 @@
 │  │  │  │  ├── immutable_config.js
 │  │  │  │  └── resolved_config_provider.js
 │  │  │  └── validation
+│  │  │     ├── aquarium_visual_issues.js
 │  │  │     ├── config_schema_validator.js
 │  │  │     ├── config_validation_result.js
 │  │  │     ├── item_progression_config_validator.js
@@ -931,6 +932,7 @@
 │  │     │  ├── aquarium_feed_picker.js
 │  │     │  ├── aquarium_fish_motion.js
 │  │     │  ├── aquarium_fish_view.js
+│  │     │  ├── aquarium_fish_view_style.js
 │  │     │  ├── fish_thumbnail_path.js
 │  │     │  ├── house_labels.js
 │  │     │  ├── house_presenter.js

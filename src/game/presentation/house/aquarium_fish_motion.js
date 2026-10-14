@@ -1,22 +1,16 @@
 export class AquariumFishMotion {
   #config;
   #rng;
+  #isValidConfig;
   #fish = [];
   #width = 1;
   #height = 1;
-  constructor({ config, rng }) { this.#config = config; this.#rng = rng; }
+  // isValidConfig is the configuration's own rule set, injected by bootstrap; rejected live edits keep the current settings.
+  constructor({ config, rng, isValidConfig }) { this.#config = config; this.#rng = rng; this.#isValidConfig = isValidConfig; }
   get fish() { return this.#fish; }
   get config() { return this.#config; }
   setConfig(config) {
-    if (!config || !config.zone || ![config.fishSizePx, config.sizeSpread,
-      config.speedMinPxPerSecond, config.speedMaxPxPerSecond, config.directionMinMs,
-      config.directionMaxMs, config.gridSizePx, ...Object.values(config.zone)].every(Number.isFinite) ||
-      config.fishSizePx < 1 || config.fishSizePx > 200 || typeof config.showZone !== "boolean" ||
-      config.sizeSpread < 0 || config.sizeSpread > .95 || config.gridSizePx > 100 ||
-      config.speedMinPxPerSecond < 0 || config.speedMaxPxPerSecond > 100 || config.speedMaxPxPerSecond < config.speedMinPxPerSecond ||
-      config.directionMinMs < 1 || config.directionMaxMs < config.directionMinMs || config.gridSizePx < 1 ||
-      config.zone.x < 0 || config.zone.y < 0 || config.zone.width <= 0 || config.zone.height <= 0 ||
-      config.zone.x + config.zone.width > 1 || config.zone.y + config.zone.height > 1) return false;
+    if (!this.#isValidConfig(config)) return false;
     this.#config = config;
     for (const fish of this.#fish) { this.#size(fish); this.#direction(fish); this.#clamp(fish); }
     return true;
