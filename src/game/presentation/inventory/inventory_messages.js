@@ -11,7 +11,6 @@ export const INVENTORY_MESSAGES = Object.freeze({
   notAnAssembledStack: "Цей предмет не є складеним стеком.",
   slotAlreadyEmpty: "Комірка вже порожня.",
   assemblyNotFound: "Збірку не знайдено.",
-  selectComponentFirst: "Спочатку виберіть компонент в інвентарі.",
   itemIncompatibleOrNoSlot: "Предмет не сумісний з поточним спорядженням або для нього немає доступної комірки.",
   assemblyIncompatibleWithSlot: "Збірка не сумісна з обраною коміркою спорядження.",
   assemblyIncompatible: "Збірка не сумісна з поточним спорядженням.",

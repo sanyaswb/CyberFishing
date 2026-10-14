@@ -1,6 +1,6 @@
-// Navigation state of the inventory UI: open/closed, category, filters, sorting, selection, highlighted
-// equipment slot, panel mode (loadout or assembly editor), the visible section and the pending placement order. Commands change it
-// only through these named transitions; snapshot() is what view models read.
+// Navigation state of the inventory UI: open/closed, category, filters, sorting, selection, the pick target
+// (highlighted equipment slot or craft socket), panel mode (loadout or assembly editor), the visible section and the
+// pending placement order. Commands change it only through these named transitions; snapshot() is what view models read.
 export class InventoryUiState {
   #isOpen = false;
   #activeCategoryId = "all";
@@ -11,6 +11,7 @@ export class InventoryUiState {
   #placementOrderKey = null;
   #selectedInstanceId = null;
   #highlightedEquipmentSlotId = null;
+  #pickedSocketId = null;
   #panelMode = "loadout";
   #editingRootInstanceId = null;
   #viewingLoadoutId = null;
@@ -34,6 +35,7 @@ export class InventoryUiState {
       placementOrderKey: this.#placementOrderKey,
       selectedInstanceId: this.#selectedInstanceId,
       highlightedEquipmentSlotId: this.#highlightedEquipmentSlotId,
+      pickedSocketId: this.#pickedSocketId,
       panelMode: this.#panelMode,
       editingRootInstanceId: this.#editingRootInstanceId,
       viewingLoadoutId: this.#viewingLoadoutId,
@@ -44,6 +46,8 @@ export class InventoryUiState {
 
   get selectedInstanceId() { return this.#selectedInstanceId; }
   get highlightedEquipmentSlotId() { return this.#highlightedEquipmentSlotId; }
+  get pickedSocketId() { return this.#pickedSocketId; }
+  get isPicking() { return this.#highlightedEquipmentSlotId !== null || this.#pickedSocketId !== null; }
   get panelMode() { return this.#panelMode; }
   get editingRootInstanceId() { return this.#editingRootInstanceId; }
   get viewingLoadoutId() { return this.#viewingLoadoutId; }
@@ -53,18 +57,35 @@ export class InventoryUiState {
 
   selectSection(sectionId) {
     this.#activeSectionId = sectionId;
-    this.#highlightedEquipmentSlotId = null;
+    this.#clearPick();
+  }
+
+  // Pick (spec 070): an empty equipment cell or craft socket opens the backpack at the compatible items; activating a
+  // card completes the pick and returns to the equipment section.
+  pickForSlot(slotId) {
+    this.#startPick();
+    this.#highlightedEquipmentSlotId = slotId;
+  }
+
+  pickForSocket(socketId) {
+    this.#startPick();
+    this.#pickedSocketId = socketId;
+  }
+
+  completePick() {
+    this.#activeSectionId = "equipment";
+    this.#clearPick();
   }
 
   open() {
     this.#isOpen = true;
-    this.#highlightedEquipmentSlotId = null;
+    this.#clearPick();
   }
 
   close() {
     this.#rodRemovalStep = null;
     this.#isOpen = false;
-    this.#highlightedEquipmentSlotId = null;
+    if (this.isPicking) this.completePick();
     this.clearPlacementOrder();
   }
 
@@ -72,7 +93,6 @@ export class InventoryUiState {
     this.#activeCategoryId = categoryId || "all";
     this.#activeSubfilterIds = [];
     this.#selectedInstanceId = null;
-    this.#highlightedEquipmentSlotId = null;
     this.clearPlacementOrder();
   }
 
@@ -89,7 +109,6 @@ export class InventoryUiState {
     else selected.delete(filterId);
     this.#activeSubfilterIds = [...selected];
     this.#selectedInstanceId = null;
-    this.#highlightedEquipmentSlotId = null;
     this.clearPlacementOrder();
     return [...selected];
   }
@@ -126,12 +145,6 @@ export class InventoryUiState {
     this.#highlightedEquipmentSlotId = null;
   }
 
-  toggleHighlightedSlot(slotId) {
-    this.#highlightedEquipmentSlotId =
-      this.#highlightedEquipmentSlotId === slotId ? null : slotId;
-    return this.#highlightedEquipmentSlotId;
-  }
-
   setPlacementOrder(key) {
     this.#placementOrderKey = key;
   }
@@ -164,7 +177,19 @@ export class InventoryUiState {
     this.#editingRootInstanceId = editingRootInstanceId;
     this.#viewingLoadoutId = viewingLoadoutId;
     this.#selectedInstanceId = null;
-    this.#highlightedEquipmentSlotId = null;
+    this.#clearPick();
     this.clearPlacementOrder();
+  }
+
+  #startPick() {
+    this.#clearPick();
+    this.#activeSectionId = "backpack";
+    this.#selectedInstanceId = null;
+    this.focusCompatibleCategory();
+  }
+
+  #clearPick() {
+    this.#highlightedEquipmentSlotId = null;
+    this.#pickedSocketId = null;
   }
 }

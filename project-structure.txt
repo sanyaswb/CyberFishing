@@ -306,6 +306,8 @@
 │  │  └── spec.md
 │  ├── 069-portrait-inventory-container
 │  │  └── spec.md
+│  ├── 070-inventory-slot-pick
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

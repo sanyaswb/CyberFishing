@@ -203,25 +203,10 @@ export class InventoryViewModelFactory {
   ) {
     const mainSlots = [];
     const auxiliarySlots = [];
+    const itemViews = this.#createItemViews(accessibleRawItems);
     for (const slotId of EQUIPMENT_ALL_SLOT_IDS) {
       if (!this.#visibilityPolicy.isVisible(slotId, { rod })) continue;
-      const itemViews = accessibleRawItems
-        .map((item) => this.#itemViews.create(item.instanceId))
-        .filter(Boolean);
-      const availability = this.#availabilityPolicy.resolve({
-        slotId,
-        equipmentState: this.#equipmentState,
-        rod,
-        inventoryItems: itemViews,
-        isCompatible: ({ item }) =>
-          this.#compatibilityPolicy.isCompatible({
-            slotId,
-            item,
-            equipmentState: this.#equipmentState,
-            rod,
-            enforceReadiness: false,
-          }),
-      });
+      const availability = this.#slotAvailability(slotId, rod, itemViews);
       const equippedId = this.#equipmentState.getRootInstanceId(slotId);
       const equippedItemView = equippedId
         ? this.#itemViews.create(equippedId)
@@ -253,6 +238,27 @@ export class InventoryViewModelFactory {
       mainSlots,
       auxiliarySlots,
     };
+  }
+
+  #createItemViews(rawItems) {
+    return rawItems.map((item) => this.#itemViews.create(item.instanceId)).filter(Boolean);
+  }
+
+  #slotAvailability(slotId, rod, itemViews) {
+    return this.#availabilityPolicy.resolve({
+      slotId,
+      equipmentState: this.#equipmentState,
+      rod,
+      inventoryItems: itemViews,
+      isCompatible: ({ item }) =>
+        this.#compatibilityPolicy.isCompatible({
+          slotId,
+          item,
+          equipmentState: this.#equipmentState,
+          rod,
+          enforceReadiness: false,
+        }),
+    });
   }
 
   #createAssemblyEditor(
@@ -319,15 +325,18 @@ export class InventoryViewModelFactory {
     const rootView = this.#itemViews.create(rootInstanceId);
     if (rootView?.itemType === "rod") {
       const rodEquipment = equipped ? this.#equipmentState : new EquipmentState({ rod: rootInstanceId });
+      const itemViews = equipped ? this.#createItemViews(accessibleRawItems) : [];
       sockets = EQUIPMENT_MAIN_SLOT_IDS.filter((id) => id !== "rod" &&
         this.#visibilityPolicy.isVisible(id, { rod: rootView })).map((slotId) => {
         const id = rodEquipment.getRootInstanceId(slotId);
+        // An equipped rod's empty socket is an equipment cell: same availability and warning as the loadout (spec 070).
+        const availability = !id && equipped ? this.#slotAvailability(slotId, equipmentReadModel.rod, itemViews) : null;
         return {
           socketId: slotId, slotId, slotIndex: 0, parentInstanceId: rootInstanceId,
           label: this.#equipmentLabel(slotId, rootView, null),
           item: id ? this.#itemViews.create(id) : null,
-          state: id ? "filled" : equipped ? "available" : "unavailable",
-          warning: "Спочатку спорядіть це вудилище.",
+          state: id ? "filled" : availability ? this.#slotState(availability.state) : "unavailable",
+          warning: availability ? availability.warning || "" : "Спочатку спорядіть це вудилище.",
           highlighted: false,
         };
       });
@@ -487,9 +496,7 @@ export class InventoryViewModelFactory {
 
   #createInventory(uiState, accessibleRawItems, rod, context = {}) {
     const contextFiltered = context.mode === "assembly";
-    const itemViews = accessibleRawItems
-      .map((item) => this.#itemViews.create(item.instanceId))
-      .filter(Boolean);
+    const itemViews = this.#createItemViews(accessibleRawItems);
     const compatibleInstanceIds = contextFiltered
       ? new Set(itemViews.map((item) => item.instanceId))
       : new Set(
@@ -513,6 +520,14 @@ export class InventoryViewModelFactory {
       ? requestedCategoryId
       : "all";
     const highlightedSlotId = uiState.highlightedEquipmentSlotId || null;
+    const pickedTarget = contextFiltered && uiState.pickedSocketId
+      ? this.#attachmentTargetResolver.listTargets(context.rootInstanceId)
+          .find((target) => target.socketId === uiState.pickedSocketId) || null
+      : null;
+    const pickedSocketInstanceIds = new Set(pickedTarget
+      ? accessibleRawItems.filter((item) => this.#attachmentTargetResolver.accepts(pickedTarget, item))
+          .map((item) => item.instanceId)
+      : []);
     const categoryItems = itemViews
       .filter((item) =>
         categoryId === "compatible"
@@ -522,14 +537,15 @@ export class InventoryViewModelFactory {
       .map((item) => ({
         ...item,
         compatibleWithHighlightedSlot:
-          Boolean(highlightedSlotId) &&
+          pickedSocketInstanceIds.has(item.instanceId) ||
+          (Boolean(highlightedSlotId) &&
           this.#compatibilityPolicy.isCompatible({
             slotId: highlightedSlotId,
             item,
             equipmentState: this.#equipmentState,
             rod,
             enforceReadiness: false,
-          }),
+          })),
       }));
     if (!contextFiltered) {
       for (const loadout of this.#loadouts.list()) {

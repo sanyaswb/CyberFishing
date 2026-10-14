@@ -166,7 +166,15 @@ export class InventoryCommandService {
     }
   }
 
+  // A card activated during a pick (spec 070) returns to the equipment section once it is equipped or opened.
   #activateInventoryItem(instanceId) {
+    const picking = this.#uiState.isPicking;
+    const result = this.#activateInventoryItemInPanel(instanceId);
+    if (picking && result.success && !result.requiresSocketChoice) this.#uiState.completePick();
+    return result;
+  }
+
+  #activateInventoryItemInPanel(instanceId) {
     if (this.#loadouts.has(instanceId)) {
       this.#uiState.showSavedLoadoutPreview(instanceId);
       return this.#success({ loadoutId: instanceId });
@@ -186,6 +194,10 @@ export class InventoryCommandService {
       this.#assemblyStates.has(this.#uiState.editingRootInstanceId)
     ) {
       const rootInstanceId = this.#uiState.editingRootInstanceId;
+      const pickedTarget = this.#attachmentTargetResolver
+        .findCompatibleTargets(rootInstanceId, source)
+        .find((target) => target.socketId === this.#uiState.pickedSocketId);
+      if (pickedTarget) return this.#fillAssemblyTarget(rootInstanceId, source, pickedTarget);
       const targets = this.#findAssemblyTargets(rootInstanceId, source);
       if (targets.length === 1) {
         return this.#fillAssemblyTarget(rootInstanceId, source, targets[0]);
@@ -305,7 +317,8 @@ export class InventoryCommandService {
 
     const selectedId = this.#uiState.selectedInstanceId;
     if (!selectedId || !this.#repository.has(selectedId)) {
-      return this.#success({ highlightedSlotId: this.#uiState.toggleHighlightedSlot(slotId) });
+      this.#uiState.pickForSlot(slotId);
+      return this.#success({ highlightedSlotId: slotId });
     }
     return this.#equipLooseRoot(selectedId, slotId);
   }
@@ -374,7 +387,8 @@ export class InventoryCommandService {
       );
     }
     if (!occupied) {
-      return this.#failure(this.#messages.selectComponentFirst);
+      this.#uiState.pickForSocket(action.socketId);
+      return this.#success({ pickedSocketId: action.socketId });
     }
 
     this.#transaction.runAtomic(() => {

@@ -671,6 +671,58 @@ vm.runInContext(
     "activating a highlighted compatible card equips it and clears selection",
   );
 
+  // Spec 070: one pick flow. An empty cell or craft socket opens the backpack at the compatible items and the activated
+  // card returns to the equipment section, equipped or with its craft panel open.
+  const pick = makeComposition({
+    items: [raw("pick-rod", "rodFeeder"), raw("pick-reel", "reel"), raw("pick-line", "line")],
+  });
+  const pickUi = () => pick.commands.getUiState();
+  const pickCard = (instanceId) => pick.facade.getViewModel().inventory.items.find((item) => item.instanceId === instanceId);
+  dispatch(pick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-rod" });
+  dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "rod" });
+  const pickRodSockets = pick.facade.getViewModel().panel.assembly.sockets;
+  assertIntegration(pickRodSockets.find((socket) => socket.slotId === "reel")?.state === "available" &&
+    pickRodSockets.some((socket) => !socket.item && socket.state === "unavailable" && socket.warning),
+    "the rod craft panel uses the loadout availability for its empty sockets");
+  dispatch(pick, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: pickUi().editingRootInstanceId });
+  dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "reel" });
+  assertIntegration(pickUi().activeSectionId === "backpack" && pickUi().highlightedEquipmentSlotId === "reel" &&
+    pick.facade.getViewModel().inventory.activeCategoryId === "compatible" &&
+    pickCard("pick-reel")?.compatibleWithHighlightedSlot === true &&
+    pickCard("pick-line")?.compatibleWithHighlightedSlot !== true,
+    "an empty cell opens the backpack at the compatible category with the fitting cards highlighted");
+  dispatch(pick, InventoryActionType.CATEGORY_SELECT, { categoryId: "all" });
+  assertIntegration(pickUi().highlightedEquipmentSlotId === "reel" && pickUi().activeSectionId === "backpack",
+    "browsing categories keeps the pick");
+  const pickReelRoot = dispatch(pick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-reel" }).rootInstanceId;
+  assertIntegration(pickUi().activeSectionId === "equipment" && pickUi().panelMode === "assembly" &&
+    pickUi().editingRootInstanceId === pickReelRoot && pickUi().highlightedEquipmentSlotId === null,
+    "a picked card with sockets returns to equipment with its craft panel open");
+  const pickLineSocket = pick.facade.getViewModel().panel.assembly.sockets.find((socket) => socket.slotId === "line");
+  assertIntegration(pickLineSocket && !pickLineSocket.item && pickLineSocket.state === "available",
+    "the craft panel offers an empty line socket");
+  dispatch(pick, InventoryActionType.ASSEMBLY_SOCKET_ACTIVATE, { rootInstanceId: pickReelRoot,
+    socketId: pickLineSocket.socketId, slotId: pickLineSocket.slotId, slotIndex: pickLineSocket.slotIndex,
+    parentInstanceId: pickLineSocket.parentInstanceId });
+  assertIntegration(pickUi().activeSectionId === "backpack" && pickUi().pickedSocketId === pickLineSocket.socketId &&
+    pickCard("pick-line")?.compatibleWithHighlightedSlot === true,
+    "an empty craft socket opens the backpack with the cards it accepts highlighted");
+  dispatch(pick, InventoryActionType.INVENTORY_ITEM_ACTIVATE, { instanceId: "pick-line" });
+  assertIntegration(pickUi().activeSectionId === "equipment" && pickUi().pickedSocketId === null &&
+    pickUi().panelMode === "assembly" &&
+    Boolean(pick.facade.getViewModel().panel.assembly.sockets.find((socket) => socket.slotId === "line")?.item),
+    "a picked component fills that socket and returns to the craft panel");
+  dispatch(pick, InventoryActionType.ASSEMBLY_BACK, { rootInstanceId: pickReelRoot });
+  dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "reel" });
+  dispatch(pick, InventoryActionType.SECTION_SELECT, { sectionId: "equipment" });
+  assertIntegration(pickUi().highlightedEquipmentSlotId === null && pickUi().activeSectionId === "equipment",
+    "selecting a section tab ends the pick");
+  dispatch(pick, InventoryActionType.EQUIPMENT_SLOT_ACTIVATE, { slotId: "reel" });
+  dispatch(pick, InventoryActionType.CLOSE);
+  dispatch(pick, InventoryActionType.OPEN);
+  assertIntegration(pickUi().highlightedEquipmentSlotId === null && pickUi().activeSectionId === "equipment",
+    "closing the inventory ends the pick and restores the equipment section");
+
   const directLureEquipment = makeComposition({
     items: [
       raw("lure-rod", "rodSpinning"),
