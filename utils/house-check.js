@@ -2,6 +2,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const { TestDocument } = require("./testing/keepnet/test_document");
+const { SourceRuntime } = require("./testing/core/source_runtime.js");
 
 function houseDocument() {
   const documentRef = new TestDocument();
@@ -321,7 +322,67 @@ async function checkSharedTimeOfDayLayers() {
   }
 }
 
+function checkHouseConfigUpdates() {
+  const recorder = () => class {
+    constructor(options) {
+      this.options = options;
+      return new Proxy(this, { get: (target, key) => key in target ? target[key] : () => () => {} });
+    }
+  };
+  const listeners = new Map();
+  const listen = (type, callback) => { if (!listeners.has(type)) listeners.set(type, new Set()); listeners.get(type).add(callback); };
+  const unlisten = (type, callback) => listeners.get(type)?.delete(callback);
+  const node = () => ({ classList: { add() {}, toggle() {} }, appendChild() {}, scrollWidth: 0, clientWidth: 0 });
+  const documentTarget = { body: { children: [], appendChild() {} }, querySelector: node, querySelectorAll: () => [],
+    addEventListener: listen, removeEventListener: unlisten };
+  const windowTarget = { URLSearchParams, location: { search: "", origin: "https://game.example" }, localStorage: {},
+    setInterval: () => 1, clearInterval() {}, addEventListener() {}, removeEventListener() {} };
+  windowTarget.parent = windowTarget;
+  const visualUpdates = [];
+  const liveConfig = { liveBait: { visual: { gridSizePx: 10 }, careTickMs: 10000, displayTickMs: 1000 },
+    input: { pointerThreshold: 10, mapPan: {} }, debug: {} };
+  const stub = (name) => ({ [name]: recorder() });
+  const runtime = new SourceRuntime({ moduleStubs: {
+    "src/platform/browser/runtime/browser_startup_environment.js": { getBrowserStartupEnvironment: () => ({ documentTarget, windowTarget }) },
+    "src/game/config/runtime/game_config.js": { CONFIG: liveConfig },
+    "src/bootstrap/production/live_bait_composition.js": { composeLiveBait: () => ({ advance() {} }) },
+    "src/bootstrap/production/game_time_composition.js": { composeGameTime: () => ({ getHours: () => 12, sync() {} }) },
+    "src/platform/browser/ui/embedded_page_overlay.js": { EMBEDDED_PAGE_RETURN_MESSAGE: "return" },
+    "src/game/presentation/house/aquarium_fish_view.js": { AquariumFishView: class {
+      setConfig(config) { visualUpdates.push(config); return true; } dispose() {} } },
+    "src/platform/browser/dom/ui_surface_adapter.js": { UiSurfaceAdapter: class { mountRoot = { appendChild() {} }; dispose() {} } },
+    "src/platform/browser/dom/horizontal_scroll_controller.js": { HorizontalScrollController: class { attach() { return () => {}; } } },
+    ...Object.fromEntries([
+      ["src/platform/browser/time/browser_wall_clock.js", "BrowserWallClock"], ["src/game/presentation/house/house_presenter.js", "HousePresenter"],
+      ["src/game/presentation/house/house_view.js", "HouseView"], ["src/game/application/house/room_upgrade_service.js", "RoomUpgradeService"],
+      ["src/platform/browser/storage/room_progress_local_store.js", "RoomProgressLocalStore"], ["src/platform/browser/ui/time_display.js", "TimeDisplay"],
+      ["src/game/presentation/house/aquarium_fish_motion.js", "AquariumFishMotion"], ["src/game/presentation/house/aquarium_feed_picker.js", "AquariumFeedPicker"],
+      ["src/platform/browser/dom/inventory_dom_factory.js", "InventoryDomFactory"],
+      ["src/game/presentation/inventory/inventory_resource_meter_renderer.js", "InventoryResourceMeterRenderer"],
+      ["src/game/presentation/styles/degradation_color_resolver.js", "DegradationColorResolver"],
+      ["src/game/presentation/ui/ui_auto_switch_renderer.js", "UiAutoSwitchRenderer"], ["src/game/presentation/ui/ui_sheet_handle_renderer.js", "UiSheetHandleRenderer"],
+      ["src/platform/browser/dom/sheet_dismiss_controller.js", "SheetDismissController"], ["src/platform/browser/dom/sheet_height_controller.js", "SheetHeightController"],
+      ["src/platform/browser/dom/hud_row_sizer.js", "HudRowSizer"], ["src/platform/browser/ui/fullscreen_control.js", "FullscreenControl"],
+    ].map(([path, name]) => [path, stub(name)])),
+  } });
+  const { startFishermanHouse } = runtime.importModule("src/bootstrap/production/house_startup.js");
+  const house = startFishermanHouse();
+  const emit = (path) => { for (const callback of [...listeners.get("config-updated") || []]) callback({ detail: { path } }); };
+  emit(["CONFIG", "liveBait", "visual", "showZone"]);
+  assert.equal(visualUpdates.at(-1), liveConfig.liveBait.visual, "a DEV edit reaches the aquarium motion");
+  liveConfig.liveBait.visual = { gridSizePx: 20 };
+  emit(["CONFIG", "liveBait", "visual", "gridSizePx"]);
+  assert.equal(visualUpdates.at(-1).gridSizePx, 20, "the motion reads the live resolved settings, not the startup snapshot");
+  emit(["CONFIG"]); emit(["CONFIG", "liveBait"]);
+  assert.equal(visualUpdates.length, 4, "reset/import of the whole config or liveBait also reapplies the visual settings");
+  emit(["CONFIG", "liveBait", "careTickMs"]); emit(["CONFIG", "debug", "timeScale"]); emit(["ITEM_DB", "rods"]);
+  assert.equal(visualUpdates.length, 4, "unrelated edits leave the swimming fish unchanged");
+  house.dispose();
+  assert.equal(listeners.get("config-updated").size, 0, "disposal removes the config listener");
+}
+
 async function main() {
+  checkHouseConfigUpdates();
   await checkSharedTimeOfDayLayers();
   const { HOUSE_CONFIG } = await import("../src/game/config/raw/house/house_config.js");
   const { RoomUpgradeService } = await import("../src/game/application/house/room_upgrade_service.js");

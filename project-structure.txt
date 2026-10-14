@@ -292,12 +292,15 @@
 │  │  └── spec.md
 │  ├── 063-house-time-of-day
 │  │  └── spec.md
+│  ├── 064-house-dev-config
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
 │  │  ├── development
 │  │  │  ├── debug_console_bootstrap.js
 │  │  │  ├── debug_overlay_bootstrap.js
+│  │  │  ├── dev_config_validation_composition.js
 │  │  │  ├── dev_time_composition.js
 │  │  │  ├── development_game_startup.js
 │  │  │  ├── development_house_startup.js

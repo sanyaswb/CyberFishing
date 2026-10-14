@@ -15,6 +15,8 @@ import { ConsoleLogger } from "../../platform/browser/diagnostics/console_logger
 import { EmbeddedPageOverlay } from "../../platform/browser/ui/embedded_page_overlay.js";
 import { UI_CATALOG_LABELS } from "../../dev/ui_catalog/ui_catalog_definitions.js";
 import { composeDevTimeDisplay } from "./dev_time_composition.js";
+import { composeDevConfigValidation } from "./dev_config_validation_composition.js";
+import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 
 export async function startDevelopmentHouse() {
   const { documentTarget, windowTarget } = getBrowserStartupEnvironment();
@@ -50,6 +52,10 @@ export async function startDevelopmentHouse() {
     documentTarget.body.replaceChildren(...nodes);
     documentTarget.title = template.title;
     const configRuntime = createProductionConfigContext();
+    // The same DEV item catalog and config validation as the location page.
+    const itemCatalog = createDevItemCatalog(ITEM_DB);
+    const mapCatalog = CONFIG.locations.map;
+    const configValidation = composeDevConfigValidation({ configRuntime, itemCatalog, mapCatalog });
     const cache = new LocalStorageCache({ storage: windowTarget.localStorage, logger: new ConsoleLogger() });
     const synchronizer = new HookedFishProfileSynchronizer({ fishRarityResolver: new FishRarityResolver(CONFIG.rarity),
       fishVisualVariantResolver: new FishVisualVariantResolver({ noneAnomalyIds: CONFIG.rarity?.fish?.noneAnomalyIds }) });
@@ -66,7 +72,7 @@ export async function startDevelopmentHouse() {
       },
       onReturnData: () => ({ debugTime: control.suspend() }),
       createDevTools: ({ uiSurface, returnToGame, toggleMountNode }) => new DevTools(CONFIG, synchronizer, {
-        configRuntime, catalogs: { items: ITEM_DB, fishes: FISH_DB, maps: CONFIG.locations.map },
+        configRuntime, configValidation, catalogs: { items: itemCatalog, fishes: FISH_DB, maps: mapCatalog },
         storageCache: cache, settingsStore: null, debugModulesSource: () => ({}),
         openGame: returnToGame, openUiCatalog: () => catalog.open(),
         createUI: toggle => {

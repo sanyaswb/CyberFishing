@@ -27,6 +27,8 @@ import { HorizontalScrollController } from "../../platform/browser/dom/horizonta
 import { FullscreenControl } from "../../platform/browser/ui/fullscreen_control.js";
 import { HUD_LABELS } from "../../game/presentation/hud/hud_labels.js";
 
+const AQUARIUM_VISUAL_PATH = Object.freeze(["liveBait", "visual"]);
+
 export function startFishermanHouse({ createTimeDisplay = null, createDevTools = null, onPreviewData = null, onReturnData = null } = {}) {
   const { documentTarget, windowTarget } = getBrowserStartupEnvironment();
   const originalNodes = Array.from(documentTarget.body.children).filter(node => node.tagName !== "SCRIPT");
@@ -81,6 +83,14 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
     }
   };
   windowTarget.addEventListener("message", onPreview);
+  // Runtime config edits (DEV tools in practice) arrive as "config-updated" events on the document. The motion keeps
+  // its previous settings when an edited value is invalid.
+  const onConfigUpdated = (event) => {
+    const path = event.detail?.path;
+    if (Array.isArray(path) && path[0] === "CONFIG" && AQUARIUM_VISUAL_PATH.every((key, index) => path.length <= index + 1 || path[index + 1] === key))
+      fishView.setConfig(CONFIG.liveBait.visual);
+  };
+  documentTarget.addEventListener("config-updated", onConfigUpdated);
   let presenter;
   const feedPicker = new AquariumFeedPicker({ documentRef: documentTarget,
     button: documentTarget.querySelector("[data-house-feed-toggle]"), list: documentTarget.querySelector("[data-house-feed-list]"),
@@ -115,6 +125,7 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
   const devTools = createDevTools?.({ uiSurface, returnToGame, toggleMountNode: documentTarget.querySelector("[data-house-dev-mount]") });
   return { dispose() { windowTarget.clearInterval(careTimer); windowTarget.clearInterval(displayTimer);
     windowTarget.removeEventListener("focus", onFocus); windowTarget.removeEventListener("message", onPreview);
+    documentTarget.removeEventListener("config-updated", onConfigUpdated);
     devTools?.dispose(); headerSizer.dispose(); fullscreen.dispose();
     for (const detach of sceneDetachers) detach();
     feedPicker.dispose(); fishView.dispose(); timeDisplay.dispose(); view.dispose(); sheetHeights.dispose();

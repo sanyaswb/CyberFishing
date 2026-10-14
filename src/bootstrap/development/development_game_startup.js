@@ -5,8 +5,7 @@ import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 import { BrowserDebugAdapter } from "../../dev/runtime/browser_debug_adapter.js";
 import { BrowserGameLifecycle } from "../../platform/browser/runtime/browser_game_lifecycle.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
-import { ConfigSchemaValidator } from "../../game/config/validation/config_schema_validator.js";
-import { ConfigValidationReporter } from "../../dev/diagnostics/config_validation_reporter.js";
+import { composeDevConfigValidation } from "./dev_config_validation_composition.js";
 import { DebugService } from "../../dev/runtime/debug_service.js";
 import { DevFlagsProvider } from "../../dev/runtime/dev_flags_provider.js";
 import { DevTools } from "../../dev/tools/dev_tools.js";
@@ -87,11 +86,7 @@ async function startGame() {
   const godMode = new GameplayOverrideReader(CONFIG);
   const itemCatalog = createDevItemCatalog(ITEM_DB);
   const mapCatalog = CONFIG.locations.map;
-  const configValidation = new ConfigValidationReporter({
-    createValidator: parameterLabels => new ConfigSchemaValidator({config: configRuntime.runtimeConfig, fishDb: FISH_DB,
-      itemDb: itemCatalog, mapDb: mapCatalog, parameterLabels, baseConfig: configRuntime.baseConfig,
-      overrideStore: configRuntime.overrideStore, projectVersion: PROJECT_VERSION_CONFIG}),
-  });
+  const configValidation = composeDevConfigValidation({configRuntime, itemCatalog, mapCatalog});
   let consoleRuntime, overlayRuntime, game, watchdog;
   let housePreviewWindow = null;
   let timeControl = null;

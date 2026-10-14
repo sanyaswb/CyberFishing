@@ -27,6 +27,13 @@ Expected: the same continuous crossfade and layer composition as the test locati
 Actual: opacity changed only on the 1 s House refresh (3–17 % jumps); the House always stacked three layers.
 Fix/evidence: shared `timeOfDayLayers` for location Canvas and House DOM; House blends each refresh with a linear CSS transition. Map/House layer and no-write checks in house-check. Spec 063; owner visual acceptance pending.
 
+### G-037 House DevTools ignore aquarium visual edits and miss validation (P3, done, not released)
+Found: 2026-10-14, owner DEV House review.
+Reproduce: dev.html → House, DevTools → CONFIG.liveBait.visual: change gridSizePx or showZone.
+Expected: the aquarium grid/zone reacts immediately; House DevTools validate edits like the location page.
+Actual: the motion keeps the startup snapshot of the frozen liveBait config; no validation, production item catalog.
+Fix/evidence: House startup applies `config-updated` visual edits; shared DEV validation composition. The startup check failed before the fix. Spec 064; owner check pending.
+
 ### G-033 Selected feed is separate from active information and cannot reopen its list (P3, done in v0.35.0)
 Found: 2026-10-14, owner House review and compact-text correction.
 Reproduce: choose a feed, inspect the remaining open list, plain preview and separate active-feed caption; try clicking the preview to change the draft.

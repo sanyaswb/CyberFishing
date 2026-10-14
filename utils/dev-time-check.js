@@ -151,6 +151,8 @@ async function checkHouseToolsComposition() {
   assert.equal(doc.body.className, "house house--dev");
   assert.equal(typeof toolsOptions.openGame, "function");
   assert.equal(typeof toolsOptions.openUiCatalog, "function");
+  assert.equal(typeof toolsOptions.configValidation.report, "function", "House DevTools validate edits like the location page");
+  assert(toolsOptions.catalogs.items.builds.debug_float_build, "House DevTools use the DEV item catalog");
   assert.equal(messages[0].data.type, "cyber-fishing:dev-house-ready");
   assert.equal(messages[0].origin, windowTarget.location.origin);
   houseOptions.onPreviewData({ debugTime: { enabled: true, multiplier: 2.5, timeScale: 480 } });
