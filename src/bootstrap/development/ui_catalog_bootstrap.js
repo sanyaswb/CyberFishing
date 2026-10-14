@@ -13,7 +13,7 @@ import { KeepnetUI } from "../../game/presentation/keepnet/keepnet_ui.js";
 import { KeepnetViewModel } from "../../game/presentation/keepnet/keepnet_view_model.js";
 import { KeepnetCardRenderer } from "../../game/presentation/keepnet/keepnet_card_renderer.js";
 import { KEEPNET_LABELS } from "../../game/presentation/keepnet/keepnet_labels.js";
-import { HouseView } from "../../game/presentation/house/house_view.js";
+import { composeHouseView } from "../production/house_view_composition.js";
 import { AquariumFishView } from "../../game/presentation/house/aquarium_fish_view.js";
 import { AquariumFishMotion } from "../../game/presentation/house/aquarium_fish_motion.js";
 import { AQUARIUM_FISH_VIEW_STYLE } from "../../game/presentation/house/aquarium_fish_view_style.js";
@@ -157,12 +157,11 @@ export function startUiCatalog() {
           addEventListener: (type, listener, options) => { windowBindings.push([type, listener, options]); windowTarget.addEventListener(type, listener, options); },
           removeEventListener: (type, listener, options) => windowTarget.removeEventListener(type, listener, options) };
         const sheetHeights = own(new SheetHeightController({ windowTarget, uiSurface: surface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }));
-        view = own(new HouseView({ documentRef: scope, windowTarget: houseWindow, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
+        view = own(composeHouseView({ documentRef: scope, windowTarget: houseWindow, domFactory: dom, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
           returnTo: "#house", fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
           resourceMeters: meters, autoSwitchRenderer: auto,
           sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController({ uiSurface: surface,
-            dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }), sheetDismissLabel: HOUSE_LABELS.sheetDismiss,
-          menuHandleLabel: HOUSE_LABELS.menuHandle,
+            dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }),
           onReturn: () => { status.textContent = UI_CATALOG_LABELS.houseReturn; },
           perform: (action, fishId) => example.perform(action, fishId) }));
         example = new UiCatalogHouseExample({ view, fishView, feedPicker, frameScheduler: scheduler, documentScope: scope, roomConfig: HOUSE_CONFIG.room, timeDisplay, status,

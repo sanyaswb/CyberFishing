@@ -2,7 +2,7 @@ import { getBrowserStartupEnvironment } from "../../platform/browser/runtime/bro
 import { BrowserWallClock } from "../../platform/browser/time/browser_wall_clock.js";
 import { composeLiveBait } from "./live_bait_composition.js";
 import { HousePresenter } from "../../game/presentation/house/house_presenter.js";
-import { HouseView } from "../../game/presentation/house/house_view.js";
+import { composeHouseView } from "./house_view_composition.js";
 import { HOUSE_LABELS } from "../../game/presentation/house/house_labels.js";
 import { CONFIG } from "../../game/config/runtime/game_config.js";
 import { HOUSE_CONFIG } from "../../game/config/raw/house/house_config.js";
@@ -102,11 +102,9 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
     else windowTarget.location.assign(returnTo);
   };
   const sheetHeights = new SheetHeightController({ windowTarget, uiSurface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs });
-  view = new HouseView({ documentRef: documentTarget, windowTarget, sheetHeights,
+  view = composeHouseView({ documentRef: documentTarget, windowTarget, domFactory, sheetHeights,
     resourceMeters, sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory,
       dismissController: new SheetDismissController({ uiSurface, dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }),
-    sheetDismissLabel: HOUSE_LABELS.sheetDismiss,
-    menuHandleLabel: HOUSE_LABELS.menuHandle,
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
     returnTo, fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,

@@ -43,3 +43,19 @@ reports and accepts a valid grid edit; catalog and schema checks pass.
 
 Correction to the review: most House colors already live in the `.house` theme block; the remaining literals have a
 single consumer and stay local (docs/styles.md). No visual value changes.
+
+## 4. HouseView split by responsibility
+
+`HouseView` (about 530 lines) mixed navigation, room art, level cards, fish lists and aquarium status. It now keeps
+the aquarium status, notices and click delegation (return link, actions) and composes injected parts:
+
+- `HouseNavigationController`: header/menu zones, sheets with focus restoration and Escape, sheet/menu handles,
+  desktop menu hover, scene gestures, rooms; `setLocked` hides the menu and closes the sheet during renovation;
+- `HouseRoomView`: level art, time-of-day layers (spec 063), room texts, renovation status;
+- `HouseLevelCard`: one segment meter and next-level row (room and aquarium instances);
+- `HouseFishListView`: one stable-row fish list (live baits and keepnet instances), elements through the injected
+  `InventoryDomFactory` instead of a private `#el` copy.
+
+`bootstrap/production/house_view_composition.js` (`composeHouseView`) composes them once for the House page and the
+DEV UI catalog. Public `HouseView` API, DOM, click/keydown/pointer listener counts, render order and disposal are
+unchanged; the existing House, catalog and navigation checks pass without behavioral edits.

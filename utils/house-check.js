@@ -62,7 +62,7 @@ function houseDocument() {
 }
 
 async function checkHousePresentation(HOUSE_CONFIG) {
-  const { HouseView } = await import("../src/game/presentation/house/house_view.js");
+  const { composeHouseView } = await import("../src/bootstrap/production/house_view_composition.js");
   const { HOUSE_LABELS } = await import("../src/game/presentation/house/house_labels.js");
   assert.deepEqual([0, 1, 2, 4, 5, 11, 14, 21, 22, 25, 101, 112].map(HOUSE_LABELS.fishCount), ["0 риб", "1 риба", "2 риби", "4 риби", "5 риб",
     "11 риб", "14 риб", "21 риба", "22 риби", "25 риб", "101 риба", "112 риб"], "fish counters use Ukrainian plural forms");
@@ -92,13 +92,13 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     setTimeout: callback => { timers.set(++timerId, callback); return timerId; }, clearTimeout: id => timers.delete(id),
     matchMedia: () => motionPreference };
   const actions = [];
-  const createView = () => new HouseView({ documentRef, windowTarget,
+  const createView = () => composeHouseView({ documentRef, windowTarget, domFactory,
     sheetHeights: new SheetHeightController({ windowTarget, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui, returnTo: "index.html",
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
-    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000, labels: HOUSE_LABELS });
+    autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000, labels: HOUSE_LABELS });
   const view = createView();
   const header = documentRef.querySelector("[data-house-header]"), dock = documentRef.querySelector("[data-house-dock]");
   assert.equal(header.inert, true, "House starts with both gesture zones closed");
@@ -354,9 +354,10 @@ function checkHouseConfigUpdates() {
       setConfig(config) { visualUpdates.push(config); return true; } dispose() {} } },
     "src/platform/browser/dom/ui_surface_adapter.js": { UiSurfaceAdapter: class { mountRoot = { appendChild() {} }; dispose() {} } },
     "src/platform/browser/dom/horizontal_scroll_controller.js": { HorizontalScrollController: class { attach() { return () => {}; } } },
+    "src/bootstrap/production/house_view_composition.js": { composeHouseView: () => new (recorder())() },
     ...Object.fromEntries([
       ["src/platform/browser/time/browser_wall_clock.js", "BrowserWallClock"], ["src/game/presentation/house/house_presenter.js", "HousePresenter"],
-      ["src/game/presentation/house/house_view.js", "HouseView"], ["src/game/application/house/room_upgrade_service.js", "RoomUpgradeService"],
+ ["src/game/application/house/room_upgrade_service.js", "RoomUpgradeService"],
       ["src/platform/browser/storage/room_progress_local_store.js", "RoomProgressLocalStore"], ["src/platform/browser/ui/time_display.js", "TimeDisplay"],
       ["src/game/presentation/house/aquarium_fish_motion.js", "AquariumFishMotion"], ["src/game/presentation/house/aquarium_feed_picker.js", "AquariumFeedPicker"],
       ["src/platform/browser/dom/inventory_dom_factory.js", "InventoryDomFactory"],

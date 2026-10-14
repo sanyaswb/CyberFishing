@@ -45,7 +45,7 @@ appearance; its single header row scales every control together when needed. A c
 reads shared token sizes only for viewport/rate changes. The room artwork has its own horizontal
 viewport, uses injected map pan settings and covers wide screens without side gaps.
 Its day/evening/night art uses the location's `timeOfDayLayers` composition (one opaque base, at most one
-blend); HouseView writes phase opacities only on change and a linear transition lasting one refresh blends them. Vertical gestures
+blend); HouseRoomView writes phase opacities only on change and a linear transition lasting one refresh blends them. Vertical gestures
 reveal the header/menu zones; sheets use a shared tap/swipe handle in place of a cross. Page navigation
 actions share one compact Grid without the parameter rows' dashed separators.
 An opposite scene gesture closes the visible zone before a later gesture can open the other. House
@@ -84,7 +84,7 @@ See [Aquarium loading contract](../specs/061-aquarium-feed-loading/spec.md) for 
 The dock handle opts out of the shared handle's hover background through
 `--ui-sheet-handle-hover-background`. On permitted desktop mouse hover, entering a menu button holds
 the button-container height until the pointer leaves the dock; gaps/handle areas never start the hold.
-HouseView owns this transient UI state and disposes its two pointer bindings. CSS uses the adapter's
+HouseNavigationController owns this transient UI state and disposes its two pointer bindings. CSS uses the adapter's
 desktop-hover policy and shared motion tokens; touch gestures and selected-sheet states retain their behavior.
 The production clock remains passive. See [DEV time/House contract](../specs/058-dev-time-controls/spec.md).
 

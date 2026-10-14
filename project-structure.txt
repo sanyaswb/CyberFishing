@@ -321,6 +321,7 @@
 │  │     ├── game_time_composition.js
 │  │     ├── game_version_badge.js
 │  │     ├── house_startup.js
+│  │     ├── house_view_composition.js
 │  │     ├── inventory_composition_root.js
 │  │     ├── inventory_ui_bootstrap.js
 │  │     ├── live_bait_composition.js
@@ -934,8 +935,12 @@
 │  │     │  ├── aquarium_fish_view.js
 │  │     │  ├── aquarium_fish_view_style.js
 │  │     │  ├── fish_thumbnail_path.js
+│  │     │  ├── house_fish_list_view.js
 │  │     │  ├── house_labels.js
+│  │     │  ├── house_level_card.js
+│  │     │  ├── house_navigation_controller.js
 │  │     │  ├── house_presenter.js
+│  │     │  ├── house_room_view.js
 │  │     │  └── house_view.js
 │  │     ├── hud
 │  │     │  ├── fight_hud_frame_builder.js

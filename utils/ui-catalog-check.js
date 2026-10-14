@@ -62,7 +62,7 @@ async function main() {
   const bootstrap = fs.readFileSync("src/bootstrap/development/ui_catalog_bootstrap.js", "utf8");
   assert(!/localStorage|sessionStorage|setInterval|start(?:Game|DevelopmentGame|FishermanHouse)|composeLiveBait|RoomProgressLocalStore/.test(bootstrap), "catalog composition must not open storage/game/care services");
   assert(bootstrap.includes('fetch("fisherman-house.html"') && bootstrap.includes('node.tagName !== "SCRIPT"'), "house reuses production shell without running scripts");
-  assert(bootstrap.includes("new HouseView(") && bootstrap.includes("new AquariumFishView(") && bootstrap.includes("new AquariumFeedPicker("), "actual house views are exercised");
+  assert(bootstrap.includes("composeHouseView(") && bootstrap.includes("new AquariumFishView(") && bootstrap.includes("new AquariumFeedPicker("), "actual house views are exercised");
   for (const file of fs.readdirSync("src/dev/ui_catalog")) {
     const source = fs.readFileSync(path.join("src/dev/ui_catalog", file), "utf8");
     assert(!/localStorage|sessionStorage|setInterval/.test(source), `isolated example: ${file}`);
@@ -213,11 +213,11 @@ function productionHouseDocument() {
 }
 
 async function checkHouseExample() {
-  const [{ HouseView }, { AquariumFeedPicker }, { AquariumFishView }, { AquariumFishMotion }, { UiCatalogHouseExample },
+  const [{ composeHouseView }, { AquariumFeedPicker }, { AquariumFishView }, { AquariumFishMotion }, { UiCatalogHouseExample },
     { UiCatalogFrameScheduler }, { InventoryResourceMeterRenderer }, { InventoryDomFactory }, { UiCloseButtonRenderer },
     { UiAutoSwitchRenderer }, { DegradationColorResolver }, { DEGRADATION_COLOR_CONFIG }, { HOUSE_CONFIG }, { HOUSE_LABELS },
     { CONFIG }, { TimeDisplay }, { isUsableAquariumVisual }, { AQUARIUM_FISH_VIEW_STYLE }] = await Promise.all([
-    import("../src/game/presentation/house/house_view.js"), import("../src/game/presentation/house/aquarium_feed_picker.js"),
+    import("../src/bootstrap/production/house_view_composition.js"), import("../src/game/presentation/house/aquarium_feed_picker.js"),
     import("../src/game/presentation/house/aquarium_fish_view.js"), import("../src/game/presentation/house/aquarium_fish_motion.js"),
     import("../src/dev/ui_catalog/ui_catalog_house_example.js"), import("../src/dev/ui_catalog/ui_catalog_frame_scheduler.js"),
     import("../src/game/presentation/inventory/inventory_resource_meter_renderer.js"), import("../src/platform/browser/dom/inventory_dom_factory.js"),
@@ -262,12 +262,12 @@ async function checkHouseExample() {
   documentRef.documentElement = { requestFullscreen: async () => {} };
   const fullscreenControl = new FullscreenControl({ documentRef,
     mountNode: documentRef.querySelector("[data-house-fullscreen-mount]"), label: "Fullscreen" });
-  const view = new HouseView({ documentRef, windowTarget, sheetHeights, perform: (action, id) => example.perform(action, id),
+  const view = composeHouseView({ documentRef, windowTarget, domFactory: dom, sheetHeights, perform: (action, id) => example.perform(action, id),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
     returnTo: "#house", onReturn: () => {}, fishView, feedPicker, timeBlendMs: 1000, labels: HOUSE_LABELS,
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver: colors }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController() }),
-    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }) });
+    autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }) });
   example = new UiCatalogHouseExample({ view, fishView, feedPicker, frameScheduler: scheduler,
     documentScope: { body: documentRef.body, dispose() {} }, roomConfig: HOUSE_CONFIG.room, timeDisplay, status: dom.element("p"), fullscreenControl,
     sheetHeights, aquariumCapacities: CONFIG.liveBait.capacities,
