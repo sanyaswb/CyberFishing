@@ -1,11 +1,13 @@
 export class InventoryLoadoutPanelRenderer {
   #dom;
   #itemRenderer;
+  #resourceMeterRenderer;
   #getEquippedLongPressDurationMs;
 
-  constructor({ domFactory, itemRenderer, getEquippedLongPressDurationMs } = {}) {
+  constructor({ domFactory, itemRenderer, resourceMeterRenderer, getEquippedLongPressDurationMs } = {}) {
     this.#dom = domFactory;
     this.#itemRenderer = itemRenderer;
+    this.#resourceMeterRenderer = resourceMeterRenderer;
     this.#getEquippedLongPressDurationMs = getEquippedLongPressDurationMs;
   }
 
@@ -17,6 +19,7 @@ export class InventoryLoadoutPanelRenderer {
       onWarning = null,
     } = {},
   ) {
+    const handlers = { onSlotActivate, onSlotLongPress, onWarning };
     const shell = this.#dom.element(
       "section",
       "inventory-loadout-shell",
@@ -34,30 +37,19 @@ export class InventoryLoadoutPanelRenderer {
     const dependentSlots = model.mainSlots.filter(
       (slot) => slot.slotId !== "rod",
     );
-    primary.style.setProperty("--inventory-cascade-count", String(dependentSlots.length));
-    if (rod) {
-      primary.appendChild(
-        this.#renderSlot(rod, "rod", {
-          onSlotActivate,
-          onSlotLongPress,
-          onWarning,
-        }),
+    // Without dependent slots (no rod selected) the rod cell spans the whole primary panel.
+    primary.classList.toggle("inventory-loadout-panel__primary--single", dependentSlots.length === 0);
+    if (rod) primary.appendChild(this.#renderRod(rod, handlers));
+    if (dependentSlots.length) {
+      const cascade = this.#dom.element(
+        "div",
+        "inventory-loadout-panel__cascade",
       );
+      dependentSlots.forEach((slot) => {
+        cascade.appendChild(this.#renderSlot(slot, "semantic", handlers));
+      });
+      primary.appendChild(cascade);
     }
-    const cascade = this.#dom.element(
-      "div",
-      "inventory-loadout-panel__cascade",
-    );
-    dependentSlots.forEach((slot) => {
-      cascade.appendChild(
-        this.#renderSlot(slot, "semantic", {
-          onSlotActivate,
-          onSlotLongPress,
-          onWarning,
-        }),
-      );
-    });
-    primary.appendChild(cascade);
     panel.appendChild(primary);
 
     if (model.auxiliarySlots.length) {
@@ -66,18 +58,29 @@ export class InventoryLoadoutPanelRenderer {
         "inventory-loadout-panel__auxiliary",
       );
       model.auxiliarySlots.forEach((slot) => {
-        auxiliary.appendChild(
-          this.#renderSlot(slot, "auxiliary", {
-            onSlotActivate,
-            onSlotLongPress,
-            onWarning,
-          }),
-        );
+        auxiliary.appendChild(this.#renderSlot(slot, "auxiliary", handlers));
       });
       panel.appendChild(auxiliary);
     }
     shell.appendChild(panel);
     return shell;
+  }
+
+  // The equipped rod's condition is a meter inside its cell; an empty rod cell has none.
+  #renderRod(slot, handlers) {
+    const field = this.#renderSlot(slot, "rod", handlers);
+    const condition = slot.item?.condition;
+    const percent = Number(condition?.percent);
+    if (condition?.available && Number.isFinite(percent)) {
+      const label = `${condition.metricLabel} ${Math.round(percent)}%`;
+      const meter = this.#resourceMeterRenderer.create(
+        { id: "condition", percent, label },
+        { variant: "parameter", showIcon: false },
+      );
+      meter.classList.add("inventory-loadout-panel__rod-condition");
+      field.appendChild(meter);
+    }
+    return field;
   }
 
   #renderSlot(

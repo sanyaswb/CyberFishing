@@ -25,18 +25,22 @@ export class UiCatalogInventoryFixture {
       charge: { percent: this.#value, label: "Заряд" }, attachments: [],
       compatibleWithHighlightedSlot: index === 1,
     }));
+    items[0].condition = { available: true, percent: this.#value, metricLabel: "Стан" };
     const empty = state === "empty";
     const slot = (slotId, label, item, index) => ({ slotId, label,
       state: state === "locked" && index > 0 ? "locked" : item && !empty ? "filled" : "empty",
       item: state === "locked" && index > 0 || empty ? null : item,
       warning: "Комірка недоступна для контрольної збірки", highlighted: index === 1 });
-    const mainSlots = [slot("rod", "Вудилище", items[0], 0), slot("reel", "Котушка", items[1], 1),
-      slot("terminalLine", "Ліска", items[2], 2), slot("tackle", "Оснастка", null, 3), slot("float", "Поплавок", items[3], 4)];
+    // Without a rod the production view model has no dependent slots: the rod cell spans the panel.
+    const mainSlots = state === "norod" ? [slot("rod", "Вудилище", null, 0)]
+      : [slot("rod", "Вудилище", items[0], 0), slot("reel", "Котушка", items[1], 1),
+        slot("terminalLine", "Ліска", items[2], 2), slot("tackle", "Оснастка", null, 3), slot("float", "Поплавок", items[3], 4)];
     this.#model = {
       isOpen: true, settings: { autoBait: true, autoChum: false },
       header: { loadValue: 4.5, loadUnit: "кг", activeBaits: empty ? [] : [items[4]], activeChums: empty ? [] : [items[5]], baitStock: empty ? 0 : 12, chumStock: empty ? 0 : 12 },
       panel: { mode: ["assembly", "removal", "save"].includes(state) ? "assembly" : state === "saved" ? "saved-loadout" : "loadout",
-        loadout: { mainSlots, auxiliarySlots: [slot("net", "Підсака", items[6], 0), slot("delivery", "Кораблик", items[7], 0)] },
+        loadout: { mainSlots, auxiliarySlots: [slot("handChum", "Прикормка рукою", items[5], 0), slot("net", "Підсака", items[6], 0),
+          slot("delivery", "Кораблик", items[7], 0), slot("gasMask", "Протигаз", null, 0)] },
         savedLoadout: { loadoutId: "catalog-loadout", name: "Контрольна збірка", slots: mainSlots, canEquipAll: false, equipWarning: "Контрольний стан: збірку не можна спорядити" },
         assembly: { root: items[0], rootInstanceId: items[0].instanceId,
           sockets: [slot("reel", "Котушка", items[1], 1)], equipped: false, canEquip: false,
@@ -56,6 +60,7 @@ export class UiCatalogInventoryFixture {
     this.#value = Math.max(0, Math.min(100, Number(value) || 0));
     const items = this.#model.inventory.items;
     for (const item of items) item.charge.percent = this.#value;
+    if (items[0]?.condition) items[0].condition.percent = this.#value;
   }
   dispatch(action) {
     const types = this.#actionTypes;

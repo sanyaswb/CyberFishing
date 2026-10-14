@@ -15,6 +15,8 @@ import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inv
 import { InventoryItemParametersRenderer } from "../../game/presentation/inventory/inventory_item_parameters_renderer.js";
 import { InventoryItemParametersResolver } from "../../game/presentation/inventory/inventory_item_parameters_resolver.js";
 import { InventoryLoadoutPanelRenderer } from "../../game/presentation/inventory/inventory_loadout_panel_renderer.js";
+import { InventorySectionTabsRenderer } from "../../game/presentation/inventory/inventory_section_tabs_renderer.js";
+import { INVENTORY_SECTIONS } from "../../game/presentation/inventory/inventory_sections.js";
 import { InventoryLongPressController } from "../../platform/browser/dom/inventory_long_press_controller.js";
 import { InventoryResourceMeterRenderer } from "../../game/presentation/inventory/inventory_resource_meter_renderer.js";
 import { InventoryResourceMeterResolver } from "../../game/presentation/inventory/inventory_resource_meter_resolver.js";
@@ -143,6 +145,7 @@ export class InventoryUiBootstrap {
       new InventoryLoadoutPanelRenderer({
         domFactory: dom,
         itemRenderer: resolvedItemRenderer,
+        resourceMeterRenderer: resolvedResourceMeterRenderer,
         getEquippedLongPressDurationMs: () => LongPressController.EQUIPPED_DURATION_MS,
       });
     const resolvedAssemblyRenderer =
@@ -180,6 +183,8 @@ export class InventoryUiBootstrap {
       resolvedAssemblyRenderer,
       resolvedSavedLoadoutRenderer,
       resolvedInventoryRenderer,
+      sections: INVENTORY_SECTIONS,
+      sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
     };
   }
 }

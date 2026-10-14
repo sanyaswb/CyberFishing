@@ -7,11 +7,6 @@
   flex: none;
 }
 
-.inventory-field--semantic,
-.inventory-field--auxiliary {
-  width: var(--inventory-card-size);
-}
-
 .inventory-slot {
   position: relative;
   display: grid;
@@ -19,11 +14,10 @@
   height: var(--inventory-card-size);
   place-items: center;
   overflow: visible;
+  border-radius: var(--inventory-slot-radius, 0);
 }
 
 .inventory-field--rod .inventory-slot {
-  aspect-ratio: 9 / 16;
-  height: auto;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -34,15 +28,16 @@
   height: var(--inventory-socket-size);
 }
 
+/* Containers restyle wells through these component properties; the defaults are the standard dark wells. */
 .inventory-slot:not(.inventory-slot--filled) {
-  border: 2px solid #252e31;
-  background: #181e20;
+  border: 2px solid var(--inventory-slot-border, #252e31);
+  background: var(--inventory-slot-background, #181e20);
 }
 
 .inventory-slot--locked:not(.inventory-slot--filled),
 .inventory-slot--unavailable:not(.inventory-slot--filled) {
-  border-color: #080a0b;
-  background: #101415;
+  border-color: var(--inventory-slot-blocked-border, #080a0b);
+  background: var(--inventory-slot-blocked-background, #101415);
 }
 
 .inventory-slot.inventory-slot--highlighted {
@@ -53,6 +48,7 @@
   position: absolute;
   z-index: 18;
   inset: 0;
+  border-radius: inherit;
   background: var(--inventory-success);
   content: "";
   opacity: 0.2;
@@ -62,7 +58,7 @@
 
 .inventory-slot.inventory-slot--filled {
   border: 0;
-  background: transparent;
+  background: var(--inventory-slot-filled-background, transparent);
 }
 
 .inventory-slot__empty-button {

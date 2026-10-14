@@ -60,6 +60,20 @@ export class InventoryDomFactory {
     return value;
   }
 
+  // A decorative sprite icon: <svg><use href="sprite.svg#id"/></svg> inherits currentColor from its parent.
+  svgIcon(href, className = "") {
+    const namespace = "http://www.w3.org/2000/svg";
+    const icon = this.#document.createElementNS(namespace, "svg");
+    if (className) icon.setAttribute("class", className);
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    icon.setAttribute("focusable", "false");
+    const use = this.#document.createElementNS(namespace, "use");
+    use.setAttribute("href", href);
+    icon.appendChild(use);
+    return icon;
+  }
+
   replaceChildren(container, ...children) {
     if (!container) return;
     container.replaceChildren(...children.filter(Boolean));

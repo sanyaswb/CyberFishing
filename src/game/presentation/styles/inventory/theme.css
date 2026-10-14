@@ -36,4 +36,15 @@
   --inventory-muted-text: #c2c9cc;
   --inventory-panel-border: rgba(201, 216, 218, 0.23);
   --inventory-panel-radius: 10px;
+  /* Grey equipment container and section tabs (spec 067 reference). */
+  --inventory-equipment-surface: #1c1c1c;
+  --inventory-equipment-panel: #272727;
+  --inventory-equipment-cell: #333333;
+  --inventory-equipment-well: #1b1b1b;
+  --inventory-equipment-blocked: #232323;
+  --inventory-equipment-tab: #262626;
+  --inventory-equipment-tab-active: #303030;
+  --inventory-equipment-tab-border: #7b7b7b;
+  --inventory-equipment-tab-icon: #6c6c6c;
+  --inventory-equipment-tab-icon-active: #d4d4d4;
 }

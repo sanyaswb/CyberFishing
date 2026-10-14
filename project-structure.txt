@@ -138,6 +138,7 @@
 │     │  ├── rod.svg
 │     │  ├── tackle.svg
 │     │  └── weight.svg
+│     ├── inventory-sections.svg
 │     └── status-icons.svg
 ├── dev.html
 ├── docs
@@ -297,6 +298,8 @@
 │  ├── 065-dev-house-override-handoff
 │  │  └── spec.md
 │  ├── 066-house-review-cleanup
+│  │  └── spec.md
+│  ├── 067-inventory-sections
 │  │  └── spec.md
 │  └── README.md
 ├── src
@@ -980,6 +983,8 @@
 │  │     │  ├── inventory_rod_removal_renderer.js
 │  │     │  ├── inventory_rule_messages.js
 │  │     │  ├── inventory_saved_loadout_preview_renderer.js
+│  │     │  ├── inventory_section_tabs_renderer.js
+│  │     │  ├── inventory_sections.js
 │  │     │  ├── inventory_slot_icons.js
 │  │     │  ├── inventory_sort_config.js
 │  │     │  ├── inventory_subfilter_resolver.js
@@ -1054,6 +1059,7 @@
 │  │     │  │  ├── loadout.css
 │  │     │  │  ├── modal.css
 │  │     │  │  ├── resource-meters.css
+│  │     │  │  ├── section-tabs.css
 │  │     │  │  ├── shared-controls.css
 │  │     │  │  ├── slots.css
 │  │     │  │  ├── theme.css

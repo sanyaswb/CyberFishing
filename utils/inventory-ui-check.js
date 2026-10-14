@@ -299,6 +299,12 @@ class FakeDocument {
   createElement(tagName) {
     return new FakeElement(tagName, this);
   }
+
+  createElementNS(namespace, tagName) {
+    const element = new FakeElement(tagName, this);
+    element.namespaceURI = namespace;
+    return element;
+  }
 }
 
 class FakeTimers {
@@ -457,8 +463,10 @@ class InventoryStaticContractCheck {
       .split("@container ui-surface (max-width: 820px)")[1];
     const mobileList = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/list-and-filters.css"), "utf8")
       .split("@container ui-surface (max-width: 820px)")[1];
-    assert.match(mobileModal, /grid-template-rows:\s*max-content\s+max-content;/,
-      "mobile equipment and items must reserve independent intrinsic rows");
+    assert.match(mobileModal, /grid-template-rows:\s*max-content\s+max-content\s+max-content;/,
+      "mobile equipment, section tabs and items must reserve independent intrinsic rows");
+    assert.match(mobileModal, /grid-template-areas:\s*"left"\s+"tabs"\s+"right";/,
+      "mobile section tabs sit directly below the equipment container");
     assert.match(mobileLoadout, /\.inventory-loadout-shell\s*\{[^}]*height:\s*auto;/,
       "mobile equipment must not inherit a percentage height from the desktop grid");
     assert.match(mobileLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
@@ -528,7 +536,7 @@ class InventoryStaticContractCheck {
       /\.inventory-resource-meter--thumbnail\s+\.inventory-resource-meter__icon\s*\{[\s\S]*?\n\}/,
     )?.[0];
     const resourceTrackRule = style.match(
-      /\.inventory-resource-meter__track\s*\{[\s\S]*?\n\}/,
+      /^\.inventory-resource-meter__track\s*\{[\s\S]*?\n\}/m,
     )?.[0];
     const parameterBarRule = style.match(
       /\.inventory-parameter__bar-track\s*\{[\s\S]*?\n\}/,
@@ -586,10 +594,24 @@ class InventoryStaticContractCheck {
         ),
       "All production parameter scales must share one configured height",
     );
+    // Spec 067: one container-relative unit sizes the equipment reference; separate columns also bound it by height.
     assert.ok(
-      style.includes("clamp(170px, calc(var(--ui-logical-width, 100vw) * 0.101), 194px)"),
-      "Rod column must stay close to the 194px reference width",
+      style.includes("--inventory-equipment-unit: calc(100cqi / 3.66);") &&
+        style.includes("--inventory-equipment-unit: min(calc(100cqi / 3.66), calc(100cqb / 4.56));") &&
+        style.includes("container: inventory-equipment / size;"),
+      "The equipment composition must scale from its container's width, and height in the two-column layout",
     );
+    assert.match(
+      style,
+      /\.inventory-loadout-panel__primary\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)\s+var\(--inventory-equipment-unit\);[\s\S]*?height:\s*calc\(var\(--inventory-equipment-unit\) \* 3 \+/,
+      "The rod cell fills the width beside one dependent column three units tall",
+    );
+    assert.match(
+      style,
+      /\.inventory-loadout-panel__primary--single\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\);/,
+      "Without dependent slots the rod cell spans the primary panel",
+    );
+    assert.ok(!/aspect-ratio:\s*9\s*\/\s*16/.test(style), "The rod cell no longer keeps a fixed 9:16 proportion");
     assert.ok(
       style.includes(
         "minmax(var(--inventory-socket-size), var(--inventory-socket-size))",
@@ -631,13 +653,13 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?grid-template-columns:\s*repeat\(\s*4,\s*var\(--inventory-auxiliary-card-size\)/,
-      "Auxiliary equipment must render as one compact four-slot row",
+      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?grid-template-columns:\s*repeat\(4,\s*var\(--inventory-equipment-well-size\)\);\s*justify-content:\s*space-between;/,
+      "Auxiliary equipment must render as four equal wells spread across the primary content width",
     );
     assert.match(
       style,
-      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding-left:\s*clamp\(14px,\s*calc\(var\(--ui-logical-width, 100vw\) \* 0\.018\),\s*34px\)/,
-      "Auxiliary row must share the rod column's left inset",
+      /\.inventory-loadout-panel__auxiliary\s*\{[\s\S]*?padding:\s*calc\(var\(--inventory-equipment-unit\) \* 0\.065\)\s+var\(--inventory-equipment-inset\);/,
+      "Auxiliary row must share the primary panel's inset so its outer wells align with the rod and column edges",
     );
     assert.ok(
       !style.includes("repeat(3, minmax(76px, 1fr))"),
@@ -645,12 +667,12 @@ class InventoryStaticContractCheck {
     );
     assert.match(
       style,
-      /\.inventory-slot:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border:\s*2px solid #252e31;[\s\S]*?background:\s*#181e20;/,
+      /\.inventory-slot:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border:\s*2px solid var\(--inventory-slot-border, #252e31\);[\s\S]*?background:\s*var\(--inventory-slot-background, #181e20\);/,
       "Open empty slots must keep the standard empty-slot visual",
     );
     assert.match(
       style,
-      /\.inventory-slot--locked:not\(\.inventory-slot--filled\),\s*\.inventory-slot--unavailable:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border-color:\s*#080a0b;[\s\S]*?background:\s*#101415;/,
+      /\.inventory-slot--locked:not\(\.inventory-slot--filled\),\s*\.inventory-slot--unavailable:not\(\.inventory-slot--filled\)\s*\{[\s\S]*?border-color:\s*var\(--inventory-slot-blocked-border, #080a0b\);[\s\S]*?background:\s*var\(--inventory-slot-blocked-background, #101415\);/,
       "Locked and missing-item slots must share the same dark well visual",
     );
     assert.ok(
@@ -1058,6 +1080,67 @@ class InventoryStaticContractCheck {
       ["net", "handChum", "delivery", "gasMask"],
       "Bottom equipment row must render net, hand chum, boat and gas mask in order",
     );
+    // Spec 067: the section tab bar sits in its own grid area below the equipment container.
+    const sectionTabs = this.#findByClass(mainNode, "inventory-section-tabs");
+    assert.strictEqual(sectionTabs.parentNode, mainNode);
+    assert.ok(sectionTabs.classList.contains("inventory-main__tabs"));
+    const tabList = this.#findByClass(sectionTabs, "inventory-section-tabs__list");
+    const tabs = this.#findAllByClass(sectionTabs, "inventory-section-tabs__tab");
+    assert.strictEqual(tabList.getAttribute("role"), "tablist");
+    assert.deepStrictEqual(tabs.map((tab) => tab.dataset.sectionId), ["equipment", "backpack", "keepnet"]);
+    assert.deepStrictEqual(tabs.map((tab) => tab.getAttribute("aria-label")), ["Екіпіровка", "Рюкзак", "Садок"]);
+    tabs.forEach((tab) => {
+      const icon = tab.children[0];
+      assert.strictEqual(tab.getAttribute("role"), "tab");
+      assert.strictEqual(icon.namespaceURI, "http://www.w3.org/2000/svg", "tab labels are SVG icons");
+      assert.strictEqual(icon.children[0].getAttribute("href"), "assets/ui/inventory-sections.svg#" + tab.dataset.sectionId);
+      assert.strictEqual(tab.textContent, "", "tabs carry no visible text");
+    });
+    const activeTabs = () => tabs.filter((tab) => tab.classList.contains("inventory-section-tabs__tab--active"))
+      .map((tab) => tab.dataset.sectionId);
+    assert.deepStrictEqual(activeTabs(), ["equipment"]);
+    assert.deepStrictEqual(tabs.map((tab) => [tab.getAttribute("aria-selected"), tab.tabIndex]),
+      [["true", 0], ["false", -1], ["false", -1]]);
+    const equipmentBeforeTabs = this.#findByClass(ui.rootNode, "inventory-loadout-panel");
+    tabs[1].click();
+    assert.deepStrictEqual(activeTabs(), ["backpack"]);
+    assert.strictEqual(this.#findByClass(ui.rootNode, "inventory-loadout-panel"), equipmentBeforeTabs,
+      "step 1 tabs change only their own state, not the inventory content");
+    tabList.emit("keydown", { key: "ArrowRight", target: tabs[1] });
+    assert.deepStrictEqual(activeTabs(), ["keepnet"]);
+    assert.strictEqual(document.activeElement, tabs[2], "arrow keys move focus with the selection");
+    tabList.emit("keydown", { key: "ArrowRight", target: tabs[2] });
+    assert.deepStrictEqual(activeTabs(), ["equipment"], "arrow keys wrap around");
+    tabList.emit("keydown", { key: "End", target: tabs[0] });
+    assert.deepStrictEqual(activeTabs(), ["keepnet"]);
+    tabList.emit("keydown", { key: "Home", target: tabs[2] });
+    assert.deepStrictEqual(activeTabs(), ["equipment"]);
+    ui.render(currentView);
+    assert.strictEqual(this.#findByClass(mainNode, "inventory-section-tabs"), sectionTabs,
+      "re-rendering the inventory keeps the tab bar identity and state");
+
+    // The rod condition meter appears only on an equipped rod with an available condition.
+    const primaryOf = () => this.#findByClass(ui.rootNode, "inventory-loadout-panel__primary");
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-loadout-panel__rod-condition").length, 0);
+    assert.ok(!primaryOf().classList.contains("inventory-loadout-panel__primary--single"));
+    assert.strictEqual(this.#findByClass(primaryOf(), "inventory-loadout-panel__cascade").children.length, 4);
+    const conditionView = this.#loadoutViewModel();
+    conditionView.panel.loadout.mainSlots[0].item.condition = { available: true, percent: 64, metricLabel: "Стан" };
+    ui.render(conditionView);
+    const rodCondition = this.#findAllByClass(ui.rootNode, "inventory-loadout-panel__rod-condition");
+    assert.strictEqual(rodCondition.length, 1);
+    assert.ok(this.#field(ui.rootNode, "rod").contains(rodCondition[0]), "the meter sits inside the rod cell");
+    assert.ok(rodCondition[0].classList.contains("inventory-resource-meter"), "the shared resource meter renders the condition");
+    assert.strictEqual(rodCondition[0].getAttribute("aria-valuenow"), "64");
+    const noRodView = this.#loadoutViewModel();
+    noRodView.panel.loadout.mainSlots = [{ slotId: "rod", label: "Rod", state: "available" }];
+    ui.render(noRodView);
+    assert.ok(primaryOf().classList.contains("inventory-loadout-panel__primary--single"),
+      "without a rod the rod cell spans the primary panel");
+    assert.strictEqual(this.#findAllByClass(primaryOf(), "inventory-loadout-panel__cascade").length, 0);
+    assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-loadout-panel__rod-condition").length, 0,
+      "an empty rod cell shows no condition");
+    ui.render(currentView);
 
     const loadoutShell = this.#findByClass(
       ui.rootNode,

@@ -2,7 +2,7 @@
 
 Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
 
-Native HTML pages compose the stylesheet order. `index.html` loads 27 production assets;
+Native HTML pages compose the stylesheet order. `index.html` loads 28 production assets;
 `dev.html` reuses that exact prefix, appends the House stylesheet for its DEV House route and three DEV assets. `ui-catalog.html` reuses the
 same prefix, appends the House component styles, catalog stylesheet and shared DEV clock/navigation styles. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.
@@ -16,7 +16,8 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/modal-controls.css`, `auto-switch.css` | Shared close/switch appearance, documented custom properties and native interactive states |
 | `styles/game-shell.css`, `version-badge.css`, `styles/hud/toolbar.css` | Page interaction policy, canvas stacking, badge and common bottom action row |
 | `styles/inventory/theme.css` | Inventory palette and shared dimensions; portal scrollbar tokens |
-| `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout |
+| `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout (left container, section tabs, right content areas) |
+| `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme |
 | `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |

@@ -35,7 +35,9 @@
   min-height: 0;
   flex: 1;
   grid-template-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
-  gap: 20px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: "left right" "tabs right";
+  gap: 0 20px;
   padding-top: 18px;
   overflow: hidden;
 }
@@ -44,6 +46,20 @@
 .inventory-main__right {
   min-width: 0;
   min-height: 0;
+}
+
+/* The equipment composition scales from this container (spec 067); separate columns give it a definite height. */
+.inventory-main__left {
+  grid-area: left;
+  container: inventory-equipment / size;
+}
+
+.inventory-main__right {
+  grid-area: right;
+}
+
+.inventory-main__tabs {
+  grid-area: tabs;
 }
 
 @container ui-surface (max-width: 1180px) {
@@ -67,16 +83,25 @@
 
   .inventory-main {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: max-content max-content;
+    grid-template-rows: max-content max-content max-content;
+    grid-template-areas: "left" "tabs" "right";
     align-items: start;
     align-content: start;
     overflow: visible;
-    gap: 16px;
+    gap: 0;
     padding-top: 16px;
   }
 
   .inventory-main__left,
   .inventory-main__right {
     min-height: auto;
+  }
+
+  .inventory-main__left {
+    container-type: inline-size;
+  }
+
+  .inventory-main__right {
+    margin-top: 16px;
   }
 }

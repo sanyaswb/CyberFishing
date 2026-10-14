@@ -23,6 +23,10 @@ export class InventoryUI {
   #warningNode;
   #leftHost;
   #rightHost;
+  #sectionTabsRenderer;
+  #sectionTabsNode;
+  // Step 1 of spec 067: transient visual selection; InventoryUiState owns it once sections switch content.
+  #activeSectionId;
   #unsubscribe = null;
   #warningTimer = null;
   #warningTimers;
@@ -109,6 +113,8 @@ export class InventoryUI {
     this.#assemblyRenderer = presentation.resolvedAssemblyRenderer;
     this.#savedLoadoutRenderer = presentation.resolvedSavedLoadoutRenderer;
     this.#inventoryRenderer = presentation.resolvedInventoryRenderer;
+    this.#sectionTabsRenderer = presentation.sectionTabsRenderer;
+    this.#activeSectionId = presentation.sections.defaultSectionId;
     this.#buildShell();
   }
 
@@ -353,7 +359,13 @@ export class InventoryUI {
       "div",
       "inventory-main__right",
     );
-    main.append(this.#leftHost, this.#rightHost);
+    this.#sectionTabsNode = this.#sectionTabsRenderer.create({ activeId: this.#activeSectionId,
+      onSelect: (sectionId) => {
+        this.#activeSectionId = sectionId;
+        this.#sectionTabsRenderer.update(this.#sectionTabsNode, sectionId);
+      } });
+    this.#sectionTabsNode.classList.add("inventory-main__tabs");
+    main.append(this.#leftHost, this.#sectionTabsNode, this.#rightHost);
     this.#rootNode.append(this.#headerHost, this.#warningNode, main);
   }
 
