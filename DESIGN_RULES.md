@@ -24,6 +24,7 @@ Use `block`, `block__element`, `block--modifier` and `block__element--modifier`.
 - BEM mixes may combine a shared appearance block and a container element on the same DOM node.
 - Style through classes. Do not couple appearance to IDs, arbitrary DOM depth, child order or global selectors such as `button`.
 - Keep specificity low. Resolve conflicting ownership instead of covering duplicated rules with `!important`.
+- A visual block has one parent that paints its background and frame. Its children (switchable sections, tab bars, toolbars) paint no outer background or radius of their own and only lay out their content; matching colours between siblings is not a substitute for a parent ([spec 077](specs/077-inventory-sidebar-parent/spec.md): `inventory-main__sidebar`). When a layout must dissolve the parent (portrait), use `display: contents` rather than duplicating the frame on the children.
 
 ## 3. Design tokens and CSS custom properties
 

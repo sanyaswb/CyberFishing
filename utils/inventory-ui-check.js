@@ -527,6 +527,15 @@ class InventoryStaticContractCheck {
     assert.match(portraitPager, /\.inventory-pager__viewport\s*\{[^}]*touch-action:\s*pan-y;/, "vertical list scrolling stays native");
     assert.match(style, /\.inventory-pager__tabs,\s*\.inventory-pager__page--backpack\s*\{\s*display:\s*none;/,
       "wide layouts show neither pager tabs nor the backpack page");
+    // Spec 077: one parent paints the left column; the tab bar and the sections paint no outer background.
+    assert.match(style, /\.inventory-main__sidebar\s*\{[^}]*grid-area:\s*left;[^}]*display:\s*flex;[^}]*border-radius:\s*var\(--inventory-panel-radius\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
+      "the sidebar owns the column's background and frame");
+    assert.match(style, /\.inventory-section-tabs\s*\{[^}]*background:\s*transparent;/, "the tab bar paints no background");
+    assert.match(style, /\.inventory-main__sidebar \.inventory-loadout-panel,\s*\.inventory-main__sidebar \.inventory-assembly-editor,\s*\.inventory-main__sidebar \.inventory-saved-loadout-preview\s*\{\s*--inventory-panel:\s*transparent;\s*--inventory-panel-border:\s*transparent;/,
+      "equipment-section panels paint no outer frame inside the sidebar");
+    assert.doesNotMatch(style, /\.keepnet-section__summary\s*\{[^}]*background:/, "the keepnet summary paints no outer frame");
+    assert.match(portraitModal, /\.inventory-main__sidebar\s*\{\s*display:\s*contents;/,
+      "portrait keeps its grid areas through the sidebar");
     // Spec 074: wide layouts place the header's two sections over the content columns in one row.
     assert.match(style, /\.inventory-header__controls\s*\{\s*grid-column:\s*2;\s*grid-row:\s*1;/,
       "the switches and close share the right section's row");
@@ -1172,8 +1181,10 @@ class InventoryStaticContractCheck {
     );
     const equipmentHost = this.#findByClass(mainNode, "inventory-main__left");
     const itemsHost = this.#findByClass(mainNode, "inventory-main__right");
-    assert.strictEqual(equipmentHost.parentNode, mainNode);
-    assert.strictEqual(itemsHost.parentNode, mainNode);
+    // Spec 077: the section content and the tab bar share one parent, the sidebar; the item host stays beside it.
+    const sidebar = this.#findByClass(mainNode, "inventory-main__sidebar");
+    assert.ok(sidebar.parentNode === mainNode && equipmentHost.parentNode === sidebar && itemsHost.parentNode === mainNode,
+      "the sidebar holds the section content beside the item host");
     assert(equipmentHost.contains(bottomAuxiliary) && !itemsHost.contains(bottomAuxiliary),
       "auxiliary equipment belongs exclusively to the equipment container");
     assert(itemsHost.contains(this.#findByClass(ui.rootNode, "inventory-list-grid")),
@@ -1188,7 +1199,8 @@ class InventoryStaticContractCheck {
     );
     // Spec 067: the section tab bar sits in its own grid area below the equipment container.
     const sectionTabs = this.#findByClass(mainNode, "inventory-section-tabs");
-    assert.strictEqual(sectionTabs.parentNode, mainNode);
+    assert.ok(sectionTabs.parentNode === sidebar && sidebar.children[1] === sectionTabs,
+      "the tab bar is the sidebar's bottom child");
     assert.ok(sectionTabs.classList.contains("inventory-main__tabs"));
     const tabList = this.#findByClass(sectionTabs, "inventory-section-tabs__list");
     const tabs = this.#findAllByClass(sectionTabs, "inventory-section-tabs__tab");

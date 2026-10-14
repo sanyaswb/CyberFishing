@@ -384,7 +384,10 @@ export class InventoryUI {
     this.#sectionTabsNode = this.#sectionTabsRenderer.create({ activeId: null,
       onSelect: (sectionId) => this.#dispatch({ type: this.#actionTypes.SECTION_SELECT, sectionId }) });
     this.#sectionTabsNode.classList.add("inventory-main__tabs");
-    main.append(this.#leftHost, this.#sectionTabsNode, this.#rightHost);
+    // One parent for the section content and the tab bar (spec 077): it owns the column's background and frame.
+    const sidebar = this.#dom.element("div", "inventory-main__sidebar");
+    sidebar.append(this.#leftHost, this.#sectionTabsNode);
+    main.append(sidebar, this.#rightHost);
     const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
     this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));
     this.#backpackSummaryNode = this.#backpackSummaryRenderer.create();

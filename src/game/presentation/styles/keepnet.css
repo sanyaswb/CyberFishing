@@ -15,11 +15,10 @@
   font: 15px/1.45 system-ui, sans-serif;
 }
 /* The content is an inventory-collection (shared-controls.css, spec 074): back/heading/filters panel, gap, fish list. */
+/* The summary paints no outer frame: the sidebar is its parent container (spec 077). */
 .keepnet-section__summary {
   overflow-y: auto;
   padding: 16px;
-  border-radius: var(--inventory-panel-radius, 10px);
-  background: var(--inventory-equipment-surface);
 }
 .keepnet-section__summary [hidden],
 .keepnet-section__content [hidden] { display: none; }

@@ -39,8 +39,8 @@
   min-height: 0;
   flex: 1;
   grid-template-columns: var(--inventory-content-columns);
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas: "left right" "tabs right";
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "left right";
   gap: 0 var(--inventory-content-gap);
   padding-top: 18px;
   overflow: hidden;
@@ -50,6 +50,34 @@
 .inventory-main__right {
   min-width: 0;
   min-height: 0;
+}
+
+/* The left column's one parent (spec 077): the section content above, the transparent tab bar at the bottom. It
+   alone paints the column's background and frame; sections and the tab bar paint no outer background. */
+.inventory-main__sidebar {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-equipment-surface);
+}
+
+.inventory-main__sidebar > .inventory-main__left {
+  flex: 1;
+}
+
+.inventory-main__sidebar .inventory-loadout-panel,
+.inventory-main__sidebar .inventory-assembly-editor,
+.inventory-main__sidebar .inventory-saved-loadout-preview {
+  --inventory-panel: transparent;
+  --inventory-panel-border: transparent;
+}
+
+.inventory-main__sidebar .inventory-backpack {
+  padding: var(--inventory-container-gap);
 }
 
 /* The equipment composition scales from this container (spec 067); separate columns give it a definite height. */
@@ -107,6 +135,12 @@
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
       padding-top: var(--inventory-container-gap);
+    }
+
+    /* The sidebar keeps no box in portrait (spec 077): content, items and tabs keep their own grid areas, and the
+       full-screen container is the background. */
+    .inventory-main__sidebar {
+      display: contents;
     }
 
     /* A tall assembly editor or saved preview scrolls inside the summary row and never hides the list or tabs. */

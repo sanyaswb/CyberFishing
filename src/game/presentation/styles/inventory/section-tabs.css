@@ -1,9 +1,10 @@
 /* Inventory section tabs: icon tabs on a baseline; the active tab rises and joins the container above (spec 067). */
 
+/* The bar only positions its tabs; the parent container (the sidebar or the full-screen modal) is the background. */
 .inventory-section-tabs {
   container-type: inline-size;
   min-width: 0;
-  background: var(--inventory-equipment-surface);
+  background: transparent;
   -webkit-tap-highlight-color: transparent;
 }
 
