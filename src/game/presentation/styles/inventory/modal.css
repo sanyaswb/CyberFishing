@@ -81,15 +81,19 @@
     --inventory-card-size: min(82px, calc((var(--ui-logical-width, 100vw) - 72px) / 4));
     --inventory-socket-size: min(66px, var(--inventory-card-size));
     --inventory-mobile-gap: 6px;
+    --inventory-mobile-inset: 10px;
+    --inventory-header-radius: 14px;
     padding: 9px;
   }
 
   /* Portrait (spec 068): the inventory fills the screen, the tabs stay at the bottom and only lists scroll.
      Narrow landscape keeps the separate containers above. */
   @media (orientation: portrait) {
+    /* Spec 069: one dark full-screen container without outer padding; the safe areas stay clear. */
     .inventory-modal {
-      padding-bottom: max(9px, env(safe-area-inset-bottom, 0px));
+      padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
       overflow: hidden;
+      background: var(--inventory-equipment-surface);
     }
 
     .inventory-main {
@@ -97,7 +101,7 @@
       grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
-      padding-top: 10px;
+      padding-top: 6px;
     }
 
     /* A tall assembly editor or saved preview scrolls inside the summary row and never hides the list or tabs. */
@@ -113,7 +117,21 @@
     }
 
     .inventory-main__right {
-      padding-top: 10px;
+      padding: 6px var(--inventory-mobile-inset) 0;
+    }
+
+    .inventory-main__left > .inventory-main__section--keepnet {
+      padding: 0 var(--inventory-mobile-inset);
+    }
+
+    /* Equipment owns the whole content row: the items live in the backpack section. */
+    .inventory-modal--section-equipment .inventory-main__left {
+      grid-area: right;
+      max-height: none;
+    }
+
+    .inventory-modal--section-equipment .inventory-main__right {
+      display: none;
     }
 
     .inventory-main__right > .inventory-main__section {

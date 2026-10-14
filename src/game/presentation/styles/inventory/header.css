@@ -26,17 +26,29 @@
 .inventory-header__close { flex: 0 0 var(--ui-close-size); }
 /* Mobile (spec 068): one short row — weight left, both switches centered, close right. */
 @container ui-surface (max-width: 820px) {
+  /* The side columns fit the weight and the close button; the switches center in the remaining width. */
   .inventory-header {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 4px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 6px;
     min-height: 0;
     padding-bottom: 8px;
   }
   .inventory-load { grid-column: 1; justify-self: start; }
-  .inventory-auto-settings { grid-column: 2; grid-row: 1; grid-template-columns: repeat(2, auto); gap: 6px; }
+  .inventory-auto-settings { grid-column: 2; grid-row: 1; grid-template-columns: repeat(2, auto); gap: 6px; justify-self: center; }
   .inventory-header__close { grid-column: 3; grid-row: 1; justify-self: end; }
+
+  /* Portrait (spec 069): the header is a rounded mini panel inside the full-screen container. */
+  @media (orientation: portrait) {
+    .inventory-header {
+      margin: var(--inventory-mobile-inset) var(--inventory-mobile-inset) 0;
+      padding: 6px 8px;
+      border-bottom: 0;
+      border-radius: var(--inventory-header-radius);
+      background: var(--inventory-equipment-panel);
+    }
+  }
 }
 @container ui-surface (max-width: 520px) {
-  .inventory-load { flex-direction: column; gap: 0; font-size: 11px; }
+  .inventory-load { flex-direction: column; gap: 0; font-size: 11px; line-height: 1.2; }
   .inventory-load__icon { width: 20px; height: 20px; }
 }

@@ -479,11 +479,22 @@ class InventoryStaticContractCheck {
       "portrait equipment must not inherit a percentage height from the desktop grid");
     assert.match(portraitLoadout, /\.inventory-loadout-panel\s*\{[^}]*flex:\s*none;/,
       "portrait equipment must not shrink its auxiliary row into the item container");
-    assert.match(portraitLoadout, /calc\(var\(--ui-logical-height, 100dvh\) \* 0\.55 \/ 4\.56\)/,
-      "portrait equipment leaves room for the item list");
+    assert.match(portraitLoadout, /calc\(\(var\(--ui-logical-height, 100dvh\) - var\(--ui-logical-width, 100vw\) \* 0\.15 - 96px\) \/ 4\.56\)/,
+      "portrait equipment fits between the header and the bottom tabs");
     assert.match(portraitList, /\.inventory-list-panel\s*\{\s*height:\s*100%;/, "the portrait item panel fills its row");
     assert.match(portraitList, /\.inventory-list-grid\s*\{[^}]*scrollbar-width:\s*none;/,
       "the portrait item list scrolls without a visible scrollbar");
+    // Spec 069: one full-screen dark container; equipment owns the content row; the header is a rounded mini panel.
+    assert.match(portraitModal, /\.inventory-modal\s*\{[^}]*padding:\s*env\(safe-area-inset-top, 0px\) 0 env\(safe-area-inset-bottom, 0px\);[^}]*background:\s*var\(--inventory-equipment-surface\);/,
+      "the portrait inventory is one dark container without outer padding");
+    assert.match(portraitModal, /\.inventory-modal--section-equipment \.inventory-main__right\s*\{\s*display:\s*none;/,
+      "portrait equipment shows no item list: the backpack section owns it");
+    assert.match(portraitModal, /\.inventory-modal--section-equipment \.inventory-main__left\s*\{\s*grid-area:\s*right;/,
+      "portrait equipment fills the content row");
+    const mobileHeader = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/header.css"), "utf8")
+      .split("@media (orientation: portrait)")[1];
+    assert.match(mobileHeader, /\.inventory-header\s*\{[^}]*border-radius:\s*var\(--inventory-header-radius\);[^}]*background:\s*var\(--inventory-equipment-panel\);/,
+      "the portrait header is a rounded mini panel");
     assert.match(style, /\.inventory-list-grid\s*\{[^}]*grid-row:\s*4;/,
       "items must keep their scroll track when the filter/sort rows are hidden");
     for (const selector of [

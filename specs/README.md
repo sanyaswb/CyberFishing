@@ -59,6 +59,7 @@ spec-kit work (029); Claude's specs start at 030.
 | [066](066-house-review-cleanup/spec.md) | House review cleanup: view texts in HOUSE_LABELS, plural fish counters, token colors/layers, fish canvas resize and shared visual validation, HouseView split | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
 | [067](067-inventory-sections/spec.md) | Grey unit-scaled equipment container (rod condition, adaptive dependent column, four wells), icon section tabs and section switching: equipment, backpack summary, keepnet as an inventory section | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
 | [068](068-portrait-inventory-screen/spec.md) | Landscape equipment pinned to the top; full-screen portrait inventory with bottom tabs, one-row header, compact switches, list-only scrolling and backpack/keepnet backgrounds | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
+| [069](069-portrait-inventory-container/spec.md) | Portrait inventory as one full-screen dark container: rounded header panel, equipment without the item list | Implemented; Architecture 4/4, Quick 25/25, Full 51/51; owner visual acceptance pending | — |
 
 ## Archived
 
