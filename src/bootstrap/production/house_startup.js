@@ -77,10 +77,7 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
     } });
   const onPreview = (event) => {
     if (hostWindow && event.source === hostWindow && event.origin === windowTarget.location.origin &&
-      event.data?.type === "cyber-fishing:aquarium-preview") {
-      if (event.data.visual) fishView.setConfig(event.data.visual);
-      onPreviewData?.(event.data);
-    }
+      event.data?.type === "cyber-fishing:dev-house-handoff") onPreviewData?.(event.data);
   };
   windowTarget.addEventListener("message", onPreview);
   // Runtime config edits (DEV tools in practice) arrive as "config-updated" events on the document. The motion keeps

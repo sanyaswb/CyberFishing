@@ -21,7 +21,7 @@ import { createDevItemCatalog } from "../../dev/data/dev_item_catalog.js";
 export async function startDevelopmentHouse() {
   const { documentTarget, windowTarget } = getBrowserStartupEnvironment();
   const abort = new windowTarget.AbortController();
-  let house, catalog, control;
+  let house, catalog, control, devTools;
   let disposed = false;
   const notifyReady = () => {
     if (disposed || new windowTarget.URLSearchParams(windowTarget.location.search).get("embedded") !== "1" ||
@@ -63,15 +63,13 @@ export async function startDevelopmentHouse() {
       src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle });
     house = startFishermanHouse({
       createTimeDisplay: options => { control = composeDevTimeDisplay({ ...options, config: CONFIG }); return control; },
+      // One override set travels with the location handoff; the time snapshot only carries the transient clock rate.
       onPreviewData: data => {
-        if (!data.debugTime) return;
-        const snapshot = data.debugTime;
-        configRuntime.set("debug.timeAccelerationEnabled", snapshot.enabled === true);
-        if (Number.isFinite(snapshot.timeScale) && snapshot.timeScale > 0) configRuntime.set("debug.timeScale", snapshot.timeScale);
-        control.resume(snapshot);
+        if (data.overrides) devTools.replaceOverrides(data.overrides);
+        if (data.debugTime) control.resume(data.debugTime);
       },
-      onReturnData: () => ({ debugTime: control.suspend() }),
-      createDevTools: ({ uiSurface, returnToGame, toggleMountNode }) => new DevTools(CONFIG, synchronizer, {
+      onReturnData: () => ({ overrides: configRuntime.exportOverrides(), debugTime: control.suspend() }),
+      createDevTools: ({ uiSurface, returnToGame, toggleMountNode }) => devTools = new DevTools(CONFIG, synchronizer, {
         configRuntime, configValidation, catalogs: { items: itemCatalog, fishes: FISH_DB, maps: mapCatalog },
         storageCache: cache, settingsStore: null, debugModulesSource: () => ({}),
         openGame: returnToGame, openUiCatalog: () => catalog.open(),

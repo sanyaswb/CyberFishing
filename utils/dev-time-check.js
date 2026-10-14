@@ -126,6 +126,7 @@ async function checkHouseToolsComposition() {
   };
   const houseConfig = { debug: { timeScale: 240, timeAccelerationEnabled: false }, rarity: {}, locations: { map: {} } };
   let houseOptions, toolsOptions, houseDisposals = 0, resumed;
+  const replaced = [];
   const fakeControl = { resume: snapshot => { resumed = snapshot; }, suspend: () => ({ enabled: true, multiplier: 3, timeScale: 240 }) };
   const uiSurface = { mountRoot: { parentNode: root }, portalRoot: doc.body };
   const source = new SourceRuntime({ moduleStubs: {
@@ -133,6 +134,7 @@ async function checkHouseToolsComposition() {
     "src/game/config/runtime/game_config.js": { CONFIG: houseConfig },
     "src/bootstrap/production/game_config_composition.js": { createProductionConfigContext: () => ({
       set(path, value) { houseConfig.debug[path.split(".").at(-1)] = value; },
+      exportOverrides: () => ({ "debug.timeAccelerationEnabled": true }),
     }) },
     "src/bootstrap/production/house_startup.js": { startFishermanHouse: options => {
       houseOptions = options;
@@ -143,7 +145,7 @@ async function checkHouseToolsComposition() {
     "src/bootstrap/development/dev_time_composition.js": { composeDevTimeDisplay: () => fakeControl },
     "src/dev/tools/dev_tools.js": { DevTools: class { constructor(config, sync, options) {
       assert.equal(config, houseConfig); assert.equal(typeof sync.synchronize, "function"); toolsOptions = options;
-    } } },
+    } replaceOverrides(overrides) { replaced.push(overrides); } } },
   } });
   const { startDevelopmentHouse } = source.importModule("src/bootstrap/development/development_house_startup.js");
   const house = await startDevelopmentHouse();
@@ -155,11 +157,14 @@ async function checkHouseToolsComposition() {
   assert(toolsOptions.catalogs.items.builds.debug_float_build, "House DevTools use the DEV item catalog");
   assert.equal(messages[0].data.type, "cyber-fishing:dev-house-ready");
   assert.equal(messages[0].origin, windowTarget.location.origin);
-  houseOptions.onPreviewData({ debugTime: { enabled: true, multiplier: 2.5, timeScale: 480 } });
-  assert.equal(houseConfig.debug.timeAccelerationEnabled, true);
-  assert.equal(houseConfig.debug.timeScale, 480);
+  houseOptions.onPreviewData({ overrides: { "debug.timeScale": 480 }, debugTime: { enabled: true, multiplier: 2.5, timeScale: 480 } });
+  assert.deepEqual(replaced, [{ "debug.timeScale": 480 }], "the location override set replaces the House set before the clock resumes");
   assert.equal(resumed.multiplier, 2.5);
-  assert.equal(houseOptions.onReturnData().debugTime.multiplier, 3);
+  houseOptions.onPreviewData({ debugTime: { multiplier: 1 } });
+  assert.equal(replaced.length, 1, "a time-only message keeps the House overrides");
+  const returned = houseOptions.onReturnData();
+  assert.equal(returned.debugTime.multiplier, 3);
+  assert.deepEqual(returned.overrides, { "debug.timeAccelerationEnabled": true }, "the House returns its whole override set");
   toolsOptions.openUiCatalog(); toolsOptions.openUiCatalog();
   assert.equal(doc.byClass("embedded-page-overlay").length, 1);
   house.dispose(); house.dispose();

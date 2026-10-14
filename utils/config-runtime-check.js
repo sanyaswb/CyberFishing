@@ -572,6 +572,15 @@ function checkLocationMapConfigChanges() {
     change(!config.locations[field]);map.update(16,12);verify(index+17,index+18);
     map.update(16,12);verify(index+17,index+18);
   }
+  // An embedded DEV page hands over its whole override set: the receiver's set becomes identical.
+  const baseScale = context.baseConfig.debug.timeScale, baseGrid = context.baseConfig.liveBait.visual.gridSizePx;
+  context.set('debug.timeScale',baseScale+1);
+  const handoff = {'liveBait.visual.gridSizePx':baseGrid+5,'debug.timeAccelerationEnabled':true};
+  tools.replaceOverrides(handoff);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.exportOverrides())),handoff,'the handed-over set replaces local overrides');
+  assert.equal(config.debug.timeScale,baseScale,'an override absent from the handoff returns to its base value');
+  assert.equal(config.liveBait.visual.gridSizePx,baseGrid+5);assert.equal(config.debug.timeAccelerationEnabled,true);
+  tools.replaceOverrides(null);assert.deepEqual(JSON.parse(JSON.stringify(context.exportOverrides())),handoff,'a message without overrides changes nothing');
   tools.dispose();
   const missingFlags = JSON.parse(JSON.stringify(config.locations));
   for(const field of fields) delete missingFlags[field];
@@ -596,7 +605,7 @@ async function checkNativeDevelopmentLifecycle() {
   let rootPorts;
   class Root { constructor(config,options){counts.root++;this.options=options;rootPorts=options;}build(){return buildReady;}getMemoryWatchdogConfig(){return config.debug.memoryWatchdog;}printStorageUsage(){} }
   const resource=key=>({dispose(){counts[key]++;}});
-  const frames = [], previewMessages = [], timeResumes = [];
+  const frames = [], previewMessages = [], timeResumes = [], handoffs = [];
   const documentTarget = { body: { appendChild() {} }, getElementById() { return null; },
     createElement(tag) {
       if(tag!=="iframe")return{remove(){this.removed=true;}};
@@ -616,7 +625,7 @@ async function checkNativeDevelopmentLifecycle() {
     'src/platform/browser/runtime/browser_startup_environment.js':{getBrowserStartupEnvironment:()=>({windowTarget,documentTarget}),publishBrowserStartupConfig(target,runtime){target.CYBER_FISHING_CONFIG_RUNTIME=runtime;},activateBrowserStartupInterface(){}},
     'src/platform/browser/dom/ui_surface_adapter.js':{UiSurfaceAdapter:Surface},
     'src/bootstrap/development/dev_time_composition.js':{composeDevTimeDisplay:()=>timeControl},
-    'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}}},
+    'src/dev/tools/dev_tools.js':{DevTools:class{constructor(config,synchronizer,options){this.options=options;}replaceOverrides(overrides){handoffs.push(overrides);}}},
     'src/game/config/runtime/game_config.js':{CONFIG:config},
     'src/bootstrap/production/game_config_composition.js':{createProductionConfigContext(initialize){configRuntime=composition.createProductionConfigContext(initialize);return configRuntime;}},
     'src/bootstrap/production/game_composition_root.js':{GameCompositionRoot:Root},
@@ -644,14 +653,19 @@ async function checkNativeDevelopmentLifecycle() {
   const readyMessage={source:frames[0].contentWindow,origin:windowTarget.location.origin,data:{type:"cyber-fishing:dev-house-ready"}};
   const beforeReady=previewMessages.length;
   dispatch({...readyMessage,source:{}});assert.equal(previewMessages.length,beforeReady,"unrelated pages cannot request a time snapshot");
+  configRuntime.set('debug.timeScale',300);
   dispatch(readyMessage);assert.equal(previewMessages.at(-1).debugTime.multiplier,2);
+  assert.equal(previewMessages.at(-1).type,"cyber-fishing:dev-house-handoff");
+  assert.equal(previewMessages.at(-1).overrides['debug.timeScale'],300,'the House receives every location override in one message');
+  assert.equal(previewMessages.filter(message=>message.visual).length,0,'no separate aquarium visual message remains');
   const afterReady=previewMessages.length;dispatch(readyMessage);assert.equal(previewMessages.length,afterReady,"replayed readiness does not reset House acceleration");
   dispatch({source:frames[0].contentWindow,origin:windowTarget.location.origin,
-    data:{type:"cyber-fishing:close-embedded-page",debugTime:{enabled:true,multiplier:3,timeScale:480}}});
+    data:{type:"cyber-fishing:close-embedded-page",overrides:{'debug.timeScale':480},debugTime:{enabled:true,multiplier:3,timeScale:480}}});
   await Promise.resolve();
   assert.equal(counts.start,2,"trusted return resumes exactly once");
-  assert.equal(timeResumes.at(-1).multiplier,3);assert.equal(config.debug.timeScale,480);
-  assert.equal(config.debug.timeAccelerationEnabled,true);
+  assert.equal(timeResumes.at(-1).multiplier,3);
+  assert.deepEqual(handoffs,[{'debug.timeScale':480}],'the House override set returns through the location DevTools');
+  configRuntime.resetAll();
   assert.equal(configRuntime.baseConfig.debug.godMode.enabled,true,'DEV explicitly enables its balance default before freezing the base');
   assert.equal(configRuntime.baseConfig.debug.fixedCatch.enabled,true);
   const {GameplayOverrideReader} = source.importModule('src/dev/runtime/gameplay_override_reader.js');

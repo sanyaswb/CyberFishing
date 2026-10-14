@@ -118,6 +118,14 @@ export class DevTools {
     }
   }
 
+  // Embedded DEV pages hand their whole override set over on open and return; the receiver's set becomes identical.
+  replaceOverrides(overrides) {
+    if (this.#isDisposed || !this.#configRuntime || !overrides || typeof overrides !== "object") return;
+    this.#configRuntime.resetAll();
+    this.#applyImportedOverrides(overrides);
+    this.#configValidation?.report("page handoff overrides", { quietWhenValid: true });
+  }
+
   dispose() {
     if (this.#isDisposed) return;
     this.#isDisposed = true;
@@ -798,6 +806,21 @@ export class DevTools {
     // The canonical adapter reads this live config; Bootstrap owns its single identity.
   }
 
+  #applyImportedOverrides(overrides) {
+    const normalizedOverrides =
+      this.#parameterAliases?.normalizeConfigOverrides(overrides) ||
+      overrides;
+    this.#configRuntime?.importOverrides?.(normalizedOverrides);
+    this.#refreshFightPhysicsAdapter();
+    document.dispatchEvent(
+      new CustomEvent("config-updated", {
+        detail: { path: ["CONFIG"], value: this.#config, importOverrides: true },
+      }),
+    );
+    this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
+    if (this.#isOpen) this.#populatePanel();
+  }
+
   #renderRuntimeOverrideControls(parentElement) {
     const content = this.#createSectionWithCache(
       "🧩 RUNTIME OVERRIDES",
@@ -835,19 +858,7 @@ export class DevTools {
       const json = window.prompt?.("Paste runtime overrides JSON", "{}");
       if (!json) return;
       try {
-        const overrides = JSON.parse(json);
-        const normalizedOverrides =
-          this.#parameterAliases?.normalizeConfigOverrides(overrides) ||
-          overrides;
-        this.#configRuntime?.importOverrides?.(normalizedOverrides);
-        this.#refreshFightPhysicsAdapter();
-        document.dispatchEvent(
-          new CustomEvent("config-updated", {
-            detail: { path: ["CONFIG"], value: this.#config, importOverrides: true },
-          }),
-        );
-        this.#invalidateItemProgression(["CONFIG", "itemProgression"]);
-        this.#populatePanel();
+        this.#applyImportedOverrides(JSON.parse(json));
         this.#configValidation?.report("import overrides");
       } catch (error) {
         console.warn("[DevTools] Failed to import runtime overrides", error);

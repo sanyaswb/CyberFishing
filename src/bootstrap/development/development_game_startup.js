@@ -90,33 +90,26 @@ async function startGame() {
   let consoleRuntime, overlayRuntime, game, watchdog;
   let housePreviewWindow = null;
   let timeControl = null;
+  let devTools = null;
   let houseTimeSnapshot = null;
   let houseReady = false;
   const onHouseReady = event => {
     if (!housePreviewWindow || houseReady || event.source !== housePreviewWindow || event.origin !== windowTarget.location.origin ||
       event.data?.type !== "cyber-fishing:dev-house-ready") return;
     houseReady = true;
-    updateHousePreview();
-    housePreviewWindow.postMessage({ type: "cyber-fishing:aquarium-preview", debugTime: houseTimeSnapshot }, windowTarget.location.origin);
+    // The House realm has its own config runtime: it receives every location override and returns its own set.
+    housePreviewWindow.postMessage({ type: "cyber-fishing:dev-house-handoff", overrides: configRuntime.exportOverrides(),
+      debugTime: houseTimeSnapshot }, windowTarget.location.origin);
   };
-  const updateHousePreview = () => housePreviewWindow?.postMessage({ type: "cyber-fishing:aquarium-preview",
-    visual: JSON.parse(JSON.stringify(CONFIG.liveBait.visual)) }, windowTarget.location.origin);
-  documentTarget.addEventListener("debug-live-update", updateHousePreview);
   windowTarget.addEventListener("message", onHouseReady);
   const pageOverlay = new EmbeddedPageOverlay({ documentRef: documentTarget, windowTarget,
     src: "dev.html?page=house&returnTo=dev.html&embedded=1", title: HOUSE_LABELS.pageTitle,
     onEnter: () => { game?.stop(); houseTimeSnapshot = timeControl?.suspend(); houseReady = false; },
-    onReady: (frameWindow) => {
-      housePreviewWindow = frameWindow; updateHousePreview();
-    },
+    onReady: (frameWindow) => { housePreviewWindow = frameWindow; },
     onExit: data => {
       housePreviewWindow = null;
-      const snapshot = data?.debugTime || houseTimeSnapshot;
-      if (data?.debugTime) {
-        configRuntime.set("debug.timeAccelerationEnabled", snapshot.enabled === true);
-        if (Number.isFinite(snapshot.timeScale) && snapshot.timeScale > 0) configRuntime.set("debug.timeScale", snapshot.timeScale);
-      }
-      timeControl?.resume(snapshot); houseTimeSnapshot = null;
+      if (data?.overrides) devTools?.replaceOverrides(data.overrides);
+      timeControl?.resume(data?.debugTime || houseTimeSnapshot); houseTimeSnapshot = null;
       void game?.start().catch((error) => windowTarget.console.error(error));
     } });
   let gameReady = false;
@@ -127,7 +120,6 @@ async function startGame() {
     browserLifecycle.removePagehideListener(cleanup);
     pageOverlay.dispose();
     windowTarget.removeEventListener("message", onHouseReady);
-    documentTarget.removeEventListener("debug-live-update", updateHousePreview);
     watchdog?.dispose();
     overlayRuntime?.dispose();
     consoleRuntime?.dispose();
@@ -162,7 +154,7 @@ async function startGame() {
       createDebugService: config => new DebugService(config, debugModulesSource),
       createFightDiagnosticsBuilder: () => new FightDiagnosticsSnapshotBuilder(),
       createWorldDebugRenderer: options => new WorldDebugRenderer(options),
-      createDevTools: (config, synchronizer, options) => new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
+      createDevTools: (config, synchronizer, options) => devTools = new DevTools(config, synchronizer, {...options, configRuntime, configValidation,
         openHouse: () => pageOverlay.open(),
         openUiCatalog: () => pageOverlay.open({ src: "ui-catalog.html?embedded=1", title: UI_CATALOG_LABELS.pageTitle, onReady: null }),
         catalogs: {items: itemCatalog, fishes: FISH_DB, maps: mapCatalog}, settingsStore, debugModulesSource, storageCache,

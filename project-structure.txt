@@ -294,6 +294,8 @@
 │  │  └── spec.md
 │  ├── 064-house-dev-config
 │  │  └── spec.md
+│  ├── 065-dev-house-override-handoff
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
