@@ -3,6 +3,7 @@
 Owner instructions: 2026-10-14. The bamboo rod (`rod_test_float`, "Бамбукова Вудка") gets the first painted skin,
 `assets/items/rods/bamboo-rod-ecip-v1.png` (rings and line) with its lineless variant
 `assets/items/rods/bamboo-rod-unecip-v1.png` (rings, no line). Both are 1024 × 1536 transparent PNGs.
+Their generation prompts are kept in [docs/art-prompts/rods](../../docs/art-prompts/rods/).
 
 1. **Catalog skin.** The rod definition carries `skin`: the thumbnail framing and the two equipment images. Every
    path lives only there, so a later WebP conversion changes one entry.

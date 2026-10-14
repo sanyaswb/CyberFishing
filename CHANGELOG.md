@@ -1,5 +1,12 @@
 # CyberFishing changelog
 
+## v0.36.0 - Inventory Sections, Picks and the First Rod Skin
+
+- Turn the inventory into Equipment/Backpack/Keepnet sections: full-screen portrait container, one sidebar parent on wide screens, two-section header with a 100kg load scale, shared filter/items collections for backpack and keepnet, and a portrait backpack pager with a presentation-only 0/100 capacity scale.
+- Pick from an empty cell, craft socket or header circle through the highlighted backpack (no section switch where the list is visible); a waiting bait or chum applies at the first header press; header pills show every hook slot with manual/automatic counts.
+- Add the bamboo rod skin (bottom-cropped thumbnail, equipment art with and without line), centre emoji glyphs by their measured ink, pan the map whenever the rod cannot cast, and scroll lists by drag without selecting cards.
+- House time-of-day blending, live DevTools/override handoff and House cleanup. Gameplay formulas and save formats are unchanged; Architecture 4/4, Quick 25/25, Full 51/51; owner visual/input acceptance remains.
+
 ## v0.35.0 - Shared UI, House Gestures and Aquarium Loading
 
 - Add the isolated production UI catalog, shared controls, logical 320px scaling, bounded resize work and desktop-only hover policy.

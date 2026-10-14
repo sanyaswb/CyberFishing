@@ -20,7 +20,16 @@ Notes: suspected owner module, related checks.
 
 ## Open
 
-### G-051 Switch containers are taller than their tracks/close and desktop placement is left-aligned (P3, fixed, not released)
+### G-052–G-058 Owner inventory/input reports of 2026-10-15 (P2/P3, done in v0.36.0)
+- G-052 Header bait glyph sat ~4px right/1px low (emoji advance wider than its grid box): one shared ui-glyph centred by measured ink ([spec 073](../specs/073-glyph-ink-centring/spec.md)).
+- G-053 Wide header had four sections; header circles did not apply a waiting bait/chum; wide picks switched to the backpack although the list was visible; backpack/keepnet filters and items shared one panel ([spec 074](../specs/074-header-sections-and-collections/spec.md)).
+- G-054 Portrait backpack had no backpack stats; filters reserved empty rows; container gaps differed ([spec 075](../specs/075-backpack-pager-and-capacity/spec.md)).
+- G-055 Map drags with a rod lacking reel/line showed the equipment warning; dragging over a card selected it instead of scrolling (P2, [spec 076](../specs/076-scroll-input-fixes/spec.md)).
+- G-056 Backpack list stopped scrolling vertically after the pager (unstyled wrapper broke the height chain; spec 076 follow-up).
+- G-057 Wide left column: tab bar and each section painted their own backgrounds; one sidebar parent now owns it ([spec 077](../specs/077-inventory-sidebar-parent/spec.md)).
+- G-058 Portrait rodless rod cell ran under the auxiliary row (viewport estimate of the header): equipment sized from its real row ([spec 078](../specs/078-portrait-equipment-real-size/spec.md)).
+
+### G-051 Switch containers are taller than their tracks/close and desktop placement is left-aligned (P3, done in v0.36.0)
 Found: 2026-10-15, owner mobile/landscape reference review.
 Reproduce: open the three-bait header in landscape/desktop; browser measured 72px pills versus 44px tracks and close, with the group 259px left of center at a 960px preview.
 Expected: common control height, aligned borders and small left item inset in both phone orientations; desktop switch group centered across the upper row.
@@ -28,21 +37,21 @@ Actual: independent outer/track/close heights, portrait-only compact styling and
 Fix/evidence: remove independent outer height and vertical padding, inject one header height into close and switches, share compact geometry across orientations, and use symmetric desktop grid columns. Browser checks at 240–960px confirm equal height/top edges, fitting five-slot contents and zero desktop center offset.
 Validation: real index 1280×800 and DEV 600×340 show 44px for every pill/track/close with aligned top edges and no console warnings/errors; Architecture 4/4, Quick 25/25 and Full 51/51 pass.
 
-### G-050 Backpack items have no separate rounded container (P3, fixed, not released)
+### G-050 Backpack items have no separate rounded container (P3, done in v0.36.0)
 Found: 2026-10-15, owner portrait backpack review.
 Reproduce: open the backpack; its transparent item panel merges with the large backpack illustration behind it.
 Expected: one opaque rounded item container like the equipment panels, filling all free space with style-consistent padding and insets.
 Actual: the portrait override deliberately removes the panel background and boundary.
 Fix/evidence: reuse the existing inventory-panel mix, equipment background and panel radius; remove the transparent override and reserve a bottom inset. Browser verifies an opaque rounded full-height panel, four columns and internal scrolling.
 
-### G-048 Narrow bait cells clip art and expose square selection borders (P3, fixed, not released)
+### G-048 Narrow bait cells clip art and expose square selection borders (P3, done in v0.36.0)
 Found: 2026-10-14, owner's 336px screenshot with two worms and cast chum.
 Reproduce: select a header bait slot; artwork sits in a roughly 17px-wide, 30px-tall cell and receives a square outline.
 Expected: complete artwork inside separated circles, a circular border only for selection/focus, and opaque automatic-mode surfaces.
 Actual: art is squeezed/cropped, selection is rectangular, and active background tints are transparent.
 Fix/evidence: one shared switch style owns circular artwork, count separation and opaque state colors. Browser checks at 240–960px cover three bait/two chum slots, round bounds and non-overlapping counts.
 
-### G-049 Header weight uses space needed by bait icons (P3, fixed, not released)
+### G-049 Header weight uses space needed by bait icons (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait header review and fixed-100kg clarification.
 Reproduce: open the narrow header with multiple bait slots, weight and close button.
 Expected: weight as a lower row inside inventory-header, with a 100kg scale and icon left; 1kg fills 1%. Mobile spans the header content width; desktop follows the left panel width.
@@ -53,42 +62,42 @@ Validation for G-048–G-050 (2026-10-15): Architecture 4/4, Quick 25/25 and Ful
 game-cycle baseline. Index/DEV browser smoke confirms the header-contained scale and rounded backpack panel;
 DEV warning/error logs are empty. Owner visual/play acceptance is pending.
 
-### G-042 Portrait inventory header changes composition at 520px (P3, fixed, not released)
+### G-042 Portrait inventory header changes composition at 520px (P3, done in v0.36.0)
 Found: 2026-10-14, owner browser review.
 Reproduce: use three bait slots and resize portrait through 520/521/600px while the side panel is hidden.
 Expected: proportional header geometry through 820px, with numbers below artwork and all controls inside the row.
 Actual: desktop icon dimensions appeared above 520px; icons/counts overlapped and controls stopped fitting.
 Fix/evidence: one header unit and coordinated 820px composition; browser geometry checks at 240/280/319/320/520/521/600/740/820px confirm fitting pills and separated counts. The side panel appears at 821px.
 
-### G-043 Equipped bait keeps the generic placeholder (P3, fixed, not released)
+### G-043 Equipped bait keeps the generic placeholder (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: equip a worm whose catalog art is an emoji rather than an image URL.
 Expected: actual equipped bait artwork replaces its empty-slot placeholder.
 Actual: the generic bait SVG took precedence over the item's icon.
 Fix/evidence: shared renderer chooses actual image/icon for filled slots; focused check and index/dev browser checks show the worm artwork.
 
-### G-044 Automatic switch loses its movement on refresh (P3, fixed, not released)
+### G-044 Automatic switch loses its movement on refresh (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: toggle automatic bait and inspect thumb positioning and DOM identity.
 Expected: working checkbox, smooth transform animation and retained focus across mode/numeric updates.
 Actual: layout overrides made the thumb static and full header replacement interrupted its transition.
 Fix/evidence: restored transform track, in-place header/switch updates and listener disposal checks; browser confirms transform changes and the shared 180ms transition in index/dev.
 
-### G-045 Equipping from backpack leaves the changed equipment out of view (P3, fixed, not released)
+### G-045 Equipping from backpack leaves the changed equipment out of view (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: equip a rod from the backpack into an empty rod slot.
 Expected: return to equipment and flash the changed slot green once.
 Actual: the item equipped but the backpack stayed open without this feedback.
 Fix/evidence: transient feedback revision, automatic section selection and one-shot CSS flash; focused command/UI checks and production browser confirm rod tab/flash and no replay on refresh.
 
-### G-046 Bare hook opens an empty crafting menu (P3, fixed, not released)
+### G-046 Bare hook opens an empty crafting menu (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: select a compatible loose hook after equipping a rod and line.
 Expected: equip directly; bait is chosen through the header.
 Actual: the removed bait socket left the player in an empty craft editor.
 Fix/evidence: atomic prepare/equip through existing assembly operations; focused integration and production browser confirm equipment tab, fitted hook and no craft panel.
 
-### G-047 Consumable counts ignore manual mode and duplicate uniform bait stock (P3, fixed, not released)
+### G-047 Consumable counts ignore manual mode and duplicate uniform bait stock (P3, done in v0.36.0)
 Found: 2026-10-14, owner count clarification.
 Reproduce: fill three hooks with different baits, disable automatic mode, then use three identical baits.
 Expected: manual mode shows total 3 and 1/1/1 for different baits; uniform filled slots show only the total in both modes. Automatic mode shows deduplicated available reserve.
@@ -99,42 +108,42 @@ Validation for G-038–G-047: Architecture 4/4, Quick 25/25 and Full 51/51 pass;
 Index/dev browser smoke passes with no warning/error logs in the changed flow. Behavior is documented in
 [inventory-behavior.md](inventory-behavior.md). Owner visual/play acceptance is pending.
 
-### G-041 Header pills hide a third bait and its reserve (P3, fixed, not released)
+### G-041 Header pills hide a third bait and its reserve (P3, done in v0.36.0)
 Found: 2026-10-14, owner `inventory-switcher-mob-v2.png` sketch.
 Reproduce: equip three different baits with backpack reserves 12/80/10 and leave cast chum empty.
 Expected: three separate icons with their quantities below, total 102 beside A, an empty pill with total zero, and a compact close button in the mobile header row.
 Actual: the earlier compact contract capped the icons at two and showed no individual reserves.
 Fix/evidence: spec 072 v2 header; focused checks failed before the change and pass for exact reserves, deduplicated totals and independent third-slot replacement. Architecture, Quick and Full required; owner visual acceptance pending.
 
-### G-038 Backpack shortcut reopens the previously selected keepnet (P2, fixed, not released)
+### G-038 Backpack shortcut reopens the previously selected keepnet (P2, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: open keepnet, close the inventory, then press the location backpack button; also press backpack while keepnet is open.
 Expected: select the requested backpack section; pressing its shortcut while already there closes it.
 Actual: the generic toggle reopened keepnet or closed the wrong section.
 Fix/evidence: section-specific shortcut; the focused UI regression failed before the fix and passes after it.
 
-### G-039 Bait selection remains nested inside hook crafting (P3, implemented, not released)
+### G-039 Bait selection remains nested inside hook crafting (P3, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review and sequential-selection clarification.
 Reproduce: equip one/two hooks, then try to select or replace bait through the header; inspect hook cards.
 Expected: available header icons, one-click sequential filling, one proposed replacement with repeat-click confirmation; worm beside worm + bread proposes replacing bread.
 Actual: the icons only toggled automatic mode; hooks exposed nested bait compartments and selection.
 Fix/evidence: spec 072; focused checks verify exact stock changes, no mutation during proposal, highlighting, cancellation and lock policy. Owner visual acceptance pending.
 
-### G-040 Chum header includes hand and boat supplies (P2, fixed, not released)
+### G-040 Chum header includes hand and boat supplies (P2, done in v0.36.0)
 Found: 2026-10-14, owner portrait inventory review.
 Reproduce: equip cast chum, hand chum and boat cargo, then inspect the header pill.
 Expected: only cast-tackle chum and its refill stock; configured multiple slots follow the bait icon contract.
 Actual: the header combined all three sources and showed multiple unrelated portions.
 Fix/evidence: tackle-only target projection and refill scope; the focused integration regression failed before the fix and passes after it.
 
-### G-036 House day/night images step instead of blending (P3, done, not released)
+### G-036 House day/night images step instead of blending (P3, done in v0.36.0)
 Found: 2026-10-14, owner House review against the test location.
 Reproduce: open the House around 17:00–21:00 or 05:00–09:00 game time (timeScale 240, optionally DEV ×5) and watch the room art.
 Expected: the same continuous crossfade and layer composition as the test location.
 Actual: opacity changed only on the 1 s House refresh (3–17 % jumps); the House always stacked three layers.
 Fix/evidence: shared `timeOfDayLayers` for location Canvas and House DOM; House blends each refresh with a linear CSS transition. Map/House layer and no-write checks in house-check. Spec 063; owner visual acceptance pending.
 
-### G-037 House DevTools ignore aquarium visual edits and miss validation (P3, done, not released)
+### G-037 House DevTools ignore aquarium visual edits and miss validation (P3, done in v0.36.0)
 Found: 2026-10-14, owner DEV House review.
 Reproduce: dev.html → House, DevTools → CONFIG.liveBait.visual: change gridSizePx or showZone.
 Expected: the aquarium grid/zone reacts immediately; House DevTools validate edits like the location page.

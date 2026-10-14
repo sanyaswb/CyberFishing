@@ -147,6 +147,10 @@
 ├── dev.html
 ├── docs
 │  ├── architecture.md
+│  ├── art-prompts
+│  │  └── rods
+│  │     ├── bamboo-rod-ecip-v1.prompt.md
+│  │     └── bamboo-rod-unecip-v1.prompt.md
 │  ├── audits
 │  │  ├── 2026-10-08-finalization-review.md
 │  │  ├── 2026-10-08-stage7-post-closure.md
@@ -325,6 +329,8 @@
 │  ├── 076-scroll-input-fixes
 │  │  └── spec.md
 │  ├── 077-inventory-sidebar-parent
+│  │  └── spec.md
+│  ├── 078-portrait-equipment-real-size
 │  │  └── spec.md
 │  └── README.md
 ├── src
