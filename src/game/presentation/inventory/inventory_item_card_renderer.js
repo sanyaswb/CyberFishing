@@ -203,13 +203,7 @@ export class InventoryItemCardRenderer {
       image.setAttribute("aria-hidden", "true");
       visual.appendChild(image);
     } else {
-      visual.appendChild(
-        this.#dom.element(
-          "span",
-          "inventory-item-card__icon",
-          item.icon || item.emoji || "?",
-        ),
-      );
+      visual.appendChild(this.#dom.glyph(item.icon || item.emoji || "?", "inventory-item-card__icon"));
     }
     card.appendChild(visual);
   }

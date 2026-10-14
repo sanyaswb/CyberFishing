@@ -53,10 +53,11 @@
   gap: 7px;
 }
 
+/* A square ui-glyph box (DESIGN_RULES §8). */
 .inventory-item-parameter-section__icon {
   flex: 0 0 auto;
-  font-size: 18px;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
 }
 
 .inventory-item-parameter-section__title {

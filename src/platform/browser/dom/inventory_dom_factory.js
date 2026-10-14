@@ -1,11 +1,15 @@
+import { GlyphInkMetrics } from "./glyph_ink_metrics.js";
+
 export class InventoryDomFactory {
   #document;
+  #glyphMetrics;
 
-  constructor(documentRef = globalThis.document) {
+  constructor(documentRef = globalThis.document, { glyphMetrics = new GlyphInkMetrics({ documentRef }) } = {}) {
     if (!documentRef?.createElement) {
       throw new TypeError("InventoryDomFactory requires a document");
     }
     this.#document = documentRef;
+    this.#glyphMetrics = glyphMetrics;
   }
 
   // Browser lookup for cold Bootstrap mounting; preserve live document, receiver and missing-global errors.
@@ -58,6 +62,18 @@ export class InventoryDomFactory {
       return "";
     }
     return value;
+  }
+
+  // A text glyph (emoji) centred by its measured ink inside the consumer's box (DESIGN_RULES §8, ui-glyph.css).
+  glyph(text, className = "") {
+    const glyph = this.element("span", `ui-glyph ${className}`.trim());
+    const ink = this.element("span", "ui-glyph__ink", text);
+    const offset = this.#glyphMetrics.offset(ink.textContent);
+    if (offset.x) ink.style.setProperty("--ui-glyph-shift-x", `${offset.x}em`);
+    if (offset.y) ink.style.setProperty("--ui-glyph-shift-y", `${offset.y}em`);
+    glyph.setAttribute("aria-hidden", "true");
+    glyph.appendChild(ink);
+    return glyph;
   }
 
   // A decorative sprite icon: <svg><use href="sprite.svg#id"/></svg> inherits currentColor from its parent.

@@ -93,7 +93,7 @@ export class UiAutoSwitchRenderer {
       const icon = String(item?.icon || item?.emoji || "");
       if (nodes.source !== imageSource || nodes.icon !== icon) {
         nodes.image = this.#dom.image(imageSource, "");
-        const visual = nodes.image || this.#dom.element("span", "inventory-toggle__glyph", icon);
+        const visual = nodes.image || this.#dom.glyph(icon, "inventory-toggle__glyph");
         visual.setAttribute("aria-hidden", "true");
         this.#dom.replaceChildren(nodes.artwork, visual);
         nodes.source = imageSource;

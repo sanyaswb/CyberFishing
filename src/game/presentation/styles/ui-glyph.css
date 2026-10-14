@@ -1,0 +1,20 @@
+/* Shared text glyph (emoji) in a square box (DESIGN_RULES §8). The consumer sizes the box; the symbol is a share of
+   its smaller side (--ui-glyph-scale, capped by --ui-glyph-max-size). Flex centring overflows evenly, so an emoji advance
+   wider than its em stays centred, and GlyphInkMetrics supplies the font's remaining ink offset in em. */
+.ui-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: visible;
+  container-type: size;
+  pointer-events: none;
+}
+
+.ui-glyph__ink {
+  flex: none;
+  font: min(var(--ui-glyph-max-size, 100cqmin), calc(100cqmin * var(--ui-glyph-scale, 1)))/1 var(--ui-font-body);
+  white-space: nowrap;
+  transform: translate(var(--ui-glyph-shift-x, 0em), var(--ui-glyph-shift-y, 0em));
+}

@@ -77,7 +77,6 @@
   height: var(--inventory-toggle-artwork-size);
   object-fit: contain;
 }
-.inventory-toggle__glyph { display: grid; place-items: center; font: var(--inventory-toggle-artwork-size)/1 var(--ui-font-body); }
 .inventory-toggle__input {
   position: absolute;
   width: 1px;

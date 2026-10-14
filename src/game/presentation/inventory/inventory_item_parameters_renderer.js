@@ -102,11 +102,7 @@ export class InventoryItemParametersRenderer {
     );
     const icon = section?.item?.icon || section?.item?.emoji;
     if (icon) {
-      identity.appendChild(this.#dom.element(
-        "span",
-        "inventory-item-parameter-section__icon",
-        icon,
-      ));
+      identity.appendChild(this.#dom.glyph(icon, "inventory-item-parameter-section__icon"));
     }
     const count = Math.max(1, Math.floor(Number(section?.count) || 1));
     const title = [

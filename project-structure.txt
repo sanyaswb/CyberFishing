@@ -316,6 +316,8 @@
 │  │  └── spec.md
 │  ├── 072-inventory-consumable-controls
 │  │  └── spec.md
+│  ├── 073-glyph-ink-centring
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -1089,6 +1091,7 @@
 │  │     │  ├── rarity_visual_resolver.js
 │  │     │  ├── three_band_gradient_color.js
 │  │     │  ├── tokens.css
+│  │     │  ├── ui-glyph.css
 │  │     │  ├── ui-surface.css
 │  │     │  └── version-badge.css
 │  │     ├── time
@@ -1124,6 +1127,7 @@
 │        ├── dom
 │        │  ├── draggable_button.js
 │        │  ├── engine_interface.js
+│        │  ├── glyph_ink_metrics.js
 │        │  ├── horizontal_scroll_controller.js
 │        │  ├── hud_row_sizer.js
 │        │  ├── inventory_dom_factory.js

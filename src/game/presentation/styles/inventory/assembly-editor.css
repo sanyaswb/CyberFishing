@@ -48,7 +48,7 @@
 }
 
 .inventory-assembly-editor__visual .inventory-item-card__icon {
-  font-size: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
+  --ui-glyph-max-size: clamp(80px, calc(var(--ui-logical-width, 100vw) * 0.11), 148px);
 }
 
 .inventory-assembly-editor__sockets {

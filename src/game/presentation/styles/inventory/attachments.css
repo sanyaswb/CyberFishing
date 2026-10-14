@@ -57,8 +57,9 @@
   object-fit: contain;
 }
 
+/* A ui-glyph filling the badge's content box (DESIGN_RULES §8). */
 .inventory-attachment-badge__icon {
-  font:
-    min(20px, calc(var(--inventory-attachment-size) - 2 * var(--inventory-image-inset) - 2px))/1 system-ui,
-    sans-serif;
+  --ui-glyph-max-size: 20px;
+  width: 100%;
+  height: 100%;
 }

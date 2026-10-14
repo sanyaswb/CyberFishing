@@ -2,7 +2,7 @@
 
 Before design work, read [DESIGN_RULES.md](../DESIGN_RULES.md). It is the current owner policy for reuse, responsive behavior and component design; this document describes the existing style ownership and runtime boundaries. In particular, mobile inventory has four columns and mobile keepnet has two; earlier specifications retain their historical layouts.
 
-Native HTML pages compose the stylesheet order. `index.html` loads 28 production assets;
+Native HTML pages compose the stylesheet order. `index.html` loads 29 production assets;
 `dev.html` reuses that exact prefix, appends the House stylesheet for its DEV House route and three DEV assets. `ui-catalog.html` reuses the
 same prefix, appends the House component styles, catalog stylesheet and shared DEV clock/navigation styles. Every link uses the package
 version. There are no CSS imports, runtime style installers or build requirements.
@@ -12,6 +12,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | Owner | Responsibility |
 | --- | --- |
 | `src/game/presentation/styles/tokens.css` | Shared DOM palette, font, radii and stacking roles |
+| `styles/ui-glyph.css` | Shared text glyph (emoji) box: flex centring, size share and the measured ink shift written by `InventoryDomFactory.glyph()` ([spec 073](../specs/073-glyph-ink-centring/spec.md)) |
 | `styles/ui-surface.css` | One logical DOM coordinate surface and physical flow footprint; Canvas stays outside |
 | `styles/modal-controls.css`, `auto-switch.css` | Shared close/switch appearance, documented custom properties and native interactive states |
 | `styles/game-shell.css`, `version-badge.css`, `styles/hud/toolbar.css` | Page interaction policy, canvas stacking, badge and common bottom action row |

@@ -77,12 +77,7 @@ export class InventoryAttachmentBadgeRenderer {
       image.className = "inventory-attachment-badge__image";
       badge.appendChild(image);
     } else {
-      const icon = this.#dom.element(
-        "span",
-        "inventory-attachment-badge__icon",
-        attachment.icon || attachment.emoji || "•",
-      );
-      badge.appendChild(icon);
+      badge.appendChild(this.#dom.glyph(attachment.icon || attachment.emoji || "•", "inventory-attachment-badge__icon"));
     }
     return badge;
   }
