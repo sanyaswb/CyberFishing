@@ -1,0 +1,249 @@
+/* Warnings, disabled actions and shared scrolling surfaces. */
+
+.inventory-warning {
+  width: min(620px, calc(100% - 40px));
+  max-height: 0;
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0 16px;
+  overflow: hidden;
+  border: 0 solid var(--inventory-danger);
+  border-radius: 5px;
+  margin: 0;
+  opacity: 0;
+  background: rgba(54, 4, 10, 0.96);
+  color: #ffb9c1;
+  font-weight: 700;
+  line-height: 1.35;
+  pointer-events: none;
+  transform: translateY(-8px);
+  visibility: hidden;
+  transition:
+    max-height 150ms ease,
+    padding 150ms ease,
+    border-width 150ms ease,
+    margin 150ms ease,
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.inventory-warning.inventory-warning--visible {
+  max-height: 120px;
+  padding: 9px 16px;
+  border-width: 1px;
+  margin-top: 10px;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.inventory-action.inventory-action--disabled {
+  opacity: 0.46;
+  cursor: not-allowed;
+}
+
+.inventory-modal,
+.inventory-list-grid,
+.inventory-categories,
+.inventory-subfilters,
+.inventory-sort-options,
+.inventory-loadout-panel,
+.inventory-assembly-editor,
+.inventory-saved-loadout-preview,
+.inventory-tooltip {
+  scrollbar-width: thin;
+  scrollbar-color: var(--inventory-scrollbar-thumb)
+    var(--inventory-scrollbar-track);
+}
+
+.inventory-modal::-webkit-scrollbar,
+.inventory-list-grid::-webkit-scrollbar,
+.inventory-categories::-webkit-scrollbar,
+.inventory-subfilters::-webkit-scrollbar,
+.inventory-sort-options::-webkit-scrollbar,
+.inventory-loadout-panel::-webkit-scrollbar,
+.inventory-assembly-editor::-webkit-scrollbar,
+.inventory-saved-loadout-preview::-webkit-scrollbar,
+.inventory-tooltip::-webkit-scrollbar {
+  width: var(--inventory-scrollbar-size);
+  height: var(--inventory-scrollbar-size);
+}
+
+.inventory-modal::-webkit-scrollbar-track,
+.inventory-list-grid::-webkit-scrollbar-track,
+.inventory-categories::-webkit-scrollbar-track,
+.inventory-subfilters::-webkit-scrollbar-track,
+.inventory-sort-options::-webkit-scrollbar-track,
+.inventory-loadout-panel::-webkit-scrollbar-track,
+.inventory-assembly-editor::-webkit-scrollbar-track,
+.inventory-saved-loadout-preview::-webkit-scrollbar-track,
+.inventory-tooltip::-webkit-scrollbar-track {
+  background: var(--inventory-scrollbar-track);
+}
+
+.inventory-modal::-webkit-scrollbar-thumb,
+.inventory-list-grid::-webkit-scrollbar-thumb,
+.inventory-categories::-webkit-scrollbar-thumb,
+.inventory-subfilters::-webkit-scrollbar-thumb,
+.inventory-sort-options::-webkit-scrollbar-thumb,
+.inventory-loadout-panel::-webkit-scrollbar-thumb,
+.inventory-assembly-editor::-webkit-scrollbar-thumb,
+.inventory-saved-loadout-preview::-webkit-scrollbar-thumb,
+.inventory-tooltip::-webkit-scrollbar-thumb {
+  border-radius: calc(var(--inventory-scrollbar-size) / 2);
+  background: var(--inventory-scrollbar-thumb);
+}
+.ui-surface--desktop-hover .inventory-modal::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-list-grid::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-categories::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-subfilters::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-sort-options::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-loadout-panel::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-assembly-editor::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-saved-loadout-preview::-webkit-scrollbar-thumb:hover,
+.ui-surface--desktop-hover .inventory-tooltip::-webkit-scrollbar-thumb:hover {
+  background: var(--inventory-scrollbar-thumb-hover);
+}
+
+/* Shared blocks are mixed into component elements; layout stays with each parent. */
+.inventory-panel {
+  min-height: var(--inventory-panel-min-height, 0);
+  border: 1px solid var(--inventory-panel-border);
+  border-radius: var(--inventory-panel-radius);
+  background: var(--inventory-panel);
+}
+
+.inventory-panel--full-height {
+  height: 100%;
+}
+
+/* Collection (spec 074): a filters panel, a gap, then the items panel. Only the items panel's list
+   (inventory-collection__list) scrolls, over an optional faded backdrop that portrait shows in place of the separate
+   summary column. Backpack and keepnet mix the elements into their own blocks together with inventory-panel. */
+.inventory-collection {
+  --inventory-panel: var(--inventory-equipment-panel);
+  --inventory-panel-border: transparent;
+  --inventory-collection-inset: 14px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--inventory-container-gap, 10px);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.inventory-collection__controls {
+  min-width: 0;
+  padding: var(--inventory-collection-inset);
+}
+
+.inventory-collection__items {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--inventory-collection-inset);
+  overflow: hidden;
+}
+
+.inventory-collection__list {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.inventory-collection__backdrop {
+  display: none;
+}
+
+/* Item and fish lists scroll by mouse drag too (spec 076); touch keeps native panning. A drag never activates a card. */
+.inventory-vertical-scroll {
+  overscroll-behavior-y: contain;
+}
+
+.inventory-vertical-scroll.inventory-vertical-scroll--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+@container ui-surface (max-width: 820px) {
+  .inventory-collection {
+    --inventory-collection-inset: 8px;
+  }
+
+  @media (orientation: portrait) {
+    .inventory-collection__list {
+      scrollbar-width: none;
+    }
+
+    .inventory-collection__list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .inventory-collection__backdrop {
+      position: absolute;
+      top: 15%;
+      left: 15%;
+      display: block;
+      width: 70%;
+      height: 70%;
+      object-fit: contain;
+      opacity: 0.12;
+      pointer-events: none;
+    }
+  }
+}
+
+.inventory-action {
+  min-height: var(--inventory-control-min-height, 37px);
+  padding: var(--inventory-control-padding);
+  border: 1px solid var(--inventory-control-border);
+  border-radius: var(--inventory-control-radius);
+  background: var(--inventory-control-background);
+  color: var(--inventory-control-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--inventory-control-font-size, 11px);
+  font-weight: 700;
+}
+.ui-surface--desktop-hover .inventory-action:hover:not(:disabled) {
+  background: var(--inventory-control-hover-background, var(--inventory-control-background));
+  border-color: var(--inventory-accent, var(--ui-accent));
+}
+.ui-surface--desktop-hover .inventory-action:active:not(:disabled) {
+  background: var(--inventory-control-active-background, var(--inventory-control-hover-background, var(--inventory-control-background)));
+}
+.inventory-action:focus-visible { outline: 2px solid var(--ui-info); outline-offset: 3px; }
+.inventory-action:disabled { opacity: var(--inventory-control-disabled-opacity, 0.46); cursor: not-allowed; }
+.ui-surface--desktop-hover .inventory-action--primary:hover:not(:disabled) {
+  background: var(--inventory-primary-hover-background, var(--inventory-primary-background));
+}
+.ui-surface--desktop-hover .inventory-action--danger:hover:not(:disabled) {
+  border-color: var(--inventory-danger);
+  background: var(--inventory-danger-background);
+}
+
+.inventory-action--primary {
+  border-color: var(--inventory-primary-border, var(--inventory-success));
+  background: var(--inventory-primary-background);
+  color: var(--inventory-primary-text);
+}
+
+.inventory-action--danger {
+  border-color: var(--inventory-danger);
+  background: var(--inventory-danger-background);
+  color: var(--inventory-danger-text);
+}
+
+.inventory-action--muted {
+  color: var(--inventory-muted-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inventory-warning {
+    transition: none;
+  }
+}

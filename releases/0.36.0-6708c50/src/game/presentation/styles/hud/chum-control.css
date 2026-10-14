@@ -1,0 +1,32 @@
+/* Chum control state appearance. */
+
+.chum-control--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chum-control--empty {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chum-control--aiming {
+  border-color: #ff8888;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--moving {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.chum-control--ready {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.chum-control--idle {
+  opacity: 1;
+  cursor: pointer;
+}
