@@ -41,7 +41,7 @@
   .inventory-header {
     --inventory-header-unit: clamp(1px, calc(100cqi / 320), calc(44px / 36));
     --inventory-header-control-height: calc(var(--inventory-header-unit) * 36);
-    --inventory-load-unit: var(--inventory-header-unit);
+    --inventory-scale-unit: var(--inventory-header-unit);
     grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     padding-bottom: 8px;

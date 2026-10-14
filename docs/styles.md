@@ -20,7 +20,7 @@ version. There are no CSS imports, runtime style installers or build requirement
 | `styles/inventory/modal.css` | Backpack, modal lifecycle and screen layout (left container, section tabs, right content areas) |
 | `styles/inventory/loadout.css`, `section-tabs.css` | Unit-based grey equipment composition and the section tab bar (spec 067); `--inventory-equipment-*` palette lives in the inventory theme. Separate containers in landscape or above 820px; the full-screen stacked layout (bottom tabs, list-only scrolling) applies only in portrait (spec 068) |
 | `styles/inventory/shared-controls.css` | Reusable panels/actions, warning, scrollbar appearance; the `inventory-collection` block (filters panel, gap, scrolling items panel, portrait backdrop) shared by backpack and keepnet ([spec 074](../specs/074-header-sections-and-collections/spec.md)) |
-| `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the load-scale icon/readout composition; header placement belongs to `header.css` |
+| `styles/inventory/resource-meters.css` | Shared meter tracks/fills, summary rounding and the `inventory-scale` icon/meter/reading composition (load and backpack capacity, `InventoryScaleRenderer`); header placement belongs to `header.css` |
 | Other `styles/inventory/*.css` | Their component, including its media/container/reduced-motion rules |
 | `styles/hud/*.css` | Game controls, time, charges, depth, chum and shared drag feedback |
 | `src/dev/styles/dev-tools.css` | DEV editor and toggle |
@@ -59,7 +59,8 @@ to the projected inventory pick state and keyboard focus remains visible; item p
 The load scale is `inventory-header__load`: on mobile the lower row inside `inventory-header`, below its
 consumable/close row, spanning the header's content width; on desktop the left section of the single header row. Header and main share the
 container-owned `--inventory-content-columns`/`--inventory-content-gap`, avoiding duplicated width formulas.
-Its icon/readout composition reuses `InventoryResourceMeterRenderer`
+Its icon/readout composition is the shared `inventory-scale` block (`InventoryScaleRenderer`, also used by the backpack
+capacity scale of [spec 075](../specs/075-backpack-pager-and-capacity/spec.md)), which reuses `InventoryResourceMeterRenderer`
 and `resource-meters.css` (including the shared summary-track radius). `InventoryLoadRenderer` maps kilograms
 to the fixed presentation config maximum of 100kg, so 1kg fills 1%. It does not compute gameplay load limits.
 

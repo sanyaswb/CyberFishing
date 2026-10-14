@@ -3,6 +3,8 @@
 .inventory-modal {
   --inventory-content-columns: minmax(430px, 0.92fr) minmax(0, 1.88fr);
   --inventory-content-gap: 20px;
+  /* One spacing between neighbouring containers (spec 075): the column gap here, the mobile inset on phones. */
+  --inventory-container-gap: var(--inventory-content-gap);
   position: fixed;
   inset: 0;
   z-index: var(--ui-layer-panel);
@@ -84,6 +86,7 @@
     --inventory-socket-size: min(66px, var(--inventory-card-size));
     --inventory-mobile-gap: 6px;
     --inventory-mobile-inset: 10px;
+    --inventory-container-gap: var(--inventory-mobile-inset);
     --inventory-header-radius: 14px;
     padding: 9px;
   }
@@ -103,7 +106,7 @@
       grid-template-rows: auto minmax(0, 1fr) auto;
       grid-template-areas: "left" "right" "tabs";
       gap: 0;
-      padding-top: 6px;
+      padding-top: var(--inventory-container-gap);
     }
 
     /* A tall assembly editor or saved preview scrolls inside the summary row and never hides the list or tabs. */
@@ -119,7 +122,11 @@
     }
 
     .inventory-main__right {
-      padding: 6px var(--inventory-mobile-inset) var(--inventory-mobile-inset);
+      padding: 0 var(--inventory-mobile-inset) var(--inventory-container-gap);
+    }
+
+    .inventory-modal--section-keepnet .inventory-main__right {
+      padding-top: var(--inventory-container-gap);
     }
 
     .inventory-main__left > .inventory-main__section--keepnet {

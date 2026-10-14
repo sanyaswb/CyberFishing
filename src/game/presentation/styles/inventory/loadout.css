@@ -123,19 +123,27 @@
   height: 100%;
 }
 
-/* The backpack section reuses the container with one cell: the backpack illustration and the carried item count. */
-.inventory-backpack-summary {
-  position: relative;
+/* Backpack view (spec 075): one image container, then a separate stats container with the capacity scale. The gap is
+   the shared container gap. Inside the portrait pager the containers use the cell colour on the items panel. */
+.inventory-backpack {
+  --inventory-panel: var(--inventory-equipment-panel);
+  --inventory-panel-border: transparent;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  place-items: center;
+  gap: var(--inventory-container-gap);
+  height: 100%;
+  min-width: 0;
   min-height: 0;
-  padding: var(--inventory-equipment-inset);
-  border-radius: var(--inventory-slot-radius);
-  background: var(--inventory-equipment-cell);
 }
 
-.inventory-backpack-summary__image {
+.inventory-backpack__visual {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: var(--inventory-container-gap);
+}
+
+.inventory-backpack__image {
   display: block;
   width: 100%;
   height: 100%;
@@ -144,10 +152,12 @@
   pointer-events: none;
 }
 
-.inventory-backpack-summary__count {
-  color: var(--inventory-equipment-tab-icon-active);
-  font-size: calc(var(--inventory-equipment-unit) * 0.11);
-  font-variant-numeric: tabular-nums;
+.inventory-backpack__stats {
+  padding: var(--inventory-container-gap);
+}
+
+.inventory-pager__page--backpack .inventory-backpack {
+  --inventory-panel: var(--inventory-equipment-cell);
 }
 
 .inventory-loadout-panel .inventory-item-card {

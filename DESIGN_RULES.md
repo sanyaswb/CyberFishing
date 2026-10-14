@@ -76,6 +76,8 @@ consumable slot selection/replacement, automatic/manual counts and equipment fee
 
 A browsable collection (backpack items, keepnet fish) is two containers of the shared `inventory-collection` block: filters in their own panel, a gap, then the scrolling items panel. Decorative illustrations lie inside the items panel; do not stack filters and items in one panel or layer a separate column underneath ([spec 074](specs/074-header-sections-and-collections/spec.md)). A pick never switches sections when the item list is already visible; read visibility from the rendered layout, not from duplicated breakpoints.
 
+Stack optional rows (filters, sorting) with flex or auto-placed rows, never with fixed empty grid tracks: a hidden row must reserve no gap. Space neighbouring containers with the one `--inventory-container-gap` token (the column gap on wide layouts, the mobile inset on phones). Alternative views of one container on a phone (the backpack's items and backpack pages) use `InventoryCollectionPagerRenderer` with tabs in the main tab style and `SwipePagerController`; wide layouts show both views without a pager ([spec 075](specs/075-backpack-pager-and-capacity/spec.md)).
+
 Use equal gaps between cards. Internal spacing and icon dimensions should be consistent within each card type. Earlier specifications describing four keepnet columns remain historical; the current keepnet rule is two columns.
 
 ## 8. Illustrations, proportions and minimal text

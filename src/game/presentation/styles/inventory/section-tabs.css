@@ -9,7 +9,8 @@
 
 .inventory-section-tabs__list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   align-items: end;
   gap: calc(100cqi * 0.015);
   height: calc(100cqi * 0.15);

@@ -3,6 +3,7 @@ export class InventoryGridRenderer {
   #itemRenderer;
   #horizontalScrollController;
   #backdropImage;
+  #pager;
   #subfiltersExpanded = false;
   #sortExpanded = false;
 
@@ -12,9 +13,11 @@ export class InventoryGridRenderer {
     horizontalScrollController = null,
     createHorizontalScrollController,
     backdropImage = "",
+    pagerRenderer,
   } = {}) {
     this.#dom = domFactory;
     this.#backdropImage = backdropImage;
+    this.#pager = pagerRenderer;
     this.#itemRenderer = itemRenderer;
     this.#horizontalScrollController =
       horizontalScrollController || createHorizontalScrollController();
@@ -30,13 +33,15 @@ export class InventoryGridRenderer {
       onRarityFilterToggle = null,
       onItemActivate = null,
       onItemLongPress = null,
+      backpackView,
     } = {},
   ) {
-    // Shared collection (spec 074): the filters panel, a gap, then the items panel over the faded backpack.
+    // Shared collection (spec 074): the filters panel, a gap, then the items panel. In portrait the items panel is a
+    // pager (spec 075): the list over the faded backpack, and the backpack view.
     const panel = this.#dom.element("section", "inventory-list-panel inventory-collection");
     const controls = this.#dom.element("div",
       "inventory-list-panel__controls inventory-collection__controls inventory-panel");
-    const items = this.#dom.element("div", "inventory-list-panel__items inventory-collection__items inventory-panel");
+    const items = this.#dom.element("div", "inventory-list-panel__page");
     const subfilters = this.#renderSubfilters(model, onSubfilterToggle);
     const sortOptions = this.#renderSortOptions(model, {
       onSortCriterionSelect,
@@ -67,8 +72,16 @@ export class InventoryGridRenderer {
       items.appendChild(backdrop);
     }
     items.appendChild(this.#renderItems(model, { onItemActivate, onItemLongPress }));
-    panel.append(controls, items);
+    const pager = this.#pager.create([items, backpackView], {
+      viewportClassName: "inventory-list-panel__items inventory-collection__items inventory-panel",
+    });
+    panel.append(controls, pager);
     return panel;
+  }
+
+  // Entering the backpack section starts on the item list, so a pick always shows its highlighted cards.
+  showItemsPage() {
+    this.#pager.select(0);
   }
 
   #renderCategories(
@@ -254,7 +267,7 @@ export class InventoryGridRenderer {
   }
 
   #renderItems(model, { onItemActivate, onItemLongPress }) {
-    const grid = this.#dom.element("div", "inventory-list-grid");
+    const grid = this.#dom.element("div", "inventory-list-grid inventory-collection__list");
     if (!model.items.length) {
       grid.appendChild(
         this.#dom.element(

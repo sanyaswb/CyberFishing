@@ -320,6 +320,8 @@
 │  │  └── spec.md
 │  ├── 074-header-sections-and-collections
 │  │  └── spec.md
+│  ├── 075-backpack-pager-and-capacity
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap
@@ -987,6 +989,7 @@
 │  │     │  ├── inventory_attachment_badge_renderer.js
 │  │     │  ├── inventory_backpack_summary_renderer.js
 │  │     │  ├── inventory_balance_parameter_resolver.js
+│  │     │  ├── inventory_collection_pager_renderer.js
 │  │     │  ├── inventory_facade_contract.js
 │  │     │  ├── inventory_grid_renderer.js
 │  │     │  ├── inventory_header_renderer.js
@@ -1006,6 +1009,7 @@
 │  │     │  ├── inventory_rod_removal_renderer.js
 │  │     │  ├── inventory_rule_messages.js
 │  │     │  ├── inventory_saved_loadout_preview_renderer.js
+│  │     │  ├── inventory_scale_renderer.js
 │  │     │  ├── inventory_section_tabs_renderer.js
 │  │     │  ├── inventory_sections.js
 │  │     │  ├── inventory_slot_icons.js
@@ -1139,6 +1143,7 @@
 │        │  ├── item_rarity_dom_adapter.js
 │        │  ├── sheet_dismiss_controller.js
 │        │  ├── sheet_height_controller.js
+│        │  ├── swipe_pager_controller.js
 │        │  ├── ui_event_shield.js
 │        │  └── ui_surface_adapter.js
 │        ├── input

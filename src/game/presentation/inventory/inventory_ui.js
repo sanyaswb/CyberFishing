@@ -29,6 +29,8 @@ export class InventoryUI {
   #sectionTabsNode;
   #backpackSummaryRenderer;
   #backpackSummaryNode;
+  // The portrait pager's backpack page (spec 075): a second backpack view, moved into each re-rendered item list.
+  #backpackPageNode;
   // Section hosts (spec 067): each section keeps its DOM while hidden; InventoryUiState owns the active section.
   #sectionHosts = new Map();
   #equipmentHost;
@@ -386,6 +388,7 @@ export class InventoryUI {
     const hostClass = (sectionId) => this.#sections.items.find((section) => section.id === sectionId).hostClass;
     this.#equipmentHost = this.#section("equipment", "left", hostClass("equipment"));
     this.#backpackSummaryNode = this.#backpackSummaryRenderer.create();
+    this.#backpackPageNode = this.#backpackSummaryRenderer.create();
     this.#section("backpack", "left", hostClass("backpack")).appendChild(this.#backpackSummaryNode);
     this.#section("keepnet", "left", hostClass("keepnet"));
     this.#itemsHost = this.#section("items", "right", "inventory-main__section--items");
@@ -406,9 +409,11 @@ export class InventoryUI {
 
   #applySection(sections) {
     this.#backpackSummaryRenderer.update(this.#backpackSummaryNode, sections.backpackItemCount);
+    this.#backpackSummaryRenderer.update(this.#backpackPageNode, sections.backpackItemCount);
     const sectionId = sections.activeId;
     if (sectionId !== this.#activeSectionId) {
       this.#activeSectionId = sectionId;
+      if (sectionId === "backpack") this.#inventoryRenderer.showItemsPage();
       const visible = new Set([this.#sectionHosts.get(sectionId).left,
         sectionId === "keepnet" ? this.#sectionHosts.get("keepnet").right : this.#itemsHost]);
       for (const hosts of this.#sectionHosts.values())
@@ -591,6 +596,7 @@ export class InventoryUI {
           type: this.#actionTypes.INVENTORY_ITEM_LONG_PRESS,
           instanceId: item.instanceId,
         }),
+      backpackView: this.#backpackPageNode,
     });
     this.#dom.replaceChildren(this.#itemsHost, grid);
   }

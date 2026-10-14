@@ -5,8 +5,10 @@ export const INVENTORY_SECTIONS = Object.freeze({
   iconSprite: "assets/ui/inventory-sections.svg",
   defaultSectionId: "equipment",
   backpackImage: "assets/ui/inventory/backpack.svg",
+  // Presentation scale only (spec 075): gameplay inventory capacity stays unlimited.
+  backpackCapacity: Object.freeze({ maxItems: 100 }),
   labels: Object.freeze({
-    backpackItems: (count) => `Предметів у рюкзаку: ${count}`,
+    backpackItems: (count, maxItems) => `Предметів у рюкзаку: ${count} з ${maxItems}`,
   }),
   items: Object.freeze([
     Object.freeze({ id: "equipment", icon: "equipment", label: "Екіпіровка",
@@ -16,4 +18,13 @@ export const INVENTORY_SECTIONS = Object.freeze({
     Object.freeze({ id: "keepnet", icon: "keepnet", label: "Садок",
       modifier: "inventory-modal--section-keepnet", hostClass: "inventory-main__section--keepnet" }),
   ]),
+  // The portrait backpack pager (spec 075): the item list on the left page, the backpack view on the right.
+  backpackPager: Object.freeze({
+    label: "Вміст рюкзака",
+    iconSprite: "assets/ui/inventory-sections.svg",
+    items: Object.freeze([
+      Object.freeze({ id: "items", icon: "items", label: "Предмети" }),
+      Object.freeze({ id: "backpack", icon: "backpack", label: "Рюкзак" }),
+    ]),
+  }),
 });

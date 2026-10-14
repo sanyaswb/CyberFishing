@@ -97,7 +97,7 @@ export class KeepnetSectionView {
       this.refresh();
     });
     filters.append(this.#kind, this.#species);
-    this.#list = this.#el("div", "keepnet-section__list");
+    this.#list = this.#el("div", "keepnet-section__list inventory-collection__list");
     // Shared collection (spec 074): back/heading/filters panel, a gap, then the fish list over the faded keepnet,
     // which CSS shows only in portrait.
     const controls = this.#el("div", "keepnet-section__controls inventory-collection__controls inventory-panel");

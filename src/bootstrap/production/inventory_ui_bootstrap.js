@@ -11,6 +11,9 @@ import { InventoryBalanceParameterResolver } from "../../game/presentation/inven
 import { InventoryDomFactory } from "../../platform/browser/dom/inventory_dom_factory.js";
 import { InventoryHeaderRenderer } from "../../game/presentation/inventory/inventory_header_renderer.js";
 import { InventoryLoadRenderer } from "../../game/presentation/inventory/inventory_load_renderer.js";
+import { InventoryScaleRenderer } from "../../game/presentation/inventory/inventory_scale_renderer.js";
+import { InventoryCollectionPagerRenderer } from "../../game/presentation/inventory/inventory_collection_pager_renderer.js";
+import { SwipePagerController } from "../../platform/browser/dom/swipe_pager_controller.js";
 import { INVENTORY_LOAD_METER_CONFIG } from "../../game/presentation/inventory/inventory_load_meter_config.js";
 import { InventoryGridRenderer } from "../../game/presentation/inventory/inventory_grid_renderer.js";
 import { InventoryItemCardRenderer } from "../../game/presentation/inventory/inventory_item_card_renderer.js";
@@ -115,6 +118,7 @@ export class InventoryUiBootstrap {
     const resolvedResourceMeterRenderer =
       resourceMeterRenderer ||
       new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver });
+    const scaleRenderer = new InventoryScaleRenderer({ domFactory: dom, resourceMeterRenderer: resolvedResourceMeterRenderer });
     const itemParametersResolver =
       new InventoryItemParametersResolver({
         resourceMeterResolver: resolvedResourceMeterResolver,
@@ -143,8 +147,7 @@ export class InventoryUiBootstrap {
       new InventoryHeaderRenderer({ domFactory: dom,
         closeButtonRenderer: new UiCloseButtonRenderer({ domFactory: dom }),
         autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }),
-        loadRenderer: new InventoryLoadRenderer({ domFactory: dom,
-          resourceMeterRenderer: resolvedResourceMeterRenderer, config: INVENTORY_LOAD_METER_CONFIG }),
+        loadRenderer: new InventoryLoadRenderer({ scaleRenderer, config: INVENTORY_LOAD_METER_CONFIG }),
       });
     const resolvedLoadoutRenderer =
       loadoutRenderer ||
@@ -178,6 +181,9 @@ export class InventoryUiBootstrap {
         itemRenderer: resolvedItemRenderer,
         createHorizontalScrollController: () => new HorizontalScrollController({ uiSurface }),
         backdropImage: INVENTORY_SECTIONS.backpackImage,
+        pagerRenderer: new InventoryCollectionPagerRenderer({ domFactory: dom,
+          tabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS.backpackPager }),
+          swipeController: new SwipePagerController(), config: INVENTORY_SECTIONS.backpackPager }),
       });
     return {
       dom,
@@ -192,7 +198,7 @@ export class InventoryUiBootstrap {
       resolvedInventoryRenderer,
       sections: INVENTORY_SECTIONS,
       sectionTabsRenderer: new InventorySectionTabsRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
-      backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS }),
+      backpackSummaryRenderer: new InventoryBackpackSummaryRenderer({ domFactory: dom, sections: INVENTORY_SECTIONS, scaleRenderer }),
     };
   }
 }

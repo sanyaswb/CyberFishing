@@ -38,19 +38,20 @@
   border-radius: inherit;
 }
 
-/* The load readout reuses the shared track/fill; its owner only arranges the icon and kilogram text. */
-.inventory-load {
-  --inventory-parameter-meter-height: calc(var(--inventory-load-unit, 1px) * 20);
+/* Scale composition (spec 075): the load and backpack capacity readouts reuse the shared track/fill; the block only
+   arranges the icon and the reading centred on the meter. Owners size it through --inventory-scale-unit. */
+.inventory-scale {
+  --inventory-parameter-meter-height: calc(var(--inventory-scale-unit, 1px) * 20);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: calc(var(--inventory-load-unit, 1px) * 8);
+  gap: calc(var(--inventory-scale-unit, 1px) * 8);
   min-width: 0;
 }
-.inventory-load__icon { width: var(--inventory-parameter-meter-height); height: var(--inventory-parameter-meter-height); object-fit: contain; }
-.inventory-load__meter, .inventory-load__value { grid-column: 2; grid-row: 1; }
-.inventory-load__meter { border-radius: 999px; }
-.inventory-load__value { z-index: 1; justify-self: center; color: var(--ui-text); font-size: calc(var(--inventory-load-unit, 1px) * 12); line-height: 1; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+.inventory-scale__icon { width: var(--inventory-parameter-meter-height); height: var(--inventory-parameter-meter-height); object-fit: contain; }
+.inventory-scale__meter, .inventory-scale__value { grid-column: 2; grid-row: 1; }
+.inventory-scale__meter { border-radius: 999px; }
+.inventory-scale__value { z-index: 1; justify-self: center; color: var(--ui-text); font-size: calc(var(--inventory-scale-unit, 1px) * 12); line-height: 1; white-space: nowrap; text-shadow: 0 1px 2px #000; }
 
 .inventory-resource-meter__track {
   position: relative;

@@ -32,6 +32,7 @@ const UI_SCRIPT_ORDER = Object.freeze([
   ["inventory_item_parameters_renderer.js", "src/game/presentation/inventory/inventory_item_parameters_renderer.js"],
   ["inventory_item_card_renderer.js", "src/game/presentation/inventory/inventory_item_card_renderer.js"],
   ["inventory_header_renderer.js", "src/game/presentation/inventory/inventory_header_renderer.js"],
+  ["inventory_scale_renderer.js", "src/game/presentation/inventory/inventory_scale_renderer.js"],
   ["inventory_load_renderer.js", "src/game/presentation/inventory/inventory_load_renderer.js"],
   ["inventory_load_meter_config.js", "src/game/presentation/inventory/inventory_load_meter_config.js"],
   ["inventory_loadout_panel_renderer.js", "src/game/presentation/inventory/inventory_loadout_panel_renderer.js"],
@@ -266,6 +267,11 @@ class FakeElement {
     this.attributes.delete(name);
   }
 
+  // Layout width for swipe checks (spec 075).
+  getBoundingClientRect() {
+    return { width: this.layoutWidth || 0, height: 0, left: 0, top: 0 };
+  }
+
   setPointerCapture(pointerId) {
     this.#capturedPointers.add(pointerId);
   }
@@ -490,10 +496,10 @@ class InventoryStaticContractCheck {
       "portrait equipment fits between the header and the bottom tabs");
     // Spec 074: backpack and keepnet share the collection block — filters panel, gap, scrolling items panel.
     const sharedControls = fs.readFileSync(path.join(ROOT, "src/game/presentation/styles/inventory/shared-controls.css"), "utf8");
-    assert.match(sharedControls, /\.inventory-collection\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*gap:\s*var\(--inventory-collection-gap, 10px\);[^}]*height:\s*100%;/,
+    assert.match(sharedControls, /\.inventory-collection\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\);[^}]*gap:\s*var\(--inventory-container-gap, 10px\);[^}]*height:\s*100%;/,
       "a collection is a filters row, a gap and the items row filling the section");
     const portraitCollection = sharedControls.split("@media (orientation: portrait)")[1];
-    assert.match(portraitCollection, /\.inventory-collection__items > :not\(\.inventory-collection__backdrop\)\s*\{\s*scrollbar-width:\s*none;/,
+    assert.match(portraitCollection, /\.inventory-collection__list\s*\{\s*scrollbar-width:\s*none;/,
       "the portrait item list scrolls without a visible scrollbar");
     assert.match(portraitCollection, /\.inventory-collection__backdrop\s*\{[^}]*display:\s*block;[^}]*opacity:\s*0\.12;/,
       "portrait shows the faded backdrop inside the items panel");
@@ -509,8 +515,18 @@ class InventoryStaticContractCheck {
       .split("@media (orientation: portrait)")[1];
     assert.match(mobileHeader, /\.inventory-header\s*\{[^}]*border-radius:\s*var\(--inventory-header-radius\);[^}]*background:\s*var\(--inventory-equipment-panel\);/,
       "the portrait header is a rounded mini panel");
-    assert.match(style, /\.inventory-list-panel__controls\s*\{\s*display:\s*grid;\s*grid-template-rows:\s*auto auto auto;/,
-      "filters keep their own panel, so hidden filter/sort rows never move the item list");
+    // Spec 075: only visible filter rows take space; one container gap token; the portrait pager slides its track.
+    assert.match(style, /\.inventory-list-panel__controls\s*\{\s*display:\s*flex;\s*flex-direction:\s*column;/,
+      "closed filter rows reserve no space and opening them pushes the items panel down");
+    assert.doesNotMatch(style, /\.inventory-list-panel__controls\s*\{[^}]*grid-template-rows/, "no empty reserved filter rows");
+    assert.match(style, /--inventory-container-gap:\s*var\(--inventory-content-gap\);/, "wide layouts space containers by the column gap");
+    assert.match(mobileModal, /--inventory-container-gap:\s*var\(--inventory-mobile-inset\);/, "phones space containers by the mobile inset");
+    const portraitPager = mobileList.split("@media (orientation: portrait)")[1];
+    assert.match(portraitPager, /\.inventory-pager__track\s*\{\s*transform:\s*translateX\(calc\(var\(--inventory-pager-position, var\(--inventory-pager-index, 0\)\)/,
+      "portrait pages follow the drag position and settle on the page index");
+    assert.match(portraitPager, /\.inventory-pager__viewport\s*\{[^}]*touch-action:\s*pan-y;/, "vertical list scrolling stays native");
+    assert.match(style, /\.inventory-pager__tabs,\s*\.inventory-pager__page--backpack\s*\{\s*display:\s*none;/,
+      "wide layouts show neither pager tabs nor the backpack page");
     // Spec 074: wide layouts place the header's two sections over the content columns in one row.
     assert.match(style, /\.inventory-header__controls\s*\{\s*grid-column:\s*2;\s*grid-row:\s*1;/,
       "the switches and close share the right section's row");
@@ -1076,9 +1092,9 @@ class InventoryStaticContractCheck {
     assert.strictEqual(this.#findAllByClass(ui.rootNode, "inventory-toggle__placeholder").length, 2,
       "unset consumables use vector placeholders");
     const headerDom = new sandbox.InventoryDomFactory(document);
-    const loadRenderer = new sandbox.InventoryLoadRenderer({ domFactory: headerDom,
-      resourceMeterRenderer: new sandbox.InventoryResourceMeterRenderer({ domFactory: headerDom }),
-      config: sandbox.INVENTORY_LOAD_METER_CONFIG });
+    const loadRenderer = new sandbox.InventoryLoadRenderer({ config: sandbox.INVENTORY_LOAD_METER_CONFIG,
+      scaleRenderer: new sandbox.InventoryScaleRenderer({ domFactory: headerDom,
+        resourceMeterRenderer: new sandbox.InventoryResourceMeterRenderer({ domFactory: headerDom }) }) });
     const headerRenderer = new sandbox.InventoryHeaderRenderer({ domFactory: headerDom,
       closeButtonRenderer: new sandbox.UiCloseButtonRenderer({ domFactory: headerDom }),
       autoSwitchRenderer: new sandbox.UiAutoSwitchRenderer({ domFactory: headerDom }), loadRenderer });
@@ -1098,7 +1114,8 @@ class InventoryStaticContractCheck {
     const loadMeter = this.#findByClass(loadScale, "inventory-resource-meter");
     assert.strictEqual(loadMeter.style.getPropertyValue("--inventory-resource-percent"), "1%",
       "one kilogram fills one percent of the owner's fixed 100kg scale");
-    assert.strictEqual(this.#findByClass(loadScale, "inventory-load__value").textContent, "1 kg");
+    assert.ok(loadScale.classList.contains("inventory-scale") && loadScale.classList.contains("inventory-load"));
+    assert.strictEqual(this.#findByClass(loadScale, "inventory-scale__value").textContent, "1 kg");
     loadRenderer.update(loadScale, { loadLabel: "Load", loadValue: 120, loadUnit: "kg" });
     assert.strictEqual(loadMeter.style.getPropertyValue("--inventory-resource-percent"), "100%");
     assert.strictEqual(this.#findByClass(loadScale, "inventory-resource-meter"), loadMeter,
@@ -1221,22 +1238,77 @@ class InventoryStaticContractCheck {
       setVisible: (visible) => keepnetVisibility.push(visible) });
     assert.ok(keepnetSections[0].contains(keepnetSummary) && keepnetSections[1].contains(keepnetContent));
     const gridBeforeSections = this.#findByClass(itemsHost, "inventory-list-panel");
-    // Spec 074: the filters panel, then the items panel holding the faded backpack and the grid.
-    const [listControls, listItems] = gridBeforeSections.children;
+    // Spec 074/075: the filters panel, then the pager — tabs above the items panel whose pages are the list over the
+    // faded backpack and the backpack view.
+    const [listControls, listPager] = gridBeforeSections.children;
+    const [pagerTabs, pagerViewport] = listPager.children;
+    const [itemsPage, backpackPage] = pagerViewport.children[0].children;
     assert.ok(gridBeforeSections.classList.contains("inventory-collection") &&
       listControls.classList.contains("inventory-collection__controls") &&
       listControls.contains(this.#findByClass(gridBeforeSections, "inventory-categories")) &&
-      listItems.classList.contains("inventory-collection__items") &&
-      listItems.contains(this.#findByClass(gridBeforeSections, "inventory-list-grid")),
-    "the backpack list is a filters panel and an items panel");
+      listPager.classList.contains("inventory-pager") && pagerTabs.classList.contains("inventory-pager__tabs") &&
+      pagerViewport.classList.contains("inventory-collection__items") &&
+      itemsPage.contains(this.#findByClass(gridBeforeSections, "inventory-list-grid")) &&
+      itemsPage.contains(this.#findByClass(gridBeforeSections, "inventory-collection__backdrop")) &&
+      backpackPage.contains(this.#findByClass(backpackPage, "inventory-backpack__capacity")),
+    "the backpack list is a filters panel and a two-page items pager");
+    const pagerTabButtons = this.#findAllByClass(pagerTabs, "inventory-section-tabs__tab");
+    const pagerIndex = () => pagerViewport.style.getPropertyValue("--inventory-pager-index");
+    assert.deepStrictEqual(pagerTabButtons.map((tab) => tab.getAttribute("aria-label")), ["Предмети", "Рюкзак"]);
+    assert.strictEqual(pagerIndex(), "0");
+    pagerTabButtons[1].click();
+    assert.strictEqual(pagerIndex(), "1", "the Backpack tab shows the backpack page");
+    assert.strictEqual(pagerTabButtons[1].getAttribute("aria-selected"), "true");
+    pagerTabButtons[0].click();
+    pagerViewport.layoutWidth = 300;
+    const swipe = (fromX, toX, end = "pointerup") => {
+      pagerViewport.emit("pointerdown", { pointerType: "touch", clientX: fromX, clientY: 100 });
+      pagerViewport.emit("pointermove", { pointerType: "touch", clientX: (fromX + toX) / 2, clientY: 101 });
+      pagerViewport.emit("pointermove", { pointerType: "touch", clientX: toX, clientY: 101 });
+      return pagerViewport.emit(end, { pointerType: "touch", clientX: toX, clientY: 101 });
+    };
+    pagerViewport.emit("pointerdown", { pointerType: "touch", clientX: 250, clientY: 100 });
+    pagerViewport.emit("pointermove", { pointerType: "touch", clientX: 100, clientY: 101 });
+    assert.strictEqual(pagerViewport.style.getPropertyValue("--inventory-pager-position"), "0.5",
+      "both pages follow the finger");
+    pagerViewport.emit("pointerup", { pointerType: "touch", clientX: 100, clientY: 101 });
+    assert.strictEqual(pagerIndex(), "1", "a left swipe beyond the threshold settles on the backpack page");
+    assert.strictEqual(pagerViewport.style.getPropertyValue("--inventory-pager-position"), "",
+      "the transient drag position is removed on release");
+    assert.ok(pagerViewport.emit("click").defaultPrevented, "the click that ends a swipe is suppressed");
+    swipe(100, 130);
+    assert.strictEqual(pagerIndex(), "1", "a short swipe springs back");
+    swipe(50, 250, "pointercancel");
+    assert.strictEqual(pagerIndex(), "1", "a cancelled swipe never changes the page");
+    swipe(50, 250);
+    assert.strictEqual(pagerIndex(), "0", "a right swipe returns to the item list");
+    swipe(100, 100);
+    pagerViewport.emit("pointerdown", { pointerType: "touch", clientX: 100, clientY: 100 });
+    pagerViewport.emit("pointermove", { pointerType: "touch", clientX: 104, clientY: 160 });
+    pagerViewport.emit("pointermove", { pointerType: "touch", clientX: 10, clientY: 160 });
+    pagerViewport.emit("pointerup", { pointerType: "touch", clientX: 10, clientY: 160 });
+    assert.strictEqual(pagerIndex(), "0", "a vertical gesture stays with list scrolling");
+    pagerTabButtons[1].click();
     const sectionView = (activeId) => ({ ...currentView, sections: { activeId, backpackItemCount: 7 } });
     ui.render(sectionView("backpack"));
     assert.deepStrictEqual(visibleSections(), [false, true, false, true, false], "backpack: summary left, the item list right");
     assert.deepStrictEqual(["equipment", "backpack", "keepnet"].map((id) => ui.rootNode.classList.contains("inventory-modal--section-" + id)),
       [false, true, false], "one root modifier names the visible section");
     assert.deepStrictEqual(activeTabs(), ["backpack"]);
-    assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__count").textContent, "Предметів у рюкзаку: 7");
-    assert.strictEqual(this.#findByClass(backpackSection, "inventory-backpack-summary__image").src, "assets/ui/inventory/backpack.svg");
+    assert.strictEqual(pagerIndex(), "0", "entering the backpack section starts on the item list");
+    // Spec 075: one image container, then a separate stats container with the 0..100 capacity scale.
+    const backpackView = this.#findByClass(backpackSection, "inventory-backpack");
+    const [backpackVisual, backpackStats] = backpackView.children;
+    assert.ok(backpackVisual.classList.contains("inventory-backpack__visual") &&
+      backpackStats.classList.contains("inventory-backpack__stats") &&
+      this.#findAllByClass(backpackView, "inventory-loadout-panel").length === 0, "the backpack view has no nested panels");
+    assert.strictEqual(this.#findByClass(backpackVisual, "inventory-backpack__image").src, "assets/ui/inventory/backpack.svg");
+    for (const view of [backpackView, this.#findByClass(backpackPage, "inventory-backpack")]) {
+      const capacity = this.#findByClass(view, "inventory-backpack__capacity");
+      assert.strictEqual(this.#findByClass(capacity, "inventory-scale__value").textContent, "7 / 100");
+      assert.strictEqual(this.#findByClass(capacity, "inventory-resource-meter").style.getPropertyValue("--inventory-resource-percent"), "7%");
+      assert.strictEqual(this.#findByClass(capacity, "inventory-scale__icon").src, "assets/ui/inventory/backpack.svg");
+    }
     ui.render(sectionView("keepnet"));
     assert.deepStrictEqual(visibleSections(), [false, false, true, false, true], "keepnet: parameters left, fish right");
     assert.strictEqual(keepnetVisibility.at(-1), ui.isOpen, "the keepnet refreshes only while its section is visible");
