@@ -356,6 +356,8 @@
       display: block;
     }
 
+    /* touch-action here covers pages without their own scroller (the backpack view); the item list declares its own
+       pan axis through .inventory-vertical-scroll (spec 079). */
     .inventory-pager__viewport {
       border-top-left-radius: 0;
       border-top-right-radius: 0;

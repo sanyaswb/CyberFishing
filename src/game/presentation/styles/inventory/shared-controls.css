@@ -159,9 +159,13 @@
   display: none;
 }
 
-/* Item and fish lists scroll by mouse drag too (spec 076); touch keeps native panning. A drag never activates a card. */
+/* Item and fish lists scroll by mouse drag too (spec 076); touch keeps native panning. A drag never activates a card.
+   Like .inventory-horizontal-scroll, the class declares the native pan axis it owns: touch-action is resolved from the
+   touched card up to this scroller only, so an ancestor's rule (the pager viewport) never applies here. pan-y leaves
+   horizontal swipes to the enclosing pager's SwipePagerController instead of the browser's history gesture. */
 .inventory-vertical-scroll {
   overscroll-behavior-y: contain;
+  touch-action: pan-y;
 }
 
 .inventory-vertical-scroll.inventory-vertical-scroll--dragging {

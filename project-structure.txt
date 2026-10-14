@@ -332,6 +332,8 @@
 │  │  └── spec.md
 │  ├── 078-portrait-equipment-real-size
 │  │  └── spec.md
+│  ├── 079-pager-touch-axis
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

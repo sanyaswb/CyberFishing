@@ -1460,6 +1460,13 @@ class InventoryStaticContractCheck {
     // Spec 076: the item list scrolls by a mouse drag over a card, and neither a drag nor a touch swipe selects it.
     const listGrid = this.#findByClass(ui.rootNode, "inventory-list-grid");
     assert.ok(listGrid.classList.contains("inventory-vertical-scroll"), "the item list owns vertical drag scrolling");
+    // Spec 079: touch-action resolves only up to the nearest scroller, so the list itself declares its native pan axis
+    // and leaves horizontal swipes to the pager, as the horizontal filter rows do for theirs.
+    const scrollCss = this.#reader.readStyle();
+    assert.match(scrollCss, /\.inventory-vertical-scroll\s*\{[^}]*touch-action:\s*pan-y;/,
+      "vertical lists keep only native vertical panning");
+    assert.match(scrollCss, /\.inventory-horizontal-scroll\s*\{[^}]*touch-action:\s*pan-x pan-y;/,
+      "horizontal rows declare their native pan axes the same way");
     listGrid.scrollHeight = 900;
     listGrid.clientHeight = 300;
     listGrid.scrollTop = 100;
