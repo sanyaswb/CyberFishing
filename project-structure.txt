@@ -296,6 +296,8 @@
 │  │  └── spec.md
 │  ├── 065-dev-house-override-handoff
 │  │  └── spec.md
+│  ├── 066-house-review-cleanup
+│  │  └── spec.md
 │  └── README.md
 ├── src
 │  ├── bootstrap

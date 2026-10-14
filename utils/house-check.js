@@ -63,6 +63,9 @@ function houseDocument() {
 
 async function checkHousePresentation(HOUSE_CONFIG) {
   const { HouseView } = await import("../src/game/presentation/house/house_view.js");
+  const { HOUSE_LABELS } = await import("../src/game/presentation/house/house_labels.js");
+  assert.deepEqual([0, 1, 2, 4, 5, 11, 14, 21, 22, 25, 101, 112].map(HOUSE_LABELS.fishCount), ["0 риб", "1 риба", "2 риби", "4 риби", "5 риб",
+    "11 риб", "14 риб", "21 риба", "22 риби", "25 риб", "101 риба", "112 риб"], "fish counters use Ukrainian plural forms");
   const { InventoryDomFactory } = await import("../src/platform/browser/dom/inventory_dom_factory.js");
   const { InventoryResourceMeterRenderer } = await import("../src/game/presentation/inventory/inventory_resource_meter_renderer.js");
   const { DegradationColorResolver } = await import("../src/game/presentation/styles/degradation_color_resolver.js");
@@ -95,7 +98,7 @@ async function checkHousePresentation(HOUSE_CONFIG) {
     perform: (...args) => actions.push(args), fishView: { show() {} }, feedPicker: { update() {}, close() {}, isOpen: false },
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory, degradationColorResolver: colorResolver }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory, dismissController: new SheetDismissController() }),
-    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000 });
+    sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }), timeBlendMs: 1000, labels: HOUSE_LABELS });
   const view = createView();
   const header = documentRef.querySelector("[data-house-header]"), dock = documentRef.querySelector("[data-house-dock]");
   assert.equal(header.inert, true, "House starts with both gesture zones closed");
@@ -286,7 +289,6 @@ async function checkHousePresentation(HOUSE_CONFIG) {
   assert.equal(actions.length, actionCount + 1, "a remounted switch performs exactly once");
   remounted.dispose();
   const { HousePresenter } = await import("../src/game/presentation/house/house_presenter.js");
-  const { HOUSE_LABELS } = await import("../src/game/presentation/house/house_labels.js");
   let funds = 2, presented;
   const pricedState = { ...model, aquarium: { ...model.aquarium, level: 5, maxLevel: 10, capacity: 16, nextUpgradeCapacity: 18 },
     feedItems: [], prices: { upgrade: 5 } };

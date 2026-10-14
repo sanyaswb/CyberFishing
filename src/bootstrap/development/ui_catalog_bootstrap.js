@@ -155,7 +155,7 @@ export function startUiCatalog() {
           removeEventListener: (type, listener, options) => windowTarget.removeEventListener(type, listener, options) };
         const sheetHeights = own(new SheetHeightController({ windowTarget, uiSurface: surface, durationMs: HOUSE_CONFIG.ui.sheetCloseDurationMs }));
         view = own(new HouseView({ documentRef: scope, windowTarget: houseWindow, sheetHeights, roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-          returnTo: "#house", fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs,
+          returnTo: "#house", fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
           resourceMeters: meters, autoSwitchRenderer: auto,
           sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController({ uiSurface: surface,
             dismissDistancePx: HOUSE_CONFIG.ui.sheetDismissDistancePx }) }), sheetDismissLabel: HOUSE_LABELS.sheetDismiss,

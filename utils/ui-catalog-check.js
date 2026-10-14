@@ -263,7 +263,7 @@ async function checkHouseExample() {
     mountNode: documentRef.querySelector("[data-house-fullscreen-mount]"), label: "Fullscreen" });
   const view = new HouseView({ documentRef, windowTarget, sheetHeights, perform: (action, id) => example.perform(action, id),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-    returnTo: "#house", onReturn: () => {}, fishView, feedPicker, timeBlendMs: 1000,
+    returnTo: "#house", onReturn: () => {}, fishView, feedPicker, timeBlendMs: 1000, labels: HOUSE_LABELS,
     resourceMeters: new InventoryResourceMeterRenderer({ domFactory: dom, degradationColorResolver: colors }),
     sheetHandleRenderer: new UiSheetHandleRenderer({ domFactory: dom, dismissController: new SheetDismissController() }),
     sheetDismissLabel: "Dismiss sheet", autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory: dom }) });

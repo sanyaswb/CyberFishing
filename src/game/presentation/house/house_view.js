@@ -43,11 +43,13 @@ export class HouseView {
   #panelFocus = null;
   #fishLists = new Map();
   #motionPreference;
+  #labels;
 
   constructor({ documentRef, windowTarget, perform, roomConfig, uiConfig,
     returnTo, onReturn, fishView, feedPicker,
-    resourceMeters, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel = sheetDismissLabel, autoSwitchRenderer, timeBlendMs }) {
+    resourceMeters, sheetHeights, sheetHandleRenderer, sheetDismissLabel, menuHandleLabel = sheetDismissLabel, autoSwitchRenderer, timeBlendMs, labels }) {
     this.#document = documentRef;
+    this.#labels = labels;
     this.#window = windowTarget;
     this.#motionPreference = windowTarget.matchMedia?.("(prefers-reduced-motion: reduce)") || null;
     this.#root = documentRef.body;
@@ -95,8 +97,8 @@ export class HouseView {
       onDismiss: () => this.#setZones(this.#headerVisible, false) });
     this.#nodes.get("dock-handle-mount").appendChild(menuHandle);
     this.#sheetHandles.push(menuHandle);
-    this.#autoSwitch = autoSwitchRenderer.create({ id: "house-auto-feeder", name: "Автогодівниця",
-      modeLabel: "Увімкнути автогодівницю", variant: "control", className: "house__auto-switch",
+    this.#autoSwitch = autoSwitchRenderer.create({ id: "house-auto-feeder", name: labels.autoFeeder,
+      modeLabel: labels.enableFeeder, variant: "control", className: "house__auto-switch",
       onChange: () => this.#perform("toggleAutoFeeder") });
     this.#nodes.get("auto-switch-mount").appendChild(this.#autoSwitch);
     this.#rooms = [...documentRef.querySelectorAll("[data-house-room]")];
@@ -182,11 +184,11 @@ export class HouseView {
     get("upgrade-level").textContent = String(model.upgradeLevel);
     get("upgrade-capacity").textContent = String(model.upgradeCapacity);
     get("auto-status").textContent = model.autoStatus;
-    get("bait-count").textContent = `${model.liveBaits.length} риб`;
-    get("catch-count").textContent = `${model.keepnet.length} риб`;
+    get("bait-count").textContent = this.#labels.fishCount(model.liveBaits.length);
+    get("catch-count").textContent = this.#labels.fishCount(model.keepnet.length);
     get("keepnet-warning").hidden = !model.liveBaits.some((fish) => fish.location === "keepnet");
     get("dead-count").hidden = model.deadCount === 0;
-    get("dead-count").textContent = model.deadCount > 0 ? `Живців втрачено: ${model.deadCount}` : "";
+    get("dead-count").textContent = model.deadCount > 0 ? this.#labels.deadCount(model.deadCount) : "";
     this.#feedPicker.update(model);
     this.#actions.get("buyAutoFeeder").hidden = aquarium.autoFeeder.owned;
     this.#nodes.get("auto-switch-mount").hidden = !aquarium.autoFeeder.owned;
@@ -198,7 +200,7 @@ export class HouseView {
     this.#renderFish(get("live-baits"), model.liveBaits, true);
     this.#renderFish(get("catches"), model.keepnet, false);
     this.#renderRoom(model.room);
-    if (model.error) this.announce(`Помилка збереження: ${model.error}`, true);
+    if (model.error) this.announce(this.#labels.saveError(model.error), true);
   }
 
   #renderTimeOfDay(eveningOpacity, nightOpacity) {
@@ -230,13 +232,13 @@ export class HouseView {
     get("room-max-level").textContent = String(room.maxLevel);
     get("room-level-count").textContent = `${room.level} / ${room.maxLevel}`;
     get("room-next-level").textContent = room.nextDurationMs === null
-      ? "Максимальний рівень" : `Наступний рівень: ${room.level + 1}`;
+      ? this.#labels.maxLevel : this.#labels.nextLevel(room.level + 1);
     get("room-duration").textContent = room.nextDurationMs === null
-      ? "" : `${room.nextDurationMs / 3600000} год`;
+      ? "" : this.#labels.hours(room.nextDurationMs);
     const progress = room.targetLevel === null || room.nextDurationMs === null ? 0
       : Math.max(0, Math.min(1, 1 - room.remainingMs / room.nextDurationMs));
     this.#renderLevelCard("room", room.level, room.maxLevel, room.targetLevel, progress,
-      (level) => ({ bonus: "+ нове оформлення кімнати", detail: `${this.#roomConfig.upgradeDurationMs[level] / 3600000} год · 3 фони` }));
+      (level) => ({ bonus: this.#labels.roomBenefit, detail: this.#labels.roomBenefitDetail(this.#roomConfig.upgradeDurationMs[level]) }));
     this.#actions.get("upgradeRoom").disabled =
       room.nextDurationMs === null || room.targetLevel !== null;
     const renovating = room.targetLevel !== null;
@@ -244,7 +246,7 @@ export class HouseView {
     get("dock").hidden = renovating;
     if (renovating) {
       this.#setPanel(null);
-      get("renovation-level").textContent = `Ремонт до рівня ${room.targetLevel}`;
+      get("renovation-level").textContent = this.#labels.renovationLevel(room.targetLevel);
       get("renovation-time").textContent = this.#formatCountdown(room.remainingMs);
     }
   }
@@ -274,7 +276,7 @@ export class HouseView {
         const benefit = describe(nextLevel);
         const row = this.#el("li", "house__level-step");
         if (nextLevel === targetLevel) row.classList.add("house__level-step--pending");
-        row.append(this.#el("span", "house__level-name", `Рівень ${nextLevel}`),
+        row.append(this.#el("span", "house__level-name", this.#labels.level(nextLevel)),
           this.#el("strong", "house__level-bonus", benefit.bonus), this.#el("small", "house__level-detail", benefit.detail));
         list.replaceChildren(row);
       }
@@ -297,7 +299,7 @@ export class HouseView {
       const percentage = Number(feed.percentage);
       const percent = Number.isFinite(percentage) ? Math.max(0, Math.min(100, percentage)) : 0;
       const reading = { id: "aquarium-feed", percent,
-        label: `${feed.name}: ${Math.round(percent)}% · ${model.feedTimeLabel}` };
+        label: this.#labels.feedReading(feed.name, Math.round(percent), model.feedTimeLabel) };
       if (!this.#feedMeter) {
         this.#feedMeter = this.#resourceMeters.create(reading, { variant: "parameter", showIcon: false });
         this.#nodes.get("feed-meter").appendChild(this.#feedMeter);
@@ -309,7 +311,7 @@ export class HouseView {
   #renderFish(container, fish, live) {
     let list = this.#fishLists.get(container);
     if (!list) {
-      list = { rows: new Map(), empty: this.#el("p", "house__muted", live ? "Живця немає." : "Садок порожній.") };
+      list = { rows: new Map(), empty: this.#el("p", "house__muted", live ? this.#labels.emptyBait : this.#labels.emptyKeepnet) };
       this.#fishLists.set(container, list);
     }
     const active = new Set();
@@ -323,14 +325,14 @@ export class HouseView {
         if (live) {
           record.timer = this.#el("span", "house__fish-timer");
           record.select = this.#button("select", "", entry.id);
-          record.transfer = this.#button("transfer", "До акваріума", entry.id);
-          record.release = this.#button("releaseBait", "Випустити", entry.id);
+          record.transfer = this.#button("transfer", this.#labels.transfer, entry.id);
+          record.release = this.#button("releaseBait", this.#labels.release, entry.id);
           record.row.append(record.timer, record.select, record.transfer, record.release);
-        } else record.row.append(this.#button("release", "Випустити", entry.id));
+        } else record.row.append(this.#button("release", this.#labels.release, entry.id));
         list.rows.set(entry.id, record);
       }
       record.name.textContent = entry.name;
-      record.meta.textContent = `${entry.weightLabel} · ${live ? entry.locationLabel : "Садок"}`;
+      record.meta.textContent = `${entry.weightLabel} · ${live ? entry.locationLabel : this.#labels.keepnet}`;
       if (live) {
         record.timer.textContent = entry.timerLabel;
         record.select.dataset.houseAction = entry.selected ? "deselect" : "select";

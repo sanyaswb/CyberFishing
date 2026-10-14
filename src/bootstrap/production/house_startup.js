@@ -106,13 +106,13 @@ export function startFishermanHouse({ createTimeDisplay = null, createDevTools =
     menuHandleLabel: HOUSE_LABELS.menuHandle,
     autoSwitchRenderer: new UiAutoSwitchRenderer({ domFactory }),
     roomConfig: HOUSE_CONFIG.room, uiConfig: HOUSE_CONFIG.ui,
-    returnTo, fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs,
+    returnTo, fishView, feedPicker, timeBlendMs: CONFIG.liveBait.displayTickMs, labels: HOUSE_LABELS,
     onReturn: hostWindow || onReturnData ? returnToGame : null,
     perform: (action, id) => presenter.perform(action, id) });
   const fullscreen = new FullscreenControl({ documentRef: documentTarget, fullscreenDocument,
     mountNode: documentTarget.querySelector("[data-house-fullscreen-mount]"), label: HUD_LABELS.fullscreen,
     onError: () => view.announce(HOUSE_LABELS.fullscreenFailed, true) });
-  presenter = new HousePresenter({ liveBait, room, gameTime, view, labels: HOUSE_LABELS, now: () => clock.nowMs() });
+  presenter = new HousePresenter({ liveBait, room, gameTime, view, labels: HOUSE_LABELS });
   const refresh = () => { presenter.refresh(); timeDisplay.update(gameTime.getHours()); };
   refresh();
   const careTimer = windowTarget.setInterval(() => { liveBait.advance(); refresh(); }, CONFIG.liveBait.careTickMs);
